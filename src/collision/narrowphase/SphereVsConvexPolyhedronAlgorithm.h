@@ -39,7 +39,16 @@ class Body;
 // Class SphereVsConvexPolyhedronAlgorithm
 /**
  * This class is used to compute the narrow-phase collision detection
- * between a sphere and a convex polyhedron.
+ * between a sphere and a convex polyhedron. The sphere is basically a
+ * point with a margin around it. The idea of this method is to use
+ * the GJK algorithm first. If GJK reports that the two objects are
+ * separated, we are done. If GJK reports that the objects are overlapping
+ * in the sphere margin, GJK will also report a contact point and a contact
+ * normal. However, if GJK reports that the object are in deep penetration
+ * (the center of the sphere is inside the polyhedron) we run the SAT
+ * algorithm to get the contact point and contact normal.
+ * This is based on the "Robust Contact Creation for Physics Simulation"
+ * presentation by Dirk Gregorius.
  */
 class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
 

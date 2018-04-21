@@ -101,27 +101,43 @@ class PolyhedronMesh {
 };
 
 // Return the number of vertices
+/**
+ * @return The number of vertices in the mesh
+ */
 inline uint PolyhedronMesh::getNbVertices() const {
     return mHalfEdgeStructure.getNbVertices();
 }
 
 // Return the number of faces
+/**
+ * @return The number of faces in the mesh
+ */
 inline uint PolyhedronMesh::getNbFaces() const {
    return mHalfEdgeStructure.getNbFaces();
 }
 
 // Return a face normal
+/**
+ * @param faceIndex The index of a given face of the mesh
+ * @return The normal vector of a given face of the mesh
+ */
 inline Vector3 PolyhedronMesh::getFaceNormal(uint faceIndex) const {
     assert(faceIndex < mHalfEdgeStructure.getNbFaces());
     return mFacesNormals[faceIndex];
 }
 
 // Return the half-edge structure of the mesh
+/**
+ * @return The Half-Edge structure of the mesh
+ */
 inline const HalfEdgeStructure& PolyhedronMesh::getHalfEdgeStructure() const {
     return mHalfEdgeStructure;
 }
 
 // Return the centroid of the polyhedron
+/**
+ * @return The centroid of the mesh
+ */
 inline Vector3 PolyhedronMesh::getCentroid() const {
     return mCentroid;
 }

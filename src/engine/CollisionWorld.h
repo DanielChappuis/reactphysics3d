@@ -256,6 +256,9 @@ inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* ov
 }
 
 // Return the name of the world
+/**
+ * @return Name of the world
+ */
 inline const std::string& CollisionWorld::getName() const {
     return mName;
 }
@@ -263,6 +266,9 @@ inline const std::string& CollisionWorld::getName() const {
 #ifdef IS_PROFILING_ACTIVE
 
 // Return a pointer to the profiler
+/**
+ * @return A pointer to the profiler
+ */
 inline Profiler* CollisionWorld::getProfiler() {
     return mProfiler;
 }
@@ -272,6 +278,9 @@ inline Profiler* CollisionWorld::getProfiler() {
 #ifdef IS_LOGGING_ACTIVE
 
 // Return a pointer to the logger
+/**
+ * @return A pointer to the logger
+ */
 inline Logger* CollisionWorld::getLogger() {
     return mLogger;
 }

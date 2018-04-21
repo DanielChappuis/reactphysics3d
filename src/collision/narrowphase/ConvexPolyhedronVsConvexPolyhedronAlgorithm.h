@@ -39,7 +39,10 @@ class ContactPoint;
 // Class ConvexPolyhedronVsConvexPolyhedronAlgorithm
 /**
  * This class is used to compute the narrow-phase collision detection
- * between two convex polyhedra.
+ * between two convex polyhedra. Here we do not use the GJK algorithm but
+ * we run the SAT algorithm to get the contact points and normal.
+ * This is based on the "Robust Contact Creation for Physics Simulation"
+ * presentation by Dirk Gregorius.
  */
 class ConvexPolyhedronVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
 

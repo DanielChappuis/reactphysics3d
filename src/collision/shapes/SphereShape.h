@@ -106,11 +106,17 @@ inline decimal SphereShape::getRadius() const {
 }
 
 // Return true if the collision shape is a polyhedron
+/**
+ * @return False because the sphere shape is not a polyhedron
+ */
 inline bool SphereShape::isPolyhedron() const {
         return false;
 }
 
 // Return the number of bytes used by the collision shape
+/**
+ * @return The size (in bytes) of the sphere shape
+ */
 inline size_t SphereShape::getSizeInBytes() const {
     return sizeof(SphereShape);
 }

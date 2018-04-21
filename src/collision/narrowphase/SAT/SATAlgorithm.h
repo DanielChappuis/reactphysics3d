@@ -43,6 +43,12 @@ class MemoryAllocator;
 class Profiler;
 
 // Class SATAlgorithm
+/**
+ * This class implements the Separating Axis Theorem algorithm (SAT).
+ * This algorithm is used to find the axis of minimum penetration between two convex polyhedra.
+ * If none is found, the objects are separated. Otherwise, the two objects are
+ * in contact and we use clipping to get the contact points.
+ */
 class SATAlgorithm {
 
     private :

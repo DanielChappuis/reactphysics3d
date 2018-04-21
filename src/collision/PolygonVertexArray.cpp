@@ -33,6 +33,15 @@ using namespace reactphysics3d;
 /// therefore, you need to make sure that those data are always valid during
 /// the lifetime of the PolygonVertexArray.
 /**
+ * @param nbVertices Number of vertices in the array
+ * @param verticesStart Pointer to the start of the vertices data
+ * @param verticesStride The number of bytes between two consecutive vertices in the array
+ * @param indexesStart Pointer to the start of the face indices data
+ * @param indexesStride The number of bytes between two consecutive face indices in the array
+ * @param nbFaces The number of faces in the array
+ * @param nbFaces Pointer to the start of the faces data
+ * @param vertexDataType Data type of the vertices data
+ * @param indexDataType Data type of the face indices data
  */
 PolygonVertexArray::PolygonVertexArray(uint nbVertices, void* verticesStart, int verticesStride,
                                        void* indexesStart, int indexesStride,
@@ -50,6 +59,9 @@ PolygonVertexArray::PolygonVertexArray(uint nbVertices, void* verticesStart, int
 }
 
 // Return the vertex index of a given vertex in a face
+/**
+ * @return The index of a vertex (in the array of vertices data) of a given vertex in a face
+ */
 uint PolygonVertexArray::getVertexIndexInFace(uint faceIndex, uint noVertexInFace) const {
 
     assert(faceIndex < mNbFaces);

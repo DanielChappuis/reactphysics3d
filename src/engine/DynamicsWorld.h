@@ -275,6 +275,9 @@ inline void DynamicsWorld::resetBodiesForceAndTorque() {
 }
 
 // Get the number of iterations for the velocity constraint solver
+/**
+ * @return The number of iterations of the velocity constraint solver
+ */
 inline uint DynamicsWorld::getNbIterationsVelocitySolver() const {
     return mNbVelocitySolverIterations;
 }
@@ -291,6 +294,9 @@ inline void DynamicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
 }
 
 // Get the number of iterations for the position constraint solver
+/**
+ * @return The number of iterations of the position constraint solver
+ */
 inline uint DynamicsWorld::getNbIterationsPositionSolver() const {
     return mNbPositionSolverIterations;
 }

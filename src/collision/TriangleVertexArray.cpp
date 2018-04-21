@@ -190,6 +190,10 @@ void TriangleVertexArray::computeVerticesNormals() {
 }
 
 // Return the indices of the three vertices of a given triangle in the array
+/**
+ * @param triangleIndex Index of a given triangle in the array
+ * @param[out] outVerticesIndices Pointer to the three output vertex indices
+ */
 void TriangleVertexArray::getTriangleVerticesIndices(uint triangleIndex, uint* outVerticesIndices) const {
 
     assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
@@ -213,7 +217,11 @@ void TriangleVertexArray::getTriangleVerticesIndices(uint triangleIndex, uint* o
     }
 }
 
-// Return the vertices coordinates of a triangle
+// Return the three vertices coordinates of a triangle
+/**
+ * @param triangleIndex Index of a given triangle in the array
+ * @param[out] outTriangleVertices Pointer to the three output vertex coordinates
+ */
 void TriangleVertexArray::getTriangleVertices(uint triangleIndex, Vector3* outTriangleVertices) const {
 
     assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
@@ -248,6 +256,10 @@ void TriangleVertexArray::getTriangleVertices(uint triangleIndex, Vector3* outTr
 }
 
 // Return the three vertices normals of a triangle
+/**
+ * @param triangleIndex Index of a given triangle in the array
+ * @param[out] outTriangleVerticesNormals Pointer to the three output vertex normals
+ */
 void TriangleVertexArray::getTriangleVerticesNormals(uint triangleIndex, Vector3* outTriangleVerticesNormals) const {
 
     assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
@@ -282,6 +294,10 @@ void TriangleVertexArray::getTriangleVerticesNormals(uint triangleIndex, Vector3
 }
 
 // Return a vertex of the array
+/**
+ * @param vertexIndex Index of a given vertex of the array
+ * @param[out] outVertex Pointer to the output vertex coordinates
+ */
 void TriangleVertexArray::getVertex(uint vertexIndex, Vector3* outVertex) {
 
     assert(vertexIndex < mNbVertices);
@@ -308,6 +324,10 @@ void TriangleVertexArray::getVertex(uint vertexIndex, Vector3* outVertex) {
 }
 
 // Return a vertex normal of the array
+/**
+ * @param vertexIndex Index of a given vertex of the array
+ * @param[out] outNormal Pointer to the output vertex normal
+ */
 void TriangleVertexArray::getNormal(uint vertexIndex, Vector3* outNormal) {
 
     assert(vertexIndex < mNbVertices);

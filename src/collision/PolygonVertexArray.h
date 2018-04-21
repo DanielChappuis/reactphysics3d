@@ -137,47 +137,75 @@ class PolygonVertexArray {
 };
 
 // Return the vertex data type
+/**
+ * @return The data type of the vertices in the array
+ */
 inline PolygonVertexArray::VertexDataType PolygonVertexArray::getVertexDataType() const {
     return mVertexDataType;
 }
 
 // Return the index data type
+/**
+ * @return The data type of the indices in the array
+ */
 inline PolygonVertexArray::IndexDataType PolygonVertexArray::getIndexDataType() const {
    return mIndexDataType;
 }
 
 // Return the number of vertices
+/**
+ * @return The number of vertices in the array
+ */
 inline uint PolygonVertexArray::getNbVertices() const {
     return mNbVertices;
 }
 
 // Return the number of faces
+/**
+ * @return The number of faces in the array
+ */
 inline uint PolygonVertexArray::getNbFaces() const {
     return mNbFaces;
 }
 
 // Return the vertices stride (number of bytes)
+/**
+ * @return The number of bytes between two vertices
+ */
 inline int PolygonVertexArray::getVerticesStride() const {
     return mVerticesStride;
 }
 
 // Return the indices stride (number of bytes)
+/**
+ * @return The number of bytes between two consecutive face indices
+ */
 inline int PolygonVertexArray::getIndicesStride() const {
     return mIndicesStride;
 }
 
 // Return a polygon face of the polyhedron
+/**
+ * @param faceIndex Index of a given face
+ * @return A polygon face
+ */
 inline PolygonVertexArray::PolygonFace* PolygonVertexArray::getPolygonFace(uint faceIndex) const {
     assert(faceIndex < mNbFaces);
     return &mPolygonFacesStart[faceIndex];
 }
 
 // Return the pointer to the start of the vertices array
+/**
+ * @return A pointer to the start of the vertex array of the polyhedron
+ */
 inline unsigned char* PolygonVertexArray::getVerticesStart() const {
     return mVerticesStart;
 }
 
 // Return the pointer to the start of the indices array
+/**
+ * @return A pointer to the start of the face indices array of the polyhedron
+ */
 inline unsigned char* PolygonVertexArray::getIndicesStart() const {
     return mIndicesStart;
 }

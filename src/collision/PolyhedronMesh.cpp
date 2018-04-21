@@ -32,7 +32,7 @@ using namespace reactphysics3d;
 
 
 // Constructor
-/*
+/**
  * Create a polyhedron mesh given an array of polygons.
  * @param polygonVertexArray Pointer to the array of polygons and their vertices
  */
@@ -94,6 +94,10 @@ void PolyhedronMesh::createHalfEdgeStructure() {
 }
 
 /// Return a vertex
+/**
+ * @param index Index of a given vertex in the mesh
+ * @return The coordinates of a given vertex in the mesh
+ */
 Vector3 PolyhedronMesh::getVertex(uint index) const {
     assert(index < getNbVertices());
 

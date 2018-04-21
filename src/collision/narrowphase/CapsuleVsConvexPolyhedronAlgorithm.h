@@ -39,7 +39,15 @@ class Body;
 // Class CapsuleVsConvexPolyhedronAlgorithm
 /**
  * This class is used to compute the narrow-phase collision detection
- * between a capsule and a convex polyhedron.
+ * between a capsule and a convex polyhedron. The capsule is basically
+ * a line segment with a margin around it. First we run the GJK algorithm.
+ * If GJK reports separation, we are done. If the objects overlap inside the
+ * capsule margin (radius), it will also report contact points and normal.
+ * However, if GJK report penetration of the capsule inner segment within
+ * the polyhedron, we run the SAT algorithm to get the contact points and
+ * normal.
+ * This is based on the "Robust Contact Creation for Physics Simulation"
+ * presentation by Dirk Gregorius.
  */
 class CapsuleVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
 

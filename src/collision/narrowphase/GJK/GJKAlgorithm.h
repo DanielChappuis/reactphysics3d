@@ -47,18 +47,15 @@ constexpr int MAX_ITERATIONS_GJK_RAYCAST = 32;
 // Class GJKAlgorithm
 /**
  * This class implements a narrow-phase collision detection algorithm. This
- * algorithm uses the ISA-GJK algorithm and the EPA algorithm. This
+ * algorithm uses the ISA-GJK algorithm. This
  * implementation is based on the implementation discussed in the book
  * "Collision Detection in Interactive 3D Environments" by Gino van den Bergen.
  * This method implements the Hybrid Technique for calculating the
  * penetration depth. The two objects are enlarged with a small margin. If
  * the object intersects in their margins, the penetration depth is quickly
  * computed using the GJK algorithm on the original objects (without margin).
- * If the original objects (without margin) intersect, we run again the GJK
- * algorithm on the enlarged objects (with margin) to compute simplex
- * polytope that contains the origin and give it to the EPA (Expanding
- * Polytope Algorithm) to compute the correct penetration depth between the
- * enlarged objects.
+ * If the original objects (without margin) intersect, we exit GJK and run
+ * the SAT algorithm to get contacts and collision data.
  */
 class GJKAlgorithm {
 

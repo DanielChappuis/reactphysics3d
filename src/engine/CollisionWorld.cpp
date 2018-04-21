@@ -255,12 +255,20 @@ inline void CollisionWorld::testAABBOverlap(const AABB& aabb, OverlapCallback* o
 }
 
 // Return true if two bodies overlap
+/**
+ * @param body1 Pointer to the first body
+ * @param body2 Pointer to a second body
+ * @return True if the two bodies overlap
+ */
 bool CollisionWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
     return mCollisionDetection.testOverlap(body1, body2);
 }
 
-
 // Return the current world-space AABB of given proxy shape
+/**
+ * @param proxyShape Pointer to a proxy shape
+ * @return The AAABB of the proxy shape in world-space
+ */
 AABB CollisionWorld::getWorldAABB(const ProxyShape* proxyShape) const {
 
     if (proxyShape->getBroadPhaseId() == -1) {

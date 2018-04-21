@@ -41,6 +41,9 @@ using namespace std;
 // Constructor
 /**
  * @param gravity Gravity vector in the world (in meters per second squared)
+ * @param worldSettings The settings of the world
+ * @param logger Pointer to the logger
+ * @param profiler Pointer to the profiler
  */
 DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings,
                              Logger* logger, Profiler* profiler)
@@ -882,7 +885,10 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
              "Dynamics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) );
 }
 
-/// Return the list of all contacts of the world
+// Return the list of all contacts of the world
+/**
+ * @return A pointer to the first contact manifold in the linked-list of manifolds
+ */
 List<const ContactManifold*> DynamicsWorld::getContactsList() {
 
     List<const ContactManifold*> contactManifolds(mMemoryManager.getPoolAllocator());

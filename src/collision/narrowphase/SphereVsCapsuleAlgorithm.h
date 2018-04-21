@@ -41,6 +41,9 @@ class ContactPoint;
 /**
  * This class is used to compute the narrow-phase collision detection
  * between a sphere collision shape and a capsule collision shape.
+ * For this case, we do not use GJK or SAT algorithm. We directly compute the
+ * contact points and contact normal. This is based on the "Robust Contact
+ * Creation for Physics Simulation" presentation by Dirk Gregorius.
  */
 class SphereVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 

@@ -157,21 +157,33 @@ class ContactPoint {
 };
 
 // Return the normal vector of the contact
+/**
+ * @return The contact normal
+ */
 inline Vector3 ContactPoint::getNormal() const {
     return mNormal;
 }
 
 // Return the contact point on the first proxy shape in the local-space of the proxy shape
+/**
+ * @return The contact point on the first proxy shape in the local-space of the proxy shape
+ */
 inline const Vector3& ContactPoint::getLocalPointOnShape1() const {
     return mLocalPointOnShape1;
 }
 
 // Return the contact point on the second proxy shape in the local-space of the proxy shape
+/**
+ * @return The contact point on the second proxy shape in the local-space of the proxy shape
+ */
 inline const Vector3& ContactPoint::getLocalPointOnShape2() const {
     return mLocalPointOnShape2;
 }
 
 // Return the cached penetration impulse
+/**
+ * @return The penetration impulse
+ */
 inline decimal ContactPoint::getPenetrationImpulse() const {
     return mPenetrationImpulse;
 }
@@ -183,56 +195,89 @@ inline bool ContactPoint::isSimilarWithContactPoint(const ContactPointInfo* loca
 }
 
 // Set the cached penetration impulse
+/**
+ * @param impulse Penetration impulse
+ */
 inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
     mPenetrationImpulse = impulse;
 }
 
 // Return true if the contact is a resting contact
+/**
+ * @return True if it is a resting contact
+ */
 inline bool ContactPoint::getIsRestingContact() const {
     return mIsRestingContact;
 }
 
 // Set the mIsRestingContact variable
+/**
+ * @param isRestingContact True if it is a resting contact
+ */
 inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
 }
 
 // Return true if the contact point is obsolete
+/**
+ * @return True if the contact is obsolete
+ */
 inline bool ContactPoint::getIsObsolete() const {
     return mIsObsolete;
 }
 
 // Set to true to make the contact point obsolete
+/**
+ * @param isObsolete True if the contact is obsolete
+ */
 inline void ContactPoint::setIsObsolete(bool isObsolete) {
     mIsObsolete = isObsolete;
 }
 
 // Return the next contact point in the linked list
+/**
+ * @return A pointer to the next contact point in the linked-list of points
+ */
 inline ContactPoint* ContactPoint::getNext() const {
    return mNext;
 }
 
 // Set the next contact point in the linked list
+/**
+ * @param next Pointer to the next contact point in the linked-list of points
+ */
 inline void ContactPoint::setNext(ContactPoint* next) {
     mNext = next;
 }
 
 // Return the previous contact point in the linked list
+/**
+ * @return A pointer to the previous contact point in the linked-list of points
+ */
 inline ContactPoint* ContactPoint::getPrevious() const {
    return mPrevious;
 }
 
 // Set the previous contact point in the linked list
+/**
+ * @param previous Pointer to the previous contact point in the linked-list of points
+ */
 inline void ContactPoint::setPrevious(ContactPoint* previous) {
     mPrevious = previous;
 }
 
 // Return the penetration depth of the contact
+/**
+ * @return the penetration depth (in meters)
+ */
 inline decimal ContactPoint::getPenetrationDepth() const {
     return mPenetrationDepth;
 }
 
 // Return the number of bytes used by the contact point
+/**
+ * @return The size of the contact point in memory (in bytes)
+ */
 inline size_t ContactPoint::getSizeInBytes() const {
     return sizeof(ContactPoint);
 }
