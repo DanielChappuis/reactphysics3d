@@ -67,9 +67,6 @@ class RaycastManager : public rp3d::RaycastCallback {
         /// All the visual contact points
         std::vector<ContactPoint> mHitPoints;
 
-        /// All the normals at hit points
-        std::vector<Line*> mNormals;
-
         /// Contact point mesh folder path
         std::string mMeshFolderPath;
 
@@ -90,24 +87,12 @@ class RaycastManager : public rp3d::RaycastCallback {
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
             mHitPoints.push_back(ContactPoint(position, normal, openglframework::Color::red()));
 
-            // Create a line to display the normal at hit point
-			// TODO : Remove the mNormals because the VisualContactPoint is now able to display the contact normal on its own
-            Line* normalLine = new Line(position, position + normal);
-            mNormals.push_back(normalLine);
-
             return raycastInfo.hitFraction;
         }
 
         void resetPoints() {
 
             mHitPoints.clear();
-
-            // Destroy all the normals
-            for (std::vector<Line*>::iterator it = mNormals.begin();
-                 it != mNormals.end(); ++it) {
-                delete (*it);
-            }
-            mNormals.clear();
         }
 
         std::vector<ContactPoint> getHitPoints() const {

@@ -1587,7 +1587,6 @@ class TestRaycast : public Test {
             test(mCallback.isHit);
 
             // Raycast hit agains the capsule shape
-            // TODO : Previous it was a cylinder, now it is a capsule shape, maybe those tests are wrong now
             Ray ray11(mLocalShapeToWorld * Vector3(4, 1, 1.5), mLocalShapeToWorld * Vector3(-30, 1.5, 2));
             Ray ray12(mLocalShapeToWorld * Vector3(1.5, 9, -1), mLocalShapeToWorld * Vector3(1.5, -30, -1));
             Ray ray13(mLocalShapeToWorld * Vector3(-1, 2, 3), mLocalShapeToWorld * Vector3(-1, 2, -30));
