@@ -6,7 +6,7 @@
 
 ReactPhysics3D is an open source C++ physics engine library that can be used in 3D simulations and games.
 
-Website : [http://www.reactphysics3d.com](http://www.reactphysics3d.com)
+Website : [https://www.reactphysics3d.com](https://www.reactphysics3d.com)
 
 Author : Daniel Chappuis
 
@@ -41,7 +41,7 @@ The ReactPhysics3D library is released under the open-source [ZLib license](http
 
 ## Documentation
 
-You can find the User Manual and the Doxygen API Documentation [here](http://www.reactphysics3d.com/documentation.html)
+You can find the user manual and the Doxygen API documentation [here](https://www.reactphysics3d.com/documentation.html)
 
 ## Branches
 
