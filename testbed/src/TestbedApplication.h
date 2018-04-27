@@ -86,9 +86,6 @@ class TestbedApplication : public Screen {
         /// Physics update time (in seconds)
         double mPhysicsTime;
 
-        /// True if multisampling is active
-        bool mIsMultisamplingActive;
-
         /// Width and height of the window
         int mWidth, mHeight;
 
