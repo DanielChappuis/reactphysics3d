@@ -1,6 +1,6 @@
 #Changelog
 
-## Version 0.7.0 (April, 2018)
+## Version 0.7.0 (April 30, 2018)
 
 ### Added
  
