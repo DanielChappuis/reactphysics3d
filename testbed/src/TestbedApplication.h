@@ -38,9 +38,6 @@ using namespace nanogui;
 // Macro for OpenGL errors
 #define checkOpenGLErrors() checkOpenGLErrorsInternal(__FILE__,__LINE__)
 
-// Constants
-const float DEFAULT_TIMESTEP = 1.0f / 60.0f;
-
 /// Class TestbedApplication
 class TestbedApplication : public Screen {
 
@@ -89,9 +86,6 @@ class TestbedApplication : public Screen {
         /// Physics update time (in seconds)
         double mPhysicsTime;
 
-        /// True if multisampling is active
-        bool mIsMultisamplingActive;
-
         /// Width and height of the window
         int mWidth, mHeight;
 
@@ -108,6 +102,12 @@ class TestbedApplication : public Screen {
 
         /// True if contact points are displayed
         bool mIsContactPointsDisplayed;
+
+        /// True if the AABBs of physics objects are displayed
+        bool mIsAABBsDisplayed;
+
+        /// True if the wireframe rendering is enabled
+        bool mIsWireframeEnabled;
 
         /// True if vsync is enabled
         bool mIsVSyncEnabled;
@@ -159,12 +159,6 @@ class TestbedApplication : public Screen {
         /// Set the variable to know if we need to take a single physics step
         void toggleTakeSinglePhysicsStep();
 
-        /// Enable/Disable shadow mapping
-        void enableShadows(bool enable);
-
-        /// Display/Hide contact points
-        void displayContactPoints(bool display);
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -173,25 +167,25 @@ class TestbedApplication : public Screen {
         TestbedApplication(bool isFullscreen);
 
         /// Destructor
-        virtual ~TestbedApplication();
+        virtual ~TestbedApplication() override;
 
         /// Render the content of the application
-        virtual void drawContents();
+        virtual void drawContents() override;
 
         /// Window resize event handler
-        virtual bool resizeEvent(const Vector2i& size);
+        virtual bool resizeEvent(const Vector2i& size) override;
 
         /// Default keyboard event handler
-        virtual bool keyboardEvent(int key, int scancode, int action, int modifiers);
+        virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
 
         /// Handle a mouse button event (default implementation: propagate to children)
-        virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers);
+        virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override;
 
         /// Handle a mouse motion event (default implementation: propagate to children)
-        virtual bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers);
+        virtual bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
 
         /// Handle a mouse scroll event (default implementation: propagate to children)
-        virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel);
+        virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel) override;
 
         /// Initialize the application
         void init();
@@ -201,6 +195,9 @@ class TestbedApplication : public Screen {
 
         /// Enable/Disable Vertical synchronization
         void enableVSync(bool enable);
+
+        /// Notify that the engine settings have changed
+        void notifyEngineSetttingsChanged();
 
         // -------------------- Friendship -------------------- //
 
@@ -247,16 +244,6 @@ inline void TestbedApplication::toggleTakeSinglePhysicsStep() {
     if (mTimer.isRunning()) {
         mSinglePhysicsStepEnabled = false;
     }
-}
-
-// Enable/Disable shadow mapping
-inline void TestbedApplication::enableShadows(bool enable) {
-    mIsShadowMappingEnabled = enable;
-}
-
-/// Display/Hide contact points
-inline void TestbedApplication::displayContactPoints(bool display) {
-    mIsContactPointsDisplayed = display;
 }
 
 // Enable/Disable Vertical synchronization

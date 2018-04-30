@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,9 +28,12 @@
 
 // Libraries
 #include "body/CollisionBody.h"
-#include "shapes/CollisionShape.h"
+#include "collision/shapes/CollisionShape.h"
 
 namespace  reactphysics3d {
+
+// Declarations
+class MemoryManager;
 
 // Class ProxyShape
 /**
@@ -47,6 +50,9 @@ class ProxyShape {
     protected:
 
         // -------------------- Attributes -------------------- //
+
+        /// Reference to the memory manager
+        MemoryManager& mMemoryManager;
 
         /// Pointer to the parent body
         CollisionBody* mBody;
@@ -66,9 +72,6 @@ class ProxyShape {
         /// Broad-phase ID (node ID in the dynamic AABB tree)
         int mBroadPhaseID;
 
-        /// Cached collision data
-        void* mCachedCollisionData;
-
         /// Pointer to user data
         void* mUserData;
 
@@ -85,13 +88,23 @@ class ProxyShape {
         /// proxy shape will collide with every collision categories by default.
         unsigned short mCollideWithMaskBits;
 
-        // -------------------- Methods -------------------- //
+#ifdef IS_PROFILING_ACTIVE
 
-        /// Private copy-constructor
-        ProxyShape(const ProxyShape& proxyShape);
+		/// Pointer to the profiler
+		Profiler* mProfiler;
 
-        /// Private assignment operator
-        ProxyShape& operator=(const ProxyShape& proxyShape);
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Logger
+        Logger* mLogger;
+#endif
+
+		// -------------------- Methods -------------------- //
+
+		/// Return the collision shape
+		CollisionShape* getCollisionShape();
 
     public:
 
@@ -99,10 +112,16 @@ class ProxyShape {
 
         /// Constructor
         ProxyShape(CollisionBody* body, CollisionShape* shape,
-                   const Transform& transform, decimal mass);
+                   const Transform& transform, decimal mass, MemoryManager& memoryManager);
 
         /// Destructor
-        ~ProxyShape();
+        virtual ~ProxyShape();
+
+        /// Deleted copy-constructor
+        ProxyShape(const ProxyShape& proxyShape) = delete;
+
+        /// Deleted assignment operator
+        ProxyShape& operator=(const ProxyShape& proxyShape) = delete;
 
         /// Return the collision shape
         const CollisionShape* getCollisionShape() const;
@@ -128,6 +147,12 @@ class ProxyShape {
         /// Return the local to world transform
         const Transform getLocalToWorldTransform() const;
 
+        /// Return the AABB of the proxy shape in world-space
+        const AABB getWorldAABB() const;
+
+        /// Test if the proxy shape overlaps with a given AABB
+        bool testAABBOverlap(const AABB& worldAABB) const;
+
         /// Return true if a point is inside the collision shape
         bool testPointInside(const Vector3& worldPoint);
 
@@ -152,14 +177,21 @@ class ProxyShape {
         /// Return the next proxy shape in the linked list of proxy shapes
         const ProxyShape* getNext() const;
 
-        /// Return the pointer to the cached collision data
-        void** getCachedCollisionData();
+        /// Return the broad-phase id
+        int getBroadPhaseId() const;
 
-        /// Return the local scaling vector of the collision shape
-        Vector3 getLocalScaling() const;
+#ifdef IS_PROFILING_ACTIVE
 
-        /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Set the logger
+        void setLogger(Logger* logger);
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -171,16 +203,12 @@ class ProxyShape {
         friend class CollisionDetection;
         friend class CollisionWorld;
         friend class DynamicsWorld;
-        friend class EPAAlgorithm;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
+		friend class ContactManifoldSet;
+		friend class MiddlePhaseTriangleCallback;
 
 };
-
-// Return the pointer to the cached collision data
-inline void** ProxyShape::getCachedCollisionData()  {
-    return &mCachedCollisionData;
-}
 
 // Return the collision shape
 /**
@@ -188,6 +216,14 @@ inline void** ProxyShape::getCachedCollisionData()  {
  */
 inline const CollisionShape* ProxyShape::getCollisionShape() const {
     return mCollisionShape;
+}
+
+// Return the collision shape
+/**
+* @return Pointer to the internal collision shape
+*/
+inline CollisionShape* ProxyShape::getCollisionShape() {
+	return mCollisionShape;
 }
 
 // Return the parent body
@@ -231,17 +267,6 @@ inline const Transform& ProxyShape::getLocalToBodyTransform() const {
     return mLocalToBodyTransform;
 }
 
-// Set the local to parent body transform
-inline void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
-
-    mLocalToBodyTransform = transform;
-
-    mBody->setIsSleeping(false);
-
-    // Notify the body that the proxy shape has to be updated in the broad-phase
-    mBody->updateProxyShapeInBroadPhase(this, true);
-}
-
 // Return the local to world transform
 /**
  * @return The transformation that transforms the local-space of the collision
@@ -249,6 +274,16 @@ inline void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
  */
 inline const Transform ProxyShape::getLocalToWorldTransform() const {
     return mBody->mTransform * mLocalToBodyTransform;
+}
+
+// Return the AABB of the proxy shape in world-space
+/**
+ * @return The AABB of the proxy shape in world-space
+ */
+inline const AABB ProxyShape::getWorldAABB() const {
+    AABB aabb;
+    mCollisionShape->computeAABB(aabb, getLocalToWorldTransform());
+    return aabb;
 }
 
 // Return the next proxy shape in the linked list of proxy shapes
@@ -275,14 +310,6 @@ inline unsigned short ProxyShape::getCollisionCategoryBits() const {
     return mCollisionCategoryBits;
 }
 
-// Set the collision category bits
-/**
- * @param collisionCategoryBits The collision category bits mask of the proxy shape
- */
-inline void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
-    mCollisionCategoryBits = collisionCategoryBits;
-}
-
 // Return the collision bits mask
 /**
  * @return The bits mask that specifies with which collision category this shape will collide
@@ -291,36 +318,41 @@ inline unsigned short ProxyShape::getCollideWithMaskBits() const {
     return mCollideWithMaskBits;
 }
 
-// Set the collision bits mask
-/**
- * @param collideWithMaskBits The bits mask that specifies with which collision category this shape will collide
- */
-inline void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
-    mCollideWithMaskBits = collideWithMaskBits;
+// Return the broad-phase id
+inline int ProxyShape::getBroadPhaseId() const {
+    return mBroadPhaseID;
 }
 
-// Return the local scaling vector of the collision shape
+/// Test if the proxy shape overlaps with a given AABB
 /**
- * @return The local scaling vector
- */
-inline Vector3 ProxyShape::getLocalScaling() const {
-    return mCollisionShape->getScaling();
+* @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
+* @return True if the given AABB overlaps with the AABB of the collision body
+*/
+inline bool ProxyShape::testAABBOverlap(const AABB& worldAABB) const {
+    return worldAABB.testCollision(getWorldAABB());
 }
 
-// Set the local scaling vector of the collision shape
-/**
- * @param scaling The new local scaling vector
- */
-inline void ProxyShape::setLocalScaling(const Vector3& scaling) {
+#ifdef IS_PROFILING_ACTIVE
 
-    // Set the local scaling of the collision shape
-    mCollisionShape->setLocalScaling(scaling);
+// Set the profiler
+inline void ProxyShape::setProfiler(Profiler* profiler) {
 
-    mBody->setIsSleeping(false);
+	mProfiler = profiler;
 
-    // Notify the body that the proxy shape has to be updated in the broad-phase
-    mBody->updateProxyShapeInBroadPhase(this, true);
+	mCollisionShape->setProfiler(profiler);
 }
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+// Set the logger
+inline void ProxyShape::setLogger(Logger* logger) {
+
+   mLogger = logger;
+}
+
+#endif
 
 }
 

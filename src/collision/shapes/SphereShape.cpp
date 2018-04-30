@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,6 +27,7 @@
 #include "SphereShape.h"
 #include "collision/ProxyShape.h"
 #include "configuration.h"
+#include "collision/RaycastInfo.h"
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -35,17 +36,29 @@ using namespace reactphysics3d;
 /**
  * @param radius Radius of the sphere (in meters)
  */
-SphereShape::SphereShape(decimal radius) : ConvexShape(SPHERE, radius) {
+SphereShape::SphereShape(decimal radius)
+            : ConvexShape(CollisionShapeName::SPHERE, CollisionShapeType::SPHERE, radius) {
     assert(radius > decimal(0.0));
 }
 
-// Destructor
-SphereShape::~SphereShape() {
+// Update the AABB of a body using its collision shape
+/**
+ * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
+ *                  computed in world-space coordinates
+ * @param transform Transform used to compute the AABB of the collision shape
+ */
+void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
+    // Get the local extents in x,y and z direction
+    Vector3 extents(mMargin, mMargin, mMargin);
+
+    // Update the AABB with the new minimum and maximum coordinates
+    aabb.setMin(transform.getPosition() - extents);
+    aabb.setMax(transform.getPosition() + extents);
 }
 
 // Raycast method with feedback information
-bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
     const Vector3 m = ray.point1;
     decimal c = m.dot(m) - mMargin * mMargin;

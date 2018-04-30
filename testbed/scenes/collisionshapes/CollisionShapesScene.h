@@ -32,8 +32,6 @@
 #include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
-#include "Cone.h"
-#include "Cylinder.h"
 #include "Capsule.h"
 #include "ConvexMesh.h"
 #include "ConcaveMesh.h"
@@ -46,10 +44,8 @@ namespace collisionshapesscene {
 const float SCENE_RADIUS = 30.0f;
 const int NB_BOXES = 5;
 const int NB_SPHERES = 5;
-const int NB_CONES = 5;
-const int NB_CYLINDERS = 5;
 const int NB_CAPSULES = 5;
-const int NB_MESHES = 3;
+const int NB_MESHES = 4;
 const int NB_COMPOUND_SHAPES = 3;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
@@ -75,14 +71,10 @@ class CollisionShapesScene : public SceneDemo {
 
         // -------------------- Attributes -------------------- //
 
-        /// All the spheres of the scene
+        /// All the boxes of the scene
         std::vector<Box*> mBoxes;
 
         std::vector<Sphere*> mSpheres;
-
-        std::vector<Cone*> mCones;
-
-        std::vector<Cylinder*> mCylinders;
 
         std::vector<Capsule*> mCapsules;
 
@@ -95,40 +87,26 @@ class CollisionShapesScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
-
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShapesScene(const std::string& name);
+        CollisionShapesScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
-        virtual ~CollisionShapesScene();
-
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics();
-
-        /// Take a step for the simulation
-        virtual void update();
-
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
+        virtual ~CollisionShapesScene() override;
 
         /// Reset the scene
-        virtual void reset();
+        virtual void reset() override;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const;
+        virtual std::vector<ContactPoint> getContactPoints() override;
 };
 
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> CollisionShapesScene::getContactPoints() const {
-    return computeContactPointsOfWorld(mDynamicsWorld);
+inline std::vector<ContactPoint> CollisionShapesScene::getContactPoints() {
+    return computeContactPointsOfWorld(getDynamicsWorld());
 }
 
 }

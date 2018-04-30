@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,10 +26,15 @@
 #ifndef REACTPHYSICS3D_CONTACT_MANIFOLD_SET_H
 #define REACTPHYSICS3D_CONTACT_MANIFOLD_SET_H
 
-// Libraries
-#include "ContactManifold.h"
-
 namespace reactphysics3d {
+
+// Declarations
+class ContactManifold;
+class ContactManifoldInfo;
+class ProxyShape;
+class MemoryAllocator;
+struct WorldSettings;
+class CollisionShape;
 
 // Constants
 const int MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET = 3;   // Maximum number of contact manifolds in the set
@@ -60,27 +65,37 @@ class ContactManifoldSet {
         /// Pointer to the second proxy shape of the contact
         ProxyShape* mShape2;
 
-        /// Reference to the memory allocator
+        /// Reference to the memory allocator for the contact manifolds
         MemoryAllocator& mMemoryAllocator;
 
         /// Contact manifolds of the set
-        ContactManifold* mManifolds[MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET];
+        ContactManifold* mManifolds;
+
+        /// World settings
+        const WorldSettings& mWorldSettings;
 
         // -------------------- Methods -------------------- //
 
         /// Create a new contact manifold and add it to the set
-        void createManifold(short normalDirectionId);
+        void createManifold(const ContactManifoldInfo* manifoldInfo);
 
-        /// Remove a contact manifold from the set
-        void removeManifold(int index);
+        // Return the contact manifold with a similar contact normal.
+        ContactManifold* selectManifoldWithSimilarNormal(const ContactManifoldInfo* contactManifold) const;
 
-        // Return the index of the contact manifold with a similar average normal.
-        int selectManifoldWithSimilarNormal(short int normalDirectionId) const;
+        /// Remove a contact manifold that is the least optimal (smaller penetration depth)
+        void removeNonOptimalManifold();
 
-        // Map the normal vector into a cubemap face bucket (a face contains 4x4 buckets)
-        // Each face of the cube is divided into 4x4 buckets. This method maps the
-        // normal vector into of the of the bucket and returns a unique Id for the bucket
-        short int computeCubemapNormalId(const Vector3& normal) const;
+        /// Update a previous similar manifold with a new one
+        void updateManifoldWithNewOne(ContactManifold* oldManifold, const ContactManifoldInfo* newManifold);
+
+        /// Return the maximum number of contact manifolds allowed between to collision shapes
+        int computeNbMaxContactManifolds(const CollisionShape* shape1, const CollisionShape* shape2);
+
+        /// Clear the contact manifold set
+        void clear();
+
+        /// Delete a contact manifold
+        void removeManifold(ContactManifold* manifold);
 
     public:
 
@@ -88,10 +103,13 @@ class ContactManifoldSet {
 
         /// Constructor
         ContactManifoldSet(ProxyShape* shape1, ProxyShape* shape2,
-                           MemoryAllocator& memoryAllocator, int nbMaxManifolds);
+                           MemoryAllocator& memoryAllocator, const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactManifoldSet();
+
+        /// Add a contact manifold in the set
+        void addContactManifold(const ContactManifoldInfo* contactManifoldInfo);
 
         /// Return the first proxy shape
         ProxyShape* getShape1() const;
@@ -99,23 +117,23 @@ class ContactManifoldSet {
         /// Return the second proxy shape
         ProxyShape* getShape2() const;
 
-        /// Add a contact point to the manifold set
-        void addContactPoint(ContactPoint* contact);
-
-        /// Update the contact manifolds
-        void update();
-
-        /// Clear the contact manifold set
-        void clear();
-
         /// Return the number of manifolds in the set
         int getNbContactManifolds() const;
 
-        /// Return a given contact manifold
-        ContactManifold* getContactManifold(int index) const;
+        /// Return a pointer to the first element of the linked-list of contact manifolds
+        ContactManifold* getContactManifolds() const;
+
+        /// Make all the contact manifolds and contact points obsolete
+        void makeContactsObsolete();
 
         /// Return the total number of contact points in the set of manifolds
         int getTotalNbContactPoints() const;
+
+        /// Clear the obsolete contact manifolds and contact points
+        void clearObsoleteManifoldsAndContactPoints();
+
+        // Remove some contact manifolds and contact points if there are too many of them
+        void reduce();
 };
 
 // Return the first proxy shape
@@ -133,19 +151,9 @@ inline int ContactManifoldSet::getNbContactManifolds() const {
     return mNbManifolds;
 }
 
-// Return a given contact manifold
-inline ContactManifold* ContactManifoldSet::getContactManifold(int index) const {
-    assert(index >= 0 && index < mNbManifolds);
-    return mManifolds[index];
-}
-
-// Return the total number of contact points in the set of manifolds
-inline int ContactManifoldSet::getTotalNbContactPoints() const {
-    int nbPoints = 0;
-    for (int i=0; i<mNbManifolds; i++) {
-        nbPoints += mManifolds[i]->getNbContactPoints();
-    }
-    return nbPoints;
+// Return a pointer to the first element of the linked-list of contact manifolds
+inline ContactManifold* ContactManifoldSet::getContactManifolds() const {
+    return mManifolds;
 }
 
 }

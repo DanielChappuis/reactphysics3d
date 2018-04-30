@@ -32,7 +32,7 @@
 #include "PhysicsObject.h"
 
 // Class ConvexMesh
-class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
+class ConvexMesh : public PhysicsObject {
 
     private :
 
@@ -41,7 +41,11 @@ class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
         /// Previous transform (for interpolation)
         rp3d::Transform mPreviousTransform;
 
-        rp3d::TriangleVertexArray* mPhysicsTriangleVertexArray;
+        rp3d::PolygonVertexArray::PolygonFace* mPolygonFaces;
+
+        rp3d::PolygonVertexArray* mPolygonVertexArray;
+
+        rp3d::PolyhedronMesh* mPolyhedronMesh;
 
         /// Collision shape
         rp3d::ConvexMeshShape* mConvexShape;
@@ -75,28 +79,19 @@ class ConvexMesh : public openglframework::Mesh, public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMesh(const openglframework::Vector3& position,
-                   rp3d::CollisionWorld* world, const std::string& meshPath);
+        ConvexMesh(rp3d::CollisionWorld* world, const std::string& meshPath);
 
         /// Constructor
-        ConvexMesh(const openglframework::Vector3& position, float mass,
-                   rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
+        ConvexMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
 
         /// Destructor
         ~ConvexMesh();
 
         /// Render the mesh at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix);
-
-        /// Set the position of the box
-        void resetTransform(const rp3d::Transform& transform);
+        virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
-        virtual void updateTransform(float interpolationFactor);
-
-        /// Set the scaling of the object
-        void setScaling(const openglframework::Vector3& scaling);
+        virtual void updateTransform(float interpolationFactor) override;
 };
 
 // Update the transform matrix of the object

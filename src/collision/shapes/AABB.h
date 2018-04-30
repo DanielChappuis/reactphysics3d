@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -56,7 +56,7 @@ class AABB {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        AABB();
+        AABB() = default;
 
         /// Constructor
         AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates);
@@ -65,7 +65,7 @@ class AABB {
         AABB(const AABB& aabb);
 
         /// Destructor
-        ~AABB();
+        ~AABB() = default;
 
         /// Return the center point
         Vector3 getCenter() const;

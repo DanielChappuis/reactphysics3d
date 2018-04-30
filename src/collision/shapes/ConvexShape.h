@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -48,46 +48,41 @@ class ConvexShape : public CollisionShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConvexShape(const ConvexShape& shape);
-
-        /// Private assignment operator
-        ConvexShape& operator=(const ConvexShape& shape);
-
         // Return a local support point in a given direction with the object margin
-        Vector3 getLocalSupportPointWithMargin(const Vector3& direction,
-                                               void** cachedCollisionData) const;
+        Vector3 getLocalSupportPointWithMargin(const Vector3& direction) const;
 
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const=0;
-
-        /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const=0;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexShape(CollisionShapeType type, decimal margin);
+        ConvexShape(CollisionShapeName name, CollisionShapeType type, decimal margin = decimal(0.0));
 
         /// Destructor
-        virtual ~ConvexShape();
+        virtual ~ConvexShape() override = default;
+
+        /// Deleted copy-constructor
+        ConvexShape(const ConvexShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConvexShape& operator=(const ConvexShape& shape) = delete;
 
         /// Return the current object margin
         decimal getMargin() const;
 
         /// Return true if the collision shape is convex, false if it is concave
-        virtual bool isConvex() const;
+        virtual bool isConvex() const override;
 
         // -------------------- Friendship -------------------- //
 
         friend class GJKAlgorithm;
-        friend class EPAAlgorithm;
+        friend class SATAlgorithm;
 };
 
-/// Return true if the collision shape is convex, false if it is concave
+// Return true if the collision shape is convex, false if it is concave
 inline bool ConvexShape::isConvex() const {
     return true;
 }

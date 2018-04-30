@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -55,7 +55,7 @@ struct FixedJointInfo : public JointInfo {
          */
         FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                        const Vector3& initAnchorPointWorldSpace)
-                       : JointInfo(rigidBody1, rigidBody2, FIXEDJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, JointType::FIXEDJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace){}
 };
 
@@ -116,41 +116,52 @@ class FixedJoint : public Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        FixedJoint(const FixedJoint& constraint);
-
-        /// Private assignment operator
-        FixedJoint& operator=(const FixedJoint& constraint);
-
         /// Return the number of bytes used by the joint
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
 
         /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        FixedJoint(const FixedJointInfo& jointInfo);
+        FixedJoint(uint id, const FixedJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~FixedJoint();
+        virtual ~FixedJoint() override = default;
+
+        /// Deleted copy-constructor
+        FixedJoint(const FixedJoint& constraint) = delete;
+
+        /// Return a string representation
+        virtual std::string to_string() const override;
+
+        /// Deleted assignment operator
+        FixedJoint& operator=(const FixedJoint& constraint) = delete;
 };
 
 // Return the number of bytes used by the joint
 inline size_t FixedJoint::getSizeInBytes() const {
     return sizeof(FixedJoint);
+}
+
+// Return a string representation
+inline std::string FixedJoint::to_string() const {
+    return "FixedJoint{ localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() +
+                        ", localAnchorPointBody2=" + mLocalAnchorPointBody2.to_string() +
+                        ", initOrientationDifferenceInv=" + mInitOrientationDifferenceInv.to_string() +
+                        "}";
 }
 
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -44,10 +44,10 @@ struct Ray {
 
         // -------------------- Attributes -------------------- //
 
-        /// First point of the ray (origin)
+        /// First point of the ray (origin) in world-space
         Vector3 point1;
 
-        /// Second point of the ray
+        /// Second point of the ray in world-space
         Vector3 point2;
 
         /// Maximum fraction value
@@ -67,9 +67,7 @@ struct Ray {
         }
 
         /// Destructor
-        ~Ray() {
-
-        }
+        ~Ray() = default;
 
         /// Overloaded assignment operator
         Ray& operator=(const Ray& ray) {

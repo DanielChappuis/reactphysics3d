@@ -30,6 +30,7 @@
 #include "Scene.h"
 #include "VisualContactPoint.h"
 #include "reactphysics3d.h"
+#include "PhysicsObject.h"
 
 // Constants
 const int SHADOWMAP_WIDTH = 2048;
@@ -73,6 +74,9 @@ class SceneDemo : public Scene {
         /// Phong shader
         openglframework::Shader mPhongShader;
 
+		/// Constant color shader
+		openglframework::Shader mColorShader;
+
         // TODO : Delete this
         openglframework::Shader mQuadShader;
 
@@ -92,6 +96,10 @@ class SceneDemo : public Scene {
 
         std::string mMeshFolderPath;
 
+		std::vector<PhysicsObject*> mPhysicsObjects;
+
+        rp3d::CollisionWorld* mPhysicsWorld;
+
         // -------------------- Methods -------------------- //
 
         // Create the Shadow map FBO and texture
@@ -110,33 +118,50 @@ class SceneDemo : public Scene {
         void renderContactPoints(openglframework::Shader& shader,
                                  const openglframework::Matrix4& worldToCameraMatrix);
 
+
+        /// Render the AABBs
+        void renderAABBs(const openglframework::Matrix4& worldToCameraMatrix);
+
+        /// Remove all contact points
         void removeAllContactPoints();
+
+        /// Return a reference to the dynamics world
+        rp3d::DynamicsWorld* getDynamicsWorld();
+
+        /// Return a reference to the dynamics world
+        const rp3d::DynamicsWorld* getDynamicsWorld() const;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SceneDemo(const std::string& name, float sceneRadius, bool isShadowMappingEnabled = true);
+        SceneDemo(const std::string& name, EngineSettings& settings, float sceneRadius, bool isShadowMappingEnabled = true);
 
         /// Destructor
-        virtual ~SceneDemo();
+        virtual ~SceneDemo() override;
 
         /// Update the scene
-        virtual void update();
+        virtual void update() override;
+
+		/// Update the physics world (take a simulation step)
+		/// Can be called several times per frame
+		virtual void updatePhysics() override;
 
         /// Render the scene (possibly in multiple passes for shadow mapping)
-        virtual void render();
+        virtual void render() override;
+
+        /// Update the engine settings
+        virtual void updateEngineSettings() override;
 
         /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix)=0;
+        virtual void renderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Enabled/Disable the shadow mapping
-        void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
+        virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
 
         /// Return all the contact points of the scene
-        std::vector<ContactPoint> computeContactPointsOfWorld(const rp3d::DynamicsWorld* world) const;
+        std::vector<ContactPoint> computeContactPointsOfWorld(reactphysics3d::DynamicsWorld *world);
 };
 
 // Enabled/Disable the shadow mapping
@@ -147,6 +172,16 @@ inline void SceneDemo::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
     if (mIsShadowMappingEnabled && !mIsShadowMappingInitialized) {
         createShadowMapFBOAndTexture();
     }
+}
+
+// Return a reference to the dynamics world
+inline rp3d::DynamicsWorld* SceneDemo::getDynamicsWorld() {
+    return dynamic_cast<rp3d::DynamicsWorld*>(mPhysicsWorld);
+}
+
+// Return a reference to the dynamics world
+inline const rp3d::DynamicsWorld* SceneDemo::getDynamicsWorld() const {
+    return dynamic_cast<rp3d::DynamicsWorld*>(mPhysicsWorld);
 }
 
 #endif

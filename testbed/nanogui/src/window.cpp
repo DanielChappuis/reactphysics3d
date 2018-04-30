@@ -1,7 +1,7 @@
 /*
     src/window.cpp -- Top-level window widget
 
-    NanoGUI was developed by Wenzel Jakob <wenzel@inf.ethz.ch>.
+    NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
     by Mikko Mononen.
 
@@ -76,17 +76,21 @@ void Window::draw(NVGcontext *ctx) {
                                   : mTheme->mWindowFillUnfocused);
     nvgFill(ctx);
 
+
     /* Draw a drop shadow */
     NVGpaint shadowPaint = nvgBoxGradient(
         ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y(), cr*2, ds*2,
         mTheme->mDropShadow, mTheme->mTransparent);
 
+    nvgSave(ctx);
+    nvgResetScissor(ctx);
     nvgBeginPath(ctx);
     nvgRect(ctx, mPos.x()-ds,mPos.y()-ds, mSize.x()+2*ds, mSize.y()+2*ds);
     nvgRoundedRect(ctx, mPos.x(), mPos.y(), mSize.x(), mSize.y(), cr);
     nvgPathWinding(ctx, NVG_HOLE);
     nvgFillPaint(ctx, shadowPaint);
     nvgFill(ctx);
+    nvgRestore(ctx);
 
     if (!mTitle.empty()) {
         /* Draw header */
@@ -105,9 +109,11 @@ void Window::draw(NVGcontext *ctx) {
         nvgBeginPath(ctx);
         nvgRoundedRect(ctx, mPos.x(), mPos.y(), mSize.x(), hh, cr);
         nvgStrokeColor(ctx, mTheme->mWindowHeaderSepTop);
-        nvgScissor(ctx, mPos.x(), mPos.y(), mSize.x(), 0.5f);
+
+        nvgSave(ctx);
+        nvgIntersectScissor(ctx, mPos.x(), mPos.y(), mSize.x(), 0.5f);
         nvgStroke(ctx);
-        nvgResetScissor(ctx);
+        nvgRestore(ctx);
 
         nvgBeginPath(ctx);
         nvgMoveTo(ctx, mPos.x() + 0.5f, mPos.y() + hh - 1.5f);

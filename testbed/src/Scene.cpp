@@ -30,10 +30,10 @@
 using namespace openglframework;
 
 // Constructor
-Scene::Scene(const std::string& name, bool isShadowMappingEnabled)
-      : mName(name), mInterpolationFactor(0.0f), mViewportX(0), mViewportY(0),
+Scene::Scene(const std::string& name, EngineSettings& engineSettings, bool isShadowMappingEnabled)
+      : mName(name), mEngineSettings(engineSettings), mLastMouseX(0), mLastMouseY(0), mInterpolationFactor(0.0f), mViewportX(0), mViewportY(0),
         mViewportWidth(0), mViewportHeight(0), mIsShadowMappingEnabled(isShadowMappingEnabled),
-        mIsContactPointsDisplayed(true) {
+        mIsContactPointsDisplayed(true), mIsAABBsDisplayed(false), mIsWireframeEnabled(false) {
 
 }
 
@@ -74,14 +74,14 @@ bool Scene::mapMouseCoordinatesToSphere(double xMouse, double yMouse,
     if ((xMouse >= 0) && (xMouse <= mWindowWidth) && (yMouse >= 0) && (yMouse <= mWindowHeight)) {
         float x = float(xMouse - 0.5f * mWindowWidth) / float(mWindowWidth);
         float y = float(0.5f * mWindowHeight - yMouse) / float(mWindowHeight);
-        float sinx = sin(PI * x * 0.5f);
-        float siny = sin(PI * y * 0.5f);
+        float sinx = std::sin(PI * x * 0.5f);
+        float siny = std::sin(PI * y * 0.5f);
         float sinx2siny2 = sinx * sinx + siny * siny;
 
         // Compute the point on the sphere
         spherePoint.x = sinx;
         spherePoint.y = siny;
-        spherePoint.z = (sinx2siny2 < 1.0) ? sqrt(1.0f - sinx2siny2) : 0.0f;
+        spherePoint.z = (sinx2siny2 < 1.0f) ? std::sqrt(1.0f - sinx2siny2) : 0.0f;
 
         return true;
     }
@@ -175,9 +175,9 @@ void Scene::rotate(int xMouse, int yMouse) {
             float cosAngle = mLastPointOnSphere.dot(newPoint3D);
 
             float epsilon = std::numeric_limits<float>::epsilon();
-            if (fabs(cosAngle) < 1.0f && axis.length() > epsilon) {
+            if (std::abs(cosAngle) < 1.0f && axis.length() > epsilon) {
                 axis.normalize();
-                float angle = 2.0f * acos(cosAngle);
+                float angle = 2.0f * std::acos(cosAngle);
 
                 // Rotate the camera around the center of the scene
                 mCamera.rotateAroundLocalPoint(axis, -angle, mCenterScene);

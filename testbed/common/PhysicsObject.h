@@ -31,7 +31,7 @@
 #include "reactphysics3d.h"
 
 // Class PhysicsObject
-class PhysicsObject {
+class PhysicsObject : public openglframework::Mesh {
 
     protected:
 
@@ -56,8 +56,14 @@ class PhysicsObject {
         /// Constructor
         PhysicsObject();
 
+        /// Constructor
+        PhysicsObject(const std::string& meshPath);
+
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor)=0;
+
+		/// Render the sphere at the correct position and with the correct orientation
+        virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix)=0;
 
         /// Set the color of the box
         void setColor(const openglframework::Color& color);
@@ -65,14 +71,17 @@ class PhysicsObject {
         /// Set the sleeping color of the box
         void setSleepingColor(const openglframework::Color& color);
 
+        /// Get the transform
+        const rp3d::Transform& getTransform() const;
+
+        /// Set the transform
+        void setTransform(const rp3d::Transform& transform);
+
         /// Return a pointer to the collision body of the box
         reactphysics3d::CollisionBody* getCollisionBody();
 
         /// Return a pointer to the rigid body of the box
         reactphysics3d::RigidBody* getRigidBody();
-
-        /// Set the scaling of the object
-        virtual void setScaling(const openglframework::Vector3& scaling)=0;
 };
 
 // Set the color of the box
@@ -83,6 +92,11 @@ inline void PhysicsObject::setColor(const openglframework::Color& color) {
 // Set the sleeping color of the box
 inline void PhysicsObject::setSleepingColor(const openglframework::Color& color) {
     mSleepingColor = color;
+}
+
+// Get the transform
+inline const rp3d::Transform& PhysicsObject::getTransform() const {
+    return mBody->getTransform();
 }
 
 // Return a pointer to the collision body of the box

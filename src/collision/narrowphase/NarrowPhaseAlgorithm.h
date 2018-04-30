@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,16 +27,19 @@
 #define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
 
 // Libraries
-#include "body/Body.h"
-#include "constraint/ContactPoint.h"
-#include "memory/MemoryAllocator.h"
-#include "engine/OverlappingPair.h"
-#include "collision/CollisionShapeInfo.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 class CollisionDetection;
+class Body;
+class ContactManifoldInfo;
+class PoolAllocator;
+class OverlappingPair;
+struct NarrowPhaseInfo;
+struct ContactPointInfo;
+class Profiler;
+class MemoryAllocator;
 
 // Class NarrowPhaseCallback
 /**
@@ -46,6 +49,8 @@ class CollisionDetection;
 class NarrowPhaseCallback {
 
     public:
+
+        virtual ~NarrowPhaseCallback() = default;
 
         /// Called by a narrow-phase collision algorithm when a new contact has been found
         virtual void notifyContact(OverlappingPair* overlappingPair,
@@ -65,49 +70,50 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Pointer to the collision detection object
-        CollisionDetection* mCollisionDetection;
+#ifdef IS_PROFILING_ACTIVE
 
-        /// Pointer to the memory allocator
-        MemoryAllocator* mMemoryAllocator;
+		/// Pointer to the profiler
+		Profiler* mProfiler;
 
-        /// Overlapping pair of the bodies currently tested for collision
-        OverlappingPair* mCurrentOverlappingPair;
-        
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm);
-
-        /// Private assignment operator
-        NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm);
+#endif
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        NarrowPhaseAlgorithm();
+        NarrowPhaseAlgorithm() = default;
 
         /// Destructor
-        virtual ~NarrowPhaseAlgorithm();
+        virtual ~NarrowPhaseAlgorithm() = default;
 
-        /// Initalize the algorithm
-        virtual void init(CollisionDetection* collisionDetection, MemoryAllocator* memoryAllocator);
-        
-        /// Set the current overlapping pair of bodies
-        void setCurrentOverlappingPair(OverlappingPair* overlappingPair);
+        /// Deleted copy-constructor
+        NarrowPhaseAlgorithm(const NarrowPhaseAlgorithm& algorithm) = delete;
 
-        /// Compute a contact info if the two bounding volume collide
-        virtual void testCollision(const CollisionShapeInfo& shape1Info,
-                                   const CollisionShapeInfo& shape2Info,
-                                   NarrowPhaseCallback* narrowPhaseCallback)=0;
+        /// Deleted assignment operator
+        NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
+
+        /// Compute a contact info if the two bounding volumes collide
+        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
+                                   MemoryAllocator& memoryAllocator)=0;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
-// Set the current overlapping pair of bodies
-inline void NarrowPhaseAlgorithm::setCurrentOverlappingPair(OverlappingPair* overlappingPair) {
-    mCurrentOverlappingPair = overlappingPair;
-}      
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void NarrowPhaseAlgorithm::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

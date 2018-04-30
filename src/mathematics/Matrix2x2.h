@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -60,7 +60,7 @@ class Matrix2x2 {
         Matrix2x2(decimal a1, decimal a2, decimal b1, decimal b2);
 
         /// Destructor
-        ~Matrix2x2();
+        ~Matrix2x2() = default;
 
         /// Copy-constructor
         Matrix2x2(const Matrix2x2& matrix);
@@ -145,7 +145,35 @@ class Matrix2x2 {
 
         /// Overloaded operator to read/write element of the matrix.
         Vector2& operator[](int row);
+
+        /// Return the string representation
+        std::string to_string() const;
 };
+
+// Constructor of the class Matrix2x2
+inline Matrix2x2::Matrix2x2() {
+
+    // Initialize all values in the matrix to zero
+    setAllValues(0.0, 0.0, 0.0, 0.0);
+}
+
+// Constructor
+inline Matrix2x2::Matrix2x2(decimal value) {
+    setAllValues(value, value, value, value);
+}
+
+// Constructor with arguments
+inline Matrix2x2::Matrix2x2(decimal a1, decimal a2, decimal b1, decimal b2) {
+
+    // Initialize the matrix with the values
+    setAllValues(a1, a2, b1, b2);
+}
+
+// Copy-constructor
+inline Matrix2x2::Matrix2x2(const Matrix2x2& matrix) {
+    setAllValues(matrix.mRows[0][0], matrix.mRows[0][1],
+                 matrix.mRows[1][0], matrix.mRows[1][1]);
+}
 
 // Method to set all the values in the matrix
 inline void Matrix2x2::setAllValues(decimal a1, decimal a2,
@@ -313,6 +341,12 @@ inline const Vector2& Matrix2x2::operator[](int row) const {
 /// matrix[row][col].
 inline Vector2& Matrix2x2::operator[](int row) {
     return mRows[row];
+}
+
+// Get the string representation
+inline std::string Matrix2x2::to_string() const {
+    return "Matrix2x2(" + std::to_string(mRows[0][0]) + "," + std::to_string(mRows[0][1]) + "," +
+           std::to_string(mRows[1][0]) + "," + std::to_string(mRows[1][1]) + ")";
 }
 
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,11 +28,13 @@
 
 // Libraries
 #include "ConvexShape.h"
-#include "body/CollisionBody.h"
 #include "mathematics/mathematics.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
+
+// Declarations
+class CollisionBody;
 
 // Class CapsuleShape
 /**
@@ -55,21 +57,14 @@ class CapsuleShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CapsuleShape(const CapsuleShape& shape);
-
-        /// Private assignment operator
-        CapsuleShape& operator=(const CapsuleShape& shape);
-
         /// Return a local support point in a given direction without the object margin
-        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                          void** cachedCollisionData) const;
+        virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
 
         /// Raycasting method between a ray one of the two spheres end cap of the capsule
         bool raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,
@@ -77,7 +72,7 @@ class CapsuleShape : public ConvexShape {
                                      Vector3& hitLocalPoint, decimal& hitFraction) const;
 
         /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
     public :
 
@@ -87,7 +82,13 @@ class CapsuleShape : public ConvexShape {
         CapsuleShape(decimal radius, decimal height);
 
         /// Destructor
-        virtual ~CapsuleShape();
+        virtual ~CapsuleShape() override = default;
+
+        /// Deleted copy-constructor
+        CapsuleShape(const CapsuleShape& shape) = delete;
+
+        /// Deleted assignment operator
+        CapsuleShape& operator=(const CapsuleShape& shape) = delete;
 
         /// Return the radius of the capsule
         decimal getRadius() const;
@@ -95,14 +96,17 @@ class CapsuleShape : public ConvexShape {
         /// Return the height of the capsule
         decimal getHeight() const;
 
-        /// Set the scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
-
         /// Return the local bounds of the shape in x, y and z directions
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
+
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
+
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
 };
 
 // Get the radius of the capsule
@@ -119,15 +123,6 @@ inline decimal CapsuleShape::getRadius() const {
  */
 inline decimal CapsuleShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
-}
-
-// Set the scaling vector of the collision shape
-inline void CapsuleShape::setLocalScaling(const Vector3& scaling) {
-
-    mHalfHeight = (mHalfHeight / mScaling.y) * scaling.y;
-    mMargin = (mMargin / mScaling.x) * scaling.x;
-
-    CollisionShape::setLocalScaling(scaling);
 }
 
 // Return the number of bytes used by the collision shape
@@ -154,6 +149,11 @@ inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
     min.z = min.x;
 }
 
+// Return true if the collision shape is a polyhedron
+inline bool CapsuleShape::isPolyhedron() const {
+    return false;
+}
+
 // Return a local support point in a given direction without the object margin.
 /// A capsule is the convex hull of two spheres S1 and S2. The support point in the direction "d"
 /// of the convex hull of a set of convex objects is the support point "p" in the set of all
@@ -161,8 +161,7 @@ inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 /// Therefore, in this method, we compute the support points of both top and bottom spheres of
 /// the capsule and return the point with the maximum dot product with the direction vector. Note
 /// that the object margin is implicitly the radius and height of the capsule.
-inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                        void** cachedCollisionData) const {
+inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     // Support point top sphere
     decimal dotProductTop = mHalfHeight * direction.y;
@@ -177,6 +176,11 @@ inline Vector3 CapsuleShape::getLocalSupportPointWithoutMargin(const Vector3& di
     else {
         return Vector3(0, -mHalfHeight, 0);
     }
+}
+
+// Return the string representation of the shape
+inline std::string CapsuleShape::to_string() const {
+    return "CapsuleShape{halfHeight=" + std::to_string(mHalfHeight) + ", radius=" + std::to_string(getRadius()) + "}";
 }
 
 }

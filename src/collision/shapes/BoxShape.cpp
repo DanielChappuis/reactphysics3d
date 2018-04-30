@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2015 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,8 @@
 #include "BoxShape.h"
 #include "collision/ProxyShape.h"
 #include "configuration.h"
-#include <vector>
+#include "memory/MemoryManager.h"
+#include "collision/RaycastInfo.h"
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -35,18 +36,49 @@ using namespace reactphysics3d;
 // Constructor
 /**
  * @param extent The vector with the three extents of the box (in meters)
- * @param margin The collision margin (in meters) around the collision shape
  */
-BoxShape::BoxShape(const Vector3& extent, decimal margin)
-         : ConvexShape(BOX, margin), mExtent(extent - Vector3(margin, margin, margin)) {
-    assert(extent.x > decimal(0.0) && extent.x > margin);
-    assert(extent.y > decimal(0.0) && extent.y > margin);
-    assert(extent.z > decimal(0.0) && extent.z > margin);
-}
+BoxShape::BoxShape(const Vector3& extent)
+         : ConvexPolyhedronShape(CollisionShapeName::BOX), mExtent(extent),
+           mHalfEdgeStructure(MemoryManager::getBaseAllocator(), 6, 8, 24) {
 
-// Destructor
-BoxShape::~BoxShape() {
+    assert(extent.x > decimal(0.0));
+    assert(extent.y > decimal(0.0));
+    assert(extent.z > decimal(0.0));
 
+    // Vertices
+    mHalfEdgeStructure.addVertex(0);
+    mHalfEdgeStructure.addVertex(1);
+    mHalfEdgeStructure.addVertex(2);
+    mHalfEdgeStructure.addVertex(3);
+    mHalfEdgeStructure.addVertex(4);
+    mHalfEdgeStructure.addVertex(5);
+    mHalfEdgeStructure.addVertex(6);
+    mHalfEdgeStructure.addVertex(7);
+
+    MemoryAllocator& allocator = MemoryManager::getBaseAllocator();
+
+    // Faces
+    List<uint> face0(allocator, 4);
+    face0.add(0); face0.add(1); face0.add(2); face0.add(3);
+    List<uint> face1(allocator, 4);
+    face1.add(1); face1.add(5); face1.add(6); face1.add(2);
+    List<uint> face2(allocator, 4);
+    face2.add(4); face2.add(7); face2.add(6); face2.add(5);
+    List<uint> face3(allocator, 4);
+    face3.add(4); face3.add(0); face3.add(3); face3.add(7);
+    List<uint> face4(allocator, 4);
+    face4.add(4); face4.add(5); face4.add(1); face4.add(0);
+    List<uint> face5(allocator, 4);
+    face5.add(2); face5.add(6); face5.add(7); face5.add(3);
+
+    mHalfEdgeStructure.addFace(face0);
+    mHalfEdgeStructure.addFace(face1);
+    mHalfEdgeStructure.addFace(face2);
+    mHalfEdgeStructure.addFace(face3);
+    mHalfEdgeStructure.addFace(face4);
+    mHalfEdgeStructure.addFace(face5);
+
+	mHalfEdgeStructure.init();
 }
 
 // Return the local inertia tensor of the collision shape
@@ -57,17 +89,16 @@ BoxShape::~BoxShape() {
  */
 void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    Vector3 realExtent = mExtent + Vector3(mMargin, mMargin, mMargin);
-    decimal xSquare = realExtent.x * realExtent.x;
-    decimal ySquare = realExtent.y * realExtent.y;
-    decimal zSquare = realExtent.z * realExtent.z;
+    decimal xSquare = mExtent.x * mExtent.x;
+    decimal ySquare = mExtent.y * mExtent.y;
+    decimal zSquare = mExtent.z * mExtent.z;
     tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
                         0.0, factor * (xSquare + zSquare), 0.0,
                         0.0, 0.0, factor * (xSquare + ySquare));
 }
 
 // Raycast method with feedback information
-bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
     Vector3 rayDirection = ray.point2 - ray.point1;
     decimal tMin = DECIMAL_SMALLEST;

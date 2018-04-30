@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -31,7 +31,6 @@
 #include "CollisionBody.h"
 #include "engine/Material.h"
 #include "mathematics/mathematics.h"
-#include "memory/MemoryAllocator.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -40,6 +39,7 @@ namespace reactphysics3d {
 struct JointListElement;
 class Joint;
 class DynamicsWorld;
+class MemoryManager;
 
 // Class RigidBody
 /**
@@ -49,6 +49,11 @@ class DynamicsWorld;
  * CollisionBody class.
   */
 class RigidBody : public CollisionBody {
+
+    private :
+
+        /// Index of the body in arrays for contact/constraint solver
+        uint mArrayIndex;
 
     protected :
 
@@ -76,12 +81,15 @@ class RigidBody : public CollisionBody {
         /// Current external torque on the body
         Vector3 mExternalTorque;
 
-        /// Local inertia tensor of the body (in local-space) with respect to the
-        /// center of mass of the body
-        Matrix3x3 mInertiaTensorLocal;
+        /// Inverse Local inertia tensor of the body (in local-space) set
+        /// by the user with respect to the center of mass of the body
+        Matrix3x3 mUserInertiaTensorLocalInverse;
 
         /// Inverse of the inertia tensor of the body
         Matrix3x3 mInertiaTensorLocalInverse;
+
+        /// Inverse of the world inertia tensor of the body
+        Matrix3x3 mInertiaTensorInverseWorld;
 
         /// Inverse of the mass of the body
         decimal mMassInverse;
@@ -99,24 +107,27 @@ class RigidBody : public CollisionBody {
         decimal mAngularDamping;
 
         /// First element of the linked list of joints involving this body
-        JointListElement* mJointsList;        
+        JointListElement* mJointsList;
+
+        /// True if the center of mass is set by the user
+        bool mIsCenterOfMassSetByUser;
+
+        /// True if the inertia tensor is set by the user
+        bool mIsInertiaTensorSetByUser;
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        RigidBody(const RigidBody& body);
-
-        /// Private assignment operator
-        RigidBody& operator=(const RigidBody& body);
-
         /// Remove a joint from the joints list
-        void removeJointFromJointsList(MemoryAllocator& memoryAllocator, const Joint* joint);
+        void removeJointFromJointsList(reactphysics3d::MemoryManager& memoryManager, const Joint* joint);
 
         /// Update the transform of the body after a change of the center of mass
         void updateTransformWithCenterOfMass();
 
         /// Update the broad-phase state for this body (because it has moved for instance)
-        virtual void updateBroadPhaseState() const;
+        virtual void updateBroadPhaseState() const override;
+
+        /// Update the world inverse inertia tensor of the body
+        void updateInertiaTensorInverseWorld();
 
     public :
 
@@ -126,13 +137,19 @@ class RigidBody : public CollisionBody {
         RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id);
 
         /// Destructor
-        virtual ~RigidBody();
+        virtual ~RigidBody() override;
+
+        /// Deleted copy-constructor
+        RigidBody(const RigidBody& body) = delete;
+
+        /// Deleted assignment operator
+        RigidBody& operator=(const RigidBody& body) = delete;
 
         /// Set the type of the body (static, kinematic or dynamic)
         void setType(BodyType type);
 
         /// Set the current position and orientation
-        virtual void setTransform(const Transform& transform);
+        virtual void setTransform(const Transform& transform) override;
 
         /// Return the mass of the body
         decimal getMass() const;
@@ -150,25 +167,25 @@ class RigidBody : public CollisionBody {
         void setAngularVelocity(const Vector3& angularVelocity);
 
         /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping);
-
-        /// Return the local inertia tensor of the body (in body coordinates)
-        const Matrix3x3& getInertiaTensorLocal() const;
+        virtual void setIsSleeping(bool isSleeping) override;
 
         /// Set the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);
+
+        /// Set the inverse local inertia tensor of the body (in body coordinates)
+        void setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTensorLocal);
+
+        /// Get the inverse local inertia tensor of the body (in body coordinates)
+        const Matrix3x3& getInverseInertiaTensorLocal() const;
+
+        /// Return the inverse of the inertia tensor in world coordinates.
+        Matrix3x3 getInertiaTensorInverseWorld() const;
 
         /// Set the local center of mass of the body (in local-space coordinates)
         void setCenterOfMassLocal(const Vector3& centerOfMassLocal);
 
         /// Set the mass of the rigid body
         void setMass(decimal mass);
-
-        /// Return the inertia tensor in world coordinates.
-        Matrix3x3 getInertiaTensorWorld() const;
-
-        /// Return the inverse of the inertia tensor in world coordinates.
-        Matrix3x3 getInertiaTensorInverseWorld() const;
 
         /// Return true if the gravity needs to be applied to this rigid body
         bool isGravityEnabled() const;
@@ -215,11 +232,18 @@ class RigidBody : public CollisionBody {
                                               decimal mass);
 
         /// Remove a collision shape from the body
-        virtual void removeCollisionShape(const ProxyShape* proxyShape);
+        virtual void removeCollisionShape(const ProxyShape* proxyShape) override;
 
         /// Recompute the center of mass, total mass and inertia tensor of the body using all
         /// the collision shapes attached to the body.
         void recomputeMassInformation();
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler) override;
+
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -255,28 +279,9 @@ inline Vector3 RigidBody::getAngularVelocity() const {
     return mAngularVelocity;
 }
 
-// Return the local inertia tensor of the body (in local-space coordinates)
-/**
- * @return The 3x3 inertia tensor matrix of the body (in local-space coordinates)
- */
-inline const Matrix3x3& RigidBody::getInertiaTensorLocal() const {
-    return mInertiaTensorLocal;
-}
-
-// Return the inertia tensor in world coordinates.
-/// The inertia tensor I_w in world coordinates is computed
-/// with the local inertia tensor I_b in body coordinates
-/// by I_w = R * I_b * R^T
-/// where R is the rotation matrix (and R^T its transpose) of
-/// the current orientation quaternion of the body
-/**
- * @return The 3x3 inertia tensor matrix of the body in world-space coordinates
- */
-inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
-
-    // Compute and return the inertia tensor in world coordinates
-    return mTransform.getOrientation().getMatrix() * mInertiaTensorLocal *
-           mTransform.getOrientation().getMatrix().getTranspose();
+// Get the inverse local inertia tensor of the body (in body coordinates)
+inline const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
+    return mInertiaTensorLocalInverse;
 }
 
 // Return the inverse of the inertia tensor in world coordinates.
@@ -291,12 +296,19 @@ inline Matrix3x3 RigidBody::getInertiaTensorWorld() const {
  */
 inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 
-    // TODO : DO NOT RECOMPUTE THE MATRIX MULTIPLICATION EVERY TIME. WE NEED TO STORE THE
-    //        INVERSE WORLD TENSOR IN THE CLASS AND UPLDATE IT WHEN THE ORIENTATION OF THE BODY CHANGES
-
     // Compute and return the inertia tensor in world coordinates
-    return mTransform.getOrientation().getMatrix() * mInertiaTensorLocalInverse *
-           mTransform.getOrientation().getMatrix().getTranspose();
+    return mInertiaTensorInverseWorld;
+}
+
+// Update the world inverse inertia tensor of the body
+/// The inertia tensor I_w in world coordinates is computed with the
+/// local inverse inertia tensor I_b^-1 in body coordinates
+/// by I_w = R * I_b^-1 * R^T
+/// where R is the rotation matrix (and R^T its transpose) of the
+/// current orientation quaternion of the body
+inline void RigidBody::updateInertiaTensorInverseWorld() {
+    Matrix3x3 orientation = mTransform.getOrientation().getMatrix();
+    mInertiaTensorInverseWorld = orientation * mInertiaTensorLocalInverse * orientation.getTranspose();
 }
 
 // Return true if the gravity needs to be applied to this rigid body
@@ -307,28 +319,12 @@ inline bool RigidBody::isGravityEnabled() const {
     return mIsGravityEnabled;
 }
 
-// Set the variable to know if the gravity is applied to this rigid body
-/**
- * @param isEnabled True if you want the gravity to be applied to this body
- */
-inline void RigidBody::enableGravity(bool isEnabled) {
-    mIsGravityEnabled = isEnabled;
-}
-
 // Return a reference to the material properties of the rigid body
 /**
  * @return A reference to the material of the body
  */
 inline Material& RigidBody::getMaterial() {
     return mMaterial;
-}
-
-// Set a new material for this rigid body
-/**
- * @param material The material you want to set to the body
- */
-inline void RigidBody::setMaterial(const Material& material) {
-    mMaterial = material;
 }
 
 // Return the linear velocity damping factor
@@ -339,32 +335,12 @@ inline decimal RigidBody::getLinearDamping() const {
     return mLinearDamping;
 }
 
-// Set the linear damping factor. This is the ratio of the linear velocity
-// that the body will lose every at seconds of simulation.
-/**
- * @param linearDamping The linear damping factor of this body
- */
-inline void RigidBody::setLinearDamping(decimal linearDamping) {
-    assert(linearDamping >= decimal(0.0));
-    mLinearDamping = linearDamping;
-}
-
 // Return the angular velocity damping factor
 /**
  * @return The angular damping factor of this body
  */
 inline decimal RigidBody::getAngularDamping() const {
     return mAngularDamping;
-}
-
-// Set the angular damping factor. This is the ratio of the angular velocity
-// that the body will lose at every seconds of simulation.
-/**
- * @param angularDamping The angular damping factor of this body
- */
-inline void RigidBody::setAngularDamping(decimal angularDamping) {
-    assert(angularDamping >= decimal(0.0));
-    mAngularDamping = angularDamping;
 }
 
 // Return the first element of the linked list of joints involving this body
@@ -407,7 +383,7 @@ inline void RigidBody::setIsSleeping(bool isSleeping) {
 inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mIsSleeping) {
@@ -432,7 +408,7 @@ inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mIsSleeping) {
@@ -455,7 +431,7 @@ inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 inline void RigidBody::applyTorque(const Vector3& torque) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != DYNAMIC) return;
+    if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mIsSleeping) {

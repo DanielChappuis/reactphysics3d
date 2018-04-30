@@ -31,8 +31,8 @@ using namespace openglframework;
 using namespace cubesscene;
 
 // Constructor
-CubesScene::CubesScene(const std::string& name)
-      : SceneDemo(name, SCENE_RADIUS) {
+CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
+      : SceneDemo(name, settings, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 5, 0);
@@ -43,25 +43,17 @@ CubesScene::CubesScene(const std::string& name)
     // Gravity vector in the dynamics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
+    rp3d::WorldSettings worldSettings;
+    worldSettings.worldName = name;
+
     // Create the dynamics world for the physics simulation
-    mDynamicsWorld = new rp3d::DynamicsWorld(gravity);
-
-    // Set the number of iterations of the constraint solver
-    mDynamicsWorld->setNbIterationsVelocitySolver(15);
-
-    float radius = 2.0f;
+    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
 
     // Create all the cubes of the scene
     for (int i=0; i<NB_CUBES; i++) {
 
-        // Position of the cubes
-        float angle = i * 30.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          30 + i * (BOX_SIZE.y + 0.3f),
-                                          0);
-
         // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, position , BOX_MASS, mDynamicsWorld);
+        Box* cube = new Box(BOX_SIZE, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
 
         // Set the box color
         cube->setColor(mDemoColors[i % mNbDemoColors]);
@@ -73,31 +65,30 @@ CubesScene::CubesScene(const std::string& name)
 
         // Add the box the list of box in the scene
         mBoxes.push_back(cube);
+        mPhysicsObjects.push_back(cube);
     }
 
+	// ------------------------- FLOOR ----------------------- //
+
     // Create the floor
-    openglframework::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, floorPosition, FLOOR_MASS, mDynamicsWorld);
+    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, getDynamicsWorld(), mMeshFolderPath);
     mFloor->setColor(mGreyColorDemo);
     mFloor->setSleepingColor(mGreyColorDemo);
 
     // The floor must be a static rigid body
-    mFloor->getRigidBody()->setType(rp3d::STATIC);
-
-    // Change the material properties of the floor rigid body
-    rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
-    material.setBounciness(rp3d::decimal(0.3));
+    mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
+	mPhysicsObjects.push_back(mFloor);
 
     // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mDynamicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mDynamicsWorld->getGravity();
+    mEngineSettings.isGravityEnabled = getDynamicsWorld()->isGravityEnabled();
+    rp3d::Vector3 gravityVector = getDynamicsWorld()->getGravity();
     mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mDynamicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mDynamicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mDynamicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mDynamicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mDynamicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mDynamicsWorld->getTimeBeforeSleep();
+    mEngineSettings.isSleepingEnabled = getDynamicsWorld()->isSleepingEnabled();
+    mEngineSettings.sleepLinearVelocity = getDynamicsWorld()->getSleepLinearVelocity();
+    mEngineSettings.sleepAngularVelocity = getDynamicsWorld()->getSleepAngularVelocity();
+    mEngineSettings.nbPositionSolverIterations = getDynamicsWorld()->getNbIterationsPositionSolver();
+    mEngineSettings.nbVelocitySolverIterations = getDynamicsWorld()->getNbIterationsVelocitySolver();
+    mEngineSettings.timeBeforeSleep = getDynamicsWorld()->getTimeBeforeSleep();
 }
 
 // Destructor
@@ -107,72 +98,20 @@ CubesScene::~CubesScene() {
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
 
         // Destroy the corresponding rigid body from the dynamics world
-        mDynamicsWorld->destroyRigidBody((*it)->getRigidBody());
+        getDynamicsWorld()->destroyRigidBody((*it)->getRigidBody());
 
         // Destroy the cube
         delete (*it);
     }
 
     // Destroy the rigid body of the floor
-    mDynamicsWorld->destroyRigidBody(mFloor->getRigidBody());
+    getDynamicsWorld()->destroyRigidBody(mFloor->getRigidBody());
 
     // Destroy the floor
     delete mFloor;
 
     // Destroy the dynamics world
-    delete mDynamicsWorld;
-}
-
-// Update the physics world (take a simulation step)
-void CubesScene::updatePhysics() {
-
-    // Update the physics engine parameters
-    mDynamicsWorld->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
-    rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
-                                     mEngineSettings.gravity.z);
-    mDynamicsWorld->setGravity(gravity);
-    mDynamicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
-    mDynamicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
-    mDynamicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
-    mDynamicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
-    mDynamicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
-    mDynamicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
-
-    // Take a simulation step
-    mDynamicsWorld->update(mEngineSettings.timeStep);
-}
-
-// Update the scene
-void CubesScene::update() {
-
-    SceneDemo::update();
-
-    // Update the position and orientation of the boxes
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-
-        // Update the transform used for the rendering
-        (*it)->updateTransform(mInterpolationFactor);
-    }
-
-    mFloor->updateTransform(mInterpolationFactor);
-}
-
-// Render the scene in a single pass
-void CubesScene::renderSinglePass(Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
-
-    // Bind the shader
-    shader.bind();
-
-    // Render all the cubes of the scene
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-        (*it)->render(shader, worldToCameraMatrix);
-    }
-
-    // Render the floor
-    mFloor->render(shader, worldToCameraMatrix);
-
-    // Unbind the shader
-    shader.unbind();
+    delete getDynamicsWorld();
 }
 
 // Reset the scene
@@ -180,19 +119,21 @@ void CubesScene::reset() {
 
     float radius = 2.0f;
 
-    for (int i=0; i<NB_CUBES; i++) {
+    // Create all the cubes of the scene
+    std::vector<Box*>::iterator it;
+    int i = 0;
+    for (it = mBoxes.begin(); it != mBoxes.end(); ++it) {
 
         // Position of the cubes
-        float angle = i * 30.0f;
-        openglframework::Vector3 position(radius * cos(angle),
-                                          10 + i * (BOX_SIZE.y + 0.3f),
-                                          0);
+       float angle = i * 30.0f;
+       rp3d::Vector3 position(radius * std::cos(angle),
+                              10 + i * (BOX_SIZE.y + 0.3f),
+                              0);
 
-        // Initial position and orientation of the rigid body
-        rp3d::Vector3 initPosition(position.x, position.y, position.z);
-        rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-        rp3d::Transform transform(initPosition, initOrientation);
+       (*it)->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
 
-        mBoxes[i]->resetTransform(transform);
+       i++;
     }
+
+    mFloor->setTransform(rp3d::Transform(rp3d::Vector3::zero(), rp3d::Quaternion::identity()));
 }

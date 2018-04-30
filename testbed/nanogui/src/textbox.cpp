@@ -4,7 +4,7 @@
 
     The text box widget was contributed by Christian Schueller.
 
-    NanoGUI was developed by Wenzel Jakob <wenzel@inf.ethz.ch>.
+    NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
     by Mikko Mononen.
 
@@ -19,12 +19,14 @@
 #include <nanogui/theme.h>
 #include <nanogui/serializer/core.h>
 #include <regex>
+#include <iostream>
 
 NAMESPACE_BEGIN(nanogui)
 
 TextBox::TextBox(Widget *parent,const std::string &value)
     : Widget(parent),
       mEditable(false),
+      mSpinnable(false),
       mCommitted(true),
       mValue(value),
       mDefaultValue(""),
@@ -42,12 +44,19 @@ TextBox::TextBox(Widget *parent,const std::string &value)
       mMouseDownModifier(0),
       mTextOffset(0),
       mLastClick(0) {
-    mFontSize = mTheme->mTextBoxFontSize;
+    if (mTheme) mFontSize = mTheme->mTextBoxFontSize;
+    mIconExtraScale = 0.8f;// widget override
 }
 
 void TextBox::setEditable(bool editable) {
     mEditable = editable;
     setCursor(editable ? Cursor::IBeam : Cursor::Arrow);
+}
+
+void TextBox::setTheme(Theme *theme) {
+    Widget::setTheme(theme);
+    if (mTheme)
+        mFontSize = mTheme->mTextBoxFontSize;
 }
 
 Vector2i TextBox::preferredSize(NVGcontext *ctx) const {
@@ -62,9 +71,13 @@ Vector2i TextBox::preferredSize(NVGcontext *ctx) const {
     } else if (!mUnits.empty()) {
         uw = nvgTextBounds(ctx, 0, 0, mUnits.c_str(), nullptr, nullptr);
     }
+    float sw = 0;
+    if (mSpinnable) {
+        sw = 14.f;
+    }
 
     float ts = nvgTextBounds(ctx, 0, 0, mValue.c_str(), nullptr, nullptr);
-    size(0) = size(1) + ts + uw;
+    size(0) = size(1) + ts + uw + sw;
     return size;
 }
 
@@ -73,11 +86,11 @@ void TextBox::draw(NVGcontext* ctx) {
 
     NVGpaint bg = nvgBoxGradient(ctx,
         mPos.x() + 1, mPos.y() + 1 + 1.0f, mSize.x() - 2, mSize.y() - 2,
-        3, 4, Color(255, 32), Color(32, 32)); 
+        3, 4, Color(255, 32), Color(32, 32));
     NVGpaint fg1 = nvgBoxGradient(ctx,
         mPos.x() + 1, mPos.y() + 1 + 1.0f, mSize.x() - 2, mSize.y() - 2,
         3, 4, Color(150, 32), Color(32, 32));
-    NVGpaint fg2 = nvgBoxGradient(ctx, 
+    NVGpaint fg2 = nvgBoxGradient(ctx,
         mPos.x() + 1, mPos.y() + 1 + 1.0f, mSize.x() - 2, mSize.y() - 2,
         3, 4, nvgRGBA(255, 0, 0, 100), nvgRGBA(255, 0, 0, 50));
 
@@ -85,8 +98,10 @@ void TextBox::draw(NVGcontext* ctx) {
     nvgRoundedRect(ctx, mPos.x() + 1, mPos.y() + 1 + 1.0f, mSize.x() - 2,
                    mSize.y() - 2, 3);
 
-    if(mEditable && focused())
+    if (mEditable && focused())
         mValidFormat ? nvgFillPaint(ctx, fg1) : nvgFillPaint(ctx, fg2);
+    else if (mSpinnable && mMouseDownPos.x() != -1)
+        nvgFillPaint(ctx, fg1);
     else
         nvgFillPaint(ctx, bg);
 
@@ -130,10 +145,44 @@ void TextBox::draw(NVGcontext* ctx) {
         unitWidth += 2;
     }
 
+    float spinArrowsWidth = 0.f;
+
+    if (mSpinnable && !focused()) {
+        spinArrowsWidth = 14.f;
+
+        nvgFontFace(ctx, "icons");
+        nvgFontSize(ctx, ((mFontSize < 0) ? mTheme->mButtonFontSize : mFontSize) * icon_scale());
+
+        bool spinning = mMouseDownPos.x() != -1;
+
+        /* up button */ {
+            bool hover = mMouseFocus && spinArea(mMousePos) == SpinArea::Top;
+            nvgFillColor(ctx, (mEnabled && (hover || spinning)) ? mTheme->mTextColor : mTheme->mDisabledTextColor);
+            auto icon = utf8(mTheme->mTextBoxUpIcon);
+            nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+            Vector2f iconPos(mPos.x() + 4.f,
+                             mPos.y() + mSize.y()/2.f - xSpacing/2.f);
+            nvgText(ctx, iconPos.x(), iconPos.y(), icon.data(), nullptr);
+        }
+
+        /* down button */ {
+            bool hover = mMouseFocus && spinArea(mMousePos) == SpinArea::Bottom;
+            nvgFillColor(ctx, (mEnabled && (hover || spinning)) ? mTheme->mTextColor : mTheme->mDisabledTextColor);
+            auto icon = utf8(mTheme->mTextBoxDownIcon);
+            nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+            Vector2f iconPos(mPos.x() + 4.f,
+                             mPos.y() + mSize.y()/2.f + xSpacing/2.f + 1.5f);
+            nvgText(ctx, iconPos.x(), iconPos.y(), icon.data(), nullptr);
+        }
+
+        nvgFontSize(ctx, fontSize());
+        nvgFontFace(ctx, "sans");
+    }
+
     switch (mAlignment) {
         case Alignment::Left:
             nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-            drawPos.x() += xSpacing;
+            drawPos.x() += xSpacing + spinArrowsWidth;
             break;
         case Alignment::Right:
             nvgTextAlign(ctx, NVG_ALIGN_RIGHT | NVG_ALIGN_MIDDLE);
@@ -146,21 +195,25 @@ void TextBox::draw(NVGcontext* ctx) {
     }
 
     nvgFontSize(ctx, fontSize());
-    nvgFillColor(ctx,
-                 mEnabled ? mTheme->mTextColor : mTheme->mDisabledTextColor);
+    nvgFillColor(ctx, mEnabled && (!mCommitted || !mValue.empty()) ?
+        mTheme->mTextColor :
+        mTheme->mDisabledTextColor);
 
     // clip visible text area
-    float clipX = mPos.x() + xSpacing - 1.0f;
+    float clipX = mPos.x() + xSpacing + spinArrowsWidth - 1.0f;
     float clipY = mPos.y() + 1.0f;
-    float clipWidth = mSize.x() - unitWidth - 2 * xSpacing + 2.0f;
+    float clipWidth = mSize.x() - unitWidth - spinArrowsWidth - 2 * xSpacing + 2.0f;
     float clipHeight = mSize.y() - 3.0f;
-    nvgScissor(ctx, clipX, clipY, clipWidth, clipHeight);
+
+    nvgSave(ctx);
+    nvgIntersectScissor(ctx, clipX, clipY, clipWidth, clipHeight);
 
     Vector2i oldDrawPos(drawPos);
     drawPos.x() += mTextOffset;
 
     if (mCommitted) {
-        nvgText(ctx, drawPos.x(), drawPos.y(), mValue.c_str(), nullptr);
+        nvgText(ctx, drawPos.x(), drawPos.y(),
+            mValue.empty() ? mPlaceholder.c_str() : mValue.c_str(), nullptr);
     } else {
         const int maxGlyphs = 1024;
         NVGglyphPosition glyphs[maxGlyphs];
@@ -226,15 +279,18 @@ void TextBox::draw(NVGcontext* ctx) {
             nvgStroke(ctx);
         }
     }
-
-    nvgResetScissor(ctx);
+    nvgRestore(ctx);
 }
 
 bool TextBox::mouseButtonEvent(const Vector2i &p, int button, bool down,
                                int modifiers) {
-    Widget::mouseButtonEvent(p, button, down, modifiers);
 
-    if (mEditable && focused() && button == GLFW_MOUSE_BUTTON_1) {
+    if (button == GLFW_MOUSE_BUTTON_1 && down && !mFocused) {
+        if (!mSpinnable || spinArea(p) == SpinArea::None) /* not on scrolling arrows */
+            requestFocus();
+    }
+
+    if (mEditable && focused()) {
         if (down) {
             mMouseDownPos = p;
             mMouseDownModifier = modifiers;
@@ -244,9 +300,34 @@ bool TextBox::mouseButtonEvent(const Vector2i &p, int button, bool down,
                 /* Double-click: select all text */
                 mSelectionPos = 0;
                 mCursorPos = (int) mValueTemp.size();
-                mMouseDownPos = Vector2i(-1, 1);
+                mMouseDownPos = Vector2i(-1, -1);
             }
             mLastClick = time;
+        } else {
+            mMouseDownPos = Vector2i(-1, -1);
+            mMouseDragPos = Vector2i(-1, -1);
+        }
+        return true;
+    } else if (mSpinnable && !focused()) {
+        if (down) {
+            if (spinArea(p) == SpinArea::None) {
+                mMouseDownPos = p;
+                mMouseDownModifier = modifiers;
+
+                double time = glfwGetTime();
+                if (time - mLastClick < 0.25) {
+                    /* Double-click: reset to default value */
+                    mValue = mDefaultValue;
+                    if (mCallback)
+                        mCallback(mValue);
+
+                    mMouseDownPos = Vector2i(-1, -1);
+                }
+                mLastClick = time;
+            } else {
+                mMouseDownPos = Vector2i(-1, -1);
+                mMouseDragPos = Vector2i(-1, -1);
+            }
         } else {
             mMouseDownPos = Vector2i(-1, -1);
             mMouseDragPos = Vector2i(-1, -1);
@@ -259,8 +340,16 @@ bool TextBox::mouseButtonEvent(const Vector2i &p, int button, bool down,
 
 bool TextBox::mouseMotionEvent(const Vector2i &p, const Vector2i & /* rel */,
                                int /* button */, int /* modifiers */) {
+    mMousePos = p;
+
+    if (!mEditable)
+        setCursor(Cursor::Arrow);
+    else if (mSpinnable && !focused() && spinArea(mMousePos) != SpinArea::None) /* scrolling arrows */
+        setCursor(Cursor::Hand);
+    else
+        setCursor(Cursor::IBeam);
+
     if (mEditable && focused()) {
-        mMousePos = p;
         return true;
     }
     return false;
@@ -268,15 +357,12 @@ bool TextBox::mouseMotionEvent(const Vector2i &p, const Vector2i & /* rel */,
 
 bool TextBox::mouseDragEvent(const Vector2i &p, const Vector2i &/* rel */,
                              int /* button */, int /* modifiers */) {
+    mMousePos = p;
+    mMouseDragPos = p;
+
     if (mEditable && focused()) {
-        mMouseDragPos = p;
         return true;
     }
-    return false;
-}
-
-bool TextBox::mouseEnterEvent(const Vector2i &p, bool enter) {
-    Widget::mouseEnterEvent(p, enter);
     return false;
 }
 
@@ -413,13 +499,24 @@ bool TextBox::keyboardCharacterEvent(unsigned int codepoint) {
 bool TextBox::checkFormat(const std::string &input, const std::string &format) {
     if (format.empty())
         return true;
-    std::regex regex(format);
-    return regex_match(input, regex);
+    try {
+        std::regex regex(format);
+        return regex_match(input, regex);
+    } catch (const std::regex_error &) {
+#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+        std::cerr << "Warning: cannot validate text field due to lacking regular expression support. please compile with GCC >= 4.9" << std::endl;
+        return true;
+#else
+        throw;
+#endif
+    }
 }
 
 bool TextBox::copySelection() {
     if (mSelectionPos > -1) {
         Screen *sc = dynamic_cast<Screen *>(this->window()->parent());
+        if (!sc)
+            return false;
 
         int begin = mCursorPos;
         int end = mSelectionPos;
@@ -437,8 +534,11 @@ bool TextBox::copySelection() {
 
 void TextBox::pasteFromClipboard() {
     Screen *sc = dynamic_cast<Screen *>(this->window()->parent());
-    std::string str(glfwGetClipboardString(sc->glfwWindow()));
-    mValueTemp.insert(mCursorPos, str);
+    if (!sc)
+        return;
+    const char* cbstr = glfwGetClipboardString(sc->glfwWindow());
+    if (cbstr)
+        mValueTemp.insert(mCursorPos, std::string(cbstr));
 }
 
 bool TextBox::deleteSelection() {
@@ -520,9 +620,21 @@ int TextBox::position2CursorIndex(float posx, float lastx,
     return mCursorId;
 }
 
+TextBox::SpinArea TextBox::spinArea(const Vector2i & pos) {
+    if (0 <= pos.x() - mPos.x() && pos.x() - mPos.x() < 14.f) { /* on scrolling arrows */
+        if (mSize.y() >= pos.y() - mPos.y() && pos.y() - mPos.y() <= mSize.y() / 2.f) { /* top part */
+            return SpinArea::Top;
+        } else if (0.f <= pos.y() - mPos.y() && pos.y() - mPos.y() > mSize.y() / 2.f) { /* bottom part */
+            return SpinArea::Bottom;
+        }
+    }
+    return SpinArea::None;
+}
+
 void TextBox::save(Serializer &s) const {
     Widget::save(s);
     s.set("editable", mEditable);
+    s.set("spinnable", mSpinnable);
     s.set("committed", mCommitted);
     s.set("value", mValue);
     s.set("defaultValue", mDefaultValue);
@@ -539,12 +651,11 @@ void TextBox::save(Serializer &s) const {
 bool TextBox::load(Serializer &s) {
     if (!Widget::load(s)) return false;
     if (!s.get("editable", mEditable)) return false;
+    if (!s.get("spinnable", mSpinnable)) return false;
     if (!s.get("committed", mCommitted)) return false;
     if (!s.get("value", mValue)) return false;
     if (!s.get("defaultValue", mDefaultValue)) return false;
-    int alignment;
-    if (!s.get("alignment", alignment)) return false;
-    mAlignment = (Alignment) alignment;
+    if (!s.get("alignment", mAlignment)) return false;
     if (!s.get("units", mUnits)) return false;
     if (!s.get("format", mFormat)) return false;
     if (!s.get("unitsImage", mUnitsImage)) return false;

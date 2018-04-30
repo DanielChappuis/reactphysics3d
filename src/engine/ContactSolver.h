@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,18 +27,21 @@
 #define REACTPHYSICS3D_CONTACT_SOLVER_H
 
 // Libraries
-#include "constraint/ContactPoint.h"
 #include "configuration.h"
-#include "constraint/Joint.h"
-#include "collision/ContactManifold.h"
-#include "Island.h"
-#include "Impulse.h"
-#include <map>
-#include <set>
+#include "mathematics/Vector3.h"
+#include "mathematics/Matrix3x3.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Declarations
+class ContactPoint;
+class Joint;
+class ContactManifold;
+class MemoryManager;
+class Profiler;
+class Island;
+class RigidBody;
 
 // Class Contact Solver
 /**
@@ -120,35 +123,11 @@ class ContactSolver {
          */
         struct ContactPointSolver {
 
-            /// Accumulated normal impulse
-            decimal penetrationImpulse;
-
-            /// Accumulated impulse in the 1st friction direction
-            decimal friction1Impulse;
-
-            /// Accumulated impulse in the 2nd friction direction
-            decimal friction2Impulse;
-
-            /// Accumulated split impulse for penetration correction
-            decimal penetrationSplitImpulse;
-
-            /// Accumulated rolling resistance impulse
-            Vector3 rollingResistanceImpulse;
+            /// Pointer to the external contact
+            ContactPoint* externalContact;
 
             /// Normal vector of the contact
             Vector3 normal;
-
-            /// First friction vector in the tangent plane
-            Vector3 frictionVector1;
-
-            /// Second friction vector in the tangent plane
-            Vector3 frictionVector2;
-
-            /// Old first friction vector in the tangent plane
-            Vector3 oldFrictionVector1;
-
-            /// Old second friction vector in the tangent plane
-            Vector3 oldFrictionVector2;
 
             /// Vector from the body 1 center to the contact point
             Vector3 r1;
@@ -156,44 +135,29 @@ class ContactSolver {
             /// Vector from the body 2 center to the contact point
             Vector3 r2;
 
-            /// Cross product of r1 with 1st friction vector
-            Vector3 r1CrossT1;
-
-            /// Cross product of r1 with 2nd friction vector
-            Vector3 r1CrossT2;
-
-            /// Cross product of r2 with 1st friction vector
-            Vector3 r2CrossT1;
-
-            /// Cross product of r2 with 2nd friction vector
-            Vector3 r2CrossT2;
-
-            /// Cross product of r1 with the contact normal
-            Vector3 r1CrossN;
-
-            /// Cross product of r2 with the contact normal
-            Vector3 r2CrossN;
-
             /// Penetration depth
             decimal penetrationDepth;
 
             /// Velocity restitution bias
             decimal restitutionBias;
 
+            /// Accumulated normal impulse
+            decimal penetrationImpulse;
+
+            /// Accumulated split impulse for penetration correction
+            decimal penetrationSplitImpulse;
+
             /// Inverse of the matrix K for the penenetration
             decimal inversePenetrationMass;
 
-            /// Inverse of the matrix K for the 1st friction
-            decimal inverseFriction1Mass;
+            /// Cross product of r1 with the contact normal
+            Vector3 i1TimesR1CrossN;
 
-            /// Inverse of the matrix K for the 2nd friction
-            decimal inverseFriction2Mass;
+            /// Cross product of r2 with the contact normal
+            Vector3 i2TimesR2CrossN;
 
             /// True if the contact was existing last time step
             bool isRestingContact;
-
-            /// Pointer to the external contact
-            ContactPoint* externalContact;
         };
 
         // Structure ContactManifoldSolver
@@ -203,11 +167,14 @@ class ContactSolver {
          */
         struct ContactManifoldSolver {
 
+            /// Pointer to the external contact manifold
+            ContactManifold* externalContactManifold;
+
             /// Index of body 1 in the constraint solver
-            uint indexBody1;
+            int32 indexBody1;
 
             /// Index of body 2 in the constraint solver
-            uint indexBody2;
+            int32 indexBody2;
 
             /// Inverse of the mass of body 1
             decimal massInverseBody1;
@@ -221,29 +188,11 @@ class ContactSolver {
             /// Inverse inertia tensor of body 2
             Matrix3x3 inverseInertiaTensorBody2;
 
-            /// Contact point constraints
-            ContactPointSolver contacts[MAX_CONTACT_POINTS_IN_MANIFOLD];
-
-            /// Number of contact points
-            uint nbContacts;
-
-            /// True if the body 1 is of type dynamic
-            bool isBody1DynamicType;
-
-            /// True if the body 2 is of type dynamic
-            bool isBody2DynamicType;
-
-            /// Mix of the restitution factor for two bodies
-            decimal restitutionFactor;
-
             /// Mix friction coefficient for the two bodies
             decimal frictionCoefficient;
 
             /// Rolling resistance factor between the two bodies
             decimal rollingResistanceFactor;
-
-            /// Pointer to the external contact manifold
-            ContactManifold* externalContactManifold;
 
             // - Variables used when friction constraints are apply at the center of the manifold-//
 
@@ -309,6 +258,9 @@ class ContactSolver {
 
             /// Rolling resistance impulse
             Vector3 rollingResistanceImpulse;
+
+            /// Number of contact points
+            int8 nbContacts;
         };
 
         // -------------------- Constants --------------------- //
@@ -324,6 +276,9 @@ class ContactSolver {
 
         // -------------------- Attributes -------------------- //
 
+        /// Memory manager
+        MemoryManager& mMemoryManager;
+
         /// Split linear velocities for the position contact solver (split impulse)
         Vector3* mSplitLinearVelocities;
 
@@ -336,6 +291,12 @@ class ContactSolver {
         /// Contact constraints
         ContactManifoldSolver* mContactConstraints;
 
+        /// Contact points
+        ContactPointSolver* mContactPoints;
+
+        /// Number of contact point constraints
+        uint mNbContactPoints;
+
         /// Number of contact constraints
         uint mNbContactManifolds;
 
@@ -345,34 +306,24 @@ class ContactSolver {
         /// Array of angular velocities
         Vector3* mAngularVelocities;
 
-        /// Reference to the map of rigid body to their index in the constrained velocities array
-        const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
-
-        /// True if the warm starting of the solver is active
-        bool mIsWarmStartingActive;
-
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
 
-        /// True if we solve 3 friction constraints at the contact manifold center only
-        /// instead of 2 friction constraints at each contact point
-        bool mIsSolveFrictionAtContactManifoldCenterActive;
+        /// World settings
+        const WorldSettings& mWorldSettings;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
 
         // -------------------- Methods -------------------- //
 
-        /// Initialize the contact constraints before solving the system
-        void initializeContactConstraints();
-
-        /// Apply an impulse to the two bodies of a constraint
-        void applyImpulse(const Impulse& impulse, const ContactManifoldSolver& manifold);
-
-        /// Apply an impulse to the two bodies of a constraint
-        void applySplitImpulse(const Impulse& impulse,
-                               const ContactManifoldSolver& manifold);
-
         /// Compute the collision restitution factor from the restitution factor of each body
-        decimal computeMixedRestitutionFactor(RigidBody *body1,
-                                              RigidBody *body2) const;
+        decimal computeMixedRestitutionFactor(RigidBody* body1,
+                                              RigidBody* body2) const;
 
         /// Compute the mixed friction coefficient from the friction coefficient of each body
         decimal computeMixedFrictionCoefficient(RigidBody* body1,
@@ -382,41 +333,29 @@ class ContactSolver {
         decimal computeMixedRollingResistance(RigidBody* body1, RigidBody* body2) const;
 
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
-        /// plane for a contact point. The two vectors have to be
-        /// such that : t1 x t2 = contactNormal.
-        void computeFrictionVectors(const Vector3& deltaVelocity,
-                                    ContactPointSolver &contactPoint) const;
-
-        /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact manifold. The two vectors have to be
         /// such that : t1 x t2 = contactNormal.
         void computeFrictionVectors(const Vector3& deltaVelocity,
                                     ContactManifoldSolver& contactPoint) const;
 
-        /// Compute a penetration constraint impulse
-        const Impulse computePenetrationImpulse(decimal deltaLambda,
-                                                const ContactPointSolver& contactPoint) const;
-
-        /// Compute the first friction constraint impulse
-        const Impulse computeFriction1Impulse(decimal deltaLambda,
-                                              const ContactPointSolver& contactPoint) const;
-
-        /// Compute the second friction constraint impulse
-        const Impulse computeFriction2Impulse(decimal deltaLambda,
-                                              const ContactPointSolver& contactPoint) const;
+        /// Warm start the solver.
+        void warmStart();
 
    public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
+        ContactSolver(MemoryManager& memoryManager, const WorldSettings& worldSettings);
 
         /// Destructor
-        virtual ~ContactSolver();
+        ~ContactSolver() = default;
+
+        /// Initialize the contact constraints
+        void init(Island** islands, uint nbIslands, decimal timeStep);
 
         /// Initialize the constraint solver for a given island
-        void initializeForIsland(decimal dt, Island* island);
+        void initializeForIsland(Island* island);
 
         /// Set the split velocities arrays
         void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
@@ -425,9 +364,6 @@ class ContactSolver {
         /// Set the constrained velocities arrays
         void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
                                             Vector3* constrainedAngularVelocities);
-
-        /// Warm start the solver.
-        void warmStart();
 
         /// Store the computed impulses to use them to
         /// warm start the solver at the next iteration
@@ -442,19 +378,21 @@ class ContactSolver {
         /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
 
-        /// Activate or deactivate the solving of friction constraints at the center of
-        /// the contact manifold instead of solving them at each contact point
-        void setIsSolveFrictionAtContactManifoldCenterActive(bool isActive);
+#ifdef IS_PROFILING_ACTIVE
 
-        /// Clean up the constraint solver
-        void cleanup();
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
 };
 
 // Set the split velocities arrays
 inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
                                                     Vector3* splitAngularVelocities) {
-    assert(splitLinearVelocities != NULL);
-    assert(splitAngularVelocities != NULL);
+
+    assert(splitLinearVelocities != nullptr);
+    assert(splitAngularVelocities != nullptr);
+
     mSplitLinearVelocities = splitLinearVelocities;
     mSplitAngularVelocities = splitAngularVelocities;
 }
@@ -462,8 +400,10 @@ inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelociti
 // Set the constrained velocities arrays
 inline void ContactSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
                                                           Vector3* constrainedAngularVelocities) {
-    assert(constrainedLinearVelocities != NULL);
-    assert(constrainedAngularVelocities != NULL);
+
+    assert(constrainedLinearVelocities != nullptr);
+    assert(constrainedAngularVelocities != nullptr);
+
     mLinearVelocities = constrainedLinearVelocities;
     mAngularVelocities = constrainedAngularVelocities;
 }
@@ -478,63 +418,15 @@ inline void ContactSolver::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
 }
 
-// Activate or deactivate the solving of friction constraints at the center of
-// the contact manifold instead of solving them at each contact point
-inline void ContactSolver::setIsSolveFrictionAtContactManifoldCenterActive(bool isActive) {
-    mIsSolveFrictionAtContactManifoldCenterActive = isActive;
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void ContactSolver::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
 }
 
-// Compute the collision restitution factor from the restitution factor of each body
-inline decimal ContactSolver::computeMixedRestitutionFactor(RigidBody* body1,
-                                                            RigidBody* body2) const {
-    decimal restitution1 = body1->getMaterial().getBounciness();
-    decimal restitution2 = body2->getMaterial().getBounciness();
-
-    // Return the largest restitution factor
-    return (restitution1 > restitution2) ? restitution1 : restitution2;
-}
-
-// Compute the mixed friction coefficient from the friction coefficient of each body
-inline decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
-                                                              RigidBody *body2) const {
-    // Use the geometric mean to compute the mixed friction coefficient
-    return sqrt(body1->getMaterial().getFrictionCoefficient() *
-                body2->getMaterial().getFrictionCoefficient());
-}
-
-// Compute th mixed rolling resistance factor between two bodies
-inline decimal ContactSolver::computeMixedRollingResistance(RigidBody* body1,
-                                                            RigidBody* body2) const {
-    return decimal(0.5f) * (body1->getMaterial().getRollingResistance() + body2->getMaterial().getRollingResistance());
-}
-
-// Compute a penetration constraint impulse
-inline const Impulse ContactSolver::computePenetrationImpulse(decimal deltaLambda,
-                                                          const ContactPointSolver& contactPoint)
-                                                          const {
-    return Impulse(-contactPoint.normal * deltaLambda, -contactPoint.r1CrossN * deltaLambda,
-                   contactPoint.normal * deltaLambda, contactPoint.r2CrossN * deltaLambda);
-}
-
-// Compute the first friction constraint impulse
-inline const Impulse ContactSolver::computeFriction1Impulse(decimal deltaLambda,
-                                                        const ContactPointSolver& contactPoint)
-                                                        const {
-    return Impulse(-contactPoint.frictionVector1 * deltaLambda,
-                   -contactPoint.r1CrossT1 * deltaLambda,
-                   contactPoint.frictionVector1 * deltaLambda,
-                   contactPoint.r2CrossT1 * deltaLambda);
-}
-
-// Compute the second friction constraint impulse
-inline const Impulse ContactSolver::computeFriction2Impulse(decimal deltaLambda,
-                                                        const ContactPointSolver& contactPoint)
-                                                        const {
-    return Impulse(-contactPoint.frictionVector2 * deltaLambda,
-                   -contactPoint.r1CrossT2 * deltaLambda,
-                   contactPoint.frictionVector2 * deltaLambda,
-                   contactPoint.r2CrossT2 * deltaLambda);
-}
+#endif
 
 }
 

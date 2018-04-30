@@ -1,5 +1,5 @@
 # Minimum cmake version required
-cmake_minimum_required(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2 FATAL_ERROR)
 
 # Project configuration
 PROJECT(Testbed)
@@ -19,7 +19,7 @@ FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
 FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("src/" "glew/include/" "nanogui/ext/glfw/include/" "nanogui/ext/glew/include/" "nanogui/include/" "nanogui/ext/nanovg/src/" "nanogui/ext/eigen/" "opengl-framework/src/" "common/" "scenes/")
+INCLUDE_DIRECTORIES("src/" "nanogui/include/" "opengl-framework/src/" "common/" "scenes/" ${NANOGUI_EXTRA_INCS})
 
 # OpenGLFramework source files
 SET(OPENGLFRAMEWORK_SOURCES
@@ -74,8 +74,6 @@ SET(TESTBED_SOURCES
 SET(COMMON_SOURCES
     common/Box.h
     common/Box.cpp
-    common/Cone.h
-    common/Cone.cpp
     common/Sphere.h
     common/Sphere.cpp
     common/Line.h
@@ -86,8 +84,6 @@ SET(COMMON_SOURCES
     common/ConvexMesh.cpp
     common/ConcaveMesh.h
     common/ConcaveMesh.cpp
-    common/Cylinder.h
-    common/Cylinder.cpp
     common/Dumbbell.h
     common/Dumbbell.cpp
     common/HeightField.h
@@ -98,6 +94,8 @@ SET(COMMON_SOURCES
     common/VisualContactPoint.cpp
     common/PerlinNoise.h
     common/PerlinNoise.cpp
+    common/AABB.h
+    common/AABB.cpp
 )
 
 # Examples scenes source files
@@ -110,10 +108,14 @@ SET(SCENES_SOURCES
     scenes/raycast/RaycastScene.cpp
     scenes/collisionshapes/CollisionShapesScene.h
     scenes/collisionshapes/CollisionShapesScene.cpp
+    scenes/collisiondetection/CollisionDetectionScene.h
+    scenes/collisiondetection/CollisionDetectionScene.cpp
     scenes/concavemesh/ConcaveMeshScene.h
     scenes/concavemesh/ConcaveMeshScene.cpp
     scenes/heightfield/HeightFieldScene.h
     scenes/heightfield/HeightFieldScene.cpp
+    scenes/cubestack/CubeStackScene.h
+    scenes/cubestack/CubeStackScene.cpp
 )
 
 # Add .user file to set debug path in Visual Studio
@@ -121,6 +123,9 @@ SET(USER_FILE testbed.vcxproj.user)
 SET(VS_USERFILE_WORKING_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
 SET(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
 CONFIGURE_FILE(VisualStudioUserTemplate.user ${USER_FILE} @ONLY)
+
+# Compile definitions
+ADD_DEFINITIONS(${NANOGUI_EXTRA_DEFS})
 
 # Create the executable
 ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${OPENGLFRAMEWORK_SOURCES})

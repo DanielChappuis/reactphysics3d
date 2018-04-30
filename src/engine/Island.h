@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,12 +27,14 @@
 #define REACTPHYSICS3D_ISLAND_H
 
 // Libraries
-#include "memory/MemoryAllocator.h"
-#include "body/RigidBody.h"
 #include "constraint/Joint.h"
-#include "collision/ContactManifold.h"
 
 namespace reactphysics3d {
+
+// Declarations
+class RigidBody;
+class SingleFrameAllocator;
+class ContactManifold;
 
 // Class Island
 /**
@@ -63,36 +65,22 @@ class Island {
         /// Current number of joints in the island
         uint mNbJoints;
 
-        /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
-
-        /// Number of bytes allocated for the bodies array
-        size_t mNbAllocatedBytesBodies;
-
-        /// Number of bytes allocated for the contact manifolds array
-        size_t mNbAllocatedBytesContactManifolds;
-
-        /// Number of bytes allocated for the joints array
-        size_t mNbAllocatedBytesJoints;
-
-        // -------------------- Methods -------------------- //
-
-        /// Private assignment operator
-        Island& operator=(const Island& island);
-
-        /// Private copy-constructor
-        Island(const Island& island);
-
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
-               MemoryAllocator& memoryAllocator);
+               MemoryManager& memoryManager);
 
         /// Destructor
         ~Island();
+
+        /// Deleted assignment operator
+        Island& operator=(const Island& island) = delete;
+
+        /// Deleted copy-constructor
+        Island(const Island& island) = delete;
 
         /// Add a body into the island
         void addBody(RigidBody* body);
@@ -116,7 +104,7 @@ class Island {
         RigidBody** getBodies();
 
         /// Return a pointer to the array of contact manifolds
-        ContactManifold** getContactManifold();
+        ContactManifold** getContactManifolds();
 
         /// Return a pointer to the array of joints
         Joint** getJoints();
@@ -166,7 +154,7 @@ inline RigidBody** Island::getBodies() {
 }
 
 // Return a pointer to the array of contact manifolds
-inline ContactManifold** Island::getContactManifold() {
+inline ContactManifold** Island::getContactManifolds() {
     return mContactManifolds;
 }
 

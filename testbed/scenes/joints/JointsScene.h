@@ -92,9 +92,6 @@ class JointsScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
-        /// Dynamics world used for the physics simulation
-        rp3d::DynamicsWorld* mDynamicsWorld;
-
         // -------------------- Methods -------------------- //
 
         /// Create the boxes and joints for the Ball-and-Socket joint example
@@ -117,32 +114,25 @@ class JointsScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        JointsScene(const std::string& name);
+        JointsScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
-        virtual ~JointsScene();
+        virtual ~JointsScene() override ;
 
         /// Update the physics world (take a simulation step)
         /// Can be called several times per frame
-        virtual void updatePhysics();
-
-        /// Take a step for the simulation
-        virtual void update();
-
-        /// Render the scene in a single pass
-        virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
+        virtual void updatePhysics() override;
 
         /// Reset the scene
-        virtual void reset();
+        virtual void reset() override;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const;
+        virtual std::vector<ContactPoint> getContactPoints() override;
 };
 
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> JointsScene::getContactPoints() const {
-    return computeContactPointsOfWorld(mDynamicsWorld);
+inline std::vector<ContactPoint> JointsScene::getContactPoints() {
+    return computeContactPointsOfWorld(getDynamicsWorld());
 }
 
 }

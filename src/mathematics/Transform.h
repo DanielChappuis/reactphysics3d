@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,6 @@
 #define	REACTPHYSICS3D_TRANSFORM_H
 
 // Libraries
-#include "Matrix3x3.h"
 #include "Vector3.h"
 #include "Quaternion.h"
 
@@ -65,7 +64,7 @@ class Transform {
         Transform(const Vector3& position, const Quaternion& orientation);
 
         /// Destructor
-        ~Transform();
+        ~Transform() = default;
 
         /// Copy-constructor
         Transform(const Transform& transform);
@@ -116,7 +115,33 @@ class Transform {
 
         /// Assignment operator
         Transform& operator=(const Transform& transform);
+
+        /// Return the string representation
+        std::string to_string() const;
 };
+
+// Constructor
+inline Transform::Transform() : mPosition(Vector3(0.0, 0.0, 0.0)), mOrientation(Quaternion::identity()) {
+
+}
+
+// Constructor
+inline Transform::Transform(const Vector3& position, const Matrix3x3& orientation)
+          : mPosition(position), mOrientation(Quaternion(orientation)) {
+
+}
+
+// Constructor
+inline Transform::Transform(const Vector3& position, const Quaternion& orientation)
+          : mPosition(position), mOrientation(orientation) {
+
+}
+
+// Copy-constructor
+inline Transform::Transform(const Transform& transform)
+          : mPosition(transform.mPosition), mOrientation(transform.mOrientation) {
+
+}
 
 // Return the position of the transform
 inline const Vector3& Transform::getPosition() const {
@@ -144,33 +169,10 @@ inline void Transform::setToIdentity() {
     mOrientation = Quaternion::identity();
 }                                           
 
-// Set the transform from an OpenGL transform matrix
-inline void Transform::setFromOpenGL(decimal* openglMatrix) {
-    Matrix3x3 matrix(openglMatrix[0], openglMatrix[4], openglMatrix[8],
-                     openglMatrix[1], openglMatrix[5], openglMatrix[9],
-                     openglMatrix[2], openglMatrix[6], openglMatrix[10]);
-    mOrientation = Quaternion(matrix);
-    mPosition.setAllValues(openglMatrix[12], openglMatrix[13], openglMatrix[14]);
-}
-
-// Get the OpenGL matrix of the transform
-inline void Transform::getOpenGLMatrix(decimal* openglMatrix) const {
-    const Matrix3x3& matrix = mOrientation.getMatrix();
-    openglMatrix[0] = matrix[0][0]; openglMatrix[1] = matrix[1][0];
-    openglMatrix[2] = matrix[2][0]; openglMatrix[3] = 0.0;
-    openglMatrix[4] = matrix[0][1]; openglMatrix[5] = matrix[1][1];
-    openglMatrix[6] = matrix[2][1]; openglMatrix[7] = 0.0;
-    openglMatrix[8] = matrix[0][2]; openglMatrix[9] = matrix[1][2];
-    openglMatrix[10] = matrix[2][2]; openglMatrix[11] = 0.0;
-    openglMatrix[12] = mPosition.x; openglMatrix[13] = mPosition.y;
-    openglMatrix[14] = mPosition.z; openglMatrix[15] = 1.0;
-}
-
 // Return the inverse of the transform
 inline Transform Transform::getInverse() const {
     const Quaternion& invQuaternion = mOrientation.getInverse();
-    Matrix3x3 invMatrix = invQuaternion.getMatrix();
-    return Transform(invMatrix * (-mPosition), invQuaternion);
+    return Transform(invQuaternion * (-mPosition), invQuaternion);
 }
 
 // Return an interpolated transform
@@ -195,13 +197,36 @@ inline Transform Transform::identity() {
 
 // Return the transformed vector
 inline Vector3 Transform::operator*(const Vector3& vector) const {
-    return (mOrientation.getMatrix() * vector) + mPosition;
+    return (mOrientation * vector) + mPosition;
 }
 
 // Operator of multiplication of a transform with another one
 inline Transform Transform::operator*(const Transform& transform2) const {
-    return Transform(mPosition + mOrientation.getMatrix() * transform2.mPosition,
-                     mOrientation * transform2.mOrientation);
+
+    // The following code is equivalent to this
+    //return Transform(mPosition + mOrientation * transform2.mPosition,
+    //                 mOrientation * transform2.mOrientation);
+
+    const decimal prodX = mOrientation.w * transform2.mPosition.x + mOrientation.y * transform2.mPosition.z
+                          - mOrientation.z * transform2.mPosition.y;
+    const decimal prodY = mOrientation.w * transform2.mPosition.y + mOrientation.z * transform2.mPosition.x
+                          - mOrientation.x * transform2.mPosition.z;
+    const decimal prodZ = mOrientation.w * transform2.mPosition.z + mOrientation.x * transform2.mPosition.y
+                          - mOrientation.y * transform2.mPosition.x;
+    const decimal prodW = -mOrientation.x * transform2.mPosition.x - mOrientation.y * transform2.mPosition.y
+                          - mOrientation.z * transform2.mPosition.z;
+
+    return Transform(Vector3(mPosition.x + mOrientation.w * prodX - prodY * mOrientation.z + prodZ * mOrientation.y - prodW * mOrientation.x,
+                             mPosition.y + mOrientation.w * prodY - prodZ * mOrientation.x + prodX * mOrientation.z - prodW * mOrientation.y,
+                             mPosition.z + mOrientation.w * prodZ - prodX * mOrientation.y + prodY * mOrientation.x - prodW * mOrientation.z),
+                     Quaternion(mOrientation.w * transform2.mOrientation.x + transform2.mOrientation.w * mOrientation.x
+                       + mOrientation.y * transform2.mOrientation.z - mOrientation.z * transform2.mOrientation.y,
+                      mOrientation.w * transform2.mOrientation.y + transform2.mOrientation.w * mOrientation.y
+                       + mOrientation.z * transform2.mOrientation.x - mOrientation.x * transform2.mOrientation.z,
+                      mOrientation.w * transform2.mOrientation.z + transform2.mOrientation.w * mOrientation.z
+                       + mOrientation.x * transform2.mOrientation.y - mOrientation.y * transform2.mOrientation.x,
+                      mOrientation.w * transform2.mOrientation.w - mOrientation.x * transform2.mOrientation.x
+                       - mOrientation.y * transform2.mOrientation.y - mOrientation.z * transform2.mOrientation.z));
 }
 
 // Return true if the two transforms are equal
@@ -221,6 +246,11 @@ inline Transform& Transform::operator=(const Transform& transform) {
         mOrientation = transform.mOrientation;
     }
     return *this;
+}
+
+// Get the string representation
+inline std::string Transform::to_string() const {
+    return "Transform(" + mPosition.to_string() + "," + mOrientation.to_string() + ")";
 }
 
 }

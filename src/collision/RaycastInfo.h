@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,7 +28,6 @@
 
 // Libraries
 #include "mathematics/Vector3.h"
-#include "mathematics/Ray.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -37,6 +36,7 @@ namespace reactphysics3d {
 class CollisionBody;
 class ProxyShape;
 class CollisionShape;
+struct Ray;
 
 // Structure RaycastInfo
 /**
@@ -45,14 +45,6 @@ class CollisionShape;
 struct RaycastInfo {
 
     private:
-
-        // -------------------- Methods -------------------- //
-
-        /// Private copy constructor
-        RaycastInfo(const RaycastInfo& raycastInfo);
-
-        /// Private assignment operator
-        RaycastInfo& operator=(const RaycastInfo& raycastInfo);
 
     public:
 
@@ -83,14 +75,18 @@ struct RaycastInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(NULL), proxyShape(NULL) {
+        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(nullptr), proxyShape(nullptr) {
 
         }
 
         /// Destructor
-        ~RaycastInfo() {
+        ~RaycastInfo() = default;
 
-        }
+        /// Deleted copy constructor
+        RaycastInfo(const RaycastInfo& raycastInfo) = delete;
+
+        /// Deleted assignment operator
+        RaycastInfo& operator=(const RaycastInfo& raycastInfo) = delete;
 };
 
 // Class RaycastCallback

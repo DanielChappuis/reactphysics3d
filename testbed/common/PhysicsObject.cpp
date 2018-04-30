@@ -27,10 +27,21 @@
 #include "PhysicsObject.h"
 
 /// Constructor
-PhysicsObject::PhysicsObject() {
+PhysicsObject::PhysicsObject() : openglframework::Mesh() {
 
+    mBody = nullptr;
     mColor = openglframework::Color(1, 1, 1, 1);
     mSleepingColor = openglframework::Color(1, 0, 0, 1);
+}
+
+/// Constructor
+PhysicsObject::PhysicsObject(const std::string& meshPath) : PhysicsObject() {
+
+    // Load the mesh from a file
+    openglframework::MeshReaderWriter::loadMeshFromFile(meshPath, *this);
+
+    // Calculate the normals of the mesh
+    calculateNormals();
 }
 
 // Compute the new transform matrix
@@ -56,4 +67,22 @@ openglframework::Matrix4 PhysicsObject::computeTransform(float interpolationFact
 
     // Apply the scaling matrix to have the correct box dimensions
     return newMatrix * scalingMatrix;
+}
+
+// Reset the transform
+void PhysicsObject::setTransform(const rp3d::Transform& transform) {
+
+    // Reset the transform
+    mBody->setTransform(transform);
+
+    mBody->setIsSleeping(false);
+
+    // Reset the velocity of the rigid body
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
+    if (rigidBody != nullptr) {
+        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
+        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
+    }
+
+    updateTransform(1.0f);
 }

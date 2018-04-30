@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -35,7 +35,7 @@
 namespace reactphysics3d {
 
 /// Enumeration for the type of a constraint
-enum JointType {BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
+enum class JointType {BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
 
 // Class declarations
 struct ConstraintSolverData;
@@ -94,19 +94,19 @@ struct JointInfo {
 
         /// Constructor
         JointInfo(JointType constraintType)
-                      : body1(NULL), body2(NULL), type(constraintType),
-                        positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
+                      : body1(nullptr), body2(nullptr), type(constraintType),
+                        positionCorrectionTechnique(JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL),
                         isCollisionEnabled(true) {}
 
         /// Constructor
         JointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, JointType constraintType)
                       : body1(rigidBody1), body2(rigidBody2), type(constraintType),
-                        positionCorrectionTechnique(NON_LINEAR_GAUSS_SEIDEL),
+                        positionCorrectionTechnique(JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL),
                         isCollisionEnabled(true) {
         }
 
         /// Destructor
-        virtual ~JointInfo() {}
+        virtual ~JointInfo() = default;
 
 };
 
@@ -119,6 +119,9 @@ class Joint {
     protected :
 
         // -------------------- Attributes -------------------- //
+
+        /// Id of the joint
+        uint mId;
 
         /// Pointer to the first body of the joint
         RigidBody* const mBody1;
@@ -144,13 +147,10 @@ class Joint {
         /// True if the joint has already been added into an island
         bool mIsAlreadyInIsland;
 
+        /// Total number of joints
+        static uint mNbTotalNbJoints;
+
         // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        Joint(const Joint& constraint);
-
-        /// Private assignment operator
-        Joint& operator=(const Joint& constraint);
 
         /// Return true if the joint has already been added into an island
         bool isAlreadyInIsland() const;
@@ -175,10 +175,16 @@ class Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Joint(const JointInfo& jointInfo);
+        Joint(uint id, const JointInfo& jointInfo);
 
         /// Destructor
-        virtual ~Joint();
+        virtual ~Joint() = default;
+
+        /// Deleted copy-constructor
+        Joint(const Joint& constraint) = delete;
+
+        /// Deleted assignment operator
+        Joint& operator=(const Joint& constraint) = delete;
 
         /// Return the reference to the body 1
         RigidBody* getBody1() const;
@@ -194,6 +200,12 @@ class Joint {
 
         /// Return true if the collision between the two bodies of the joint is enabled
         bool isCollisionEnabled() const;
+
+        /// Return the id of the joint
+        uint getId() const;
+
+        /// Return a string representation
+        virtual std::string to_string() const=0;
 
         // -------------------- Friendship -------------------- //
 
@@ -241,6 +253,14 @@ inline JointType Joint::getType() const {
  */
 inline bool Joint::isCollisionEnabled() const {
     return mIsCollisionEnabled;
+}
+
+// Return the id of the joint
+/**
+ * @return The id of the joint
+ */
+inline uint Joint::getId() const {
+    return mId;
 }
 
 // Return true if the joint has already been added into an island

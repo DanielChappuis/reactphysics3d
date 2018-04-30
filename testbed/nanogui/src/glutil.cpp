@@ -1,7 +1,7 @@
 /*
     src/glutil.cpp -- Convenience classes for accessing OpenGL >= 3.x
 
-    NanoGUI was developed by Wenzel Jakob <wenzel@inf.ethz.ch>.
+    NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
     by Mikko Mononen.
 
@@ -12,8 +12,9 @@
 #include <nanogui/glutil.h>
 #include <iostream>
 #include <fstream>
+#include <Eigen/Geometry>
 
-namespace nanogui {
+NAMESPACE_BEGIN(nanogui)
 
 static GLuint createShader_helper(GLint type, const std::string &name,
                                   const std::string &defines,
@@ -141,6 +142,16 @@ GLint GLShader::attrib(const std::string &name, bool warn) const {
     return id;
 }
 
+void GLShader::setUniform(const std::string &name, const GLUniformBuffer &buf, bool warn) {
+    GLuint blockIndex = glGetUniformBlockIndex(mProgramShader, name.c_str());
+    if (blockIndex == GL_INVALID_INDEX) {
+        if (warn)
+            std::cerr << mName << ": warning: did not find uniform buffer " << name << std::endl;
+        return;
+    }
+    glUniformBlockBinding(mProgramShader, blockIndex, buf.getBindingPoint());
+}
+
 GLint GLShader::uniform(const std::string &name, bool warn) const {
     GLint id = glGetUniformLocation(mProgramShader, name.c_str());
     if (id == -1 && warn)
@@ -148,9 +159,9 @@ GLint GLShader::uniform(const std::string &name, bool warn) const {
     return id;
 }
 
-void GLShader::uploadAttrib(const std::string &name, uint32_t size, int dim,
+void GLShader::uploadAttrib(const std::string &name, size_t size, int dim,
                             uint32_t compSize, GLuint glType, bool integral,
-                            const uint8_t *data, int version) {
+                            const void *data, int version) {
     int attribID = 0;
     if (name != "indices") {
         attribID = attrib(name);
@@ -164,7 +175,7 @@ void GLShader::uploadAttrib(const std::string &name, uint32_t size, int dim,
         Buffer &buffer = it->second;
         bufferID = it->second.id;
         buffer.version = version;
-        buffer.size = size;
+        buffer.size = (GLuint) size;
         buffer.compSize = compSize;
     } else {
         glGenBuffers(1, &bufferID);
@@ -173,11 +184,11 @@ void GLShader::uploadAttrib(const std::string &name, uint32_t size, int dim,
         buffer.glType = glType;
         buffer.dim = dim;
         buffer.compSize = compSize;
-        buffer.size = size;
+        buffer.size = (GLuint) size;
         buffer.version = version;
         mBufferObjects[name] = buffer;
     }
-    size_t totalSize = (size_t) size * (size_t) compSize;
+    size_t totalSize = size * (size_t) compSize;
 
     if (name == "indices") {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferID);
@@ -194,8 +205,8 @@ void GLShader::uploadAttrib(const std::string &name, uint32_t size, int dim,
     }
 }
 
-void GLShader::downloadAttrib(const std::string &name, uint32_t size, int /* dim */,
-                             uint32_t compSize, GLuint /* glType */, uint8_t *data) {
+void GLShader::downloadAttrib(const std::string &name, size_t size, int /* dim */,
+                             uint32_t compSize, GLuint /* glType */, void *data) {
     auto it = mBufferObjects.find(name);
     if (it == mBufferObjects.end())
         throw std::runtime_error("downloadAttrib(" + mName + ", " + name + ") : buffer not found!");
@@ -204,7 +215,7 @@ void GLShader::downloadAttrib(const std::string &name, uint32_t size, int /* dim
     if (buf.size != size || buf.compSize != compSize)
         throw std::runtime_error(mName + ": downloadAttrib: size mismatch!");
 
-    size_t totalSize = (size_t) size * (size_t) compSize;
+    size_t totalSize = size * (size_t) compSize;
 
     if (name == "indices") {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buf.id);
@@ -272,15 +283,55 @@ void GLShader::drawArray(int type, uint32_t offset, uint32_t count) {
 void GLShader::free() {
     for (auto &buf: mBufferObjects)
         glDeleteBuffers(1, &buf.second.id);
+    mBufferObjects.clear();
 
-    if (mVertexArrayObject)
+    if (mVertexArrayObject) {
         glDeleteVertexArrays(1, &mVertexArrayObject);
+        mVertexArrayObject = 0;
+    }
 
     glDeleteProgram(mProgramShader); mProgramShader = 0;
     glDeleteShader(mVertexShader);   mVertexShader = 0;
     glDeleteShader(mFragmentShader); mFragmentShader = 0;
     glDeleteShader(mGeometryShader); mGeometryShader = 0;
 }
+
+const GLShader::Buffer &GLShader::attribBuffer(const std::string &name) {
+    for (auto &pair : mBufferObjects) {
+        if (pair.first == name)
+            return pair.second;
+    }
+
+    throw std::runtime_error(mName + ": attribBuffer: " + name + " not found!");
+}
+
+//  ----------------------------------------------------
+
+void GLUniformBuffer::init() {
+    glGenBuffers(1, &mID);
+}
+
+void GLUniformBuffer::bind(int bindingPoint) {
+    mBindingPoint = bindingPoint;
+    glBindBufferBase(GL_UNIFORM_BUFFER, mBindingPoint, mID);
+}
+
+void GLUniformBuffer::release() {
+    glBindBufferBase(GL_UNIFORM_BUFFER, mBindingPoint, 0);
+}
+
+void GLUniformBuffer::free() {
+    glDeleteBuffers(1, &mID);
+    mID = 0;
+}
+
+void GLUniformBuffer::update(const std::vector<uint8_t> &data) {
+    glBindBuffer(GL_UNIFORM_BUFFER, mID);
+    glBufferData(GL_UNIFORM_BUFFER, data.size(), data.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+//  ----------------------------------------------------
 
 void GLFramebuffer::init(const Vector2i &size, int nSamples) {
     mSize = size;
@@ -289,7 +340,7 @@ void GLFramebuffer::init(const Vector2i &size, int nSamples) {
     glGenRenderbuffers(1, &mColor);
     glBindRenderbuffer(GL_RENDERBUFFER, mColor);
 
-    if (nSamples == 1)
+    if (nSamples <= 1)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, size.x(), size.y());
     else
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, nSamples, GL_RGBA8, size.x(), size.y());
@@ -297,7 +348,7 @@ void GLFramebuffer::init(const Vector2i &size, int nSamples) {
     glGenRenderbuffers(1, &mDepth);
     glBindRenderbuffer(GL_RENDERBUFFER, mDepth);
 
-    if (nSamples == 1)
+    if (nSamples <= 1)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, size.x(), size.y());
     else
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, nSamples, GL_DEPTH24_STENCIL8, size.x(), size.y());
@@ -318,10 +369,11 @@ void GLFramebuffer::init(const Vector2i &size, int nSamples) {
 
     release();
 }
-    
+
 void GLFramebuffer::free() {
     glDeleteRenderbuffers(1, &mColor);
     glDeleteRenderbuffers(1, &mDepth);
+    mColor = mDepth = 0;
 }
 
 void GLFramebuffer::bind() {
@@ -348,49 +400,51 @@ void GLFramebuffer::blit() {
 }
 
 void GLFramebuffer::downloadTGA(const std::string &filename) {
-	uint8_t *temp = new uint8_t[mSize.prod() * 4];
+    uint8_t *temp = new uint8_t[mSize.prod() * 4];
 
     std::cout << "Writing \"" << filename  << "\" (" << mSize.x() << "x" << mSize.y() << ") .. ";
     std::cout.flush();
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebuffer);
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-	glReadPixels(0, 0, mSize.x(), mSize.y(), GL_BGRA, GL_UNSIGNED_BYTE, temp);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebuffer);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glReadPixels(0, 0, mSize.x(), mSize.y(), GL_BGRA, GL_UNSIGNED_BYTE, temp);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
-	uint32_t rowSize = mSize.x() * 4;
-	uint32_t halfHeight = mSize.y() / 2;
-	uint8_t *line = (uint8_t *) alloca(rowSize);
-	for (uint32_t i=0, j=mSize.y()-1; i<halfHeight; ++i) {
-		memcpy(line, temp + i * rowSize, rowSize);
-		memcpy(temp + i * rowSize, temp + j * rowSize, rowSize);
-		memcpy(temp + j * rowSize, line, rowSize);
-		j--;
-	}
+    uint32_t rowSize = mSize.x() * 4;
+    uint32_t halfHeight = mSize.y() / 2;
+    uint8_t *line = (uint8_t *) alloca(rowSize);
+    for (uint32_t i=0, j=mSize.y()-1; i<halfHeight; ++i) {
+        memcpy(line, temp + i * rowSize, rowSize);
+        memcpy(temp + i * rowSize, temp + j * rowSize, rowSize);
+        memcpy(temp + j * rowSize, line, rowSize);
+        j--;
+    }
 
-	FILE *tga = fopen(filename.c_str(), "wb");
-	if (tga == nullptr)
-	    throw std::runtime_error("GLFramebuffer::downloadTGA(): Could not open output file");
-	fputc(0, tga); /* ID */
-	fputc(0, tga); /* Color map */
-	fputc(2, tga); /* Image type */
-	fputc(0, tga); fputc(0, tga); /* First entry of color map (unused) */
-	fputc(0, tga); fputc(0, tga); /* Length of color map (unused) */
-	fputc(0, tga); /* Color map entry size (unused) */
-	fputc(0, tga); fputc(0, tga);  /* X offset */
-	fputc(0, tga); fputc(0, tga);  /* Y offset */
-	fputc(mSize.x() % 256, tga); /* Width */
-	fputc(mSize.x() / 256, tga); /* continued */
-	fputc(mSize.y() % 256, tga); /* Height */
-	fputc(mSize.y() / 256, tga); /* continued */
-	fputc(32, tga);   /* Bits per pixel */
-	fputc(0x20, tga); /* Scan from top left */
-	fwrite(temp, mSize.prod() * 4, 1, tga);
-	fclose(tga);
+    FILE *tga = fopen(filename.c_str(), "wb");
+    if (tga == nullptr)
+        throw std::runtime_error("GLFramebuffer::downloadTGA(): Could not open output file");
+    fputc(0, tga); /* ID */
+    fputc(0, tga); /* Color map */
+    fputc(2, tga); /* Image type */
+    fputc(0, tga); fputc(0, tga); /* First entry of color map (unused) */
+    fputc(0, tga); fputc(0, tga); /* Length of color map (unused) */
+    fputc(0, tga); /* Color map entry size (unused) */
+    fputc(0, tga); fputc(0, tga);  /* X offset */
+    fputc(0, tga); fputc(0, tga);  /* Y offset */
+    fputc(mSize.x() % 256, tga); /* Width */
+    fputc(mSize.x() / 256, tga); /* continued */
+    fputc(mSize.y() % 256, tga); /* Height */
+    fputc(mSize.y() / 256, tga); /* continued */
+    fputc(32, tga);   /* Bits per pixel */
+    fputc(0x20, tga); /* Scan from top left */
+    fwrite(temp, mSize.prod() * 4, 1, tga);
+    fclose(tga);
 
-	delete[] temp;
+    delete[] temp;
     std::cout << "done." << std::endl;
 }
+
+//  ----------------------------------------------------
 
 Eigen::Vector3f project(const Eigen::Vector3f &obj,
                         const Eigen::Matrix4f &model,
@@ -429,69 +483,61 @@ Eigen::Vector3f unproject(const Eigen::Vector3f &win,
     return obj.head(3);
 }
 
-Eigen::Matrix4f lookAt(const Eigen::Vector3f &eye,
-                       const Eigen::Vector3f &center,
+Eigen::Matrix4f lookAt(const Eigen::Vector3f &origin,
+                       const Eigen::Vector3f &target,
                        const Eigen::Vector3f &up) {
-    Eigen::Vector3f f = (center - eye).normalized();
+    Eigen::Vector3f f = (target - origin).normalized();
     Eigen::Vector3f s = f.cross(up).normalized();
     Eigen::Vector3f u = s.cross(f);
 
-    Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
-    Result(0, 0) = s(0);
-    Result(0, 1) = s(1);
-    Result(0, 2) = s(2);
-    Result(1, 0) = u(0);
-    Result(1, 1) = u(1);
-    Result(1, 2) = u(2);
-    Result(2, 0) = -f(0);
-    Result(2, 1) = -f(1);
-    Result(2, 2) = -f(2);
-    Result(0, 3) = -s.transpose() * eye;
-    Result(1, 3) = -u.transpose() * eye;
-    Result(2, 3) = f.transpose() * eye;
-    return Result;
+    Eigen::Matrix4f result = Eigen::Matrix4f::Identity();
+    result(0, 0) = s(0);
+    result(0, 1) = s(1);
+    result(0, 2) = s(2);
+    result(1, 0) = u(0);
+    result(1, 1) = u(1);
+    result(1, 2) = u(2);
+    result(2, 0) = -f(0);
+    result(2, 1) = -f(1);
+    result(2, 2) = -f(2);
+    result(0, 3) = -s.transpose() * origin;
+    result(1, 3) = -u.transpose() * origin;
+    result(2, 3) = f.transpose() * origin;
+    return result;
 }
 
-Eigen::Matrix4f ortho(const float left, const float right, const float bottom,
-                      const float top, const float zNear, const float zFar) {
-    Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
-    Result(0, 0) = 2.0f / (right - left);
-    Result(1, 1) = 2.0f / (top - bottom);
-    Result(2, 2) = -2.0f / (zFar - zNear);
-    Result(0, 3) = -(right + left) / (right - left);
-    Result(1, 3) = -(top + bottom) / (top - bottom);
-    Result(2, 3) = -(zFar + zNear) / (zFar - zNear);
-    return Result;
+Eigen::Matrix4f ortho(float left, float right, float bottom,
+                      float top, float nearVal, float farVal) {
+    Eigen::Matrix4f result = Eigen::Matrix4f::Identity();
+    result(0, 0) = 2.0f / (right - left);
+    result(1, 1) = 2.0f / (top - bottom);
+    result(2, 2) = -2.0f / (farVal - nearVal);
+    result(0, 3) = -(right + left) / (right - left);
+    result(1, 3) = -(top + bottom) / (top - bottom);
+    result(2, 3) = -(farVal + nearVal) / (farVal - nearVal);
+    return result;
 }
 
-Eigen::Matrix4f frustum(const float left, const float right, const float bottom,
-                        const float top, const float nearVal,
-                        const float farVal) {
-    Eigen::Matrix4f Result = Eigen::Matrix4f::Zero();
-    Result(0, 0) = (2.0f * nearVal) / (right - left);
-    Result(1, 1) = (2.0f * nearVal) / (top - bottom);
-    Result(0, 2) = (right + left) / (right - left);
-    Result(1, 2) = (top + bottom) / (top - bottom);
-    Result(2, 2) = -(farVal + nearVal) / (farVal - nearVal);
-    Result(3, 2) = -1.0f;
-    Result(2, 3) = -(2.0f * farVal * nearVal) / (farVal - nearVal);
-    return Result;
+Eigen::Matrix4f frustum(float left, float right, float bottom,
+                        float top, float nearVal,
+                        float farVal) {
+    Eigen::Matrix4f result = Eigen::Matrix4f::Zero();
+    result(0, 0) = (2.0f * nearVal) / (right - left);
+    result(1, 1) = (2.0f * nearVal) / (top - bottom);
+    result(0, 2) = (right + left) / (right - left);
+    result(1, 2) = (top + bottom) / (top - bottom);
+    result(2, 2) = -(farVal + nearVal) / (farVal - nearVal);
+    result(3, 2) = -1.0f;
+    result(2, 3) = -(2.0f * farVal * nearVal) / (farVal - nearVal);
+    return result;
 }
 
-Eigen::Matrix4f scale(const Eigen::Matrix4f &m, const Eigen::Vector3f &v) {
-    Eigen::Matrix4f Result;
-    Result.col(0) = m.col(0).array() * v(0);
-    Result.col(1) = m.col(1).array() * v(1);
-    Result.col(2) = m.col(2).array() * v(2);
-    Result.col(3) = m.col(3);
-    return Result;
+Eigen::Matrix4f scale(const Eigen::Vector3f &v) {
+    return Eigen::Affine3f(Eigen::Scaling(v)).matrix();
 }
 
-Eigen::Matrix4f translate(const Eigen::Matrix4f &m, const Eigen::Vector3f &v) {
-    Eigen::Matrix4f Result = m;
-    Result.col(3) = m.col(0).array() * v(0) + m.col(1).array() * v(1) +
-                    m.col(2).array() * v(2) + m.col(3).array();
-    return Result;
+Eigen::Matrix4f translate(const Eigen::Vector3f &v) {
+    return Eigen::Affine3f(Eigen::Translation<float, 3>(v)).matrix();
 }
 
-}; /* namespace nanogui */
+NAMESPACE_END(nanogui)

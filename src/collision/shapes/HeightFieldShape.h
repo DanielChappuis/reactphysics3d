@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,12 +28,13 @@
 
 // Libraries
 #include "ConcaveShape.h"
-#include "collision/shapes/TriangleShape.h"
-#include "engine/Profiler.h"
+#include "collision/shapes/AABB.h"
 
 namespace reactphysics3d {
 
 class HeightFieldShape;
+class Profiler;
+class TriangleShape;
 
 // Class TriangleOverlapCallback
 /**
@@ -49,14 +50,22 @@ class TriangleOverlapCallback : public TriangleCallback {
         bool mIsHit;
         decimal mSmallestHitFraction;
         const HeightFieldShape& mHeightFieldShape;
+        MemoryAllocator& mAllocator;
+		
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
 
     public:
 
         // Constructor
         TriangleOverlapCallback(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo,
-                                const HeightFieldShape& heightFieldShape)
+                                const HeightFieldShape& heightFieldShape, MemoryAllocator& allocator)
                                : mRay(ray), mProxyShape(proxyShape), mRaycastInfo(raycastInfo),
-                                 mHeightFieldShape (heightFieldShape) {
+                                 mHeightFieldShape (heightFieldShape), mAllocator(allocator) {
             mIsHit = false;
             mSmallestHitFraction = mRay.maxFraction;
         }
@@ -64,7 +73,17 @@ class TriangleOverlapCallback : public TriangleCallback {
         bool getIsHit() const {return mIsHit;}
 
         /// Raycast test between a ray and a triangle of the heightfield
-        virtual void testTriangle(const Vector3* trianglePoints);
+        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) override;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler) {
+			mProfiler = profiler;
+		}
+
+#endif
+
 };
 
 
@@ -84,7 +103,7 @@ class HeightFieldShape : public ConcaveShape {
     public:
 
         /// Data type for the height data of the height field
-        enum HeightDataType {HEIGHT_FLOAT_TYPE, HEIGHT_DOUBLE_TYPE, HEIGHT_INT_TYPE};
+        enum class HeightDataType {HEIGHT_FLOAT_TYPE, HEIGHT_DOUBLE_TYPE, HEIGHT_INT_TYPE};
 
     protected:
 
@@ -123,19 +142,16 @@ class HeightFieldShape : public ConcaveShape {
         /// Local AABB of the height field (without scaling)
         AABB mAABB;
 
+        /// Scaling vector
+        const Vector3 mScaling;
+
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        HeightFieldShape(const HeightFieldShape& shape);
-
-        /// Private assignment operator
-        HeightFieldShape& operator=(const HeightFieldShape& shape);
-
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
@@ -157,15 +173,28 @@ class HeightFieldShape : public ConcaveShape {
         /// Compute the min/max grid coords corresponding to the intersection of the AABB of the height field and the AABB to collide
         void computeMinMaxGridCoordinates(int* minCoords, int* maxCoords, const AABB& aabbToCollide) const;
 
+        /// Compute the shape Id for a given triangle
+        uint computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const;
+
     public:
 
         /// Constructor
         HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                          const void* heightFieldData, HeightDataType dataType,
-                         int upAxis = 1, decimal integerHeightScale = 1.0f);
+                         int upAxis = 1, decimal integerHeightScale = 1.0f,
+                         const Vector3& scaling = Vector3(1,1,1));
 
         /// Destructor
-        ~HeightFieldShape();
+        virtual ~HeightFieldShape() override = default;
+
+        /// Deleted copy-constructor
+        HeightFieldShape(const HeightFieldShape& shape) = delete;
+
+        /// Deleted assignment operator
+        HeightFieldShape& operator=(const HeightFieldShape& shape) = delete;
+
+        /// Return the scaling factor
+        const Vector3& getScaling() const;
 
         /// Return the number of rows in the height field
         int getNbRows() const;
@@ -177,22 +206,27 @@ class HeightFieldShape : public ConcaveShape {
         HeightDataType getHeightDataType() const;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const;
-
-        /// Set the local scaling vector of the collision shape
-        virtual void setLocalScaling(const Vector3& scaling);
+        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const;
+        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const;
+        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const override;
+
+        /// Return the string representation of the shape
+        virtual std::string to_string() const override;
 
         // ---------- Friendship ----------- //
 
         friend class ConvexTriangleAABBOverlapCallback;
         friend class ConcaveMeshRaycastCallback;
 };
+
+// Return the scaling factor
+inline const Vector3& HeightFieldShape::getScaling() const {
+    return mScaling;
+}
 
 // Return the number of rows in the height field
 inline int HeightFieldShape::getNbRows() const {
@@ -214,18 +248,13 @@ inline size_t HeightFieldShape::getSizeInBytes() const {
     return sizeof(HeightFieldShape);
 }
 
-// Set the local scaling vector of the collision shape
-inline void HeightFieldShape::setLocalScaling(const Vector3& scaling) {
-    CollisionShape::setLocalScaling(scaling);
-}
-
 // Return the height of a given (x,y) point in the height field
 inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 
     switch(mHeightDataType) {
-        case HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
-        case HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
-        case HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
+        case HeightDataType::HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
+        case HeightDataType::HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
+        case HeightDataType::HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
         default: assert(false); return 0;
     }
 }
@@ -250,6 +279,12 @@ inline void HeightFieldShape::computeLocalInertiaTensor(Matrix3x3& tensor, decim
     tensor.setAllValues(mass, 0, 0,
                         0, mass, 0,
                         0, 0, mass);
+}
+
+// Compute the shape Id for a given triangle
+inline uint HeightFieldShape::computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const {
+
+    return (jIndex * (mNbColumns - 1) + iIndex) * 2 + secondTriangleIncrement;
 }
 
 }

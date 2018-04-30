@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,9 +28,13 @@
 
 // Libraries
 #include "mathematics/mathematics.h"
-#include "engine/ConstraintSolver.h"
+#include "body/RigidBody.h"
+#include "Joint.h"
 
 namespace reactphysics3d {
+
+// Declarations
+class ConstraintSolver;
 
 // Structure SliderJointInfo
 /**
@@ -77,7 +81,7 @@ struct SliderJointInfo : public JointInfo {
         SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace)
-                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(false), isMotorEnabled(false), minTranslationLimit(-1.0),
@@ -96,7 +100,7 @@ struct SliderJointInfo : public JointInfo {
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace,
                         decimal initMinTranslationLimit, decimal initMaxTranslationLimit)
-                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(true), isMotorEnabled(false),
@@ -120,7 +124,7 @@ struct SliderJointInfo : public JointInfo {
                         const Vector3& initSliderAxisWorldSpace,
                         decimal initMinTranslationLimit, decimal initMaxTranslationLimit,
                         decimal initMotorSpeed, decimal initMaxMotorForce)
-                       : JointInfo(rigidBody1, rigidBody2, SLIDERJOINT),
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(true), isMotorEnabled(true),
@@ -262,39 +266,39 @@ class SliderJoint : public Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        SliderJoint(const SliderJoint& constraint);
-
-        /// Private assignment operator
-        SliderJoint& operator=(const SliderJoint& constraint);
-
         /// Reset the limits
         void resetLimits();
 
         /// Return the number of bytes used by the joint
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
 
         /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SliderJoint(const SliderJointInfo& jointInfo);
+        SliderJoint(uint id, const SliderJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~SliderJoint();
+        virtual ~SliderJoint() override = default;
+
+        /// Deleted copy-constructor
+        SliderJoint(const SliderJoint& constraint) = delete;
+
+        /// Deleted assignment operator
+        SliderJoint& operator=(const SliderJoint& constraint) = delete;
 
         /// Return true if the limits or the joint are enabled
         bool isLimitEnabled() const;
@@ -337,6 +341,9 @@ class SliderJoint : public Joint {
 
         /// Return the intensity of the current force applied for the joint motor
         decimal getMotorForce(decimal timeStep) const;
+
+        /// Return a string representation
+        virtual std::string to_string() const override;
 };
 
 // Return true if the limits or the joint are enabled
@@ -399,6 +406,17 @@ inline decimal SliderJoint::getMotorForce(decimal timeStep) const {
 // Return the number of bytes used by the joint
 inline size_t SliderJoint::getSizeInBytes() const {
     return sizeof(SliderJoint);
+}
+
+// Return a string representation
+inline std::string SliderJoint::to_string() const {
+    return "SliderJoint{ lowerLimit=" + std::to_string(mLowerLimit) + ", upperLimit=" + std::to_string(mUpperLimit) +
+            "localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() + ", localAnchorPointBody2=" +
+            mLocalAnchorPointBody2.to_string() + ", sliderAxisBody1=" + mSliderAxisBody1.to_string() +
+            ", initOrientationDifferenceInv=" +
+            mInitOrientationDifferenceInv.to_string() + ", motorSpeed=" + std::to_string(mMotorSpeed) +
+            ", maxMotorForce=" + std::to_string(mMaxMotorForce) + ", isLimitEnabled=" +
+            (mIsLimitEnabled ? "true" : "false") + ", isMotorEnabled=" + (mIsMotorEnabled ? "true" : "false") + "}";
 }
 
 }

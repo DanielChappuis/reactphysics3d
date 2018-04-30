@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,9 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include <complex>
 #include "configuration.h"
 #include "ConvexMeshShape.h"
+#include "engine/CollisionWorld.h"
+#include "collision/RaycastInfo.h"
 
 using namespace reactphysics3d;
 
@@ -38,111 +39,12 @@ using namespace reactphysics3d;
  * @param stride Stride between the beginning of two elements in the vertices array
  * @param margin Collision margin (in meters) around the collision shape
  */
-ConvexMeshShape::ConvexMeshShape(const decimal* arrayVertices, uint nbVertices, int stride, decimal margin)
-                : ConvexShape(CONVEX_MESH, margin), mNbVertices(nbVertices), mMinBounds(0, 0, 0),
-                  mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
-    assert(nbVertices > 0);
-    assert(stride > 0);
-
-    const unsigned char* vertexPointer = (const unsigned char*) arrayVertices;
-
-    // Copy all the vertices into the internal array
-    for (uint i=0; i<mNbVertices; i++) {
-        const decimal* newPoint = (const decimal*) vertexPointer;
-        mVertices.push_back(Vector3(newPoint[0], newPoint[1], newPoint[2]));
-        vertexPointer += stride;
-    }
+ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling)
+                : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH), mPolyhedronMesh(polyhedronMesh),
+                  mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0), mScaling(scaling) {
 
     // Recalculate the bounds of the mesh
     recalculateBounds();
-}
-
-// Constructor to initialize with a triangle mesh
-/// This method creates an internal copy of the input vertices.
-/**
- * @param triangleVertexArray Array with the vertices and indices of the vertices and triangles of the mesh
- * @param isEdgesInformationUsed True if you want to use edges information for collision detection (faster but requires more memory)
- * @param margin Collision margin (in meters) around the collision shape
- */
-ConvexMeshShape::ConvexMeshShape(TriangleVertexArray* triangleVertexArray, bool isEdgesInformationUsed, decimal margin)
-                : ConvexShape(CONVEX_MESH, margin), mMinBounds(0, 0, 0),
-                  mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(isEdgesInformationUsed) {
-
-    TriangleVertexArray::VertexDataType vertexType = triangleVertexArray->getVertexDataType();
-    TriangleVertexArray::IndexDataType indexType = triangleVertexArray->getIndexDataType();
-    unsigned char* verticesStart = triangleVertexArray->getVerticesStart();
-    unsigned char* indicesStart = triangleVertexArray->getIndicesStart();
-    int vertexStride = triangleVertexArray->getVerticesStride();
-    int indexStride = triangleVertexArray->getIndicesStride();
-
-    // For each vertex of the mesh
-    for (uint v = 0; v < triangleVertexArray->getNbVertices(); v++) {
-
-        // Get the vertices components of the triangle
-        if (vertexType == TriangleVertexArray::VERTEX_FLOAT_TYPE) {
-            const float* vertices = (float*)(verticesStart + v * vertexStride);
-
-            Vector3 vertex(vertices[0], vertices[1], vertices[2] );
-            vertex = vertex * mScaling;
-            mVertices.push_back(vertex);
-        }
-        else if (vertexType == TriangleVertexArray::VERTEX_DOUBLE_TYPE) {
-            const double* vertices = (double*)(verticesStart + v * vertexStride);
-
-            Vector3 vertex(vertices[0], vertices[1], vertices[2] );
-            vertex = vertex * mScaling;
-            mVertices.push_back(vertex);
-        }
-    }
-
-    // If we need to use the edges information of the mesh
-    if (mIsEdgesInformationUsed) {
-
-        // For each triangle of the mesh
-        for (uint triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
-
-            void* vertexIndexPointer = (indicesStart + triangleIndex * 3 * indexStride);
-
-            uint vertexIndex[3] = {0, 0, 0};
-
-            // For each vertex of the triangle
-            for (int k=0; k < 3; k++) {
-
-                // Get the index of the current vertex in the triangle
-                if (indexType == TriangleVertexArray::INDEX_INTEGER_TYPE) {
-                    vertexIndex[k] = ((uint*)vertexIndexPointer)[k];
-                }
-                else if (indexType == TriangleVertexArray::INDEX_SHORT_TYPE) {
-                    vertexIndex[k] = ((unsigned short*)vertexIndexPointer)[k];
-                }
-                else {
-                    assert(false);
-                }
-            }
-
-            // Add information about the edges
-            addEdge(vertexIndex[0], vertexIndex[1]);
-            addEdge(vertexIndex[0], vertexIndex[2]);
-            addEdge(vertexIndex[1], vertexIndex[2]);
-        }
-    }
-
-    mNbVertices = mVertices.size();
-    recalculateBounds();
-}
-
-// Constructor.
-/// If you use this constructor, you will need to set the vertices manually one by one using
-/// the addVertex() method.
-ConvexMeshShape::ConvexMeshShape(decimal margin)
-                : ConvexShape(CONVEX_MESH, margin), mNbVertices(0), mMinBounds(0, 0, 0),
-                  mMaxBounds(0, 0, 0), mIsEdgesInformationUsed(false) {
-
-}
-
-// Destructor
-ConvexMeshShape::~ConvexMeshShape() {
-
 }
 
 // Return a local support point in a given direction without the object margin.
@@ -153,116 +55,195 @@ ConvexMeshShape::~ConvexMeshShape() {
 /// it as a start in a hill-climbing (local search) process to find the new support vertex which
 /// will be in most of the cases very close to the previous one. Using hill-climbing, this method
 /// runs in almost constant time.
-Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction,
-                                                           void** cachedCollisionData) const {
+Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
-    assert(mNbVertices == mVertices.size());
-    assert(cachedCollisionData != NULL);
+    decimal maxDotProduct = DECIMAL_SMALLEST;
+    uint indexMaxDotProduct = 0;
 
-    // Allocate memory for the cached collision data if not allocated yet
-    if ((*cachedCollisionData) == NULL) {
-        *cachedCollisionData = (int*) malloc(sizeof(int));
-        *((int*)(*cachedCollisionData)) = 0;
-    }
+    // For each vertex of the mesh
+    for (uint i=0; i<mPolyhedronMesh->getNbVertices(); i++) {
 
-    // If the edges information is used to speed up the collision detection
-    if (mIsEdgesInformationUsed) {
+        // Compute the dot product of the current vertex
+        decimal dotProduct = direction.dot(mPolyhedronMesh->getVertex(i));
 
-        assert(mEdgesAdjacencyList.size() == mNbVertices);
-
-        uint maxVertex = *((int*)(*cachedCollisionData));
-        decimal maxDotProduct = direction.dot(mVertices[maxVertex]);
-        bool isOptimal;
-
-        // Perform hill-climbing (local search)
-        do {
-            isOptimal = true;
-
-            assert(mEdgesAdjacencyList.at(maxVertex).size() > 0);
-
-            // For all neighbors of the current vertex
-            std::set<uint>::const_iterator it;
-            std::set<uint>::const_iterator itBegin = mEdgesAdjacencyList.at(maxVertex).begin();
-            std::set<uint>::const_iterator itEnd = mEdgesAdjacencyList.at(maxVertex).end();
-            for (it = itBegin; it != itEnd; ++it) {
-
-                // Compute the dot product
-                decimal dotProduct = direction.dot(mVertices[*it]);
-
-                // If the current vertex is a better vertex (larger dot product)
-                if (dotProduct > maxDotProduct) {
-                    maxVertex = *it;
-                    maxDotProduct = dotProduct;
-                    isOptimal = false;
-                }
-            }
-
-        } while(!isOptimal);
-
-        // Cache the support vertex
-        *((int*)(*cachedCollisionData)) = maxVertex;
-
-        // Return the support vertex
-        return mVertices[maxVertex] * mScaling;
-    }
-    else {  // If the edges information is not used
-
-        double maxDotProduct = DECIMAL_SMALLEST;
-        uint indexMaxDotProduct = 0;
-
-        // For each vertex of the mesh
-        for (uint i=0; i<mNbVertices; i++) {
-
-            // Compute the dot product of the current vertex
-            double dotProduct = direction.dot(mVertices[i]);
-
-            // If the current dot product is larger than the maximum one
-            if (dotProduct > maxDotProduct) {
-                indexMaxDotProduct = i;
-                maxDotProduct = dotProduct;
-            }
+        // If the current dot product is larger than the maximum one
+        if (dotProduct > maxDotProduct) {
+            indexMaxDotProduct = i;
+            maxDotProduct = dotProduct;
         }
-
-        assert(maxDotProduct >= decimal(0.0));
-
-        // Return the vertex with the largest dot product in the support direction
-        return mVertices[indexMaxDotProduct] * mScaling;
     }
+
+    assert(maxDotProduct >= decimal(0.0));
+
+    // Return the vertex with the largest dot product in the support direction
+    return mPolyhedronMesh->getVertex(indexMaxDotProduct) * mScaling;
 }
 
 // Recompute the bounds of the mesh
 void ConvexMeshShape::recalculateBounds() {
 
-    // TODO : Only works if the local origin is inside the mesh
-    //        => Make it more robust (init with first vertex of mesh instead)
-
-    mMinBounds.setToZero();
-    mMaxBounds.setToZero();
+    mMinBounds = mPolyhedronMesh->getVertex(0);
+    mMaxBounds = mPolyhedronMesh->getVertex(0);
 
     // For each vertex of the mesh
-    for (uint i=0; i<mNbVertices; i++) {
+    for (uint i=1; i<mPolyhedronMesh->getNbVertices(); i++) {
 
-        if (mVertices[i].x > mMaxBounds.x) mMaxBounds.x = mVertices[i].x;
-        if (mVertices[i].x < mMinBounds.x) mMinBounds.x = mVertices[i].x;
+        if (mPolyhedronMesh->getVertex(i).x > mMaxBounds.x) mMaxBounds.x = mPolyhedronMesh->getVertex(i).x;
+        if (mPolyhedronMesh->getVertex(i).x < mMinBounds.x) mMinBounds.x = mPolyhedronMesh->getVertex(i).x;
 
-        if (mVertices[i].y > mMaxBounds.y) mMaxBounds.y = mVertices[i].y;
-        if (mVertices[i].y < mMinBounds.y) mMinBounds.y = mVertices[i].y;
+        if (mPolyhedronMesh->getVertex(i).y > mMaxBounds.y) mMaxBounds.y = mPolyhedronMesh->getVertex(i).y;
+        if (mPolyhedronMesh->getVertex(i).y < mMinBounds.y) mMinBounds.y = mPolyhedronMesh->getVertex(i).y;
 
-        if (mVertices[i].z > mMaxBounds.z) mMaxBounds.z = mVertices[i].z;
-        if (mVertices[i].z < mMinBounds.z) mMinBounds.z = mVertices[i].z;
+        if (mPolyhedronMesh->getVertex(i).z > mMaxBounds.z) mMaxBounds.z = mPolyhedronMesh->getVertex(i).z;
+        if (mPolyhedronMesh->getVertex(i).z < mMinBounds.z) mMinBounds.z = mPolyhedronMesh->getVertex(i).z;
     }
 
     // Apply the local scaling factor
     mMaxBounds = mMaxBounds * mScaling;
     mMinBounds = mMinBounds * mScaling;
-
-    // Add the object margin to the bounds
-    mMaxBounds += Vector3(mMargin, mMargin, mMargin);
-    mMinBounds -= Vector3(mMargin, mMargin, mMargin);
 }
 
 // Raycast method with feedback information
-bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
-    return proxyShape->mBody->mWorld.mCollisionDetection.mNarrowPhaseGJKAlgorithm.raycast(
-                                     ray, proxyShape, raycastInfo);
+/// This method implements the technique in the book "Real-time Collision Detection" by
+/// Christer Ericson.
+bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+
+    // Ray direction
+    Vector3 direction = ray.point2 - ray.point1;
+
+    decimal tMin = decimal(0.0);
+    decimal tMax = ray.maxFraction;
+    Vector3 currentFaceNormal;
+    bool isIntersectionFound = false;
+
+    const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
+
+    // For each face of the convex mesh
+    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+
+        const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
+        const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
+        const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
+        const Vector3 facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
+        decimal denom = faceNormal.dot(direction);
+        decimal planeD = faceNormal.dot(facePoint);
+        decimal dist = planeD -  faceNormal.dot(ray.point1);
+
+        // If ray is parallel to the face
+        if (denom == decimal(0.0)) {
+
+            // If ray is outside the clipping face, we return no intersection
+            if (dist < decimal(0.0)) return false;
+        }
+        else {
+
+            // Compute the intersection between the ray and the current face plane
+            decimal t = dist / denom;
+
+            // Update the current ray intersection by clipping it with the current face plane
+            // If the place faces the ray
+            if (denom < decimal(0.0)) {
+                // Clip the current ray intersection as it enters the convex mesh
+                if (t > tMin) {
+                    tMin = t;
+                    currentFaceNormal = faceNormal;
+                    isIntersectionFound = true;
+                }
+            }
+            else {
+                // Clip the current ray intersection as it exits the convex mesh
+                if (t < tMax) tMax = t;
+            }
+
+            // If the ray intersection with the convex mesh becomes empty, report no intersection
+            if (tMin > tMax) return false;
+        }
+    }
+
+    if (isIntersectionFound) {
+
+        // The ray intersects with the convex mesh
+        assert(tMin >= decimal(0.0));
+        assert(tMax <= ray.maxFraction);
+        assert(tMin <= tMax);
+        assert(currentFaceNormal.lengthSquare() > decimal(0.0));
+
+        // The ray intersects the three slabs, we compute the hit point
+        Vector3 localHitPoint = ray.point1 + tMin * direction;
+
+        raycastInfo.hitFraction = tMin;
+        raycastInfo.body = proxyShape->getBody();
+        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.worldPoint = localHitPoint;
+        raycastInfo.worldNormal = currentFaceNormal;
+
+        return true;
+    }
+
+    return false;
 }
+
+// Return true if a point is inside the collision shape
+bool ConvexMeshShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+
+    const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
+
+    // For each face plane of the convex mesh
+    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+
+        const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
+        const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
+        const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
+        const Vector3 facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
+
+        // If the point is out of the face plane, it is outside of the convex mesh
+        if (computePointToPlaneDistance(localPoint, faceNormal, facePoint) > decimal(0.0)) return false;
+    }
+
+    return true;
+}
+
+// Return the string representation of the shape
+std::string ConvexMeshShape::to_string() const {
+
+    std::stringstream ss;
+    ss << "ConvexMeshShape{" << std::endl;
+    ss << "nbVertices=" << mPolyhedronMesh->getNbVertices() << std::endl;
+    ss << "nbFaces=" << mPolyhedronMesh->getNbFaces() << std::endl;
+
+    ss << "vertices=[";
+
+    for (uint v=0; v < mPolyhedronMesh->getNbVertices(); v++) {
+
+        Vector3 vertex = mPolyhedronMesh->getVertex(v);
+        ss << vertex.to_string();
+        if (v != mPolyhedronMesh->getNbVertices() - 1) {
+            ss << ", ";
+        }
+    }
+
+    ss << "], faces=[";
+
+    HalfEdgeStructure halfEdgeStruct = mPolyhedronMesh->getHalfEdgeStructure();
+    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+
+        const HalfEdgeStructure::Face& face = halfEdgeStruct.getFace(f);
+
+        ss << "[";
+
+        for (uint v=0; v < face.faceVertices.size(); v++) {
+
+            ss << face.faceVertices[v];
+            if (v != face.faceVertices.size() - 1) {
+               ss << ",";
+            }
+        }
+
+        ss << "]";
+    }
+
+    ss << "]}";
+
+    return ss.str();
+}
+

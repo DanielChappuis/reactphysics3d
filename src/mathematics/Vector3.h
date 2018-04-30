@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,6 @@
 #define REACTPHYSICS3D_VECTOR3_H
 
 // Libraries
-#include <cmath>
 #include <cassert>
 #include "mathematics_functions.h"
 #include "decimal.h"
@@ -36,7 +35,7 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class Vector3
+// Struct Vector3
 /**
  * This class represents a 3D vector.
  */
@@ -57,7 +56,7 @@ struct Vector3 {
 
         // -------------------- Methods -------------------- //
 
-        /// Constructor of the class Vector3D
+        /// Constructor of the struct Vector3
         Vector3();
 
         /// Constructor with arguments
@@ -67,7 +66,7 @@ struct Vector3 {
         Vector3(const Vector3& vector);
 
         /// Destructor
-        ~Vector3();
+        ~Vector3() = default;
 
         /// Set all the values of the vector
         void setAllValues(decimal newX, decimal newY, decimal newZ);
@@ -147,6 +146,9 @@ struct Vector3 {
         /// Overloaded less than operator for ordering to be used inside std::set for instance
         bool operator<(const Vector3& vector) const;
 
+        /// Get the string representation
+        std::string to_string() const;
+
         /// Return a vector taking the minimum components of two vectors
         static Vector3 min(const Vector3& vector1, const Vector3& vector2);
 
@@ -168,6 +170,21 @@ struct Vector3 {
         friend Vector3 operator/(const Vector3& vector1, const Vector3& vector2);
 };
 
+// Constructor of the struct Vector3
+inline Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
+
+}
+
+// Constructor with arguments
+inline Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
+
+}
+
+// Copy-constructor
+inline Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
+
+}
+
 // Set the vector to zero
 inline void Vector3::setToZero() {
     x = 0;
@@ -184,7 +201,7 @@ inline void Vector3::setAllValues(decimal newX, decimal newY, decimal newZ) {
 
 // Return the length of the vector
 inline decimal Vector3::length() const {
-    return sqrt(x*x + y*y + z*z);
+    return std::sqrt(x*x + y*y + z*z);
 }
 
 // Return the square of the length of the vector
@@ -374,6 +391,11 @@ inline decimal Vector3::getMinValue() const {
 // Return the maximum value among the three components of a vector
 inline decimal Vector3::getMaxValue() const {
     return std::max(std::max(x, y), z);
+}
+
+// Get the string representation
+inline std::string Vector3::to_string() const {
+    return "Vector3(" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + ")";
 }
 
 // Return the zero vector

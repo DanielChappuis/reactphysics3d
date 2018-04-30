@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,16 +29,11 @@
 using namespace reactphysics3d;
 
 // Constructor
-Joint::Joint(const JointInfo& jointInfo)
-           :mBody1(jointInfo.body1), mBody2(jointInfo.body2), mType(jointInfo.type),
+Joint::Joint(uint id, const JointInfo& jointInfo)
+           :mId(id), mBody1(jointInfo.body1), mBody2(jointInfo.body2), mType(jointInfo.type),
             mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
             mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
 
-    assert(mBody1 != NULL);
-    assert(mBody2 != NULL);
-}
-
-// Destructor
-Joint::~Joint() {
-
+    assert(mBody1 != nullptr);
+    assert(mBody2 != nullptr);
 }

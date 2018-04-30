@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,9 +30,9 @@
 namespace reactphysics3d {
 
 #if defined(IS_DOUBLE_PRECISION_ENABLED)   // If we are compiling for double precision
-    typedef double decimal;
+    using decimal = double;
 #else                                   // If we are compiling for single precision
-    typedef float decimal;
+    using decimal = float;
 #endif
 
 }

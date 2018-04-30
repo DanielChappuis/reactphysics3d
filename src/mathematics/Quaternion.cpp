@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,35 +26,29 @@
 // Libraries
 #include "Quaternion.h"
 #include "Vector3.h"
+#include "Matrix3x3.h"
 #include <cassert>
 
 // Namespace
 using namespace reactphysics3d;
 
-// Constructor of the class
-Quaternion::Quaternion() : x(0.0), y(0.0), z(0.0), w(0.0) {
+// Return a quaternion constructed from Euler angles (in radians)
+Quaternion Quaternion::fromEulerAngles(decimal angleX, decimal angleY, decimal angleZ) {
 
+    Quaternion quaternion;
+    quaternion.initWithEulerAngles(angleX, angleY, angleZ);
+
+    return quaternion;
 }
 
-// Constructor with arguments
-Quaternion::Quaternion(decimal newX, decimal newY, decimal newZ, decimal newW)
-           :x(newX), y(newY), z(newZ), w(newW) {
 
-}
+// Return a quaternion constructed from Euler angles (in radians)
+Quaternion Quaternion::fromEulerAngles(const Vector3& eulerAngles) {
 
-// Constructor with the component w and the vector v=(x y z)
-Quaternion::Quaternion(decimal newW, const Vector3& v) : x(v.x), y(v.y), z(v.z), w(newW) {
+    Quaternion quaternion;
+    quaternion.initWithEulerAngles(eulerAngles.x, eulerAngles.y, eulerAngles.z);
 
-}
-
-// Constructor which convert Euler angles (in radians) to a quaternion
-Quaternion::Quaternion(decimal angleX, decimal angleY, decimal angleZ) {
-    initWithEulerAngles(angleX, angleY, angleZ);
-}
-
-// Constructor which convert Euler angles (in radians) to a quaternion
-Quaternion::Quaternion(const Vector3& eulerAngles) {
-    initWithEulerAngles(eulerAngles.x, eulerAngles.y, eulerAngles.z);
+    return quaternion;
 }
 
 // Copy-constructor
@@ -72,10 +66,10 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
     decimal r;
     decimal s;
 
-    if (trace < 0.0) {
+    if (trace < decimal(0.0)) {
         if (matrix[1][1] > matrix[0][0]) {
             if(matrix[2][2] > matrix[1][1]) {
-                r = sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + decimal(1.0));
+                r = std::sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + decimal(1.0));
                 s = decimal(0.5) / r;
                 
                 // Compute the quaternion
@@ -85,7 +79,7 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
                 w = (matrix[1][0] - matrix[0][1]) * s;
             }
             else {
-                r = sqrt(matrix[1][1] - matrix[2][2] - matrix[0][0] + decimal(1.0));
+                r = std::sqrt(matrix[1][1] - matrix[2][2] - matrix[0][0] + decimal(1.0));
                 s = decimal(0.5) / r;
 
                 // Compute the quaternion
@@ -96,7 +90,7 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
             }
         }
         else if (matrix[2][2] > matrix[0][0]) {
-            r = sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + decimal(1.0));
+            r = std::sqrt(matrix[2][2] - matrix[0][0] - matrix[1][1] + decimal(1.0));
             s = decimal(0.5) / r;
 
             // Compute the quaternion
@@ -106,7 +100,7 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
             w = (matrix[1][0] - matrix[0][1]) * s;
         }
         else {
-            r = sqrt(matrix[0][0] - matrix[1][1] - matrix[2][2] + decimal(1.0));
+            r = std::sqrt(matrix[0][0] - matrix[1][1] - matrix[2][2] + decimal(1.0));
             s = decimal(0.5) / r;
 
             // Compute the quaternion
@@ -117,7 +111,7 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
         }
     }
     else {
-        r = sqrt(trace + decimal(1.0));
+        r = std::sqrt(trace + decimal(1.0));
         s = decimal(0.5) / r;
 
         // Compute the quaternion
@@ -128,31 +122,16 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
     }
 }
 
-// Destructor
-Quaternion::~Quaternion() {
-
-}
-
 // Compute the rotation angle (in radians) and the rotation axis
 /// This method is used to get the rotation angle (in radian) and the unit
 /// rotation axis of an orientation quaternion.
 void Quaternion::getRotationAngleAxis(decimal& angle, Vector3& axis) const {
-    Quaternion quaternion;
-
-    // If the quaternion is unit
-    if (length() == 1.0) {
-        quaternion = *this;
-    }
-    else {
-        // We compute the unit quaternion
-        quaternion = getUnit();
-    }
 
     // Compute the roation angle
-    angle = acos(quaternion.w) * decimal(2.0);
+    angle = std::acos(w) * decimal(2.0);
 
     // Compute the 3D rotation axis
-    Vector3 rotationAxis(quaternion.x, quaternion.y, quaternion.z);
+    Vector3 rotationAxis(x, y, z);
 
     // Normalize the rotation axis
     rotationAxis = rotationAxis.getUnit();
@@ -167,7 +146,7 @@ Matrix3x3 Quaternion::getMatrix() const {
     decimal nQ = x*x + y*y + z*z + w*w;
     decimal s = 0.0;
 
-    if (nQ > 0.0) {
+    if (nQ > decimal(0.0)) {
         s = decimal(2.0) / nQ;
     }
 
@@ -195,7 +174,7 @@ Matrix3x3 Quaternion::getMatrix() const {
 /// The t argument has to be such that 0 <= t <= 1. This method is static.
 Quaternion Quaternion::slerp(const Quaternion& quaternion1,
                              const Quaternion& quaternion2, decimal t) {
-    assert(t >= 0.0 && t <= 1.0);
+    assert(t >= decimal(0.0) && t <= decimal(1.0));
 
     decimal invert = 1.0;
 
@@ -203,7 +182,7 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1,
     decimal cosineTheta = quaternion1.dot(quaternion2);
 
     // Take care of the sign of cosineTheta
-    if (cosineTheta < 0.0) {
+    if (cosineTheta < decimal(0.0)) {
 			cosineTheta = -cosineTheta;
 			invert = -1.0;
     }
@@ -217,14 +196,14 @@ Quaternion Quaternion::slerp(const Quaternion& quaternion1,
     }
 
     // Compute the theta angle
-    decimal theta = acos(cosineTheta);
+    decimal theta = std::acos(cosineTheta);
 
     // Compute sin(theta)
-    decimal sineTheta = sin(theta);
+    decimal sineTheta = std::sin(theta);
 
     // Compute the two coefficients that are in the spherical linear interpolation formula
-    decimal coeff1 = sin((decimal(1.0)-t)*theta) / sineTheta;
-    decimal coeff2 = sin(t*theta) / sineTheta * invert;
+    decimal coeff1 = std::sin((decimal(1.0)-t)*theta) / sineTheta;
+    decimal coeff2 = std::sin(t*theta) / sineTheta * invert;
 
     // Compute and return the interpolated quaternion
     return quaternion1 * coeff1 + quaternion2 * coeff2;

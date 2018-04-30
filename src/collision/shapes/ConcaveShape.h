@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -42,8 +42,11 @@ class TriangleCallback {
 
     public:
 
+        /// Destructor
+        virtual ~TriangleCallback() = default;
+
         /// Report a triangle
-        virtual void testTriangle(const Vector3* trianglePoints)=0;
+        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId)=0;
 
 };
 
@@ -59,38 +62,29 @@ class ConcaveShape : public CollisionShape {
 
         // -------------------- Attributes -------------------- //
 
-        /// True if the smooth mesh collision algorithm is enabled
-        bool mIsSmoothMeshCollisionEnabled;
-
-        // Margin use for collision detection for each triangle
-        decimal mTriangleMargin;
-
         /// Raycast test type for the triangle (front, back, front-back)
         TriangleRaycastSide mRaycastTestType;
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        ConcaveShape(const ConcaveShape& shape);
-
-        /// Private assignment operator
-        ConcaveShape& operator=(const ConcaveShape& shape);
-
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const;
+        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveShape(CollisionShapeType type);
+        ConcaveShape(CollisionShapeName name);
 
         /// Destructor
-        virtual ~ConcaveShape();
+        virtual ~ConcaveShape() override = default;
 
-        /// Return the triangle margin
-        decimal getTriangleMargin() const;
+        /// Deleted copy-constructor
+        ConcaveShape(const ConcaveShape& shape) = delete;
+
+        /// Deleted assignment operator
+        ConcaveShape& operator=(const ConcaveShape& shape) = delete;
 
         /// Return the raycast test type (front, back, front-back)
         TriangleRaycastSide getRaycastTestType() const;
@@ -99,44 +93,28 @@ class ConcaveShape : public CollisionShape {
         void setRaycastTestType(TriangleRaycastSide testType);
 
         /// Return true if the collision shape is convex, false if it is concave
-        virtual bool isConvex() const;
+        virtual bool isConvex() const override;
+
+        /// Return true if the collision shape is a polyhedron
+        virtual bool isPolyhedron() const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const=0;
-
-        /// Return true if the smooth mesh collision is enabled
-        bool getIsSmoothMeshCollisionEnabled() const;
-
-        /// Enable/disable the smooth mesh collision algorithm
-        void setIsSmoothMeshCollisionEnabled(bool isEnabled);
 };
 
-// Return the triangle margin
-inline decimal ConcaveShape::getTriangleMargin() const {
-    return mTriangleMargin;
-}
-
-/// Return true if the collision shape is convex, false if it is concave
+// Return true if the collision shape is convex, false if it is concave
 inline bool ConcaveShape::isConvex() const {
     return false;
+}
+
+// Return true if the collision shape is a polyhedron
+inline bool ConcaveShape::isPolyhedron() const {
+    return true;
 }
 
 // Return true if a point is inside the collision shape
 inline bool ConcaveShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
     return false;
-}
-
-// Return true if the smooth mesh collision is enabled
-inline bool ConcaveShape::getIsSmoothMeshCollisionEnabled() const {
-    return mIsSmoothMeshCollisionEnabled;
-}
-
-// Enable/disable the smooth mesh collision algorithm
-/// Smooth mesh collision is used to avoid collisions against some internal edges
-/// of the triangle mesh. If it is enabled, collsions with the mesh will be smoother
-/// but collisions computation is a bit more expensive.
-inline void ConcaveShape::setIsSmoothMeshCollisionEnabled(bool isEnabled) {
-    mIsSmoothMeshCollisionEnabled = isEnabled;
 }
 
 // Return the raycast test type (front, back, front-back)

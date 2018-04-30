@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,6 +26,7 @@
 // Libraries
 #include "Body.h"
 #include "collision/shapes/CollisionShape.h"
+#include "utils/Logger.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -36,11 +37,59 @@ using namespace reactphysics3d;
  */
 Body::Body(bodyindex id)
      : mID(id), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
-       mIsSleeping(false), mSleepTime(0), mUserData(NULL) {
+       mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
+
+#ifdef IS_LOGGING_ACTIVE
+        mLogger = nullptr;
+#endif
 
 }
 
-// Destructor
-Body::~Body() {
+// Set whether or not the body is active
+/**
+ * @param isActive True if you want to activate the body
+ */
+void Body::setIsActive(bool isActive) {
+    mIsActive = isActive;
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isActive=" +
+             (mIsActive ? "true" : "false"));
 }
+
+// Set the variable to know whether or not the body is sleeping
+void Body::setIsSleeping(bool isSleeping) {
+
+    if (isSleeping) {
+        mSleepTime = decimal(0.0);
+    }
+    else {
+        if (mIsSleeping) {
+            mSleepTime = decimal(0.0);
+        }
+    }
+
+    if (mIsSleeping != isSleeping) {
+
+        mIsSleeping = isSleeping;
+
+        RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isSleeping=" +
+             (mIsSleeping ? "true" : "false"));
+    }
+}
+
+// Set whether or not the body is allowed to go to sleep
+/**
+ * @param isAllowedToSleep True if the body is allowed to sleep
+ */
+void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
+    mIsAllowedToSleep = isAllowedToSleep;
+
+    if (!mIsAllowedToSleep) setIsSleeping(false);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isAllowedToSleep=" +
+             (mIsAllowedToSleep ? "true" : "false"));
+}
+

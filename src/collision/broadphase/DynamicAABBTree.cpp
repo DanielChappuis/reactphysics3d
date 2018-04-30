@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,8 +26,8 @@
 // Libraries
 #include "DynamicAABBTree.h"
 #include "BroadPhaseAlgorithm.h"
-#include "memory/Stack.h"
-#include "engine/Profiler.h"
+#include "containers/Stack.h"
+#include "utils/Profiler.h"
 
 using namespace reactphysics3d;
 
@@ -35,7 +35,8 @@ using namespace reactphysics3d;
 const int TreeNode::NULL_TREE_NODE = -1;
 
 // Constructor
-DynamicAABBTree::DynamicAABBTree(decimal extraAABBGap) : mExtraAABBGap(extraAABBGap) {
+DynamicAABBTree::DynamicAABBTree(MemoryAllocator& allocator, decimal extraAABBGap)
+                : mAllocator(allocator), mExtraAABBGap(extraAABBGap) {
 
     init();
 }
@@ -44,7 +45,7 @@ DynamicAABBTree::DynamicAABBTree(decimal extraAABBGap) : mExtraAABBGap(extraAABB
 DynamicAABBTree::~DynamicAABBTree() {
 
     // Free the allocated memory for the nodes
-    free(mNodes);
+    mAllocator.release(mNodes, mNbAllocatedNodes * sizeof(TreeNode));
 }
 
 // Initialize the tree
@@ -55,9 +56,9 @@ void DynamicAABBTree::init() {
     mNbAllocatedNodes = 8;
 
     // Allocate memory for the nodes of the tree
-    mNodes = (TreeNode*) malloc(mNbAllocatedNodes * sizeof(TreeNode));
+    mNodes = static_cast<TreeNode*>(mAllocator.allocate(mNbAllocatedNodes * sizeof(TreeNode)));
     assert(mNodes);
-    memset(mNodes, 0, mNbAllocatedNodes * sizeof(TreeNode));
+    std::memset(mNodes, 0, mNbAllocatedNodes * sizeof(TreeNode));
 
     // Initialize the allocated nodes
     for (int i=0; i<mNbAllocatedNodes - 1; i++) {
@@ -73,7 +74,7 @@ void DynamicAABBTree::init() {
 void DynamicAABBTree::reset() {
 
     // Free the allocated memory for the nodes
-    free(mNodes);
+    mAllocator.release(mNodes, mNbAllocatedNodes * sizeof(TreeNode));
 
     // Initialize the tree
     init();
@@ -88,12 +89,13 @@ int DynamicAABBTree::allocateNode() {
         assert(mNbNodes == mNbAllocatedNodes);
 
         // Allocate more nodes in the tree
+        uint oldNbAllocatedNodes = mNbAllocatedNodes;
         mNbAllocatedNodes *= 2;
         TreeNode* oldNodes = mNodes;
-        mNodes = (TreeNode*) malloc(mNbAllocatedNodes * sizeof(TreeNode));
+        mNodes = static_cast<TreeNode*>(mAllocator.allocate(mNbAllocatedNodes * sizeof(TreeNode)));
         assert(mNodes);
         memcpy(mNodes, oldNodes, mNbNodes * sizeof(TreeNode));
-        free(oldNodes);
+        mAllocator.release(oldNodes, oldNbAllocatedNodes * sizeof(TreeNode));
 
         // Initialize the allocated nodes
         for (int i=mNbNodes; i<mNbAllocatedNodes - 1; i++) {
@@ -171,7 +173,7 @@ void DynamicAABBTree::removeObject(int nodeID) {
 /// (this can be useful if the shape AABB has become much smaller than the previous one for instance).
 bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector3& displacement, bool forceReinsert) {
 
-    PROFILE("DynamicAABBTree::updateObject()");
+    RP3D_PROFILE("DynamicAABBTree::updateObject()", mProfiler);
 
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
@@ -596,7 +598,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
                                                          DynamicAABBTreeOverlapCallback& callback) const {
 
     // Create a stack with the nodes to visit
-    Stack<int, 64> stack;
+    Stack<int, 64> stack(mAllocator);
     stack.push(mRootNodeID);
 
     // While there are still nodes to visit
@@ -633,11 +635,11 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 // Ray casting method
 void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &callback) const {
 
-    PROFILE("DynamicAABBTree::raycast()");
+    RP3D_PROFILE("DynamicAABBTree::raycast()", mProfiler);
 
     decimal maxFraction = ray.maxFraction;
 
-    Stack<int, 128> stack;
+    Stack<int, 128> stack(mAllocator);
     stack.push(mRootNodeID);
 
     // Walk through the tree from the root looking for proxy shapes

@@ -28,14 +28,10 @@
 #include "PerlinNoise.h"
 
 // Constructor
-HeightField::HeightField(const openglframework::Vector3 &position,
-                       reactphysics3d::CollisionWorld* world)
-           : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
+HeightField::HeightField(rp3d::CollisionWorld* world)
+           : mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
@@ -49,17 +45,12 @@ HeightField::HeightField(const openglframework::Vector3 &position,
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
     mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
-                                               mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
+                                               mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
-
-    mPreviousTransform = transform;
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    mBody = world->createCollisionBody(transform);
+    mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
     mProxyShape = mBody->addCollisionShape(mHeightFieldShape, rp3d::Transform::identity());
@@ -71,14 +62,10 @@ HeightField::HeightField(const openglframework::Vector3 &position,
 }
 
 // Constructor
-HeightField::HeightField(const openglframework::Vector3 &position, float mass,
-                       reactphysics3d::DynamicsWorld* dynamicsWorld)
-           : openglframework::Mesh(), mVBOVertices(GL_ARRAY_BUFFER),
+HeightField::HeightField(float mass, rp3d::DynamicsWorld* dynamicsWorld)
+           : mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Initialize the position where the sphere will be rendered
-    translateWorld(position);
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
@@ -92,15 +79,12 @@ HeightField::HeightField(const openglframework::Vector3 &position, float mass,
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
     mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
-                                                   mHeightData, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
+                                                   mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
 
-    // Initial position and orientation of the rigid body
-    rp3d::Vector3 initPosition(position.x, position.y, position.z);
-    rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-    rp3d::Transform transform(initPosition, initOrientation);
+    mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(transform);
+    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
     mProxyShape = body->addCollisionShape(mHeightFieldShape, rp3d::Transform::identity(), mass);
@@ -318,35 +302,4 @@ void HeightField::createVBOAndVAO() {
 
     // Unbind the VAO
     mVAO.unbind();
-}
-
-// Reset the transform
-void HeightField::resetTransform(const rp3d::Transform& transform) {
-
-    // Reset the transform
-    mBody->setTransform(transform);
-
-    mBody->setIsSleeping(false);
-
-    // Reset the velocity of the rigid body
-    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != NULL) {
-        rigidBody->setLinearVelocity(rp3d::Vector3(0, 0, 0));
-        rigidBody->setAngularVelocity(rp3d::Vector3(0, 0, 0));
-    }
-
-    updateTransform(1.0f);
-}
-
-// Set the scaling of the object
-void HeightField::setScaling(const openglframework::Vector3& scaling) {
-
-    // Scale the collision shape
-    mProxyShape->setLocalScaling(rp3d::Vector3(scaling.x, scaling.y, scaling.z));
-
-    // Scale the graphics object
-    mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0,
-                                              0, scaling.y, 0,0,
-                                              0, 0, scaling.z, 0,
-                                              0, 0, 0, 1.0f);
 }

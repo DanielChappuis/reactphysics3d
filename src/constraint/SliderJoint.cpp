@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,6 +25,7 @@
 
 // Libraries
 #include "SliderJoint.h"
+#include "engine/ConstraintSolver.h"
 
 using namespace reactphysics3d;
 
@@ -32,8 +33,8 @@ using namespace reactphysics3d;
 const decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
-SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
-            : Joint(jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
+SliderJoint::SliderJoint(uint id, const SliderJointInfo& jointInfo)
+            : Joint(id, jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
               mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
               mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
               mLowerLimit(jointInfo.minTranslationLimit),
@@ -41,9 +42,9 @@ SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
               mIsUpperLimitViolated(false), mMotorSpeed(jointInfo.motorSpeed),
               mMaxMotorForce(jointInfo.maxMotorForce){
 
-    assert(mUpperLimit >= 0.0);
-    assert(mLowerLimit <= 0.0);
-    assert(mMaxMotorForce >= 0.0);
+    assert(mUpperLimit >= decimal(0.0));
+    assert(mLowerLimit <= decimal(0.0));
+    assert(mMaxMotorForce >= decimal(0.0));
 
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mBody1->getTransform();
@@ -70,17 +71,12 @@ SliderJoint::SliderJoint(const SliderJointInfo& jointInfo)
     mSliderAxisBody1.normalize();
 }
 
-// Destructor
-SliderJoint::~SliderJoint() {
-
-}
-
 // Initialize before solving the constraint
 void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
     // Initialize the bodies index in the veloc ity array
-    mIndexBody1 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody1)->second;
-    mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
+    mIndexBody1 = mBody1->mArrayIndex;
+    mIndexBody2 = mBody2->mArrayIndex;
 
     // Get the bodies positions and orientations
     const Vector3& x1 = mBody1->mCenterOfMassWorld;
@@ -146,14 +142,14 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
     mInverseMassMatrixTranslationConstraint.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
     }
 
     // Compute the bias "b" of the translation constraint
     mBTranslation.setToZero();
     decimal biasFactor = (BETA / constraintSolverData.timeStep);
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mBTranslation.x = u.dot(mN1);
         mBTranslation.y = u.dot(mN2);
         mBTranslation *= biasFactor;
@@ -162,13 +158,13 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotationConstraint = mI1 + mI2;
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
     }
 
     // Compute the bias "b" of the rotation constraint
     mBRotation.setToZero();
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         const Quaternion qError = orientationBody2 * mInitOrientationDifferenceInv * orientationBody1.getInverse();
         mBRotation = biasFactor * decimal(2.0) * qError.getVectorV();
     }
@@ -185,13 +181,13 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
         // Compute the bias "b" of the lower limit constraint
         mBLowerLimit = 0.0;
-        if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mBLowerLimit = biasFactor * lowerLimitError;
         }
 
         // Compute the bias "b" of the upper limit constraint
         mBUpperLimit = 0.0;
-        if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mBUpperLimit = biasFactor * upperLimitError;
         }
     }
@@ -438,7 +434,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // If the error position correction technique is not the non-linear-gauss-seidel, we do
     // do not execute this method
-    if (mPositionCorrectionTechnique != NON_LINEAR_GAUSS_SEIDEL) return;
+    if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies positions and orientations
     Vector3& x1 = constraintSolverData.positions[mIndexBody1];
@@ -502,7 +498,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
     mInverseMassMatrixTranslationConstraint.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
     }
 
@@ -545,7 +541,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotationConstraint = mI1 + mI2;
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
     }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,51 +25,68 @@
 
 // Libraries
 #include "CollisionShape.h"
-#include "engine/Profiler.h"
+#include "utils/Profiler.h"
 #include "body/CollisionBody.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeType type) : mType(type), mScaling(1.0, 1.0, 1.0) {
-    
+CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type)
+               : mType(type), mName(name), mId(0) {
+
+#ifdef IS_PROFILING_ACTIVE
+        mProfiler = nullptr;
+#endif
+
 }
 
-// Destructor
-CollisionShape::~CollisionShape() {
-
-}
-
-// Compute the world-space AABB of the collision shape given a transform
+// Compute the world-space AABB of the collision shape given a transform from shape
+// local-space to world-space. The technique is described in the book Real-Time Collision
+// Detection by Christer Ericson.
 /**
  * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
  *                  computed in world-space coordinates
- * @param transform Transform used to compute the AABB of the collision shape
+ * @param transform Transform from shape local-space to world-space used to compute
+ *                  the AABB of the collision shape
  */
 void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
-    PROFILE("CollisionShape::computeAABB()");
+    RP3D_PROFILE("CollisionShape::computeAABB()", mProfiler);
 
     // Get the local bounds in x,y and z direction
     Vector3 minBounds;
     Vector3 maxBounds;
     getLocalBounds(minBounds, maxBounds);
 
-    // Rotate the local bounds according to the orientation of the body
-    Matrix3x3 worldAxis = transform.getOrientation().getMatrix().getAbsoluteMatrix();
-    Vector3 worldMinBounds(worldAxis.getColumn(0).dot(minBounds),
-                           worldAxis.getColumn(1).dot(minBounds),
-                           worldAxis.getColumn(2).dot(minBounds));
-    Vector3 worldMaxBounds(worldAxis.getColumn(0).dot(maxBounds),
-                           worldAxis.getColumn(1).dot(maxBounds),
-                           worldAxis.getColumn(2).dot(maxBounds));
+    const Vector3 translation = transform.getPosition();
+    Matrix3x3 matrix = transform.getOrientation().getMatrix();
+    Vector3 resultMin;
+    Vector3 resultMax;
 
-    // Compute the minimum and maximum coordinates of the rotated extents
-    Vector3 minCoordinates = transform.getPosition() + worldMinBounds;
-    Vector3 maxCoordinates = transform.getPosition() + worldMaxBounds;
+    // For each of the three axis
+    for (int i=0; i<3; i++) {
+
+        // Add translation component
+        resultMin[i] = translation[i];
+        resultMax[i] = translation[i];
+
+        for (int j=0; j<3; j++) {
+            decimal e = matrix[i][j] * minBounds[j];
+            decimal f = matrix[i][j] * maxBounds[j];
+
+            if (e < f) {
+                resultMin[i] += e;
+                resultMax[i] += f;
+            }
+            else {
+                resultMin[i] += f;
+                resultMax[i] += e;
+            }
+        }
+    }
 
     // Update the AABB with the new minimum and maximum coordinates
-    aabb.setMin(minCoordinates);
-    aabb.setMax(maxCoordinates);
+    aabb.setMin(resultMin);
+    aabb.setMax(resultMax);
 }

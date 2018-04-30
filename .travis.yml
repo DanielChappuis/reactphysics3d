@@ -1,7 +1,12 @@
 language: cpp
+
+install:
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install valgrind; fi
+
 matrix:
 
-  # Linux / GCC
+  # ----- Linux / GCC -----
   include:
     - os: linux
       addons:
@@ -9,50 +14,226 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-4.9
+            - g++-7
       env:
-        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
 
-    # OS X / GCC
-    - os: osx
-      osx_image: xcode8
-      env:
-       - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
-
-    # Linux / Clang
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
           packages:
-            - clang-3.6
+            - g++-7
       env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
 
-    # OS X / Clang
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" LOGGER="True" Profiler="True"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False" LOGGER="True" Profiler="True"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - lcov
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False" CODE_COVERAGE="True"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - valgrind
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" VALGRIND="True"
+
+    # ----- OS X / GCC -----
     - os: osx
       osx_image: xcode8
+      env:
+       - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+    - os: osx
+      osx_image: xcode8
+      env:
+       - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+    - os: osx
+      osx_image: xcode8
+      env:
+       - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+    - os: osx
+      osx_image: xcode8
+      env:
+       - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
+    - os: osx
+      osx_image: xcode8
+      env:
+       - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="True" LOGGER="True" PROFILER="True"
+    - os: osx
+      osx_image: xcode8
+      env:
+       - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="True" LOGGER="True" PROFILER="True"
+
+    # ----- Linux / Clang -----
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True" LOGGER="True" PROFILER="True"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
+            - clang-3.8
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Release" DOUBLE_PRECISION="True" LOGGER="True" PROFILER="True"
+
+    # ----- OS X / Clang -----
+    - os: osx
+      osx_image: xcode8
+      env:
+        - BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+
+    - os: osx
+      osx_image: xcode8
+      env:
+        - BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+
+    - os: osx
+      osx_image: xcode8
+      env:
+        - BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+
+    - os: osx
+      osx_image: xcode8
+      env:
+        - BUILD_TYPE="Release" DOUBLE_PRECISION="True"
+
+    - os: osx
+      osx_image: xcode8
+      env:
+        - BUILD_TYPE="Debug" DOUBLE_PRECISION="True" LOGGER="True" PROFILER="True"
+
+    - os: osx
+      osx_image: xcode8
+      env:
+        - BUILD_TYPE="Release" DOUBLE_PRECISION="True" LOGGER="True" PROFILER="True"
 
 before_install:
   - eval "${MATRIX_EVAL}"
+
 branches:
   only:
     - master
     - develop
+
 script:
-  - mkdir build_directory
-  - cd build_directory
-  # Build in debug mode with double precision
-  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=True -DCOMPILE_TESTS=True ../
-  - make && make test ARGS="-V"
-  # Build in debug mode with single precision
-  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
-  - make && make test ARGS="-V"
-  # Build in release mode with double precision
-  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=True -DCOMPILE_TESTS=True ../
-  - make && make test ARGS="-V"
-  # Build in release mode with single precision
-  - cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release —DDOUBLE_PRECISION_ENABLED=False -DCOMPILE_TESTS=True ../
-  - make && make test ARGS="-V"
+    - mkdir build_directory
+    - cd build_directory
+    - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} —DRP3D_DOUBLE_PRECISION_ENABLED=${DOUBLE_PRECISION} -DRP3D_COMPILE_TESTS=True -DRP3D_LOGS_ENABLE=${LOGGER} -DRP3D_PROFILING_ENABLED=${PROFILER} -DRP3D_CODE_COVERAGE_ENABLED=${CODE_COVERAGE} ../
+    - make && make test ARGS="-V"
+    - if [ "${VALGRIND}" == "True" ]; then
+        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 test/tests;
+      fi
+
+after_success:
+ 
+ # Generate code coverage report
+ - if [ "${CODE_COVERAGE}" == "True" ]; then
+     bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports";
+   fi

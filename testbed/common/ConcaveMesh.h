@@ -32,7 +32,7 @@
 #include "PhysicsObject.h"
 
 // Class ConcaveMesh
-class ConcaveMesh : public openglframework::Mesh, public PhysicsObject {
+class ConcaveMesh : public PhysicsObject {
 
     private :
 
@@ -76,28 +76,20 @@ class ConcaveMesh : public openglframework::Mesh, public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMesh(const openglframework::Vector3& position,
-                   rp3d::CollisionWorld* world, const std::string& meshPath);
+        ConcaveMesh(rp3d::CollisionWorld* world, const std::string& meshPath);
 
         /// Constructor
-        ConcaveMesh(const openglframework::Vector3& position, float mass,
-                   rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
+        ConcaveMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
 
         /// Destructor
         ~ConcaveMesh();
 
         /// Render the mesh at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix);
-
-        /// Set the position of the box
-        void resetTransform(const rp3d::Transform& transform);
+                    const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
-        virtual void updateTransform(float interpolationFactor);
-
-        /// Set the scaling of the object
-        void setScaling(const openglframework::Vector3& scaling);
+        virtual void updateTransform(float interpolationFactor) override;
 };
 
 // Update the transform matrix of the object

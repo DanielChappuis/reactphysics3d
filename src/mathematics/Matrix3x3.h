@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -34,7 +34,6 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-
 // Class Matrix3x3
 /**
  * This class represents a 3x3 matrix.
@@ -63,7 +62,7 @@ class Matrix3x3 {
                   decimal c1, decimal c2, decimal c3);
 
         /// Destructor
-        virtual ~Matrix3x3();
+        ~Matrix3x3() = default;
 
         /// Copy-constructor
         Matrix3x3(const Matrix3x3& matrix);
@@ -153,7 +152,36 @@ class Matrix3x3 {
 
         /// Overloaded operator to read/write element of the matrix.
         Vector3& operator[](int row);
+
+        /// Return the string representation
+        std::string to_string() const;
 };
+
+// Constructor of the class Matrix3x3
+inline Matrix3x3::Matrix3x3() {
+    // Initialize all values in the matrix to zero
+    setAllValues(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+}
+
+// Constructor
+inline Matrix3x3::Matrix3x3(decimal value) {
+    setAllValues(value, value, value, value, value, value, value, value, value);
+}
+
+// Constructor with arguments
+inline Matrix3x3::Matrix3x3(decimal a1, decimal a2, decimal a3,
+                     decimal b1, decimal b2, decimal b3,
+                     decimal c1, decimal c2, decimal c3) {
+    // Initialize the matrix with the values
+    setAllValues(a1, a2, a3, b1, b2, b3, c1, c2, c3);
+}
+
+// Copy-constructor
+inline Matrix3x3::Matrix3x3(const Matrix3x3& matrix) {
+    setAllValues(matrix.mRows[0][0], matrix.mRows[0][1], matrix.mRows[0][2],
+                 matrix.mRows[1][0], matrix.mRows[1][1], matrix.mRows[1][2],
+                 matrix.mRows[2][0], matrix.mRows[2][1], matrix.mRows[2][2]);
+}
 
 // Method to set all the values in the matrix
 inline void Matrix3x3::setAllValues(decimal a1, decimal a2, decimal a3,
@@ -233,9 +261,9 @@ inline Matrix3x3 Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(const Vect
 
 // Return the matrix with absolute values
 inline Matrix3x3 Matrix3x3::getAbsoluteMatrix() const {
-    return Matrix3x3(fabs(mRows[0][0]), fabs(mRows[0][1]), fabs(mRows[0][2]),
-                     fabs(mRows[1][0]), fabs(mRows[1][1]), fabs(mRows[1][2]),
-                     fabs(mRows[2][0]), fabs(mRows[2][1]), fabs(mRows[2][2]));
+    return Matrix3x3(std::fabs(mRows[0][0]), std::fabs(mRows[0][1]), std::fabs(mRows[0][2]),
+                     std::fabs(mRows[1][0]), std::fabs(mRows[1][1]), std::fabs(mRows[1][2]),
+                     std::fabs(mRows[2][0]), std::fabs(mRows[2][1]), std::fabs(mRows[2][2]));
 }
 
 // Overloaded operator for addition
@@ -364,6 +392,13 @@ inline const Vector3& Matrix3x3::operator[](int row) const {
 /// matrix[row][col].
 inline Vector3& Matrix3x3::operator[](int row) {
     return mRows[row];
+}
+
+// Get the string representation
+inline std::string Matrix3x3::to_string() const {
+    return "Matrix3x3(" + std::to_string(mRows[0][0]) + "," + std::to_string(mRows[0][1]) + "," + std::to_string(mRows[0][2]) + "," +
+           std::to_string(mRows[1][0]) + "," + std::to_string(mRows[1][1]) + "," + std::to_string(mRows[1][2]) + "," +
+           std::to_string(mRows[2][0]) + "," + std::to_string(mRows[2][1]) + "," + std::to_string(mRows[2][2]) + ")";
 }
 
 }

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,6 +27,7 @@
 #include "CapsuleShape.h"
 #include "collision/ProxyShape.h"
 #include "configuration.h"
+#include "collision/RaycastInfo.h"
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -37,14 +38,9 @@ using namespace reactphysics3d;
  * @param height The height of the capsule (in meters)
  */
 CapsuleShape::CapsuleShape(decimal radius, decimal height)
-            : ConvexShape(CAPSULE, radius), mHalfHeight(height * decimal(0.5)) {
+            : ConvexShape(CollisionShapeName::CAPSULE, CollisionShapeType::CAPSULE, radius), mHalfHeight(height * decimal(0.5)) {
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
-}
-
-// Destructor
-CapsuleShape::~CapsuleShape() {
-
 }
 
 // Return the local inertia tensor of the capsule
@@ -90,7 +86,7 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
 }
 
 // Raycast method with feedback information
-bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape) const {
+bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
 
     const Vector3 n = ray.point2 - ray.point1;
 

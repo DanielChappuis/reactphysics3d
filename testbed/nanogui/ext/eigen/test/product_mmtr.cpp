@@ -13,7 +13,8 @@
     ref2 = ref1 = DEST;                               \
     DEST.template triangularView<TRI>() OP;           \
     ref1 OP;                                          \
-    ref2.template triangularView<TRI>() = ref1;       \
+    ref2.template triangularView<TRI>()               \
+      = ref1.template triangularView<TRI>();          \
     VERIFY_IS_APPROX(DEST,ref2);                      \
   }
 
@@ -24,14 +25,16 @@ template<typename Scalar> void mmtr(int size)
 
   DenseIndex othersize = internal::random<DenseIndex>(1,200);
   
-  MatrixColMaj matc(size, size);
-  MatrixRowMaj matr(size, size);
+  MatrixColMaj matc = MatrixColMaj::Zero(size, size);
+  MatrixRowMaj matr = MatrixRowMaj::Zero(size, size);
   MatrixColMaj ref1(size, size), ref2(size, size);
   
   MatrixColMaj soc(size,othersize); soc.setRandom();
   MatrixColMaj osc(othersize,size); osc.setRandom();
   MatrixRowMaj sor(size,othersize); sor.setRandom();
   MatrixRowMaj osr(othersize,size); osr.setRandom();
+  MatrixColMaj sqc(size,size); sqc.setRandom();
+  MatrixRowMaj sqr(size,size); sqr.setRandom();
   
   Scalar s = internal::random<Scalar>();
   
@@ -49,6 +52,29 @@ template<typename Scalar> void mmtr(int size)
   CHECK_MMTR(matc, Upper, -= s*(osc.transpose()*osc.conjugate()));
   CHECK_MMTR(matr, Lower, -= s*soc*soc.adjoint());
   CHECK_MMTR(matr, Upper, -= soc*(s*soc.adjoint()));
+  
+  CHECK_MMTR(matc, Lower, -= s*sqr*sqc.template triangularView<Upper>());
+  CHECK_MMTR(matc, Upper, = s*sqc*sqr.template triangularView<Upper>());
+  CHECK_MMTR(matc, Lower, += s*sqr*sqc.template triangularView<Lower>());
+  CHECK_MMTR(matc, Upper, = s*sqc*sqc.template triangularView<Lower>());
+  
+  CHECK_MMTR(matc, Lower, = (s*sqr).template triangularView<Upper>()*sqc);
+  CHECK_MMTR(matc, Upper, -= (s*sqc).template triangularView<Upper>()*sqc);
+  CHECK_MMTR(matc, Lower, = (s*sqr).template triangularView<Lower>()*sqc);
+  CHECK_MMTR(matc, Upper, += (s*sqc).template triangularView<Lower>()*sqc);
+
+  // check aliasing
+  ref2 = ref1 = matc;
+  ref1 = sqc.adjoint() * matc * sqc;
+  ref2.template triangularView<Upper>() = ref1.template triangularView<Upper>();
+  matc.template triangularView<Upper>() = sqc.adjoint() * matc * sqc;
+  VERIFY_IS_APPROX(matc, ref2);
+
+  ref2 = ref1 = matc;
+  ref1 = sqc * matc * sqc.adjoint();
+  ref2.template triangularView<Lower>() = ref1.template triangularView<Lower>();
+  matc.template triangularView<Lower>() = sqc * matc * sqc.adjoint();
+  VERIFY_IS_APPROX(matc, ref2);
 }
 
 void test_product_mmtr()

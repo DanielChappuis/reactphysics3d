@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -46,21 +46,25 @@
 #include "collision/shapes/CollisionShape.h"
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/SphereShape.h"
-#include "collision/shapes/ConeShape.h"
-#include "collision/shapes/CylinderShape.h"
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexMeshShape.h"
 #include "collision/shapes/ConcaveMeshShape.h"
 #include "collision/shapes/HeightFieldShape.h"
+#include "collision/PolyhedronMesh.h"
 #include "collision/shapes/AABB.h"
 #include "collision/ProxyShape.h"
 #include "collision/RaycastInfo.h"
 #include "collision/TriangleMesh.h"
+#include "collision/PolyhedronMesh.h"
 #include "collision/TriangleVertexArray.h"
+#include "collision/PolygonVertexArray.h"
+#include "collision/CollisionCallback.h"
+#include "collision/OverlapCallback.h"
 #include "constraint/BallAndSocketJoint.h"
 #include "constraint/SliderJoint.h"
 #include "constraint/HingeJoint.h"
 #include "constraint/FixedJoint.h"
+#include "containers/List.h"
 
 /// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;

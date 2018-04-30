@@ -3,7 +3,7 @@
 
     The text box widget was contributed by Christian Schueller.
 
-    NanoGUI was developed by Wenzel Jakob <wenzel@inf.ethz.ch>.
+    NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
     by Mikko Mononen.
 
@@ -13,6 +13,7 @@
 
 #include <nanogui/theme.h>
 #include <nanogui/opengl.h>
+#include <nanogui/entypo.h>
 #include <nanogui_resources.h>
 
 NAMESPACE_BEGIN(nanogui)
@@ -21,10 +22,19 @@ Theme::Theme(NVGcontext *ctx) {
     mStandardFontSize                 = 16;
     mButtonFontSize                   = 20;
     mTextBoxFontSize                  = 20;
+    mIconScale                        = 0.77f;
+
     mWindowCornerRadius               = 2;
     mWindowHeaderHeight               = 30;
     mWindowDropShadowSize             = 10;
     mButtonCornerRadius               = 2;
+    mTabBorderWidth                   = 0.75f;
+    mTabInnerMargin                   = 5;
+    mTabMinButtonWidth                = 20;
+    mTabMaxButtonWidth                = 160;
+    mTabControlWidth                  = 20;
+    mTabButtonHorizontalPadding       = 10;
+    mTabButtonVerticalPadding         = 2;
 
     mDropShadow                       = Color(0, 128);
     mTransparent                      = Color(0, 0);
@@ -56,6 +66,19 @@ Theme::Theme(NVGcontext *ctx) {
 
     mWindowPopup                      = Color(50, 255);
     mWindowPopupTransparent           = Color(50, 0);
+
+    mCheckBoxIcon                     = ENTYPO_ICON_CHECK;
+    mMessageInformationIcon           = ENTYPO_ICON_INFO_WITH_CIRCLE;
+    mMessageQuestionIcon              = ENTYPO_ICON_HELP_WITH_CIRCLE;
+    mMessageWarningIcon               = ENTYPO_ICON_WARNING;
+    mMessageAltButtonIcon             = ENTYPO_ICON_CIRCLE_WITH_CROSS;
+    mMessagePrimaryButtonIcon         = ENTYPO_ICON_CHECK;
+    mPopupChevronRightIcon            = ENTYPO_ICON_CHEVRON_RIGHT;
+    mPopupChevronLeftIcon             = ENTYPO_ICON_CHEVRON_LEFT;
+    mTabHeaderLeftIcon                = ENTYPO_ICON_ARROW_BOLD_LEFT;
+    mTabHeaderRightIcon               = ENTYPO_ICON_ARROW_BOLD_RIGHT;
+    mTextBoxUpIcon                    = ENTYPO_ICON_CHEVRON_UP;
+    mTextBoxDownIcon                  = ENTYPO_ICON_CHEVRON_DOWN;
 
     mFontNormal = nvgCreateFontMem(ctx, "sans", roboto_regular_ttf,
                                    roboto_regular_ttf_size, 0);

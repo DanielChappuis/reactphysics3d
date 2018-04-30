@@ -34,8 +34,6 @@
 #include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
-#include "Cone.h"
-#include "Cylinder.h"
 #include "Capsule.h"
 #include "Line.h"
 #include "ConvexMesh.h"
@@ -59,7 +57,7 @@ const float CAPSULE_HEIGHT = 5.0f;
 const float DUMBBELL_HEIGHT = 5.0f;
 const int NB_RAYS = 100;
 const float RAY_LENGTH = 30.0f;
-const int NB_BODIES = 9;
+const int NB_BODIES = 7;
 
 // Raycast manager
 class RaycastManager : public rp3d::RaycastCallback {
@@ -68,9 +66,6 @@ class RaycastManager : public rp3d::RaycastCallback {
 
         /// All the visual contact points
         std::vector<ContactPoint> mHitPoints;
-
-        /// All the normals at hit points
-        std::vector<Line*> mNormals;
 
         /// Contact point mesh folder path
         std::string mMeshFolderPath;
@@ -83,16 +78,14 @@ class RaycastManager : public rp3d::RaycastCallback {
 
         }
 
-        virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) {
+        virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) override {
+
+			rp3d::Vector3 n = raycastInfo.worldNormal;
+			openglframework::Vector3 normal(n.x, n.y, n.z);
+
             rp3d::Vector3 hitPos = raycastInfo.worldPoint;
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
-            mHitPoints.push_back(ContactPoint(position));
-
-            // Create a line to display the normal at hit point
-            rp3d::Vector3 n = raycastInfo.worldNormal;
-            openglframework::Vector3 normal(n.x, n.y, n.z);
-            Line* normalLine = new Line(position, position + normal);
-            mNormals.push_back(normalLine);
+            mHitPoints.push_back(ContactPoint(position, normal, openglframework::Color::red()));
 
             return raycastInfo.hitFraction;
         }
@@ -100,13 +93,6 @@ class RaycastManager : public rp3d::RaycastCallback {
         void resetPoints() {
 
             mHitPoints.clear();
-
-            // Destroy all the normals
-            for (std::vector<Line*>::iterator it = mNormals.begin();
-                 it != mNormals.end(); ++it) {
-                delete (*it);
-            }
-            mNormals.clear();
         }
 
         std::vector<ContactPoint> getHitPoints() const {
@@ -136,21 +122,14 @@ class RaycastScene : public SceneDemo {
         /// True if the hit points normals are displayed
         bool mAreNormalsDisplayed;
 
-        /// Raycast manager
-
         /// All objects on the scene
         Box* mBox;
         Sphere* mSphere;
-        Cone* mCone;
-        Cylinder* mCylinder;
         Capsule* mCapsule;
         ConvexMesh* mConvexMesh;
         Dumbbell* mDumbbell;
         ConcaveMesh* mConcaveMesh;
         HeightField* mHeightField;
-
-        /// Collision world used for the physics simulation
-        rp3d::CollisionWorld* mCollisionWorld;
 
         /// All the points to render the lines
         std::vector<openglframework::Vector3> mLinePoints;
@@ -165,7 +144,7 @@ class RaycastScene : public SceneDemo {
         void createLines();
 
         // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO(openglframework::Shader& shader);
+        void createVBOAndVAO();
 
 
     public:
@@ -173,24 +152,20 @@ class RaycastScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastScene(const std::string& name);
+        RaycastScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
-        virtual ~RaycastScene();
-
-        /// Update the physics world (take a simulation step)
-        /// Can be called several times per frame
-        virtual void updatePhysics();
+        virtual ~RaycastScene() override;
 
         /// Take a step for the simulation
-        virtual void update();
+        virtual void update() override;
 
         /// Render the scene in a single pass
         virtual void renderSinglePass(openglframework::Shader& shader,
-                                      const openglframework::Matrix4& worldToCameraMatrix);
+                                      const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Reset the scene
-        virtual void reset();
+        virtual void reset() override;
 
         /// Change the body to raycast
         void changeBody();
@@ -199,16 +174,16 @@ class RaycastScene : public SceneDemo {
         void showHideNormals();
 
         /// Called when a keyboard event occurs
-        virtual bool keyboardEvent(int key, int scancode, int action, int mods);
+        virtual bool keyboardEvent(int key, int scancode, int action, int mods) override;
 
         /// Enabled/Disable the shadow mapping
-        void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
+        virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
 
         /// Display/Hide the contact points
-        void virtual setIsContactPointsDisplayed(bool display);
+        virtual void setIsContactPointsDisplayed(bool display) override;
 
         /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() const;
+        virtual std::vector<ContactPoint> getContactPoints() override;
 };
 
 // Display or not the surface normals at hit points
@@ -227,7 +202,7 @@ inline void RaycastScene::setIsContactPointsDisplayed(bool display) {
 }
 
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> RaycastScene::getContactPoints() const {
+inline std::vector<ContactPoint> RaycastScene::getContactPoints() {
     return mRaycastManager.getHitPoints();
 }
 

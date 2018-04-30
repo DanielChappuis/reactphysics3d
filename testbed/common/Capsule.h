@@ -32,7 +32,7 @@
 #include "PhysicsObject.h"
 
 // Class Sphere
-class Capsule : public openglframework::Mesh, public PhysicsObject {
+class Capsule : public PhysicsObject {
 
 	private :
 
@@ -82,29 +82,20 @@ class Capsule : public openglframework::Mesh, public PhysicsObject {
 		// -------------------- Methods -------------------- //
 
 		/// Constructor
-		Capsule(float radius, float height, const openglframework::Vector3& position,
-				reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath);
+        Capsule(float radius, float height, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
 
 		/// Constructor
-		Capsule(float radius, float height, const openglframework::Vector3& position,
-				float mass, reactphysics3d::DynamicsWorld* dynamicsWorld,
+        Capsule(float radius, float height, float mass, rp3d::DynamicsWorld* dynamicsWorld,
 				const std::string& meshFolderPath);
 
 		/// Destructor
 		~Capsule();
 
 		/// Render the sphere at the correct position and with the correct orientation
-		void render(openglframework::Shader& shader,
-				const openglframework::Matrix4& worldToCameraMatrix);
-
-		/// Set the position of the box
-		void resetTransform(const rp3d::Transform& transform);
+        virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
-        virtual void updateTransform(float interpolationFactor);
-
-        /// Set the scaling of the object
-        void setScaling(const openglframework::Vector3& scaling);
+        virtual void updateTransform(float interpolationFactor) override;
 };
 
 // Update the transform matrix of the object

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,30 +25,26 @@
 
 // Libraries
 #include "Island.h"
+#include "memory/MemoryManager.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints,
-               MemoryAllocator& memoryAllocator)
-       : mBodies(NULL), mContactManifolds(NULL), mJoints(NULL), mNbBodies(0),
-         mNbContactManifolds(0), mNbJoints(0), mMemoryAllocator(memoryAllocator) {
+Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, uint nbMaxJoints, MemoryManager& memoryManager)
+       : mBodies(nullptr), mContactManifolds(nullptr), mJoints(nullptr), mNbBodies(0),
+         mNbContactManifolds(0), mNbJoints(0) {
 
-    // Allocate memory for the arrays
-    mNbAllocatedBytesBodies = sizeof(RigidBody*) * nbMaxBodies;
-    mBodies = (RigidBody**) mMemoryAllocator.allocate(mNbAllocatedBytesBodies);
-    mNbAllocatedBytesContactManifolds = sizeof(ContactManifold*) * nbMaxContactManifolds;
-    mContactManifolds = (ContactManifold**) mMemoryAllocator.allocate(
-                                                                mNbAllocatedBytesContactManifolds);
-    mNbAllocatedBytesJoints = sizeof(Joint*) * nbMaxJoints;
-    mJoints = (Joint**) mMemoryAllocator.allocate(mNbAllocatedBytesJoints);
+    // Allocate memory for the arrays on the single frame allocator
+    mBodies = static_cast<RigidBody**>(memoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                              sizeof(RigidBody*) * nbMaxBodies));
+    mContactManifolds = static_cast<ContactManifold**>(memoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                                              sizeof(ContactManifold*) * nbMaxContactManifolds));
+    mJoints = static_cast<Joint**>(memoryManager.allocate(MemoryManager::AllocationType::Frame,
+                                                          sizeof(Joint*) * nbMaxJoints));
 }
 
 // Destructor
 Island::~Island() {
-
-    // Release the memory of the arrays
-    mMemoryAllocator.release(mBodies, mNbAllocatedBytesBodies);
-    mMemoryAllocator.release(mContactManifolds, mNbAllocatedBytesContactManifolds);
-    mMemoryAllocator.release(mJoints, mNbAllocatedBytesJoints);
+    // This destructor is never called because memory is allocated on the
+    // single frame allocator
 }

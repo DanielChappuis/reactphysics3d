@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,12 +29,13 @@
 // Libraries
 #include "configuration.h"
 #include "mathematics/mathematics.h"
-#include "constraint/Joint.h"
-#include "Island.h"
-#include <map>
-#include <set>
 
 namespace reactphysics3d {
+
+// Declarations
+class Joint;
+class Island;
+class Profiler;
 
 // Structure ConstraintSolverData
 /**
@@ -60,18 +61,12 @@ struct ConstraintSolverData {
         /// Reference to the bodies orientations
         Quaternion* orientations;
 
-        /// Reference to the map that associates rigid body to their index
-        /// in the constrained velocities array
-        const std::map<RigidBody*, uint>& mapBodyToConstrainedVelocityIndex;
-
         /// True if warm starting of the solver is active
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData(const std::map<RigidBody*, uint>& refMapBodyToConstrainedVelocityIndex)
-                           :linearVelocities(NULL), angularVelocities(NULL),
-                            positions(NULL), orientations(NULL),
-                            mapBodyToConstrainedVelocityIndex(refMapBodyToConstrainedVelocityIndex){
+        ConstraintSolverData() :linearVelocities(nullptr), angularVelocities(nullptr),
+                                positions(nullptr), orientations(nullptr) {
 
         }
 
@@ -152,10 +147,6 @@ class ConstraintSolver {
 
         // -------------------- Attributes -------------------- //
 
-        /// Reference to the map that associates rigid body to their index in
-        /// the constrained velocities array
-        const std::map<RigidBody*, uint>& mMapBodyToConstrainedVelocityIndex;
-
         /// Current time step
         decimal mTimeStep;
 
@@ -165,15 +156,21 @@ class ConstraintSolver {
         /// Constraint solver data used to initialize and solve the constraints
         ConstraintSolverData mConstraintSolverData;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+#endif
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver(const std::map<RigidBody*, uint>& mapBodyToVelocityIndex);
+        ConstraintSolver();
 
         /// Destructor
-        ~ConstraintSolver();
+        ~ConstraintSolver() = default;
 
         /// Initialize the constraint solver for a given island
         void initializeForIsland(decimal dt, Island* island);
@@ -197,13 +194,23 @@ class ConstraintSolver {
         /// Set the constrained positions/orientations arrays
         void setConstrainedPositionsArrays(Vector3* constrainedPositions,
                                            Quaternion* constrainedOrientations);
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
 // Set the constrained velocities arrays
 inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
                                                             Vector3* constrainedAngularVelocities) {
-    assert(constrainedLinearVelocities != NULL);
-    assert(constrainedAngularVelocities != NULL);
+
+    assert(constrainedLinearVelocities != nullptr);
+    assert(constrainedAngularVelocities != nullptr);
+
     mConstraintSolverData.linearVelocities = constrainedLinearVelocities;
     mConstraintSolverData.angularVelocities = constrainedAngularVelocities;
 }
@@ -211,11 +218,22 @@ inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constraine
 // Set the constrained positions/orientations arrays
 inline void ConstraintSolver::setConstrainedPositionsArrays(Vector3* constrainedPositions,
                                                            Quaternion* constrainedOrientations) {
-    assert(constrainedPositions != NULL);
-    assert(constrainedOrientations != NULL);
+
+    assert(constrainedPositions != nullptr);
+    assert(constrainedOrientations != nullptr);
+
     mConstraintSolverData.positions = constrainedPositions;
     mConstraintSolverData.orientations = constrainedOrientations;
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void ConstraintSolver::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

@@ -1,10 +1,12 @@
 [![Travis Build Status](https://travis-ci.org/DanielChappuis/reactphysics3d.svg?branch=master)](https://travis-ci.org/DanielChappuis/reactphysics3d)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ae24e998e304e4da78ec848eade9e3a)](https://www.codacy.com/app/chappuis.daniel/reactphysics3d?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DanielChappuis/reactphysics3d&amp;utm_campaign=Badge_Grade)
+[![codecov.io](https://codecov.io/github/DanielChappuis/reactphysics3d/coverage.svg?branch=master)](https://codecov.io/github/DanielChappuis/reactphysics3d?branch=master)
 
 ## ReactPhysics3D
 
 ReactPhysics3D is an open source C++ physics engine library that can be used in 3D simulations and games.
 
-Website : [http://www.reactphysics3d.com](http://www.reactphysics3d.com)
+Website : [https://www.reactphysics3d.com](https://www.reactphysics3d.com)
 
 Author : Daniel Chappuis
 
@@ -14,23 +16,24 @@ Author : Daniel Chappuis
 
 ReactPhysics3D has the following features :
 
-- Rigid body dynamics
-- Discrete collision detection
-- Collision shapes (Sphere, Box, Cone, Cylinder, Capsule, Convex Mesh, static Concave Mesh, Height Field)
-- Multiple collision shapes per body
-- Broadphase collision detection (Dynamic AABB tree)
-- Narrowphase collision detection (GJK/EPA)
-- Collision response and friction (Sequential Impulses Solver)
-- Joints (Ball and Socket, Hinge, Slider, Fixed)
-- Collision filtering with categories
-- Ray casting
-- Sleeping technique for inactive bodies
-- Integrated Profiler
-- Multi-platform (Windows, Linux, Mac OS X)
-- No dependencies (only OpenGL for the testbed application)
-- Documentation (User manual and Doxygen API)
-- Testbed application with demo scenes
-- Unit tests
+    - Rigid body dynamics
+    - Discrete collision detection
+    - Collision shapes (Sphere, Box, Capsule, Convex Mesh, Static Concave Mesh, Height Field)
+    - Multiple collision shapes per body
+    - Broadphase collision detection (Dynamic AABB tree)
+    - Narrowphase collision detection (SAT/GJK)
+    - Collision response and friction (Sequential Impulses Solver)
+    - Joints (Ball and Socket, Hinge, Slider, Fixed)
+    - Collision filtering with categories
+    - Ray casting
+    - Sleeping technique for inactive bodies
+    - Multi-platform (Windows, Linux, Mac OS X)
+    - No external libraries (do not use STL containers)
+    - Documentation (user manual and Doxygen API)
+    - Testbed application with demos
+    - Integrated Profiler
+    - Logs
+    - Unit tests
 
 ## License
 
@@ -38,7 +41,7 @@ The ReactPhysics3D library is released under the open-source [ZLib license](http
 
 ## Documentation
 
-You can find the User Manual and the Doxygen API Documentation [here](http://www.reactphysics3d.com/documentation.html)
+You can find the user manual and the Doxygen API documentation [here](https://www.reactphysics3d.com/documentation.html)
 
 ## Branches
 

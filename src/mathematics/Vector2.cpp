@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,30 +25,9 @@
 
 // Libraries
 #include "Vector2.h"
-#include <vector>
 
 // Namespaces
 using namespace reactphysics3d;
-
-// Constructor
-Vector2::Vector2() : x(0.0), y(0.0) {
-
-}
-
-// Constructor with arguments
-Vector2::Vector2(decimal newX, decimal newY) : x(newX), y(newY) {
-
-}
-
-// Copy-constructor
-Vector2::Vector2(const Vector2& vector) : x(vector.x), y(vector.y) {
-
-}
-
-// Destructor
-Vector2::~Vector2() {
-
-}
 
 // Return the corresponding unit vector
 Vector2 Vector2::getUnit() const {

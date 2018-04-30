@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,6 +27,8 @@
 #include "CollisionBody.h"
 #include "engine/CollisionWorld.h"
 #include "collision/ContactManifold.h"
+#include "collision/RaycastInfo.h"
+#include "utils/Logger.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -38,14 +40,18 @@ using namespace reactphysics3d;
  * @param id ID of the body
  */
 CollisionBody::CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id)
-              : Body(id), mType(DYNAMIC), mTransform(transform), mProxyCollisionShapes(NULL),
-                mNbCollisionShapes(0), mContactManifoldsList(NULL), mWorld(world) {
+              : Body(id), mType(BodyType::DYNAMIC), mTransform(transform), mProxyCollisionShapes(nullptr),
+                mNbCollisionShapes(0), mContactManifoldsList(nullptr), mWorld(world) {
+
+#ifdef IS_PROFILING_ACTIVE
+        mProfiler = nullptr;
+#endif
 
 }
 
 // Destructor
 CollisionBody::~CollisionBody() {
-    assert(mContactManifoldsList == NULL);
+    assert(mContactManifoldsList == nullptr);
 
     // Remove all the proxy collision shapes of the body
     removeAllCollisionShapes();
@@ -70,12 +76,26 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
                                              const Transform& transform) {
 
     // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mMemoryAllocator.allocate(
+    ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, decimal(1));
+                                                                      transform, decimal(1), mWorld.mMemoryManager);
+
+#ifdef IS_PROFILING_ACTIVE
+
+	// Set the profiler
+	proxyShape->setProfiler(mProfiler);
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+    // Set the logger
+    proxyShape->setLogger(mLogger);
+
+#endif
 
     // Add it to the list of proxy collision shapes of the body
-    if (mProxyCollisionShapes == NULL) {
+    if (mProxyCollisionShapes == nullptr) {
         mProxyCollisionShapes = proxyShape;
     }
     else {
@@ -92,6 +112,13 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
 
     mNbCollisionShapes++;
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
+             "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
+             proxyShape->getCollisionShape()->to_string());
+
     // Return a pointer to the collision shape
     return proxyShape;
 }
@@ -107,22 +134,25 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
 
     ProxyShape* current = mProxyCollisionShapes;
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " removed from body");
+
     // If the the first proxy shape is the one to remove
     if (current == proxyShape) {
         mProxyCollisionShapes = current->mNext;
 
-        if (mIsActive) {
+        if (mIsActive && proxyShape->getBroadPhaseId() != -1) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
         current->~ProxyShape();
-        mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, current, sizeof(ProxyShape));
         mNbCollisionShapes--;
         return;
     }
 
     // Look for the proxy shape that contains the collision shape in parameter
-    while(current->mNext != NULL) {
+    while(current->mNext != nullptr) {
 
         // If we have found the collision shape to remove
         if (current->mNext == proxyShape) {
@@ -131,12 +161,12 @@ void CollisionBody::removeCollisionShape(const ProxyShape* proxyShape) {
             ProxyShape* elementToRemove = current->mNext;
             current->mNext = elementToRemove->mNext;
 
-            if (mIsActive) {
+            if (mIsActive && proxyShape->getBroadPhaseId() != -1) {
                 mWorld.mCollisionDetection.removeProxyCollisionShape(elementToRemove);
             }
 
             elementToRemove->~ProxyShape();
-            mWorld.mMemoryAllocator.release(elementToRemove, sizeof(ProxyShape));
+            mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, elementToRemove, sizeof(ProxyShape));
             mNbCollisionShapes--;
             return;
         }
@@ -152,23 +182,23 @@ void CollisionBody::removeAllCollisionShapes() {
     ProxyShape* current = mProxyCollisionShapes;
 
     // Look for the proxy shape that contains the collision shape in parameter
-    while(current != NULL) {
+    while(current != nullptr) {
 
         // Remove the proxy collision shape
         ProxyShape* nextElement = current->mNext;
 
-        if (mIsActive) {
+        if (mIsActive && current->getBroadPhaseId() != -1) {
             mWorld.mCollisionDetection.removeProxyCollisionShape(current);
         }
 
         current->~ProxyShape();
-        mWorld.mMemoryAllocator.release(current, sizeof(ProxyShape));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, current, sizeof(ProxyShape));
 
         // Get the next element in the list
         current = nextElement;
     }
 
-    mProxyCollisionShapes = NULL;
+    mProxyCollisionShapes = nullptr;
 }
 
 // Reset the contact manifold lists
@@ -176,23 +206,23 @@ void CollisionBody::resetContactManifoldsList() {
 
     // Delete the linked list of contact manifolds of that body
     ContactManifoldListElement* currentElement = mContactManifoldsList;
-    while (currentElement != NULL) {
-        ContactManifoldListElement* nextElement = currentElement->next;
+    while (currentElement != nullptr) {
+        ContactManifoldListElement* nextElement = currentElement->getNext();
 
         // Delete the current element
         currentElement->~ContactManifoldListElement();
-        mWorld.mMemoryAllocator.release(currentElement, sizeof(ContactManifoldListElement));
+        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, currentElement, sizeof(ContactManifoldListElement));
 
         currentElement = nextElement;
     }
-    mContactManifoldsList = NULL;
+    mContactManifoldsList = nullptr;
 }
 
 // Update the broad-phase state for this body (because it has moved for instance)
 void CollisionBody::updateBroadPhaseState() const {
 
     // For all the proxy collision shapes of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
         // Update the proxy
         updateProxyShapeInBroadPhase(shape);
@@ -202,12 +232,15 @@ void CollisionBody::updateBroadPhaseState() const {
 // Update the broad-phase state of a proxy collision shape of the body
 void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert) const {
 
-    // Recompute the world-space AABB of the collision shape
-    AABB aabb;
-    proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+    if (proxyShape->getBroadPhaseId() != -1) {
 
-    // Update the broad-phase state for the proxy collision shape
-    mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert);
+        // Recompute the world-space AABB of the collision shape
+        AABB aabb;
+        proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+
+        // Update the broad-phase state for the proxy collision shape
+        mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert)	;
+    }
 }
 
 // Set whether or not the body is active
@@ -225,7 +258,7 @@ void CollisionBody::setIsActive(bool isActive) {
     if (isActive) {
 
         // For each proxy shape of the body
-        for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+        for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
             // Compute the world-space AABB of the new collision shape
             AABB aabb;
@@ -238,15 +271,22 @@ void CollisionBody::setIsActive(bool isActive) {
     else {  // If we have to deactivate the body
 
         // For each proxy shape of the body
-        for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+        for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
-            // Remove the proxy shape from the collision detection
-            mWorld.mCollisionDetection.removeProxyCollisionShape(shape);
+            if (shape->getBroadPhaseId() != -1) {
+
+                // Remove the proxy shape from the collision detection
+                mWorld.mCollisionDetection.removeProxyCollisionShape(shape);
+            }
         }
 
         // Reset the contact manifold list of the body
         resetContactManifoldsList();
     }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set isActive=" +
+             (mIsActive ? "true" : "false"));
 }
 
 // Ask the broad-phase to test again the collision shapes of the body for collision
@@ -254,7 +294,7 @@ void CollisionBody::setIsActive(bool isActive) {
 void CollisionBody::askForBroadPhaseCollisionCheck() const {
 
     // For all the proxy collision shapes of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
         mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(shape);  
     }
@@ -271,9 +311,9 @@ int CollisionBody::resetIsAlreadyInIslandAndCountManifolds() {
     // Reset the mIsAlreadyInIsland variable of the contact manifolds for
     // this body
     ContactManifoldListElement* currentElement = mContactManifoldsList;
-    while (currentElement != NULL) {
-        currentElement->contactManifold->mIsAlreadyInIsland = false;
-        currentElement = currentElement->next;
+    while (currentElement != nullptr) {
+        currentElement->getContactManifold()->mIsAlreadyInIsland = false;
+        currentElement = currentElement->getNext();
         nbManifolds++;
     }
 
@@ -289,7 +329,7 @@ int CollisionBody::resetIsAlreadyInIslandAndCountManifolds() {
 bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 
     // For each collision shape of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
         // Test if the point is inside the collision shape
         if (shape->testPointInside(worldPoint)) return true;
@@ -315,7 +355,7 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     Ray rayTemp(ray);
 
     // For each collision shape of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
         // Test if the ray hits the collision shape
         if (shape->raycast(rayTemp, raycastInfo)) {
@@ -335,12 +375,12 @@ AABB CollisionBody::getAABB() const {
 
     AABB bodyAABB;
 
-    if (mProxyCollisionShapes == NULL) return bodyAABB;
+    if (mProxyCollisionShapes == nullptr) return bodyAABB;
 
     mProxyCollisionShapes->getCollisionShape()->computeAABB(bodyAABB, mTransform * mProxyCollisionShapes->getLocalToBodyTransform());
 
     // For each proxy shape of the body
-    for (ProxyShape* shape = mProxyCollisionShapes->mNext; shape != NULL; shape = shape->mNext) {
+    for (ProxyShape* shape = mProxyCollisionShapes->mNext; shape != nullptr; shape = shape->mNext) {
 
         // Compute the world-space AABB of the collision shape
         AABB aabb;
@@ -352,3 +392,49 @@ AABB CollisionBody::getAABB() const {
 
     return bodyAABB;
 }
+
+// Set the current position and orientation
+/**
+ * @param transform The transformation of the body that transforms the local-space
+ *                  of the body into world-space
+ */
+void CollisionBody::setTransform(const Transform& transform) {
+
+    // Update the transform of the body
+    mTransform = transform;
+
+    // Update the broad-phase state of the body
+    updateBroadPhaseState();
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
+}
+
+
+// Set the type of the body
+/// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+/**
+ * @param type The type of the body (STATIC, KINEMATIC, DYNAMIC)
+ */
+void CollisionBody::setType(BodyType type) {
+    mType = type;
+
+    if (mType == BodyType::STATIC) {
+
+        // Update the broad-phase state of the body
+        updateBroadPhaseState();
+    }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mID) + ": Set type=" +
+             (mType == BodyType::STATIC ? "Static" : (mType == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
+}
+

@@ -39,7 +39,10 @@ double Gui::mCachedUpdateTime = 0;
 double Gui::mCachedPhysicsUpdateTime = 0;
 
 // Constructor
-Gui::Gui(TestbedApplication* app) : mApp(app) {
+Gui::Gui(TestbedApplication* app)
+    : mApp(app), mSimulationPanel(nullptr), mSettingsPanel(nullptr), mPhysicsPanel(nullptr),
+      mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mPhysicsTimeLabel(nullptr)
+{
 
 }
 
@@ -100,17 +103,17 @@ void Gui::createSimulationPanel() {
     new Label(mSimulationPanel, "Controls","sans-bold");
     Widget* panelControls = new Widget(mSimulationPanel);
     panelControls->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
-    ToolButton* buttonPlay = new ToolButton(panelControls, ENTYPO_ICON_PLAY);
+    ToolButton* buttonPlay = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_PLAY);
     buttonPlay->setFlags(Button::NormalButton);
     buttonPlay->setCallback([&] {
         mApp->playSimulation();
     });
-    ToolButton* buttonPause = new ToolButton(panelControls, ENTYPO_ICON_PAUS);
+    ToolButton* buttonPause = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_PAUS);
     buttonPause->setFlags(Button::NormalButton);
     buttonPause->setCallback([&] {
         mApp->pauseSimulation();
     });
-    ToolButton* buttonPlayStep = new ToolButton(panelControls, ENTYPO_ICON_TO_END);
+    ToolButton* buttonPlayStep = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_NEXT);
     buttonPlayStep->setFlags(Button::NormalButton);
     buttonPlayStep->setCallback([&] {
         mApp->toggleTakeSinglePhysicsStep();
@@ -128,10 +131,11 @@ void Gui::createSimulationPanel() {
         scenesNames.push_back(scenes[i]->getName().c_str());
     }
     new Label(mSimulationPanel, "Scene","sans-bold");
-    ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames, [&, scenes](int index) {
+    ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
+    comboBoxScenes->setFixedWidth(150);
+    comboBoxScenes->setCallback([&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });
-    comboBoxScenes->setFixedWidth(150);
 }
 
 void Gui::createSettingsPanel() {
@@ -170,6 +174,7 @@ void Gui::createSettingsPanel() {
     checkboxSleeping->setChecked(mApp->mEngineSettings.isSleepingEnabled);
     checkboxSleeping->setCallback([&](bool value) {
         mApp->mEngineSettings.isSleepingEnabled = value;
+        mApp->notifyEngineSetttingsChanged();
     });
 
     // Enabled/Disable Gravity
@@ -177,6 +182,7 @@ void Gui::createSettingsPanel() {
     checkboxGravity->setChecked(mApp->mEngineSettings.isGravityEnabled);
     checkboxGravity->setCallback([&](bool value) {
         mApp->mEngineSettings.isGravityEnabled = value;
+        mApp->notifyEngineSetttingsChanged();
     });
 
     // Timestep
@@ -202,6 +208,7 @@ void Gui::createSettingsPanel() {
             if (finalValue < 1 || finalValue > 1000) return false;
 
             mApp->mEngineSettings.timeStep = finalValue / 1000.0f;
+            mApp->notifyEngineSetttingsChanged();
             textboxTimeStep->setValue(out.str());
         }
         catch (...) {
@@ -233,6 +240,7 @@ void Gui::createSettingsPanel() {
             if (value < 1 || value > 1000) return false;
 
             mApp->mEngineSettings.nbVelocitySolverIterations = value;
+            mApp->notifyEngineSetttingsChanged();
             textboxVelocityIterations->setValue(out.str());
         }
         catch (...) {
@@ -264,6 +272,7 @@ void Gui::createSettingsPanel() {
             if (value < 1 || value > 1000) return false;
 
             mApp->mEngineSettings.nbPositionSolverIterations = value;
+            mApp->notifyEngineSetttingsChanged();
             textboxPositionIterations->setValue(out.str());
         }
         catch (...) {
@@ -298,6 +307,7 @@ void Gui::createSettingsPanel() {
             if (finalValue < 1 || finalValue > 100000) return false;
 
             mApp->mEngineSettings.timeBeforeSleep = finalValue / 1000.0f;
+            mApp->notifyEngineSetttingsChanged();
             textboxTimeSleep->setValue(out.str());
         }
         catch (...) {
@@ -332,6 +342,7 @@ void Gui::createSettingsPanel() {
             if (finalValue < 0 || finalValue > 10000) return false;
 
             mApp->mEngineSettings.sleepLinearVelocity = finalValue;
+            mApp->notifyEngineSetttingsChanged();
             textboxSleepLinearVel->setValue(out.str());
         }
         catch (...) {
@@ -366,6 +377,7 @@ void Gui::createSettingsPanel() {
             if (finalValue < 0 || finalValue > 10000) return false;
 
             mApp->mEngineSettings.sleepAngularVelocity = finalValue;
+            mApp->notifyEngineSetttingsChanged();
             textboxSleepAngularVel->setValue(out.str());
         }
         catch (...) {
@@ -388,6 +400,14 @@ void Gui::createSettingsPanel() {
         mApp->mIsContactPointsDisplayed = value;
     });
 
+
+    // Display/Hide the AABBs
+    CheckBox* checkboxAABBs = new CheckBox(mRenderingPanel, "AABBs");
+    checkboxAABBs->setChecked(mApp->mIsAABBsDisplayed);
+    checkboxAABBs->setCallback([&](bool value) {
+        mApp->mIsAABBsDisplayed = value;
+    });
+
     // Enabled/Disable VSync
     CheckBox* checkboxVSync = new CheckBox(mRenderingPanel, "V-Sync");
     checkboxVSync->setChecked(mApp->mIsVSyncEnabled);
@@ -400,6 +420,13 @@ void Gui::createSettingsPanel() {
     checkboxShadows->setChecked(mApp->mIsShadowMappingEnabled);
     checkboxShadows->setCallback([&](bool value) {
         mApp->mIsShadowMappingEnabled = value;
+    });
+
+    // Enable/Disable wireframe mode
+    CheckBox* checkboxWireframe = new CheckBox(mRenderingPanel, "Wireframe");
+    checkboxWireframe->setChecked(mApp->mIsWireframeEnabled);
+    checkboxWireframe->setCallback([&](bool value) {
+        mApp->mIsWireframeEnabled = value;
     });
 
     mPhysicsPanel->setVisible(true);

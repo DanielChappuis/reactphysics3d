@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,28 +25,22 @@
 
 // Libraries
 #include "ConvexShape.h"
-
+#include "mathematics/Vector3.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-ConvexShape::ConvexShape(CollisionShapeType type, decimal margin)
-            : CollisionShape(type), mMargin(margin) {
-
-}
-
-// Destructor
-ConvexShape::~ConvexShape() {
+ConvexShape::ConvexShape(CollisionShapeName name, CollisionShapeType type, decimal margin)
+            : CollisionShape(name, type), mMargin(margin) {
 
 }
 
 // Return a local support point in a given direction with the object margin
-Vector3 ConvexShape::getLocalSupportPointWithMargin(const Vector3& direction,
-                                                    void** cachedCollisionData) const {
+Vector3 ConvexShape::getLocalSupportPointWithMargin(const Vector3& direction) const {
 
     // Get the support point without margin
-    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction, cachedCollisionData);
+    Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
 
     if (mMargin != decimal(0.0)) {
 

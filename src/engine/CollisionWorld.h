@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,26 +27,26 @@
 #define REACTPHYSICS3D_COLLISION_WORLD_H
 
 // Libraries
-#include <vector>
-#include <set>
-#include <list>
-#include <algorithm>
 #include "mathematics/mathematics.h"
-#include "Profiler.h"
-#include "body/CollisionBody.h"
-#include "collision/RaycastInfo.h"
-#include "OverlappingPair.h"
+#include "containers/List.h"
 #include "collision/CollisionDetection.h"
 #include "constraint/Joint.h"
-#include "constraint/ContactPoint.h"
-#include "memory/MemoryAllocator.h"
-#include "EventListener.h"
+#include "memory/MemoryManager.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
 
 // Declarations
+class Profiler;
+class Logger;
+class EventListener;
+class Joint;
+class ContactPoint;
+class OverlappingPair;
+class CollisionBody;
+struct RaycastInfo;
 class CollisionCallback;
+class OverlapCallback;
 
 // Class CollisionWorld
 /**
@@ -60,34 +60,55 @@ class CollisionWorld {
 
         // -------------------- Attributes -------------------- //
 
+        /// Memory manager
+        MemoryManager mMemoryManager;
+
+        /// Configuration of the physics world
+        WorldSettings mConfig;
+
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;
 
         /// All the bodies (rigid and soft) of the world
-        std::set<CollisionBody*> mBodies;
+        List<CollisionBody*> mBodies;
 
-        /// Current body ID
-        bodyindex mCurrentBodyID;
+        /// Current body id
+        bodyindex mCurrentBodyId;
 
-        /// List of free ID for rigid bodies
-        std::vector<luint> mFreeBodiesIDs;
-
-        /// Memory allocator
-        MemoryAllocator mMemoryAllocator;
+        /// List of free ids for rigid bodies
+        List<luint> mFreeBodiesIds;
 
         /// Pointer to an event listener object
         EventListener* mEventListener;
 
+        /// Name of the collision world
+        std::string mName;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Real-time hierarchical profiler
+        Profiler* mProfiler;
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Logger
+        Logger* mLogger;
+#endif
+
+        /// True if the profiler has been created by the user
+        bool mIsProfilerCreatedByUser;
+
+        /// True if the logger has been created by the user
+        bool mIsLoggerCreatedByUser;
+
+        /// Total number of worlds
+        static uint mNbWorlds;
+
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        CollisionWorld(const CollisionWorld& world);
-
-        /// Private assignment operator
-        CollisionWorld& operator=(const CollisionWorld& world);
-
-        /// Return the next available body ID
-        bodyindex computeNextAvailableBodyID();
+        /// Return the next available body id
+        bodyindex computeNextAvailableBodyId();
 
         /// Reset all the contact manifolds linked list of each body
         void resetContactManifoldListsOfBodies();
@@ -97,16 +118,17 @@ class CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionWorld();
+        CollisionWorld(const WorldSettings& worldSettings = WorldSettings(), Logger* logger = nullptr,
+                       Profiler* profiler = nullptr);
 
         /// Destructor
         virtual ~CollisionWorld();
 
-        /// Return an iterator to the beginning of the bodies of the physics world
-        std::set<CollisionBody*>::iterator getBodiesBeginIterator();
+        /// Deleted copy-constructor
+        CollisionWorld(const CollisionWorld& world) = delete;
 
-        /// Return an iterator to the end of the bodies of the physics world
-        std::set<CollisionBody*>::iterator getBodiesEndIterator();
+        /// Deleted assignment operator
+        CollisionWorld& operator=(const CollisionWorld& world) = delete;
 
         /// Create a collision body
         CollisionBody* createCollisionBody(const Transform& transform);
@@ -125,32 +147,43 @@ class CollisionWorld {
         bool testAABBOverlap(const CollisionBody* body1,
                              const CollisionBody* body2) const;
 
-        /// Test if the AABBs of two proxy shapes overlap
-        bool testAABBOverlap(const ProxyShape* shape1,
-                             const ProxyShape* shape2) const;
+        /// Report all the bodies that overlap with the AABB in parameter
+        void testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
 
-        /// Test and report collisions between a given shape and all the others
-        /// shapes of the world
-        virtual void testCollision(const ProxyShape* shape,
-                                   CollisionCallback* callback);
+        /// Return true if two bodies overlap
+        bool testOverlap(CollisionBody* body1, CollisionBody* body2);
 
-        /// Test and report collisions between two given shapes
-        virtual void testCollision(const ProxyShape* shape1,
-                                   const ProxyShape* shape2,
-                                   CollisionCallback* callback);
-
-        /// Test and report collisions between a body and all the others bodies of the
-        /// world
-        virtual void testCollision(const CollisionBody* body,
-                                   CollisionCallback* callback);
+        /// Report all the bodies that overlap with the body in parameter
+        void testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
 
         /// Test and report collisions between two bodies
-        virtual void testCollision(const CollisionBody* body1,
-                                   const CollisionBody* body2,
-                                   CollisionCallback* callback);
+        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback);
+
+        /// Test and report collisions between a body and all the others bodies of the world
+        void testCollision(CollisionBody* body, CollisionCallback* callback, unsigned short categoryMaskBits = 0xFFFF);
 
         /// Test and report collisions between all shapes of the world
-        virtual void testCollision(CollisionCallback* callback);
+        void testCollision(CollisionCallback* callback);
+
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Return a reference to the profiler
+        Profiler* getProfiler();
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Return a reference to the logger
+        Logger* getLogger();
+
+#endif
+
+        /// Return the current world-space AABB of given proxy shape
+        AABB getWorldAABB(const ProxyShape* proxyShape) const;
+
+        /// Return the name of the world
+        const std::string& getName() const;
 
         // -------------------- Friendship -------------------- //
 
@@ -159,22 +192,6 @@ class CollisionWorld {
         friend class RigidBody;
         friend class ConvexMeshShape;
 };
-
-// Return an iterator to the beginning of the bodies of the physics world
-/**
- * @return An starting iterator to the set of bodies of the world
- */
-inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesBeginIterator() {
-    return mBodies.begin();
-}
-
-// Return an iterator to the end of the bodies of the physics world
-/**
- * @return An ending iterator to the set of bodies of the world
- */
-inline std::set<CollisionBody*>::iterator CollisionWorld::getBodiesEndIterator() {
-    return mBodies.end();
-}
 
 // Set the collision dispatch configuration
 /// This can be used to replace default collision detection algorithms by your
@@ -200,38 +217,76 @@ inline void CollisionWorld::raycast(const Ray& ray,
     mCollisionDetection.raycast(raycastCallback, ray, raycastWithCategoryMaskBits);
 }
 
-// Test if the AABBs of two proxy shapes overlap
+// Test and report collisions between two bodies
 /**
- * @param shape1 Pointer to the first proxy shape to test
- * @param shape2 Pointer to the second proxy shape to test
- * @return
+ * @param body1 Pointer to the first body to test
+ * @param body2 Pointer to the second body to test
+ * @param callback Pointer to the object with the callback method
  */
-inline bool CollisionWorld::testAABBOverlap(const ProxyShape* shape1,
-                                            const ProxyShape* shape2) const {
-
-    return mCollisionDetection.testAABBOverlap(shape1, shape2);
+inline void CollisionWorld::testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback) {
+    mCollisionDetection.testCollision(body1, body2, callback);
 }
 
-// Class CollisionCallback
+// Test and report collisions between a body and all the others bodies of the world
 /**
- * This class can be used to register a callback for collision test queries.
- * You should implement your own class inherited from this one and implement
- * the notifyRaycastHit() method. This method will be called for each ProxyShape
- * that is hit by the ray.
+ * @param body Pointer to the body against which we need to test collision
+ * @param callback Pointer to the object with the callback method to report contacts
+ * @param categoryMaskBits Bits mask corresponding to the category of bodies we need to test collision with
  */
-class CollisionCallback {
+inline void CollisionWorld::testCollision(CollisionBody* body, CollisionCallback* callback, unsigned short categoryMaskBits) {
+    mCollisionDetection.testCollision(body, callback, categoryMaskBits);
+}
 
-    public:
+// Test and report collisions between all bodies of the world
+/**
+ * @param callback Pointer to the object with the callback method to report contacts
+ */
+inline void CollisionWorld::testCollision(CollisionCallback* callback) {
+    mCollisionDetection.testCollision(callback);
+}
 
-        /// Destructor
-        virtual ~CollisionCallback() {
+// Report all the bodies that overlap with the body in parameter
+/**
+ * @param body Pointer to the collision body to test overlap with
+ * @param overlapCallback Pointer to the callback class to report overlap
+ * @param categoryMaskBits bits mask used to filter the bodies to test overlap with
+ */
+inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
+    mCollisionDetection.testOverlap(body, overlapCallback, categoryMaskBits);
+}
 
-        }
+// Return the name of the world
+/**
+ * @return Name of the world
+ */
+inline const std::string& CollisionWorld::getName() const {
+    return mName;
+}
 
-        /// This method will be called for contact
-        virtual void notifyContact(const ContactPointInfo& contactPointInfo)=0;
-};
+#ifdef IS_PROFILING_ACTIVE
+
+// Return a pointer to the profiler
+/**
+ * @return A pointer to the profiler
+ */
+inline Profiler* CollisionWorld::getProfiler() {
+    return mProfiler;
+}
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+// Return a pointer to the logger
+/**
+ * @return A pointer to the logger
+ */
+inline Logger* CollisionWorld::getLogger() {
+    return mLogger;
+}
+
+#endif
 
 }
 
- #endif
+#endif

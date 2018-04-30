@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -58,13 +58,13 @@ class Material {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Material();
+        Material(const WorldSettings& worldSettings);
 
         /// Copy-constructor
         Material(const Material& material);
 
         /// Destructor
-        ~Material();
+        ~Material() = default;
 
         /// Return the bounciness
         decimal getBounciness() const;
@@ -83,6 +83,9 @@ class Material {
 
         /// Set the rolling resistance factor
         void setRollingResistance(decimal rollingResistance);
+
+        /// Return a string representation for the material
+        std::string to_string() const;
 
         /// Overloaded assignment operator
         Material& operator=(const Material& material);
@@ -145,6 +148,18 @@ inline decimal Material::getRollingResistance() const {
 inline void Material::setRollingResistance(decimal rollingResistance) {
     assert(rollingResistance >= 0);
     mRollingResistance = rollingResistance;
+}
+
+// Return a string representation for the material
+inline std::string Material::to_string() const {
+
+    std::stringstream ss;
+
+    ss << "frictionCoefficient=" << mFrictionCoefficient << std::endl;
+    ss << "rollingResistance=" << mRollingResistance << std::endl;
+    ss << "bounciness=" << mBounciness << std::endl;
+
+    return ss.str();
 }
 
 // Overloaded assignment operator

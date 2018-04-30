@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,11 +32,13 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include "containers/List.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 struct Vector3;
+struct Vector2;
 
 // ---------- Mathematics functions ---------- //
 
@@ -45,6 +47,12 @@ struct Vector3;
 inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
     return (std::fabs(a - b) < epsilon);
 }
+
+/// Function to test if two vectors are (almost) equal
+bool approxEqual(const Vector3& vec1, const Vector3& vec2, decimal epsilon = MACHINE_EPSILON);
+
+/// Function to test if two vectors are (almost) equal
+bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon = MACHINE_EPSILON);
 
 /// Function that returns the result of the "value" clamped by
 /// two others values "lowerLimit" and "upperLimit"
@@ -75,13 +83,53 @@ inline bool sameSign(decimal a, decimal b) {
     return a * b >= decimal(0.0);
 }
 
+/// Return true if two vectors are parallel
+bool areParallelVectors(const Vector3& vector1, const Vector3& vector2);
+
+/// Return true if two vectors are orthogonal
+bool areOrthogonalVectors(const Vector3& vector1, const Vector3& vector2);
+
 /// Clamp a vector such that it is no longer than a given maximum length
 Vector3 clamp(const Vector3& vector, decimal maxLength);
+
+// Compute and return a point on segment from "segPointA" and "segPointB" that is closest to point "pointC"
+Vector3 computeClosestPointOnSegment(const Vector3& segPointA, const Vector3& segPointB, const Vector3& pointC);
+
+// Compute the closest points between two segments
+void computeClosestPointBetweenTwoSegments(const Vector3& seg1PointA, const Vector3& seg1PointB,
+										   const Vector3& seg2PointA, const Vector3& seg2PointB,
+										   Vector3& closestPointSeg1, Vector3& closestPointSeg2);
 
 /// Compute the barycentric coordinates u, v, w of a point p inside the triangle (a, b, c)
 void computeBarycentricCoordinatesInTriangle(const Vector3& a, const Vector3& b, const Vector3& c,
                                              const Vector3& p, decimal& u, decimal& v, decimal& w);
 
+/// Compute the intersection between a plane and a segment
+decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB, const decimal planeD, const Vector3& planeNormal);
+
+/// Compute the distance between a point and a line
+decimal computePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point);
+
+/// Clip a segment against multiple planes and return the clipped segment vertices
+List<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
+                                                           const List<Vector3>& planesPoints,
+                                                           const List<Vector3>& planesNormals,
+                                                           MemoryAllocator& allocator);
+
+/// Clip a polygon against multiple planes and return the clipped polygon vertices
+List<Vector3> clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const List<Vector3>& planesPoints,
+                                    const List<Vector3>& planesNormals, MemoryAllocator& allocator);
+
+/// Project a point onto a plane that is given by a point and its unit length normal
+Vector3 projectPointOntoPlane(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint);
+
+/// Return the distance between a point and a plane (the plane normal must be normalized)
+decimal computePointToPlaneDistance(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint);
+
+/// Return true if the given number is prime
+bool isPrimeNumber(int number);
+
 }
+
 
 #endif

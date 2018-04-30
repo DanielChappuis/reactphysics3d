@@ -1,25 +1,29 @@
 /*
     nanogui/widget.h -- Base class of all widgets
 
-    NanoGUI was developed by Wenzel Jakob <wenzel@inf.ethz.ch>.
+    NanoGUI was developed by Wenzel Jakob <wenzel.jakob@epfl.ch>.
     The widget drawing code is based on the NanoVG demo application
     by Mikko Mononen.
 
     All rights reserved. Use of this source code is governed by a
     BSD-style license that can be found in the LICENSE.txt file.
 */
+/** \file */
 
 #pragma once
 
 #include <nanogui/object.h>
+#include <nanogui/theme.h>
 #include <vector>
 
 NAMESPACE_BEGIN(nanogui)
 
-enum class Cursor;
+enum class Cursor;// do not put a docstring, this is already documented
 
 /**
- * \brief Base class of all widgets
+ * \class Widget widget.h nanogui/widget.h
+ *
+ * \brief Base class of all widgets.
  *
  * \ref Widget is the base class of all widgets in \c nanogui. It can
  * also be used as an panel to arrange an arbitrary number of child
@@ -49,7 +53,7 @@ public:
     /// Return the \ref Theme used to draw this widget
     const Theme *theme() const { return mTheme.get(); }
     /// Set the \ref Theme used to draw this widget
-    void setTheme(Theme *theme) { mTheme = theme; }
+    virtual void setTheme(Theme *theme);
 
     /// Return the position relative to the parent widget
     const Vector2i &position() const { return mPos; }
@@ -123,12 +127,16 @@ public:
     const std::vector<Widget *> &children() const { return mChildren; }
 
     /**
-     * \brief Add a child widget to the current widget
+     * \brief Add a child widget to the current widget at
+     * the specified index.
      *
      * This function almost never needs to be called by hand,
      * since the constructor of \ref Widget automatically
      * adds the current widget to its parent
      */
+    virtual void addChild(int index, Widget *widget);
+
+    /// Convenience function which appends a widget at the end
     void addChild(Widget *widget);
 
     /// Remove a child widget by index
@@ -137,8 +145,26 @@ public:
     /// Remove a child widget by value
     void removeChild(const Widget *widget);
 
-    // Walk up the hierarchy and return the parent window
+    /// Retrieves the child at the specific position
+    const Widget* childAt(int index) const { return mChildren[index]; }
+
+    /// Retrieves the child at the specific position
+    Widget* childAt(int index) { return mChildren[index]; }
+
+    /// Returns the index of a specific child or -1 if not found
+    int childIndex(Widget* widget) const;
+
+    /// Variadic shorthand notation to construct and add a child widget
+    template<typename WidgetClass, typename... Args>
+    WidgetClass* add(const Args&... args) {
+        return new WidgetClass(this, args...);
+    }
+
+    /// Walk up the hierarchy and return the parent window
     Window *window();
+
+    /// Walk up the hierarchy and return the parent screen
+    Screen *screen();
 
     /// Associate this widget with an ID value (optional)
     void setId(const std::string &id) { mId = id; }
@@ -166,6 +192,18 @@ public:
     void setFontSize(int fontSize) { mFontSize = fontSize; }
     /// Return whether the font size is explicitly specified for this widget
     bool hasFontSize() const { return mFontSize > 0; }
+
+    /**
+     * The amount of extra scaling applied to *icon* fonts.
+     * See \ref nanogui::Widget::mIconExtraScale.
+     */
+    float iconExtraScale() const { return mIconExtraScale; }
+
+    /**
+     * Sets the amount of extra scaling applied to *icon* fonts.
+     * See \ref nanogui::Widget::mIconExtraScale.
+     */
+    void setIconExtraScale(float scale) { mIconExtraScale = scale; }
 
     /// Return a pointer to the cursor of the widget
     Cursor cursor() const { return mCursor; }
@@ -219,9 +257,22 @@ public:
 
     /// Restore the state of the widget from the given \ref Serializer instance
     virtual bool load(Serializer &s);
+
 protected:
     /// Free all resources used by the widget and any children
     virtual ~Widget();
+
+    /**
+     * Convenience definition for subclasses to get the full icon scale for this
+     * class of Widget.  It simple returns the value
+     * ``mTheme->mIconScale * this->mIconExtraScale``.
+     *
+     * \remark
+     *     See also: \ref nanogui::Theme::mIconScale and
+     *     \ref nanogui::Widget::mIconExtraScale.  This tiered scaling
+     *     strategy may not be appropriate with fonts other than ``entypo.ttf``.
+     */
+    inline float icon_scale() const { return mTheme->mIconScale * mIconExtraScale; }
 
 protected:
     Widget *mParent;
@@ -230,11 +281,62 @@ protected:
     std::string mId;
     Vector2i mPos, mSize, mFixedSize;
     std::vector<Widget *> mChildren;
-    bool mVisible, mEnabled;
+
+    /**
+     * Whether or not this Widget is currently visible.  When a Widget is not
+     * currently visible, no time is wasted executing its drawing method.
+     */
+    bool mVisible;
+
+    /**
+     * Whether or not this Widget is currently enabled.  Various different kinds
+     * of derived types use this to determine whether or not user input will be
+     * accepted.  For example, when ``mEnabled == false``, the state of a
+     * CheckBox cannot be changed, or a TextBox will not allow new input.
+     */
+    bool mEnabled;
     bool mFocused, mMouseFocus;
     std::string mTooltip;
     int mFontSize;
+
+    /**
+     * \brief The amount of extra icon scaling used in addition the the theme's
+     *        default icon font scale.  Default value is ``1.0``, which implies
+     *        that \ref nanogui::Widget::icon_scale simply returns the value
+     *        of \ref nanogui::Theme::mIconScale.
+     *
+     * Most widgets do not need extra scaling, but some (e.g., CheckBox, TextBox)
+     * need to adjust the Theme's default icon scaling
+     * (\ref nanogui::Theme::mIconScale) to properly display icons within their
+     * bounds (upscale, or downscale).
+     *
+     * \rst
+     * .. note::
+     *
+     *    When using ``nvgFontSize`` for icons in subclasses, make sure to call
+     *    the :func:`nanogui::Widget::icon_scale` function.  Expected usage when
+     *    *drawing* icon fonts is something like:
+     *
+     *    .. code-block:: cpp
+     *
+     *       virtual void draw(NVGcontext *ctx) {
+     *           // fontSize depends on the kind of Widget.  Search for `FontSize`
+     *           // in the Theme class (e.g., standard vs button)
+     *           float ih = fontSize;
+     *           // assuming your Widget has a declared `mIcon`
+     *           if (nvgIsFontIcon(mIcon)) {
+     *               ih *= icon_scale();
+     *               nvgFontFace(ctx, "icons");
+     *               nvgFontSize(ctx, ih);
+     *               /// remaining drawing code (see button.cpp for more)
+     *           }
+     *       }
+     * \endrst
+     */
+    float mIconExtraScale;
     Cursor mCursor;
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 NAMESPACE_END(nanogui)

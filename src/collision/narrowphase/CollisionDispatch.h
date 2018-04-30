@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,9 +27,12 @@
 #define	REACTPHYSICS3D_COLLISION_DISPATCH_H
 
 // Libraries
-#include "NarrowPhaseAlgorithm.h"
 
 namespace reactphysics3d {
+
+// Declarations
+class NarrowPhaseAlgorithm;
+class Profiler;
 
 // Class CollisionDispatch
 /**
@@ -41,25 +44,43 @@ class CollisionDispatch {
 
     protected:
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
     public:
 
         /// Constructor
-        CollisionDispatch() {}
+        CollisionDispatch() = default;
 
         /// Destructor
-        virtual ~CollisionDispatch() {}
-
-        /// Initialize the collision dispatch configuration
-        virtual void init(CollisionDetection* collisionDetection,
-                          MemoryAllocator* memoryAllocator) {
-
-        }
+        virtual ~CollisionDispatch() = default;
 
         /// Select and return the narrow-phase collision detection algorithm to
         /// use between two types of collision shapes.
-        virtual NarrowPhaseAlgorithm* selectAlgorithm(int shape1Type,
-                                                      int shape2Type)=0;
+        virtual NarrowPhaseAlgorithm* selectAlgorithm(int shape1Type, int shape2Type)=0;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		virtual void setProfiler(Profiler* profiler);
+
+#endif
+
 };
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void CollisionDispatch::setProfiler(Profiler* profiler) {
+
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

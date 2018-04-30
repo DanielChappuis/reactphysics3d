@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,23 +27,23 @@
 #define REACTPHYSICS3D_COLLISION_BODY_H
 
 // Libraries
-#include <stdexcept>
 #include <cassert>
 #include "Body.h"
-#include "mathematics/Transform.h"
 #include "collision/shapes/AABB.h"
-#include "collision/shapes/CollisionShape.h"
-#include "collision/RaycastInfo.h"
-#include "memory/MemoryAllocator.h"
+#include "mathematics/Transform.h"
 #include "configuration.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
 
-// Class declarations
+// Declarations
 struct ContactManifoldListElement;
 class ProxyShape;
 class CollisionWorld;
+class CollisionShape;
+struct RaycastInfo;
+class PoolAllocator;
+class Profiler;
 
 /// Enumeration for the type of a body
 /// STATIC : A static body has infinite mass, zero velocity but the position can be
@@ -54,7 +54,7 @@ class CollisionWorld;
 /// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
 ///           position is determined by the physics engine. A dynamic body can collide with other
 ///           dynamic, static or kinematic bodies.
-enum BodyType {STATIC, KINEMATIC, DYNAMIC};
+enum class BodyType {STATIC, KINEMATIC, DYNAMIC};
 
 // Class CollisionBody
 /**
@@ -85,13 +85,14 @@ class CollisionBody : public Body {
         /// Reference to the world the body belongs to
         CollisionWorld& mWorld;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
+
         // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        CollisionBody(const CollisionBody& body);
-
-        /// Private assignment operator
-        CollisionBody& operator=(const CollisionBody& body);
 
         /// Reset the contact manifold lists
         void resetContactManifoldsList();
@@ -120,7 +121,13 @@ class CollisionBody : public Body {
         CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id);
 
         /// Destructor
-        virtual ~CollisionBody();
+        virtual ~CollisionBody() override;
+
+        /// Deleted copy-constructor
+        CollisionBody(const CollisionBody& body) = delete;
+
+        /// Deleted assignment operator
+        CollisionBody& operator=(const CollisionBody& body) = delete;
 
         /// Return the type of the body
         BodyType getType() const;
@@ -129,7 +136,7 @@ class CollisionBody : public Body {
         void setType(BodyType type);
 
         /// Set whether or not the body is active
-        virtual void setIsActive(bool isActive);
+        virtual void setIsActive(bool isActive) override;
 
         /// Return the current position and orientation
         const Transform& getTransform() const;
@@ -153,6 +160,9 @@ class CollisionBody : public Body {
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo);
 
+        /// Test if the collision body overlaps with a given AABB
+        bool testAABBOverlap(const AABB& worldAABB) const;
+
         /// Compute and return the AABB of the body by merging all proxy shapes AABBs
         AABB getAABB() const;
 
@@ -174,6 +184,13 @@ class CollisionBody : public Body {
         /// Return the body local-space coordinates of a vector given in the world-space coordinates
         Vector3 getLocalVector(const Vector3& worldVector) const;
 
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		virtual void setProfiler(Profiler* profiler);
+
+#endif
+
         // -------------------- Friendship -------------------- //
 
         friend class CollisionWorld;
@@ -192,29 +209,6 @@ inline BodyType CollisionBody::getType() const {
     return mType;
 }
 
-// Set the type of the body
-/// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
-/// STATIC : A static body has infinite mass, zero velocity but the position can be
-///          changed manually. A static body does not collide with other static or kinematic bodies.
-/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
-///             position is computed by the physics engine. A kinematic body does not collide with
-///             other static or kinematic bodies.
-/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
-///           position is determined by the physics engine. A dynamic body can collide with other
-///           dynamic, static or kinematic bodies.
-/**
- * @param type The type of the body (STATIC, KINEMATIC, DYNAMIC)
- */
-inline void CollisionBody::setType(BodyType type) {
-    mType = type;
-
-    if (mType == STATIC) {
-
-        // Update the broad-phase state of the body
-        updateBroadPhaseState();
-    }
-}
-
 // Return the current position and orientation
 /**
  * @return The current transformation of the body that transforms the local-space
@@ -222,20 +216,6 @@ inline void CollisionBody::setType(BodyType type) {
  */
 inline const Transform& CollisionBody::getTransform() const {
     return mTransform;
-}
-
-// Set the current position and orientation
-/**
- * @param transform The transformation of the body that transforms the local-space
- *                  of the body into world-space
- */
-inline void CollisionBody::setTransform(const Transform& transform) {
-
-    // Update the transform of the body
-    mTransform = transform;
-
-    // Update the broad-phase state of the body
-    updateBroadPhaseState();
 }
 
 // Return the first element of the linked list of contact manifolds involving this body
@@ -301,6 +281,24 @@ inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
     return mTransform.getOrientation().getInverse() * worldVector;
 }
 
+/// Test if the collision body overlaps with a given AABB
+/**
+* @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
+* @return True if the given AABB overlaps with the AABB of the collision body
+*/
+inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
+    return worldAABB.testCollision(getAABB());
 }
 
- #endif
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void CollisionBody::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
+
+}
+
+#endif

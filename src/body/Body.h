@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,12 +27,14 @@
 #define REACTPHYSICS3D_BODY_H
 
 // Libraries
-#include <stdexcept>
 #include <cassert>
 #include "configuration.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
+
+// Declarations
+class Logger;
 
 // TODO : Make this class abstract
 // Class Body
@@ -75,13 +77,11 @@ class Body {
         /// Pointer that can be used to attach user data to the body
         void* mUserData;
 
-        // -------------------- Methods -------------------- //
+#ifdef IS_LOGGING_ACTIVE
 
-        /// Private copy-constructor
-        Body(const Body& body);
-
-        /// Private assignment operator
-        Body& operator=(const Body& body);
+        /// Logger
+        Logger* mLogger;
+#endif
 
     public :
 
@@ -90,11 +90,17 @@ class Body {
         /// Constructor
         Body(bodyindex id);
 
+        /// Deleted copy-constructor
+        Body(const Body& body) = delete;
+
+        /// Deleted assignment operator
+        Body& operator=(const Body& body) = delete;
+
         /// Destructor
-        virtual ~Body();
+        virtual ~Body() = default;
 
         /// Return the ID of the body
-        bodyindex getID() const;
+        bodyindex getId() const;
 
         /// Return whether or not the body is allowed to sleep
         bool isAllowedToSleep() const;
@@ -120,6 +126,12 @@ class Body {
         /// Attach user data to this body
         void setUserData(void* userData);
 
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Set the logger
+        void setLogger(Logger* logger);
+#endif
+
         /// Smaller than operator
         bool operator<(const Body& body2) const;
 
@@ -139,9 +151,9 @@ class Body {
 
 // Return the id of the body
 /**
- * @return The ID of the body
+ * @return The id of the body
  */
-inline bodyindex Body::getID() const {
+inline bodyindex Body::getId() const {
     return mID;
 }
 
@@ -151,16 +163,6 @@ inline bodyindex Body::getID() const {
  */
 inline bool Body::isAllowedToSleep() const {
     return mIsAllowedToSleep;
-}
-
-// Set whether or not the body is allowed to go to sleep
-/**
- * @param isAllowedToSleep True if the body is allowed to sleep
- */
-inline void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
-    mIsAllowedToSleep = isAllowedToSleep;
-
-    if (!mIsAllowedToSleep) setIsSleeping(false);
 }
 
 // Return whether or not the body is sleeping
@@ -179,29 +181,6 @@ inline bool Body::isActive() const {
     return mIsActive;
 }
 
-// Set whether or not the body is active
-/**
- * @param isActive True if you want to activate the body
- */
-inline void Body::setIsActive(bool isActive) {
-    mIsActive = isActive;
-}
-
-// Set the variable to know whether or not the body is sleeping
-inline void Body::setIsSleeping(bool isSleeping) {
-
-    if (isSleeping) {
-        mSleepTime = decimal(0.0);
-    }
-    else {
-        if (mIsSleeping) {
-            mSleepTime = decimal(0.0);
-        }
-    }
-
-    mIsSleeping = isSleeping;
-}
-
 // Return a pointer to the user data attached to this body
 /**
  * @return A pointer to the user data you have attached to the body
@@ -217,6 +196,15 @@ inline void* Body::getUserData() const {
 inline void Body::setUserData(void* userData) {
     mUserData = userData;
 }
+
+#ifdef IS_LOGGING_ACTIVE
+
+// Set the logger
+inline void Body::setLogger(Logger* logger) {
+    mLogger = logger;
+}
+
+#endif
 
 // Smaller than operator
 inline bool Body::operator<(const Body& body2) const {

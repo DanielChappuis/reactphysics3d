@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,8 +27,6 @@
 #define REACTPHYSICS3D_TIMER_H
 
 // Libraries
-#include <stdexcept>
-#include <iostream>
 #include <ctime>
 #include <cassert>
 #include "configuration.h"
@@ -71,14 +69,6 @@ class Timer {
         /// True if the timer is running
         bool mIsRunning;
 
-        // -------------------- Methods -------------------- //
-
-        /// Private copy-constructor
-        Timer(const Timer& timer);
-
-        /// Private assignment operator
-        Timer& operator=(const Timer& timer);
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -87,7 +77,13 @@ class Timer {
         Timer(double timeStep);
 
         /// Destructor
-        virtual ~Timer();
+        ~Timer() = default;
+
+        /// Deleted copy-constructor
+        Timer(const Timer& timer) = delete;
+
+        /// Deleted assignment operator
+        Timer& operator=(const Timer& timer) = delete;
 
         /// Return the timestep of the physics engine
         double getTimeStep() const;

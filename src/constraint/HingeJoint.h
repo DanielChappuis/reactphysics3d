@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -82,7 +82,7 @@ struct HingeJointInfo : public JointInfo {
         HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld)
-                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(false),
                                 isMotorEnabled(false), minAngleLimit(-1), maxAngleLimit(1),
@@ -101,7 +101,7 @@ struct HingeJointInfo : public JointInfo {
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit)
-                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
@@ -124,7 +124,7 @@ struct HingeJointInfo : public JointInfo {
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit,
                                decimal initMotorSpeed, decimal initMaxMotorTorque)
-                              : JointInfo(rigidBody1, rigidBody2, HINGEJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
@@ -250,12 +250,6 @@ class HingeJoint : public Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        HingeJoint(const HingeJoint& constraint);
-
-        /// Private assignment operator
-        HingeJoint& operator=(const HingeJoint& constraint);
-
         /// Reset the limits
         void resetLimits();
 
@@ -274,29 +268,35 @@ class HingeJoint : public Joint {
                                          const Quaternion& orientationBody2);
 
         /// Return the number of bytes used by the joint
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
 
         /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HingeJoint(const HingeJointInfo& jointInfo);
+        HingeJoint(uint id, const HingeJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~HingeJoint();
+        virtual ~HingeJoint() override = default;
+
+        /// Deleted copy-constructor
+        HingeJoint(const HingeJoint& constraint) = delete;
+
+        /// Deleted assignment operator
+        HingeJoint& operator=(const HingeJoint& constraint) = delete;
 
         /// Return true if the limits or the joint are enabled
         bool isLimitEnabled() const;
@@ -336,6 +336,9 @@ class HingeJoint : public Joint {
 
         /// Return the intensity of the current torque applied for the joint motor
         decimal getMotorTorque(decimal timeStep) const;
+
+        /// Return a string representation
+        virtual std::string to_string() const override;
 };
 
 // Return true if the limits of the joint are enabled
@@ -398,6 +401,17 @@ inline decimal HingeJoint::getMotorTorque(decimal timeStep) const {
 // Return the number of bytes used by the joint
 inline size_t HingeJoint::getSizeInBytes() const {
     return sizeof(HingeJoint);
+}
+
+// Return a string representation
+inline std::string HingeJoint::to_string() const {
+    return "HingeJoint{ lowerLimit=" + std::to_string(mLowerLimit) + ", upperLimit=" + std::to_string(mUpperLimit) +
+            "localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() + ", localAnchorPointBody2=" +
+            mLocalAnchorPointBody2.to_string() + ", hingeLocalAxisBody1=" + mHingeLocalAxisBody1.to_string() +
+            ", hingeLocalAxisBody2=" + mHingeLocalAxisBody2.to_string() + ", initOrientationDifferenceInv=" +
+            mInitOrientationDifferenceInv.to_string() + ", motorSpeed=" + std::to_string(mMotorSpeed) +
+            ", maxMotorTorque=" + std::to_string(mMaxMotorTorque) + ", isLimitEnabled=" +
+            (mIsLimitEnabled ? "true" : "false") + ", isMotorEnabled=" + (mIsMotorEnabled ? "true" : "false") + "}";
 }
 
 }

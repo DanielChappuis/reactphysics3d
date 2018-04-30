@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -29,7 +29,6 @@
 // Libraries
 #include "configuration.h"
 #include "collision/shapes/AABB.h"
-#include "body/CollisionBody.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -38,7 +37,12 @@ namespace reactphysics3d {
 class BroadPhaseAlgorithm;
 class BroadPhaseRaycastTestCallback;
 class DynamicAABBTreeOverlapCallback;
+class CollisionBody;
 struct RaycastTest;
+class AABB;
+class Profiler;
+class MemoryAllocator;
+
 
 // Structure TreeNode
 /**
@@ -101,6 +105,9 @@ class DynamicAABBTreeOverlapCallback {
         // Called when a overlapping node has been found during the call to
         // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
         virtual void notifyOverlappingNode(int nodeId)=0;
+
+        // Destructor
+        virtual ~DynamicAABBTreeOverlapCallback() = default;
 };
 
 // Class DynamicAABBTreeRaycastCallback
@@ -114,6 +121,8 @@ class DynamicAABBTreeRaycastCallback {
 
         // Called when the AABB of a leaf node is hit by a ray
         virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray)=0;
+
+        virtual ~DynamicAABBTreeRaycastCallback() = default;
 
 };
 
@@ -130,6 +139,9 @@ class DynamicAABBTree {
     private:
 
         // -------------------- Attributes -------------------- //
+
+        /// Memory allocator
+        MemoryAllocator& mAllocator;
 
         /// Pointer to the memory location of the nodes of the tree
         TreeNode* mNodes;
@@ -149,6 +161,13 @@ class DynamicAABBTree {
         /// Extra AABB Gap used to allow the collision shape to move a little bit
         /// without triggering a large modification of the tree which can be costly
         decimal mExtraAABBGap;
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Pointer to the profiler
+		Profiler* mProfiler;
+
+#endif
 
         // -------------------- Methods -------------------- //
 
@@ -191,7 +210,7 @@ class DynamicAABBTree {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicAABBTree(decimal extraAABBGap = decimal(0.0));
+        DynamicAABBTree(MemoryAllocator& allocator, decimal extraAABBGap = decimal(0.0));
 
         /// Destructor
         ~DynamicAABBTree();
@@ -232,6 +251,14 @@ class DynamicAABBTree {
 
         /// Clear all the nodes and reset the tree
         void reset();
+
+#ifdef IS_PROFILING_ACTIVE
+
+		/// Set the profiler
+		void setProfiler(Profiler* profiler);
+
+#endif
+
 };
 
 // Return true if the node is a leaf of the tree
@@ -286,6 +313,15 @@ inline int DynamicAABBTree::addObject(const AABB& aabb, void* data) {
 
     return nodeId;
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void DynamicAABBTree::setProfiler(Profiler* profiler) {
+	mProfiler = profiler;
+}
+
+#endif
 
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,34 +25,30 @@
 
 // Libraries
 #include "Transform.h"
+#include "Matrix3x3.h"
 
 // Namespaces
 using namespace reactphysics3d;
 
-// Constructor
-Transform::Transform() : mPosition(Vector3(0.0, 0.0, 0.0)), mOrientation(Quaternion::identity()) {
 
+// Set the transform from an OpenGL transform matrix
+void Transform::setFromOpenGL(decimal* openglMatrix) {
+    Matrix3x3 matrix(openglMatrix[0], openglMatrix[4], openglMatrix[8],
+                     openglMatrix[1], openglMatrix[5], openglMatrix[9],
+                     openglMatrix[2], openglMatrix[6], openglMatrix[10]);
+    mOrientation = Quaternion(matrix);
+    mPosition.setAllValues(openglMatrix[12], openglMatrix[13], openglMatrix[14]);
 }
 
-// Constructor
-Transform::Transform(const Vector3& position, const Matrix3x3& orientation)
-          : mPosition(position), mOrientation(Quaternion(orientation)) {
-
-}
-
-// Constructor
-Transform::Transform(const Vector3& position, const Quaternion& orientation)
-          : mPosition(position), mOrientation(orientation) {
-
-}
-
-// Copy-constructor
-Transform::Transform(const Transform& transform)
-          : mPosition(transform.mPosition), mOrientation(transform.mOrientation) {
-
-}
-
-// Destructor
-Transform::~Transform() {
-    
+// Get the OpenGL matrix of the transform
+void Transform::getOpenGLMatrix(decimal* openglMatrix) const {
+    const Matrix3x3& matrix = mOrientation.getMatrix();
+    openglMatrix[0] = matrix[0][0]; openglMatrix[1] = matrix[1][0];
+    openglMatrix[2] = matrix[2][0]; openglMatrix[3] = 0.0;
+    openglMatrix[4] = matrix[0][1]; openglMatrix[5] = matrix[1][1];
+    openglMatrix[6] = matrix[2][1]; openglMatrix[7] = 0.0;
+    openglMatrix[8] = matrix[0][2]; openglMatrix[9] = matrix[1][2];
+    openglMatrix[10] = matrix[2][2]; openglMatrix[11] = 0.0;
+    openglMatrix[12] = mPosition.x; openglMatrix[13] = mPosition.y;
+    openglMatrix[14] = mPosition.z; openglMatrix[15] = 1.0;
 }

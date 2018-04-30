@@ -9,6 +9,7 @@
     All rights reserved. Use of this source code is governed by a
     BSD-style license that can be found in the LICENSE.txt file.
 */
+/** \file */
 
 #pragma once
 
@@ -18,15 +19,27 @@
 #include <memory>
 #include <set>
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace half_float { class half; }
+#endif
 
 NAMESPACE_BEGIN(nanogui)
 
 NAMESPACE_BEGIN(detail)
+/**
+ * \struct serialization_helper core.h nanogui/serializer/core.h
+ *
+ * \rst
+ * The primary serialization helper class; preliminary specializations
+ * are in :ref:`file_nanogui_serializer_core.h`, see :class:`nanogui::Serializer`.
+ * \endrst
+ */
 template <typename T> struct serialization_helper;
 NAMESPACE_END(detail)
 
 /**
+ * \class Serializer core.h nanogui/serializer/core.h
+ *
  * \brief Serialization helper class
  *
  * This class can be used to store and retrieve a great variety of C++ data
@@ -37,13 +50,15 @@ NAMESPACE_END(detail)
  * objects.
  *
  * Note that this header file just provides the basics; the files
- * <tt>nanogui/serializer/opengl.h</tt>, and
- * <tt>nanogui/serializer/sparse.h</tt> must be included to serialize
- * the respective data types.
+ * ``nanogui/serializer/opengl.h``, and ``nanogui/serializer/sparse.h`` must
+ * be included to serialize the respective data types.
  */
 class Serializer {
 protected:
+// this friendship breaks the documentation
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     template <typename T> friend struct detail::serialization_helper;
+#endif
 
 public:
     /// Create a new serialized file for reading or writing
@@ -81,7 +96,7 @@ public:
     /// Return whether compatibility mode is enabled
     bool compatibility() { return mCompatibility; }
 
-    /// Store a field in the serialized file (when opened with <tt>write=true</tt>)
+    /// Store a field in the serialized file (when opened with ``write=true``)
     template <typename T> void set(const std::string &name, const T &value) {
         typedef detail::serialization_helper<T> helper;
         set_base(name, helper::type_id());
@@ -92,7 +107,7 @@ public:
             pop();
     }
 
-    /// Retrieve a field from the serialized file (when opened with <tt>write=false</tt>)
+    /// Retrieve a field from the serialized file (when opened with ``write=false``)
     template <typename T> bool get(const std::string &name, T &value) {
         typedef detail::serialization_helper<T> helper;
         if (!get_base(name, helper::type_id()))
@@ -124,7 +139,20 @@ private:
 
 NAMESPACE_BEGIN(detail)
 
-template <typename T> struct serialization_traits { };
+/**
+ * \struct serialization_traits core.h nanogui/seralizer/core.h
+ *
+ * \brief SFINAE helper struct for generic traits serialization.
+ *
+ * Must be fully specialized for any type that needs to be serialized.
+ *
+ * \tparam T
+ *     The type to explicity be serialized.
+ */
+template <typename T, typename SFINAE = void> struct serialization_traits { };
+
+// bypass template specializations for now
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 template <> struct serialization_traits<int8_t>           { const char *type_id = "u8";  };
 template <> struct serialization_traits<uint8_t>          { const char *type_id = "s8";  };
 template <> struct serialization_traits<int16_t>          { const char *type_id = "u16"; };
@@ -138,6 +166,10 @@ template <> struct serialization_traits<float>            { const char *type_id 
 template <> struct serialization_traits<double>           { const char *type_id = "f64"; };
 template <> struct serialization_traits<bool>             { const char *type_id = "b8";  };
 template <> struct serialization_traits<char>             { const char *type_id = "c8";  };
+
+template <typename T> struct serialization_traits<T> :
+    serialization_traits<typename std::underlying_type<T>::type,
+                         typename std::enable_if<std::is_enum<T>::value>::type> { };
 
 template <typename T> struct serialization_helper {
     static std::string type_id() { return serialization_traits<T>().type_id; }
@@ -156,7 +188,7 @@ template <> struct serialization_helper<std::string> {
 
     static void write(Serializer &s, const std::string *value, size_t count) {
         for (size_t i = 0; i<count; ++i) {
-            uint32_t length = value->length();
+            uint32_t length = (uint32_t) value->length();
             s.write(&length, sizeof(uint32_t));
             s.write((char *) value->data(), sizeof(char) * value->length());
             value++;
@@ -215,7 +247,7 @@ template <typename T> struct serialization_helper<std::vector<T>> {
 
     static void write(Serializer &s, const std::vector<T> *value, size_t count) {
         for (size_t i = 0; i<count; ++i) {
-            uint32_t size = value->size();
+            uint32_t size = (uint32_t) value->size();
             s.write(&size, sizeof(uint32_t));
             serialization_helper<T>::write(s, value->data(), size);
             value++;
@@ -368,6 +400,8 @@ struct serialization_helper<Widget> {
         }
     }
 };
+
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
 NAMESPACE_END(detail)
 NAMESPACE_END(nanogui)

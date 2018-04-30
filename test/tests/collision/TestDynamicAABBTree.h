@@ -29,12 +29,13 @@
 // Libraries
 #include "Test.h"
 #include "collision/broadphase/DynamicAABBTree.h"
-#include <vector>
+#include "memory/MemoryManager.h"
+#include "utils/Profiler.h"
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
 
-class OverlapCallback : public DynamicAABBTreeOverlapCallback {
+class TestOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
     public :
 
@@ -42,7 +43,7 @@ class OverlapCallback : public DynamicAABBTreeOverlapCallback {
 
         // Called when a overlapping node has been found during the call to
         // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
-        virtual void notifyOverlappingNode(int nodeId) {
+        virtual void notifyOverlappingNode(int nodeId) override {
             mOverlapNodes.push_back(nodeId);
         }
 
@@ -62,7 +63,7 @@ class DynamicTreeRaycastCallback : public DynamicAABBTreeRaycastCallback {
         std::vector<int> mHitNodes;
 
         // Called when the AABB of a leaf node is hit by a ray
-        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) {
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) override {
             mHitNodes.push_back(nodeId);
             return 1.0;
         }
@@ -86,10 +87,8 @@ class TestDynamicAABBTree : public Test {
 
         // ---------- Atributes ---------- //
 
-        OverlapCallback mOverlapCallback;
+        TestOverlapCallback mOverlapCallback;
         DynamicTreeRaycastCallback mRaycastCallback;
-
-
 
     public :
 
@@ -115,7 +114,13 @@ class TestDynamicAABBTree : public Test {
             // ------------ Create tree ---------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree;
+            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
+			
+#ifdef IS_PROFILING_ACTIVE
+			/// Pointer to the profiler
+			Profiler* profiler = new Profiler();
+			tree.setProfiler(profiler);
+#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -154,6 +159,10 @@ class TestDynamicAABBTree : public Test {
             test(*(int*)(tree.getNodeDataPointer(object2Id)) == object2Data);
             test(*(int*)(tree.getNodeDataPointer(object3Id)) == object3Data);
             test(*(int*)(tree.getNodeDataPointer(object4Id)) == object4Data);
+
+#ifdef IS_PROFILING_ACTIVE
+			delete profiler;
+#endif
         }
 
         void testOverlapping() {
@@ -161,7 +170,13 @@ class TestDynamicAABBTree : public Test {
             // ------------- Create tree ----------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree;
+            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
+
+#ifdef IS_PROFILING_ACTIVE
+			/// Pointer to the profiler
+			Profiler* profiler = new Profiler();
+			tree.setProfiler(profiler);
+#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -344,6 +359,9 @@ class TestDynamicAABBTree : public Test {
             test(!mOverlapCallback.isOverlapping(object3Id));
             test(!mOverlapCallback.isOverlapping(object4Id));
 
+#ifdef IS_PROFILING_ACTIVE
+			delete profiler;
+#endif
         }
 
         void testRaycast() {
@@ -351,7 +369,13 @@ class TestDynamicAABBTree : public Test {
             // ------------- Create tree ----------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree;
+            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
+
+#ifdef IS_PROFILING_ACTIVE
+			/// Pointer to the profiler
+			Profiler* profiler = new Profiler();
+			tree.setProfiler(profiler);
+#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -515,6 +539,10 @@ class TestDynamicAABBTree : public Test {
             test(!mRaycastCallback.isHit(object2Id));
             test(mRaycastCallback.isHit(object3Id));
             test(mRaycastCallback.isHit(object4Id));
+
+#ifdef IS_PROFILING_ACTIVE
+			delete profiler;
+#endif
         }
  };
 

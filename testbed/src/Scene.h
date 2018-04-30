@@ -28,15 +28,19 @@
 
 // Libraries
 #include "openglframework.h"
+#include "reactphysics3d.h"
 
 // Structure ContactPoint
 struct ContactPoint {
 
     public:
         openglframework::Vector3 point;
+		openglframework::Vector3 normal;
+		openglframework::Color color;
 
         /// Constructor
-        ContactPoint(const openglframework::Vector3& pointWorld) : point(pointWorld) {
+        ContactPoint(const openglframework::Vector3& pointWorld, const openglframework::Vector3& normalWorld, const openglframework::Color colorPoint)
+			        : point(pointWorld), normal(normalWorld), color(colorPoint) {
 
         }
 };
@@ -49,8 +53,8 @@ struct EngineSettings {
 
        long double elapsedTime;             // Elapsed time (in seconds)
        float timeStep;                      // Current time step (in seconds)
-       int nbVelocitySolverIterations;      // Nb of velocity solver iterations
-       int nbPositionSolverIterations;      // Nb of position solver iterations
+       unsigned int nbVelocitySolverIterations;      // Nb of velocity solver iterations
+       unsigned int nbPositionSolverIterations;      // Nb of position solver iterations
        bool isSleepingEnabled;              // True if sleeping technique is enabled
        float timeBeforeSleep;               // Time of inactivity before a body sleep
        float sleepLinearVelocity;           // Sleep linear velocity
@@ -61,6 +65,24 @@ struct EngineSettings {
        /// Constructor
        EngineSettings() : elapsedTime(0.0f), timeStep(0.0f) {
 
+       }
+
+       /// Return default engine settings
+       static EngineSettings defaultSettings() {
+
+           EngineSettings defaultSettings;
+
+           rp3d::WorldSettings worldSettings;
+           defaultSettings.timeStep = 1.0f / 60.0f;
+           defaultSettings.nbVelocitySolverIterations = worldSettings.defaultVelocitySolverNbIterations;
+           defaultSettings.nbPositionSolverIterations = worldSettings.defaultPositionSolverNbIterations;
+           defaultSettings.isSleepingEnabled = worldSettings.isSleepingEnabled;
+           defaultSettings.timeBeforeSleep = worldSettings.defaultTimeBeforeSleep;
+           defaultSettings.sleepLinearVelocity = worldSettings.defaultSleepLinearVelocity;
+           defaultSettings.sleepAngularVelocity = worldSettings.defaultSleepAngularVelocity;
+           defaultSettings.isGravityEnabled = true;
+
+           return defaultSettings;
        }
 };
 
@@ -76,7 +98,7 @@ class Scene {
         std::string mName;
 
         /// Physics engine settings
-        EngineSettings mEngineSettings;
+        EngineSettings& mEngineSettings;
 
         /// Camera
         openglframework::Camera mCamera;
@@ -108,6 +130,12 @@ class Scene {
         /// True if contact points are displayed
         bool mIsContactPointsDisplayed;
 
+        /// True if the AABBs of the phycis objects are displayed
+        bool mIsAABBsDisplayed;
+
+        /// True if we render shapes in wireframe mode
+        bool mIsWireframeEnabled;
+
         // -------------------- Methods -------------------- //
 
         /// Set the scene position (where the camera needs to look at)
@@ -134,7 +162,7 @@ class Scene {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Scene(const std::string& name, bool isShadowMappingEnabled = false);
+        Scene(const std::string& name, EngineSettings& engineSettings, bool isShadowMappingEnabled = false);
 
         /// Destructor
         virtual ~Scene();
@@ -178,12 +206,6 @@ class Scene {
         /// Return a reference to the camera
         const openglframework::Camera& getCamera() const;
 
-        /// Get the engine settings
-        EngineSettings getEngineSettings() const;
-
-        /// Set the engine settings
-        void setEngineSettings(const EngineSettings& settings);
-
         /// Set the interpolation factor
         void setInterpolationFactor(float interpolationFactor);
 
@@ -199,8 +221,20 @@ class Scene {
         /// Display/Hide the contact points
         void virtual setIsContactPointsDisplayed(bool display);
 
+        /// Display/Hide the AABBs
+        void setIsAABBsDisplayed(bool display);
+
+        /// Return true if wireframe rendering is enabled
+        bool getIsWireframeEnabled() const;
+
+        /// Enable/disbale wireframe rendering
+        void setIsWireframeEnabled(bool isEnabled);
+
         /// Return all the contact points of the scene
-        std::vector<ContactPoint> virtual getContactPoints() const;
+        std::vector<ContactPoint> virtual getContactPoints();
+
+        /// Update the engine settings
+        virtual void updateEngineSettings() = 0;
 };
 
 // Called when a keyboard event occurs
@@ -232,16 +266,6 @@ inline void Scene::setViewport(int x, int y, int width, int height) {
     mViewportHeight = height;
 }
 
-// Get the engine settings
-inline EngineSettings Scene::getEngineSettings() const {
-    return mEngineSettings;
-}
-
-// Set the engine settings
-inline void Scene::setEngineSettings(const EngineSettings& settings) {
-   mEngineSettings = settings;
-}
-
 // Set the interpolation factor
 inline void Scene::setInterpolationFactor(float interpolationFactor) {
     mInterpolationFactor = interpolationFactor;
@@ -267,8 +291,23 @@ inline void Scene::setIsContactPointsDisplayed(bool display) {
     mIsContactPointsDisplayed = display;
 }
 
+// Display/Hide the AABBs
+inline void Scene::setIsAABBsDisplayed(bool display) {
+    mIsAABBsDisplayed = display;
+}
+
+// Return true if wireframe rendering is enabled
+inline bool Scene::getIsWireframeEnabled() const {
+    return mIsWireframeEnabled;
+}
+
+// Enable/disbale wireframe rendering
+inline void Scene::setIsWireframeEnabled(bool isEnabled) {
+    mIsWireframeEnabled = isEnabled;
+}
+
 // Return all the contact points of the scene
-inline std::vector<ContactPoint> Scene::getContactPoints() const {
+inline std::vector<ContactPoint> Scene::getContactPoints() {
 
     // Return an empty list of contact points
     return std::vector<ContactPoint>();

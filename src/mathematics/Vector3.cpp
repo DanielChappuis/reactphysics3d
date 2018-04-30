@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -25,31 +25,9 @@
 
 // Libraries
 #include "Vector3.h"
-#include <iostream>
-#include <vector>
 
 // Namespaces
 using namespace reactphysics3d;
-
-// Constructor of the class Vector3D
-Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
-
-}
-
-// Constructor with arguments
-Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
-
-}
-
-// Copy-constructor
-Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
-
-}
-
-// Destructor
-Vector3::~Vector3() {
-
-}
 
 // Return the corresponding unit vector
 Vector3 Vector3::getUnit() const {
@@ -70,17 +48,17 @@ Vector3 Vector3::getOneUnitOrthogonalVector() const {
     assert(length() > MACHINE_EPSILON);
 
     // Get the minimum element of the vector
-    Vector3 vectorAbs(fabs(x), fabs(y), fabs(z));
+    Vector3 vectorAbs(std::fabs(x), std::fabs(y), std::fabs(z));
     int minElement = vectorAbs.getMinAxis();
 
     if (minElement == 0) {
-        return Vector3(0.0, -z, y) / sqrt(y*y + z*z);
+        return Vector3(0.0, -z, y) / std::sqrt(y*y + z*z);
     }
     else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / sqrt(x*x + z*z);
+        return Vector3(-z, 0.0, x) / std::sqrt(x*x + z*z);
     }
     else {
-        return Vector3(-y, x, 0.0) / sqrt(x*x + y*y);
+        return Vector3(-y, x, 0.0) / std::sqrt(x*x + y*y);
     }
 
 }

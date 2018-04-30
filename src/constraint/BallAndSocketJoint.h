@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -55,7 +55,7 @@ struct BallAndSocketJointInfo : public JointInfo {
          */
         BallAndSocketJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                                const Vector3& initAnchorPointWorldSpace)
-                              : JointInfo(rigidBody1, rigidBody2, BALLSOCKETJOINT),
+                              : JointInfo(rigidBody1, rigidBody2, JointType::BALLSOCKETJOINT),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace) {}
 };
 
@@ -105,41 +105,50 @@ class BallAndSocketJoint : public Joint {
 
         // -------------------- Methods -------------------- //
 
-        /// Private copy-constructor
-        BallAndSocketJoint(const BallAndSocketJoint& constraint);
-
-        /// Private assignment operator
-        BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint);
-
         /// Return the number of bytes used by the joint
-        virtual size_t getSizeInBytes() const;
+        virtual size_t getSizeInBytes() const override;
 
         /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData);
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
 
         /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData);
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
 
         /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData);
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BallAndSocketJoint(const BallAndSocketJointInfo& jointInfo);
+        BallAndSocketJoint(uint id, const BallAndSocketJointInfo& jointInfo);
 
         /// Destructor
-        virtual ~BallAndSocketJoint();
+        virtual ~BallAndSocketJoint() override = default;
+
+        /// Deleted copy-constructor
+        BallAndSocketJoint(const BallAndSocketJoint& constraint) = delete;
+
+        /// Return a string representation
+        virtual std::string to_string() const override;
+
+        /// Deleted assignment operator
+        BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint) = delete;
 };
 
 // Return the number of bytes used by the joint
 inline size_t BallAndSocketJoint::getSizeInBytes() const {
     return sizeof(BallAndSocketJoint);
+}
+
+// Return a string representation
+inline std::string BallAndSocketJoint::to_string() const {
+    return "BallAndSocketJoint{ localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() +
+            ", localAnchorPointBody2=" + mLocalAnchorPointBody2.to_string() + "}";
 }
 
 }
