@@ -14,26 +14,26 @@ Author : Daniel Chappuis
 
 ## Features
 
-ReactPhysics3D has the following features :
+ReactPhysics3D has the following features:
 
-    - Rigid body dynamics
-    - Discrete collision detection
-    - Collision shapes (Sphere, Box, Capsule, Convex Mesh, Static Concave Mesh, Height Field)
-    - Multiple collision shapes per body
-    - Broadphase collision detection (Dynamic AABB tree)
-    - Narrowphase collision detection (SAT/GJK)
-    - Collision response and friction (Sequential Impulses Solver)
-    - Joints (Ball and Socket, Hinge, Slider, Fixed)
-    - Collision filtering with categories
-    - Ray casting
-    - Sleeping technique for inactive bodies
-    - Multi-platform (Windows, Linux, Mac OS X)
-    - No external libraries (do not use STL containers)
-    - Documentation (user manual and Doxygen API)
-    - Testbed application with demos
-    - Integrated Profiler
-    - Logs
-    - Unit tests
+ - Rigid body dynamics
+ - Discrete collision detection
+ - Collision shapes (Sphere, Box, Capsule, Convex Mesh, Static Concave Mesh, Height Field)
+ - Multiple collision shapes per body
+ - Broadphase collision detection (Dynamic AABB tree)
+ - Narrowphase collision detection (SAT/GJK)
+ - Collision response and friction (Sequential Impulses Solver)
+ - Joints (Ball and Socket, Hinge, Slider, Fixed)
+ - Collision filtering with categories
+ - Ray casting
+ - Sleeping technique for inactive bodies
+ - Multi-platform (Windows, Linux, Mac OS X)
+ - No external libraries (do not use STL containers)
+ - Documentation (user manual and Doxygen API)
+ - Testbed application with demos
+ - Integrated Profiler
+ - Logs
+ - Unit tests
 
 ## License
 
