@@ -264,6 +264,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
     // Reset the array of collision shapes that have move (or have been created) during the
     // last simulation step
     mNbMovedShapes = 0;
+    mNbNonUsedMovedShapes = 0;
 
     // Sort the array of potential overlapping pairs in order to remove duplicate pairs
     std::sort(mPotentialPairs, mPotentialPairs + mNbPotentialPairs, BroadPhasePair::smallerThan);
