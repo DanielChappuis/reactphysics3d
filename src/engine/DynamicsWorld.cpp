@@ -359,11 +359,8 @@ void DynamicsWorld::solveContactsAndConstraints() {
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
 
-        // Check if there are contacts and constraints to solve
-        bool isConstraintsToSolve = mIslands[islandIndex]->getNbJoints() > 0;
-
-        // If there are constraints
-        if (isConstraintsToSolve) {
+        // If there are constraints to solve
+        if (mIslands[islandIndex]->getNbJoints() > 0) {
 
             // Initialize the constraint solver
             mConstraintSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
@@ -374,9 +371,10 @@ void DynamicsWorld::solveContactsAndConstraints() {
     for (uint i=0; i<mNbVelocitySolverIterations; i++) {
 
         for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
+
             // Solve the constraints
-            bool isConstraintsToSolve = mIslands[islandIndex]->getNbJoints() > 0;
-            if (isConstraintsToSolve) {
+            if (mIslands[islandIndex]->getNbJoints() > 0) {
+
                 mConstraintSolver.solveVelocityConstraints(mIslands[islandIndex]);
             }
         }
@@ -724,7 +722,7 @@ void DynamicsWorld::computeIslands() {
             RigidBody* bodyToVisit = stackBodiesToVisit[stackIndex];
             assert(bodyToVisit->isActive());
 
-            // Awake the body if it is slepping
+            // Awake the body if it is sleeping
             bodyToVisit->setIsSleeping(false);
 
             // Add the body into the island
@@ -746,22 +744,27 @@ void DynamicsWorld::computeIslands() {
                 // Check if the current contact manifold has already been added into an island
                 if (contactManifold->isAlreadyInIsland()) continue;
 
-                // Add the contact manifold into the island
-                mIslands[mNbIslands]->addContactManifold(contactManifold);
-                contactManifold->mIsAlreadyInIsland = true;
-
                 // Get the other body of the contact manifold
-                RigidBody* body1 = static_cast<RigidBody*>(contactManifold->getBody1());
-                RigidBody* body2 = static_cast<RigidBody*>(contactManifold->getBody2());
-                RigidBody* otherBody = (body1->getId() == bodyToVisit->getId()) ? body2 : body1;
+                RigidBody* body1 = dynamic_cast<RigidBody*>(contactManifold->getBody1());
+                RigidBody* body2 = dynamic_cast<RigidBody*>(contactManifold->getBody2());
 
-                // Check if the other body has already been added to the island
-                if (otherBody->mIsAlreadyInIsland) continue;
+                // If the colliding body is a RigidBody (and not a CollisionBody instead)
+                if (body1 != nullptr && body2 != nullptr) {
 
-                // Insert the other body into the stack of bodies to visit
-                stackBodiesToVisit[stackIndex] = otherBody;
-                stackIndex++;
-                otherBody->mIsAlreadyInIsland = true;
+                    // Add the contact manifold into the island
+                    mIslands[mNbIslands]->addContactManifold(contactManifold);
+                    contactManifold->mIsAlreadyInIsland = true;
+
+                    RigidBody* otherBody = (body1->getId() == bodyToVisit->getId()) ? body2 : body1;
+
+                    // Check if the other body has already been added to the island
+                    if (otherBody->mIsAlreadyInIsland) continue;
+
+                    // Insert the other body into the stack of bodies to visit
+                    stackBodiesToVisit[stackIndex] = otherBody;
+                    stackIndex++;
+                    otherBody->mIsAlreadyInIsland = true;
+                }
             }
 
             // For each joint in which the current body is involved
