@@ -186,6 +186,9 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Add the body ID to the list of free IDs
     mFreeBodiesIds.add(collisionBody->getId());
 
+    // Reset the contact manifold list of the body
+    collisionBody->resetContactManifoldsList();
+
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();
 
