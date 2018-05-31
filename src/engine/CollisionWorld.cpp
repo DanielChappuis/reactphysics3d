@@ -253,7 +253,7 @@ bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
  * @param overlapCallback Pointer to the callback class to report overlap
  * @param categoryMaskBits bits mask used to filter the bodies to test overlap with
  */
-inline void CollisionWorld::testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
+void CollisionWorld::testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
     mCollisionDetection.testAABBOverlap(aabb, overlapCallback, categoryMaskBits);
 }
 
