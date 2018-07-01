@@ -83,9 +83,10 @@ class SATAlgorithm {
                                        const Vector3& bCrossA, const Vector3& dCrossC) const;
 
         /// Compute and return the distance between the two edges in the direction of the candidate separating axis
-        decimal computeDistanceBetweenEdges(const Vector3& edge1A, const Vector3& edge2A, const Vector3& polyhedron2Centroid,
+        decimal computeDistanceBetweenEdges(const Vector3& edge1A, const Vector3& edge2A,
+                                            const Vector3& polyhedron1Centroid, const Vector3& polyhedron2Centroid,
                                             const Vector3& edge1Direction, const Vector3& edge2Direction,
-                                            Vector3& outSeparatingAxis) const;
+                                            bool isShape1Triangle, Vector3& outSeparatingAxis) const;
 
         /// Return the penetration depth between two polyhedra along a face normal axis of the first polyhedron
         decimal testSingleFaceDirectionPolyhedronVsPolyhedron(const ConvexPolyhedronShape* polyhedron1,

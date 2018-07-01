@@ -62,13 +62,17 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
     mVerticesNormals[2] = verticesNormals[2];
 
     // Faces
-    for (uint i=0; i<2; i++) {
-        mFaces[i].faceVertices.reserve(3);
-        mFaces[i].faceVertices.add(0);
-        mFaces[i].faceVertices.add(1);
-        mFaces[i].faceVertices.add(2);
-        mFaces[i].edgeIndex = i;
-    }
+    mFaces[0].faceVertices.reserve(3);
+    mFaces[0].faceVertices.add(0);
+    mFaces[0].faceVertices.add(1);
+    mFaces[0].faceVertices.add(2);
+    mFaces[0].edgeIndex = 0;
+
+    mFaces[1].faceVertices.reserve(3);
+    mFaces[1].faceVertices.add(0);
+    mFaces[1].faceVertices.add(2);
+    mFaces[1].faceVertices.add(1);
+    mFaces[1].edgeIndex = 1;
 
     // Edges
     for (uint i=0; i<6; i++) {
