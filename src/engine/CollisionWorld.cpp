@@ -247,7 +247,7 @@ bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
     return body1AABB.testCollision(body2AABB);
 }
 
-// Report all the bodies that overlap with the aabb in parameter
+// Report all the bodies which have an AABB that overlaps with the AABB in parameter
 /**
  * @param aabb AABB used to test for overlap
  * @param overlapCallback Pointer to the callback class to report overlap

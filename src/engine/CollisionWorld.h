@@ -147,7 +147,7 @@ class CollisionWorld {
         bool testAABBOverlap(const CollisionBody* body1,
                              const CollisionBody* body2) const;
 
-        /// Report all the bodies that overlap with the AABB in parameter
+        /// Report all the bodies which have an AABB that overlaps with the AABB in parameter
         void testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
 
         /// Return true if two bodies overlap
