@@ -36,15 +36,11 @@ using namespace reactphysics3d;
 // Constructor
 BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
-                     mNbMovedShapes(0), mNbAllocatedMovedShapes(8),
-                     mNbNonUsedMovedShapes(0), mNbPotentialPairs(0), mNbAllocatedPotentialPairs(8),
+                     mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
+                     mNbPotentialPairs(0), mNbAllocatedPotentialPairs(8),
                      mCollisionDetection(collisionDetection) {
 
     PoolAllocator& poolAllocator = collisionDetection.getMemoryManager().getPoolAllocator();
-
-    // Allocate memory for the array of non-static proxy shapes IDs
-    mMovedShapes = static_cast<int*>(poolAllocator.allocate(mNbAllocatedMovedShapes * sizeof(int)));
-    assert(mMovedShapes != nullptr);
 
     // Allocate memory for the array of potential overlapping pairs
     mPotentialPairs = static_cast<BroadPhasePair*>(poolAllocator.allocate(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair)));
@@ -64,38 +60,8 @@ BroadPhaseAlgorithm::~BroadPhaseAlgorithm() {
     // Get the memory pool allocatory
     PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
 
-    // Release the memory for the array of non-static proxy shapes IDs
-    poolAllocator.release(mMovedShapes, mNbAllocatedMovedShapes * sizeof (int));
-
     // Release the memory for the array of potential overlapping pairs
     poolAllocator.release(mPotentialPairs, mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
-}
-
-// Add a collision shape in the array of shapes that have moved in the last simulation step
-// and that need to be tested again for broad-phase overlapping.
-void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
-
-
-    // Allocate more elements in the array of shapes that have moved if necessary
-    if (mNbAllocatedMovedShapes == mNbMovedShapes) {
-
-        // Get the memory pool allocatory
-        PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
-
-        uint oldNbAllocatedMovedShapes = mNbAllocatedMovedShapes;
-        mNbAllocatedMovedShapes *= 2;
-        int* oldArray = mMovedShapes;
-        mMovedShapes = static_cast<int*>(poolAllocator.allocate(mNbAllocatedMovedShapes * sizeof(int)));
-        assert(mMovedShapes != nullptr);
-        std::memcpy(mMovedShapes, oldArray, mNbMovedShapes * sizeof(int));
-        poolAllocator.release(oldArray, oldNbAllocatedMovedShapes * sizeof(int));
-    }
-
-    // Store the broad-phase ID into the array of shapes that have moved
-    assert(mNbMovedShapes < mNbAllocatedMovedShapes);
-    assert(mMovedShapes != nullptr);
-    mMovedShapes[mNbMovedShapes] = broadPhaseID;
-    mNbMovedShapes++;
 }
 
 // Return true if the two broad-phase collision shapes are overlapping
@@ -121,47 +87,6 @@ void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
     BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
 
     mDynamicAABBTree.raycast(ray, broadPhaseRaycastCallback);
-}
-
-// Remove a collision shape from the array of shapes that have moved in the last simulation step
-// and that need to be tested again for broad-phase overlapping.
-void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
-
-    assert(mNbNonUsedMovedShapes <= mNbMovedShapes);
-
-    // If less than the quarter of allocated elements of the non-static shapes IDs array
-    // are used, we release some allocated memory
-    if ((mNbMovedShapes - mNbNonUsedMovedShapes) < mNbAllocatedMovedShapes / 4 &&
-            mNbAllocatedMovedShapes > 8) {
-
-        // Get the memory pool allocatory
-        PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
-
-        uint oldNbAllocatedMovedShapes = mNbAllocatedMovedShapes;
-        mNbAllocatedMovedShapes /= 2;
-        int* oldArray = mMovedShapes;
-        mMovedShapes = static_cast<int*>(poolAllocator.allocate(mNbAllocatedMovedShapes * sizeof(int)));
-        assert(mMovedShapes != nullptr);
-        uint nbElements = 0;
-        for (uint i=0; i<mNbMovedShapes; i++) {
-            if (oldArray[i] != -1) {
-                mMovedShapes[nbElements] = oldArray[i];
-                nbElements++;
-            }
-        }
-        mNbMovedShapes = nbElements;
-        mNbNonUsedMovedShapes = 0;
-        poolAllocator.release(oldArray, oldNbAllocatedMovedShapes * sizeof(int));
-    }
-
-    // Remove the broad-phase ID from the array
-    for (uint i=0; i<mNbMovedShapes; i++) {
-        if (mMovedShapes[i] == broadPhaseID) {
-            mMovedShapes[i] = -1;
-            mNbNonUsedMovedShapes++;
-            break;
-        }
-    }
 }
 
 // Add a proxy collision shape into the broad-phase collision detection
@@ -239,8 +164,8 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
 
     // For all collision shapes that have moved (or have been created) during the
     // last simulation step
-    for (uint i=0; i<mNbMovedShapes; i++) {
-        int shapeID = mMovedShapes[i];
+    for (auto it = mMovedShapes.begin(); it != mMovedShapes.end(); ++it) {
+        int shapeID = *it;
 
         if (shapeID == -1) continue;
 
@@ -263,8 +188,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
 
     // Reset the array of collision shapes that have move (or have been created) during the
     // last simulation step
-    mNbMovedShapes = 0;
-    mNbNonUsedMovedShapes = 0;
+    mMovedShapes.clear();
 
     // Sort the array of potential overlapping pairs in order to remove duplicate pairs
     std::sort(mPotentialPairs, mPotentialPairs + mNbPotentialPairs, BroadPhasePair::smallerThan);
