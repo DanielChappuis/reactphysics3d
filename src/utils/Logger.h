@@ -126,7 +126,7 @@ class Logger {
                 }
 
                 /// Destructor
-                virtual ~TextFormatter() {
+                virtual ~TextFormatter() override {
 
                 }
 
@@ -279,7 +279,7 @@ class Logger {
                 }
 
                 /// Destructor
-                virtual ~HtmlFormatter() {
+                virtual ~HtmlFormatter() override {
 
                 }
 
