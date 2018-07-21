@@ -26,6 +26,9 @@
 #ifndef REACTPHYSICS3D_PROFILER_H
 #define REACTPHYSICS3D_PROFILER_H
 
+// If profiling is enabled
+#ifdef IS_PROFILING_ACTIVE
+
 // Libraries
 #include "configuration.h"
 #include "engine/Timer.h"
@@ -379,17 +382,9 @@ class ProfileSample {
         }
 };
 
-#ifdef IS_PROFILING_ACTIVE
 
 // Use this macro to start profile a block of code
 #define RP3D_PROFILE(name, profiler) ProfileSample profileSample(name, profiler)
-
-#else   // If profile is not active
-
-// Empty macro in case profiling is not active
-#define RP3D_PROFILE(name, profiler)
-
-#endif
 
 // Return true if we are at the root of the profiler tree
 inline bool ProfileNodeIterator::isRoot() {
@@ -504,5 +499,12 @@ inline void Profiler::destroy() {
 
 }
 
+// If profiling is disabled
+#else
+
+// Empty macro in case profiling is not active
+#define RP3D_PROFILE(name, profiler)
+
+#endif
 
 #endif

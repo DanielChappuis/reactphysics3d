@@ -23,6 +23,7 @@
 *                                                                               *
 ********************************************************************************/
 
+// If profiling is enabled
 #ifdef IS_PROFILING_ACTIVE
 
 // Libraries
