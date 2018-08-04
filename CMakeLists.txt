@@ -254,6 +254,12 @@ ENDIF()
 
 SET_TARGET_PROPERTIES(reactphysics3d PROPERTIES PUBLIC_HEADER "${REACTPHYSICS3D_HEADERS}")
 
+# Version number and soname for the library
+SET_TARGET_PROPERTIES(reactphysics3d  PROPERTIES
+          VERSION "0.7.0" 
+          SOVERSION "0.7" 
+)
+
 # Install target
 INSTALL(TARGETS reactphysics3d
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
