@@ -97,51 +97,51 @@ class TestSet : public Test {
             // ----- Constructors ----- //
 
             Set<std::string> set1(mAllocator);
-            test(set1.capacity() == 0);
-            test(set1.size() == 0);
+            rp3d_test(set1.capacity() == 0);
+            rp3d_test(set1.size() == 0);
 
             Set<std::string> set2(mAllocator, 100);
-            test(set2.capacity() >= 100);
-            test(set2.size() == 0);
+            rp3d_test(set2.capacity() >= 100);
+            rp3d_test(set2.size() == 0);
 
             // ----- Copy Constructors ----- //
             Set<std::string> set3(set1);
-            test(set3.capacity() == set1.capacity());
-            test(set3.size() == set1.size());
+            rp3d_test(set3.capacity() == set1.capacity());
+            rp3d_test(set3.size() == set1.size());
 
             Set<int> set4(mAllocator);
             set4.add(10);
             set4.add(20);
             set4.add(30);
-            test(set4.capacity() >= 3);
-            test(set4.size() == 3);
+            rp3d_test(set4.capacity() >= 3);
+            rp3d_test(set4.size() == 3);
             set4.add(30);
-            test(set4.size() == 3);
+            rp3d_test(set4.size() == 3);
 
             Set<int> set5(set4);
-            test(set5.capacity() == set4.capacity());
-            test(set5.size() == set4.size());
-            test(set5.contains(10));
-            test(set5.contains(20));
-            test(set5.contains(30));
+            rp3d_test(set5.capacity() == set4.capacity());
+            rp3d_test(set5.size() == set4.size());
+            rp3d_test(set5.contains(10));
+            rp3d_test(set5.contains(20));
+            rp3d_test(set5.contains(30));
         }
 
         void testReserve() {
 
             Set<std::string> set1(mAllocator);
             set1.reserve(15);
-            test(set1.capacity() >= 15);
+            rp3d_test(set1.capacity() >= 15);
             set1.add("test1");
             set1.add("test2");
-            test(set1.capacity() >= 15);
+            rp3d_test(set1.capacity() >= 15);
 
             set1.reserve(10);
-            test(set1.capacity() >= 15);
+            rp3d_test(set1.capacity() >= 15);
 
             set1.reserve(100);
-            test(set1.capacity() >= 100);
-            test(set1.contains("test1"));
-            test(set1.contains("test2"));
+            rp3d_test(set1.capacity() >= 100);
+            rp3d_test(set1.contains("test1"));
+            rp3d_test(set1.contains("test2"));
         }
 
         void testAddRemoveClear() {
@@ -152,10 +152,10 @@ class TestSet : public Test {
             set1.add(10);
             set1.add(80);
             set1.add(130);
-            test(set1.contains(10));
-            test(set1.contains(80));
-            test(set1.contains(130));
-            test(set1.size() == 3);
+            rp3d_test(set1.contains(10));
+            rp3d_test(set1.contains(80));
+            rp3d_test(set1.contains(130));
+            rp3d_test(set1.size() == 3);
 
             Set<int> set2(mAllocator, 15);
             for (int i = 0; i < 1000000; i++) {
@@ -165,40 +165,40 @@ class TestSet : public Test {
             for (int i = 0; i < 1000000; i++) {
                 if (!set2.contains(i)) isValid = false;
             }
-            test(isValid);
+            rp3d_test(isValid);
 
             set1.remove(10);
             set1.add(10);
-            test(set1.size() == 3);
-            test(set1.contains(10));
+            rp3d_test(set1.size() == 3);
+            rp3d_test(set1.contains(10));
 
             set1.add(34);
-            test(set1.contains(34));
-            test(set1.size() == 4);
+            rp3d_test(set1.contains(34));
+            rp3d_test(set1.size() == 4);
 
             // ----- Test remove() ----- //
 
             set1.remove(10);
-            test(!set1.contains(10));
-            test(set1.contains(80));
-            test(set1.contains(130));
-            test(set1.contains(34));
-            test(set1.size() == 3);
+            rp3d_test(!set1.contains(10));
+            rp3d_test(set1.contains(80));
+            rp3d_test(set1.contains(130));
+            rp3d_test(set1.contains(34));
+            rp3d_test(set1.size() == 3);
 
             set1.remove(80);
-            test(!set1.contains(80));
-            test(set1.contains(130));
-            test(set1.contains(34));
-            test(set1.size() == 2);
+            rp3d_test(!set1.contains(80));
+            rp3d_test(set1.contains(130));
+            rp3d_test(set1.contains(34));
+            rp3d_test(set1.size() == 2);
 
             set1.remove(130);
-            test(!set1.contains(130));
-            test(set1.contains(34));
-            test(set1.size() == 1);
+            rp3d_test(!set1.contains(130));
+            rp3d_test(set1.contains(34));
+            rp3d_test(set1.size() == 1);
 
             set1.remove(34);
-            test(!set1.contains(34));
-            test(set1.size() == 0);
+            rp3d_test(!set1.contains(34));
+            rp3d_test(set1.size() == 0);
 
             isValid = true;
             for (int i = 0; i < 1000000; i++) {
@@ -207,8 +207,8 @@ class TestSet : public Test {
             for (int i = 0; i < 1000000; i++) {
                 if (set2.contains(i)) isValid = false;
             }
-            test(isValid);
-            test(set2.size() == 0);
+            rp3d_test(isValid);
+            rp3d_test(set2.size() == 0);
 
             Set<int> set3(mAllocator);
             for (int i=0; i < 1000000; i++) {
@@ -219,12 +219,12 @@ class TestSet : public Test {
             set3.add(1);
             set3.add(2);
             set3.add(3);
-            test(set3.size() == 3);
+            rp3d_test(set3.size() == 3);
             auto it = set3.begin();
             set3.remove(it++);
-            test(!set3.contains(1));
-            test(set3.size() == 2);
-            test(*it == 2);
+            rp3d_test(!set3.contains(1));
+            rp3d_test(set3.size() == 2);
+            rp3d_test(*it == 2);
 
             set3.add(6);
             set3.add(7);
@@ -232,7 +232,7 @@ class TestSet : public Test {
             for (it = set3.begin(); it != set3.end();) {
                it = set3.remove(it);
             }
-            test(set3.size() == 0);
+            rp3d_test(set3.size() == 0);
 
             // ----- Test clear() ----- //
 
@@ -241,16 +241,16 @@ class TestSet : public Test {
             set4.add(4);
             set4.add(6);
             set4.clear();
-            test(set4.size() == 0);
+            rp3d_test(set4.size() == 0);
             set4.add(2);
-            test(set4.size() == 1);
-            test(set4.contains(2));
+            rp3d_test(set4.size() == 1);
+            rp3d_test(set4.contains(2));
             set4.clear();
-            test(set4.size() == 0);
+            rp3d_test(set4.size() == 0);
 
             Set<int> set5(mAllocator);
             set5.clear();
-            test(set5.size() == 0);
+            rp3d_test(set5.size() == 0);
 
             // ----- Test map with always same hash value for keys ----- //
 
@@ -264,37 +264,37 @@ class TestSet : public Test {
                     isTestValid = false;
                 }
             }
-            test(isTestValid);
+            rp3d_test(isTestValid);
             for (int i=0; i < 1000; i++) {
                 set6.remove(TestValueSet(i));
             }
-            test(set6.size() == 0);
+            rp3d_test(set6.size() == 0);
         }
 
         void testContains() {
 
             Set<int> set1(mAllocator);
 
-            test(!set1.contains(2));
-            test(!set1.contains(4));
-            test(!set1.contains(6));
+            rp3d_test(!set1.contains(2));
+            rp3d_test(!set1.contains(4));
+            rp3d_test(!set1.contains(6));
 
             set1.add(2);
             set1.add(4);
             set1.add(6);
 
-            test(set1.contains(2));
-            test(set1.contains(4));
-            test(set1.contains(6));
+            rp3d_test(set1.contains(2));
+            rp3d_test(set1.contains(4));
+            rp3d_test(set1.contains(6));
 
             set1.remove(4);
-            test(!set1.contains(4));
-            test(set1.contains(2));
-            test(set1.contains(6));
+            rp3d_test(!set1.contains(4));
+            rp3d_test(set1.contains(2));
+            rp3d_test(set1.contains(6));
 
             set1.clear();
-            test(!set1.contains(2));
-            test(!set1.contains(6));
+            rp3d_test(!set1.contains(2));
+            rp3d_test(!set1.contains(6));
         }
 
         void testFind() {
@@ -303,14 +303,14 @@ class TestSet : public Test {
             set1.add(2);
             set1.add(4);
             set1.add(6);
-            test(set1.find(2) != set1.end());
-            test(set1.find(4) != set1.end());
-            test(set1.find(6) != set1.end());
-            test(set1.find(45) == set1.end());
+            rp3d_test(set1.find(2) != set1.end());
+            rp3d_test(set1.find(4) != set1.end());
+            rp3d_test(set1.find(6) != set1.end());
+            rp3d_test(set1.find(45) == set1.end());
 
             set1.remove(2);
 
-            test(set1.find(2) == set1.end());
+            rp3d_test(set1.find(2) == set1.end());
         }
 
         void testEquality() {
@@ -318,7 +318,7 @@ class TestSet : public Test {
             Set<std::string> set1(mAllocator, 10);
             Set<std::string> set2(mAllocator, 2);
 
-            test(set1 == set2);
+            rp3d_test(set1 == set2);
 
             set1.add("a");
             set1.add("b");
@@ -328,25 +328,25 @@ class TestSet : public Test {
             set2.add("b");
             set2.add("h");
 
-            test(set1 == set1);
-            test(set2 == set2);
-            test(set1 != set2);
-            test(set2 != set1);
+            rp3d_test(set1 == set1);
+            rp3d_test(set2 == set2);
+            rp3d_test(set1 != set2);
+            rp3d_test(set2 != set1);
 
             set1.add("a");
             set2.remove("h");
             set2.add("c");
 
-            test(set1 == set2);
-            test(set2 == set1);
+            rp3d_test(set1 == set2);
+            rp3d_test(set2 == set1);
 
             Set<std::string> set3(mAllocator);
             set3.add("a");
 
-            test(set1 != set3);
-            test(set2 != set3);
-            test(set3 != set1);
-            test(set3 != set2);
+            rp3d_test(set1 != set3);
+            rp3d_test(set2 != set3);
+            rp3d_test(set3 != set1);
+            rp3d_test(set3 != set2);
         }
 
         void testAssignment() {
@@ -358,40 +358,40 @@ class TestSet : public Test {
 
            Set<int> set2(mAllocator);
            set2 = set1;
-           test(set2.size() == set1.size());
-           test(set2.contains(1));
-           test(set2.contains(2));
-           test(set2.contains(10));
-           test(set1 == set2);
+           rp3d_test(set2.size() == set1.size());
+           rp3d_test(set2.contains(1));
+           rp3d_test(set2.contains(2));
+           rp3d_test(set2.contains(10));
+           rp3d_test(set1 == set2);
 
            Set<int> set3(mAllocator, 100);
            set3 = set1;
-           test(set3.size() == set1.size());
-           test(set3 == set1);
-           test(set3.contains(1));
-           test(set3.contains(2));
-           test(set3.contains(10));
+           rp3d_test(set3.size() == set1.size());
+           rp3d_test(set3 == set1);
+           rp3d_test(set3.contains(1));
+           rp3d_test(set3.contains(2));
+           rp3d_test(set3.contains(10));
 
            Set<int> set4(mAllocator);
            set3 = set4;
-           test(set3.size() == 0);
-           test(set3 == set4);
+           rp3d_test(set3.size() == 0);
+           rp3d_test(set3 == set4);
 
            Set<int> set5(mAllocator);
            set5.add(7);
            set5.add(19);
            set1 = set5;
-           test(set5.size() == set1.size());
-           test(set1 == set5);
-           test(set1.contains(7));
-           test(set1.contains(19));
+           rp3d_test(set5.size() == set1.size());
+           rp3d_test(set1 == set5);
+           rp3d_test(set1.contains(7));
+           rp3d_test(set1.contains(19));
         }
 
         void testIterators() {
 
             Set<int> set1(mAllocator);
 
-            test(set1.begin() == set1.end());
+            rp3d_test(set1.begin() == set1.end());
 
             set1.add(1);
             set1.add(2);
@@ -401,14 +401,14 @@ class TestSet : public Test {
             Set<int>::Iterator itBegin = set1.begin();
             Set<int>::Iterator it = set1.begin();
 
-            test(itBegin == it);
+            rp3d_test(itBegin == it);
 
             int size = 0;
             for (auto it = set1.begin(); it != set1.end(); ++it) {
-                test(set1.contains(*it));
+                rp3d_test(set1.contains(*it));
                 size++;
             }
-            test(set1.size() == size);
+            rp3d_test(set1.size() == size);
         }
  };
 

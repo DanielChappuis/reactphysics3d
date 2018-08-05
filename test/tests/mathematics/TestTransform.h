@@ -90,25 +90,25 @@ class TestTransform : public Test {
             Transform transform1(Vector3(1, 2, 3), Quaternion(6, 7, 8, 9));
             Transform transform2(Vector3(4, 5, 6), Matrix3x3(1, 0, 0, 0, 1, 0, 0, 0, 1));
             Transform transform3(transform1);
-            test(transform1.getPosition() == Vector3(1, 2, 3));
-            test(transform1.getOrientation() == Quaternion(6, 7, 8, 9));
-            test(transform2.getPosition() == Vector3(4, 5, 6));
-            test(transform2.getOrientation() == Quaternion::identity());
-            test(transform3 == transform1);
+            rp3d_test(transform1.getPosition() == Vector3(1, 2, 3));
+            rp3d_test(transform1.getOrientation() == Quaternion(6, 7, 8, 9));
+            rp3d_test(transform2.getPosition() == Vector3(4, 5, 6));
+            rp3d_test(transform2.getOrientation() == Quaternion::identity());
+            rp3d_test(transform3 == transform1);
         }
 
         /// Test getter and setter
         void testGetSet() {
-            test(mIdentityTransform.getPosition() == Vector3(0, 0, 0));
-            test(mIdentityTransform.getOrientation() == Quaternion::identity());
+            rp3d_test(mIdentityTransform.getPosition() == Vector3(0, 0, 0));
+            rp3d_test(mIdentityTransform.getOrientation() == Quaternion::identity());
             Transform transform;
             transform.setPosition(Vector3(5, 7, 8));
             transform.setOrientation(Quaternion(1, 2, 3, 1));
-            test(transform.getPosition() == Vector3(5, 7, 8));
-            test(transform.getOrientation() == Quaternion(1, 2, 3, 1));
+            rp3d_test(transform.getPosition() == Vector3(5, 7, 8));
+            rp3d_test(transform.getOrientation() == Quaternion(1, 2, 3, 1));
             transform.setToIdentity();
-            test(transform.getPosition() == Vector3(0, 0, 0));
-            test(transform.getOrientation() == Quaternion::identity());
+            rp3d_test(transform.getPosition() == Vector3(0, 0, 0));
+            rp3d_test(transform.getOrientation() == Quaternion::identity());
         }
 
         /// Test the inverse
@@ -117,9 +117,9 @@ class TestTransform : public Test {
             Vector3 vector(2, 3, 4);
             Vector3 tempVector = mTransform1 * vector;
             Vector3 tempVector2 = inverseTransform * tempVector;
-            test(approxEqual(tempVector2.x, vector.x, decimal(10e-6)));
-            test(approxEqual(tempVector2.y, vector.y, decimal(10e-6)));
-            test(approxEqual(tempVector2.z, vector.z, decimal(10e-6)));
+            rp3d_test(approxEqual(tempVector2.x, vector.x, decimal(10e-6)));
+            rp3d_test(approxEqual(tempVector2.y, vector.y, decimal(10e-6)));
+            rp3d_test(approxEqual(tempVector2.z, vector.z, decimal(10e-6)));
         }
 
         /// Test methods to set and get transform matrix from and to OpenGL
@@ -137,30 +137,30 @@ class TestTransform : public Test {
             transform.setFromOpenGL(openglMatrix);
             decimal openglMatrix2[16];
             transform.getOpenGLMatrix(openglMatrix2);
-            test(approxEqual(openglMatrix2[0], orientation[0][0]));
-            test(approxEqual(openglMatrix2[1], orientation[1][0]));
-            test(approxEqual(openglMatrix2[2], orientation[2][0]));
-            test(approxEqual(openglMatrix2[3], 0));
-            test(approxEqual(openglMatrix2[4], orientation[0][1]));
-            test(approxEqual(openglMatrix2[5], orientation[1][1]));
-            test(approxEqual(openglMatrix2[6], orientation[2][1]));
-            test(approxEqual(openglMatrix2[7], 0));
-            test(approxEqual(openglMatrix2[8], orientation[0][2]));
-            test(approxEqual(openglMatrix2[9], orientation[1][2]));
-            test(approxEqual(openglMatrix2[10], orientation[2][2]));
-            test(approxEqual(openglMatrix2[11], 0));
-            test(approxEqual(openglMatrix2[12], position.x));
-            test(approxEqual(openglMatrix2[13], position.y));
-            test(approxEqual(openglMatrix2[14], position.z));
-            test(approxEqual(openglMatrix2[15], 1));
+            rp3d_test(approxEqual(openglMatrix2[0], orientation[0][0]));
+            rp3d_test(approxEqual(openglMatrix2[1], orientation[1][0]));
+            rp3d_test(approxEqual(openglMatrix2[2], orientation[2][0]));
+            rp3d_test(approxEqual(openglMatrix2[3], 0));
+            rp3d_test(approxEqual(openglMatrix2[4], orientation[0][1]));
+            rp3d_test(approxEqual(openglMatrix2[5], orientation[1][1]));
+            rp3d_test(approxEqual(openglMatrix2[6], orientation[2][1]));
+            rp3d_test(approxEqual(openglMatrix2[7], 0));
+            rp3d_test(approxEqual(openglMatrix2[8], orientation[0][2]));
+            rp3d_test(approxEqual(openglMatrix2[9], orientation[1][2]));
+            rp3d_test(approxEqual(openglMatrix2[10], orientation[2][2]));
+            rp3d_test(approxEqual(openglMatrix2[11], 0));
+            rp3d_test(approxEqual(openglMatrix2[12], position.x));
+            rp3d_test(approxEqual(openglMatrix2[13], position.y));
+            rp3d_test(approxEqual(openglMatrix2[14], position.z));
+            rp3d_test(approxEqual(openglMatrix2[15], 1));
         }
 
         /// Test the method to interpolate transforms
         void testInterpolateTransform() {
             Transform transformStart = Transform::interpolateTransforms(mTransform1, mTransform2,0);
             Transform transformEnd = Transform::interpolateTransforms(mTransform1, mTransform2,1);
-            test(transformStart == mTransform1);
-            test(transformEnd == mTransform2);
+            rp3d_test(transformStart == mTransform1);
+            rp3d_test(transformEnd == mTransform2);
 
             decimal sinA = sin(PI/3.0f);
             decimal cosA = cos(PI/3.0f);
@@ -171,46 +171,46 @@ class TestTransform : public Test {
             Transform transform = Transform::interpolateTransforms(transform1, transform2, 0.5);
             Vector3 position = transform.getPosition();
             Quaternion orientation = transform.getOrientation();
-            test(approxEqual(position.x, 6));
-            test(approxEqual(position.y, 8));
-            test(approxEqual(position.z, 11));
-            test(approxEqual(orientation.x, sinB));
-            test(approxEqual(orientation.y, sinB));
-            test(approxEqual(orientation.z, sinB));
-            test(approxEqual(orientation.w, cosB));
+            rp3d_test(approxEqual(position.x, 6));
+            rp3d_test(approxEqual(position.y, 8));
+            rp3d_test(approxEqual(position.z, 11));
+            rp3d_test(approxEqual(orientation.x, sinB));
+            rp3d_test(approxEqual(orientation.y, sinB));
+            rp3d_test(approxEqual(orientation.z, sinB));
+            rp3d_test(approxEqual(orientation.w, cosB));
         }
 
         /// Test the identity methods
         void testIdentity() {
             Transform transform = Transform::identity();
-            test(transform.getPosition() == Vector3(0, 0, 0));
-            test(transform.getOrientation() == Quaternion::identity());
+            rp3d_test(transform.getPosition() == Vector3(0, 0, 0));
+            rp3d_test(transform.getOrientation() == Quaternion::identity());
 
             Transform transform2(Vector3(5, 6, 2), Quaternion(3, 5, 1, 6));
             transform2.setToIdentity();
-            test(transform2.getPosition() == Vector3(0, 0, 0));
-            test(transform2.getOrientation() == Quaternion::identity());
+            rp3d_test(transform2.getPosition() == Vector3(0, 0, 0));
+            rp3d_test(transform2.getOrientation() == Quaternion::identity());
         }
 
         /// Test the overloaded operators
         void testOperators() {
 
             // Equality, inequality operator
-            test(mTransform1 == mTransform1);
-            test(mTransform1 != mTransform2);
+            rp3d_test(mTransform1 == mTransform1);
+            rp3d_test(mTransform1 != mTransform2);
 
             // Assignment operator
             Transform transform;
             transform = mTransform1;
-            test(transform == mTransform1);
+            rp3d_test(transform == mTransform1);
 
             // Multiplication
             Vector3 vector(7, 53, 5);
             Vector3 vector2 = mTransform2 * (mTransform1 * vector);
             Vector3 vector3 = (mTransform2 * mTransform1) * vector;
-            test(approxEqual(vector2.x, vector3.x, decimal(10e-6)));
-            test(approxEqual(vector2.y, vector3.y, decimal(10e-6)));
-            test(approxEqual(vector2.z, vector3.z, decimal(10e-6)));
+            rp3d_test(approxEqual(vector2.x, vector3.x, decimal(10e-6)));
+            rp3d_test(approxEqual(vector2.y, vector3.y, decimal(10e-6)));
+            rp3d_test(approxEqual(vector2.z, vector3.z, decimal(10e-6)));
         }
  };
 
