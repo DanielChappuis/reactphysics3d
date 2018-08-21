@@ -37,14 +37,8 @@ using namespace reactphysics3d;
 BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
                      mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
-                     mNbPotentialPairs(0), mNbAllocatedPotentialPairs(8),
+                     mPotentialPairs(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
-
-    PoolAllocator& poolAllocator = collisionDetection.getMemoryManager().getPoolAllocator();
-
-    // Allocate memory for the array of potential overlapping pairs
-    mPotentialPairs = static_cast<BroadPhasePair*>(poolAllocator.allocate(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair)));
-    assert(mPotentialPairs != nullptr);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -52,16 +46,6 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
 
 #endif
 
-}
-
-// Destructor
-BroadPhaseAlgorithm::~BroadPhaseAlgorithm() {
-
-    // Get the memory pool allocatory
-    PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
-
-    // Release the memory for the array of potential overlapping pairs
-    poolAllocator.release(mPotentialPairs, mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
 }
 
 // Return true if the two broad-phase collision shapes are overlapping
@@ -158,7 +142,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
     // TODO : Try to see if we can allocate potential pairs in single frame allocator
 
     // Reset the potential overlapping pairs
-    mNbPotentialPairs = 0;
+    mPotentialPairs.clear();
 
     LinkedList<int> overlappingNodes(memoryManager.getPoolAllocator());
 
@@ -191,22 +175,22 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
     mMovedShapes.clear();
 
     // Sort the array of potential overlapping pairs in order to remove duplicate pairs
-    std::sort(mPotentialPairs, mPotentialPairs + mNbPotentialPairs, BroadPhasePair::smallerThan);
+    std::sort(mPotentialPairs.begin(), mPotentialPairs.end(), BroadPhasePair::smallerThan);
 
     // Check all the potential overlapping pairs avoiding duplicates to report unique
     // overlapping pairs
-    uint i=0;
-    while (i < mNbPotentialPairs) {
+    auto it = mPotentialPairs.begin();
+    while (it != mPotentialPairs.end()) {
 
         // Get a potential overlapping pair
-        BroadPhasePair* pair = mPotentialPairs + i;
-        i++;
+        BroadPhasePair& pair = *it;
+        ++it;
 
-        assert(pair->collisionShape1ID != pair->collisionShape2ID);
+        assert(pair.collisionShape1ID != pair.collisionShape2ID);
 
         // Get the two collision shapes of the pair
-        ProxyShape* shape1 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair->collisionShape1ID));
-        ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair->collisionShape2ID));
+        ProxyShape* shape1 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair.collisionShape1ID));
+        ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair.collisionShape2ID));
 
         // If the two proxy collision shapes are from the same body, skip it
         if (shape1->getBody()->getId() != shape2->getBody()->getId()) {
@@ -216,34 +200,18 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
         }
 
         // Skip the duplicate overlapping pairs
-        while (i < mNbPotentialPairs) {
+        while (it != mPotentialPairs.end()) {
 
             // Get the next pair
-            BroadPhasePair* nextPair = mPotentialPairs + i;
+            BroadPhasePair& nextPair = *it;
 
             // If the next pair is different from the previous one, we stop skipping pairs
-            if (nextPair->collisionShape1ID != pair->collisionShape1ID ||
-                nextPair->collisionShape2ID != pair->collisionShape2ID) {
+            if (nextPair.collisionShape1ID != pair.collisionShape1ID ||
+                nextPair.collisionShape2ID != pair.collisionShape2ID) {
                 break;
             }
-            i++;
+            ++it;
         }
-    }
-
-    // If the number of potential overlapping pairs is less than the quarter of allocated
-    // number of overlapping pairs
-    if (mNbPotentialPairs < mNbAllocatedPotentialPairs / 4 && mNbPotentialPairs > 8) {
-
-        PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
-
-        // Reduce the number of allocated potential overlapping pairs
-        BroadPhasePair* oldPairs = mPotentialPairs;
-        uint oldNbAllocatedPotentialPairs = mNbAllocatedPotentialPairs;
-        mNbAllocatedPotentialPairs /= 2;
-        mPotentialPairs = static_cast<BroadPhasePair*>(poolAllocator.allocate(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair)));
-        assert(mPotentialPairs);
-        memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPhasePair));
-        poolAllocator.release(oldPairs, oldNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
     }
 }
 
@@ -257,25 +225,9 @@ void BroadPhaseAlgorithm::addOverlappingNodes(int referenceNodeId, const LinkedL
         // If both the nodes are the same, we do not create store the overlapping pair
         if (referenceNodeId != elem->data) {
 
-            // If we need to allocate more memory for the array of potential overlapping pairs
-            if (mNbPotentialPairs == mNbAllocatedPotentialPairs) {
-
-                PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
-
-                // Allocate more memory for the array of potential pairs
-                BroadPhasePair* oldPairs = mPotentialPairs;
-                uint oldNbAllocatedPotentialPairs = mNbAllocatedPotentialPairs;
-                mNbAllocatedPotentialPairs *= 2;
-                mPotentialPairs = static_cast<BroadPhasePair*>(poolAllocator.allocate(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair)));
-                assert(mPotentialPairs);
-                memcpy(mPotentialPairs, oldPairs, mNbPotentialPairs * sizeof(BroadPhasePair));
-                poolAllocator.release(oldPairs, oldNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
-            }
-
             // Add the new potential pair into the array of potential overlapping pairs
-            mPotentialPairs[mNbPotentialPairs].collisionShape1ID = std::min(referenceNodeId, elem->data);
-            mPotentialPairs[mNbPotentialPairs].collisionShape2ID = std::max(referenceNodeId, elem->data);
-            mNbPotentialPairs++;
+            mPotentialPairs.add(BroadPhasePair(std::min(referenceNodeId, elem->data),
+                                               std::max(referenceNodeId, elem->data)));
         }
 
         elem = elem->next;

@@ -59,8 +59,14 @@ struct BroadPhasePair {
 
     // -------------------- Methods -------------------- //
 
+    /// Constructor
+    BroadPhasePair(int shapeId1, int shapeId2) {
+        collisionShape1ID = shapeId1;
+        collisionShape2ID = shapeId2;
+    }
+
     /// Method used to compare two pairs for sorting algorithm
-    static bool smallerThan(const BroadPhasePair& pair1, const BroadPhasePair& pair2);
+    static bool smallerThan(const BroadPhasePair &pair1, const BroadPhasePair &pair2);
 };
 
 // class AABBOverlapCallback
@@ -140,13 +146,7 @@ class BroadPhaseAlgorithm {
         Set<int> mMovedShapes;
 
         /// Temporary array of potential overlapping pairs (with potential duplicates)
-        BroadPhasePair* mPotentialPairs;
-
-        /// Number of potential overlapping pairs
-        uint mNbPotentialPairs;
-
-        /// Number of allocated elements for the array of potential overlapping pairs
-        uint mNbAllocatedPotentialPairs;
+        List<BroadPhasePair> mPotentialPairs;
 
         /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;
@@ -166,7 +166,7 @@ class BroadPhaseAlgorithm {
         BroadPhaseAlgorithm(CollisionDetection& collisionDetection);
 
         /// Destructor
-        ~BroadPhaseAlgorithm();
+        ~BroadPhaseAlgorithm() = default;
 
         /// Deleted copy-constructor
         BroadPhaseAlgorithm(const BroadPhaseAlgorithm& algorithm) = delete;
@@ -223,7 +223,8 @@ class BroadPhaseAlgorithm {
 };
 
 // Method used to compare two pairs for sorting algorithm
-inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1, const BroadPhasePair& pair2) {
+inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1,
+                                        const BroadPhasePair& pair2) {
 
     if (pair1.collisionShape1ID < pair2.collisionShape1ID) return true;
     if (pair1.collisionShape1ID == pair2.collisionShape1ID) {

@@ -375,6 +375,11 @@ class TestList : public Test {
             List<int>::Iterator itEnd = list1.end();
             List<int>::Iterator it = list1.begin();
 
+            test(itBegin < itEnd);
+            test(itBegin <= itEnd);
+            test(itEnd > itBegin);
+            test(itEnd >= itBegin);
+
             test(itBegin == it);
             test(*it == 5);
             test(*(it++) == 5);
@@ -399,6 +404,19 @@ class TestList : public Test {
                 list2.add(*it);
             }
             test(list1 == list2);
+
+            it = itBegin;
+            test(*(it + 2) == 8);
+            it += 2;
+            test(*it == 8);
+            test(*(it - 2) == 5);
+            it -= 2;
+            test(*it == 5);
+            test((itEnd - itBegin) == 4);
+
+            it = itBegin;
+            *it = 19;
+            test(*it == 19);
         }
 
  };
