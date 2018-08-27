@@ -398,11 +398,14 @@ void DynamicsWorld::solvePositionCorrection() {
 
         // ---------- Solve the position error correction for the constraints ---------- //
 
-        // For each iteration of the position (error correction) solver
-        for (uint i=0; i<mNbPositionSolverIterations; i++) {
+        if (mIslands[islandIndex]->getNbJoints() > 0) {
 
-            // Solve the position constraints
-            mConstraintSolver.solvePositionConstraints(mIslands[islandIndex]);
+            // For each iteration of the position (error correction) solver
+            for (uint i=0; i<mNbPositionSolverIterations; i++) {
+
+                // Solve the position constraints
+                mConstraintSolver.solvePositionConstraints(mIslands[islandIndex]);
+            }
         }
     }
 }

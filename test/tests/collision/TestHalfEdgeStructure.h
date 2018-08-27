@@ -4,6 +4,7 @@
 // Libraries
 #include "reactphysics3d.h"
 #include "Test.h"
+#include <vector>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -94,54 +95,54 @@ class TestHalfEdgeStructure : public Test {
 
             // --- Test that the half-edge structure of the cube is valid --- //
 
-            test(cubeStructure.getNbFaces() == 6);
-            test(cubeStructure.getNbVertices() == 8);
-            test(cubeStructure.getNbHalfEdges() == 24);
+            rp3d_test(cubeStructure.getNbFaces() == 6);
+            rp3d_test(cubeStructure.getNbVertices() == 8);
+            rp3d_test(cubeStructure.getNbHalfEdges() == 24);
 
             // Test vertices
-            test(vertices[cubeStructure.getVertex(0).vertexPointIndex].x == -0.5);
-            test(vertices[cubeStructure.getVertex(0).vertexPointIndex].y == -0.5);
-            test(vertices[cubeStructure.getVertex(0).vertexPointIndex].z == 0.5);
-            test(cubeStructure.getHalfEdge(cubeStructure.getVertex(0).edgeIndex).vertexIndex == 0);
+            rp3d_test(vertices[cubeStructure.getVertex(0).vertexPointIndex].x == -0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(0).vertexPointIndex].y == -0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(0).vertexPointIndex].z == 0.5);
+            rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(0).edgeIndex).vertexIndex == 0);
 
-            test(vertices[cubeStructure.getVertex(1).vertexPointIndex].x == 0.5);
-            test(vertices[cubeStructure.getVertex(1).vertexPointIndex].y == -0.5);
-            test(vertices[cubeStructure.getVertex(1).vertexPointIndex].z == 0.5);
-            test(cubeStructure.getHalfEdge(cubeStructure.getVertex(1).edgeIndex).vertexIndex == 1);
+            rp3d_test(vertices[cubeStructure.getVertex(1).vertexPointIndex].x == 0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(1).vertexPointIndex].y == -0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(1).vertexPointIndex].z == 0.5);
+            rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(1).edgeIndex).vertexIndex == 1);
 
-            test(vertices[cubeStructure.getVertex(2).vertexPointIndex].x == 0.5);
-            test(vertices[cubeStructure.getVertex(2).vertexPointIndex].y == 0.5);
-            test(vertices[cubeStructure.getVertex(2).vertexPointIndex].z == 0.5);
-            test(cubeStructure.getHalfEdge(cubeStructure.getVertex(2).edgeIndex).vertexIndex == 2);
+            rp3d_test(vertices[cubeStructure.getVertex(2).vertexPointIndex].x == 0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(2).vertexPointIndex].y == 0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(2).vertexPointIndex].z == 0.5);
+            rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(2).edgeIndex).vertexIndex == 2);
 
-            test(vertices[cubeStructure.getVertex(3).vertexPointIndex].x == -0.5);
-            test(vertices[cubeStructure.getVertex(3).vertexPointIndex].y == 0.5);
-            test(vertices[cubeStructure.getVertex(3).vertexPointIndex].z == 0.5);
-            test(cubeStructure.getHalfEdge(cubeStructure.getVertex(3).edgeIndex).vertexIndex == 3);
+            rp3d_test(vertices[cubeStructure.getVertex(3).vertexPointIndex].x == -0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(3).vertexPointIndex].y == 0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(3).vertexPointIndex].z == 0.5);
+            rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(3).edgeIndex).vertexIndex == 3);
 
-            test(vertices[cubeStructure.getVertex(4).vertexPointIndex].x == -0.5);
-            test(vertices[cubeStructure.getVertex(4).vertexPointIndex].y == -0.5);
-            test(vertices[cubeStructure.getVertex(4).vertexPointIndex].z == -0.5);
-            test(cubeStructure.getHalfEdge(cubeStructure.getVertex(4).edgeIndex).vertexIndex == 4);
+            rp3d_test(vertices[cubeStructure.getVertex(4).vertexPointIndex].x == -0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(4).vertexPointIndex].y == -0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(4).vertexPointIndex].z == -0.5);
+            rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(4).edgeIndex).vertexIndex == 4);
 
-            test(vertices[cubeStructure.getVertex(5).vertexPointIndex].x == 0.5);
-            test(vertices[cubeStructure.getVertex(5).vertexPointIndex].y == -0.5);
-            test(vertices[cubeStructure.getVertex(5).vertexPointIndex].z == -0.5);
-            test(cubeStructure.getHalfEdge(cubeStructure.getVertex(5).edgeIndex).vertexIndex == 5);
+            rp3d_test(vertices[cubeStructure.getVertex(5).vertexPointIndex].x == 0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(5).vertexPointIndex].y == -0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(5).vertexPointIndex].z == -0.5);
+            rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(5).edgeIndex).vertexIndex == 5);
 
-            test(vertices[cubeStructure.getVertex(6).vertexPointIndex].x == 0.5);
-            test(vertices[cubeStructure.getVertex(6).vertexPointIndex].y == 0.5);
-            test(vertices[cubeStructure.getVertex(6).vertexPointIndex].z == -0.5);
-            test(cubeStructure.getHalfEdge(cubeStructure.getVertex(6).edgeIndex).vertexIndex == 6);
+            rp3d_test(vertices[cubeStructure.getVertex(6).vertexPointIndex].x == 0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(6).vertexPointIndex].y == 0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(6).vertexPointIndex].z == -0.5);
+            rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(6).edgeIndex).vertexIndex == 6);
 
-            test(vertices[cubeStructure.getVertex(7).vertexPointIndex].x == -0.5);
-            test(vertices[cubeStructure.getVertex(7).vertexPointIndex].y == 0.5);
-            test(vertices[cubeStructure.getVertex(7).vertexPointIndex].z == -0.5);
-            test(cubeStructure.getHalfEdge(cubeStructure.getVertex(7).edgeIndex).vertexIndex == 7);
+            rp3d_test(vertices[cubeStructure.getVertex(7).vertexPointIndex].x == -0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(7).vertexPointIndex].y == 0.5);
+            rp3d_test(vertices[cubeStructure.getVertex(7).vertexPointIndex].z == -0.5);
+            rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(7).edgeIndex).vertexIndex == 7);
 
             // Test faces
             for (uint f=0; f<6; f++) {
-                test(cubeStructure.getHalfEdge(cubeStructure.getFace(f).edgeIndex).faceIndex == f);
+                rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getFace(f).edgeIndex).faceIndex == f);
             }
 
             // Test edges
@@ -156,14 +157,14 @@ class TestHalfEdgeStructure : public Test {
 
                     rp3d::HalfEdgeStructure::Edge edge = cubeStructure.getHalfEdge(edgeIndex);
 
-                    test(cubeStructure.getHalfEdge(edge.twinEdgeIndex).twinEdgeIndex == edgeIndex);
-                    test(edge.faceIndex == f);
+                    rp3d_test(cubeStructure.getHalfEdge(edge.twinEdgeIndex).twinEdgeIndex == edgeIndex);
+                    rp3d_test(edge.faceIndex == f);
 
                     // Go to the next edge
                     edgeIndex = edge.nextEdgeIndex;
                 }
 
-                test(firstEdgeIndex == edgeIndex);
+                rp3d_test(firstEdgeIndex == edgeIndex);
             }
         }
 
@@ -205,34 +206,34 @@ class TestHalfEdgeStructure : public Test {
 
             // --- Test that the half-edge structure of the tetrahedron is valid --- //
 
-            test(tetrahedron.getNbFaces() == 4);
-            test(tetrahedron.getNbVertices() == 4);
-            test(tetrahedron.getNbHalfEdges() == 12);
+            rp3d_test(tetrahedron.getNbFaces() == 4);
+            rp3d_test(tetrahedron.getNbVertices() == 4);
+            rp3d_test(tetrahedron.getNbHalfEdges() == 12);
 
             // Test vertices
-            test(vertices[tetrahedron.getVertex(0).vertexPointIndex].x == 1);
-            test(vertices[tetrahedron.getVertex(0).vertexPointIndex].y == -1);
-            test(vertices[tetrahedron.getVertex(0).vertexPointIndex].z == -1);
-            test(tetrahedron.getHalfEdge(tetrahedron.getVertex(0).edgeIndex).vertexIndex == 0);
+            rp3d_test(vertices[tetrahedron.getVertex(0).vertexPointIndex].x == 1);
+            rp3d_test(vertices[tetrahedron.getVertex(0).vertexPointIndex].y == -1);
+            rp3d_test(vertices[tetrahedron.getVertex(0).vertexPointIndex].z == -1);
+            rp3d_test(tetrahedron.getHalfEdge(tetrahedron.getVertex(0).edgeIndex).vertexIndex == 0);
 
-            test(vertices[tetrahedron.getVertex(1).vertexPointIndex].x == -1);
-            test(vertices[tetrahedron.getVertex(1).vertexPointIndex].y == -1);
-            test(vertices[tetrahedron.getVertex(1).vertexPointIndex].z == -1);
-            test(tetrahedron.getHalfEdge(tetrahedron.getVertex(1).edgeIndex).vertexIndex == 1);
+            rp3d_test(vertices[tetrahedron.getVertex(1).vertexPointIndex].x == -1);
+            rp3d_test(vertices[tetrahedron.getVertex(1).vertexPointIndex].y == -1);
+            rp3d_test(vertices[tetrahedron.getVertex(1).vertexPointIndex].z == -1);
+            rp3d_test(tetrahedron.getHalfEdge(tetrahedron.getVertex(1).edgeIndex).vertexIndex == 1);
 
-            test(vertices[tetrahedron.getVertex(2).vertexPointIndex].x == 0);
-            test(vertices[tetrahedron.getVertex(2).vertexPointIndex].y == -1);
-            test(vertices[tetrahedron.getVertex(2).vertexPointIndex].z == 1);
-            test(tetrahedron.getHalfEdge(tetrahedron.getVertex(2).edgeIndex).vertexIndex == 2);
+            rp3d_test(vertices[tetrahedron.getVertex(2).vertexPointIndex].x == 0);
+            rp3d_test(vertices[tetrahedron.getVertex(2).vertexPointIndex].y == -1);
+            rp3d_test(vertices[tetrahedron.getVertex(2).vertexPointIndex].z == 1);
+            rp3d_test(tetrahedron.getHalfEdge(tetrahedron.getVertex(2).edgeIndex).vertexIndex == 2);
 
-            test(vertices[tetrahedron.getVertex(3).vertexPointIndex].x == 0);
-            test(vertices[tetrahedron.getVertex(3).vertexPointIndex].y == 1);
-            test(vertices[tetrahedron.getVertex(3).vertexPointIndex].z == 0);
-            test(tetrahedron.getHalfEdge(tetrahedron.getVertex(3).edgeIndex).vertexIndex == 3);
+            rp3d_test(vertices[tetrahedron.getVertex(3).vertexPointIndex].x == 0);
+            rp3d_test(vertices[tetrahedron.getVertex(3).vertexPointIndex].y == 1);
+            rp3d_test(vertices[tetrahedron.getVertex(3).vertexPointIndex].z == 0);
+            rp3d_test(tetrahedron.getHalfEdge(tetrahedron.getVertex(3).edgeIndex).vertexIndex == 3);
 
             // Test faces
             for (uint f=0; f<4; f++) {
-                test(tetrahedron.getHalfEdge(tetrahedron.getFace(f).edgeIndex).faceIndex == f);
+                rp3d_test(tetrahedron.getHalfEdge(tetrahedron.getFace(f).edgeIndex).faceIndex == f);
             }
 
             // Test edges
@@ -246,14 +247,14 @@ class TestHalfEdgeStructure : public Test {
 
                     rp3d::HalfEdgeStructure::Edge edge = tetrahedron.getHalfEdge(edgeIndex);
 
-                    test(tetrahedron.getHalfEdge(edge.twinEdgeIndex).twinEdgeIndex == edgeIndex);
-                    test(edge.faceIndex == f);
+                    rp3d_test(tetrahedron.getHalfEdge(edge.twinEdgeIndex).twinEdgeIndex == edgeIndex);
+                    rp3d_test(edge.faceIndex == f);
 
                     // Go to the next edge
                     edgeIndex = edge.nextEdgeIndex;
                 }
 
-                test(firstEdgeIndex == edgeIndex);
+                rp3d_test(firstEdgeIndex == edgeIndex);
             }
         }
  };

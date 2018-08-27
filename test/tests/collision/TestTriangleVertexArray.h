@@ -139,47 +139,47 @@ class TestTriangleVertexArray : public Test {
 
             // ----- First triangle vertex array ----- //
 
-            test(mTriangleVertexArray1->getVertexDataType() == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE);
-            test(mTriangleVertexArray1->getIndexDataType() == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            test(mTriangleVertexArray1->getVertexNormalDataType() == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE);
-            test(mTriangleVertexArray1->getNbTriangles() == 2);
-            test(mTriangleVertexArray1->getNbVertices() == 4);
-            test(mTriangleVertexArray1->getIndicesStart() == static_cast<const void*>(mIndices1));
-            test(mTriangleVertexArray1->getVerticesStart() == static_cast<const void*>(mVertices1));
-            test(mTriangleVertexArray1->getIndicesStride() == (3 * sizeof(uint)));
-            test(mTriangleVertexArray1->getVerticesStride() == (3 * sizeof(float)));
+            rp3d_test(mTriangleVertexArray1->getVertexDataType() == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE);
+            rp3d_test(mTriangleVertexArray1->getIndexDataType() == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+            rp3d_test(mTriangleVertexArray1->getVertexNormalDataType() == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE);
+            rp3d_test(mTriangleVertexArray1->getNbTriangles() == 2);
+            rp3d_test(mTriangleVertexArray1->getNbVertices() == 4);
+            rp3d_test(mTriangleVertexArray1->getIndicesStart() == static_cast<const void*>(mIndices1));
+            rp3d_test(mTriangleVertexArray1->getVerticesStart() == static_cast<const void*>(mVertices1));
+            rp3d_test(mTriangleVertexArray1->getIndicesStride() == (3 * sizeof(uint)));
+            rp3d_test(mTriangleVertexArray1->getVerticesStride() == (3 * sizeof(float)));
 
             // Get triangle indices
 
             uint triangle0Indices[3];
             mTriangleVertexArray1->getTriangleVerticesIndices(0, triangle0Indices);
 
-            test(triangle0Indices[0] == mIndices1[0]);
-            test(triangle0Indices[1] == mIndices1[1]);
-            test(triangle0Indices[2] == mIndices1[2]);
+            rp3d_test(triangle0Indices[0] == mIndices1[0]);
+            rp3d_test(triangle0Indices[1] == mIndices1[1]);
+            rp3d_test(triangle0Indices[2] == mIndices1[2]);
 
             uint triangle1Indices[3];
             mTriangleVertexArray1->getTriangleVerticesIndices(1, triangle1Indices);
 
-            test(triangle1Indices[0] == mIndices1[3]);
-            test(triangle1Indices[1] == mIndices1[4]);
-            test(triangle1Indices[2] == mIndices1[5]);
+            rp3d_test(triangle1Indices[0] == mIndices1[3]);
+            rp3d_test(triangle1Indices[1] == mIndices1[4]);
+            rp3d_test(triangle1Indices[2] == mIndices1[5]);
 
             // Get triangle vertices
 
             Vector3 triangle0Vertices[3];
             mTriangleVertexArray1->getTriangleVertices(0, triangle0Vertices);
 
-            test(approxEqual(triangle0Vertices[0], mVertex0, decimal(0.0000001)));
-            test(approxEqual(triangle0Vertices[1], mVertex1, decimal(0.0000001)));
-            test(approxEqual(triangle0Vertices[2], mVertex2, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle0Vertices[0], mVertex0, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle0Vertices[1], mVertex1, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle0Vertices[2], mVertex2, decimal(0.0000001)));
 
             Vector3 triangle1Vertices[3];
             mTriangleVertexArray1->getTriangleVertices(1, triangle1Vertices);
 
-            test(approxEqual(triangle1Vertices[0], mVertex0, decimal(0.0000001)));
-            test(approxEqual(triangle1Vertices[1], mVertex3, decimal(0.0000001)));
-            test(approxEqual(triangle1Vertices[2], mVertex1, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle1Vertices[0], mVertex0, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle1Vertices[1], mVertex3, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle1Vertices[2], mVertex1, decimal(0.0000001)));
 
             // Get triangle normals
 
@@ -193,64 +193,64 @@ class TestTriangleVertexArray : public Test {
             const Vector3 normal2Test(0, 1, 0);
             const Vector3 normal3Test(1, 0, 0);
 
-            test(approxEqual(triangle0Normals[0], normal0Test, decimal(0.0001)));
-            test(approxEqual(triangle0Normals[2], normal2Test, decimal(0.0001)));
-            test(approxEqual(triangle1Normals[1], normal3Test, decimal(0.0001)));
+            rp3d_test(approxEqual(triangle0Normals[0], normal0Test, decimal(0.0001)));
+            rp3d_test(approxEqual(triangle0Normals[2], normal2Test, decimal(0.0001)));
+            rp3d_test(approxEqual(triangle1Normals[1], normal3Test, decimal(0.0001)));
 
             // ----- Second triangle vertex array ----- //
 
-            test(mTriangleVertexArray2->getVertexDataType() == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE);
-            test(mTriangleVertexArray2->getIndexDataType() == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE);
-            test(mTriangleVertexArray2->getVertexNormalDataType() == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE);
-            test(mTriangleVertexArray2->getNbTriangles() == 2);
-            test(mTriangleVertexArray2->getNbVertices() == 4);
-            test(mTriangleVertexArray2->getIndicesStart() == static_cast<const void*>(mIndices2));
-            test(mTriangleVertexArray2->getVerticesStart() == static_cast<const void*>(mVertices2));
-            test(mTriangleVertexArray2->getVerticesNormalsStart() == static_cast<const void*>(mNormals2));
-            test(mTriangleVertexArray2->getIndicesStride() == (3 * sizeof(short)));
-            test(mTriangleVertexArray2->getVerticesStride() == (3 * sizeof(double)));
-            test(mTriangleVertexArray2->getVerticesNormalsStride() == (3 * sizeof(float)));
+            rp3d_test(mTriangleVertexArray2->getVertexDataType() == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE);
+            rp3d_test(mTriangleVertexArray2->getIndexDataType() == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE);
+            rp3d_test(mTriangleVertexArray2->getVertexNormalDataType() == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE);
+            rp3d_test(mTriangleVertexArray2->getNbTriangles() == 2);
+            rp3d_test(mTriangleVertexArray2->getNbVertices() == 4);
+            rp3d_test(mTriangleVertexArray2->getIndicesStart() == static_cast<const void*>(mIndices2));
+            rp3d_test(mTriangleVertexArray2->getVerticesStart() == static_cast<const void*>(mVertices2));
+            rp3d_test(mTriangleVertexArray2->getVerticesNormalsStart() == static_cast<const void*>(mNormals2));
+            rp3d_test(mTriangleVertexArray2->getIndicesStride() == (3 * sizeof(short)));
+            rp3d_test(mTriangleVertexArray2->getVerticesStride() == (3 * sizeof(double)));
+            rp3d_test(mTriangleVertexArray2->getVerticesNormalsStride() == (3 * sizeof(float)));
 
             // Get triangle indices
 
             mTriangleVertexArray2->getTriangleVerticesIndices(0, triangle0Indices);
 
-            test(triangle0Indices[0] == static_cast<uint>(mIndices2[0]));
-            test(triangle0Indices[1] == static_cast<uint>(mIndices2[1]));
-            test(triangle0Indices[2] == static_cast<uint>(mIndices2[2]));
+            rp3d_test(triangle0Indices[0] == static_cast<uint>(mIndices2[0]));
+            rp3d_test(triangle0Indices[1] == static_cast<uint>(mIndices2[1]));
+            rp3d_test(triangle0Indices[2] == static_cast<uint>(mIndices2[2]));
 
             mTriangleVertexArray2->getTriangleVerticesIndices(1, triangle1Indices);
 
-            test(triangle1Indices[0] == static_cast<uint>(mIndices2[3]));
-            test(triangle1Indices[1] == static_cast<uint>(mIndices2[4]));
-            test(triangle1Indices[2] == static_cast<uint>(mIndices2[5]));
+            rp3d_test(triangle1Indices[0] == static_cast<uint>(mIndices2[3]));
+            rp3d_test(triangle1Indices[1] == static_cast<uint>(mIndices2[4]));
+            rp3d_test(triangle1Indices[2] == static_cast<uint>(mIndices2[5]));
 
             // Get triangle vertices
 
             mTriangleVertexArray2->getTriangleVertices(0, triangle0Vertices);
 
-            test(approxEqual(triangle0Vertices[0], mVertex4, decimal(0.0000001)));
-            test(approxEqual(triangle0Vertices[1], mVertex5, decimal(0.0000001)));
-            test(approxEqual(triangle0Vertices[2], mVertex6, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle0Vertices[0], mVertex4, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle0Vertices[1], mVertex5, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle0Vertices[2], mVertex6, decimal(0.0000001)));
 
             mTriangleVertexArray2->getTriangleVertices(1, triangle1Vertices);
 
-            test(approxEqual(triangle1Vertices[0], mVertex4, decimal(0.0000001)));
-            test(approxEqual(triangle1Vertices[1], mVertex7, decimal(0.0000001)));
-            test(approxEqual(triangle1Vertices[2], mVertex5, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle1Vertices[0], mVertex4, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle1Vertices[1], mVertex7, decimal(0.0000001)));
+            rp3d_test(approxEqual(triangle1Vertices[2], mVertex5, decimal(0.0000001)));
 
             // Get triangle normals
 
             mTriangleVertexArray2->getTriangleVerticesNormals(0, triangle0Normals);
             mTriangleVertexArray2->getTriangleVerticesNormals(1, triangle1Normals);
 
-            test(approxEqual(triangle0Normals[0], mNormal0, decimal(0.000001)));
-            test(approxEqual(triangle0Normals[1], mNormal1, decimal(0.000001)));
-            test(approxEqual(triangle0Normals[2], mNormal2, decimal(0.000001)));
+            rp3d_test(approxEqual(triangle0Normals[0], mNormal0, decimal(0.000001)));
+            rp3d_test(approxEqual(triangle0Normals[1], mNormal1, decimal(0.000001)));
+            rp3d_test(approxEqual(triangle0Normals[2], mNormal2, decimal(0.000001)));
 
-            test(approxEqual(triangle1Normals[0], mNormal0, decimal(0.000001)));
-            test(approxEqual(triangle1Normals[1], mNormal3, decimal(0.000001)));
-            test(approxEqual(triangle1Normals[2], mNormal1, decimal(0.000001)));
+            rp3d_test(approxEqual(triangle1Normals[0], mNormal0, decimal(0.000001)));
+            rp3d_test(approxEqual(triangle1Normals[1], mNormal3, decimal(0.000001)));
+            rp3d_test(approxEqual(triangle1Normals[2], mNormal1, decimal(0.000001)));
         }
 
 };

@@ -76,19 +76,19 @@ class TestQuaternion : public Test {
         void testConstructors() {
 
             Quaternion quaternion1(mQuaternion1);
-            test(mQuaternion1 == quaternion1);
+            rp3d_test(mQuaternion1 == quaternion1);
 
             Quaternion quaternion2(4, 5, 6, 7);
-            test(quaternion2 == Quaternion(4, 5, 6, 7));
+            rp3d_test(quaternion2 == Quaternion(4, 5, 6, 7));
 
             Quaternion quaternion3(8, Vector3(3, 5, 2));
-            test(quaternion3 == Quaternion(3, 5, 2, 8));
+            rp3d_test(quaternion3 == Quaternion(3, 5, 2, 8));
 
             Quaternion quaternion4(mQuaternion1.getMatrix());
-            test(approxEqual(quaternion4.x, mQuaternion1.x));
-            test(approxEqual(quaternion4.y, mQuaternion1.y));
-            test(approxEqual(quaternion4.z, mQuaternion1.z));
-            test(approxEqual(quaternion4.w, mQuaternion1.w));
+            rp3d_test(approxEqual(quaternion4.x, mQuaternion1.x));
+            rp3d_test(approxEqual(quaternion4.y, mQuaternion1.y));
+            rp3d_test(approxEqual(quaternion4.z, mQuaternion1.z));
+            rp3d_test(approxEqual(quaternion4.w, mQuaternion1.w));
 
             // Test conversion from Euler angles to quaternion
 
@@ -97,26 +97,26 @@ class TestQuaternion : public Test {
             Quaternion quaternion5 = Quaternion::fromEulerAngles(PI_OVER_2, 0, 0);
             Quaternion quaternionTest5(std::sin(PI_OVER_4), 0, 0, std::cos(PI_OVER_4));
             quaternionTest5.normalize();
-            test(approxEqual(quaternion5.x, quaternionTest5.x));
-            test(approxEqual(quaternion5.y, quaternionTest5.y));
-            test(approxEqual(quaternion5.z, quaternionTest5.z));
-            test(approxEqual(quaternion5.w, quaternionTest5.w));
+            rp3d_test(approxEqual(quaternion5.x, quaternionTest5.x));
+            rp3d_test(approxEqual(quaternion5.y, quaternionTest5.y));
+            rp3d_test(approxEqual(quaternion5.z, quaternionTest5.z));
+            rp3d_test(approxEqual(quaternion5.w, quaternionTest5.w));
 
             Quaternion quaternion6 = Quaternion::fromEulerAngles(0, PI_OVER_2, 0);
             Quaternion quaternionTest6(0, std::sin(PI_OVER_4), 0, std::cos(PI_OVER_4));
             quaternionTest6.normalize();
-            test(approxEqual(quaternion6.x, quaternionTest6.x));
-            test(approxEqual(quaternion6.y, quaternionTest6.y));
-            test(approxEqual(quaternion6.z, quaternionTest6.z));
-            test(approxEqual(quaternion6.w, quaternionTest6.w));
+            rp3d_test(approxEqual(quaternion6.x, quaternionTest6.x));
+            rp3d_test(approxEqual(quaternion6.y, quaternionTest6.y));
+            rp3d_test(approxEqual(quaternion6.z, quaternionTest6.z));
+            rp3d_test(approxEqual(quaternion6.w, quaternionTest6.w));
 
             Quaternion quaternion7 = Quaternion::fromEulerAngles(Vector3(0, 0, PI_OVER_2));
             Quaternion quaternionTest7(0, 0, std::sin(PI_OVER_4), std::cos(PI_OVER_4));
             quaternionTest7.normalize();
-            test(approxEqual(quaternion7.x, quaternionTest7.x));
-            test(approxEqual(quaternion7.y, quaternionTest7.y));
-            test(approxEqual(quaternion7.z, quaternionTest7.z));
-            test(approxEqual(quaternion7.w, quaternionTest7.w));
+            rp3d_test(approxEqual(quaternion7.x, quaternionTest7.x));
+            rp3d_test(approxEqual(quaternion7.y, quaternionTest7.y));
+            rp3d_test(approxEqual(quaternion7.z, quaternionTest7.z));
+            rp3d_test(approxEqual(quaternion7.w, quaternionTest7.w));
         }
 
         /// Test unit, length, normalize methods
@@ -124,15 +124,15 @@ class TestQuaternion : public Test {
 
             // Test method that returns the length
             Quaternion quaternion(2, 3, -4, 5);
-            test(approxEqual(quaternion.length(), std::sqrt(decimal(54.0))));
+            rp3d_test(approxEqual(quaternion.length(), std::sqrt(decimal(54.0))));
 
             // Test method that returns a unit quaternion
-            test(approxEqual(quaternion.getUnit().length(), 1.0));
+            rp3d_test(approxEqual(quaternion.getUnit().length(), 1.0));
 
             // Test the normalization method
             Quaternion quaternion2(4, 5, 6, 7);
             quaternion2.normalize();
-            test(approxEqual(quaternion2.length(), 1.0));
+            rp3d_test(approxEqual(quaternion2.length(), 1.0));
         }
 
         /// Test others methods
@@ -141,80 +141,80 @@ class TestQuaternion : public Test {
             // Test the method to set the values
             Quaternion quaternion;
             quaternion.setAllValues(1, 2, 3, 4);
-            test(quaternion == Quaternion(1, 2, 3, 4));
+            rp3d_test(quaternion == Quaternion(1, 2, 3, 4));
 
             // Test the method to set the quaternion to zero
             quaternion.setToZero();
-            test(quaternion == Quaternion(0, 0, 0, 0));
+            rp3d_test(quaternion == Quaternion(0, 0, 0, 0));
 
             // Tes the methods to get or set to identity
             Quaternion identity1(1, 2, 3, 4);
             identity1.setToIdentity();
-            test(identity1 == Quaternion(0, 0, 0, 1));
-            test(Quaternion::identity() == Quaternion(0, 0, 0, 1));
+            rp3d_test(identity1 == Quaternion(0, 0, 0, 1));
+            rp3d_test(Quaternion::identity() == Quaternion(0, 0, 0, 1));
 
             // Test the method to get the vector (x, y, z)
             Vector3 v = mQuaternion1.getVectorV();
-            test(v.x == mQuaternion1.x);
-            test(v.y == mQuaternion1.y);
-            test(v.z == mQuaternion1.z);
+            rp3d_test(v.x == mQuaternion1.x);
+            rp3d_test(v.y == mQuaternion1.y);
+            rp3d_test(v.z == mQuaternion1.z);
 
             // Test the conjugate method
             Quaternion conjugate = mQuaternion1.getConjugate();
-            test(conjugate.x == -mQuaternion1.x);
-            test(conjugate.y == -mQuaternion1.y);
-            test(conjugate.z == -mQuaternion1.z);
-            test(conjugate.w == mQuaternion1.w);
+            rp3d_test(conjugate.x == -mQuaternion1.x);
+            rp3d_test(conjugate.y == -mQuaternion1.y);
+            rp3d_test(conjugate.z == -mQuaternion1.z);
+            rp3d_test(conjugate.w == mQuaternion1.w);
 
             // Test the inverse methods
             Quaternion inverse1 = mQuaternion1.getInverse();
             Quaternion inverse2(mQuaternion1);
             inverse2.inverse();
-            test(inverse2 == inverse1);
+            rp3d_test(inverse2 == inverse1);
             Quaternion product = mQuaternion1 * inverse1;
-            test(approxEqual(product.x, mIdentity.x, decimal(10e-6)));
-            test(approxEqual(product.y, mIdentity.y, decimal(10e-6)));
-            test(approxEqual(product.z, mIdentity.z, decimal(10e-6)));
-            test(approxEqual(product.w, mIdentity.w, decimal(10e-6)));
+            rp3d_test(approxEqual(product.x, mIdentity.x, decimal(10e-6)));
+            rp3d_test(approxEqual(product.y, mIdentity.y, decimal(10e-6)));
+            rp3d_test(approxEqual(product.z, mIdentity.z, decimal(10e-6)));
+            rp3d_test(approxEqual(product.w, mIdentity.w, decimal(10e-6)));
 
             // Test the dot product
             Quaternion quaternion1(2, 3, 4, 5);
             Quaternion quaternion2(6, 7, 8, 9);
             decimal dotProduct = quaternion1.dot(quaternion2);
-            test(dotProduct == 110);
+            rp3d_test(dotProduct == 110);
 
             // Test the method that returns the rotation angle and axis
             Vector3 axis;
             decimal angle;
             Vector3 originalAxis = Vector3(2, 3, 4).getUnit();
             mQuaternion1.getRotationAngleAxis(angle, axis);
-            test(approxEqual(axis.x, originalAxis.x));
-            test(approxEqual(angle, decimal(PI/4.0), decimal(10e-6)));
+            rp3d_test(approxEqual(axis.x, originalAxis.x));
+            rp3d_test(approxEqual(angle, decimal(PI/4.0), decimal(10e-6)));
 
             // Test the method that returns the corresponding matrix
             Matrix3x3 matrix = mQuaternion1.getMatrix();
             Vector3 vector(56, -2, 82);
             Vector3 vector1 = matrix * vector;
             Vector3 vector2 = mQuaternion1 * vector;
-            test(approxEqual(vector1.x, vector2.x, decimal(10e-6)));
-            test(approxEqual(vector1.y, vector2.y, decimal(10e-6)));
-            test(approxEqual(vector1.z, vector2.z, decimal(10e-6)));
+            rp3d_test(approxEqual(vector1.x, vector2.x, decimal(10e-6)));
+            rp3d_test(approxEqual(vector1.y, vector2.y, decimal(10e-6)));
+            rp3d_test(approxEqual(vector1.z, vector2.z, decimal(10e-6)));
 
             // Test slerp method
             Quaternion quatStart = quaternion1.getUnit();
             Quaternion quatEnd = quaternion2.getUnit();
             Quaternion test1 = Quaternion::slerp(quatStart, quatEnd, 0.0);
             Quaternion test2 = Quaternion::slerp(quatStart, quatEnd, 1.0);
-            test(test1 == quatStart);
-            test(test2 == quatEnd);
+            rp3d_test(test1 == quatStart);
+            rp3d_test(test2 == quatEnd);
             decimal sinA = sin(decimal(PI/4.0));
             decimal cosA = cos(decimal(PI/4.0));
             Quaternion quat(sinA, 0, 0, cosA);
             Quaternion test3 = Quaternion::slerp(mIdentity, quat, decimal(0.5));
-            test(approxEqual(test3.x, sin(decimal(PI/8.0))));
-            test(approxEqual(test3.y, 0.0));
-            test(approxEqual(test3.z, 0.0));
-            test(approxEqual(test3.w, cos(decimal(PI/8.0)), decimal(10e-6)));
+            rp3d_test(approxEqual(test3.x, sin(decimal(PI/8.0))));
+            rp3d_test(approxEqual(test3.y, 0.0));
+            rp3d_test(approxEqual(test3.z, 0.0));
+            rp3d_test(approxEqual(test3.w, cos(decimal(PI/8.0)), decimal(10e-6)));
         }
 
         /// Test overloaded operators
@@ -226,43 +226,43 @@ class TestQuaternion : public Test {
             Quaternion test1 = quat1 + quat2;
             Quaternion test11(-6, 52, 2, 8);
             test11 += quat1;
-            test(test1 == Quaternion(2, 12, 10, 13));
-            test(test11 == Quaternion(-2, 57, 4, 18));
+            rp3d_test(test1 == Quaternion(2, 12, 10, 13));
+            rp3d_test(test11 == Quaternion(-2, 57, 4, 18));
 
             // Test substraction
             Quaternion test2 = quat1 - quat2;
             Quaternion test22(-73, 62, 25, 9);
             test22 -= quat1;
-            test(test2 == Quaternion(6, -2, -6, 7));
-            test(test22 == Quaternion(-77, 57, 23, -1));
+            rp3d_test(test2 == Quaternion(6, -2, -6, 7));
+            rp3d_test(test22 == Quaternion(-77, 57, 23, -1));
 
             // Test multiplication with a number
             Quaternion test3 = quat1 * 3.0;
-            test(test3 == Quaternion(12, 15, 6, 30));
+            rp3d_test(test3 == Quaternion(12, 15, 6, 30));
 
             // Test multiplication between two quaternions
             Quaternion test4 = quat1 * quat2;
             Quaternion test5 = mQuaternion1 * mIdentity;
-            test(test4 == Quaternion(18, 49, 124, -13));
-            test(test5 == mQuaternion1);
+            rp3d_test(test4 == Quaternion(18, 49, 124, -13));
+            rp3d_test(test5 == mQuaternion1);
 
             // Test multiplication between a quaternion and a point
             Vector3 point(5, -24, 563);
             Vector3 vector1 = mIdentity * point;
             Vector3 vector2 = mQuaternion1 * point;
             Vector3 testVector2 = mQuaternion1.getMatrix() * point;
-            test(vector1 == point);
-            test(approxEqual(vector2.x, testVector2.x, decimal(10e-5)));
-            test(approxEqual(vector2.y, testVector2.y, decimal(10e-5)));
-            test(approxEqual(vector2.z, testVector2.z, decimal(10e-5)));
+            rp3d_test(vector1 == point);
+            rp3d_test(approxEqual(vector2.x, testVector2.x, decimal(10e-5)));
+            rp3d_test(approxEqual(vector2.y, testVector2.y, decimal(10e-5)));
+            rp3d_test(approxEqual(vector2.z, testVector2.z, decimal(10e-5)));
 
             // Test assignment operator
             Quaternion quaternion;
             quaternion = mQuaternion1;
-            test(quaternion == mQuaternion1);
+            rp3d_test(quaternion == mQuaternion1);
 
             // Test equality operator
-            test(mQuaternion1 == mQuaternion1);
+            rp3d_test(mQuaternion1 == mQuaternion1);
         }
  };
 
