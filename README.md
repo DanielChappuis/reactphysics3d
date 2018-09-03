@@ -1,6 +1,8 @@
 [![Travis Build Status](https://travis-ci.org/DanielChappuis/reactphysics3d.svg?branch=master)](https://travis-ci.org/DanielChappuis/reactphysics3d)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ae24e998e304e4da78ec848eade9e3a)](https://www.codacy.com/app/chappuis.daniel/reactphysics3d?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DanielChappuis/reactphysics3d&amp;utm_campaign=Badge_Grade)
 [![codecov.io](https://codecov.io/github/DanielChappuis/reactphysics3d/coverage.svg?branch=master)](https://codecov.io/github/DanielChappuis/reactphysics3d?branch=master)
+[![Code Quality: Cpp](https://img.shields.io/lgtm/grade/cpp/g/DanielChappuis/reactphysics3d.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/DanielChappuis/reactphysics3d/context:cpp)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/DanielChappuis/reactphysics3d.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/DanielChappuis/reactphysics3d/alerts)
 
 ## ReactPhysics3D
 
