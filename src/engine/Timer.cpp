@@ -42,7 +42,7 @@ long double Timer::getCurrentSystemTime() {
         LARGE_INTEGER ticks;
         QueryPerformanceFrequency(&ticksPerSecond);
         QueryPerformanceCounter(&ticks);
-        return (long double(ticks.QuadPart) / long double(ticksPerSecond.QuadPart));
+        return ((long double)(ticks.QuadPart) / (long double)(ticksPerSecond.QuadPart));
     #else
         // Initialize the lastUpdateTime with the current time in seconds
         timeval timeValue;

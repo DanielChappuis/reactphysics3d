@@ -26,6 +26,8 @@
 #ifndef REACTPHYSICS3D_LOGGER_H
 #define REACTPHYSICS3D_LOGGER_H
 
+// If logging is enabled
+#ifdef IS_LOGGING_ACTIVE
 
 // Libraries
 #include "containers/List.h"
@@ -124,7 +126,7 @@ class Logger {
                 }
 
                 /// Destructor
-                virtual ~TextFormatter() {
+                virtual ~TextFormatter() override {
 
                 }
 
@@ -277,7 +279,7 @@ class Logger {
                 }
 
                 /// Destructor
-                virtual ~HtmlFormatter() {
+                virtual ~HtmlFormatter() override {
 
                 }
 
@@ -461,18 +463,6 @@ class Logger {
 
 }
 
-#ifdef IS_LOGGING_ACTIVE
-
-// Use this macro to log something
-#define RP3D_LOG(logger, level, category, message) logger->log(level, category, message)
-
-#else   // If logger is not active
-
-// Empty macro in case logs are not enabled
-#define RP3D_LOG(logger, level, category, message)
-
-#endif
-
 // Hash function for struct VerticesPair
 namespace std {
 
@@ -484,5 +474,16 @@ namespace std {
     }
   };
 }
+
+// Use this macro to log something
+#define RP3D_LOG(logger, level, category, message) logger->log(level, category, message)
+
+// If the logging is not enabled
+#else
+
+// Empty macro in case logs are not enabled
+#define RP3D_LOG(logger, level, category, message)
+
+#endif
 
 #endif

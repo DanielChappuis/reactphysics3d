@@ -29,6 +29,7 @@
 // Libraries
 #include "DynamicAABBTree.h"
 #include "containers/LinkedList.h"
+#include "containers/Set.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -58,8 +59,14 @@ struct BroadPhasePair {
 
     // -------------------- Methods -------------------- //
 
+    /// Constructor
+    BroadPhasePair(int shapeId1, int shapeId2) {
+        collisionShape1ID = shapeId1;
+        collisionShape2ID = shapeId2;
+    }
+
     /// Method used to compare two pairs for sorting algorithm
-    static bool smallerThan(const BroadPhasePair& pair1, const BroadPhasePair& pair2);
+    static bool smallerThan(const BroadPhasePair &pair1, const BroadPhasePair &pair2);
 };
 
 // class AABBOverlapCallback
@@ -133,31 +140,13 @@ class BroadPhaseAlgorithm {
         /// Dynamic AABB tree
         DynamicAABBTree mDynamicAABBTree;
 
-        /// Array with the broad-phase IDs of all collision shapes that have moved (or have been
+        /// Set with the broad-phase IDs of all collision shapes that have moved (or have been
         /// created) during the last simulation step. Those are the shapes that need to be tested
         /// for overlapping in the next simulation step.
-        int* mMovedShapes;
-
-        /// Number of collision shapes in the array of shapes that have moved during the last
-        /// simulation step.
-        uint mNbMovedShapes;
-
-        /// Number of allocated elements for the array of shapes that have moved during the last
-        /// simulation step.
-        uint mNbAllocatedMovedShapes;
-
-        /// Number of non-used elements in the array of shapes that have moved during the last
-        /// simulation step.
-        uint mNbNonUsedMovedShapes;
+        Set<int> mMovedShapes;
 
         /// Temporary array of potential overlapping pairs (with potential duplicates)
-        BroadPhasePair* mPotentialPairs;
-
-        /// Number of potential overlapping pairs
-        uint mNbPotentialPairs;
-
-        /// Number of allocated elements for the array of potential overlapping pairs
-        uint mNbAllocatedPotentialPairs;
+        List<BroadPhasePair> mPotentialPairs;
 
         /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;
@@ -177,7 +166,7 @@ class BroadPhaseAlgorithm {
         BroadPhaseAlgorithm(CollisionDetection& collisionDetection);
 
         /// Destructor
-        ~BroadPhaseAlgorithm();
+        ~BroadPhaseAlgorithm() = default;
 
         /// Deleted copy-constructor
         BroadPhaseAlgorithm(const BroadPhaseAlgorithm& algorithm) = delete;
@@ -234,7 +223,8 @@ class BroadPhaseAlgorithm {
 };
 
 // Method used to compare two pairs for sorting algorithm
-inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1, const BroadPhasePair& pair2) {
+inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1,
+                                        const BroadPhasePair& pair2) {
 
     if (pair1.collisionShape1ID < pair2.collisionShape1ID) return true;
     if (pair1.collisionShape1ID == pair2.collisionShape1ID) {
@@ -246,6 +236,22 @@ inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1, const Broad
 // Return the fat AABB of a given broad-phase shape
 inline const AABB& BroadPhaseAlgorithm::getFatAABB(int broadPhaseId) const  {
     return mDynamicAABBTree.getFatAABB(broadPhaseId);
+}
+
+// Add a collision shape in the array of shapes that have moved in the last simulation step
+// and that need to be tested again for broad-phase overlapping.
+inline void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
+
+    // Store the broad-phase ID into the array of shapes that have moved
+    mMovedShapes.add(broadPhaseID);
+}
+
+// Remove a collision shape from the array of shapes that have moved in the last simulation step
+// and that need to be tested again for broad-phase overlapping.
+inline void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
+
+    // Remove the broad-phase ID from the set
+    mMovedShapes.remove(broadPhaseID);
 }
 
 // Return the proxy shape corresponding to the broad-phase node id in parameter

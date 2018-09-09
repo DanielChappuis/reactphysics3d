@@ -188,7 +188,7 @@ inline void Vector2::setAllValues(decimal newX, decimal newY) {
 
 // Return the length of the vector
 inline decimal Vector2::length() const {
-    return sqrt(x*x + y*y);
+    return std::sqrt(x*x + y*y);
 }
 
 // Return the square of the length of the vector

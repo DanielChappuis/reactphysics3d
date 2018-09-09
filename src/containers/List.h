@@ -79,8 +79,10 @@ class List {
                 using value_type = T;
                 using difference_type = std::ptrdiff_t;
                 using pointer = T*;
+                using const_pointer = T const*;
                 using reference = T&;
-                using iterator_category = std::bidirectional_iterator_tag;
+                using const_reference = const T&;
+                using iterator_category = std::random_access_iterator_tag;
 
                 /// Constructor
                 Iterator() = default;
@@ -98,13 +100,19 @@ class List {
                 }
 
                 /// Deferencable
-                reference operator*() const {
+                reference operator*() {
+                    assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
+                    return mBuffer[mCurrentIndex];
+                }
+
+                /// Const Deferencable
+                const_reference operator*() const {
                     assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
                     return mBuffer[mCurrentIndex];
                 }
 
                 /// Deferencable
-                pointer operator->() const {
+                const_pointer operator->() const {
                     assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
                     return &(mBuffer[mCurrentIndex]);
                 }
@@ -137,6 +145,53 @@ class List {
                     Iterator tmp = *this;
                     mCurrentIndex--;
                     return tmp;
+                }
+               
+                /// Plus operator
+                Iterator operator+(const difference_type& n) {
+                    return Iterator(mBuffer, mCurrentIndex + n, mSize);
+                }
+               
+                /// Plus operator
+                Iterator& operator+=(const difference_type& n) {
+                    mCurrentIndex += n;
+                    return *this;
+                }
+               
+                /// Minus operator
+                Iterator operator-(const difference_type& n) {
+                    return Iterator(mBuffer, mCurrentIndex - n, mSize);
+                }
+                
+                /// Minus operator
+                Iterator& operator-=(const difference_type& n) {
+                    mCurrentIndex -= n;
+                    return *this;
+                }
+
+                /// Difference operator
+                difference_type operator-(const Iterator& iterator) const {
+                   return mCurrentIndex - iterator.mCurrentIndex;
+                }
+
+                /// Comparison operator
+                bool operator<(const Iterator& other) const {
+                    return mCurrentIndex < other.mCurrentIndex;
+                }
+
+                /// Comparison operator
+                bool operator>(const Iterator& other) const {
+                    return mCurrentIndex > other.mCurrentIndex;
+                }
+
+                /// Comparison operator
+                bool operator<=(const Iterator& other) const {
+                    return mCurrentIndex <= other.mCurrentIndex;
+                }
+
+                /// Comparison operator
+                bool operator>=(const Iterator& other) const {
+                    return mCurrentIndex >= other.mCurrentIndex;
                 }
 
                 /// Equality operator (it == end())

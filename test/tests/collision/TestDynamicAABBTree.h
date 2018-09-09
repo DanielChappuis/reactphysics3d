@@ -147,18 +147,18 @@ class TestDynamicAABBTree : public Test {
 
             // Test root AABB
             AABB rootAABB = tree.getRootAABB();
-            test(rootAABB.getMin().x == -6);
-            test(rootAABB.getMin().y == -4);
-            test(rootAABB.getMin().z == -3);
-            test(rootAABB.getMax().x == 10);
-            test(rootAABB.getMax().y == 8);
-            test(rootAABB.getMax().z == 3);
+            rp3d_test(rootAABB.getMin().x == -6);
+            rp3d_test(rootAABB.getMin().y == -4);
+            rp3d_test(rootAABB.getMin().z == -3);
+            rp3d_test(rootAABB.getMax().x == 10);
+            rp3d_test(rootAABB.getMax().y == 8);
+            rp3d_test(rootAABB.getMax().z == 3);
 
             // Test data stored at the nodes of the tree
-            test(*(int*)(tree.getNodeDataPointer(object1Id)) == object1Data);
-            test(*(int*)(tree.getNodeDataPointer(object2Id)) == object2Data);
-            test(*(int*)(tree.getNodeDataPointer(object3Id)) == object3Data);
-            test(*(int*)(tree.getNodeDataPointer(object4Id)) == object4Data);
+            rp3d_test(*(int*)(tree.getNodeDataPointer(object1Id)) == object1Data);
+            rp3d_test(*(int*)(tree.getNodeDataPointer(object2Id)) == object2Data);
+            rp3d_test(*(int*)(tree.getNodeDataPointer(object3Id)) == object3Data);
+            rp3d_test(*(int*)(tree.getNodeDataPointer(object4Id)) == object4Data);
 
 #ifdef IS_PROFILING_ACTIVE
 			delete profiler;
@@ -204,42 +204,42 @@ class TestDynamicAABBTree : public Test {
             // AABB overlapping nothing
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(!mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping everything
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), mOverlapCallback);
-            test(mOverlapCallback.isOverlapping(object1Id));
-            test(mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 1 and 3
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), mOverlapCallback);
-            test(mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 3 and 4
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 2
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(mOverlapCallback.isOverlapping(object2Id));
-            test(!mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // ---- Update the object AABBs with the initial AABBs (no reinsertion) ----- //
 
@@ -251,42 +251,42 @@ class TestDynamicAABBTree : public Test {
             // AABB overlapping nothing
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(!mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping everything
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), mOverlapCallback);
-            test(mOverlapCallback.isOverlapping(object1Id));
-            test(mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 1 and 3
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), mOverlapCallback);
-            test(mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 3 and 4
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 2
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(mOverlapCallback.isOverlapping(object2Id));
-            test(!mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // ---- Update the object AABBs with the initial AABBs (with reinsertion) ----- //
 
@@ -298,42 +298,42 @@ class TestDynamicAABBTree : public Test {
             // AABB overlapping nothing
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(!mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping everything
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), mOverlapCallback);
-            test(mOverlapCallback.isOverlapping(object1Id));
-            test(mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 1 and 3
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), mOverlapCallback);
-            test(mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 3 and 4
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping object 2
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(mOverlapCallback.isOverlapping(object2Id));
-            test(!mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // ---- Move objects 2 and 3 ----- //
 
@@ -346,18 +346,18 @@ class TestDynamicAABBTree : public Test {
             // AABB overlapping object 3
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(6, -10, -2), Vector3(8, 5, 3)), mOverlapCallback);
-            test(!mOverlapCallback.isOverlapping(object1Id));
-            test(!mOverlapCallback.isOverlapping(object2Id));
-            test(mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
             // AABB overlapping objects 1, 2
             mOverlapCallback.reset();
             tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-8, 5, -3), Vector3(-2, 11, 3)), mOverlapCallback);
-            test(mOverlapCallback.isOverlapping(object1Id));
-            test(mOverlapCallback.isOverlapping(object2Id));
-            test(!mOverlapCallback.isOverlapping(object3Id));
-            test(!mOverlapCallback.isOverlapping(object4Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
+            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
+            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
 
 #ifdef IS_PROFILING_ACTIVE
 			delete profiler;
@@ -404,37 +404,37 @@ class TestDynamicAABBTree : public Test {
             mRaycastCallback.reset();
             Ray ray1(Vector3(4.5, -10, -5), Vector3(4.5, 10, -5));
             tree.raycast(ray1, mRaycastCallback);
-            test(!mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(!mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 1
             mRaycastCallback.reset();
             Ray ray2(Vector3(-1, -20, -2), Vector3(-1, 20, -2));
             tree.raycast(ray2, mRaycastCallback);
-            test(mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 1 and 2
             mRaycastCallback.reset();
             Ray ray3(Vector3(-7, 6, -2), Vector3(8, 6, -2));
             tree.raycast(ray3, mRaycastCallback);
-            test(mRaycastCallback.isHit(object1Id));
-            test(mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(mRaycastCallback.isHit(object1Id));
+            rp3d_test(mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 3
             mRaycastCallback.reset();
             Ray ray4(Vector3(-7, 2, 0), Vector3(-1, 2, 0));
             tree.raycast(ray4, mRaycastCallback);
-            test(!mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(!mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // ---- Update the object AABBs with the initial AABBs (no reinsertion) ----- //
 
@@ -446,34 +446,34 @@ class TestDynamicAABBTree : public Test {
             // Ray with no hits
             mRaycastCallback.reset();
             tree.raycast(ray1, mRaycastCallback);
-            test(!mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(!mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 1
             mRaycastCallback.reset();
             tree.raycast(ray2, mRaycastCallback);
-            test(mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 1 and 2
             mRaycastCallback.reset();
             tree.raycast(ray3, mRaycastCallback);
-            test(mRaycastCallback.isHit(object1Id));
-            test(mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(mRaycastCallback.isHit(object1Id));
+            rp3d_test(mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 3
             mRaycastCallback.reset();
             tree.raycast(ray4, mRaycastCallback);
-            test(!mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(!mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // ---- Update the object AABBs with the initial AABBs (with reinsertion) ----- //
 
@@ -485,34 +485,34 @@ class TestDynamicAABBTree : public Test {
             // Ray with no hits
             mRaycastCallback.reset();
             tree.raycast(ray1, mRaycastCallback);
-            test(!mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(!mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 1
             mRaycastCallback.reset();
             tree.raycast(ray2, mRaycastCallback);
-            test(mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 1 and 2
             mRaycastCallback.reset();
             tree.raycast(ray3, mRaycastCallback);
-            test(mRaycastCallback.isHit(object1Id));
-            test(mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(mRaycastCallback.isHit(object1Id));
+            rp3d_test(mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 3
             mRaycastCallback.reset();
             tree.raycast(ray4, mRaycastCallback);
-            test(!mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(!mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // ---- Move objects 2 and 3 ----- //
 
@@ -526,19 +526,19 @@ class TestDynamicAABBTree : public Test {
             Ray ray5(Vector3(-4, -5, 0), Vector3(-4, 12, 0));
             mRaycastCallback.reset();
             tree.raycast(ray5, mRaycastCallback);
-            test(mRaycastCallback.isHit(object1Id));
-            test(mRaycastCallback.isHit(object2Id));
-            test(!mRaycastCallback.isHit(object3Id));
-            test(!mRaycastCallback.isHit(object4Id));
+            rp3d_test(mRaycastCallback.isHit(object1Id));
+            rp3d_test(mRaycastCallback.isHit(object2Id));
+            rp3d_test(!mRaycastCallback.isHit(object3Id));
+            rp3d_test(!mRaycastCallback.isHit(object4Id));
 
             // Ray that hits object 3 and 4
             Ray ray6(Vector3(11, -3, 1), Vector3(-2, -3, 1));
             mRaycastCallback.reset();
             tree.raycast(ray6, mRaycastCallback);
-            test(!mRaycastCallback.isHit(object1Id));
-            test(!mRaycastCallback.isHit(object2Id));
-            test(mRaycastCallback.isHit(object3Id));
-            test(mRaycastCallback.isHit(object4Id));
+            rp3d_test(!mRaycastCallback.isHit(object1Id));
+            rp3d_test(!mRaycastCallback.isHit(object2Id));
+            rp3d_test(mRaycastCallback.isHit(object3Id));
+            rp3d_test(mRaycastCallback.isHit(object4Id));
 
 #ifdef IS_PROFILING_ACTIVE
 			delete profiler;

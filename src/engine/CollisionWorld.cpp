@@ -186,6 +186,9 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Add the body ID to the list of free IDs
     mFreeBodiesIds.add(collisionBody->getId());
 
+    // Reset the contact manifold list of the body
+    collisionBody->resetContactManifoldsList();
+
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();
 
@@ -244,13 +247,13 @@ bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
     return body1AABB.testCollision(body2AABB);
 }
 
-// Report all the bodies that overlap with the aabb in parameter
+// Report all the bodies which have an AABB that overlaps with the AABB in parameter
 /**
  * @param aabb AABB used to test for overlap
  * @param overlapCallback Pointer to the callback class to report overlap
  * @param categoryMaskBits bits mask used to filter the bodies to test overlap with
  */
-inline void CollisionWorld::testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
+void CollisionWorld::testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
     mCollisionDetection.testAABBOverlap(aabb, overlapCallback, categoryMaskBits);
 }
 

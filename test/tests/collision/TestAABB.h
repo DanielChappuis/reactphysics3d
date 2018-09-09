@@ -93,60 +93,60 @@ class TestAABB : public Test {
             };
             AABB aabb3 = AABB::createAABBForTriangle(trianglePoints);
 
-            test(aabb1.getMin().x == 0);
-            test(aabb1.getMin().y == 0);
-            test(aabb1.getMin().z == 0);
-            test(aabb1.getMax().x == 0);
-            test(aabb1.getMax().y == 0);
-            test(aabb1.getMax().z == 0);
+            rp3d_test(aabb1.getMin().x == 0);
+            rp3d_test(aabb1.getMin().y == 0);
+            rp3d_test(aabb1.getMin().z == 0);
+            rp3d_test(aabb1.getMax().x == 0);
+            rp3d_test(aabb1.getMax().y == 0);
+            rp3d_test(aabb1.getMax().z == 0);
 
-            test(aabb2.getMin().x == -3);
-            test(aabb2.getMin().y == -5);
-            test(aabb2.getMin().z == -8);
-            test(aabb2.getMax().x == 65);
-            test(aabb2.getMax().y == -1);
-            test(aabb2.getMax().z == 56);
+            rp3d_test(aabb2.getMin().x == -3);
+            rp3d_test(aabb2.getMin().y == -5);
+            rp3d_test(aabb2.getMin().z == -8);
+            rp3d_test(aabb2.getMax().x == 65);
+            rp3d_test(aabb2.getMax().y == -1);
+            rp3d_test(aabb2.getMax().z == 56);
 
-            test(aabb3.getMin().x == -12);
-            test(aabb3.getMin().y == -34);
-            test(aabb3.getMin().z == -73);
-            test(aabb3.getMax().x == 45);
-            test(aabb3.getMax().y == 98);
-            test(aabb3.getMax().z == 76);
+            rp3d_test(aabb3.getMin().x == -12);
+            rp3d_test(aabb3.getMin().y == -34);
+            rp3d_test(aabb3.getMin().z == -73);
+            rp3d_test(aabb3.getMax().x == 45);
+            rp3d_test(aabb3.getMax().y == 98);
+            rp3d_test(aabb3.getMax().z == 76);
 
             // -------- Test inflate() -------- //
             AABB aabbInflate(Vector3(-3, 4, 8), Vector3(-1, 6, 32));
             aabbInflate.inflate(1, 2, 3);
-            test(approxEqual(aabbInflate.getMin().x, -4, 0.00001));
-            test(approxEqual(aabbInflate.getMin().y, 2, 0.00001));
-            test(approxEqual(aabbInflate.getMin().z, 5, 0.00001));
-            test(approxEqual(aabbInflate.getMax().x, 0, 0.00001));
-            test(approxEqual(aabbInflate.getMax().y, 8, 0.00001));
-            test(approxEqual(aabbInflate.getMax().z, 35, 0.00001));
+            rp3d_test(approxEqual(aabbInflate.getMin().x, -4, 0.00001));
+            rp3d_test(approxEqual(aabbInflate.getMin().y, 2, 0.00001));
+            rp3d_test(approxEqual(aabbInflate.getMin().z, 5, 0.00001));
+            rp3d_test(approxEqual(aabbInflate.getMax().x, 0, 0.00001));
+            rp3d_test(approxEqual(aabbInflate.getMax().y, 8, 0.00001));
+            rp3d_test(approxEqual(aabbInflate.getMax().z, 35, 0.00001));
 
             // -------- Test getExtent() --------- //
 
-            test(approxEqual(mAABB1.getExtent().x, 20));
-            test(approxEqual(mAABB1.getExtent().y, 20));
-            test(approxEqual(mAABB1.getExtent().z, 20));
+            rp3d_test(approxEqual(mAABB1.getExtent().x, 20));
+            rp3d_test(approxEqual(mAABB1.getExtent().y, 20));
+            rp3d_test(approxEqual(mAABB1.getExtent().z, 20));
 
-            test(approxEqual(mAABB2.getExtent().x, 3));
-            test(approxEqual(mAABB2.getExtent().y, 16));
-            test(approxEqual(mAABB2.getExtent().z, 60));
+            rp3d_test(approxEqual(mAABB2.getExtent().x, 3));
+            rp3d_test(approxEqual(mAABB2.getExtent().y, 16));
+            rp3d_test(approxEqual(mAABB2.getExtent().z, 60));
 
-            test(approxEqual(mAABB3.getExtent().x, 50));
-            test(approxEqual(mAABB3.getExtent().y, 50));
-            test(approxEqual(mAABB3.getExtent().z, 50));
+            rp3d_test(approxEqual(mAABB3.getExtent().x, 50));
+            rp3d_test(approxEqual(mAABB3.getExtent().y, 50));
+            rp3d_test(approxEqual(mAABB3.getExtent().z, 50));
 
             // -------- Test getCenter() -------- //
 
-            test(mAABB1.getCenter().x == 0);
-            test(mAABB1.getCenter().y == 0);
-            test(mAABB1.getCenter().z == 0);
+            rp3d_test(mAABB1.getCenter().x == 0);
+            rp3d_test(mAABB1.getCenter().y == 0);
+            rp3d_test(mAABB1.getCenter().z == 0);
 
-            test(approxEqual(mAABB2.getCenter().x, -3.5));
-            test(approxEqual(mAABB2.getCenter().y, 12));
-            test(approxEqual(mAABB2.getCenter().z, 0));
+            rp3d_test(approxEqual(mAABB2.getCenter().x, -3.5));
+            rp3d_test(approxEqual(mAABB2.getCenter().y, 12));
+            rp3d_test(approxEqual(mAABB2.getCenter().z, 0));
 
             // -------- Test setMin(), setMax(), getMin(), getMax() -------- //
 
@@ -154,29 +154,29 @@ class TestAABB : public Test {
             aabb5.setMin(Vector3(-12, 34, 6));
             aabb5.setMax(Vector3(-3, 56, 20));
 
-            test(aabb5.getMin().x == -12);
-            test(aabb5.getMin().y == 34);
-            test(aabb5.getMin().z == 6);
-            test(aabb5.getMax().x == -3);
-            test(aabb5.getMax().y == 56);
-            test(aabb5.getMax().z == 20);
+            rp3d_test(aabb5.getMin().x == -12);
+            rp3d_test(aabb5.getMin().y == 34);
+            rp3d_test(aabb5.getMin().z == 6);
+            rp3d_test(aabb5.getMax().x == -3);
+            rp3d_test(aabb5.getMax().y == 56);
+            rp3d_test(aabb5.getMax().z == 20);
 
             // -------- Test assignment operator -------- //
 
             AABB aabb6;
             aabb6 = aabb2;
 
-            test(aabb6.getMin().x == -3);
-            test(aabb6.getMin().y == -5);
-            test(aabb6.getMin().z == -8);
-            test(aabb6.getMax().x == 65);
-            test(aabb6.getMax().y == -1);
-            test(aabb6.getMax().z == 56);
+            rp3d_test(aabb6.getMin().x == -3);
+            rp3d_test(aabb6.getMin().y == -5);
+            rp3d_test(aabb6.getMin().z == -8);
+            rp3d_test(aabb6.getMax().x == 65);
+            rp3d_test(aabb6.getMax().y == -1);
+            rp3d_test(aabb6.getMax().z == 56);
 
             // -------- Test getVolume() -------- //
 
-            test(approxEqual(mAABB1.getVolume(), 8000));
-            test(approxEqual(mAABB2.getVolume(), 2880));
+            rp3d_test(approxEqual(mAABB1.getVolume(), 8000));
+            rp3d_test(approxEqual(mAABB2.getVolume(), 2880));
         }
 
         void testMergeMethods() {
@@ -189,70 +189,70 @@ class TestAABB : public Test {
             AABB aabb3;
             aabb3.mergeTwoAABBs(aabb1, mAABB1);
 
-            test(aabb3.getMin().x == -45);
-            test(aabb3.getMin().y == -10);
-            test(aabb3.getMin().z == -10);
-            test(aabb3.getMax().x == 23);
-            test(aabb3.getMax().y == 10);
-            test(aabb3.getMax().z == 10);
+            rp3d_test(aabb3.getMin().x == -45);
+            rp3d_test(aabb3.getMin().y == -10);
+            rp3d_test(aabb3.getMin().z == -10);
+            rp3d_test(aabb3.getMax().x == 23);
+            rp3d_test(aabb3.getMax().y == 10);
+            rp3d_test(aabb3.getMax().z == 10);
 
             AABB aabb4;
             aabb4.mergeTwoAABBs(aabb1, aabb2);
 
-            test(aabb4.getMin().x == -45);
-            test(aabb4.getMin().y == 6);
-            test(aabb4.getMin().z == -2);
-            test(aabb4.getMax().x == 23);
-            test(aabb4.getMax().y == 9);
-            test(aabb4.getMax().z == 45);
+            rp3d_test(aabb4.getMin().x == -45);
+            rp3d_test(aabb4.getMin().y == 6);
+            rp3d_test(aabb4.getMin().z == -2);
+            rp3d_test(aabb4.getMax().x == 23);
+            rp3d_test(aabb4.getMax().y == 9);
+            rp3d_test(aabb4.getMax().z == 45);
 
             // -------- Test mergeWithAABB() -------- //
 
             aabb1.mergeWithAABB(mAABB1);
 
-            test(aabb1.getMin().x == -45);
-            test(aabb1.getMin().y == -10);
-            test(aabb1.getMin().z == -10);
-            test(aabb1.getMax().x == 23);
-            test(aabb1.getMax().y == 10);
-            test(aabb1.getMax().z == 10);
+            rp3d_test(aabb1.getMin().x == -45);
+            rp3d_test(aabb1.getMin().y == -10);
+            rp3d_test(aabb1.getMin().z == -10);
+            rp3d_test(aabb1.getMax().x == 23);
+            rp3d_test(aabb1.getMax().y == 10);
+            rp3d_test(aabb1.getMax().z == 10);
 
             aabb2.mergeWithAABB(mAABB1);
 
-            test(aabb2.getMin().x == -15);
-            test(aabb2.getMin().y == -10);
-            test(aabb2.getMin().z == -10);
-            test(aabb2.getMax().x == 10);
-            test(aabb2.getMax().y == 10);
-            test(aabb2.getMax().z == 45);
+            rp3d_test(aabb2.getMin().x == -15);
+            rp3d_test(aabb2.getMin().y == -10);
+            rp3d_test(aabb2.getMin().z == -10);
+            rp3d_test(aabb2.getMax().x == 10);
+            rp3d_test(aabb2.getMax().y == 10);
+            rp3d_test(aabb2.getMax().z == 45);
         }
 
         void testIntersection() {
 
             // -------- Test contains(AABB) -------- //
-            test(!mAABB1.contains(mAABB2));
-            test(mAABB3.contains(mAABB1));
-            test(!mAABB1.contains(mAABB3));
-            test(!mAABB1.contains(mAABB4));
-            test(!mAABB4.contains(mAABB1));
+            rp3d_test(!mAABB1.contains(mAABB2));
+            rp3d_test(mAABB3.contains(mAABB1));
+            rp3d_test(!mAABB1.contains(mAABB3));
+            rp3d_test(!mAABB1.contains(mAABB4));
+            rp3d_test(!mAABB4.contains(mAABB1));
 
             // -------- Test contains(Vector3) -------- //
-            test(mAABB1.contains(Vector3(0, 0, 0)));
-            test(mAABB1.contains(Vector3(-5, 6, 9)));
-            test(mAABB1.contains(Vector3(-9, -4, -9)));
-            test(mAABB1.contains(Vector3(9, 4, 7)));
-            test(!mAABB1.contains(Vector3(-11, -4, -9)));
-            test(!mAABB1.contains(Vector3(1, 12, -9)));
-            test(!mAABB1.contains(Vector3(1, 8, -13)));
-            test(!mAABB1.contains(Vector3(-14, 82, -13)));
+            rp3d_test(mAABB1.contains(Vector3(0, 0, 0)));
+            rp3d_test(mAABB1.contains(Vector3(-5, 6, 9)));
+            rp3d_test(mAABB1.contains(Vector3(-9, -4, -9)));
+            rp3d_test(mAABB1.contains(Vector3(9, 4, 7)));
+            rp3d_test(!mAABB1.contains(Vector3(-11, -4, -9)));
+            rp3d_test(!mAABB1.contains(Vector3(1, 12, -9)));
+            rp3d_test(!mAABB1.contains(Vector3(1, 8, -13)));
+            rp3d_test(!mAABB1.contains(Vector3(-14, 82, -13)));
 
             // -------- Test testCollision() -------- //
-            test(mAABB1.testCollision(mAABB2));
-            test(mAABB2.testCollision(mAABB1));
-            test(mAABB1.testCollision(mAABB3));
-            test(mAABB3.testCollision(mAABB1));
-            test(!mAABB1.testCollision(mAABB4));
-            test(!mAABB4.testCollision(mAABB1));
+            rp3d_test(mAABB1.testCollision(mAABB2));
+            rp3d_test(mAABB2.testCollision(mAABB1));
+            rp3d_test(mAABB1.testCollision(mAABB3));
+            rp3d_test(mAABB3.testCollision(mAABB1));
+            rp3d_test(!mAABB1.testCollision(mAABB4));
+            rp3d_test(!mAABB4.testCollision(mAABB1));
 
             // -------- Test testCollisionTriangleAABB() -------- //
 
@@ -260,8 +260,8 @@ class TestAABB : public Test {
             Vector3 trianglePoints[] = {
                 Vector3(-2, 4, 6), Vector3(20, -34, -73), Vector3(-12, 98, 76)
             };
-            test(mAABB1.testCollisionTriangleAABB(trianglePoints));
-            test(!aabb.testCollisionTriangleAABB(trianglePoints));
+            rp3d_test(mAABB1.testCollisionTriangleAABB(trianglePoints));
+            rp3d_test(!aabb.testCollisionTriangleAABB(trianglePoints));
 
             // -------- Test testRayIntersect() -------- //
 
@@ -274,14 +274,14 @@ class TestAABB : public Test {
             Ray ray7(Vector3(-4, 6, -100), Vector3(-4, 6, -11), 0.6);
             Ray ray8(Vector3(-403, -432, -100), Vector3(134, 643, 23));
 
-            test(mAABB1.testRayIntersect(ray1));
-            test(!mAABB1.testRayIntersect(ray2));
-            test(mAABB1.testRayIntersect(ray3));
-            test(mAABB1.testRayIntersect(ray4));
-            test(mAABB1.testRayIntersect(ray5));
-            test(mAABB1.testRayIntersect(ray6));
-            test(!mAABB1.testRayIntersect(ray7));
-            test(!mAABB1.testRayIntersect(ray8));
+            rp3d_test(mAABB1.testRayIntersect(ray1));
+            rp3d_test(!mAABB1.testRayIntersect(ray2));
+            rp3d_test(mAABB1.testRayIntersect(ray3));
+            rp3d_test(mAABB1.testRayIntersect(ray4));
+            rp3d_test(mAABB1.testRayIntersect(ray5));
+            rp3d_test(mAABB1.testRayIntersect(ray6));
+            rp3d_test(!mAABB1.testRayIntersect(ray7));
+            rp3d_test(!mAABB1.testRayIntersect(ray8));
         }
  };
 

@@ -1,5 +1,22 @@
 # Changelog
 
+## Release Candidate
+
+### Fixed
+
+ - Bug [#45](https://github.com/DanielChappuis/reactphysics3d/issues/45) has been fixed.
+ - Bug [#50](https://github.com/DanielChappuis/reactphysics3d/issues/50) has been fixed.
+ - Bug [#52](https://github.com/DanielChappuis/reactphysics3d/issues/52) has been fixed.
+ - Bug [#53](https://github.com/DanielChappuis/reactphysics3d/issues/53) has been fixed.
+ - Bug [#54](https://github.com/DanielChappuis/reactphysics3d/issues/54) has been fixed.
+ - Bug [#55](https://github.com/DanielChappuis/reactphysics3d/issues/55) has been fixed.
+ - Bug [#51](https://github.com/DanielChappuis/reactphysics3d/issues/51) has been fixed.
+ - Bug [#60](https://github.com/DanielChappuis/reactphysics3d/issues/60) has been fixed.
+ - Bug [#57](https://github.com/DanielChappuis/reactphysics3d/issues/57) has been fixed.
+ - Bug [#37](https://github.com/DanielChappuis/reactphysics3d/issues/37) has been fixed.
+ - Bug [#62](https://github.com/DanielChappuis/reactphysics3d/issues/62) has been fixed.
+ - Bug [#63](https://github.com/DanielChappuis/reactphysics3d/issues/63) has been fixed.
+
 ## Version 0.7.0 (May 1, 2018)
 
 ### Added

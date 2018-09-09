@@ -112,7 +112,7 @@ class CollisionDetection {
         void computeNarrowPhase();
 
         /// Add a contact manifold to the linked list of contact manifolds of the two bodies
-        /// involed in the corresponding contact.
+        /// involved in the corresponding contact.
         void addContactManifoldToBody(OverlappingPair* pair);
 
         /// Fill-in the collision detection matrix
