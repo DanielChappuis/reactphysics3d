@@ -59,6 +59,8 @@ class CollisionDetection {
 
     private :
 
+        using OverlappingPairMap = Map<Pair<uint, uint>, OverlappingPair*>;
+
         // -------------------- Attributes -------------------- //
 
         /// Memory manager
@@ -80,7 +82,7 @@ class CollisionDetection {
         NarrowPhaseInfo* mNarrowPhaseInfoList;
 
         /// Broad-phase overlapping pairs
-        Map<Pair<uint, uint>, OverlappingPair*> mOverlappingPairs;
+        OverlappingPairMap mOverlappingPairs;
 
         /// Broad-phase algorithm
         BroadPhaseAlgorithm mBroadPhaseAlgorithm;
@@ -131,17 +133,15 @@ class CollisionDetection {
         NarrowPhaseInfo* computeMiddlePhaseForProxyShapes(OverlappingPair* pair);
 
         /// Convert the potential contact into actual contacts
-        void processAllPotentialContacts();
-
-        /// Process the potential contact manifold of a pair to create actual contact manifold
-        void processPotentialContacts(OverlappingPair* pair);
+        void processAllPotentialContacts(const List<NarrowPhaseInfo*>& narrowPhaseInfos,
+                                         const OverlappingPairMap& overlappingPairs);
 
         /// Report contacts for all the colliding overlapping pairs
         void reportAllContacts();
 
         /// Process the potential contacts where one collion is a concave shape
         void processSmoothMeshContacts(OverlappingPair* pair);
-   
+
     public :
 
         // -------------------- Methods -------------------- //

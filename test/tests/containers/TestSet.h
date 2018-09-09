@@ -149,12 +149,20 @@ class TestSet : public Test {
             // ----- Test add() ----- //
 
             Set<int> set1(mAllocator);
-            set1.add(10);
-            set1.add(80);
-            set1.add(130);
+            bool add1 = set1.add(10);
+            bool add2 = set1.add(80);
+            bool add3 = set1.add(130);
+            test(add1);
+            test(add2);
+            test(add3);
             test(set1.contains(10));
             test(set1.contains(80));
             test(set1.contains(130));
+            test(set1.size() == 3);
+
+            bool add4 = set1.add(80);
+            test(!add4);
+            test(set1.contains(80));
             test(set1.size() == 3);
 
             Set<int> set2(mAllocator, 15);
@@ -168,7 +176,8 @@ class TestSet : public Test {
             test(isValid);
 
             set1.remove(10);
-            set1.add(10);
+            bool add = set1.add(10);
+            test(add);
             test(set1.size() == 3);
             test(set1.contains(10));
 

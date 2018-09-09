@@ -42,7 +42,7 @@ namespace reactphysics3d {
  * This class represents a simple generic set. This set is implemented
  * with a hash table.
   */
-template<typename V>
+template<typename V, class Hash = std::hash<V>, class KeyEqual = std::equal_to<V>>
 class Set {
 
     private:
@@ -93,6 +93,12 @@ class Set {
         static int LARGEST_PRIME;
 
         // -------------------- Attributes -------------------- //
+
+        /// Object with hash operator
+        const Hash mHash;
+
+        /// Object with equality operator
+        const KeyEqual mEqual;
 
         /// Current number of used entries in the set
         int mNbUsedEntries;
@@ -206,11 +212,11 @@ class Set {
 
             if (mCapacity > 0) {
 
-               size_t hashCode = std::hash<V>()(value);
+               size_t hashCode = mHash(value);
                int bucket = hashCode % mCapacity;
 
                for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
-                   if (mEntries[i].hashCode == hashCode && (*mEntries[i].value) == value) {
+                   if (mEntries[i].hashCode == hashCode && mEqual(*mEntries[i].value, value)) {
                        return i;
                    }
                }
@@ -373,8 +379,9 @@ class Set {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Set(MemoryAllocator& allocator, size_t capacity = 0)
-            : mNbUsedEntries(0), mNbFreeEntries(0), mCapacity(0), mBuckets(nullptr),
+        Set(MemoryAllocator& allocator, size_t capacity = 0, const Hash& hash = Hash(),
+            const KeyEqual& equal = KeyEqual())
+            : mHash(hash), mEqual(equal), mNbUsedEntries(0), mNbFreeEntries(0), mCapacity(0), mBuckets(nullptr),
               mEntries(nullptr), mAllocator(allocator), mFreeIndex(-1) {
 
             // If the largest prime has not been computed yet
@@ -391,8 +398,8 @@ class Set {
         }
 
         /// Copy constructor
-        Set(const Set<V>& set)
-          :mNbUsedEntries(set.mNbUsedEntries), mNbFreeEntries(set.mNbFreeEntries), mCapacity(set.mCapacity),
+        Set(const Set<V, Hash, KeyEqual>& set)
+          :mHash(set.mHash), mEqual(set.mEqual), mNbUsedEntries(set.mNbUsedEntries), mNbFreeEntries(set.mNbFreeEntries), mCapacity(set.mCapacity),
            mBuckets(nullptr), mEntries(nullptr), mAllocator(set.mAllocator), mFreeIndex(set.mFreeIndex) {
 
             if (mCapacity > 0) {
@@ -445,15 +452,16 @@ class Set {
             return findEntry(value) != -1;
         }
 
-        /// Add a value into the set
-        void add(const V& value) {
+        /// Add a value into the set.
+        /// Returns true if the item has been inserted and false otherwise.
+        bool add(const V& value) {
 
             if (mCapacity == 0) {
                 initialize(0);
             }
 
             // Compute the hash code of the value
-            size_t hashCode = std::hash<V>()(value);
+            size_t hashCode = mHash(value);
 
             // Compute the corresponding bucket index
             int bucket = hashCode % mCapacity;
@@ -462,9 +470,9 @@ class Set {
             for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
 
                 // If there is already an item with the same value in the set
-                if (mEntries[i].hashCode == hashCode && (*mEntries[i].value) == value) {
+                if (mEntries[i].hashCode == hashCode && mEqual(*mEntries[i].value, value)) {
 
-                    return;
+                    return false;
                 }
             }
 
@@ -500,6 +508,8 @@ class Set {
             assert(mEntries[entryIndex].value != nullptr);
             new (mEntries[entryIndex].value) V(value);
             mBuckets[bucket] = entryIndex;
+
+            return true;
         }
 
         /// Remove the element pointed by some iterator
@@ -517,12 +527,12 @@ class Set {
 
             if (mCapacity > 0) {
 
-                size_t hashcode = std::hash<V>()(value);
+                size_t hashcode = mHash(value);
                 int bucket = hashcode % mCapacity;
                 int last = -1;
                 for (int i = mBuckets[bucket]; i >= 0; last = i, i = mEntries[i].next) {
 
-                    if (mEntries[i].hashCode == hashcode && (*mEntries[i].value) == value) {
+                    if (mEntries[i].hashCode == hashcode && mEqual(*mEntries[i].value, value)) {
 
                         if (last < 0 ) {
                            mBuckets[bucket] = mEntries[i].next;
@@ -604,11 +614,11 @@ class Set {
 
             if (mCapacity > 0) {
 
-               size_t hashCode = std::hash<V>()(value);
+               size_t hashCode = mHash(value);
                bucket = hashCode % mCapacity;
 
                for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
-                   if (mEntries[i].hashCode == hashCode && *(mEntries[i].value) == value) {
+                   if (mEntries[i].hashCode == hashCode && mEqual(*(mEntries[i].value), value)) {
                        entry = i;
                        break;
                    }
@@ -715,15 +725,15 @@ class Set {
         }
 };
 
-template<typename V>
-const int Set<V>::PRIMES[NB_PRIMES] = {3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919,
+template<typename V, class Hash, class KeyEqual>
+const int Set<V, Hash, KeyEqual>::PRIMES[NB_PRIMES] = {3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919,
                              1103, 1327, 1597, 1931, 2333, 2801, 3371, 4049, 4861, 5839, 7013, 8419, 10103, 12143, 14591,
                              17519, 21023, 25229, 30293, 36353, 43627, 52361, 62851, 75431, 90523, 108631, 130363, 156437,
                              187751, 225307, 270371, 324449, 389357, 467237, 560689, 672827, 807403, 968897, 1162687, 1395263,
                              1674319, 2009191, 2411033, 2893249, 3471899, 4166287, 4999559};
 
-template<typename V>
-int Set<V>::LARGEST_PRIME = -1;
+template<typename V, class Hash, class KeyEqual>
+int Set<V, Hash, KeyEqual>::LARGEST_PRIME = -1;
 
 }
 

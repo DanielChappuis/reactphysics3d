@@ -78,12 +78,6 @@ void NarrowPhaseInfo::addContactPoint(const Vector3& contactNormal, decimal penD
     contactPoints = contactPointInfo;
 }
 
-/// Take all the generated contact points and create a new potential
-/// contact manifold into the overlapping pair
-void NarrowPhaseInfo::addContactPointsAsPotentialContactManifold() {
-    overlappingPair->addPotentialContactPoints(this);
-}
-
 // Reset the remaining contact points
 void NarrowPhaseInfo::resetContactPoints() {
 

@@ -894,8 +894,7 @@ List<const ContactManifold*> DynamicsWorld::getContactsList() {
     List<const ContactManifold*> contactManifolds(mMemoryManager.getPoolAllocator());
 
     // For each currently overlapping pair of bodies
-    Map<Pair<uint, uint>, OverlappingPair*>::Iterator it;
-    for (it = mCollisionDetection.mOverlappingPairs.begin();
+    for (auto it = mCollisionDetection.mOverlappingPairs.begin();
          it != mCollisionDetection.mOverlappingPairs.end(); ++it) {
 
         OverlappingPair* pair = it->second;

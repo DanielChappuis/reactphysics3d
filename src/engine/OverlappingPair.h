@@ -32,6 +32,7 @@
 #include "containers/Map.h"
 #include "containers/Pair.h"
 #include "containers/containers_common.h"
+#include <cstddef>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -106,11 +107,11 @@ class OverlappingPair {
 
         // -------------------- Attributes -------------------- //
 
+        /// Pair ID
+        OverlappingPairId mPairID;
+
         /// Set of persistent contact manifolds
         ContactManifoldSet mContactManifoldSet;
-
-        /// Linked-list of potential contact manifold
-        ContactManifoldInfo* mPotentialContactManifolds;
 
         /// Persistent memory allocator
         MemoryAllocator& mPersistentAllocator;
@@ -144,7 +145,7 @@ class OverlappingPair {
 
         /// Deleted assignment operator
         OverlappingPair& operator=(const OverlappingPair& pair) = delete;
-        
+
         /// Return the pointer to first proxy collision shape
         ProxyShape* getShape1() const;
 
@@ -157,14 +158,8 @@ class OverlappingPair {
         /// Return the a reference to the contact manifold set
         const ContactManifoldSet& getContactManifoldSet();
 
-        /// Clear all the potential contact manifolds
-        void clearPotentialContactManifolds();
-
         /// Add potential contact-points from narrow-phase into potential contact manifolds
         void addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo);
-
-        /// Add a contact to the contact manifold
-        void addContactManifold(const ContactManifoldInfo* contactManifoldInfo);
 
         /// Return a reference to the temporary memory allocator
         MemoryAllocator& getTemporaryAllocator();
@@ -174,12 +169,6 @@ class OverlappingPair {
 
 		/// Return true if the overlapping pair has contact manifolds with contacts
 		bool hasContacts() const;
-
-        /// Return a pointer to the first potential contact manifold in the linked-list
-        ContactManifoldInfo* getPotentialContactManifolds();
-
-        /// Reduce the number of contact points of all the potential contact manifolds
-        void reducePotentialContactManifolds();
 
         /// Make the contact manifolds and contact points obsolete
         void makeContactsObsolete();
@@ -222,11 +211,6 @@ inline ProxyShape* OverlappingPair::getShape1() const {
 inline ProxyShape* OverlappingPair::getShape2() const {
     return mContactManifoldSet.getShape2();
 }                
-
-// Add a contact to the contact manifold
-inline void OverlappingPair::addContactManifold(const ContactManifoldInfo* contactManifoldInfo) {
-    mContactManifoldSet.addContactManifold(contactManifoldInfo);
-}
 
 // Return the last frame collision info for a given shape id or nullptr if none is found
 inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(ShapeIdPair& shapeIds) {
@@ -289,11 +273,6 @@ inline bool OverlappingPair::hasContacts() const {
 	return mContactManifoldSet.getContactManifolds() != nullptr;
 }
 
-// Return a pointer to the first potential contact manifold in the linked-list
-inline ContactManifoldInfo* OverlappingPair::getPotentialContactManifolds() {
-    return mPotentialContactManifolds;
-}
-
 // Clear the obsolete contact manifold and contact points
 inline void OverlappingPair::clearObsoleteManifoldsAndContactPoints() {
     mContactManifoldSet.clearObsoleteManifoldsAndContactPoints();
@@ -307,6 +286,11 @@ inline void OverlappingPair::reduceContactManifolds() {
 // Return the last frame collision info for a given pair of shape ids
 inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const {
     return mLastFrameCollisionInfos[ShapeIdPair(shapeId1, shapeId2)];
+}
+
+// Create a new potential contact manifold using contact-points from narrow-phase
+inline void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
+    mContactManifoldSet.addContactPoints(narrowPhaseInfo);
 }
 
 }

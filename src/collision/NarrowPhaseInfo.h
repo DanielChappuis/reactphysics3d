@@ -83,9 +83,6 @@ struct NarrowPhaseInfo {
         void addContactPoint(const Vector3& contactNormal, decimal penDepth,
                              const Vector3& localPt1, const Vector3& localPt2);
 
-        /// Create a new potential contact manifold into the overlapping pair using current contact points
-        void addContactPointsAsPotentialContactManifold();
-
         /// Reset the remaining contact points
         void resetContactPoints();
 

@@ -26,12 +26,11 @@
 // Libraries
 #include "ContactManifold.h"
 #include "constraint/ContactPoint.h"
-#include "collision/ContactManifoldInfo.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-ContactManifold::ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyShape* shape1, ProxyShape* shape2,
+ContactManifold::ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
                                  MemoryAllocator& memoryAllocator, const WorldSettings& worldSettings)
                 : mShape1(shape1), mShape2(shape2), mContactPoints(nullptr),
                   mNbContactPoints(0), mFrictionImpulse1(0.0), mFrictionImpulse2(0.0),
@@ -39,18 +38,6 @@ ContactManifold::ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyS
                   mMemoryAllocator(memoryAllocator), mNext(nullptr), mPrevious(nullptr), mIsObsolete(false),
                   mWorldSettings(worldSettings) {
     
-    // For each contact point info in the manifold
-    const ContactPointInfo* pointInfo = manifoldInfo->getFirstContactPointInfo();
-    while(pointInfo != nullptr) {
-
-        // Add the new contact point
-        addContactPoint(pointInfo);
-
-        pointInfo = pointInfo->next;
-    }
-
-    assert(mNbContactPoints <= MAX_CONTACT_POINTS_IN_MANIFOLD);
-    assert(mNbContactPoints > 0);
 }
 
 // Destructor
@@ -121,20 +108,45 @@ decimal ContactManifold::getLargestContactDepth() const {
 // Add a contact point
 void ContactManifold::addContactPoint(const ContactPointInfo* contactPointInfo) {
 
-    assert(contactPointInfo != nullptr);
+       // For each contact point in the manifold
+       bool isSimilarPointFound = false;
+       ContactPoint* oldContactPoint = mContactPoints;
+       while (oldContactPoint != nullptr) {
 
-    // Create the new contact point
-    ContactPoint* contactPoint = new (mMemoryAllocator.allocate(sizeof(ContactPoint))) ContactPoint(contactPointInfo, mWorldSettings);
+           assert(oldContactPoint != nullptr);
 
-    // Add the new contact point into the manifold
-    contactPoint->setNext(mContactPoints);
-    contactPoint->setPrevious(nullptr);
-    if (mContactPoints != nullptr) {
-        mContactPoints->setPrevious(contactPoint);
-    }
-    mContactPoints = contactPoint;
+            // If the new contact point is similar (very close) to the old contact point
+            if (oldContactPoint->isSimilarWithContactPoint(contactPointInfo)) {
 
-    mNbContactPoints++;
+                // Replace (update) the old contact point with the new one
+                oldContactPoint->update(contactPointInfo);
+                isSimilarPointFound = true;
+                break;
+            }
+
+            oldContactPoint = oldContactPoint->getNext();
+       }
+
+       // If we have not found a similar contact point
+       if (!isSimilarPointFound) {
+
+            // Create the new contact point
+            ContactPoint* contactPoint = new (mMemoryAllocator.allocate(sizeof(ContactPoint))) ContactPoint(contactPointInfo, mWorldSettings);
+
+            // Add the new contact point into the manifold
+            contactPoint->setNext(mContactPoints);
+            contactPoint->setPrevious(nullptr);
+            if (mContactPoints != nullptr) {
+                mContactPoints->setPrevious(contactPoint);
+            }
+
+            mContactPoints = contactPoint;
+
+            mNbContactPoints++;
+       }
+
+    // The old manifold is no longer obsolete
+    mIsObsolete = false;
 }
 
 // Set to true to make the manifold obsolete
@@ -176,49 +188,202 @@ void ContactManifold::clearObsoleteContactPoints() {
     assert(mContactPoints != nullptr);
 }
 
-// Make sure we do not have too much contact points by keeping only the best
-// contact points of the manifold (with largest penetration depth)
-void ContactManifold::reduce() {
+// Reduce the number of contact points of the currently computed manifold
+// This is based on the technique described by Dirk Gregorius in his
+// "Contacts Creation" GDC presentation. This method will reduce the number of
+// contact points to a maximum of 4 points (but it can be less).
+void ContactManifold::reduce(const Transform& shape1ToWorldTransform) {
 
     assert(mContactPoints != nullptr);
 
-    // Remove contact points while there is too much contact points
-    while (mNbContactPoints > MAX_CONTACT_POINTS_IN_MANIFOLD) {
-        removeNonOptimalContactPoint();
-    }
+    // The following algorithm only works to reduce to a maximum of 4 contact points
+    assert(MAX_CONTACT_POINTS_IN_MANIFOLD == 4);
 
-    assert(mNbContactPoints <= MAX_CONTACT_POINTS_IN_MANIFOLD && mNbContactPoints > 0);
-    assert(mContactPoints != nullptr);
-}
+    // If there are too many contact points in the manifold
+    if (mNbContactPoints > MAX_CONTACT_POINTS_IN_MANIFOLD) {
 
-// Remove a contact point that is not optimal (with a small penetration depth)
-void ContactManifold::removeNonOptimalContactPoint() {
+        uint nbReducedPoints = 0;
 
-    assert(mContactPoints != nullptr);
-    assert(mNbContactPoints > MAX_CONTACT_POINTS_IN_MANIFOLD);
-
-    // Get the contact point with the minimum penetration depth among all points
-    ContactPoint* contactPoint = mContactPoints;
-    ContactPoint* minContactPoint = nullptr;
-    decimal minPenetrationDepth = DECIMAL_LARGEST;
-    while (contactPoint != nullptr) {
-
-        ContactPoint* nextContactPoint =  contactPoint->getNext();
-
-        if (contactPoint->getPenetrationDepth() < minPenetrationDepth) {
-
-            minContactPoint = contactPoint;
-            minPenetrationDepth = contactPoint->getPenetrationDepth();
+        ContactPoint* pointsToKeep[MAX_CONTACT_POINTS_IN_MANIFOLD];
+        for (int i=0; i<MAX_CONTACT_POINTS_IN_MANIFOLD; i++) {
+            pointsToKeep[i] = nullptr;
         }
 
-        contactPoint = nextContactPoint;
+        //  Compute the initial contact point we need to keep.
+        // The first point we keep is always the point in a given
+        // constant direction (in order to always have same contact points
+        // between frames for better stability)
+
+        const Transform worldToShape1Transform = shape1ToWorldTransform.getInverse();
+
+        // Compute the contact normal of the manifold (we use the first contact point)
+        // in the local-space of the first collision shape
+        const Vector3 contactNormalShape1Space = worldToShape1Transform.getOrientation() * mContactPoints->getNormal();
+
+        // Compute a search direction
+        const Vector3 searchDirection(1, 1, 1);
+        ContactPoint* element = mContactPoints;
+        pointsToKeep[0] = element;
+        decimal maxDotProduct = searchDirection.dot(element->getLocalPointOnShape1());
+        element = element->getNext();
+        nbReducedPoints = 1;
+        while(element != nullptr) {
+
+            decimal dotProduct = searchDirection.dot(element->getLocalPointOnShape1());
+            if (dotProduct > maxDotProduct) {
+                maxDotProduct = dotProduct;
+                pointsToKeep[0] = element;
+            }
+            element = element->getNext();
+        }
+        assert(pointsToKeep[0] != nullptr);
+        assert(nbReducedPoints == 1);
+
+        // Compute the second contact point we need to keep.
+        // The second point we keep is the one farthest away from the first point.
+
+        decimal maxDistance = decimal(0.0);
+        element = mContactPoints;
+        while(element != nullptr) {
+
+            if (element == pointsToKeep[0]) {
+                element = element->getNext();
+                continue;
+            }
+
+            decimal distance = (pointsToKeep[0]->getLocalPointOnShape1() - element->getLocalPointOnShape1()).lengthSquare();
+            if (distance >= maxDistance) {
+                maxDistance = distance;
+                pointsToKeep[1] = element;
+                nbReducedPoints = 2;
+            }
+            element = element->getNext();
+        }
+        assert(pointsToKeep[1] != nullptr);
+        assert(nbReducedPoints == 2);
+
+        // Compute the third contact point we need to keep.
+        // The second point is the one producing the triangle with the larger area
+        // with first and second point.
+
+        // We compute the most positive or most negative triangle area (depending on winding)
+        ContactPoint* thirdPointMaxArea = nullptr;
+        ContactPoint* thirdPointMinArea = nullptr;
+        decimal minArea = decimal(0.0);
+        decimal maxArea = decimal(0.0);
+        bool isPreviousAreaPositive = true;
+        element = mContactPoints;
+        while(element != nullptr) {
+
+            if (element == pointsToKeep[0] || element == pointsToKeep[1]) {
+                element = element->getNext();
+                continue;
+            }
+
+            const Vector3 newToFirst = pointsToKeep[0]->getLocalPointOnShape1() - element->getLocalPointOnShape1();
+            const Vector3 newToSecond = pointsToKeep[1]->getLocalPointOnShape1() - element->getLocalPointOnShape1();
+
+            // Compute the triangle area
+            decimal area = newToFirst.cross(newToSecond).dot(contactNormalShape1Space);
+
+            if (area >= maxArea) {
+                maxArea = area;
+                thirdPointMaxArea = element;
+            }
+            if (area <= minArea) {
+                minArea = area;
+                thirdPointMinArea = element;
+            }
+            element = element->getNext();
+        }
+        assert(minArea <= decimal(0.0));
+        assert(maxArea >= decimal(0.0));
+        if (maxArea > (-minArea)) {
+            isPreviousAreaPositive = true;
+            pointsToKeep[2] = thirdPointMaxArea;
+            nbReducedPoints = 3;
+        }
+        else {
+            isPreviousAreaPositive = false;
+            pointsToKeep[2] = thirdPointMinArea;
+            nbReducedPoints = 3;
+        }
+
+        // Compute the 4th point by choosing the triangle that add the most
+        // triangle area to the previous triangle and has opposite sign area (opposite winding)
+
+        decimal largestArea = decimal(0.0); // Largest area (positive or negative)
+        element = mContactPoints;
+
+        if (nbReducedPoints == 3) {
+
+            // For each remaining point
+            while(element != nullptr) {
+
+                if (element == pointsToKeep[0] || element == pointsToKeep[1] || element == pointsToKeep[2]) {
+                element = element->getNext();
+                continue;
+                }
+
+                // For each edge of the triangle made by the first three points
+                for (uint i=0; i<3; i++) {
+
+                uint edgeVertex1Index = i;
+                uint edgeVertex2Index = i < 2 ? i + 1 : 0;
+
+                const Vector3 newToFirst = pointsToKeep[edgeVertex1Index]->getLocalPointOnShape1() - element->getLocalPointOnShape1();
+                const Vector3 newToSecond = pointsToKeep[edgeVertex2Index]->getLocalPointOnShape1() - element->getLocalPointOnShape1();
+
+                // Compute the triangle area
+                decimal area = newToFirst.cross(newToSecond).dot(contactNormalShape1Space);
+
+                // We are looking at the triangle with maximal area (positive or negative).
+                // If the previous area is positive, we are looking at negative area now.
+                // If the previous area is negative, we are looking at the positive area now.
+                if (isPreviousAreaPositive && area <= largestArea) {
+                    largestArea = area;
+                    pointsToKeep[3] = element;
+                    nbReducedPoints = 4;
+                }
+                else if (!isPreviousAreaPositive && area >= largestArea) {
+                    largestArea = area;
+                    pointsToKeep[3] = element;
+                    nbReducedPoints = 4;
+                }
+                }
+
+                element = element->getNext();
+            }
+        }
+
+        // Delete the contact points we do not want to keep from the linked list
+        element = mContactPoints;
+        ContactPoint* previousElement = nullptr;
+        while(element != nullptr) {
+
+            bool deletePoint = true;
+
+            // Skip the points we want to keep
+            for (uint i=0; i<nbReducedPoints; i++) {
+
+                if (element == pointsToKeep[i]) {
+
+                    previousElement = element;
+                    element = element->getNext();
+                    deletePoint = false;
+                }
+            }
+
+            if (deletePoint) {
+
+                ContactPoint* contactPointToDelete = element;
+                element = element->getNext();
+
+                removeContactPoint(contactPointToDelete);
+            }
+        }
+
+        assert(nbReducedPoints > 0 && nbReducedPoints <= 4);
+        mNbContactPoints = nbReducedPoints;
     }
-
-    assert(minContactPoint != nullptr);
-
-    // Remove the non optimal contact point
-    removeContactPoint(minContactPoint);
-
-    assert(mNbContactPoints > 0);
-    assert(mContactPoints != nullptr);
 }

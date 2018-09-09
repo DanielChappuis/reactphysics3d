@@ -26,7 +26,6 @@
 // Libraries
 #include <cassert>
 #include "OverlappingPair.h"
-#include "collision/ContactManifoldInfo.h"
 #include "collision/NarrowPhaseInfo.h"
 #include "containers/containers_common.h"
 #include "collision/ContactPointInfo.h"
@@ -37,7 +36,7 @@ using namespace reactphysics3d;
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                                  MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator,
                                  const WorldSettings& worldSettings)
-                : mContactManifoldSet(shape1, shape2, persistentMemoryAllocator, worldSettings), mPotentialContactManifolds(nullptr),
+                : mPairID(computeID(shape1, shape2)), mContactManifoldSet(shape1, shape2, persistentMemoryAllocator, worldSettings),
                   mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
                   mLastFrameCollisionInfos(mPersistentAllocator), mWorldSettings(worldSettings) {
     
@@ -45,7 +44,6 @@ OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
 
 // Destructor
 OverlappingPair::~OverlappingPair() {
-	assert(mPotentialContactManifolds == nullptr);
 
     // Remove all the remaining last frame collision info
     for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ++it) {
@@ -57,98 +55,6 @@ OverlappingPair::~OverlappingPair() {
         mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
     }
 }
-
-// Create a new potential contact manifold using contact-points from narrow-phase
-void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
-
-    assert(narrowPhaseInfo->contactPoints != nullptr);
-
-    // For each potential contact point to add
-    ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints;
-    while (contactPoint != nullptr) {
-
-        ContactPointInfo* nextContactPoint = contactPoint->next;
-
-        // Look if the contact point correspond to an existing potential manifold
-        // (if the contact point normal is similar to the normal of an existing manifold)
-        ContactManifoldInfo* manifold = mPotentialContactManifolds;
-        bool similarManifoldFound = false;
-        while(manifold != nullptr) {
-
-            // Get the first contact point
-            const ContactPointInfo* point = manifold->getFirstContactPointInfo();
-            assert(point != nullptr);
-
-            // If we have found a corresponding manifold for the new contact point
-            // (a manifold with a similar contact normal direction)
-            if (point->normal.dot(contactPoint->normal) >= mWorldSettings.cosAngleSimilarContactManifold) {
-
-                // Add the contact point to the manifold
-                manifold->addContactPoint(contactPoint);
-
-               similarManifoldFound = true;
-
-               break;
-            }
-
-            manifold = manifold->getNext();
-        }
-
-        // If we have not found an existing manifold with a similar contact normal
-        if (!similarManifoldFound) {
-
-            // Create a new potential contact manifold
-            ContactManifoldInfo* manifoldInfo = new (mTempMemoryAllocator.allocate(sizeof(ContactManifoldInfo)))
-                                            ContactManifoldInfo(mTempMemoryAllocator);
-
-            // Add the manifold into the linked-list of potential contact manifolds
-            manifoldInfo->mNext = mPotentialContactManifolds;
-            mPotentialContactManifolds = manifoldInfo;
-
-            // Add the contact point to the manifold
-            manifoldInfo->addContactPoint(contactPoint);
-        }
-
-        contactPoint = nextContactPoint;
-    }
-
-    // All the contact point info of the narrow-phase info have been moved
-    // into the potential contacts of the overlapping pair
-    narrowPhaseInfo->contactPoints = nullptr;
-}
-
-// Clear all the potential contact manifolds
-void OverlappingPair::clearPotentialContactManifolds() {
-
-    ContactManifoldInfo* element = mPotentialContactManifolds;
-    while(element != nullptr) {
-
-        // Remove the proxy collision shape
-        ContactManifoldInfo* elementToRemove = element;
-        element = element->getNext();
-
-        // Delete the element
-        elementToRemove->~ContactManifoldInfo();
-        mTempMemoryAllocator.release(elementToRemove, sizeof(ContactManifoldInfo));
-    }
-
-    mPotentialContactManifolds = nullptr;
-}
-
-// Reduce the number of contact points of all the potential contact manifolds
-void OverlappingPair::reducePotentialContactManifolds() {
-
-    // For each potential contact manifold
-    ContactManifoldInfo* manifold = mPotentialContactManifolds;
-    while (manifold != nullptr) {
-
-        // Reduce the number of contact points of the manifold
-        manifold->reduce(mContactManifoldSet.getShape1()->getLocalToWorldTransform());
-
-        manifold = manifold->getNext();
-    }
-}
-
 
 // Add a new last frame collision info if it does not exist for the given shapes already
 void OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) {

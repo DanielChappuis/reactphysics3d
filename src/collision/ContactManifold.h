@@ -93,6 +93,11 @@ class ContactManifold {
 
     private:
 
+        // -------------------- Constants -------------------- //
+
+        /// Maximum number of contact points in a reduced contact manifold
+        const int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
+
         // -------------------- Attributes -------------------- //
 
         /// Pointer to the first proxy shape of the contact
@@ -181,11 +186,8 @@ class ContactManifold {
         /// Add a contact point
         void addContactPoint(const ContactPointInfo* contactPointInfo);
 
-        /// Make sure we do not have too much contact points by keeping only the best ones
-        void reduce();
-
-        /// Remove a contact point that is not optimal (with a small penetration depth)
-        void removeNonOptimalContactPoint();
+        /// Reduce the number of contact points of the currently computed manifold
+        void reduce(const Transform& shape1ToWorldTransform);
 
         /// Remove a contact point
         void removeContactPoint(ContactPoint* contactPoint);
@@ -219,8 +221,8 @@ class ContactManifold {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifold(const ContactManifoldInfo* manifoldInfo, ProxyShape* shape1, ProxyShape* shape2,
-                        MemoryAllocator& memoryAllocator, const WorldSettings& worldSettings);
+        ContactManifold(ProxyShape* shape1, ProxyShape* shape2, MemoryAllocator& memoryAllocator,
+                        const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactManifold();

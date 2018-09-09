@@ -34,7 +34,11 @@ class ContactManifoldInfo;
 class ProxyShape;
 class MemoryAllocator;
 struct WorldSettings;
+struct NarrowPhaseInfo;
+struct Vector3;
 class CollisionShape;
+class Transform;
+
 
 // Constants
 const int MAX_MANIFOLDS_IN_CONTACT_MANIFOLD_SET = 3;   // Maximum number of contact manifolds in the set
@@ -77,16 +81,13 @@ class ContactManifoldSet {
         // -------------------- Methods -------------------- //
 
         /// Create a new contact manifold and add it to the set
-        void createManifold(const ContactManifoldInfo* manifoldInfo);
+        ContactManifold* createManifold();
 
         // Return the contact manifold with a similar contact normal.
-        ContactManifold* selectManifoldWithSimilarNormal(const ContactManifoldInfo* contactManifold) const;
+        ContactManifold* selectManifoldWithSimilarNormal(const Vector3& contactNormal) const;
 
         /// Remove a contact manifold that is the least optimal (smaller penetration depth)
         void removeNonOptimalManifold();
-
-        /// Update a previous similar manifold with a new one
-        void updateManifoldWithNewOne(ContactManifold* oldManifold, const ContactManifoldInfo* newManifold);
 
         /// Return the maximum number of contact manifolds allowed between to collision shapes
         int computeNbMaxContactManifolds(const CollisionShape* shape1, const CollisionShape* shape2);
@@ -108,8 +109,8 @@ class ContactManifoldSet {
         /// Destructor
         ~ContactManifoldSet();
 
-        /// Add a contact manifold in the set
-        void addContactManifold(const ContactManifoldInfo* contactManifoldInfo);
+        /// Add the contact points from the narrow phase
+        void addContactPoints(NarrowPhaseInfo* narrowPhaseInfo);
 
         /// Return the first proxy shape
         ProxyShape* getShape1() const;

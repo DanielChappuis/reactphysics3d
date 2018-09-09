@@ -25,8 +25,8 @@
 
 // Libraries
 #include "ContactManifoldSet.h"
+#include "NarrowPhaseInfo.h"
 #include "constraint/ContactPoint.h"
-#include "collision/ContactManifoldInfo.h"
 #include "ProxyShape.h"
 #include "collision/ContactManifold.h"
 
@@ -49,24 +49,56 @@ ContactManifoldSet::~ContactManifoldSet() {
     clear();
 }
 
-void ContactManifoldSet::addContactManifold(const ContactManifoldInfo* contactManifoldInfo) {
+void ContactManifoldSet::addContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
 
-    assert(contactManifoldInfo->getFirstContactPointInfo() != nullptr);
+    assert(narrowPhaseInfo->contactPoints != nullptr);
 
-    // Try to find an existing contact manifold with similar contact normal
-    ContactManifold* similarManifold = selectManifoldWithSimilarNormal(contactManifoldInfo);
+    // For each potential contact point to add
+    ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints;
+    while (contactPoint != nullptr) {
 
-    // If a similar manifold has been found
-    if (similarManifold != nullptr) {
+        // Look if the contact point correspond to an existing potential manifold
+        // (if the contact point normal is similar to the normal of an existing manifold)
+        ContactManifold* manifold = mManifolds;
+        bool similarManifoldFound = false;
+        while(manifold != nullptr) {
 
-        // Update the old manifold with the new one
-        updateManifoldWithNewOne(similarManifold, contactManifoldInfo);
+            // Get the first contact point
+            const ContactPoint* point = manifold->getContactPoints();
+            assert(point != nullptr);
+
+            // If we have found a corresponding manifold for the new contact point
+            // (a manifold with a similar contact normal direction)
+            if (point->getNormal().dot(contactPoint->normal) >= mWorldSettings.cosAngleSimilarContactManifold) {
+
+                // Add the contact point to the manifold
+                manifold->addContactPoint(contactPoint);
+
+               similarManifoldFound = true;
+
+               break;
+            }
+
+            manifold = manifold->getNext();
+        }
+
+        // If we have not found an existing manifold with a similar contact normal
+        if (!similarManifoldFound) {
+
+            // Create a new contact manifold
+            ContactManifold* manifold = createManifold();
+
+            // Add the contact point to the manifold
+            manifold->addContactPoint(contactPoint);
+        }
+
+        contactPoint = contactPoint->next;
     }
-    else {
 
-        // Create a new contact manifold
-        createManifold(contactManifoldInfo);
-    }
+    // All the contact point info of the narrow-phase info have been moved
+    // into the potential contacts of the overlapping pair. We can now
+    // remove the contacts points from the narrow phase info object.
+    narrowPhaseInfo->resetContactPoints();
 }
 
 // Return the total number of contact points in the set of manifolds
@@ -94,51 +126,6 @@ int ContactManifoldSet::computeNbMaxContactManifolds(const CollisionShape* shape
     else {
         return mWorldSettings.nbMaxContactManifoldsConcaveShape;
     }
-}
-
-
-// Update a previous similar manifold with a new one
-void ContactManifoldSet::updateManifoldWithNewOne(ContactManifold* oldManifold, const ContactManifoldInfo* newManifold) {
-
-   assert(oldManifold != nullptr);
-   assert(newManifold != nullptr);
-
-   // For each contact point of the new manifold
-   ContactPointInfo* contactPointInfo = newManifold->getFirstContactPointInfo();
-   assert(contactPointInfo != nullptr);
-   while (contactPointInfo != nullptr) {
-
-       // For each contact point in the old manifold
-       bool isSimilarPointFound = false;
-       ContactPoint* oldContactPoint = oldManifold->getContactPoints();
-       while (oldContactPoint != nullptr) {
-
-           assert(oldContactPoint != nullptr);
-
-            // If the new contact point is similar (very close) to the old contact point
-            if (oldContactPoint->isSimilarWithContactPoint(contactPointInfo)) {
-
-                // Replace (update) the old contact point with the new one
-                oldContactPoint->update(contactPointInfo);
-                isSimilarPointFound = true;
-                break;
-            }
-
-            oldContactPoint = oldContactPoint->getNext();
-       }
-
-       // If we have not found a similar contact point
-       if (!isSimilarPointFound) {
-
-           // Add the contact point to the manifold
-           oldManifold->addContactPoint(contactPointInfo);
-       }
-
-       contactPointInfo = contactPointInfo->next;
-   }
-
-   // The old manifold is no longer obsolete
-   oldManifold->setIsObsolete(false, false);
 }
 
 // Remove a contact manifold that is the least optimal (smaller penetration depth)
@@ -171,13 +158,26 @@ void ContactManifoldSet::removeNonOptimalManifold() {
     removeManifold(minDepthManifold);
 }
 
+// Create a new contact manifold and add it to the set
+ContactManifold* ContactManifoldSet::createManifold() {
+
+    ContactManifold* manifold = new (mMemoryAllocator.allocate(sizeof(ContactManifold)))
+                                        ContactManifold(mShape1, mShape2, mMemoryAllocator, mWorldSettings);
+    manifold->setPrevious(nullptr);
+    manifold->setNext(mManifolds);
+    if (mManifolds != nullptr) {
+        mManifolds->setPrevious(manifold);
+    }
+    mManifolds = manifold;
+
+    mNbManifolds++;
+
+    return manifold;
+}
+
 // Return the contact manifold with a similar contact normal.
 // If no manifold has close enough contact normal, it returns nullptr
-ContactManifold* ContactManifoldSet::selectManifoldWithSimilarNormal(const ContactManifoldInfo* contactManifold) const {
-
-    // Get the contact normal of the first point of the manifold
-    const ContactPointInfo* contactPoint = contactManifold->getFirstContactPointInfo();
-    assert(contactPoint != nullptr);
+ContactManifold* ContactManifoldSet::selectManifoldWithSimilarNormal(const Vector3& contactNormal) const {
 
     ContactManifold* manifold = mManifolds;
 
@@ -189,7 +189,7 @@ ContactManifold* ContactManifoldSet::selectManifoldWithSimilarNormal(const Conta
         assert(point != nullptr);
 
         // If the contact normal of the two manifolds are close enough
-        if (contactPoint->normal.dot(point->getNormal()) >= mWorldSettings.cosAngleSimilarContactManifold) {
+        if (contactNormal.dot(point->getNormal()) >= mWorldSettings.cosAngleSimilarContactManifold) {
             return manifold;
         }
 
@@ -216,22 +216,9 @@ void ContactManifoldSet::clear() {
         mNbManifolds--;
     }
 
+    mManifolds = nullptr;
+
     assert(mNbManifolds == 0);
-}
-
-// Create a new contact manifold and add it to the set
-void ContactManifoldSet::createManifold(const ContactManifoldInfo* manifoldInfo) {
-
-    ContactManifold* manifold = new (mMemoryAllocator.allocate(sizeof(ContactManifold)))
-                                    ContactManifold(manifoldInfo, mShape1, mShape2, mMemoryAllocator, mWorldSettings);
-    manifold->setPrevious(nullptr);
-    manifold->setNext(mManifolds);
-	if (mManifolds != nullptr) {
-		mManifolds->setPrevious(manifold);
-	}
-    mManifolds = manifold;
-
-    mNbManifolds++;
 }
 
 // Remove a contact manifold from the set
@@ -309,7 +296,7 @@ void ContactManifoldSet::reduce() {
     // Reduce all the contact manifolds in case they have too many contact points
     ContactManifold* manifold = mManifolds;
     while (manifold != nullptr) {
-        manifold->reduce();
+        manifold->reduce(mShape1->getLocalToWorldTransform());
         manifold = manifold->getNext();
     }
 }
