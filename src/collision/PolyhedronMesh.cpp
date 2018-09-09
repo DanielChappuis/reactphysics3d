@@ -105,7 +105,7 @@ Vector3 PolyhedronMesh::getVertex(uint index) const {
     uint vertexIndex = mHalfEdgeStructure.getVertex(index).vertexPointIndex;
 
     PolygonVertexArray::VertexDataType vertexType = mPolygonVertexArray->getVertexDataType();
-    unsigned char* verticesStart = mPolygonVertexArray->getVerticesStart();
+    const unsigned char* verticesStart = mPolygonVertexArray->getVerticesStart();
     int vertexStride = mPolygonVertexArray->getVerticesStride();
 
     Vector3 vertex;
