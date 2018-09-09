@@ -160,6 +160,9 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
         void getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* outVerticesNormals) const;
+		
+        /// Return the indices of the three vertices of a given triangle in the array
+        void getTriangleVerticesIndices(uint subPart, uint triangleIndex, uint* outVerticesIndices) const;
 
         /// Compute the shape Id for a given triangle of the mesh
         uint computeTriangleShapeId(uint subPart, uint triangleIndex) const;
@@ -180,6 +183,18 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Return the scaling vector
         const Vector3& getScaling() const;
+		
+        /// Return the number of sub parts contained in this mesh
+		uint getNbSubparts() const;
+		
+        /// Return the number of triangles in a sub part
+		uint getNbTriangles(uint subPart) const;
+		
+        /// Return the triangle positions for a specific subpart and triangle index
+		void getTriangleVertices(uint subPart, uint triangleIndex, Vector3* v1, Vector3* v2, Vector3* v3) const;
+
+        /// Return the triangle normals for a specific subpart and triangle index
+		void getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* n1, Vector3* n2, Vector3* n3) const;
 
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
