@@ -43,14 +43,14 @@ using namespace reactphysics3d;
  * @param vertexDataType Data type of the vertices data
  * @param indexDataType Data type of the face indices data
  */
-PolygonVertexArray::PolygonVertexArray(uint nbVertices, void* verticesStart, int verticesStride,
-                                       void* indexesStart, int indexesStride,
+PolygonVertexArray::PolygonVertexArray(uint nbVertices, const void* verticesStart, int verticesStride,
+                                       const void* indexesStart, int indexesStride,
                                        uint nbFaces, PolygonFace* facesStart,
                                        VertexDataType vertexDataType, IndexDataType indexDataType) {
     mNbVertices = nbVertices;
-    mVerticesStart = reinterpret_cast<unsigned char*>(verticesStart);
+    mVerticesStart = reinterpret_cast<const unsigned char*>(verticesStart);
     mVerticesStride = verticesStride;
-    mIndicesStart = reinterpret_cast<unsigned char*>(indexesStart);
+    mIndicesStart = reinterpret_cast<const unsigned char*>(indexesStart);
     mIndicesStride = indexesStride;
     mNbFaces = nbFaces;
     mPolygonFacesStart = facesStart;
@@ -71,7 +71,7 @@ uint PolygonVertexArray::getVertexIndexInFace(uint faceIndex, uint noVertexInFac
 
     assert(noVertexInFace < face->nbVertices);
 
-    void* vertexIndexPointer = mIndicesStart + (face->indexBase + noVertexInFace) * mIndicesStride;
+    const void* vertexIndexPointer = mIndicesStart + (face->indexBase + noVertexInFace) * mIndicesStride;
 
     if (mIndexDataType == PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
         return *((uint*)vertexIndexPointer);
