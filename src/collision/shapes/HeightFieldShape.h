@@ -161,12 +161,6 @@ class HeightFieldShape : public ConcaveShape {
         void getTriangleVerticesWithIndexPointer(int32 subPart, int32 triangleIndex,
                                                  Vector3* outTriangleVertices) const;
 
-        /// Return the vertex (local-coordinates) of the height field at a given (x,y) position
-        Vector3 getVertexAt(int x, int y) const;
-
-        /// Return the height of a given (x,y) point in the height field
-        decimal getHeightAt(int x, int y) const;
-
         /// Return the closest inside integer grid value of a given floating grid value
         int computeIntegerGridValue(decimal value) const;
 
@@ -201,6 +195,12 @@ class HeightFieldShape : public ConcaveShape {
 
         /// Return the number of columns in the height field
         int getNbColumns() const;
+		
+        /// Return the vertex (local-coordinates) of the height field at a given (x,y) position
+        Vector3 getVertexAt(int x, int y) const;
+
+        /// Return the height of a given (x,y) point in the height field
+        decimal getHeightAt(int x, int y) const;
 
         /// Return the type of height value in the height field
         HeightDataType getHeightDataType() const;
