@@ -155,12 +155,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
 
-        /// Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-        void getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const;
-
-        /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
-        void getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* outVerticesNormals) const;
-
         /// Compute the shape Id for a given triangle of the mesh
         uint computeTriangleShapeId(uint subPart, uint triangleIndex) const;
 
@@ -170,7 +164,7 @@ class ConcaveMeshShape : public ConcaveShape {
         ConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling = Vector3(1, 1, 1));
 
         /// Destructor
-        virtual ~ConcaveMeshShape() = default;
+        virtual ~ConcaveMeshShape() override = default;
 
         /// Deleted copy-constructor
         ConcaveMeshShape(const ConcaveMeshShape& shape) = delete;
@@ -180,6 +174,21 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Return the scaling vector
         const Vector3& getScaling() const;
+		
+        /// Return the number of sub parts contained in this mesh
+		uint getNbSubparts() const;
+		
+        /// Return the number of triangles in a sub part of the mesh
+		uint getNbTriangles(uint subPart) const;
+
+        /// Return the indices of the three vertices of a given triangle in the array
+        void getTriangleVerticesIndices(uint subPart, uint triangleIndex, uint* outVerticesIndices) const;
+
+        /// Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
+        void getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const;
+
+        /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
+        void getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* outVerticesNormals) const;
 
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
