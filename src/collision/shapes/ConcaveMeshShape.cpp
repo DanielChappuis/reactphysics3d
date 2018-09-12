@@ -131,33 +131,11 @@ uint ConcaveMeshShape::getNbSubparts() const
 	return mTriangleMesh->getNbSubparts();
 }
 		
-// Return the number of triangles in a sub part
+// Return the number of triangles in a sub part of the mesh
 uint ConcaveMeshShape::getNbTriangles(uint subPart) const
 {
 	assert(mTriangleMesh->getSubpart(subPart));
 	return mTriangleMesh->getSubpart(subPart)->getNbTriangles();
-}
-
-// Return the triangle positions for a specific subpart and triangle index
-void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex, Vector3* v1, Vector3* v2, Vector3* v3) const
-{
-	assert(mTriangleMesh->getSubpart(subPart));
-	Vector3 outTriangleVertices[3];
-	getTriangleVertices(subPart, triangleIndex, &outTriangleVertices[0]);
-	*v1 = outTriangleVertices[0];
-	*v2 = outTriangleVertices[1];
-	*v3 = outTriangleVertices[2];
-}
-
-// Return the triangle normals for a specific subpart and triangle index
-void ConcaveMeshShape::getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* n1, Vector3* n2, Vector3* n3) const
-{
-	assert(mTriangleMesh->getSubpart(subPart));
-	Vector3 outTriangleVerticesNormals[3];
-	getTriangleVerticesNormals(subPart, triangleIndex, &outTriangleVerticesNormals[0]);
-	*n1 = outTriangleVerticesNormals[0];
-	*n2 = outTriangleVerticesNormals[1];
-	*n3 = outTriangleVerticesNormals[2];
 }
 
 // Use a callback method on all triangles of the concave shape inside a given AABB
