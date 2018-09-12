@@ -2,6 +2,11 @@
 
 ## Release Candidate
 
+### Added
+
+ - Make possible for the user to get vertices, normals and triangle indices of a ConcaveMeshShape
+ - Make possible for the user to get vertices and height values of the HeightFieldShape
+
 ### Fixed
 
  - Bug [#45](https://github.com/DanielChappuis/reactphysics3d/issues/45) has been fixed.
