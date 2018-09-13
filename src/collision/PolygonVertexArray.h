@@ -69,14 +69,14 @@ class PolygonVertexArray {
         uint mNbVertices;
 
         /// Pointer to the first vertex value in the array
-        unsigned char* mVerticesStart;
+        const unsigned char* mVerticesStart;
 
         /// Stride (number of bytes) between the beginning of two vertices
         /// values in the array
         int mVerticesStride;
 
         /// Pointer to the first vertex index of the array
-        unsigned char* mIndicesStart;
+        const unsigned char* mIndicesStart;
 
         /// Stride (number of bytes) between the beginning of two indices in
         /// the array
@@ -97,8 +97,8 @@ class PolygonVertexArray {
     public:
 
         /// Constructor
-        PolygonVertexArray(uint nbVertices, void* verticesStart, int verticesStride,
-                           void* indexesStart, int indexesStride,
+        PolygonVertexArray(uint nbVertices, const void* verticesStart, int verticesStride,
+                           const void* indexesStart, int indexesStride,
                            uint nbFaces, PolygonFace* facesStart,
                            VertexDataType vertexDataType, IndexDataType indexDataType);
 
@@ -130,10 +130,10 @@ class PolygonVertexArray {
         PolygonFace* getPolygonFace(uint faceIndex) const;
 
         /// Return the pointer to the start of the vertices array
-        unsigned char* getVerticesStart() const;
+        const unsigned char* getVerticesStart() const;
 
         /// Return the pointer to the start of the indices array
-        unsigned char* getIndicesStart() const;
+        const unsigned char* getIndicesStart() const;
 };
 
 // Return the vertex data type
@@ -198,7 +198,7 @@ inline PolygonVertexArray::PolygonFace* PolygonVertexArray::getPolygonFace(uint 
 /**
  * @return A pointer to the start of the vertex array of the polyhedron
  */
-inline unsigned char* PolygonVertexArray::getVerticesStart() const {
+inline const unsigned char* PolygonVertexArray::getVerticesStart() const {
     return mVerticesStart;
 }
 
@@ -206,7 +206,7 @@ inline unsigned char* PolygonVertexArray::getVerticesStart() const {
 /**
  * @return A pointer to the start of the face indices array of the polyhedron
  */
-inline unsigned char* PolygonVertexArray::getIndicesStart() const {
+inline const unsigned char* PolygonVertexArray::getIndicesStart() const {
     return mIndicesStart;
 }
 

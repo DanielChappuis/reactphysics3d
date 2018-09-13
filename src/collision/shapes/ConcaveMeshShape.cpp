@@ -115,6 +115,28 @@ void ConcaveMeshShape::getTriangleVerticesNormals(uint subPart, uint triangleInd
     triangleVertexArray->getTriangleVerticesNormals(triangleIndex, outVerticesNormals);
 }
 
+// Return the indices of the three vertices of a given triangle in the array
+void ConcaveMeshShape::getTriangleVerticesIndices(uint subPart, uint triangleIndex, uint* outVerticesIndices) const {
+
+    // Get the triangle vertex array of the current sub-part
+    TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
+
+    // Get the vertices normals of the triangle
+    triangleVertexArray->getTriangleVerticesIndices(triangleIndex, outVerticesIndices);
+}
+
+// Return the number of sub parts contained in this mesh
+uint ConcaveMeshShape::getNbSubparts() const
+{
+	return mTriangleMesh->getNbSubparts();
+}
+		
+// Return the number of triangles in a sub part of the mesh
+uint ConcaveMeshShape::getNbTriangles(uint subPart) const
+{
+	assert(mTriangleMesh->getSubpart(subPart));
+	return mTriangleMesh->getSubpart(subPart)->getNbTriangles();
+}
 
 // Use a callback method on all triangles of the concave shape inside a given AABB
 void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const {
