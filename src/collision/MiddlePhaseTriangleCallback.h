@@ -66,6 +66,9 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         /// Pointer to the concave collision shape
         const ConcaveShape* mConcaveShape;
 
+        /// Reference to the list of narrow-phase infos
+        List<NarrowPhaseInfo*>& mOutNarrowPhaseInfos;
+
         /// Reference to the single-frame memory allocator
         MemoryAllocator& mAllocator;
 
@@ -78,17 +81,15 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
 
     public:
 
-        /// Pointer to the first element of the linked-list of narrow-phase info
-        NarrowPhaseInfo* narrowPhaseInfoList;
-
         /// Constructor
         MiddlePhaseTriangleCallback(OverlappingPair* overlappingPair,
                                     ProxyShape* concaveProxyShape,
                                     ProxyShape* convexProxyShape, const ConcaveShape* concaveShape,
+                                    List<NarrowPhaseInfo*>& outNarrowPhaseInfos,
                                     MemoryAllocator& allocator)
             :mOverlappingPair(overlappingPair), mConcaveProxyShape(concaveProxyShape),
              mConvexProxyShape(convexProxyShape), mConcaveShape(concaveShape),
-             mAllocator(allocator), narrowPhaseInfoList(nullptr) {
+             mOutNarrowPhaseInfos(outNarrowPhaseInfos), mAllocator(allocator) {
 
         }
 

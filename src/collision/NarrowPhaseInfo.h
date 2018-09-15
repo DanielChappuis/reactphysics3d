@@ -65,9 +65,6 @@ struct NarrowPhaseInfo {
         /// Linked-list of contact points created during the narrow-phase
         ContactPointInfo* contactPoints;
 
-        /// Pointer to the next element in the linked list
-        NarrowPhaseInfo* next;
-
         /// Memory allocator for the collision shape (Used to release TriangleShape memory in destructor)
         MemoryAllocator& collisionShapeAllocator;
 

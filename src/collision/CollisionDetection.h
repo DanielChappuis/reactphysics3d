@@ -78,8 +78,8 @@ class CollisionDetection {
         /// Pointer to the physics world
         CollisionWorld* mWorld;
 
-        /// Pointer to the first narrow-phase info of the linked list
-        NarrowPhaseInfo* mNarrowPhaseInfoList;
+        /// List of narrow phase infos
+        List<NarrowPhaseInfo*> mNarrowPhaseInfos;
 
         /// Broad-phase overlapping pairs
         OverlappingPairMap mOverlappingPairs;
@@ -127,13 +127,13 @@ class CollisionDetection {
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
         void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
-                                               NarrowPhaseInfo** firstNarrowPhaseInfo);
+                                               List<NarrowPhaseInfo*>& narrowPhaseInfos);
 
         /// Compute the middle-phase collision detection between two proxy shapes
-        NarrowPhaseInfo* computeMiddlePhaseForProxyShapes(OverlappingPair* pair);
+        void computeMiddlePhaseForProxyShapes(OverlappingPair* pair, List<NarrowPhaseInfo*>& outNarrowPhaseInfos);
 
         /// Convert the potential contact into actual contacts
-        void processAllPotentialContacts(const List<NarrowPhaseInfo*>& narrowPhaseInfos,
+        void processAllPotentialContacts(const List<NarrowPhaseInfo*>& collidingNarrowPhaseInfos,
                                          const OverlappingPairMap& overlappingPairs);
 
         /// Report contacts for all the colliding overlapping pairs

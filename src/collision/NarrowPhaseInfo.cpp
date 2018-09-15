@@ -37,7 +37,7 @@ NarrowPhaseInfo::NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
                 const Transform& shape2Transform, MemoryAllocator& shapeAllocator)
       : overlappingPair(pair), collisionShape1(shape1), collisionShape2(shape2),
         shape1ToWorldTransform(shape1Transform), shape2ToWorldTransform(shape2Transform),
-        contactPoints(nullptr), next(nullptr), collisionShapeAllocator(shapeAllocator) {
+        contactPoints(nullptr), collisionShapeAllocator(shapeAllocator) {
 
     // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
     overlappingPair->addLastFrameInfoIfNecessary(shape1->getId(), shape2->getId());

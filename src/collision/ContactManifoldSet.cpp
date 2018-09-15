@@ -94,11 +94,6 @@ void ContactManifoldSet::addContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
 
         contactPoint = contactPoint->next;
     }
-
-    // All the contact point info of the narrow-phase info have been moved
-    // into the potential contacts of the overlapping pair. We can now
-    // remove the contacts points from the narrow phase info object.
-    narrowPhaseInfo->resetContactPoints();
 }
 
 // Return the total number of contact points in the set of manifolds
