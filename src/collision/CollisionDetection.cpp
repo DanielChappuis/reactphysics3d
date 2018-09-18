@@ -242,7 +242,7 @@ void CollisionDetection::computeNarrowPhase() {
 
         NarrowPhaseInfo* narrowPhaseInfo = mNarrowPhaseInfos[i];
 
-        assert(narrowPhaseInfo->contactPoints == nullptr);
+        assert(narrowPhaseInfo->contactPoints.size() == 0);
 
         // Select the narrow phase algorithm to use according to the two collision shapes
         const CollisionShapeType shape1Type = narrowPhaseInfo->collisionShape1->getType();
@@ -434,7 +434,7 @@ void CollisionDetection::processAllPotentialContacts(const List<NarrowPhaseInfo*
         NarrowPhaseInfo* narrowPhaseInfo = collidingNarrowPhaseInfos[i];
 
         assert(narrowPhaseInfo != nullptr);
-        assert(narrowPhaseInfo->contactPoints != nullptr);
+        assert(narrowPhaseInfo->contactPoints.size() > 0);
 
         // Transfer the contact points from the narrow phase info to the overlapping pair
         narrowPhaseInfo->overlappingPair->addPotentialContactPoints(narrowPhaseInfo);

@@ -76,8 +76,8 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPh
             // two contact points instead of a single one (as in the deep contact case with SAT algorithm)
 
             // Get the contact point created by GJK
-            ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints;
-            assert(contactPoint != nullptr);
+            assert(narrowPhaseInfo->contactPoints.size() > 0);
+            ContactPointInfo*& contactPoint = narrowPhaseInfo->contactPoints[0];
 
             bool isCapsuleShape1 = narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CAPSULE;
 

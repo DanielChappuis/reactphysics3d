@@ -51,11 +51,12 @@ ContactManifoldSet::~ContactManifoldSet() {
 
 void ContactManifoldSet::addContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
 
-    assert(narrowPhaseInfo->contactPoints != nullptr);
+    assert(narrowPhaseInfo->contactPoints.size() > 0);
 
     // For each potential contact point to add
-    ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints;
-    while (contactPoint != nullptr) {
+    for (uint i=0; i < narrowPhaseInfo->contactPoints.size(); i++) {
+
+        ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints[i];
 
         // Look if the contact point correspond to an existing potential manifold
         // (if the contact point normal is similar to the normal of an existing manifold)
@@ -91,8 +92,6 @@ void ContactManifoldSet::addContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
             // Add the contact point to the manifold
             manifold->addContactPoint(contactPoint);
         }
-
-        contactPoint = contactPoint->next;
     }
 }
 

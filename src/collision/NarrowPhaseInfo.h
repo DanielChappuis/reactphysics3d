@@ -62,8 +62,8 @@ struct NarrowPhaseInfo {
         /// Transform that maps from collision shape 2 local-space to world-space
         Transform shape2ToWorldTransform;
 
-        /// Linked-list of contact points created during the narrow-phase
-        ContactPointInfo* contactPoints;
+        /// List of contact points created during the narrow-phase
+        List<ContactPointInfo*> contactPoints;
 
         /// Memory allocator for the collision shape (Used to release TriangleShape memory in destructor)
         MemoryAllocator& collisionShapeAllocator;

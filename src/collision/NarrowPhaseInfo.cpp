@@ -37,7 +37,7 @@ NarrowPhaseInfo::NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
                 const Transform& shape2Transform, MemoryAllocator& shapeAllocator)
       : overlappingPair(pair), collisionShape1(shape1), collisionShape2(shape2),
         shape1ToWorldTransform(shape1Transform), shape2ToWorldTransform(shape2Transform),
-        contactPoints(nullptr), collisionShapeAllocator(shapeAllocator) {
+        contactPoints(overlappingPair->getTemporaryAllocator()), collisionShapeAllocator(shapeAllocator) {
 
     // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
     overlappingPair->addLastFrameInfoIfNecessary(shape1->getId(), shape2->getId());
@@ -46,7 +46,7 @@ NarrowPhaseInfo::NarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
 // Destructor
 NarrowPhaseInfo::~NarrowPhaseInfo() {
 
-    assert(contactPoints == nullptr);
+    assert(contactPoints.size() == 0);
 
 	// Release the memory of the TriangleShape (this memory was allocated in the
 	// MiddlePhaseTriangleCallback::testTriangle() method)
@@ -73,9 +73,8 @@ void NarrowPhaseInfo::addContactPoint(const Vector3& contactNormal, decimal penD
     ContactPointInfo* contactPointInfo = new (allocator.allocate(sizeof(ContactPointInfo)))
             ContactPointInfo(contactNormal, penDepth, localPt1, localPt2);
 
-    // Add it into the linked list of contact points
-    contactPointInfo->next = contactPoints;
-    contactPoints = contactPointInfo;
+    // Add it into the list of contact points
+    contactPoints.add(contactPointInfo);
 }
 
 // Reset the remaining contact points
@@ -85,19 +84,16 @@ void NarrowPhaseInfo::resetContactPoints() {
     MemoryAllocator& allocator = overlappingPair->getTemporaryAllocator();
 
     // For each remaining contact point info
-    ContactPointInfo* element = contactPoints;
-    while(element != nullptr) {
+    for (uint i=0; i < contactPoints.size(); i++) {
 
-        ContactPointInfo* elementToDelete = element;
-
-        element = element->next;
+        ContactPointInfo* contactPoint = contactPoints[i];
 
         // Call the destructor
-        elementToDelete->~ContactPointInfo();
+        contactPoint->~ContactPointInfo();
 
         // Delete the current element
-        allocator.release(elementToDelete, sizeof(ContactPointInfo));
+        allocator.release(contactPoint, sizeof(ContactPointInfo));
     }
 
-    contactPoints = nullptr;
+    contactPoints.clear();
 }
