@@ -33,12 +33,12 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class SingleFrameAllocator
+// Class DefaultSingleFrameAllocator
 /**
  * This class represent a memory allocator used to efficiently allocate
  * memory on the heap that is used during a single frame.
  */
-class SingleFrameAllocator : public MemoryAllocator {
+class DefaultSingleFrameAllocator : public SingleFrameAllocator {
 
     private :
 
@@ -49,9 +49,11 @@ class SingleFrameAllocator : public MemoryAllocator {
         static const int NB_FRAMES_UNTIL_SHRINK = 120;
 
         /// Initial size (in bytes) of the single frame allocator
-        size_t INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES = 1048576; // 1Mb
+        static const size_t INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES = 1048576; // 1Mb
 
         // -------------------- Attributes -------------------- //
+		/// Cached memory allocator used on construction
+		MemoryAllocator* mBaseMemoryAllocator;
 
         /// Total size (in bytes) of memory of the allocator
         size_t mTotalSizeBytes;
@@ -74,13 +76,13 @@ class SingleFrameAllocator : public MemoryAllocator {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SingleFrameAllocator();
+        DefaultSingleFrameAllocator();
 
         /// Destructor
-        virtual ~SingleFrameAllocator() override;
+        virtual ~DefaultSingleFrameAllocator() override;
 
         /// Assignment operator
-        SingleFrameAllocator& operator=(SingleFrameAllocator& allocator) = default;
+        DefaultSingleFrameAllocator& operator=(DefaultSingleFrameAllocator& allocator) = default;
 
         /// Allocate memory of a given size (in bytes)
         virtual void* allocate(size_t size) override;
@@ -89,7 +91,7 @@ class SingleFrameAllocator : public MemoryAllocator {
         virtual void release(void* pointer, size_t size) override;
 
         /// Reset the marker of the current allocated memory
-        virtual void reset();
+        virtual void reset() override;
 };
 
 }

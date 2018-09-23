@@ -57,6 +57,33 @@ class MemoryAllocator {
         virtual void release(void* pointer, size_t size)=0;
 };
 
+/**
+ * Abstract class with the basic interface of all single frames memory allocators
+ */
+class SingleFrameAllocator : public MemoryAllocator{
+	
+    public:
+
+        /// Constructor
+        SingleFrameAllocator() = default;
+
+        /// Destructor
+        virtual ~SingleFrameAllocator() override = default;
+
+        /// Assignment operator
+        SingleFrameAllocator& operator=(SingleFrameAllocator& allocator) = default;
+
+        /// Allocate memory of a given size (in bytes) and return a pointer to the
+        /// allocated memory.
+        virtual void* allocate(size_t size) override =0;
+
+        /// Release previously allocated memory.
+        virtual void release(void* pointer, size_t size) override =0;
+		
+        /// Reset the marker of the current allocated memory
+        virtual void reset()=0;
+};
+
 }
 
 #endif
