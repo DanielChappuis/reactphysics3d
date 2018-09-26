@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "PoolAllocator.h"
+#include "DefaultPoolAllocator.h"
 #include "MemoryManager.h"
 #include <cstdlib>
 #include <cassert>
@@ -32,12 +32,12 @@
 using namespace reactphysics3d;
 
 // Initialization of static variables
-bool PoolAllocator::isMapSizeToHeadIndexInitialized = false;
-size_t PoolAllocator::mUnitSizes[NB_HEAPS];
-int PoolAllocator::mMapSizeToHeapIndex[MAX_UNIT_SIZE + 1];
+bool DefaultPoolAllocator::isMapSizeToHeadIndexInitialized = false;
+size_t DefaultPoolAllocator::mUnitSizes[NB_HEAPS];
+int DefaultPoolAllocator::mMapSizeToHeapIndex[MAX_UNIT_SIZE + 1];
 
 // Constructor
-PoolAllocator::PoolAllocator() {
+DefaultPoolAllocator::DefaultPoolAllocator() {
 
     // Allocate some memory to manage the blocks
     mNbAllocatedMemoryBlocks = 64;
@@ -79,7 +79,7 @@ PoolAllocator::PoolAllocator() {
 }
 
 // Destructor
-PoolAllocator::~PoolAllocator() {
+DefaultPoolAllocator::~DefaultPoolAllocator() {
 
     // Release the memory allocated for each block
     for (uint i=0; i<mNbCurrentMemoryBlocks; i++) {
@@ -98,7 +98,7 @@ PoolAllocator::~PoolAllocator() {
 
 // Allocate memory of a given size (in bytes) and return a pointer to the
 // allocated memory.
-void* PoolAllocator::allocate(size_t size) {
+void* DefaultPoolAllocator::allocate(size_t size) {
 
     // We cannot allocate zero bytes
     if (size == 0) return nullptr;
@@ -171,7 +171,7 @@ void* PoolAllocator::allocate(size_t size) {
 }
 
 // Release previously allocated memory.
-void PoolAllocator::release(void* pointer, size_t size) {
+void DefaultPoolAllocator::release(void* pointer, size_t size) {
 
     // Cannot release a 0-byte allocated memory
     if (size == 0) return;

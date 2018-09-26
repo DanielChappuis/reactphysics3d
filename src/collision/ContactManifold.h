@@ -38,7 +38,7 @@ class ContactManifoldInfo;
 struct ContactPointInfo;
 class CollisionBody;
 class ContactPoint;
-class PoolAllocator;
+class DefaultPoolAllocator;
 
 // Structure ContactManifoldListElement
 /**
