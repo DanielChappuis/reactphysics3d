@@ -40,7 +40,7 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
                      mNbPotentialPairs(0), mNbAllocatedPotentialPairs(8),
                      mCollisionDetection(collisionDetection) {
 
-    PoolAllocator& poolAllocator = collisionDetection.getMemoryManager().getPoolAllocator();
+    MemoryAllocator& poolAllocator = collisionDetection.getMemoryManager().getPoolAllocator();
 
     // Allocate memory for the array of potential overlapping pairs
     mPotentialPairs = static_cast<BroadPhasePair*>(poolAllocator.allocate(mNbAllocatedPotentialPairs * sizeof(BroadPhasePair)));
@@ -58,7 +58,7 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
 BroadPhaseAlgorithm::~BroadPhaseAlgorithm() {
 
     // Get the memory pool allocatory
-    PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
+    MemoryAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
 
     // Release the memory for the array of potential overlapping pairs
     poolAllocator.release(mPotentialPairs, mNbAllocatedPotentialPairs * sizeof(BroadPhasePair));
@@ -234,7 +234,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
     // number of overlapping pairs
     if (mNbPotentialPairs < mNbAllocatedPotentialPairs / 4 && mNbPotentialPairs > 8) {
 
-        PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
+        MemoryAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
 
         // Reduce the number of allocated potential overlapping pairs
         BroadPhasePair* oldPairs = mPotentialPairs;
@@ -260,7 +260,7 @@ void BroadPhaseAlgorithm::addOverlappingNodes(int referenceNodeId, const LinkedL
             // If we need to allocate more memory for the array of potential overlapping pairs
             if (mNbPotentialPairs == mNbAllocatedPotentialPairs) {
 
-                PoolAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
+                MemoryAllocator& poolAllocator = mCollisionDetection.getMemoryManager().getPoolAllocator();
 
                 // Allocate more memory for the array of potential pairs
                 BroadPhasePair* oldPairs = mPotentialPairs;

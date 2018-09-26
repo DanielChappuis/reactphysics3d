@@ -6,6 +6,7 @@
 
  - Make possible for the user to get vertices, normals and triangle indices of a ConcaveMeshShape
  - Make possible for the user to get vertices and height values of the HeightFieldShape
+ - Make possible for the user to use a custom single frame and pool memory allocator
 
 ### Fixed
 

@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "SingleFrameAllocator.h"
+#include "DefaultSingleFrameAllocator.h"
 #include "MemoryManager.h"
 #include <cstdlib>
 #include <cassert>
@@ -32,26 +32,27 @@
 using namespace reactphysics3d;
 
 // Constructor
-SingleFrameAllocator::SingleFrameAllocator()
-    : mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES),
+DefaultSingleFrameAllocator::DefaultSingleFrameAllocator()
+    : mBaseMemoryAllocator(&MemoryManager::getBaseAllocator()),
+      mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES),
       mCurrentOffset(0), mNbFramesTooMuchAllocated(0), mNeedToAllocatedMore(false) {
 
     // Allocate a whole block of memory at the beginning
-    mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
+    mMemoryBufferStart = static_cast<char*>(mBaseMemoryAllocator->allocate(mTotalSizeBytes));
     assert(mMemoryBufferStart != nullptr);
 }
 
 // Destructor
-SingleFrameAllocator::~SingleFrameAllocator() {
+DefaultSingleFrameAllocator::~DefaultSingleFrameAllocator() {
 
     // Release the memory allocated at the beginning
-    MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
+    mBaseMemoryAllocator->release(mMemoryBufferStart, mTotalSizeBytes);
 }
 
 
 // Allocate memory of a given size (in bytes) and return a pointer to the
 // allocated memory.
-void* SingleFrameAllocator::allocate(size_t size) {
+void* DefaultSingleFrameAllocator::allocate(size_t size) {
 
     // Check that there is enough remaining memory in the buffer
     if (mCurrentOffset + size > mTotalSizeBytes) {
@@ -60,7 +61,7 @@ void* SingleFrameAllocator::allocate(size_t size) {
         mNeedToAllocatedMore = true;
 
         // Return default memory allocation
-        return MemoryManager::getBaseAllocator().allocate(size);
+        return mBaseMemoryAllocator->allocate(size);
     }
 
     // Next available memory location
@@ -74,19 +75,19 @@ void* SingleFrameAllocator::allocate(size_t size) {
 }
 
 // Release previously allocated memory.
-void SingleFrameAllocator::release(void* pointer, size_t size) {
+void DefaultSingleFrameAllocator::release(void* pointer, size_t size) {
 
     // If allocated memory is not within the single frame allocation range
     char* p = static_cast<char*>(pointer);
     if (p < mMemoryBufferStart || p > mMemoryBufferStart + mTotalSizeBytes) {
 
         // Use default deallocation
-        MemoryManager::getBaseAllocator().release(pointer, size);
+        mBaseMemoryAllocator->release(pointer, size);
     }
 }
 
 // Reset the marker of the current allocated memory
-void SingleFrameAllocator::reset() {
+void DefaultSingleFrameAllocator::reset() {
 
     // If too much memory is allocated
     if (mCurrentOffset < mTotalSizeBytes / 2) {
@@ -96,14 +97,14 @@ void SingleFrameAllocator::reset() {
         if (mNbFramesTooMuchAllocated > NB_FRAMES_UNTIL_SHRINK) {
 
             // Release the memory allocated at the beginning
-            MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
+            mBaseMemoryAllocator->release(mMemoryBufferStart, mTotalSizeBytes);
 
             // Divide the total memory to allocate by two
             mTotalSizeBytes /= 2;
             if (mTotalSizeBytes == 0) mTotalSizeBytes = 1;
 
             // Allocate a whole block of memory at the beginning
-            mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
+            mMemoryBufferStart = static_cast<char*>(mBaseMemoryAllocator->allocate(mTotalSizeBytes));
             assert(mMemoryBufferStart != nullptr);
 
             mNbFramesTooMuchAllocated = 0;
@@ -117,13 +118,13 @@ void SingleFrameAllocator::reset() {
     if (mNeedToAllocatedMore) {
 
         // Release the memory allocated at the beginning
-        MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
+        mBaseMemoryAllocator->release(mMemoryBufferStart, mTotalSizeBytes);
 
         // Multiply the total memory to allocate by two
         mTotalSizeBytes *= 2;
 
         // Allocate a whole block of memory at the beginning
-        mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
+        mMemoryBufferStart = static_cast<char*>(mBaseMemoryAllocator->allocate(mTotalSizeBytes));
         assert(mMemoryBufferStart != nullptr);
 
         mNeedToAllocatedMore = false;

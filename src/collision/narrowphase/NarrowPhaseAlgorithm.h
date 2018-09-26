@@ -34,7 +34,7 @@ namespace reactphysics3d {
 class CollisionDetection;
 class Body;
 class ContactManifoldInfo;
-class PoolAllocator;
+class DefaultPoolAllocator;
 class OverlappingPair;
 struct NarrowPhaseInfo;
 struct ContactPointInfo;
