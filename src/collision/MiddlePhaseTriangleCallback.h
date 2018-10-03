@@ -41,7 +41,7 @@ class NarrowPhaseAlgorithm;
 class ProxyShape;
 class MemoryAllocator;
 class Profiler;
-struct NarrowPhaseInfo;
+struct NarrowPhaseInfoBatch;
 struct Vector3;
 
 // Class ConvexVsTriangleCallback
@@ -66,8 +66,8 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         /// Pointer to the concave collision shape
         const ConcaveShape* mConcaveShape;
 
-        /// Reference to the list of narrow-phase infos
-        List<NarrowPhaseInfo*>& mOutNarrowPhaseInfos;
+        /// Reference to the narrow phase info batch
+        NarrowPhaseInfoBatch& mOutNarrowPhaseInfoBatch;
 
         /// Reference to the single-frame memory allocator
         MemoryAllocator& mAllocator;
@@ -85,11 +85,11 @@ class MiddlePhaseTriangleCallback : public TriangleCallback {
         MiddlePhaseTriangleCallback(OverlappingPair* overlappingPair,
                                     ProxyShape* concaveProxyShape,
                                     ProxyShape* convexProxyShape, const ConcaveShape* concaveShape,
-                                    List<NarrowPhaseInfo*>& outNarrowPhaseInfos,
+                                    NarrowPhaseInfoBatch& outNarrowPhaseInfoBatch,
                                     MemoryAllocator& allocator)
             :mOverlappingPair(overlappingPair), mConcaveProxyShape(concaveProxyShape),
              mConvexProxyShape(convexProxyShape), mConcaveShape(concaveShape),
-             mOutNarrowPhaseInfos(outNarrowPhaseInfos), mAllocator(allocator) {
+             mOutNarrowPhaseInfoBatch(outNarrowPhaseInfoBatch), mAllocator(allocator) {
 
         }
 

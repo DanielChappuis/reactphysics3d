@@ -37,8 +37,6 @@ namespace reactphysics3d {
 // Declarations
 class CollisionBody;
 
-struct NarrowPhaseInfo;
-
 // Class ContactPoint
 /**
  * This class represents a collision contact point between two

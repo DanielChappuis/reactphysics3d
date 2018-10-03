@@ -27,7 +27,7 @@
 #include "SphereVsConvexPolyhedronAlgorithm.h"
 #include "GJK/GJKAlgorithm.h"
 #include "SAT/SATAlgorithm.h"
-#include "collision/NarrowPhaseInfo.h"
+#include "collision/NarrowPhaseInfoBatch.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -35,57 +35,66 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between a sphere and a convex polyhedron
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
-                                                      MemoryAllocator& memoryAllocator) {
-
-    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
-        narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-    assert(narrowPhaseInfo->collisionShape1->getType() == CollisionShapeType::SPHERE ||
-        narrowPhaseInfo->collisionShape2->getType() == CollisionShapeType::SPHERE);
-
-    // Get the last frame collision info
-    LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfo->getLastFrameCollisionInfo();
+void SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+                                                      bool reportContacts, MemoryAllocator& memoryAllocator) {
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
 
 #ifdef IS_PROFILING_ACTIVE
 
-	gjkAlgorithm.setProfiler(mProfiler);
+        gjkAlgorithm.setProfiler(mProfiler);
 
 #endif
 
-    GJKAlgorithm::GJKResult result = gjkAlgorithm.testCollision(narrowPhaseInfo, reportContacts);
+    List<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
+    gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults, reportContacts);
 
-    lastFrameCollisionInfo->wasUsingGJK = true;
-    lastFrameCollisionInfo->wasUsingSAT = false;
+    // For each item in the batch
+    uint resultIndex=0;
+    for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
-    // If we have found a contact point inside the margins (shallow penetration)
-    if (result == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
+        assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
 
-        // Return true
-        return true;
-    }
+        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
+            narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::SPHERE ||
+            narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::SPHERE);
 
-    // If we have overlap even without the margins (deep penetration)
-    if (result == GJKAlgorithm::GJKResult::INTERPENETRATE) {
+        // Get the last frame collision info
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.getLastFrameCollisionInfo(batchIndex);
 
-        // Run the SAT algorithm to find the separating axis and compute contact point
-        SATAlgorithm satAlgorithm(memoryAllocator);
+        lastFrameCollisionInfo->wasUsingGJK = true;
+        lastFrameCollisionInfo->wasUsingSAT = false;
+
+        // If we have found a contact point inside the margins (shallow penetration)
+        if (gjkResults[resultIndex] == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
+
+            // Return true
+            narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+            continue;
+        }
+
+        // If we have overlap even without the margins (deep penetration)
+        if (gjkResults[resultIndex] == GJKAlgorithm::GJKResult::INTERPENETRATE) {
+
+            // Run the SAT algorithm to find the separating axis and compute contact point
+            SATAlgorithm satAlgorithm(memoryAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 
-		satAlgorithm.setProfiler(mProfiler);
+            satAlgorithm.setProfiler(mProfiler);
 
 #endif
 
-        bool isColliding =  satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
+            satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex, 1, reportContacts);
 
-        lastFrameCollisionInfo->wasUsingGJK = false;
-        lastFrameCollisionInfo->wasUsingSAT = true;
+            lastFrameCollisionInfo->wasUsingGJK = false;
+            lastFrameCollisionInfo->wasUsingSAT = true;
 
-        return isColliding;
+            continue;
+        }
+
+        resultIndex++;
     }
-
-    return false;
 }

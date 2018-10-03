@@ -26,6 +26,9 @@
 #ifndef REACTPHYSICS3D_CONTACT_MANIFOLD_SET_H
 #define REACTPHYSICS3D_CONTACT_MANIFOLD_SET_H
 
+// Libraries
+#include "configuration.h"
+
 namespace reactphysics3d {
 
 // Declarations
@@ -34,7 +37,7 @@ class ContactManifoldInfo;
 class ProxyShape;
 class MemoryAllocator;
 struct WorldSettings;
-struct NarrowPhaseInfo;
+struct NarrowPhaseInfoBatch;
 struct Vector3;
 class CollisionShape;
 class Transform;
@@ -110,7 +113,7 @@ class ContactManifoldSet {
         ~ContactManifoldSet();
 
         /// Add the contact points from the narrow phase
-        void addContactPoints(NarrowPhaseInfo* narrowPhaseInfo);
+        void addContactPoints(const NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex);
 
         /// Return the first proxy shape
         ProxyShape* getShape1() const;

@@ -26,8 +26,8 @@
 // Libraries
 #include "collision/MiddlePhaseTriangleCallback.h"
 #include "engine/OverlappingPair.h"
-#include "collision/NarrowPhaseInfo.h"
 #include "collision/shapes/TriangleShape.h"
+#include "collision/NarrowPhaseInfoBatch.h"
 
 using namespace reactphysics3d;
 
@@ -51,12 +51,8 @@ void MiddlePhaseTriangleCallback::testTriangle(const Vector3* trianglePoints, co
     ProxyShape* shape2 = isShape1Convex ? mConcaveProxyShape : mConvexProxyShape;
 
     // Create a narrow phase info for the narrow-phase collision detection
-    NarrowPhaseInfo* narrowPhaseInfo = new (mAllocator.allocate(sizeof(NarrowPhaseInfo)))
-                           NarrowPhaseInfo(mOverlappingPair,
-                           isShape1Convex ? mConvexProxyShape->getCollisionShape() : triangleShape,
-                           isShape1Convex ? triangleShape : mConvexProxyShape->getCollisionShape(),
-                           shape1->getLocalToWorldTransform(),
-                           shape2->getLocalToWorldTransform(),
-                           mAllocator);
-    mOutNarrowPhaseInfos.add(narrowPhaseInfo);
+    mOutNarrowPhaseInfoBatch.addNarrowPhaseInfo(mOverlappingPair,
+                                                isShape1Convex ? mConvexProxyShape->getCollisionShape() : triangleShape,
+                                                isShape1Convex ? triangleShape : mConvexProxyShape->getCollisionShape(),
+                                                shape1->getLocalToWorldTransform(), shape2->getLocalToWorldTransform(), mAllocator);
 }

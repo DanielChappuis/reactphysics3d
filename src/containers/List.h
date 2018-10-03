@@ -39,7 +39,7 @@ namespace reactphysics3d {
 // Class List
 /**
  * This class represents a simple generic list with custom memory allocator.
-  */
+ */
 template<typename T>
 class List {
 

@@ -25,7 +25,7 @@
 
 // Libraries
 #include "ContactManifoldSet.h"
-#include "NarrowPhaseInfo.h"
+#include "NarrowPhaseInfoBatch.h"
 #include "constraint/ContactPoint.h"
 #include "ProxyShape.h"
 #include "collision/ContactManifold.h"
@@ -49,14 +49,14 @@ ContactManifoldSet::~ContactManifoldSet() {
     clear();
 }
 
-void ContactManifoldSet::addContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
+void ContactManifoldSet::addContactPoints(const NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) {
 
-    assert(narrowPhaseInfo->contactPoints.size() > 0);
+    assert(narrowPhaseInfoBatch.contactPoints[batchIndex].size() > 0);
 
     // For each potential contact point to add
-    for (uint i=0; i < narrowPhaseInfo->contactPoints.size(); i++) {
+    for (uint i=0; i < narrowPhaseInfoBatch.contactPoints[batchIndex].size(); i++) {
 
-        ContactPointInfo* contactPoint = narrowPhaseInfo->contactPoints[i];
+        ContactPointInfo* contactPoint = narrowPhaseInfoBatch.contactPoints[batchIndex][i];
 
         // Look if the contact point correspond to an existing potential manifold
         // (if the contact point normal is similar to the normal of an existing manifold)

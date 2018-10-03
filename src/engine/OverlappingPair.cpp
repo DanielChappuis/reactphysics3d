@@ -26,7 +26,6 @@
 // Libraries
 #include <cassert>
 #include "OverlappingPair.h"
-#include "collision/NarrowPhaseInfo.h"
 #include "containers/containers_common.h"
 #include "collision/ContactPointInfo.h"
 

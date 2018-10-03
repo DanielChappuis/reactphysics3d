@@ -32,6 +32,7 @@
 #include "collision/shapes/CollisionShape.h"
 #include "engine/OverlappingPair.h"
 #include "collision/narrowphase/DefaultCollisionDispatch.h"
+#include "collision/NarrowPhaseInfoBatch.h"
 #include "containers/Map.h"
 #include "containers/Set.h"
 
@@ -79,7 +80,7 @@ class CollisionDetection {
         CollisionWorld* mWorld;
 
         /// List of narrow phase infos
-        List<NarrowPhaseInfo*> mNarrowPhaseInfos;
+        NarrowPhaseInfoBatch mNarrowPhaseInfoBatch;
 
         /// Broad-phase overlapping pairs
         OverlappingPairMap mOverlappingPairs;
@@ -127,13 +128,14 @@ class CollisionDetection {
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
         void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
-                                               List<NarrowPhaseInfo*>& narrowPhaseInfos);
+                                               NarrowPhaseInfoBatch& narrowPhaseInfoBatch);
 
         /// Compute the middle-phase collision detection between two proxy shapes
-        void computeMiddlePhaseForProxyShapes(OverlappingPair* pair, List<NarrowPhaseInfo*>& outNarrowPhaseInfos);
+        void computeMiddlePhaseForProxyShapes(OverlappingPair* pair, NarrowPhaseInfoBatch& outNarrowPhaseInfoBatch);
 
         /// Convert the potential contact into actual contacts
-        void processAllPotentialContacts(const List<NarrowPhaseInfo*>& collidingNarrowPhaseInfos,
+        void processAllPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
+                                         const List<uint>& collidingBatchIndex,
                                          const OverlappingPairMap& overlappingPairs);
 
         /// Report contacts for all the colliding overlapping pairs

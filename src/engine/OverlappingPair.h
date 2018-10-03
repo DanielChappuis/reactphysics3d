@@ -38,7 +38,7 @@
 namespace reactphysics3d {
 
 // Declarations
-struct NarrowPhaseInfo;
+struct NarrowPhaseInfoBatch;
 class CollisionShape;
 
 // Structure LastFrameCollisionInfo
@@ -159,7 +159,7 @@ class OverlappingPair {
         const ContactManifoldSet& getContactManifoldSet();
 
         /// Add potential contact-points from narrow-phase into potential contact manifolds
-        void addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo);
+        void addPotentialContactPoints(const NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex);
 
         /// Return a reference to the temporary memory allocator
         MemoryAllocator& getTemporaryAllocator();
@@ -289,8 +289,8 @@ inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(uint s
 }
 
 // Create a new potential contact manifold using contact-points from narrow-phase
-inline void OverlappingPair::addPotentialContactPoints(NarrowPhaseInfo* narrowPhaseInfo) {
-    mContactManifoldSet.addContactPoints(narrowPhaseInfo);
+inline void OverlappingPair::addPotentialContactPoints(const NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) {
+    mContactManifoldSet.addContactPoints(narrowPhaseInfoBatch, batchIndex);
 }
 
 }
