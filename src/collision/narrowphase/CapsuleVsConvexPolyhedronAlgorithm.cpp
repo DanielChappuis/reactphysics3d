@@ -64,7 +64,7 @@ void CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
         // Get the last frame collision info
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.getLastFrameCollisionInfo(batchIndex);
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
 
         lastFrameCollisionInfo->wasUsingGJK = true;
         lastFrameCollisionInfo->wasUsingSAT = false;

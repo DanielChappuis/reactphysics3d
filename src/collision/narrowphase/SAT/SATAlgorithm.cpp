@@ -494,7 +494,7 @@ void SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
         Vector3 minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
         bool isShape1Triangle = polyhedron1->getName() == CollisionShapeName::TRIANGLE;
 
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.getLastFrameCollisionInfo(batchIndex);
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
 
         // If the last frame collision info is valid and was also using SAT algorithm
         if (lastFrameCollisionInfo->isValid && lastFrameCollisionInfo->wasUsingSAT) {

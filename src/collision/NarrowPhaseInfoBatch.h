@@ -78,6 +78,9 @@ struct NarrowPhaseInfoBatch {
         /// Memory allocators for the collision shape (Used to release TriangleShape memory in destructor)
         List<MemoryAllocator*> collisionShapeAllocators;
 
+        /// Collision infos of the previous frame
+        List<LastFrameCollisionInfo*> lastFrameCollisionInfos;
+
         /// Constructor
         NarrowPhaseInfoBatch(MemoryAllocator& allocator);
 
@@ -101,19 +104,11 @@ struct NarrowPhaseInfoBatch {
 
         /// Clear all the objects in the batch
         void clear();
-
-        /// Get the last collision frame info for temporal coherence
-        LastFrameCollisionInfo* getLastFrameCollisionInfo(uint index) const;
 };
 
 /// Return the number of objects in the batch
 inline uint NarrowPhaseInfoBatch::getNbObjects() const {
     return overlappingPairs.size();
-}
-
-// Get the last collision frame info for temporal coherence
-inline LastFrameCollisionInfo* NarrowPhaseInfoBatch::getLastFrameCollisionInfo(uint index) const {
-    return overlappingPairs[index]->getLastFrameCollisionInfo(collisionShapes1[index]->getId(), collisionShapes2[index]->getId());
 }
 
 }

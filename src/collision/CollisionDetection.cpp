@@ -248,7 +248,7 @@ void CollisionDetection::computeNarrowPhase() {
         // If there is no collision algorithm between those two kinds of shapes, skip it
         if (narrowPhaseAlgorithm != nullptr) {
 
-            LastFrameCollisionInfo* lastCollisionFrameInfo = mNarrowPhaseInfoBatch.getLastFrameCollisionInfo(batchIndex);
+            LastFrameCollisionInfo* lastCollisionFrameInfo = mNarrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
 
             // Use the narrow-phase collision detection algorithm to check
             // if there really is a collision. If a collision occurs, the

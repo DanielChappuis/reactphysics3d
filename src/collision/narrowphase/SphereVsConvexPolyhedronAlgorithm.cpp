@@ -62,7 +62,7 @@ void SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
             narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::SPHERE);
 
         // Get the last frame collision info
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.getLastFrameCollisionInfo(batchIndex);
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
 
         lastFrameCollisionInfo->wasUsingGJK = true;
         lastFrameCollisionInfo->wasUsingSAT = false;
