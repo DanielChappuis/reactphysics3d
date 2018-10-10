@@ -135,9 +135,9 @@ void* DefaultPoolAllocator::allocate(size_t size) {
             MemoryBlock* currentMemoryBlocks = mMemoryBlocks;
             mNbAllocatedMemoryBlocks += 64;
             mMemoryBlocks = static_cast<MemoryBlock*>(MemoryManager::getBaseAllocator().allocate(mNbAllocatedMemoryBlocks * sizeof(MemoryBlock)));
-            memcpy(mMemoryBlocks, currentMemoryBlocks,mNbCurrentMemoryBlocks * sizeof(MemoryBlock));
+            memcpy(mMemoryBlocks, currentMemoryBlocks, mNbCurrentMemoryBlocks * sizeof(MemoryBlock));
             memset(mMemoryBlocks + mNbCurrentMemoryBlocks, 0, 64 * sizeof(MemoryBlock));
-            free(currentMemoryBlocks);
+            MemoryManager::getBaseAllocator().release(currentMemoryBlocks, mNbCurrentMemoryBlocks * sizeof(MemoryBlock));
         }
 
         // Allocate a new memory blocks for the corresponding heap and divide it in many
