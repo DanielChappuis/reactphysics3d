@@ -1516,7 +1516,8 @@ world.destroyJoint(joint);
     \label{sec:raycasting}
 
     You can use ReactPhysics3D to test intersection between a ray and the bodies of the world you have created. Ray casting can be performed against multiple bodies, a single body or
-    any proxy shape of a given body. \\
+    any proxy shape of a given body. Note that ray casting only works from the outside of the bodies. If the origin of a ray is inside a collision
+    shape, no hit will be reported. \\
 
     The first thing you need to do is to create a ray using the \texttt{Ray} class of ReactPhysics3D. As you can see in the following example, this is very easy. You
     simply need to specify the point where the ray starts and the point where the ray ends (in world-space coordinates). \\
