@@ -35,9 +35,9 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two convex polyhedra
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-void ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
+bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                                                 uint batchStartIndex, uint batchNbItems,
-                                                                bool reportContacts,
+                                                                bool reportContacts, bool stopFirstContactFound,
                                                                 MemoryAllocator& memoryAllocator) {
 
     // Run the SAT algorithm to find the separating axis and compute contact point
@@ -49,7 +49,8 @@ void ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoB
 
 #endif
 
-    satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, reportContacts);
+    bool isCollisionFound = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfoBatch, batchStartIndex,
+                                                                                         batchNbItems, reportContacts, stopFirstContactFound);
 
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
@@ -58,5 +59,11 @@ void ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoB
 
         lastFrameCollisionInfo->wasUsingSAT = true;
         lastFrameCollisionInfo->wasUsingGJK = false;
+
+        if (isCollisionFound && stopFirstContactFound) {
+            return isCollisionFound;
+        }
     }
+
+    return isCollisionFound;
 }

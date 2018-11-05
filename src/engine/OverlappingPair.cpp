@@ -56,7 +56,7 @@ OverlappingPair::~OverlappingPair() {
 }
 
 // Add a new last frame collision info if it does not exist for the given shapes already
-void OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) {
+LastFrameCollisionInfo* OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) {
 
     // Try to get the corresponding last frame collision info
     const ShapeIdPair shapeIdPair(shapeId1, shapeId2);
@@ -71,11 +71,15 @@ void OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) 
 
         // Add it into the map of collision infos
         mLastFrameCollisionInfos.add(Pair<ShapeIdPair, LastFrameCollisionInfo*>(shapeIdPair, collisionInfo));
+
+        return collisionInfo;
     }
     else {
 
        // The existing collision info is not obsolete
        it->second->isObsolete = false;
+
+       return it->second;
     }
 }
 

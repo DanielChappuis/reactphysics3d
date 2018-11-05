@@ -34,10 +34,14 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two capsules
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-void CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, bool reportContacts,
-                                              MemoryAllocator& memoryAllocator) {
+bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+                                              bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
     
+    bool isCollisionFound = false;
+
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
+
+        assert(narrowPhaseInfoBatch.contactPoints[batchIndex].size() == 0);
 
         assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
         assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CAPSULE);
@@ -151,6 +155,10 @@ void CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                 }
 
                 narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+                isCollisionFound = true;
+                if (stopFirstContactFound) {
+                    return isCollisionFound;
+                }
                 continue;
             }
         }
@@ -227,6 +235,12 @@ void CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
             }
 
             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+            isCollisionFound = true;
+            if (stopFirstContactFound) {
+                return isCollisionFound;
+            }
         }
     }
+
+    return isCollisionFound;
 }

@@ -127,6 +127,7 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
                 lastFrameCollisionInfo->gjkSeparatingAxis = v;
 
                 // No intersection, we return
+                assert(gjkResults.size() == batchIndex);
                 gjkResults.add(GJKResult::SEPARATED);
                 noIntersection = true;
                 break;
@@ -201,12 +202,14 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
 
             // If the penetration depth is negative (due too numerical errors), there is no contact
             if (penetrationDepth <= decimal(0.0)) {
+                assert(gjkResults.size() == batchIndex);
                 gjkResults.add(GJKResult::SEPARATED);
                 continue;
             }
 
             // Do not generate a contact point with zero normal length
             if (normal.lengthSquare() < MACHINE_EPSILON) {
+                assert(gjkResults.size() == batchIndex);
                 gjkResults.add(GJKResult::SEPARATED);
                 continue;
             }
@@ -221,10 +224,13 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
                 narrowPhaseInfoBatch.addContactPoint(batchIndex, normal, penetrationDepth, pA, pB);
             }
 
+            assert(gjkResults.size() == batchIndex);
             gjkResults.add(GJKResult::COLLIDE_IN_MARGIN);
+
             continue;
         }
 
+        assert(gjkResults.size() == batchIndex);
         gjkResults.add(GJKResult::INTERPENETRATE);
     }
 }

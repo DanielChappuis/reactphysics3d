@@ -65,8 +65,8 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
         SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volume collide
-        virtual void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                                   uint batchNbItems, bool reportContacts,
+        virtual bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
+                                   uint batchNbItems, bool reportContacts, bool stopFirstContactFound,
                                    MemoryAllocator& memoryAllocator) override;
 };
 

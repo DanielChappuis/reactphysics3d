@@ -35,10 +35,14 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between a sphere and a capsule
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-void SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                             bool reportContacts, MemoryAllocator& memoryAllocator) {
+bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+                                             bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
+
+    bool isCollisionFound = false;
 
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
+
+        assert(narrowPhaseInfoBatch.contactPoints[batchIndex].size() == 0);
 
         bool isSphereShape1 = narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::SPHERE;
 
@@ -138,7 +142,13 @@ void SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseIn
             }
 
             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+            isCollisionFound = true;
+            if (stopFirstContactFound) {
+               return isCollisionFound;
+            }
             continue;
         }
     }
+
+    return isCollisionFound;
 }

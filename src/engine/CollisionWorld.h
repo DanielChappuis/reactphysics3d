@@ -136,8 +136,8 @@ class CollisionWorld {
         /// Destroy a collision body
         void destroyCollisionBody(CollisionBody* collisionBody);
 
-        /// Set the collision dispatch configuration
-        void setCollisionDispatch(CollisionDispatch* collisionDispatch);
+        /// Get the collision dispatch configuration
+        CollisionDispatch& getCollisionDispatch();
 
         /// Ray cast method
         void raycast(const Ray& ray, RaycastCallback* raycastCallback,
@@ -200,8 +200,8 @@ class CollisionWorld {
  * @param CollisionDispatch Pointer to a collision dispatch object describing
  * which collision detection algorithm to use for two given collision shapes
  */
-inline void CollisionWorld::setCollisionDispatch(CollisionDispatch* collisionDispatch) {
-    mCollisionDetection.setCollisionDispatch(collisionDispatch);
+inline CollisionDispatch& CollisionWorld::getCollisionDispatch() {
+    return mCollisionDetection.getCollisionDispatch();
 }
 
 // Ray cast method

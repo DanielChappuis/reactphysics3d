@@ -180,7 +180,7 @@ class OverlappingPair {
         void reduceContactManifolds();
 
         /// Add a new last frame collision info if it does not exist for the given shapes already
-        void addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2);
+        LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2);
 
         /// Return the last frame collision info for a given pair of shape ids
         LastFrameCollisionInfo* getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const;

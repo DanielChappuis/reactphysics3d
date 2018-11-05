@@ -59,6 +59,7 @@ class NarrowPhaseCallback {
 
 };
 
+// TODO DOD : Try to delete this class
 // Class NarrowPhaseAlgorithm
 /**
  * This abstract class is the base class for a  narrow-phase collision
@@ -71,6 +72,9 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
+        // Id of the algorithm (computed by hasing the algorithm name)
+        size_t mId;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -79,6 +83,7 @@ class NarrowPhaseAlgorithm {
 #endif
 
     public :
+
 
         // -------------------- Methods -------------------- //
 
@@ -95,8 +100,8 @@ class NarrowPhaseAlgorithm {
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volumes collide
-        virtual void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                                   uint batchNbItems, bool reportContacts,
+        virtual bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
+                                   uint batchNbItems, bool reportContacts, bool stopFirstContactFound,
                                    MemoryAllocator& memoryAllocator)=0;
 
 #ifdef IS_PROFILING_ACTIVE

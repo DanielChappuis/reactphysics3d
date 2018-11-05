@@ -35,11 +35,13 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between a sphere and a convex polyhedron
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-void SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                                      bool reportContacts, MemoryAllocator& memoryAllocator) {
+bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+                                                      bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
+
+    bool isCollisionFound = false;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -49,12 +51,10 @@ void SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
 
     List<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
     gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults, reportContacts);
+    assert(gjkResults.size() == batchNbItems);
 
     // For each item in the batch
-    uint resultIndex=0;
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
-
-        assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
 
         assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
             narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
@@ -68,15 +68,19 @@ void SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
         lastFrameCollisionInfo->wasUsingSAT = false;
 
         // If we have found a contact point inside the margins (shallow penetration)
-        if (gjkResults[resultIndex] == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
+        if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
 
             // Return true
             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+            isCollisionFound = true;
+            if (stopFirstContactFound) {
+                return isCollisionFound;
+            }
             continue;
         }
 
         // If we have overlap even without the margins (deep penetration)
-        if (gjkResults[resultIndex] == GJKAlgorithm::GJKResult::INTERPENETRATE) {
+        if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::INTERPENETRATE) {
 
             // Run the SAT algorithm to find the separating axis and compute contact point
             SATAlgorithm satAlgorithm(memoryAllocator);
@@ -87,14 +91,18 @@ void SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
 
 #endif
 
-            satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex, 1, reportContacts);
+            isCollisionFound |= satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex, 1, reportContacts, stopFirstContactFound);
 
             lastFrameCollisionInfo->wasUsingGJK = false;
             lastFrameCollisionInfo->wasUsingSAT = true;
 
+            if (isCollisionFound && stopFirstContactFound) {
+                return isCollisionFound;
+            }
+
             continue;
         }
-
-        resultIndex++;
     }
+
+    return isCollisionFound;
 }

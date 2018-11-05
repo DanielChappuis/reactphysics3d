@@ -31,8 +31,8 @@
 #include "broadphase/BroadPhaseAlgorithm.h"
 #include "collision/shapes/CollisionShape.h"
 #include "engine/OverlappingPair.h"
-#include "collision/narrowphase/DefaultCollisionDispatch.h"
-#include "collision/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/NarrowPhaseInput.h"
+#include "collision/narrowphase/CollisionDispatch.h"
 #include "containers/Map.h"
 #include "containers/Set.h"
 
@@ -68,19 +68,10 @@ class CollisionDetection {
         MemoryManager& mMemoryManager;
 
         /// Collision Detection Dispatch configuration
-        CollisionDispatch* mCollisionDispatch;
-
-        /// Default collision dispatch configuration
-        DefaultCollisionDispatch mDefaultCollisionDispatch;
-
-        /// Collision detection matrix (algorithms to use)
-        NarrowPhaseAlgorithm* mCollisionMatrix[NB_COLLISION_SHAPE_TYPES][NB_COLLISION_SHAPE_TYPES];
+        CollisionDispatch mCollisionDispatch;
 
         /// Pointer to the physics world
         CollisionWorld* mWorld;
-
-        /// List of narrow phase infos
-        NarrowPhaseInfoBatch mNarrowPhaseInfoBatch;
 
         /// Broad-phase overlapping pairs
         OverlappingPairMap mOverlappingPairs;
@@ -93,6 +84,9 @@ class CollisionDetection {
 
         /// True if some collision shapes have been added previously
         bool mIsCollisionShapesAdded;
+
+        /// Narrow-phase collision detection input
+        NarrowPhaseInput mNarrowPhaseInput;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -112,31 +106,33 @@ class CollisionDetection {
         /// Compute the narrow-phase collision detection
         void computeNarrowPhase();
 
+        /// Execute the narrow-phase collision detection algorithm on batches
+        bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool stopFirstContactFound,
+                                      bool reportContacts, MemoryAllocator& allocator);
+
         /// Add a contact manifold to the linked list of contact manifolds of the two bodies
         /// involved in the corresponding contact.
         void addContactManifoldToBody(OverlappingPair* pair);
-
-        /// Fill-in the collision detection matrix
-        void fillInCollisionMatrix();
-
-        /// Return the corresponding narrow-phase algorithm
-        NarrowPhaseAlgorithm* selectNarrowPhaseAlgorithm(const CollisionShapeType& shape1Type,
-                                                         const CollisionShapeType& shape2Type) const;
 
         /// Add all the contact manifold of colliding pairs to their bodies
         void addAllContactManifoldsToBodies();
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
         void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
-                                               NarrowPhaseInfoBatch& narrowPhaseInfoBatch);
+                                               NarrowPhaseInput& narrowPhaseInput);
 
         /// Compute the middle-phase collision detection between two proxy shapes
-        void computeMiddlePhaseForProxyShapes(OverlappingPair* pair, NarrowPhaseInfoBatch& outNarrowPhaseInfoBatch);
+        void computeMiddlePhaseForProxyShapes(OverlappingPair* pair, NarrowPhaseInput& outNarrowPhaseInput);
 
         /// Convert the potential contact into actual contacts
-        void processAllPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                         const List<uint>& collidingBatchIndex,
-                                         const OverlappingPairMap& overlappingPairs);
+        void processPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
+                                      bool updateLastFrameInfo);
+
+        /// Process the potential contacts after narrow-phase collision detection
+        void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo);
+
+        /// Clear the obsolete manifolds and contact points and reduce the number of contacts points of the remaining manifolds
+        void reduceContactManifolds(const OverlappingPairMap& overlappingPairs);
 
         /// Report contacts for all the colliding overlapping pairs
         void reportAllContacts();
@@ -161,7 +157,7 @@ class CollisionDetection {
         CollisionDetection& operator=(const CollisionDetection& collisionDetection) = delete;
 
         /// Set the collision dispatch configuration
-        void setCollisionDispatch(CollisionDispatch* collisionDispatch);
+        CollisionDispatch& getCollisionDispatch();
 
         /// Add a proxy collision shape to the collision detection
         void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
@@ -235,20 +231,9 @@ class CollisionDetection {
         friend class ConvexMeshShape;
 };
 
-// Set the collision dispatch configuration
-inline void CollisionDetection::setCollisionDispatch(CollisionDispatch* collisionDispatch) {
-    mCollisionDispatch = collisionDispatch;
-
-    // Fill-in the collision matrix with the new algorithms to use
-    fillInCollisionMatrix();
-
-#ifdef IS_PROFILING_ACTIVE
-
-	// Set the profiler
-	mCollisionDispatch->setProfiler(mProfiler);
-
-#endif
-
+// Return a reference to the collision dispatch configuration
+inline CollisionDispatch& CollisionDetection::getCollisionDispatch() {
+    return mCollisionDispatch;
 }
 
 // Add a body to the collision detection
@@ -289,24 +274,6 @@ inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, con
     mBroadPhaseAlgorithm.updateProxyCollisionShape(shape, aabb, displacement);
 }
 
-// Return the corresponding narrow-phase algorithm
-inline NarrowPhaseAlgorithm* CollisionDetection::selectNarrowPhaseAlgorithm(const CollisionShapeType& shape1Type,
-                                                                            const CollisionShapeType& shape2Type) const {
-
-    uint shape1Index = static_cast<unsigned int>(shape1Type);
-    uint shape2Index = static_cast<unsigned int>(shape2Type);
-
-    // Swap the shape types if necessary
-    if (shape1Index > shape2Index) {
-        const uint tempIndex = shape1Index;
-        shape1Index = shape2Index;
-        shape2Index = tempIndex;
-    }
-
-    assert(shape1Index <= shape2Index);
-
-    return mCollisionMatrix[shape1Index][shape2Index];
-}
 
 // Return a pointer to the world
 inline CollisionWorld* CollisionDetection::getWorld() {
@@ -324,7 +291,7 @@ inline MemoryManager& CollisionDetection::getMemoryManager() const {
 inline void CollisionDetection::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 	mBroadPhaseAlgorithm.setProfiler(profiler);
-	mCollisionDispatch->setProfiler(profiler);
+    mCollisionDispatch.setProfiler(profiler);
 }
 
 #endif

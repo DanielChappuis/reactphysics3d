@@ -52,9 +52,11 @@ SATAlgorithm::SATAlgorithm(MemoryAllocator& memoryAllocator) : mMemoryAllocator(
 }
 
 // Test collision between a sphere and a convex mesh
-void SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
+bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                                          uint batchStartIndex, uint batchNbItems,
-                                                         bool reportContacts) const {
+                                                         bool reportContacts, bool stopFirstContactFound) const {
+
+    bool isCollisionFound = false;
 
     RP3D_PROFILE("SATAlgorithm::testCollisionSphereVsConvexPolyhedron()", mProfiler);
 
@@ -133,7 +135,13 @@ void SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& n
         }
 
         narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+        isCollisionFound = true;
+        if (stopFirstContactFound) {
+            return isCollisionFound;
+        }
     }
+
+    return isCollisionFound;
 }
 
 // Compute the penetration depth between a face of the polyhedron and a sphere along the polyhedron face normal direction
@@ -468,9 +476,11 @@ bool SATAlgorithm::isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, c
 }
 
 // Test collision between two convex polyhedrons
-void SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, bool reportContacts) const {
+bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, bool reportContacts, bool stopFirstContactFound) const {
 
     RP3D_PROFILE("SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron()", mProfiler);
+
+    bool isCollisionFound = false;
 
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
@@ -537,6 +547,10 @@ void SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                         // The shapes are still overlapping in the previous axis (the contact manifold is not empty).
                         // Therefore, we can return without running the whole SAT algorithm
                         narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+                        isCollisionFound = true;
+                        if (stopFirstContactFound) {
+                            return isCollisionFound;
+                        }
                         continue;
                     }
 
@@ -576,6 +590,10 @@ void SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                         // The shapes are still overlapping in the previous axis (the contact manifold is not empty).
                         // Therefore, we can return without running the whole SAT algorithm
                         narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+                        isCollisionFound = true;
+                        if (stopFirstContactFound) {
+                            return isCollisionFound;
+                        }
                         continue;
                     }
 
@@ -664,6 +682,10 @@ void SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                             // The shapes are overlapping on the previous axis (the contact manifold is not empty). Therefore
                             // we return without running the whole SAT algorithm
                             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+                            isCollisionFound = true;
+                            if (stopFirstContactFound) {
+                                return isCollisionFound;
+                            }
                             continue;
                         }
 
@@ -855,7 +877,13 @@ void SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
         }
 
         narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+        isCollisionFound = true;
+        if (stopFirstContactFound) {
+            return isCollisionFound;
+        }
     }
+
+    return isCollisionFound;
 }
 
 // Compute the contact points between two faces of two convex polyhedra.

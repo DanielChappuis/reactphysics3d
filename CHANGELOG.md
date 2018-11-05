@@ -17,6 +17,12 @@
  - Bug [#62](https://github.com/DanielChappuis/reactphysics3d/issues/62) has been fixed.
  - Bug [#63](https://github.com/DanielChappuis/reactphysics3d/issues/63) has been fixed.
 
+### Removed
+
+ - The CollisionWorld::setCollisionDispatch() method has been removed. In order to use a custom collision
+   algorithm, you must not get the collision dispatch object with the
+   CollisionWorld::getCollisionDispatch() method and set a collision algorithm to this object.
+
 ## Version 0.7.0 (May 1, 2018)
 
 ### Added

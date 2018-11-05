@@ -35,7 +35,8 @@ using namespace reactphysics3d;
 NarrowPhaseInfoBatch::NarrowPhaseInfoBatch(MemoryAllocator& allocator)
       : mMemoryAllocator(allocator), overlappingPairs(allocator), collisionShapes1(allocator), collisionShapes2(allocator),
         shape1ToWorldTransforms(allocator), shape2ToWorldTransforms(allocator),
-        isColliding(allocator), contactPoints(allocator), collisionShapeAllocators(allocator), lastFrameCollisionInfos(allocator) {
+        isColliding(allocator), contactPoints(allocator), collisionShapeAllocators(allocator),
+        lastFrameCollisionInfos(allocator) {
 
 }
 
@@ -59,9 +60,8 @@ void NarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pair, CollisionSh
     isColliding.add(false);
 
     // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
-    pair->addLastFrameInfoIfNecessary(shape1->getId(), shape2->getId());
-
-    lastFrameCollisionInfos.add(pair->getLastFrameCollisionInfo(shape1->getId(), shape2->getId()));
+    LastFrameCollisionInfo* lastFrameInfo = pair->addLastFrameInfoIfNecessary(shape1->getId(), shape2->getId());
+    lastFrameCollisionInfos.add(lastFrameInfo);
 }
 
 // Add a new contact point
