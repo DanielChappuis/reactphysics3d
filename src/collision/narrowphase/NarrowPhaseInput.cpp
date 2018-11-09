@@ -68,6 +68,17 @@ void NarrowPhaseInput::addNarrowPhaseTest(OverlappingPair* pair, CollisionShape*
     }
 }
 
+/// Reserve memory for the containers with cached capacity
+void NarrowPhaseInput::reserveMemory() {
+
+    mSphereVsSphereBatch.reserveMemory();
+    mSphereVsCapsuleBatch.reserveMemory();
+    mCapsuleVsCapsuleBatch.reserveMemory();
+    mSphereVsConvexPolyhedronBatch.reserveMemory();
+    mCapsuleVsConvexPolyhedronBatch.reserveMemory();
+    mConvexPolyhedronVsConvexPolyhedronBatch.reserveMemory();
+}
+
 // Clear
 void NarrowPhaseInput::clear() {
 

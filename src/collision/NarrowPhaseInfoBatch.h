@@ -52,6 +52,9 @@ struct NarrowPhaseInfoBatch {
         /// Memory allocator
         MemoryAllocator& mMemoryAllocator;
 
+        /// Cached capacity
+        uint mCachedCapacity = 0;
+
     public:
 
         /// List of Broadphase overlapping pairs
@@ -101,6 +104,9 @@ struct NarrowPhaseInfoBatch {
 
         /// Reset the remaining contact points
         void resetContactPoints(uint index);
+
+        // Initialize the containers using cached capacity
+        void reserveMemory();
 
         /// Clear all the objects in the batch
         void clear();

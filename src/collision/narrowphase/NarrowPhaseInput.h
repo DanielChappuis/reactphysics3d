@@ -58,7 +58,6 @@ class NarrowPhaseInput {
         NarrowPhaseInfoBatch mSphereVsConvexPolyhedronBatch;
         NarrowPhaseInfoBatch mCapsuleVsConvexPolyhedronBatch;
         NarrowPhaseInfoBatch mConvexPolyhedronVsConvexPolyhedronBatch;
-
     public:
 
         /// Constructor
@@ -87,6 +86,9 @@ class NarrowPhaseInput {
 
         /// Get a reference to the convex polyhedron vs convex polyhedron batch
         NarrowPhaseInfoBatch& getConvexPolyhedronVsConvexPolyhedronBatch();
+
+        /// Reserve memory for the containers with cached capacity
+        void reserveMemory();
 
         /// Clear
         void clear();

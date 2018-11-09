@@ -102,6 +102,20 @@ void NarrowPhaseInfoBatch::resetContactPoints(uint index) {
     contactPoints[index].clear();
 }
 
+// Initialize the containers using cached capacity
+void NarrowPhaseInfoBatch::reserveMemory() {
+
+    overlappingPairs.reserve(mCachedCapacity);
+    collisionShapes1.reserve(mCachedCapacity);
+    collisionShapes2.reserve(mCachedCapacity);
+    shape1ToWorldTransforms.reserve(mCachedCapacity);
+    shape2ToWorldTransforms.reserve(mCachedCapacity);
+    collisionShapeAllocators.reserve(mCachedCapacity);
+    lastFrameCollisionInfos.reserve(mCachedCapacity);
+    isColliding.reserve(mCachedCapacity);
+    contactPoints.reserve(mCachedCapacity);
+}
+
 // Clear all the objects in the batch
 void NarrowPhaseInfoBatch::clear() {
 
@@ -121,13 +135,20 @@ void NarrowPhaseInfoBatch::clear() {
         }
     }
 
-    overlappingPairs.clear();
-    collisionShapes1.clear();
-    collisionShapes2.clear();
-    shape1ToWorldTransforms.clear();
-    shape2ToWorldTransforms.clear();
-    collisionShapeAllocators.clear();
-    lastFrameCollisionInfos.clear();
-    isColliding.clear();
-    contactPoints.clear();
+    // Note that we clear the following containers and we release their allocated memory. Therefore,
+    // if the memory allocator is a single frame allocator, the memory is deallocated and will be
+    // allocated in the next frame at a possibly different location in memory (remember that the
+    // location of the allocated memory of a single frame allocator might change between two frames)
+
+    mCachedCapacity = overlappingPairs.size();
+
+    overlappingPairs.clear(true);
+    collisionShapes1.clear(true);
+    collisionShapes2.clear(true);
+    shape1ToWorldTransforms.clear(true);
+    shape2ToWorldTransforms.clear(true);
+    collisionShapeAllocators.clear(true);
+    lastFrameCollisionInfos.clear(true);
+    isColliding.clear(true);
+    contactPoints.clear(true);
 }

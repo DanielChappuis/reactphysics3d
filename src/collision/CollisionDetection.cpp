@@ -52,7 +52,7 @@ CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryManager& mem
                    : mMemoryManager(memoryManager), mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
                      mOverlappingPairs(mMemoryManager.getPoolAllocator()), mBroadPhaseAlgorithm(*this),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()), mIsCollisionShapesAdded(false),
-                     mNarrowPhaseInput(mMemoryManager.getPoolAllocator()) {
+                     mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator()) {
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -97,6 +97,9 @@ void CollisionDetection::computeBroadPhase() {
 void CollisionDetection::computeMiddlePhase() {
 
     RP3D_PROFILE("CollisionDetection::computeMiddlePhase()", mProfiler);
+
+    // Reserve memory for the narrow-phase input using cached capacity from previous frame
+    mNarrowPhaseInput.reserveMemory();
 
     // For each possible collision pair of bodies
     for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
@@ -638,8 +641,6 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
 
     // Test narrow-phase collision
     bool isCollisionFound = testNarrowPhaseCollision(narrowPhaseInput, true, false, mMemoryManager.getPoolAllocator());
-
-    narrowPhaseInput.clear();
 
     // No overlap has been found
     return isCollisionFound;
