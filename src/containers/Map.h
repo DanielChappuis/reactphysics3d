@@ -240,32 +240,6 @@ class Map {
             return number;
         }
 
-        /// Clear and reset the map
-        void reset() {
-
-            // If elements have been allocated
-            if (mCapacity > 0) {
-
-                // Clear the map
-                clear();
-
-                // Destroy the entries
-                for (int i=0; i < mCapacity; i++) {
-                    mEntries[i].~Entry();
-                }
-
-                mAllocator.release(mBuckets, mCapacity * sizeof(int));
-                mAllocator.release(mEntries, mCapacity * sizeof(Entry));
-
-                mNbUsedEntries = 0;
-                mNbFreeEntries = 0;
-                mCapacity = 0;
-                mBuckets = nullptr;
-                mEntries = nullptr;
-                mFreeIndex = -1;
-            }
-        }
-
     public:
 
         /// Class Iterator
@@ -423,7 +397,7 @@ class Map {
         /// Destructor
         ~Map() {
 
-            reset();
+            clear(true);
         }
 
         /// Allocate memory for a given number of elements
@@ -577,11 +551,13 @@ class Map {
         }
 
         /// Clear the map
-        void clear() {
+        void clear(bool releaseMemory = false) {
 
             if (mNbUsedEntries > 0) {
 
+                // Remove the key/value pair of each entry
                 for (int i=0; i < mCapacity; i++) {
+
                     mBuckets[i] = -1;
                     mEntries[i].next = -1;
                     if (mEntries[i].keyValue != nullptr) {
@@ -594,6 +570,23 @@ class Map {
                 mFreeIndex = -1;
                 mNbUsedEntries = 0;
                 mNbFreeEntries = 0;
+            }
+
+            // If elements have been allocated
+            if (releaseMemory && mCapacity > 0) {
+
+                // Destroy the entries
+                for (int i=0; i < mCapacity; i++) {
+                    mEntries[i].~Entry();
+                }
+
+                // Release memory
+                mAllocator.release(mBuckets, mCapacity * sizeof(int));
+                mAllocator.release(mEntries, mCapacity * sizeof(Entry));
+
+                mCapacity = 0;
+                mBuckets = nullptr;
+                mEntries = nullptr;
             }
 
             assert(size() == 0);
@@ -709,8 +702,8 @@ class Map {
             // Check for self assignment
             if (this != &map) {
 
-                // Reset the map
-                reset();
+                // Clear the map
+                clear(true);
 
                 if (map.mCapacity > 0) {
 

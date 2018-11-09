@@ -245,32 +245,6 @@ class Set {
             return number;
         }
 
-        /// Clear and reset the set
-        void reset() {
-
-            // If elements have been allocated
-            if (mCapacity > 0) {
-
-                // Clear the list
-                clear();
-
-                // Destroy the entries
-                for (int i=0; i < mCapacity; i++) {
-                    mEntries[i].~Entry();
-                }
-
-                mAllocator.release(mBuckets, mCapacity * sizeof(int));
-                mAllocator.release(mEntries, mCapacity * sizeof(Entry));
-
-                mNbUsedEntries = 0;
-                mNbFreeEntries = 0;
-                mCapacity = 0;
-                mBuckets = nullptr;
-                mEntries = nullptr;
-                mFreeIndex = -1;
-            }
-        }
-
     public:
 
         /// Class Iterator
@@ -429,7 +403,7 @@ class Set {
         /// Destructor
         ~Set() {
 
-            reset();
+            clear(true);
         }
 
         /// Allocate memory for a given number of elements
@@ -572,7 +546,7 @@ class Set {
         }
 
         /// Clear the set
-        void clear() {
+        void clear(bool releaseMemory = false) {
 
             if (mNbUsedEntries > 0) {
 
@@ -589,6 +563,22 @@ class Set {
                 mFreeIndex = -1;
                 mNbUsedEntries = 0;
                 mNbFreeEntries = 0;
+            }
+
+            // If elements have been allocated
+            if (releaseMemory && mCapacity > 0) {
+
+                // Destroy the entries
+                for (int i=0; i < mCapacity; i++) {
+                    mEntries[i].~Entry();
+                }
+
+                mAllocator.release(mBuckets, mCapacity * sizeof(int));
+                mAllocator.release(mEntries, mCapacity * sizeof(Entry));
+
+                mCapacity = 0;
+                mBuckets = nullptr;
+                mEntries = nullptr;
             }
 
             assert(size() == 0);
@@ -660,8 +650,8 @@ class Set {
             // Check for self assignment
             if (this != &set) {
 
-                // Reset the set
-                reset();
+                // Clear the set
+                clear(true);
 
                 if (set.mCapacity > 0) {
 

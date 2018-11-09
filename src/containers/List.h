@@ -243,10 +243,7 @@ class List {
             if (mCapacity > 0) {
 
                 // Clear the list
-                clear();
-
-                // Release the memory allocated on the heap
-                mAllocator.release(mBuffer, mCapacity * sizeof(T));
+                clear(true);
             }
         }
 
@@ -365,7 +362,7 @@ class List {
         }
 
         /// Clear the list
-        void clear() {
+        void clear(bool releaseMemory = false) {
 
             // Call the destructor of each element
             for (uint i=0; i < mSize; i++) {
@@ -373,6 +370,16 @@ class List {
             }
 
             mSize = 0;
+
+            // If we need to release all the allocated memory
+            if (releaseMemory && mCapacity > 0) {
+
+                // Release the memory allocated on the heap
+                mAllocator.release(mBuffer, mCapacity * sizeof(T));
+
+                mBuffer = nullptr;
+                mCapacity = 0;
+            }
         }
 
         /// Return the number of elements in the list
