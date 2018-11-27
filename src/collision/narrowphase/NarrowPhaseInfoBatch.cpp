@@ -25,7 +25,7 @@
 
 // Libraries
 #include "NarrowPhaseInfoBatch.h"
-#include "ContactPointInfo.h"
+#include "collision/ContactPointInfo.h"
 #include "collision/shapes/TriangleShape.h"
 #include "engine/OverlappingPair.h"
 
@@ -125,11 +125,12 @@ void NarrowPhaseInfoBatch::clear() {
 
         // Release the memory of the TriangleShape (this memory was allocated in the
         // MiddlePhaseTriangleCallback::testTriangle() method)
-        if (collisionShapes1[i]->getName() == CollisionShapeName::TRIANGLE) {
+        // TODO DOD : Try to move this code
+        if (collisionShapes1.size() > 0 && collisionShapes1[i]->getName() == CollisionShapeName::TRIANGLE) {
             collisionShapes1[i]->~CollisionShape();
             collisionShapeAllocators[i]->release(collisionShapes1[i], sizeof(TriangleShape));
         }
-        if (collisionShapes2[i]->getName() == CollisionShapeName::TRIANGLE) {
+        if (collisionShapes2.size() > 0 && collisionShapes2[i]->getName() == CollisionShapeName::TRIANGLE) {
             collisionShapes2[i]->~CollisionShape();
             collisionShapeAllocators[i]->release(collisionShapes2[i], sizeof(TriangleShape));
         }

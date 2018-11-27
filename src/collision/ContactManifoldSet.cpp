@@ -25,7 +25,7 @@
 
 // Libraries
 #include "ContactManifoldSet.h"
-#include "NarrowPhaseInfoBatch.h"
+#include "narrowphase/NarrowPhaseInfoBatch.h"
 #include "constraint/ContactPoint.h"
 #include "ProxyShape.h"
 #include "collision/ContactManifold.h"

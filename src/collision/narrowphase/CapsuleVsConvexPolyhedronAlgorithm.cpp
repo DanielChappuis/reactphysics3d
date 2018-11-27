@@ -29,7 +29,7 @@
 #include "GJK/GJKAlgorithm.h"
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexPolyhedronShape.h"
-#include "collision/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 #include "collision/ContactPointInfo.h"
 #include <cassert>
 

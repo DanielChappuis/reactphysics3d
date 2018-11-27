@@ -35,7 +35,7 @@
 #include "collision/CollisionCallback.h"
 #include "collision/MiddlePhaseTriangleCallback.h"
 #include "collision/OverlapCallback.h"
-#include "collision/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 #include "collision/ContactManifold.h"
 #include "utils/Profiler.h"
 #include "engine/EventListener.h"
@@ -252,7 +252,7 @@ bool CollisionDetection::testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseI
     ConvexPolyhedronVsConvexPolyhedronAlgorithm* convexPolyVsConvexPolyAlgo = mCollisionDispatch.getConvexPolyhedronVsConvexPolyhedronAlgorithm();
 
     // get the narrow-phase batches to test for collision
-    NarrowPhaseInfoBatch& sphereVsSphereBatch = narrowPhaseInput.getSphereVsSphereBatch();
+    SphereVsSphereNarrowPhaseInfoBatch& sphereVsSphereBatch = narrowPhaseInput.getSphereVsSphereBatch();
     NarrowPhaseInfoBatch& sphereVsCapsuleBatch = narrowPhaseInput.getSphereVsCapsuleBatch();
     NarrowPhaseInfoBatch& capsuleVsCapsuleBatch = narrowPhaseInput.getCapsuleVsCapsuleBatch();
     NarrowPhaseInfoBatch& sphereVsConvexPolyhedronBatch = narrowPhaseInput.getSphereVsConvexPolyhedronBatch();

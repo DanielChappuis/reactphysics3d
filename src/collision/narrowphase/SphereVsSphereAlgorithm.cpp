@@ -26,12 +26,12 @@
 // Libraries
 #include "SphereVsSphereAlgorithm.h"
 #include "collision/shapes/SphereShape.h"
-#include "collision/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/SphereVsSphereNarrowPhaseInfoBatch.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
                                             bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
 
     bool isCollisionFound = false;
@@ -42,32 +42,29 @@ bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInf
         assert(narrowPhaseInfoBatch.contactPoints[batchIndex].size() == 0);
         assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
 
-        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::SPHERE);
-        assert(narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::SPHERE);
-
-        // Get the sphere collision shapes
-        const SphereShape* sphereShape1 = static_cast<const SphereShape*>(narrowPhaseInfoBatch.collisionShapes1[batchIndex]);
-        const SphereShape* sphereShape2 = static_cast<const SphereShape*>(narrowPhaseInfoBatch.collisionShapes2[batchIndex]);
-
         // Get the local-space to world-space transforms
-        const Transform& transform1 = narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex];
-        const Transform& transform2 = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex];
+        const Transform& transform1 = narrowPhaseInfoBatch.sphere1WorldTransforms[batchIndex];
+        const Transform& transform2 = narrowPhaseInfoBatch.sphere2WorldTransforms[batchIndex];
 
         // Compute the distance between the centers
         Vector3 vectorBetweenCenters = transform2.getPosition() - transform1.getPosition();
         decimal squaredDistanceBetweenCenters = vectorBetweenCenters.lengthSquare();
 
         // Compute the sum of the radius
-        decimal sumRadius = sphereShape1->getRadius() + sphereShape2->getRadius();
+        decimal sumRadiuses = narrowPhaseInfoBatch.sphere1Radiuses[batchIndex] + narrowPhaseInfoBatch.sphere2Radiuses[batchIndex];
+
+        // Compute the product of the sum of the radius
+        decimal sumRadiusesProducts = sumRadiuses * sumRadiuses;
 
         // If the sphere collision shapes intersect
-        if (squaredDistanceBetweenCenters < sumRadius * sumRadius) {
+        if (squaredDistanceBetweenCenters < sumRadiusesProducts) {
 
             if (reportContacts) {
 
-                Vector3 centerSphere2InBody1LocalSpace = transform1.getInverse() * transform2.getPosition();
-                Vector3 centerSphere1InBody2LocalSpace = transform2.getInverse() * transform1.getPosition();
-                decimal penetrationDepth = sumRadius - std::sqrt(squaredDistanceBetweenCenters);
+                Transform transform1Inverse = narrowPhaseInfoBatch.sphere1WorldTransforms[batchIndex].getInverse();
+                Transform transform2Inverse = narrowPhaseInfoBatch.sphere2WorldTransforms[batchIndex].getInverse();
+
+                decimal penetrationDepth = sumRadiuses - std::sqrt(squaredDistanceBetweenCenters);
                 Vector3 intersectionOnBody1;
                 Vector3 intersectionOnBody2;
                 Vector3 normal;
@@ -75,8 +72,11 @@ bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInf
                 // If the two sphere centers are not at the same position
                 if (squaredDistanceBetweenCenters > MACHINE_EPSILON) {
 
-                    intersectionOnBody1 = sphereShape1->getRadius() * centerSphere2InBody1LocalSpace.getUnit();
-                    intersectionOnBody2 = sphereShape2->getRadius() * centerSphere1InBody2LocalSpace.getUnit();
+                    Vector3 centerSphere2InBody1LocalSpace = transform1Inverse * narrowPhaseInfoBatch.sphere1WorldTransforms[batchIndex].getPosition();
+                    Vector3 centerSphere1InBody2LocalSpace = transform2Inverse * narrowPhaseInfoBatch.sphere2WorldTransforms[batchIndex].getPosition();
+
+                    intersectionOnBody1 = narrowPhaseInfoBatch.sphere1Radiuses[batchIndex] * centerSphere2InBody1LocalSpace.getUnit();
+                    intersectionOnBody2 = narrowPhaseInfoBatch.sphere2Radiuses[batchIndex] * centerSphere1InBody2LocalSpace.getUnit();
                     normal = vectorBetweenCenters.getUnit();
                 }
                 else {    // If the sphere centers are at the same position (degenerate case)
@@ -84,8 +84,8 @@ bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInf
                     // Take any contact normal direction
                     normal.setAllValues(0, 1, 0);
 
-                    intersectionOnBody1 = sphereShape1->getRadius() * (transform1.getInverse().getOrientation() * normal);
-                    intersectionOnBody2 = sphereShape2->getRadius() * (transform2.getInverse().getOrientation() * normal);
+                    intersectionOnBody1 = narrowPhaseInfoBatch.sphere1Radiuses[batchIndex] * (transform1Inverse.getOrientation() * normal);
+                    intersectionOnBody2 = narrowPhaseInfoBatch.sphere2Radiuses[batchIndex] * (transform2Inverse.getOrientation() * normal);
                 }
 
                 // Create the contact info object

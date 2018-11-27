@@ -31,7 +31,7 @@
 #include "configuration.h"
 #include "utils/Profiler.h"
 #include "containers/List.h"
-#include "collision/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 #include "collision/narrowphase/GJK/VoronoiSimplex.h"
 #include <cassert>
 

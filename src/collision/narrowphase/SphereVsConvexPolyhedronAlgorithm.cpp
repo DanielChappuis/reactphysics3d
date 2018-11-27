@@ -27,7 +27,7 @@
 #include "SphereVsConvexPolyhedronAlgorithm.h"
 #include "GJK/GJKAlgorithm.h"
 #include "SAT/SATAlgorithm.h"
-#include "collision/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

@@ -47,7 +47,7 @@ struct ContactPointInfo;
  */
 struct NarrowPhaseInfoBatch {
 
-    private:
+    protected:
 
         /// Memory allocator
         MemoryAllocator& mMemoryAllocator;
@@ -56,6 +56,8 @@ struct NarrowPhaseInfoBatch {
         uint mCachedCapacity = 0;
 
     public:
+
+        // TODO DOD : Try to remove most of the following lists
 
         /// List of Broadphase overlapping pairs
         List<OverlappingPair*> overlappingPairs;
@@ -88,12 +90,13 @@ struct NarrowPhaseInfoBatch {
         NarrowPhaseInfoBatch(MemoryAllocator& allocator);
 
         /// Destructor
-        ~NarrowPhaseInfoBatch();
+        virtual ~NarrowPhaseInfoBatch();
 
         /// Return the number of objects in the batch
         uint getNbObjects() const;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
+        // TODO DOD : Remove this method (only use the one in specialized classed)
         void addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
                         CollisionShape* shape2, const Transform& shape1Transform,
                         const Transform& shape2Transform, MemoryAllocator& shapeAllocator);
@@ -109,7 +112,7 @@ struct NarrowPhaseInfoBatch {
         void reserveMemory();
 
         /// Clear all the objects in the batch
-        void clear();
+        virtual void clear();
 };
 
 /// Return the number of objects in the batch

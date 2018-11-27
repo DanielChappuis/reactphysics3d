@@ -23,47 +23,56 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_SPHERE_VS_SPHERE_NARROW_PHASE_INFO_BATCH_H
+#define REACTPHYSICS3D_SPHERE_VS_SPHERE_NARROW_PHASE_INFO_BATCH_H
+
 // Libraries
-#include "ConvexPolyhedronVsConvexPolyhedronAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
-#include "SAT/SATAlgorithm.h"
 #include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+/// Namespace ReactPhysics3D
+namespace reactphysics3d {
 
-// Compute the narrow-phase collision detection between two convex polyhedra
-// This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
-// by Dirk Gregorius.
-bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                                                uint batchStartIndex, uint batchNbItems,
-                                                                bool reportContacts, bool stopFirstContactFound,
-                                                                MemoryAllocator& memoryAllocator) {
+// Struct SphereVsSphereNarrowPhaseInfoBatch
+/**
+ * This structure collects all the potential collisions from the middle-phase algorithm
+ * that have to be tested during narrow-phase collision detection. This class collects all the
+ * sphere vs sphere collision detection tests.
+ */
+struct SphereVsSphereNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
 
-    // Run the SAT algorithm to find the separating axis and compute contact point
-    SATAlgorithm satAlgorithm(memoryAllocator);
+    public:
 
-#ifdef IS_PROFILING_ACTIVE
+        /// List of radiuses for the first spheres
+        List<decimal> sphere1Radiuses;
 
-	satAlgorithm.setProfiler(mProfiler);
+        /// List of radiuses for the second spheres
+        List<decimal> sphere2Radiuses;
+
+        /// List of the world-space positions for the center of the first spheres
+        List<Transform> sphere1WorldTransforms;
+
+        /// List of the world-space positions for the center of the second spheres
+        List<Transform> sphere2WorldTransforms;
+
+        /// Constructor
+        SphereVsSphereNarrowPhaseInfoBatch(MemoryAllocator& allocator);
+
+        /// Destructor
+        virtual ~SphereVsSphereNarrowPhaseInfoBatch() = default;
+
+        /// Add shapes to be tested during narrow-phase collision detection into the batch
+        virtual void addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
+                                        CollisionShape* shape2, const Transform& shape1Transform,
+                                        const Transform& shape2Transform);
+
+        // Initialize the containers using cached capacity
+        void reserveMemory();
+
+        /// Clear all the objects in the batch
+        virtual void clear();
+};
+
+}
 
 #endif
 
-    bool isCollisionFound = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfoBatch, batchStartIndex,
-                                                                                         batchNbItems, reportContacts, stopFirstContactFound);
-
-    for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
-
-        // Get the last frame collision info
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
-
-        lastFrameCollisionInfo->wasUsingSAT = true;
-        lastFrameCollisionInfo->wasUsingGJK = false;
-
-        if (isCollisionFound && stopFirstContactFound) {
-            return isCollisionFound;
-        }
-    }
-
-    return isCollisionFound;
-}

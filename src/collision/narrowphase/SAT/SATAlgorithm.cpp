@@ -30,7 +30,7 @@
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/SphereShape.h"
 #include "engine/OverlappingPair.h"
-#include "collision/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 #include "collision/shapes/TriangleShape.h"
 #include "configuration.h"
 #include "utils/Profiler.h"
