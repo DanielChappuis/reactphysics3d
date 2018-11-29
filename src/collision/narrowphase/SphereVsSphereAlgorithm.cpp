@@ -43,8 +43,8 @@ bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& 
         assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
 
         // Get the local-space to world-space transforms
-        const Transform& transform1 = narrowPhaseInfoBatch.sphere1WorldTransforms[batchIndex];
-        const Transform& transform2 = narrowPhaseInfoBatch.sphere2WorldTransforms[batchIndex];
+        const Transform& transform1 = narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex];
+        const Transform& transform2 = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex];
 
         // Compute the distance between the centers
         Vector3 vectorBetweenCenters = transform2.getPosition() - transform1.getPosition();
@@ -61,8 +61,8 @@ bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& 
 
             if (reportContacts) {
 
-                Transform transform1Inverse = narrowPhaseInfoBatch.sphere1WorldTransforms[batchIndex].getInverse();
-                Transform transform2Inverse = narrowPhaseInfoBatch.sphere2WorldTransforms[batchIndex].getInverse();
+                Transform transform1Inverse = transform1.getInverse();
+                Transform transform2Inverse = transform2.getInverse();
 
                 decimal penetrationDepth = sumRadiuses - std::sqrt(squaredDistanceBetweenCenters);
                 Vector3 intersectionOnBody1;
@@ -72,8 +72,8 @@ bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& 
                 // If the two sphere centers are not at the same position
                 if (squaredDistanceBetweenCenters > MACHINE_EPSILON) {
 
-                    Vector3 centerSphere2InBody1LocalSpace = transform1Inverse * narrowPhaseInfoBatch.sphere1WorldTransforms[batchIndex].getPosition();
-                    Vector3 centerSphere1InBody2LocalSpace = transform2Inverse * narrowPhaseInfoBatch.sphere2WorldTransforms[batchIndex].getPosition();
+                    Vector3 centerSphere2InBody1LocalSpace = transform1Inverse * transform2.getPosition();
+                    Vector3 centerSphere1InBody2LocalSpace = transform2Inverse * transform1.getPosition();
 
                     intersectionOnBody1 = narrowPhaseInfoBatch.sphere1Radiuses[batchIndex] * centerSphere2InBody1LocalSpace.getUnit();
                     intersectionOnBody2 = narrowPhaseInfoBatch.sphere2Radiuses[batchIndex] * centerSphere1InBody2LocalSpace.getUnit();

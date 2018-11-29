@@ -30,6 +30,7 @@
 #include "containers/List.h"
 #include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 #include "collision/narrowphase/SphereVsSphereNarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -55,7 +56,7 @@ class NarrowPhaseInput {
 
         SphereVsSphereNarrowPhaseInfoBatch mSphereVsSphereBatch;
         NarrowPhaseInfoBatch mSphereVsCapsuleBatch;
-        NarrowPhaseInfoBatch mCapsuleVsCapsuleBatch;
+        CapsuleVsCapsuleNarrowPhaseInfoBatch mCapsuleVsCapsuleBatch;
         NarrowPhaseInfoBatch mSphereVsConvexPolyhedronBatch;
         NarrowPhaseInfoBatch mCapsuleVsConvexPolyhedronBatch;
         NarrowPhaseInfoBatch mConvexPolyhedronVsConvexPolyhedronBatch;
@@ -77,7 +78,7 @@ class NarrowPhaseInput {
         NarrowPhaseInfoBatch& getSphereVsCapsuleBatch();
 
         /// Get a reference to the capsule vs capsule batch
-        NarrowPhaseInfoBatch& getCapsuleVsCapsuleBatch();
+        CapsuleVsCapsuleNarrowPhaseInfoBatch& getCapsuleVsCapsuleBatch();
 
         /// Get a reference to the sphere vs convex polyhedron batch
         NarrowPhaseInfoBatch& getSphereVsConvexPolyhedronBatch();
@@ -107,7 +108,7 @@ inline NarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsCapsuleBatch() {
 }
 
 // Get a reference to the capsule vs capsule batch
-inline NarrowPhaseInfoBatch& NarrowPhaseInput::getCapsuleVsCapsuleBatch() {
+inline CapsuleVsCapsuleNarrowPhaseInfoBatch& NarrowPhaseInput::getCapsuleVsCapsuleBatch() {
    return mCapsuleVsCapsuleBatch;
 }
 

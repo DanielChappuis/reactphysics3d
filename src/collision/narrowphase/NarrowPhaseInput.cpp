@@ -50,7 +50,7 @@ void NarrowPhaseInput::addNarrowPhaseTest(OverlappingPair* pair, CollisionShape*
             mSphereVsCapsuleBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::CapsuleVsCapsule:
-            mCapsuleVsCapsuleBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);
+            mCapsuleVsCapsuleBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform);
             break;
         case NarrowPhaseAlgorithmType::SphereVsConvexPolyhedron:
             mSphereVsConvexPolyhedronBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);

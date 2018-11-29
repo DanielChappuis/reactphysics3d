@@ -24,29 +24,32 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereVsSphereNarrowPhaseInfoBatch.h"
-#include "collision/shapes/SphereShape.h"
+#include "CapsuleVsCapsuleNarrowPhaseInfoBatch.h"
+#include "collision/shapes/CapsuleShape.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-SphereVsSphereNarrowPhaseInfoBatch::SphereVsSphereNarrowPhaseInfoBatch(MemoryAllocator& allocator)
-      : NarrowPhaseInfoBatch(allocator), sphere1Radiuses(allocator), sphere2Radiuses(allocator) {
+CapsuleVsCapsuleNarrowPhaseInfoBatch::CapsuleVsCapsuleNarrowPhaseInfoBatch(MemoryAllocator& allocator)
+      : NarrowPhaseInfoBatch(allocator), capsule1Radiuses(allocator), capsule2Radiuses(allocator),
+        capsule1Heights(allocator), capsule2Heights(allocator) {
 
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-void SphereVsSphereNarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1, CollisionShape* shape2,
+void CapsuleVsCapsuleNarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1, CollisionShape* shape2,
                                                             const Transform& shape1Transform, const Transform& shape2Transform) {
 
-    assert(shape1->getType() == CollisionShapeType::SPHERE);
-    assert(shape2->getType() == CollisionShapeType::SPHERE);
+    assert(shape1->getType() == CollisionShapeType::CAPSULE);
+    assert(shape2->getType() == CollisionShapeType::CAPSULE);
 
-    const SphereShape* sphere1 = static_cast<const SphereShape*>(shape1);
-    const SphereShape* sphere2 = static_cast<const SphereShape*>(shape2);
+    const CapsuleShape* capsule1 = static_cast<const CapsuleShape*>(shape1);
+    const CapsuleShape* capsule2 = static_cast<const CapsuleShape*>(shape2);
 
-    sphere1Radiuses.add(sphere1->getRadius());
-    sphere2Radiuses.add(sphere2->getRadius());
+    capsule1Radiuses.add(capsule1->getRadius());
+    capsule2Radiuses.add(capsule2->getRadius());
+    capsule1Heights.add(capsule1->getHeight());
+    capsule2Heights.add(capsule2->getHeight());
     shape1ToWorldTransforms.add(shape1Transform);
     shape2ToWorldTransforms.add(shape2Transform);
     overlappingPairs.add(pair);
@@ -59,16 +62,18 @@ void SphereVsSphereNarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pai
 }
 
 // Initialize the containers using cached capacity
-void SphereVsSphereNarrowPhaseInfoBatch::reserveMemory() {
+void CapsuleVsCapsuleNarrowPhaseInfoBatch::reserveMemory() {
 
     NarrowPhaseInfoBatch::reserveMemory();
 
-    sphere1Radiuses.reserve(mCachedCapacity);
-    sphere2Radiuses.reserve(mCachedCapacity);
+    capsule1Radiuses.reserve(mCachedCapacity);
+    capsule2Radiuses.reserve(mCachedCapacity);
+    capsule1Heights.reserve(mCachedCapacity);
+    capsule2Heights.reserve(mCachedCapacity);
 }
 
 // Clear all the objects in the batch
-void SphereVsSphereNarrowPhaseInfoBatch::clear() {
+void CapsuleVsCapsuleNarrowPhaseInfoBatch::clear() {
 
     NarrowPhaseInfoBatch::clear();
 
@@ -77,7 +82,8 @@ void SphereVsSphereNarrowPhaseInfoBatch::clear() {
     // allocated in the next frame at a possibly different location in memory (remember that the
     // location of the allocated memory of a single frame allocator might change between two frames)
 
-    sphere1Radiuses.clear(true);
-    sphere2Radiuses.clear(true);
+    capsule1Radiuses.clear(true);
+    capsule2Radiuses.clear(true);
+    capsule1Heights.clear(true);
+    capsule2Heights.clear(true);
 }
-

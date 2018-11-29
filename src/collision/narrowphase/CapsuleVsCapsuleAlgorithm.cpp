@@ -26,7 +26,7 @@
 // Libraries
 #include "CapsuleVsCapsuleAlgorithm.h"
 #include "collision/shapes/CapsuleShape.h"
-#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two capsules
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
                                               bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
     
     bool isCollisionFound = false;
@@ -44,33 +44,31 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
         assert(narrowPhaseInfoBatch.contactPoints[batchIndex].size() == 0);
 
         assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
-        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CAPSULE);
-        assert(narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::CAPSULE);
-
-        // Get the capsule collision shapes
-        const CapsuleShape* capsuleShape1 = static_cast<const CapsuleShape*>(narrowPhaseInfoBatch.collisionShapes1[batchIndex]);
-        const CapsuleShape* capsuleShape2 = static_cast<const CapsuleShape*>(narrowPhaseInfoBatch.collisionShapes2[batchIndex]);
 
         // Get the transform from capsule 1 local-space to capsule 2 local-space
         const Transform capsule1ToCapsule2SpaceTransform = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getInverse() *
                                                            narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex];
 
         // Compute the end-points of the inner segment of the first capsule
-        Vector3 capsule1SegA(0, -capsuleShape1->getHeight() * decimal(0.5), 0);
-        Vector3 capsule1SegB(0, capsuleShape1->getHeight() * decimal(0.5), 0);
+        const decimal capsule1HalfHeight = narrowPhaseInfoBatch.capsule1Heights[batchIndex] * decimal(0.5);
+        Vector3 capsule1SegA(0, -capsule1HalfHeight, 0);
+        Vector3 capsule1SegB(0, capsule1HalfHeight, 0);
         capsule1SegA = capsule1ToCapsule2SpaceTransform * capsule1SegA;
         capsule1SegB = capsule1ToCapsule2SpaceTransform * capsule1SegB;
 
         // Compute the end-points of the inner segment of the second capsule
-        const Vector3 capsule2SegA(0, -capsuleShape2->getHeight() * decimal(0.5), 0);
-        const Vector3 capsule2SegB(0, capsuleShape2->getHeight() * decimal(0.5), 0);
+        const decimal capsule2HalfHeight = narrowPhaseInfoBatch.capsule2Heights[batchIndex] * decimal(0.5);
+        const Vector3 capsule2SegA(0, -capsule2HalfHeight, 0);
+        const Vector3 capsule2SegB(0, capsule2HalfHeight, 0);
 
         // The two inner capsule segments
         const Vector3 seg1 = capsule1SegB - capsule1SegA;
         const Vector3 seg2 = capsule2SegB - capsule2SegA;
 
         // Compute the sum of the radius of the two capsules (virtual spheres)
-        decimal sumRadius = capsuleShape2->getRadius() + capsuleShape1->getRadius();
+        const decimal capsule1Radius = narrowPhaseInfoBatch.capsule1Radiuses[batchIndex];
+        const decimal capsule2Radius = narrowPhaseInfoBatch.capsule2Radiuses[batchIndex];
+        const decimal sumRadius = capsule1Radius + capsule2Radius;
 
         // If the two capsules are parallel (we create two contact points)
         bool areCapsuleInnerSegmentsParralel = areParallelVectors(seg1, seg2);
@@ -140,10 +138,10 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                     }
 
                     Transform capsule2ToCapsule1SpaceTransform = capsule1ToCapsule2SpaceTransform.getInverse();
-                    const Vector3 contactPointACapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointA - segment1ToSegment2 + normalCapsule2SpaceNormalized * capsuleShape1->getRadius());
-                    const Vector3 contactPointBCapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointB - segment1ToSegment2 + normalCapsule2SpaceNormalized * capsuleShape1->getRadius());
-                    const Vector3 contactPointACapsule2Local = clipPointA - normalCapsule2SpaceNormalized * capsuleShape2->getRadius();
-                    const Vector3 contactPointBCapsule2Local = clipPointB - normalCapsule2SpaceNormalized * capsuleShape2->getRadius();
+                    const Vector3 contactPointACapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointA - segment1ToSegment2 + normalCapsule2SpaceNormalized * capsule1Radius);
+                    const Vector3 contactPointBCapsule1Local = capsule2ToCapsule1SpaceTransform * (clipPointB - segment1ToSegment2 + normalCapsule2SpaceNormalized * capsule1Radius);
+                    const Vector3 contactPointACapsule2Local = clipPointA - normalCapsule2SpaceNormalized * capsule2Radius;
+                    const Vector3 contactPointBCapsule2Local = clipPointB - normalCapsule2SpaceNormalized * capsule2Radius;
 
                     decimal penetrationDepth = sumRadius - segmentsPerpendicularDistance;
 
@@ -184,8 +182,8 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                     decimal closestPointsDistance = std::sqrt(closestPointsDistanceSquare);
                     closestPointsSeg1ToSeg2 /= closestPointsDistance;
 
-                    const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsuleShape1->getRadius());
-                    const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsuleShape2->getRadius();
+                    const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsule1Radius);
+                    const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsule2Radius;
 
                     const Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * closestPointsSeg1ToSeg2;
 
@@ -207,8 +205,8 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                         Vector3 normalCapsuleSpace2 = (closestPointCapsule2Seg - capsule1SegmentMostExtremePoint);
                         normalCapsuleSpace2.normalize();
 
-                        const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsuleShape1->getRadius());
-                        const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsuleShape2->getRadius();
+                        const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsule1Radius);
+                        const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsule2Radius;
 
                         const Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * normalCapsuleSpace2;
 
@@ -223,8 +221,8 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                         normalCapsuleSpace2.normalize();
 
                         // Compute the contact points on both shapes
-                        const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsuleShape1->getRadius());
-                        const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsuleShape2->getRadius();
+                        const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsule1Radius);
+                        const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsule2Radius;
 
                         const Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * normalCapsuleSpace2;
 

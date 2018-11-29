@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Declarations
-struct NarrowPhaseInfoBatch;
+struct CapsuleVsCapsuleNarrowPhaseInfoBatch;
 class Body;
 class ContactPoint;
 
@@ -67,7 +67,7 @@ class CapsuleVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 		CapsuleVsCapsuleAlgorithm& operator=(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
 
         /// Compute the narrow-phase collision detection between two capsules
-        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
+        bool testCollision(CapsuleVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
                                    uint batchNbItems, bool reportContacts, bool stopFirstContactFound,
                                    MemoryAllocator& memoryAllocator);
 };

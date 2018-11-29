@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_SPHERE_NARROW_PHASE_INFO_BATCH_H
-#define REACTPHYSICS3D_SPHERE_VS_SPHERE_NARROW_PHASE_INFO_BATCH_H
+#ifndef REACTPHYSICS3D_CAPSULE_VS_CAPSULE_NARROW_PHASE_INFO_BATCH_H
+#define REACTPHYSICS3D_CAPSULE_VS_CAPSULE_NARROW_PHASE_INFO_BATCH_H
 
 // Libraries
 #include "collision/narrowphase/NarrowPhaseInfoBatch.h"
@@ -38,21 +38,27 @@ namespace reactphysics3d {
  * that have to be tested during narrow-phase collision detection. This class collects all the
  * sphere vs sphere collision detection tests.
  */
-struct SphereVsSphereNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
+struct CapsuleVsCapsuleNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
 
     public:
 
-        /// List of radiuses for the first spheres
-        List<decimal> sphere1Radiuses;
+        /// List of radiuses for the first capsules
+        List<decimal> capsule1Radiuses;
 
-        /// List of radiuses for the second spheres
-        List<decimal> sphere2Radiuses;
+        /// List of radiuses for the second capsules
+        List<decimal> capsule2Radiuses;
+
+        /// List of heights for the first capsules
+        List<decimal> capsule1Heights;
+
+        /// List of heights for the second capsules
+        List<decimal> capsule2Heights;
 
         /// Constructor
-        SphereVsSphereNarrowPhaseInfoBatch(MemoryAllocator& allocator);
+        CapsuleVsCapsuleNarrowPhaseInfoBatch(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~SphereVsSphereNarrowPhaseInfoBatch() = default;
+        virtual ~CapsuleVsCapsuleNarrowPhaseInfoBatch() = default;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
         virtual void addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
