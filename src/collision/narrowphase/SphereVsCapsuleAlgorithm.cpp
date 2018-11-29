@@ -27,7 +27,7 @@
 #include "SphereVsCapsuleAlgorithm.h"
 #include "collision/shapes/SphereShape.h"
 #include "collision/shapes/CapsuleShape.h"
-#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
+#include "collision/narrowphase/SphereVsCapsuleNarrowPhaseInfoBatch.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
@@ -35,23 +35,17 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between a sphere and a capsule
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+bool SphereVsCapsuleAlgorithm::testCollision(SphereVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
                                              bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
 
     bool isCollisionFound = false;
 
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
+        assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
         assert(narrowPhaseInfoBatch.contactPoints[batchIndex].size() == 0);
 
-        bool isSphereShape1 = narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::SPHERE;
-
-        assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
-        assert(isSphereShape1 || narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CAPSULE);
-
-        // Get the collision shapes
-        const SphereShape* sphereShape = static_cast<const SphereShape*>(isSphereShape1 ? narrowPhaseInfoBatch.collisionShapes1[batchIndex] : narrowPhaseInfoBatch.collisionShapes2[batchIndex]);
-        const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(isSphereShape1 ? narrowPhaseInfoBatch.collisionShapes2[batchIndex] : narrowPhaseInfoBatch.collisionShapes1[batchIndex]);
+        const bool isSphereShape1 = narrowPhaseInfoBatch.isSpheresShape1[batchIndex];
 
         // Get the transform from sphere local-space to capsule local-space
         const Transform& sphereToWorldTransform = isSphereShape1 ? narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex] : narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex];
@@ -63,7 +57,7 @@ bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseIn
         const Vector3 sphereCenter = sphereToCapsuleSpaceTransform.getPosition();
 
         // Compute the end-points of the inner segment of the capsule
-        const decimal capsuleHalfHeight = capsuleShape->getHeight() * decimal(0.5);
+        const decimal capsuleHalfHeight = narrowPhaseInfoBatch.capsuleHeights[batchIndex] * decimal(0.5);
         const Vector3 capsuleSegA(0, -capsuleHalfHeight, 0);
         const Vector3 capsuleSegB(0, capsuleHalfHeight, 0);
 
@@ -75,7 +69,7 @@ bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseIn
         const decimal sphereSegmentDistanceSquare = sphereCenterToSegment.lengthSquare();
 
         // Compute the sum of the radius of the sphere and the capsule (virtual sphere)
-        decimal sumRadius = sphereShape->getRadius() + capsuleShape->getRadius();
+        decimal sumRadius = narrowPhaseInfoBatch.sphereRadiuses[batchIndex] + narrowPhaseInfoBatch.capsuleRadiuses[batchIndex];
 
         // If the collision shapes overlap
         if (sphereSegmentDistanceSquare < sumRadius * sumRadius) {
@@ -93,8 +87,8 @@ bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseIn
                     decimal sphereSegmentDistance = std::sqrt(sphereSegmentDistanceSquare);
                     sphereCenterToSegment /= sphereSegmentDistance;
 
-                    contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + sphereCenterToSegment * sphereShape->getRadius());
-                    contactPointCapsuleLocal = closestPointOnSegment - sphereCenterToSegment * capsuleShape->getRadius();
+                    contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + sphereCenterToSegment * narrowPhaseInfoBatch.sphereRadiuses[batchIndex]);
+                    contactPointCapsuleLocal = closestPointOnSegment - sphereCenterToSegment * narrowPhaseInfoBatch.capsuleRadiuses[batchIndex];
 
                     normalWorld = capsuleToWorldTransform.getOrientation() * sphereCenterToSegment;
 
@@ -125,8 +119,8 @@ bool SphereVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseIn
                     normalWorld = capsuleToWorldTransform.getOrientation() * normalCapsuleSpace;
 
                     // Compute the two local contact points
-                    contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + normalCapsuleSpace * sphereShape->getRadius());
-                    contactPointCapsuleLocal = sphereCenter - normalCapsuleSpace * capsuleShape->getRadius();
+                    contactPointSphereLocal = sphereToCapsuleSpaceTransform.getInverse() * (sphereCenter + normalCapsuleSpace * narrowPhaseInfoBatch.sphereRadiuses[batchIndex]);
+                    contactPointCapsuleLocal = sphereCenter - normalCapsuleSpace * narrowPhaseInfoBatch.capsuleRadiuses[batchIndex];
                 }
 
                 if (penetrationDepth <= decimal(0.0)) {
