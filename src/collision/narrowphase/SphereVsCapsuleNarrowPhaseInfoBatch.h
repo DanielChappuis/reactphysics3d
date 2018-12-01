@@ -66,7 +66,7 @@ struct SphereVsCapsuleNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
                                         const Transform& shape2Transform);
 
         // Initialize the containers using cached capacity
-        void reserveMemory();
+        virtual void reserveMemory();
 
         /// Clear all the objects in the batch
         virtual void clear();

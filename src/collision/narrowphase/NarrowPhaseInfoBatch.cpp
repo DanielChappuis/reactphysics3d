@@ -125,7 +125,6 @@ void NarrowPhaseInfoBatch::clear() {
 
         // Release the memory of the TriangleShape (this memory was allocated in the
         // MiddlePhaseTriangleCallback::testTriangle() method)
-        // TODO DOD : Try to move this code
         if (collisionShapes1.size() > 0 && collisionShapes1[i]->getName() == CollisionShapeName::TRIANGLE) {
             collisionShapes1[i]->~CollisionShape();
             collisionShapeAllocators[i]->release(collisionShapes1[i], sizeof(TriangleShape));

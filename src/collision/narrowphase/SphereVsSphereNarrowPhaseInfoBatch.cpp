@@ -61,7 +61,12 @@ void SphereVsSphereNarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pai
 // Initialize the containers using cached capacity
 void SphereVsSphereNarrowPhaseInfoBatch::reserveMemory() {
 
-    NarrowPhaseInfoBatch::reserveMemory();
+    overlappingPairs.reserve(mCachedCapacity);
+    shape1ToWorldTransforms.reserve(mCachedCapacity);
+    shape2ToWorldTransforms.reserve(mCachedCapacity);
+    lastFrameCollisionInfos.reserve(mCachedCapacity);
+    isColliding.reserve(mCachedCapacity);
+    contactPoints.reserve(mCachedCapacity);
 
     sphere1Radiuses.reserve(mCachedCapacity);
     sphere2Radiuses.reserve(mCachedCapacity);
@@ -70,12 +75,19 @@ void SphereVsSphereNarrowPhaseInfoBatch::reserveMemory() {
 // Clear all the objects in the batch
 void SphereVsSphereNarrowPhaseInfoBatch::clear() {
 
-    NarrowPhaseInfoBatch::clear();
-
     // Note that we clear the following containers and we release their allocated memory. Therefore,
     // if the memory allocator is a single frame allocator, the memory is deallocated and will be
     // allocated in the next frame at a possibly different location in memory (remember that the
     // location of the allocated memory of a single frame allocator might change between two frames)
+
+    mCachedCapacity = overlappingPairs.size();
+
+    overlappingPairs.clear(true);
+    shape1ToWorldTransforms.clear(true);
+    shape2ToWorldTransforms.clear(true);
+    lastFrameCollisionInfos.clear(true);
+    isColliding.clear(true);
+    contactPoints.clear(true);
 
     sphere1Radiuses.clear(true);
     sphere2Radiuses.clear(true);

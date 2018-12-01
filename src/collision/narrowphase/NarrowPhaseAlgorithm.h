@@ -59,7 +59,6 @@ class NarrowPhaseCallback {
 
 };
 
-// TODO DOD : Try to delete this class
 // Class NarrowPhaseAlgorithm
 /**
  * This abstract class is the base class for a  narrow-phase collision

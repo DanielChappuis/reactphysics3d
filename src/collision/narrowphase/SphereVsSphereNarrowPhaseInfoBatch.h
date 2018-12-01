@@ -52,7 +52,7 @@ struct SphereVsSphereNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
         SphereVsSphereNarrowPhaseInfoBatch(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~SphereVsSphereNarrowPhaseInfoBatch() = default;
+        virtual ~SphereVsSphereNarrowPhaseInfoBatch() override = default;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
         virtual void addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
@@ -60,10 +60,10 @@ struct SphereVsSphereNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
                                         const Transform& shape2Transform);
 
         // Initialize the containers using cached capacity
-        void reserveMemory();
+        virtual void reserveMemory() override;
 
         /// Clear all the objects in the batch
-        virtual void clear();
+        virtual void clear() override;
 };
 
 }
