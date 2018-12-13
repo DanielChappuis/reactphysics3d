@@ -160,6 +160,7 @@ SET (REACTPHYSICS3D_HEADERS
     "src/containers/Map.h"
     "src/containers/Set.h"
     "src/containers/Pair.h"
+    "src/containers/Deque.h"
     "src/utils/Profiler.h"
     "src/utils/Logger.h"
 )

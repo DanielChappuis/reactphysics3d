@@ -18,6 +18,7 @@ SET (RP3D_TESTS_HEADERS
     "tests/containers/TestList.h"
     "tests/containers/TestMap.h"
     "tests/containers/TestSet.h"
+    "tests/containers/TestDeque.h"
     "tests/mathematics/TestMathematicsFunctions.h"
     "tests/mathematics/TestMatrix2x2.h"
     "tests/mathematics/TestMatrix3x3.h"
