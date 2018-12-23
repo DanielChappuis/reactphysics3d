@@ -172,62 +172,6 @@ class Deque {
             mLastChunkIndex += halfNbChunksToAdd;
         }
 
-        /*
-        /// Get the next item in the deque (return false if we have reached the end)
-        bool getNextItem(size_t& chunkIndex, size_t& itemIndex) const {
-
-            bool isValid = true;
-
-            // If we have reached the last item
-            if (chunkIndex == mLastChunkIndex && itemIndex == mLastItemIndex) {
-                isValid = false;
-            }
-
-            // If we were at the last item of the chunk
-            if (itemIndex == CHUNK_NB_ITEMS - 1) {
-
-                // Move to the next chunk
-                chunkIndex++;
-                itemIndex = 0;
-            }
-            else {
-
-                itemIndex++;
-            }
-
-            return isValid;
-        }
-
-        /// Get the previous item in the deque (return false if we have reached the front)
-        bool getPreviousItem(size_t& chunkIndex, size_t& itemIndex) const {
-
-            // If we have reached the first item
-            if (chunkIndex == mFirstChunkIndex && itemIndex == mFirstItemIndex) {
-                return false;
-            }
-
-            // If we were at the first item of the chunk
-            if (itemIndex == 0) {
-
-                // Move to the previous chunk
-                chunkIndex--;
-                itemIndex = CHUNK_NB_ITEMS - 1;
-            }
-            else {
-
-                itemIndex--;
-            }
-
-            return true;
-        }
-        /// Return true if the two chunk/item indices are currently valid for the state of the deque
-        bool areValidIndices(size_t chunkIndex, size_t itemIndex) const {
-
-            return chunkIndex >= mFirstChunkIndex && chunkIndex <= mLastChunkIndex &&
-                   itemIndex >= mFirstItemIndex && itemIndex <= mLastItemIndex;
-        }
-        */
-
     public:
 
         /// Class Iterator
@@ -422,11 +366,11 @@ class Deque {
             // Release each chunk
             for (size_t i=0; i < mNbChunks; i++) {
 
-                mAllocator.release(static_cast<void*>(mChunks[i]), sizeof(T) * CHUNK_NB_ITEMS);
+                mAllocator.release(mChunks[i], sizeof(T) * CHUNK_NB_ITEMS);
             }
 
             // Release the chunks array
-            mAllocator.release(static_cast<void*>(mChunks), sizeof(T*) * mNbChunks);
+            mAllocator.release(mChunks, sizeof(T*) * mNbChunks);
         }
 
         /// Add an element at the end of the deque

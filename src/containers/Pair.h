@@ -103,5 +103,4 @@ namespace std {
   };
 }
 
-
 #endif
