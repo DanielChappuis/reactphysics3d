@@ -23,73 +23,58 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_ENTITY_MANAGER_H
+#define REACTPHYSICS3D_ENTITY_MANAGER_H
+
 // Libraries
-#include "Body.h"
-#include "collision/shapes/CollisionShape.h"
-#include "utils/Logger.h"
+#include "configuration.h"
+#include "containers/List.h"
+#include "containers/Deque.h"
+#include "engine/Entity.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+/// Namespace reactphysics3d
+namespace reactphysics3d {
 
-// Constructor
+// Class EntityManager
 /**
- * @param id ID of the new body
+ * This class is responsible to manage the entities of the ECS.
  */
-Body::Body(Entity entity, bodyindex id)
-     : mID(id), mEntity(entity), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
-       mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
+class EntityManager {
 
-#ifdef IS_LOGGING_ACTIVE
-        mLogger = nullptr;
+    private:
+
+        // -------------------- Attributes -------------------- //
+
+        /// List storing the generations of the created entities
+        List<uint8> mGenerations;
+
+        /// Deque with the indices of destroyed entities that can be reused
+        Deque<uint32> mFreeIndices;
+
+        // -------------------- Methods -------------------- //
+
+    public:
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        EntityManager(MemoryAllocator& allocator);
+
+        /// Create a new entity
+        Entity createEntity();
+
+        /// Destroy an entity
+        void destroyEntity(Entity entity);
+
+        /// Return true if the entity is still valid (not destroyed)
+        bool isValid(Entity entity) const;
+};
+
+// Return true if the entity is still valid (not destroyed)
+inline bool EntityManager::isValid(Entity entity) const {
+    return mGenerations[entity.getIndex()] == entity.getGeneration();
+}
+
+}
+
 #endif
-
-}
-
-// Set whether or not the body is active
-/**
- * @param isActive True if you want to activate the body
- */
-void Body::setIsActive(bool isActive) {
-    mIsActive = isActive;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isActive=" +
-             (mIsActive ? "true" : "false"));
-}
-
-// Set the variable to know whether or not the body is sleeping
-void Body::setIsSleeping(bool isSleeping) {
-
-    if (isSleeping) {
-        mSleepTime = decimal(0.0);
-    }
-    else {
-        if (mIsSleeping) {
-            mSleepTime = decimal(0.0);
-        }
-    }
-
-    if (mIsSleeping != isSleeping) {
-
-        mIsSleeping = isSleeping;
-
-        RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isSleeping=" +
-             (mIsSleeping ? "true" : "false"));
-    }
-}
-
-// Set whether or not the body is allowed to go to sleep
-/**
- * @param isAllowedToSleep True if the body is allowed to sleep
- */
-void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
-    mIsAllowedToSleep = isAllowedToSleep;
-
-    if (!mIsAllowedToSleep) setIsSleeping(false);
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isAllowedToSleep=" +
-             (mIsAllowedToSleep ? "true" : "false"));
-}
-

@@ -53,8 +53,6 @@ using uint = unsigned int;
 using uchar = unsigned char;
 using ushort = unsigned short;
 using luint = long unsigned int;
-using bodyindex = luint;
-using bodyindexpair = Pair<bodyindex, bodyindex>;
 
 using int8 = std::int8_t;
 using uint8 = std::uint8_t;
@@ -62,6 +60,10 @@ using int16 = std::int16_t;
 using uint16 = std::uint16_t;
 using int32 = std::int32_t;
 using uint32 = std::uint32_t;
+
+// TODO : Delete this
+using bodyindex = luint;
+using bodyindexpair = Pair<bodyindex, bodyindex>;
 
 // ------------------- Enumerations ------------------- //
 

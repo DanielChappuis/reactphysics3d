@@ -39,8 +39,8 @@ using namespace reactphysics3d;
 * @param world The world where the body has been added
 * @param id The ID of the body
 */
-RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id)
-          : CollisionBody(transform, world, id), mArrayIndex(0), mInitMass(decimal(1.0)),
+RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id)
+          : CollisionBody(transform, world, entity, id), mArrayIndex(0), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mMaterial(world.mConfig), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
             mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {

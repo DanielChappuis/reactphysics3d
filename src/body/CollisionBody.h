@@ -118,7 +118,7 @@ class CollisionBody : public Body {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id);
+        CollisionBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id);
 
         /// Destructor
         virtual ~CollisionBody() override;

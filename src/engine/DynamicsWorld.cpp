@@ -417,15 +417,21 @@ void DynamicsWorld::solvePositionCorrection() {
  */
 RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 
+    // Create a new entity for the body
+    Entity entity = mEntityManager.createEntity();
+
     // Compute the body ID
     bodyindex bodyID = computeNextAvailableBodyId();
 
     // Largest index cannot be used (it is used for invalid index)
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
+    // Add a transform component
+    mTransformComponents.addComponent(entity, TransformComponents::TransformComponent(transform));
+
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                                        sizeof(RigidBody))) RigidBody(transform, *this, bodyID);
+                                     sizeof(RigidBody))) RigidBody(transform, *this, entity, bodyID);
     assert(rigidBody != nullptr);
 
     // Add the rigid body to the physics world
@@ -470,6 +476,9 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     // Reset the contact manifold list of the body
     rigidBody->resetContactManifoldsList();
+
+    // Destroy the corresponding entity
+    mEntityManager.destroyEntity(rigidBody->getEntity());
 
     // Call the destructor of the rigid body
     rigidBody->~RigidBody();

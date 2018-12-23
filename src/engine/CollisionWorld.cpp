@@ -37,7 +37,9 @@ uint CollisionWorld::mNbWorlds = 0;
 
 // Constructor
 CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
-               : mConfig(worldSettings), mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0),
+               : mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
+                 mTransformComponents(mMemoryManager.getBaseAllocator()),
+                 mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0),
                  mFreeBodiesIds(mMemoryManager.getPoolAllocator()), mEventListener(nullptr), mName(worldSettings.worldName),
                  mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {
@@ -138,16 +140,22 @@ CollisionWorld::~CollisionWorld() {
  */
 CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
+    // Create a new entity for the body
+    Entity entity = mEntityManager.createEntity();
+
     // Get the next available body ID
     bodyindex bodyID = computeNextAvailableBodyId();
 
     // Largest index cannot be used (it is used for invalid index)
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
+    // Add a transform component
+    mTransformComponents.addComponent(entity, TransformComponents::TransformComponent(transform));
+
     // Create the collision body
     CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                         sizeof(CollisionBody)))
-                                        CollisionBody(transform, *this, bodyID);
+                                        CollisionBody(transform, *this, entity, bodyID);
 
     assert(collisionBody != nullptr);
 
@@ -188,6 +196,9 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
     // Reset the contact manifold list of the body
     collisionBody->resetContactManifoldsList();
+
+    // Destroy the corresponding entity
+    mEntityManager.destroyEntity(collisionBody->getEntity());
 
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();

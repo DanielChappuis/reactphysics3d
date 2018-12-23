@@ -24,72 +24,52 @@
 ********************************************************************************/
 
 // Libraries
-#include "Body.h"
-#include "collision/shapes/CollisionShape.h"
-#include "utils/Logger.h"
+#include "EntityManager.h"
+#include "Entity.h"
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-/**
- * @param id ID of the new body
- */
-Body::Body(Entity entity, bodyindex id)
-     : mID(id), mEntity(entity), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
-       mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
-
-#ifdef IS_LOGGING_ACTIVE
-        mLogger = nullptr;
-#endif
+EntityManager::EntityManager(MemoryAllocator& allocator)
+              :mGenerations(allocator), mFreeIndices(allocator) {
 
 }
 
-// Set whether or not the body is active
-/**
- * @param isActive True if you want to activate the body
- */
-void Body::setIsActive(bool isActive) {
-    mIsActive = isActive;
+// Create a new entity
+Entity EntityManager::createEntity() {
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isActive=" +
-             (mIsActive ? "true" : "false"));
-}
+    uint32 index;
 
-// Set the variable to know whether or not the body is sleeping
-void Body::setIsSleeping(bool isSleeping) {
+    // If there are already enough free indices to start using them
+    if (mFreeIndices.size() > Entity::MINIMUM_FREE_INDICES) {
 
-    if (isSleeping) {
-        mSleepTime = decimal(0.0);
+        // Recycle an index from the free indices
+        index = mFreeIndices.getFront();
+        mFreeIndices.popFront();
     }
     else {
-        if (mIsSleeping) {
-            mSleepTime = decimal(0.0);
-        }
+
+        // We start at generation 0
+        mGenerations.add(0);
+
+        // Create a new indice
+        index = static_cast<uint32>(mGenerations.size()) - 1;
+
+        assert(index < (1 << Entity::ENTITY_INDEX_BITS));
     }
 
-    if (mIsSleeping != isSleeping) {
-
-        mIsSleeping = isSleeping;
-
-        RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isSleeping=" +
-             (mIsSleeping ? "true" : "false"));
-    }
+    // Return a new entity
+    return Entity(index, mGenerations[index]);
 }
 
-// Set whether or not the body is allowed to go to sleep
-/**
- * @param isAllowedToSleep True if the body is allowed to sleep
- */
-void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
-    mIsAllowedToSleep = isAllowedToSleep;
+// Destroy an entity
+void EntityManager::destroyEntity(Entity entity) {
 
-    if (!mIsAllowedToSleep) setIsSleeping(false);
+    const uint32 index = entity.getIndex();
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isAllowedToSleep=" +
-             (mIsAllowedToSleep ? "true" : "false"));
+    // Increment the generation of this index
+    mGenerations[index]++;
+
+    // Add the index into the deque of free indices
+    mFreeIndices.addBack(index);
 }
-

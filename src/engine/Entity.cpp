@@ -24,72 +24,37 @@
 ********************************************************************************/
 
 // Libraries
-#include "Body.h"
-#include "collision/shapes/CollisionShape.h"
-#include "utils/Logger.h"
+#include "Entity.h"
+#include <cassert>
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
+// Static members initialization
+const uint32 Entity::ENTITY_INDEX_BITS = 24;
+const uint32 Entity::ENTITY_INDEX_MASK = (1 << Entity::ENTITY_INDEX_BITS) - 1;
+const uint32 Entity::ENTITY_GENERATION_BITS = 8;
+const uint32 Entity::ENTITY_GENERATION_MASK = (1 << Entity::ENTITY_GENERATION_BITS) - 1;
+const uint32 Entity::MINIMUM_FREE_INDICES = 1024;
+
 // Constructor
-/**
- * @param id ID of the new body
- */
-Body::Body(Entity entity, bodyindex id)
-     : mID(id), mEntity(entity), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
-       mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
+Entity::Entity(uint32 index, uint32 generation)
+       :id((index & ENTITY_INDEX_MASK) | ((generation & ENTITY_GENERATION_MASK) << ENTITY_INDEX_BITS)) {
 
-#ifdef IS_LOGGING_ACTIVE
-        mLogger = nullptr;
-#endif
-
+    uint32 test1 = index & ENTITY_INDEX_MASK;
+    uint32 test2 = (generation & ENTITY_INDEX_MASK) << ENTITY_INDEX_BITS;
+    uint32 test3 = test1 | test2;
+    uint32 test = getIndex();
+    assert(getIndex() == index);
+    assert(getGeneration() == generation);
 }
 
-// Set whether or not the body is active
-/**
- * @param isActive True if you want to activate the body
- */
-void Body::setIsActive(bool isActive) {
-    mIsActive = isActive;
+// Assignment operator
+Entity& Entity::operator=(const Entity& entity) {
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isActive=" +
-             (mIsActive ? "true" : "false"));
-}
+    if (&entity != this) {
 
-// Set the variable to know whether or not the body is sleeping
-void Body::setIsSleeping(bool isSleeping) {
-
-    if (isSleeping) {
-        mSleepTime = decimal(0.0);
-    }
-    else {
-        if (mIsSleeping) {
-            mSleepTime = decimal(0.0);
-        }
+        id = entity.id;
     }
 
-    if (mIsSleeping != isSleeping) {
-
-        mIsSleeping = isSleeping;
-
-        RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isSleeping=" +
-             (mIsSleeping ? "true" : "false"));
-    }
+    return *this;
 }
-
-// Set whether or not the body is allowed to go to sleep
-/**
- * @param isAllowedToSleep True if the body is allowed to sleep
- */
-void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
-    mIsAllowedToSleep = isAllowedToSleep;
-
-    if (!mIsAllowedToSleep) setIsSleeping(false);
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isAllowedToSleep=" +
-             (mIsAllowedToSleep ? "true" : "false"));
-}
-

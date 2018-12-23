@@ -29,6 +29,7 @@
 // Libraries
 #include <cassert>
 #include "configuration.h"
+#include "engine/Entity.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -50,7 +51,11 @@ class Body {
         // -------------------- Attributes -------------------- //
 
         /// ID of the body
+        // TODO : Remove this
         bodyindex mID;
+
+        /// Identifier of the entity in the ECS
+        Entity mEntity;
 
         /// True if the body has already been added in an island (for sleeping technique)
         bool mIsAlreadyInIsland;
@@ -88,7 +93,7 @@ class Body {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Body(bodyindex id);
+        Body(Entity entity, bodyindex id);
 
         /// Deleted copy-constructor
         Body(const Body& body) = delete;
@@ -101,6 +106,9 @@ class Body {
 
         /// Return the ID of the body
         bodyindex getId() const;
+
+        /// Return the corresponding entity of the body
+        Entity getEntity() const;
 
         /// Return whether or not the body is allowed to sleep
         bool isAllowedToSleep() const;
@@ -155,6 +163,14 @@ class Body {
  */
 inline bodyindex Body::getId() const {
     return mID;
+}
+
+// Return the corresponding entity of the body
+/**
+ * @return The entity of the body
+ */
+inline Entity Body::getEntity() const {
+    return mEntity;
 }
 
 // Return whether or not the body is allowed to sleep

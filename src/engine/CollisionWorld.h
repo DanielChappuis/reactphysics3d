@@ -32,6 +32,8 @@
 #include "collision/CollisionDetection.h"
 #include "constraint/Joint.h"
 #include "memory/MemoryManager.h"
+#include "engine/EntityManager.h"
+#include "components/TransformComponents.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -65,6 +67,12 @@ class CollisionWorld {
 
         /// Configuration of the physics world
         WorldSettings mConfig;
+
+        /// Entity Manager for the ECS
+        EntityManager mEntityManager;
+
+        /// Transform Components
+        TransformComponents mTransformComponents;
 
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;
@@ -190,6 +198,7 @@ class CollisionWorld {
         friend class CollisionDetection;
         friend class CollisionBody;
         friend class RigidBody;
+        friend class ProxyShape;
         friend class ConvexMeshShape;
 };
 
