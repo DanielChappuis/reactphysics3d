@@ -267,15 +267,6 @@ inline const Transform& ProxyShape::getLocalToBodyTransform() const {
     return mLocalToBodyTransform;
 }
 
-// Return the local to world transform
-/**
- * @return The transformation that transforms the local-space of the collision
- *         shape to the world-space
- */
-inline const Transform ProxyShape::getLocalToWorldTransform() const {
-    return mBody->mTransform * mLocalToBodyTransform;
-}
-
 // Return the AABB of the proxy shape in world-space
 /**
  * @return The AABB of the proxy shape in world-space

@@ -39,8 +39,8 @@ using namespace reactphysics3d;
  * @param world The physics world where the body is created
  * @param id ID of the body
  */
-CollisionBody::CollisionBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id)
-              : Body(entity, id), mType(BodyType::DYNAMIC), mTransform(transform), mProxyCollisionShapes(nullptr),
+CollisionBody::CollisionBody(CollisionWorld& world, Entity entity, bodyindex id)
+              : Body(entity, id), mType(BodyType::DYNAMIC), mProxyCollisionShapes(nullptr),
                 mNbCollisionShapes(0), mContactManifoldsList(nullptr), mWorld(world) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -105,7 +105,7 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
 
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
-    collisionShape->computeAABB(aabb, mTransform * transform);
+    collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
@@ -218,6 +218,18 @@ void CollisionBody::resetContactManifoldsList() {
     mContactManifoldsList = nullptr;
 }
 
+// Return the current position and orientation
+/**
+ * @return The current transformation of the body that transforms the local-space
+ *         of the body into world-space
+ */
+const Transform& CollisionBody::getTransform() const {
+
+    // TODO : Make sure we do not call this method from the internal physics engine
+
+    return mWorld.mTransformComponents.getTransform(mEntity);
+}
+
 // Update the broad-phase state for this body (because it has moved for instance)
 void CollisionBody::updateBroadPhaseState() const {
 
@@ -232,11 +244,13 @@ void CollisionBody::updateBroadPhaseState() const {
 // Update the broad-phase state of a proxy collision shape of the body
 void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert) const {
 
+    const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
+
     if (proxyShape->getBroadPhaseId() != -1) {
 
         // Recompute the world-space AABB of the collision shape
         AABB aabb;
-        proxyShape->getCollisionShape()->computeAABB(aabb, mTransform * proxyShape->getLocalToBodyTransform());
+        proxyShape->getCollisionShape()->computeAABB(aabb, transform * proxyShape->getLocalToBodyTransform());
 
         // Update the broad-phase state for the proxy collision shape
         mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert)	;
@@ -257,12 +271,14 @@ void CollisionBody::setIsActive(bool isActive) {
     // If we have to activate the body
     if (isActive) {
 
+        const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
+
         // For each proxy shape of the body
         for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
 
             // Compute the world-space AABB of the new collision shape
             AABB aabb;
-            shape->getCollisionShape()->computeAABB(aabb, mTransform * shape->mLocalToBodyTransform);
+            shape->getCollisionShape()->computeAABB(aabb, transform * shape->mLocalToBodyTransform);
 
             // Add the proxy shape to the collision detection
             mWorld.mCollisionDetection.addProxyCollisionShape(shape, aabb);
@@ -377,14 +393,18 @@ AABB CollisionBody::getAABB() const {
 
     if (mProxyCollisionShapes == nullptr) return bodyAABB;
 
-    mProxyCollisionShapes->getCollisionShape()->computeAABB(bodyAABB, mTransform * mProxyCollisionShapes->getLocalToBodyTransform());
+    // TODO : Make sure we compute this in a system
+
+    const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
+
+    mProxyCollisionShapes->getCollisionShape()->computeAABB(bodyAABB, transform * mProxyCollisionShapes->getLocalToBodyTransform());
 
     // For each proxy shape of the body
     for (ProxyShape* shape = mProxyCollisionShapes->mNext; shape != nullptr; shape = shape->mNext) {
 
         // Compute the world-space AABB of the collision shape
         AABB aabb;
-        shape->getCollisionShape()->computeAABB(aabb, mTransform * shape->getLocalToBodyTransform());
+        shape->getCollisionShape()->computeAABB(aabb, transform * shape->getLocalToBodyTransform());
 
         // Merge the proxy shape AABB with the current body AABB
         bodyAABB.mergeWithAABB(aabb);
@@ -401,15 +421,51 @@ AABB CollisionBody::getAABB() const {
 void CollisionBody::setTransform(const Transform& transform) {
 
     // Update the transform of the body
-    mTransform = transform;
+    mWorld.mTransformComponents.setTransform(mEntity, transform);
 
     // Update the broad-phase state of the body
     updateBroadPhaseState();
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
+             "Body " + std::to_string(mID) + ": Set transform=" + transform.to_string());
 }
 
+
+// Return the world-space coordinates of a point given the local-space coordinates of the body
+/**
+* @param localPoint A point in the local-space coordinates of the body
+* @return The point in world-space coordinates
+*/
+Vector3 CollisionBody::getWorldPoint(const Vector3& localPoint) const {
+    return mWorld.mTransformComponents.getTransform(mEntity) * localPoint;
+}
+
+// Return the world-space vector of a vector given in local-space coordinates of the body
+/**
+* @param localVector A vector in the local-space coordinates of the body
+* @return The vector in world-space coordinates
+*/
+Vector3 CollisionBody::getWorldVector(const Vector3& localVector) const {
+    return mWorld.mTransformComponents.getTransform(mEntity).getOrientation() * localVector;
+}
+
+// Return the body local-space coordinates of a point given in the world-space coordinates
+/**
+* @param worldPoint A point in world-space coordinates
+* @return The point in the local-space coordinates of the body
+*/
+Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
+    return mWorld.mTransformComponents.getTransform(mEntity).getInverse() * worldPoint;
+}
+
+// Return the body local-space coordinates of a vector given in the world-space coordinates
+/**
+* @param worldVector A vector in world-space coordinates
+* @return The vector in the local-space coordinates of the body
+*/
+Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
+    return mWorld.mTransformComponents.getTransform(mEntity).getOrientation().getInverse() * worldVector;
+}
 
 // Set the type of the body
 /// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:

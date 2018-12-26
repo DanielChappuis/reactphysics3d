@@ -28,6 +28,7 @@
 #include "utils/Logger.h"
 #include "collision/RaycastInfo.h"
 #include "memory/MemoryManager.h"
+#include "engine/CollisionWorld.h"
 
 using namespace reactphysics3d;
 
@@ -55,7 +56,7 @@ ProxyShape::~ProxyShape() {
  * @return True if the point is inside the collision shape
  */
 bool ProxyShape::testPointInside(const Vector3& worldPoint) {
-    const Transform localToWorld = mBody->getTransform() * mLocalToBodyTransform;
+    const Transform localToWorld = mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) * mLocalToBodyTransform;
     const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
     return mCollisionShape->testPointInside(localPoint, this);
 }
@@ -127,3 +128,13 @@ bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 
     return isHit;
 }
+
+// Return the local to world transform
+/**
+ * @return The transformation that transforms the local-space of the collision
+ *         shape to the world-space
+ */
+const Transform ProxyShape::getLocalToWorldTransform() const {
+    return mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) * mLocalToBodyTransform;
+}
+

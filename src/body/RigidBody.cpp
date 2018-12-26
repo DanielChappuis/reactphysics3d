@@ -40,7 +40,7 @@ using namespace reactphysics3d;
 * @param id The ID of the body
 */
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id)
-          : CollisionBody(transform, world, entity, id), mArrayIndex(0), mInitMass(decimal(1.0)),
+          : CollisionBody(world, entity, id), mArrayIndex(0), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mMaterial(world.mConfig), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
             mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
@@ -186,7 +186,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
     mCenterOfMassLocal = centerOfMassLocal;
 
     // Compute the center of mass in world-space coordinates
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+    mCenterOfMassWorld = mWorld.mTransformComponents.getTransform(mEntity) * mCenterOfMassLocal;
 
     // Update the linear velocity of the center of mass
     mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
@@ -247,6 +247,20 @@ void RigidBody::removeJointFromJointsList(MemoryManager& memoryManager, const Jo
     }
 }
 
+// Update the world inverse inertia tensor of the body
+/// The inertia tensor I_w in world coordinates is computed with the
+/// local inverse inertia tensor I_b^-1 in body coordinates
+/// by I_w = R * I_b^-1 * R^T
+/// where R is the rotation matrix (and R^T its transpose) of the
+/// current orientation quaternion of the body
+void RigidBody::updateInertiaTensorInverseWorld() {
+
+    // TODO : Make sure we do this in a system
+
+    Matrix3x3 orientation = mWorld.mTransformComponents.getTransform(mEntity).getOrientation().getMatrix();
+    mInertiaTensorInverseWorld = orientation * mInertiaTensorLocalInverse * orientation.getTranspose();
+}
+
 // Add a collision shape to the body.
 /// When you add a collision shape to the body, an internal copy of this
 /// collision shape will be created internally. Therefore, you can delete it
@@ -297,7 +311,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
 
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
-    collisionShape->computeAABB(aabb, mTransform * transform);
+    collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
@@ -373,6 +387,16 @@ void RigidBody::setAngularDamping(decimal angularDamping) {
              "Body " + std::to_string(mID) + ": Set angularDamping=" + std::to_string(mAngularDamping));
 }
 
+/// Update the transform of the body after a change of the center of mass
+void RigidBody::updateTransformWithCenterOfMass() {
+
+    // TODO : Make sure we compute this in a system
+
+    // Translate the body according to the translation of the center of mass position
+    Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
+    transform.setPosition(mCenterOfMassWorld - transform.getOrientation() * mCenterOfMassLocal);
+}
+
 // Set a new material for this rigid body
 /**
  * @param material The material you want to set to the body
@@ -434,12 +458,12 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 void RigidBody::setTransform(const Transform& transform) {
 
     // Update the transform of the body
-    mTransform = transform;
+    mWorld.mTransformComponents.setTransform(mEntity, transform);
 
     const Vector3 oldCenterOfMass = mCenterOfMassWorld;
 
     // Compute the new center of mass in world-space coordinates
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+    mCenterOfMassWorld = transform * mCenterOfMassLocal;
 
     // Update the linear velocity of the center of mass
     mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
@@ -451,7 +475,7 @@ void RigidBody::setTransform(const Transform& transform) {
     updateBroadPhaseState();
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
+             "Body " + std::to_string(mID) + ": Set transform=" + transform.to_string());
 }
 
 // Recompute the center of mass, total mass and inertia tensor of the body using all
@@ -466,9 +490,11 @@ void RigidBody::recomputeMassInformation() {
     Matrix3x3 inertiaTensorLocal;
     inertiaTensorLocal.setToZero();
 
+    const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
+
     // If it is a STATIC or a KINEMATIC body
     if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
-        mCenterOfMassWorld = mTransform.getPosition();
+        mCenterOfMassWorld = transform.getPosition();
         return;
     }
 
@@ -487,7 +513,7 @@ void RigidBody::recomputeMassInformation() {
         mMassInverse = decimal(1.0) / mInitMass;
     }
     else {
-        mCenterOfMassWorld = mTransform.getPosition();
+        mCenterOfMassWorld = transform.getPosition();
         return;
     }
 
@@ -498,7 +524,7 @@ void RigidBody::recomputeMassInformation() {
         mCenterOfMassLocal *= mMassInverse;
     }
 
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+    mCenterOfMassWorld = transform * mCenterOfMassLocal;
 
     if (!mIsInertiaTensorSetByUser) {
 
@@ -546,6 +572,10 @@ void RigidBody::updateBroadPhaseState() const {
 
     RP3D_PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
 
+    // TODO : Make sure we compute this in a system
+
+    const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
+
     DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
 
@@ -554,7 +584,7 @@ void RigidBody::updateBroadPhaseState() const {
 
         // Recompute the world-space AABB of the collision shape
         AABB aabb;
-        shape->getCollisionShape()->computeAABB(aabb, mTransform * shape->getLocalToBodyTransform());
+        shape->getCollisionShape()->computeAABB(aabb, transform * shape->getLocalToBodyTransform());
 
         // Update the broad-phase state for the proxy collision shape
         mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb, displacement);

@@ -74,10 +74,10 @@ void TransformComponents::allocate(uint32 nbComponentsToAllocate) {
 
     // New pointers to components data
     Entity* newEntities = static_cast<Entity*>(newBuffer);
-    Transform* newTransforms = reinterpret_cast<Transform*>(newEntities + mNbAllocatedComponents);
+    Transform* newTransforms = reinterpret_cast<Transform*>(newEntities + nbComponentsToAllocate);
 
     // If there was already components before
-    if (mNbAllocatedComponents > 0) {
+    if (mNbComponents > 0) {
 
         // Copy component data from the previous buffer to the new one
         memcpy(newTransforms, mTransforms, mNbComponents * sizeof(Transform));

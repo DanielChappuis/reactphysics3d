@@ -185,7 +185,7 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
 
             // Get current position and orientation of the body
             const Vector3& currentPosition = bodies[b]->mCenterOfMassWorld;
-            const Quaternion& currentOrientation = bodies[b]->getTransform().getOrientation();
+            const Quaternion& currentOrientation = mTransformComponents.getTransform(bodies[b]->getEntity()).getOrientation();
 
             // Update the new constrained position and orientation of the body
             mConstrainedPositions[indexArray] = currentPosition + newLinVelocity * mTimeStep;
@@ -200,6 +200,8 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
 void DynamicsWorld::updateBodiesState() {
 
     RP3D_PROFILE("DynamicsWorld::updateBodiesState()", mProfiler);
+
+    // TODO : Make sure we compute this in a system
 
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
@@ -219,7 +221,7 @@ void DynamicsWorld::updateBodiesState() {
             bodies[b]->mCenterOfMassWorld = mConstrainedPositions[index];
 
             // Update the orientation of the body
-            bodies[b]->mTransform.setOrientation(mConstrainedOrientations[index].getUnit());
+            mTransformComponents.getTransform(bodies[b]->getEntity()).setOrientation(mConstrainedOrientations[index].getUnit());
 
             // Update the transform of the body (using the new center of mass and new orientation)
             bodies[b]->updateTransformWithCenterOfMass();

@@ -300,17 +300,6 @@ inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
     return mInertiaTensorInverseWorld;
 }
 
-// Update the world inverse inertia tensor of the body
-/// The inertia tensor I_w in world coordinates is computed with the
-/// local inverse inertia tensor I_b^-1 in body coordinates
-/// by I_w = R * I_b^-1 * R^T
-/// where R is the rotation matrix (and R^T its transpose) of the
-/// current orientation quaternion of the body
-inline void RigidBody::updateInertiaTensorInverseWorld() {
-    Matrix3x3 orientation = mTransform.getOrientation().getMatrix();
-    mInertiaTensorInverseWorld = orientation * mInertiaTensorLocalInverse * orientation.getTranspose();
-}
-
 // Return true if the gravity needs to be applied to this rigid body
 /**
  * @return True if the gravity is applied to the body
@@ -440,13 +429,6 @@ inline void RigidBody::applyTorque(const Vector3& torque) {
 
     // Add the torque
     mExternalTorque += torque;
-}
-
-/// Update the transform of the body after a change of the center of mass
-inline void RigidBody::updateTransformWithCenterOfMass() {
-
-    // Translate the body according to the translation of the center of mass position
-    mTransform.setPosition(mCenterOfMassWorld - mTransform.getOrientation() * mCenterOfMassLocal);
 }
 
 }

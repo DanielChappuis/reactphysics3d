@@ -155,7 +155,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     // Create the collision body
     CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                         sizeof(CollisionBody)))
-                                        CollisionBody(transform, *this, entity, bodyID);
+                                        CollisionBody(*this, entity, bodyID);
 
     assert(collisionBody != nullptr);
 
