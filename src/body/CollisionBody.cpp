@@ -431,6 +431,15 @@ void CollisionBody::setTransform(const Transform& transform) {
 }
 
 
+// Set the variable to know whether or not the body is sleeping
+void CollisionBody::setIsSleeping(bool isSleeping) {
+
+    Body::setIsSleeping(isSleeping);
+
+    // Notify all the components
+    mWorld.notifyBodySleeping(mEntity, isSleeping);
+}
+
 // Return the world-space coordinates of a point given the local-space coordinates of the body
 /**
 * @param localPoint A point in the local-space coordinates of the body

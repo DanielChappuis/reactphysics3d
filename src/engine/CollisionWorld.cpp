@@ -150,7 +150,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Add a transform component
-    mTransformComponents.addComponent(entity, TransformComponents::TransformComponent(transform));
+    mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
 
     // Create the collision body
     CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
@@ -236,6 +236,15 @@ void CollisionWorld::resetContactManifoldListsOfBodies() {
         // Reset the contact manifold list of the body
         (*it)->resetContactManifoldsList();
     }
+}
+
+// Notify the world if a body is sleeping or not
+void CollisionWorld::notifyBodySleeping(Entity entity, bool isSleeping) {
+
+    // TODO : Make sure we notify all the components here ...
+
+    // Notify all the components
+    mTransformComponents.setIsEntitySleeping(entity, isSleeping);
 }
 
 // Test if the AABBs of two bodies overlap

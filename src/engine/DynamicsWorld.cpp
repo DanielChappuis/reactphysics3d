@@ -429,7 +429,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     // Add a transform component
-    mTransformComponents.addComponent(entity, TransformComponents::TransformComponent(transform));
+    mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,

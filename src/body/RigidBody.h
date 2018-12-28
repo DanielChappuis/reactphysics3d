@@ -358,7 +358,7 @@ inline void RigidBody::setIsSleeping(bool isSleeping) {
         mExternalTorque.setToZero();
     }
 
-    Body::setIsSleeping(isSleeping);
+    CollisionBody::setIsSleeping(isSleeping);
 }
 
 // Apply an external force to the body at its center of mass.

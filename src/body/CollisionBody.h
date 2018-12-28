@@ -141,6 +141,9 @@ class CollisionBody : public Body {
         /// Set the current position and orientation
         virtual void setTransform(const Transform& transform);
 
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping) override;
+
         /// Add a collision shape to the body.
         virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,
                                               const Transform& transform);

@@ -42,6 +42,7 @@ class EntityManager;
 /**
  * This class represent the component of the ECS that contains the transforms of the
  * different entities. The position and orientation of the bodies are stored there.
+ * The components of the sleeping entities (bodies) are always stored at the end of the array.
  */
 class TransformComponents {
 
@@ -68,6 +69,9 @@ class TransformComponents {
         /// Number of allocated components
         uint32 mNbAllocatedComponents;
 
+        /// Index of the first component of a sleeping entity (sleeping components are stored at the end)
+        uint32 mSleepingStartIndex;
+
         /// Allocated memory for all the data of the components
         void* mBuffer;
 
@@ -87,6 +91,12 @@ class TransformComponents {
 
         /// Destroy a component at a given index
         void destroyComponent(uint32 index);
+
+        // Move a component from a source to a destination index in the components array
+        void moveComponentToIndex(uint32 srcIndex, uint32 destIndex);
+
+        /// Swap two components in the array
+        void swapComponents(uint32 index1, uint32 index2);
 
     public:
 
@@ -113,7 +123,7 @@ class TransformComponents {
         void allocate(uint32 nbComponentsToAllocate);
 
         /// Add a component
-        void addComponent(Entity entity, const TransformComponent& component);
+        void addComponent(Entity entity, bool isSleeping, const TransformComponent& component);
 
         /// Perform garbage collection to remove unused components
         void garbageCollection(const EntityManager& entityManager);
@@ -123,6 +133,9 @@ class TransformComponents {
 
         /// Set the transform of an entity
         void setTransform(Entity entity, const Transform& transform);
+
+        /// Notify if a given entity is sleeping or not
+        void setIsEntitySleeping(Entity entity, bool isSleeping);
 };
 
 // Return the transform of an entity

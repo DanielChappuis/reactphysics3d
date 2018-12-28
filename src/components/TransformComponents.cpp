@@ -36,7 +36,7 @@ using namespace reactphysics3d;
 // Constructor
 TransformComponents::TransformComponents(MemoryAllocator& allocator)
                     :mMemoryAllocator(allocator), mNbComponents(0), mNbAllocatedComponents(0),
-                     mBuffer(nullptr), mMapEntityToComponentIndex(allocator) {
+                     mSleepingStartIndex(0), mBuffer(nullptr), mMapEntityToComponentIndex(allocator) {
 
     // Allocate memory for the components data
     allocate(INIT_ALLOCATED_COMPONENTS);
@@ -94,21 +94,53 @@ void TransformComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void TransformComponents::addComponent(Entity entity, const TransformComponent& component) {
+void TransformComponents::addComponent(Entity entity, bool isSleeping, const TransformComponent& component) {
 
     // If we need to allocate more components
     if (mNbComponents == mNbAllocatedComponents) {
         allocate(mNbAllocatedComponents * 2);
     }
 
-    // Map the entity with the new component lookup index
-    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, mNbComponents));
+    // If the component to add is part of a sleeping entity or there are no sleeping entity
+    if (isSleeping || mSleepingStartIndex == mNbComponents) {
 
-    // Insert the new component data
-    new (mEntities + mNbComponents) Entity(entity);
-    new (mTransforms + mNbComponents) Transform(component.transform);
+        // Add the component at the end of the array
+        uint32 index = mNbComponents;
+
+        // Map the entity with the new component lookup index
+        mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, index));
+
+        if (isSleeping) {
+            mSleepingStartIndex = index;
+        }
+
+        // Insert the new component data
+        new (mEntities + index) Entity(entity);
+        new (mTransforms + index) Transform(component.transform);
+    }
+    // If the component to add is not part of a sleeping entity and there are others sleeping components
+    else {
+
+        // Copy the first sleeping component to the end of the array
+        new (mEntities + mNbComponents) Entity(mEntities[mSleepingStartIndex]);
+        new (mTransforms + mNbComponents) Transform(mTransforms[mSleepingStartIndex]);
+
+        mMapEntityToComponentIndex[mEntities[mSleepingStartIndex]] = mNbComponents;
+
+        // Copy the new component to the previous location of the fist sleeping component
+        mEntities[mSleepingStartIndex] = entity;
+        mTransforms[mSleepingStartIndex] = component.transform;
+
+        // Map the entity with the new component lookup index
+        mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, mSleepingStartIndex));
+
+        mSleepingStartIndex++;
+    }
 
     mNbComponents++;
+
+    assert(mSleepingStartIndex <= mNbComponents);
+    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
 // Perform garbage collection to remove unused components
@@ -146,6 +178,8 @@ void TransformComponents::garbageCollection(const EntityManager& entityManager) 
         // Destroy the component
         removeComponent(i);
     }
+
+    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
 // Remove a component at a given index
@@ -154,36 +188,131 @@ void TransformComponents::removeComponent(uint32 index) {
     assert(index < mNbComponents);
 
     // We want to keep the arrays tightly packed. Therefore, when a component is removed,
-    // we replace it with the last element of the array
+    // we replace it with the last element of the array. But we need to make sure that sleeping
+    // and non-sleeping components stay grouped together.
 
-    const uint32 lastIndex = mNbComponents - 1;
+    // Destroy the component
+    destroyComponent(index);
 
-    Entity entity = mEntities[index];
-    Entity lastEntity = mEntities[lastIndex];
+    // If the component to remove is sleeping
+    if (index >= mSleepingStartIndex) {
 
-    if (mNbComponents > 1 && index != lastIndex) {
+        // If the component is not the last one
+        if (index != mNbComponents - 1) {
 
-        // Replace the data of the component to destroy by the data of the last component
-        mEntities[index] = mEntities[lastIndex];
-        mTransforms[index] = mTransforms[lastIndex];
-
-        // Update the entity to component index mapping
-        mMapEntityToComponentIndex[lastEntity] = index;
+            // We replace it by the last sleeping component
+            moveComponentToIndex(mNbComponents - 1, index);
+        }
     }
-    else {
+    else {   // If the component to remove is not sleeping
 
-        // Call the destructors on the component values
-        destroyComponent(index);
+        // If it not the last awake component
+        if (index != mSleepingStartIndex - 1) {
+
+            // We replace it by the last awake component
+            moveComponentToIndex(mSleepingStartIndex - 1, index);
+        }
+
+        // If there are sleeping components at the end
+        if (mSleepingStartIndex != mNbComponents) {
+
+            // We replace the last awake component by the last sleeping component
+            moveComponentToIndex(mNbComponents - 1, index);
+
+            mSleepingStartIndex--;
+        }
     }
-
-    // Update the entity to component index mapping
-    mMapEntityToComponentIndex.remove(entity);
 
     mNbComponents--;
+
+    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
+}
+
+// Notify if a given entity is sleeping or not
+void TransformComponents::setIsEntitySleeping(Entity entity, bool isSleeping) {
+
+    const uint32 index = mMapEntityToComponentIndex[entity];
+
+    // If the component was sleeping and is not sleeping anymore
+    if (!isSleeping && index >= mSleepingStartIndex) {
+
+        assert(mSleepingStartIndex < mNbComponents);
+
+        // If the sleeping component is not the first sleeping component
+        if (mSleepingStartIndex != index) {
+
+            // Swap the first sleeping component with the one we need to wake up
+            swapComponents(index, mSleepingStartIndex);
+        }
+
+        mSleepingStartIndex++;
+    }
+    // If the component was awake and must now go to sleep
+    else if (isSleeping && index < mSleepingStartIndex) {
+
+        assert(mSleepingStartIndex > 0);
+
+        // If the awake component is not the only awake component
+        if (index != mSleepingStartIndex - 1) {
+
+            // Swap the last awake component with the one we need to put to sleep
+            swapComponents(index, mSleepingStartIndex - 1);
+        }
+
+        mSleepingStartIndex--;
+    }
+
+    assert(mSleepingStartIndex <= mNbComponents);
+    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
+}
+
+// Move a component from a source to a destination index in the components array
+// The destination location must contain a constructed object
+void TransformComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
+
+    // Copy the data of the source component to the destination location
+    new (mEntities + destIndex) Entity(mEntities[srcIndex]);
+    new (mTransforms + destIndex) Transform(mTransforms[srcIndex]);
+
+    const Entity entity = mEntities[srcIndex];
+
+    // Destroy the source component
+    destroyComponent(srcIndex);
+
+    // Update the entity to component index mapping
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, destIndex));
+
+    assert(mMapEntityToComponentIndex[mEntities[destIndex]] == destIndex);
+}
+
+// Swap two components in the array
+void TransformComponents::swapComponents(uint32 index1, uint32 index2) {
+
+    // Copy component 1 data
+    Entity entity1(mEntities[index1]);
+    Transform transform1(mTransforms[index1]);
+
+    // Destroy component 1
+    destroyComponent(index1);
+
+    moveComponentToIndex(index2, index1);
+
+    // Reconstruct component 1 at component 2 location
+    new (mEntities + index2) Entity(entity1);
+    new (mTransforms + index2) Transform(transform1);
+
+    // Update the entity to component index mapping
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity1, index2));
+
+    assert(mMapEntityToComponentIndex[mEntities[index1]] == index1);
+    assert(mMapEntityToComponentIndex[mEntities[index2]] == index2);
+    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
 // Destroy a component at a given index
 void TransformComponents::destroyComponent(uint32 index) {
+
+    mMapEntityToComponentIndex.remove(mEntities[index]);
 
     mEntities[index].~Entity();
     mTransforms[index].~Transform();
