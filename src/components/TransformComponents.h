@@ -29,6 +29,7 @@
 // Libraries
 #include "mathematics/Transform.h"
 #include "engine/Entity.h"
+#include "components/Components.h"
 #include "containers/Map.h"
 
 // ReactPhysics3D namespace
@@ -44,39 +45,18 @@ class EntityManager;
  * different entities. The position and orientation of the bodies are stored there.
  * The components of the sleeping entities (bodies) are always stored at the end of the array.
  */
-class TransformComponents {
+class TransformComponents : public Components {
 
     private:
 
         // -------------------- Constants -------------------- //
 
-        /// Number of components to allocated at the beginning
-        const uint32 INIT_ALLOCATED_COMPONENTS = 10;
-
-        /// Number of valid entities to hit before stopping garbage collection
-        const uint32 GARBAGE_COLLECTION_MAX_VALID_ENTITIES = 5;
-
         const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(Transform);
 
         // -------------------- Attributes -------------------- //
 
-        /// Memory allocator
-        MemoryAllocator& mMemoryAllocator;
-
-        /// Current number of components
-        uint32 mNbComponents;
-
-        /// Number of allocated components
-        uint32 mNbAllocatedComponents;
-
         /// Index of the first component of a sleeping entity (sleeping components are stored at the end)
         uint32 mSleepingStartIndex;
-
-        /// Allocated memory for all the data of the components
-        void* mBuffer;
-
-        /// Map an entity to the index of its component in the array
-        Map<Entity, uint32> mMapEntityToComponentIndex;
 
         /// Array of entities of each component
         Entity* mEntities;
@@ -92,7 +72,7 @@ class TransformComponents {
         /// Destroy a component at a given index
         void destroyComponent(uint32 index);
 
-        // Move a component from a source to a destination index in the components array
+        /// Move a component from a source to a destination index in the components array
         void moveComponentToIndex(uint32 srcIndex, uint32 destIndex);
 
         /// Swap two components in the array
@@ -117,7 +97,7 @@ class TransformComponents {
         TransformComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        ~TransformComponents();
+        virtual ~TransformComponents();
 
         /// Allocate memory for a given number of components
         void allocate(uint32 nbComponentsToAllocate);

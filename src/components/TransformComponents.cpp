@@ -35,8 +35,7 @@ using namespace reactphysics3d;
 
 // Constructor
 TransformComponents::TransformComponents(MemoryAllocator& allocator)
-                    :mMemoryAllocator(allocator), mNbComponents(0), mNbAllocatedComponents(0),
-                     mSleepingStartIndex(0), mBuffer(nullptr), mMapEntityToComponentIndex(allocator) {
+                    :Components(allocator), mSleepingStartIndex(0){
 
     // Allocate memory for the components data
     allocate(INIT_ALLOCATED_COMPONENTS);
@@ -101,41 +100,35 @@ void TransformComponents::addComponent(Entity entity, bool isSleeping, const Tra
         allocate(mNbAllocatedComponents * 2);
     }
 
+    uint32 index;
+
     // If the component to add is part of a sleeping entity or there are no sleeping entity
     if (isSleeping || mSleepingStartIndex == mNbComponents) {
 
         // Add the component at the end of the array
-        uint32 index = mNbComponents;
-
-        // Map the entity with the new component lookup index
-        mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, index));
+        index = mNbComponents;
 
         if (isSleeping) {
             mSleepingStartIndex = index;
         }
-
-        // Insert the new component data
-        new (mEntities + index) Entity(entity);
-        new (mTransforms + index) Transform(component.transform);
     }
     // If the component to add is not part of a sleeping entity and there are others sleeping components
     else {
 
-        // Copy the first sleeping component to the end of the array
-        new (mEntities + mNbComponents) Entity(mEntities[mSleepingStartIndex]);
-        new (mTransforms + mNbComponents) Transform(mTransforms[mSleepingStartIndex]);
+        // Move the first sleeping component to the end of the array
+        moveComponentToIndex(mSleepingStartIndex, mNbComponents);
 
-        mMapEntityToComponentIndex[mEntities[mSleepingStartIndex]] = mNbComponents;
-
-        // Copy the new component to the previous location of the fist sleeping component
-        mEntities[mSleepingStartIndex] = entity;
-        mTransforms[mSleepingStartIndex] = component.transform;
-
-        // Map the entity with the new component lookup index
-        mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, mSleepingStartIndex));
+        index = mSleepingStartIndex;
 
         mSleepingStartIndex++;
     }
+
+    // Insert the new component data
+    new (mEntities + index) Entity(entity);
+    new (mTransforms + index) Transform(component.transform);
+
+    // Map the entity with the new component lookup index
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, index));
 
     mNbComponents++;
 
