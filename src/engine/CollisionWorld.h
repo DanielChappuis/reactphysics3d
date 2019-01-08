@@ -34,6 +34,7 @@
 #include "memory/MemoryManager.h"
 #include "engine/EntityManager.h"
 #include "components/TransformComponents.h"
+#include "components/ProxyShapesComponents.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -73,6 +74,9 @@ class CollisionWorld {
 
         /// Transform Components
         TransformComponents mTransformComponents;
+
+        /// Proxy-Shapes Components
+        ProxyShapesComponents mProxyShapesComponents;
 
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;

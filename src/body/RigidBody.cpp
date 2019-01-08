@@ -286,6 +286,17 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
                                                                       transform, mass, mWorld.mMemoryManager);
 
+    // Add the proxy-shape component to the entity of the body
+    Vector3 localBoundsMin;
+    Vector3 localBoundsMax;
+    // TODO : Maybe this method can directly returns an AABB
+    proxyShape->getCollisionShape()->getLocalBounds(localBoundsMin, localBoundsMax);
+
+    ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(proxyShape->getBroadPhaseId(),
+                                                                   AABB(localBoundsMin, localBoundsMax),
+                                                                   transform, collisionShape, mass);
+    mWorld.mProxyShapesComponents.addComponent(mEntity, mIsSleeping, proxyShapeComponent);
+
 #ifdef IS_PROFILING_ACTIVE
 
 	// Set the profiler

@@ -48,6 +48,8 @@ TransformComponents::~TransformComponents() {
 
         // Destroy all the remaining components
         for (uint32 i = 0; i < mNbComponents; i++) {
+
+            // TODO : MAke sure we do not delete already deleted components
             destroyComponent(i);
         }
 
@@ -103,20 +105,22 @@ void TransformComponents::addComponent(Entity entity, bool isSleeping, const Tra
     uint32 index;
 
     // If the component to add is part of a sleeping entity or there are no sleeping entity
-    if (isSleeping || mSleepingStartIndex == mNbComponents) {
+    if (isSleeping) {
 
         // Add the component at the end of the array
         index = mNbComponents;
 
-        if (isSleeping) {
-            mSleepingStartIndex = index;
-        }
+        mSleepingStartIndex = index;
     }
-    // If the component to add is not part of a sleeping entity and there are others sleeping components
+    // If the component to add is not part of a sleeping entity
     else {
 
-        // Move the first sleeping component to the end of the array
-        moveComponentToIndex(mSleepingStartIndex, mNbComponents);
+        // If there already are sleeping components
+        if (mSleepingStartIndex != mNbComponents) {
+
+            // Move the first sleeping component to the end of the array
+            moveComponentToIndex(mSleepingStartIndex, mNbComponents);
+        }
 
         index = mSleepingStartIndex;
 

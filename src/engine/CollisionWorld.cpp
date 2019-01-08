@@ -38,7 +38,7 @@ uint CollisionWorld::mNbWorlds = 0;
 // Constructor
 CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
                : mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
-                 mTransformComponents(mMemoryManager.getBaseAllocator()),
+                 mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
                  mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0),
                  mFreeBodiesIds(mMemoryManager.getPoolAllocator()), mEventListener(nullptr), mName(worldSettings.worldName),
                  mIsProfilerCreatedByUser(profiler != nullptr),
@@ -245,6 +245,7 @@ void CollisionWorld::notifyBodySleeping(Entity entity, bool isSleeping) {
 
     // Notify all the components
     mTransformComponents.setIsEntitySleeping(entity, isSleeping);
+    mProxyShapesComponents.setIsEntitySleeping(entity, isSleeping);
 }
 
 // Test if the AABBs of two bodies overlap
