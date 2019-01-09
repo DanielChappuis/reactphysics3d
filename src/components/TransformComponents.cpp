@@ -140,45 +140,6 @@ void TransformComponents::addComponent(Entity entity, bool isSleeping, const Tra
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
-// Perform garbage collection to remove unused components
-void TransformComponents::garbageCollection(const EntityManager& entityManager) {
-
-    // TODO : Make sure we call this method each frame
-
-    // We use lazy garbage collection. The idea is to pick random components and destroy
-    // them if their corresponding entities have been destroyed. We do this until we hit
-    // GARBAGE_COLLECTION_MAX_VALID_ENTITIES in a row. Therefore, it cost almost nothing
-    // if there are no destroyed entities and it very quickly destroys components where there
-    // are a lot of destroyed entities.
-
-    uint32 nbHitValidEntitiesInARow = 0;
-
-    // For random number generation
-    std::random_device rd;
-    std::mt19937 eng(rd());
-
-    while (mNbComponents > 0 && nbHitValidEntitiesInARow < GARBAGE_COLLECTION_MAX_VALID_ENTITIES) {
-
-        // Select a random index in the components array
-        std::uniform_int_distribution<uint32> distr(0, mNbComponents - 1);
-        uint32 i = distr(eng);
-
-        // If the corresponding entity is valid
-        if (entityManager.isValid(mEntities[i])) {
-            nbHitValidEntitiesInARow++;
-
-            continue;
-        }
-
-        nbHitValidEntitiesInARow = 0;
-
-        // Destroy the component
-        removeComponent(i);
-    }
-
-    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
-}
-
 // Remove a component at a given index
 void TransformComponents::removeComponent(uint32 index) {
 
@@ -214,14 +175,15 @@ void TransformComponents::removeComponent(uint32 index) {
         if (mSleepingStartIndex != mNbComponents) {
 
             // We replace the last awake component by the last sleeping component
-            moveComponentToIndex(mNbComponents - 1, index);
-
-            mSleepingStartIndex--;
+            moveComponentToIndex(mNbComponents - 1, mSleepingStartIndex - 1);
         }
+
+        mSleepingStartIndex--;
     }
 
     mNbComponents--;
 
+    assert(mSleepingStartIndex <= mNbComponents);
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
@@ -309,8 +271,26 @@ void TransformComponents::swapComponents(uint32 index1, uint32 index2) {
 // Destroy a component at a given index
 void TransformComponents::destroyComponent(uint32 index) {
 
+    assert(index < mNbComponents);
+    assert(mMapEntityToComponentIndex[mEntities[index]] == index);
+
     mMapEntityToComponentIndex.remove(mEntities[index]);
 
     mEntities[index].~Entity();
     mTransforms[index].~Transform();
+}
+
+// Remove all the components of a given entity
+void TransformComponents::removeComponents(Entity entity) {
+
+    auto it = mMapEntityToComponentIndex.find(entity);
+
+    // If there is a component for this entity
+    if (it != mMapEntityToComponentIndex.end()) {
+
+        // Remove the component
+        removeComponent(it->second);
+    }
+
+   assert(!mMapEntityToComponentIndex.containsKey(entity));
 }

@@ -105,8 +105,8 @@ class TransformComponents : public Components {
         /// Add a component
         void addComponent(Entity entity, bool isSleeping, const TransformComponent& component);
 
-        /// Perform garbage collection to remove unused components
-        void garbageCollection(const EntityManager& entityManager);
+        /// Remove all the components of a given entity
+        void removeComponents(Entity entity);
 
         /// Return the transform of an entity
         Transform& getTransform(Entity entity) const;

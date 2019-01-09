@@ -169,11 +169,11 @@ class ProxyShapesComponents {
         /// Add a component
         void addComponent(Entity entity, bool isSleeping, const ProxyShapeComponent& component);
 
+        /// Remove all the components of a given entity
+        void removeComponents(Entity entity);
+
         /// Notify if a given entity is sleeping or not
         void setIsEntitySleeping(Entity entity, bool isSleeping);
-
-        /// Perform garbage collection to remove unused components
-        void garbageCollection(const EntityManager& entityManager);
 };
 
 }

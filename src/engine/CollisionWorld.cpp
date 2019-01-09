@@ -197,8 +197,8 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Reset the contact manifold list of the body
     collisionBody->resetContactManifoldsList();
 
-    // Destroy the corresponding entity
-    mEntityManager.destroyEntity(collisionBody->getEntity());
+    // Destroy the entity and its components
+    destroyEntity(collisionBody->getEntity());
 
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();
@@ -246,6 +246,19 @@ void CollisionWorld::notifyBodySleeping(Entity entity, bool isSleeping) {
     // Notify all the components
     mTransformComponents.setIsEntitySleeping(entity, isSleeping);
     mProxyShapesComponents.setIsEntitySleeping(entity, isSleeping);
+}
+
+// Destroy an entity and all the associated components
+void CollisionWorld::destroyEntity(Entity entity) {
+
+    // Destroy the corresponding entity
+    mEntityManager.destroyEntity(entity);
+
+    // TODO : Make sure we notify all the components here ...
+
+    // Notify all the components
+    mTransformComponents.removeComponents(entity);
+    mProxyShapesComponents.removeComponents(entity);
 }
 
 // Test if the AABBs of two bodies overlap

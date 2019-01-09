@@ -479,8 +479,8 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     // Reset the contact manifold list of the body
     rigidBody->resetContactManifoldsList();
 
-    // Destroy the corresponding entity
-    mEntityManager.destroyEntity(rigidBody->getEntity());
+    // Destroy the corresponding entity and its components
+    destroyEntity(rigidBody->getEntity());
 
     // Call the destructor of the rigid body
     rigidBody->~RigidBody();
