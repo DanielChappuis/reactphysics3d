@@ -40,10 +40,6 @@ const uint32 Entity::MINIMUM_FREE_INDICES = 1024;
 Entity::Entity(uint32 index, uint32 generation)
        :id((index & ENTITY_INDEX_MASK) | ((generation & ENTITY_GENERATION_MASK) << ENTITY_INDEX_BITS)) {
 
-    uint32 test1 = index & ENTITY_INDEX_MASK;
-    uint32 test2 = (generation & ENTITY_INDEX_MASK) << ENTITY_INDEX_BITS;
-    uint32 test3 = test1 | test2;
-    uint32 test = getIndex();
     assert(getIndex() == index);
     assert(getGeneration() == generation);
 }

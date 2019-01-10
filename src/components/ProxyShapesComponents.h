@@ -40,6 +40,7 @@ class MemoryAllocator;
 class EntityManager;
 class AABB;
 class CollisionShape;
+class ProxyShape;
 
 // Class ProxyShapesComponents
 /**
@@ -61,7 +62,7 @@ class ProxyShapesComponents {
         /// Number of valid entities to hit before stopping garbage collection
         const uint32 GARBAGE_COLLECTION_MAX_VALID_ENTITIES = 5;
 
-        const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(int) + sizeof(AABB) +
+        const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(ProxyShape*) + sizeof(int) + sizeof(AABB) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(decimal) + sizeof(uint32) +
                 sizeof(uint32);
 
@@ -85,8 +86,14 @@ class ProxyShapesComponents {
         /// Map an entity to the index of its component in the array
         Map<Entity, uint32> mMapEntityToComponentIndex;
 
+        /// Map a proxy shape to the index of the corresponding component in the array
+        Map<ProxyShape*, uint32> mMapProxyShapeToComponentIndex;
+
         /// Array of entities of each component
         Entity* mEntities;
+
+        /// Array of pointers to the proxy-shapes
+        ProxyShape** mProxyShapes;
 
         /// Ids of the proxy-shapes for the broad-phase algorithm
         // TODO : Try to change type to uint32
@@ -140,6 +147,7 @@ class ProxyShapesComponents {
         /// Structure for the data of a proxy shape component
         struct ProxyShapeComponent {
 
+            ProxyShape* proxyShape;
             int broadPhaseId;
             AABB localBounds;
             Transform localToBodyTransform;
@@ -147,9 +155,9 @@ class ProxyShapesComponents {
             decimal mass;
 
             /// Constructor
-            ProxyShapeComponent(int broadPhaseId, AABB localBounds, Transform localToBodyTransform,
+            ProxyShapeComponent(ProxyShape* proxyShape, int broadPhaseId, AABB localBounds, Transform localToBodyTransform,
                                 CollisionShape* collisionShape, decimal mass)
-                 :broadPhaseId(broadPhaseId), localBounds(localBounds), localToBodyTransform(localToBodyTransform),
+                 :proxyShape(proxyShape), broadPhaseId(broadPhaseId), localBounds(localBounds), localToBodyTransform(localToBodyTransform),
                   collisionShape(collisionShape), mass(mass) {
 
             }
