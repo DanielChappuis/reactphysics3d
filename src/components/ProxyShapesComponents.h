@@ -87,7 +87,7 @@ class ProxyShapesComponents {
         Map<Entity, uint32> mMapEntityToComponentIndex;
 
         /// Map a proxy shape to the index of the corresponding component in the array
-        Map<ProxyShape*, uint32> mMapProxyShapeToComponentIndex;
+        Map<const ProxyShape*, uint32> mMapProxyShapeToComponentIndex;
 
         /// Array of entities of each component
         Entity* mEntities;
@@ -108,7 +108,7 @@ class ProxyShapesComponents {
         /// Pointers to the collision shapes of the proxy-shapes
         CollisionShape** mCollisionShapes;
 
-        /// Masses of the proxy-shapes
+        /// Masses (in kilogramms) of the proxy-shapes
         decimal* mMasses;
 
         /// Index of the previous proxy-shape in the same body
@@ -182,7 +182,40 @@ class ProxyShapesComponents {
 
         /// Notify if a given entity is sleeping or not
         void setIsEntitySleeping(Entity entity, bool isSleeping);
+
+        /// Return the mass of a proxy-shape
+        decimal getMass(const ProxyShape* proxyShape) const;
+
+        /// Return the local-to-body transform of a proxy-shape
+        const Transform& getLocalToBodyTransform(const ProxyShape* proxyShape) const;
+
+        /// Set the local-to-body transform of a proxy-shape
+        void setLocalToBodyTransform(const ProxyShape* proxyShape, const Transform& transform);
 };
+
+// Return the mass of a proxy-shape
+inline decimal ProxyShapesComponents::getMass(const ProxyShape* proxyShape) const {
+
+   assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+   return mMasses[mMapProxyShapeToComponentIndex[proxyShape]];
+}
+
+// Return the local-to-body transform of a proxy-shape
+inline const Transform& ProxyShapesComponents::getLocalToBodyTransform(const ProxyShape* proxyShape) const {
+
+   assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+   return mLocalToBodyTransforms[mMapProxyShapeToComponentIndex[proxyShape]];
+}
+
+// Set the local-to-body transform of a proxy-shape
+inline void ProxyShapesComponents::setLocalToBodyTransform(const ProxyShape* proxyShape, const Transform& transform) {
+
+   assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+   mLocalToBodyTransforms[mMapProxyShapeToComponentIndex[proxyShape]] = transform;
+}
 
 }
 

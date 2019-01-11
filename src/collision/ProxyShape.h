@@ -61,10 +61,10 @@ class ProxyShape {
         CollisionShape* mCollisionShape;
 
         /// Local-space to parent body-space transform (does not change over time)
-        Transform mLocalToBodyTransform;
+        //Transform mLocalToBodyTransform;
 
         /// Mass (in kilogramms) of the corresponding collision shape
-        decimal mMass;
+        //decimal mMass;
 
         /// Pointer to the next proxy shape of the body (linked list)
         ProxyShape* mNext;
@@ -111,8 +111,7 @@ class ProxyShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyShape(CollisionBody* body, CollisionShape* shape,
-                   const Transform& transform, decimal mass, MemoryManager& memoryManager);
+        ProxyShape(CollisionBody* body, CollisionShape* shape, MemoryManager& memoryManager);
 
         /// Destructor
         virtual ~ProxyShape();
@@ -234,14 +233,6 @@ inline CollisionBody* ProxyShape::getBody() const {
     return mBody;
 }
 
-// Return the mass of the collision shape
-/**
- * @return Mass of the collision shape (in kilograms)
- */
-inline decimal ProxyShape::getMass() const {
-    return mMass;
-}
-
 // Return a pointer to the user data attached to this body
 /**
  * @return A pointer to the user data stored into the proxy shape
@@ -256,15 +247,6 @@ inline void* ProxyShape::getUserData() const {
  */
 inline void ProxyShape::setUserData(void* userData) {
     mUserData = userData;
-}
-
-// Return the local to parent body transform
-/**
- * @return The transformation that transforms the local-space of the collision shape
- *         to the local-space of the parent body
- */
-inline const Transform& ProxyShape::getLocalToBodyTransform() const {
-    return mLocalToBodyTransform;
 }
 
 // Return the AABB of the proxy shape in world-space

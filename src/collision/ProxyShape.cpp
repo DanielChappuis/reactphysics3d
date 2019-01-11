@@ -39,8 +39,8 @@ using namespace reactphysics3d;
  * @param transform Transformation from collision shape local-space to body local-space
  * @param mass Mass of the collision shape (in kilograms)
  */
-ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, const Transform& transform, decimal mass, MemoryManager& memoryManager)
-           :mMemoryManager(memoryManager), mBody(body), mCollisionShape(shape), mLocalToBodyTransform(transform), mMass(mass),
+ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, MemoryManager& memoryManager)
+           :mMemoryManager(memoryManager), mBody(body), mCollisionShape(shape),
             mNext(nullptr), mBroadPhaseID(-1), mUserData(nullptr), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
 
 }
@@ -50,13 +50,23 @@ ProxyShape::~ProxyShape() {
 
 }
 
+// Return the mass of the collision shape
+/**
+ * @return Mass of the collision shape (in kilograms)
+ */
+decimal ProxyShape::getMass() const {
+    return mBody->mWorld.mProxyShapesComponents.getMass(this);
+}
+
+
 // Return true if a point is inside the collision shape
 /**
  * @param worldPoint Point to test in world-space coordinates
  * @return True if the point is inside the collision shape
  */
 bool ProxyShape::testPointInside(const Vector3& worldPoint) {
-    const Transform localToWorld = mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) * mLocalToBodyTransform;
+    const Transform localToWorld = mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) *
+                                   mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
     const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
     return mCollisionShape->testPointInside(localPoint, this);
 }
@@ -88,7 +98,8 @@ void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
 // Set the local to parent body transform
 void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
-    mLocalToBodyTransform = transform;
+    //mLocalToBodyTransform = transform;
+    mBody->mWorld.mProxyShapesComponents.setLocalToBodyTransform(this, transform);
 
     mBody->setIsSleeping(false);
 
@@ -97,7 +108,16 @@ void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set localToBodyTransform=" +
-             mLocalToBodyTransform.to_string());
+             transform.to_string());
+}
+
+// Return the local to parent body transform
+/**
+ * @return The transformation that transforms the local-space of the collision shape
+ *         to the local-space of the parent body
+ */
+const Transform& ProxyShape::getLocalToBodyTransform() const {
+    return mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
 }
 
 // Raycast method with feedback information
@@ -135,6 +155,7 @@ bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
  *         shape to the world-space
  */
 const Transform ProxyShape::getLocalToWorldTransform() const {
-    return mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) * mLocalToBodyTransform;
+    return mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) *
+           mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
 }
 

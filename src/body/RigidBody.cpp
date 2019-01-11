@@ -284,7 +284,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, mass, mWorld.mMemoryManager);
+                                                                      mWorld.mMemoryManager);
 
     // Add the proxy-shape component to the entity of the body
     Vector3 localBoundsMin;

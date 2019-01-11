@@ -78,7 +78,7 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                       sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, decimal(1), mWorld.mMemoryManager);
+                                                                      mWorld.mMemoryManager);
 
     // Add the proxy-shape component to the entity of the body
     Vector3 localBoundsMin;
@@ -289,7 +289,7 @@ void CollisionBody::setIsActive(bool isActive) {
 
             // Compute the world-space AABB of the new collision shape
             AABB aabb;
-            shape->getCollisionShape()->computeAABB(aabb, transform * shape->mLocalToBodyTransform);
+            shape->getCollisionShape()->computeAABB(aabb, transform * mWorld.mProxyShapesComponents.getLocalToBodyTransform(shape));
 
             // Add the proxy shape to the collision detection
             mWorld.mCollisionDetection.addProxyCollisionShape(shape, aabb);

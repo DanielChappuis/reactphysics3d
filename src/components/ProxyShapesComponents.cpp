@@ -200,7 +200,7 @@ void ProxyShapesComponents::addComponent(Entity entity, bool isSleeping, const P
     mCollisionShapes[index] = component.collisionShape;
     new (mMasses + index) decimal(component.mass);
 
-    mMapProxyShapeToComponentIndex.add(Pair<ProxyShape*, uint32>(component.proxyShape, index));
+    mMapProxyShapeToComponentIndex.add(Pair<const ProxyShape*, uint32>(component.proxyShape, index));
 
     mNbComponents++;
 
@@ -255,7 +255,7 @@ void ProxyShapesComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInd
         assert(mMapEntityToComponentIndex[mEntities[destIndex]] == destIndex);
     }
 
-    mMapProxyShapeToComponentIndex.add(Pair<ProxyShape*, uint32>(mProxyShapes[destIndex], destIndex));
+    mMapProxyShapeToComponentIndex.add(Pair<const ProxyShape*, uint32>(mProxyShapes[destIndex], destIndex));
 
     assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[destIndex]] == destIndex || !hasNextProxyShape(destIndex));
     assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[destIndex]] == destIndex || !hasPreviousProxyShape(destIndex));
@@ -305,7 +305,7 @@ void ProxyShapesComponents::swapComponents(uint32 index1, uint32 index2) {
         mPreviousBodyProxyShapes[mNextBodyProxyShapes[index2]] = index2;
     }
 
-    mMapProxyShapeToComponentIndex.add(Pair<ProxyShape*, uint32>(mProxyShapes[index2], index2));
+    mMapProxyShapeToComponentIndex.add(Pair<const ProxyShape*, uint32>(mProxyShapes[index2], index2));
 
     // Update the entity to component index mapping if it is the first body proxy-shape
     if (isFirstBodyProxyShape1) {
