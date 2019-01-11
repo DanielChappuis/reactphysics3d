@@ -29,13 +29,15 @@
 #include "utils/Profiler.h"
 #include "collision/RaycastInfo.h"
 #include "memory/MemoryManager.h"
+#include "engine/CollisionWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
+BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection, ProxyShapesComponents& proxyShapesComponents)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
+                     mProxyShapesComponents(proxyShapesComponents),
                      mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mPotentialPairs(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
@@ -82,7 +84,7 @@ void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const A
     int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
 
     // Set the broad-phase ID of the proxy shape
-    proxyShape->mBroadPhaseID = nodeId;
+    mProxyShapesComponents.setBroadPhaseId(proxyShape, nodeId);
 
     // Add the collision shape into the array of bodies that have moved (or have been created)
     // during the last simulation step
@@ -96,7 +98,7 @@ void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
     int broadPhaseID = proxyShape->getBroadPhaseId();
 
-    proxyShape->mBroadPhaseID = -1;
+    mProxyShapesComponents.setBroadPhaseId(proxyShape, -1);
 
     // Remove the collision shape from the dynamic AABB tree
     mDynamicAABBTree.removeObject(broadPhaseID);

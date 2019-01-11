@@ -48,9 +48,9 @@ using namespace std;
 
 
 // Constructor
-CollisionDetection::CollisionDetection(CollisionWorld* world, MemoryManager& memoryManager)
-                   : mMemoryManager(memoryManager), mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
-                     mOverlappingPairs(mMemoryManager.getPoolAllocator()), mBroadPhaseAlgorithm(*this),
+CollisionDetection::CollisionDetection(CollisionWorld* world, ProxyShapesComponents& proxyShapesComponents, MemoryManager& memoryManager)
+                   : mMemoryManager(memoryManager), mProxyShapesComponents(proxyShapesComponents), mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
+                     mOverlappingPairs(mMemoryManager.getPoolAllocator()), mBroadPhaseAlgorithm(*this, mProxyShapesComponents),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()), mIsCollisionShapesAdded(false),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator()) {
 

@@ -35,6 +35,7 @@
 #include "collision/narrowphase/CollisionDispatch.h"
 #include "containers/Map.h"
 #include "containers/Set.h"
+#include "components/ProxyShapesComponents.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -66,6 +67,9 @@ class CollisionDetection {
 
         /// Memory manager
         MemoryManager& mMemoryManager;
+
+        /// Reference the the proxy-shapes components
+        ProxyShapesComponents& mProxyShapesComponents;
 
         /// Collision Detection Dispatch configuration
         CollisionDispatch mCollisionDispatch;
@@ -145,7 +149,7 @@ class CollisionDetection {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetection(CollisionWorld* world, MemoryManager& memoryManager);
+        CollisionDetection(CollisionWorld* world, ProxyShapesComponents& proxyShapesComponents, MemoryManager& memoryManager);
 
         /// Destructor
         ~CollisionDetection() = default;

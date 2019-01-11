@@ -30,6 +30,7 @@
 #include "DynamicAABBTree.h"
 #include "containers/LinkedList.h"
 #include "containers/Set.h"
+#include "components/ProxyShapesComponents.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -140,6 +141,9 @@ class BroadPhaseAlgorithm {
         /// Dynamic AABB tree
         DynamicAABBTree mDynamicAABBTree;
 
+        /// Reference to the proxy-shapes components
+        ProxyShapesComponents& mProxyShapesComponents;
+
         /// Set with the broad-phase IDs of all collision shapes that have moved (or have been
         /// created) during the last simulation step. Those are the shapes that need to be tested
         /// for overlapping in the next simulation step.
@@ -163,7 +167,7 @@ class BroadPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BroadPhaseAlgorithm(CollisionDetection& collisionDetection);
+        BroadPhaseAlgorithm(CollisionDetection& collisionDetection, ProxyShapesComponents& proxyShapesComponents);
 
         /// Destructor
         ~BroadPhaseAlgorithm() = default;

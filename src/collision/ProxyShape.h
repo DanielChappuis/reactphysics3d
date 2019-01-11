@@ -70,7 +70,7 @@ class ProxyShape {
         ProxyShape* mNext;
 
         /// Broad-phase ID (node ID in the dynamic AABB tree)
-        int mBroadPhaseID;
+        //int mBroadPhaseID;
 
         /// Pointer to user data
         void* mUserData;
@@ -263,11 +263,6 @@ inline unsigned short ProxyShape::getCollisionCategoryBits() const {
  */
 inline unsigned short ProxyShape::getCollideWithMaskBits() const {
     return mCollideWithMaskBits;
-}
-
-// Return the broad-phase id
-inline int ProxyShape::getBroadPhaseId() const {
-    return mBroadPhaseID;
 }
 
 /// Test if the proxy shape overlaps with a given AABB

@@ -194,6 +194,12 @@ class ProxyShapesComponents {
 
         /// Return a pointer to the collision shape of a proxy-shape
         CollisionShape* getCollisionShape(const ProxyShape* proxyShape) const;
+
+        /// Return the broad-phase id of a given proxy shape
+        int getBroadPhaseId(const ProxyShape* proxyShape) const;
+
+        /// Set the broad-phase id of a given proxy shape
+        void setBroadPhaseId(const ProxyShape* proxyShape, int broadPhaseId);
 };
 
 // Return the mass of a proxy-shape
@@ -227,6 +233,23 @@ inline CollisionShape* ProxyShapesComponents::getCollisionShape(const ProxyShape
 
     return mCollisionShapes[mMapProxyShapeToComponentIndex[proxyShape]];
 }
+
+// Return the broad-phase id of a given proxy shape
+inline int ProxyShapesComponents::getBroadPhaseId(const ProxyShape* proxyShape) const {
+
+    assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+    return mBroadPhaseIds[mMapProxyShapeToComponentIndex[proxyShape]];
+}
+
+// Set the broad-phase id of a given proxy shape
+inline void ProxyShapesComponents::setBroadPhaseId(const ProxyShape* proxyShape, int broadPhaseId) {
+
+    assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+    mBroadPhaseIds[mMapProxyShapeToComponentIndex[proxyShape]] = broadPhaseId;
+}
+
 }
 
 #endif

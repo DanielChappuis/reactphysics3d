@@ -41,7 +41,7 @@ using namespace reactphysics3d;
  */
 ProxyShape::ProxyShape(CollisionBody* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mBody(body),
-            mNext(nullptr), mBroadPhaseID(-1), mUserData(nullptr), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
+            mNext(nullptr), mUserData(nullptr), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
 
 }
 
@@ -79,8 +79,10 @@ bool ProxyShape::testPointInside(const Vector3& worldPoint) {
 void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
     mCollisionCategoryBits = collisionCategoryBits;
 
+    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
+
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collisionCategoryBits=" +
+             "ProxyShape " + std::to_string(broadPhaseId) + ": Set collisionCategoryBits=" +
              std::to_string(mCollisionCategoryBits));
 }
 
@@ -91,8 +93,10 @@ void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) 
 void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
     mCollideWithMaskBits = collideWithMaskBits;
 
+    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
+
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set collideWithMaskBits=" +
+             "ProxyShape " + std::to_string(broadPhaseId) + ": Set collideWithMaskBits=" +
              std::to_string(mCollideWithMaskBits));
 }
 
@@ -107,8 +111,10 @@ void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
     // Notify the body that the proxy shape has to be updated in the broad-phase
     mBody->updateProxyShapeInBroadPhase(this, true);
 
+    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
+
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(mBroadPhaseID) + ": Set localToBodyTransform=" +
+             "ProxyShape " + std::to_string(broadPhaseId) + ": Set localToBodyTransform=" +
              transform.to_string());
 }
 
@@ -137,6 +143,11 @@ const CollisionShape* ProxyShape::getCollisionShape() const {
 */
 CollisionShape* ProxyShape::getCollisionShape() {
     return mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+}
+
+// Return the broad-phase id
+int ProxyShape::getBroadPhaseId() const {
+    return mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
 }
 
 // Return the local to parent body transform

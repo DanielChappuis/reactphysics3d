@@ -85,7 +85,7 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
 
-    ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(proxyShape, proxyShape->getBroadPhaseId(),
+    ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, decimal(1));
     mWorld.mProxyShapesComponents.addComponent(mEntity, mIsSleeping, proxyShapeComponent);
