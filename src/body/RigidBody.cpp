@@ -283,14 +283,13 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
 
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                      sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      mWorld.mMemoryManager);
+                                      sizeof(ProxyShape))) ProxyShape(this, mWorld.mMemoryManager);
 
     // Add the proxy-shape component to the entity of the body
     Vector3 localBoundsMin;
     Vector3 localBoundsMax;
     // TODO : Maybe this method can directly returns an AABB
-    proxyShape->getCollisionShape()->getLocalBounds(localBoundsMin, localBoundsMax);
+    collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
 
     ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(proxyShape, proxyShape->getBroadPhaseId(),
                                                                    AABB(localBoundsMin, localBoundsMax),

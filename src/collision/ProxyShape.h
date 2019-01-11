@@ -58,7 +58,7 @@ class ProxyShape {
         CollisionBody* mBody;
 
         /// Internal collision shape
-        CollisionShape* mCollisionShape;
+        //CollisionShape* mCollisionShape;
 
         /// Local-space to parent body-space transform (does not change over time)
         //Transform mLocalToBodyTransform;
@@ -111,7 +111,7 @@ class ProxyShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyShape(CollisionBody* body, CollisionShape* shape, MemoryManager& memoryManager);
+        ProxyShape(CollisionBody* body, MemoryManager& memoryManager);
 
         /// Destructor
         virtual ~ProxyShape();
@@ -209,22 +209,6 @@ class ProxyShape {
 
 };
 
-// Return the collision shape
-/**
- * @return Pointer to the internal collision shape
- */
-inline const CollisionShape* ProxyShape::getCollisionShape() const {
-    return mCollisionShape;
-}
-
-// Return the collision shape
-/**
-* @return Pointer to the internal collision shape
-*/
-inline CollisionShape* ProxyShape::getCollisionShape() {
-	return mCollisionShape;
-}
-
 // Return the parent body
 /**
  * @return Pointer to the parent body
@@ -247,16 +231,6 @@ inline void* ProxyShape::getUserData() const {
  */
 inline void ProxyShape::setUserData(void* userData) {
     mUserData = userData;
-}
-
-// Return the AABB of the proxy shape in world-space
-/**
- * @return The AABB of the proxy shape in world-space
- */
-inline const AABB ProxyShape::getWorldAABB() const {
-    AABB aabb;
-    mCollisionShape->computeAABB(aabb, getLocalToWorldTransform());
-    return aabb;
 }
 
 // Return the next proxy shape in the linked list of proxy shapes
@@ -304,18 +278,6 @@ inline int ProxyShape::getBroadPhaseId() const {
 inline bool ProxyShape::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getWorldAABB());
 }
-
-#ifdef IS_PROFILING_ACTIVE
-
-// Set the profiler
-inline void ProxyShape::setProfiler(Profiler* profiler) {
-
-	mProfiler = profiler;
-
-	mCollisionShape->setProfiler(profiler);
-}
-
-#endif
 
 #ifdef IS_LOGGING_ACTIVE
 

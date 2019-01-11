@@ -39,8 +39,8 @@ using namespace reactphysics3d;
  * @param transform Transformation from collision shape local-space to body local-space
  * @param mass Mass of the collision shape (in kilograms)
  */
-ProxyShape::ProxyShape(CollisionBody* body, CollisionShape* shape, MemoryManager& memoryManager)
-           :mMemoryManager(memoryManager), mBody(body), mCollisionShape(shape),
+ProxyShape::ProxyShape(CollisionBody* body, MemoryManager& memoryManager)
+           :mMemoryManager(memoryManager), mBody(body),
             mNext(nullptr), mBroadPhaseID(-1), mUserData(nullptr), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
 
 }
@@ -68,7 +68,8 @@ bool ProxyShape::testPointInside(const Vector3& worldPoint) {
     const Transform localToWorld = mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) *
                                    mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
     const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
-    return mCollisionShape->testPointInside(localPoint, this);
+    const CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    return collisionShape->testPointInside(localPoint, this);
 }
 
 // Set the collision category bits
@@ -111,6 +112,33 @@ void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
              transform.to_string());
 }
 
+// Return the AABB of the proxy shape in world-space
+/**
+ * @return The AABB of the proxy shape in world-space
+ */
+const AABB ProxyShape::getWorldAABB() const {
+    AABB aabb;
+    CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    collisionShape->computeAABB(aabb, getLocalToWorldTransform());
+    return aabb;
+}
+
+// Return the collision shape
+/**
+ * @return Pointer to the internal collision shape
+ */
+const CollisionShape* ProxyShape::getCollisionShape() const {
+    return mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+}
+
+// Return the collision shape
+/**
+* @return Pointer to the internal collision shape
+*/
+CollisionShape* ProxyShape::getCollisionShape() {
+    return mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+}
+
 // Return the local to parent body transform
 /**
  * @return The transformation that transforms the local-space of the collision shape
@@ -139,7 +167,8 @@ bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
                  worldToLocalTransform * ray.point2,
                  ray.maxFraction);
 
-    bool isHit = mCollisionShape->raycast(rayLocal, raycastInfo, this, mMemoryManager.getPoolAllocator());
+    const CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    bool isHit = collisionShape->raycast(rayLocal, raycastInfo, this, mMemoryManager.getPoolAllocator());
 
     // Convert the raycast info into world-space
     raycastInfo.worldPoint = localToWorldTransform * raycastInfo.worldPoint;
@@ -158,4 +187,17 @@ const Transform ProxyShape::getLocalToWorldTransform() const {
     return mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) *
            mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+void ProxyShape::setProfiler(Profiler* profiler) {
+
+    mProfiler = profiler;
+
+    CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    collisionShape->setProfiler(profiler);
+}
+
+#endif
 

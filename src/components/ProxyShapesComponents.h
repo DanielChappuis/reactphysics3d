@@ -191,6 +191,9 @@ class ProxyShapesComponents {
 
         /// Set the local-to-body transform of a proxy-shape
         void setLocalToBodyTransform(const ProxyShape* proxyShape, const Transform& transform);
+
+        /// Return a pointer to the collision shape of a proxy-shape
+        CollisionShape* getCollisionShape(const ProxyShape* proxyShape) const;
 };
 
 // Return the mass of a proxy-shape
@@ -217,6 +220,13 @@ inline void ProxyShapesComponents::setLocalToBodyTransform(const ProxyShape* pro
    mLocalToBodyTransforms[mMapProxyShapeToComponentIndex[proxyShape]] = transform;
 }
 
+// Return a pointer to the collision shape of a proxy-shape
+inline CollisionShape* ProxyShapesComponents::getCollisionShape(const ProxyShape* proxyShape) const {
+
+   assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+    return mCollisionShapes[mMapProxyShapeToComponentIndex[proxyShape]];
+}
 }
 
 #endif
