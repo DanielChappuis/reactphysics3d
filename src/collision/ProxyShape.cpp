@@ -41,7 +41,7 @@ using namespace reactphysics3d;
  */
 ProxyShape::ProxyShape(CollisionBody* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mBody(body),
-            mNext(nullptr), mUserData(nullptr), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
+            mUserData(nullptr), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
 
 }
 
@@ -157,6 +157,24 @@ int ProxyShape::getBroadPhaseId() const {
  */
 const Transform& ProxyShape::getLocalToBodyTransform() const {
     return mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
+}
+
+// Return the next proxy shape in the linked list of proxy shapes
+/**
+ * @return Pointer to the next proxy shape in the linked list of proxy shapes
+ */
+ProxyShape* ProxyShape::getNext() {
+    // TODO : Delete this method
+    return mBody->mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(this);
+}
+
+// Return the next proxy shape in the linked list of proxy shapes
+/**
+ * @return Pointer to the next proxy shape in the linked list of proxy shapes
+ */
+const ProxyShape* ProxyShape::getNext() const {
+    // TODO : Delete this method
+    return mBody->mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(this);
 }
 
 // Raycast method with feedback information

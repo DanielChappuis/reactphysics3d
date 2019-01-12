@@ -67,7 +67,7 @@ class ProxyShape {
         //decimal mMass;
 
         /// Pointer to the next proxy shape of the body (linked list)
-        ProxyShape* mNext;
+        //ProxyShape* mNext;
 
         /// Broad-phase ID (node ID in the dynamic AABB tree)
         //int mBroadPhaseID;
@@ -231,22 +231,6 @@ inline void* ProxyShape::getUserData() const {
  */
 inline void ProxyShape::setUserData(void* userData) {
     mUserData = userData;
-}
-
-// Return the next proxy shape in the linked list of proxy shapes
-/**
- * @return Pointer to the next proxy shape in the linked list of proxy shapes
- */
-inline ProxyShape* ProxyShape::getNext() {
-    return mNext;
-}
-
-// Return the next proxy shape in the linked list of proxy shapes
-/**
- * @return Pointer to the next proxy shape in the linked list of proxy shapes
- */
-inline const ProxyShape* ProxyShape::getNext() const {
-    return mNext;
 }
 
 // Return the collision category bits

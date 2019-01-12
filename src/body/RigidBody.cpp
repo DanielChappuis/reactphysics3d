@@ -310,23 +310,12 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
 
 #endif
 
-    // Add it to the list of proxy collision shapes of the body
-    if (mProxyCollisionShapes == nullptr) {
-        mProxyCollisionShapes = proxyShape;
-    }
-    else {
-        proxyShape->mNext = mProxyCollisionShapes;
-        mProxyCollisionShapes = proxyShape;
-    }
-
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
     collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
-
-    mNbCollisionShapes++;
 
     // Recompute the center of mass, total mass and inertia tensor of the body with the new
     // collision shape
@@ -350,7 +339,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
 /**
  * @param proxyShape The pointer of the proxy shape you want to remove
  */
-void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
+void RigidBody::removeCollisionShape(ProxyShape* proxyShape) {
 
     // Remove the collision shape
     CollisionBody::removeCollisionShape(proxyShape);
@@ -511,7 +500,7 @@ void RigidBody::recomputeMassInformation() {
     assert(mType == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
+    for (ProxyShape* shape = mWorld.mProxyShapesComponents.getFirstProxyShapeOfBody(mEntity); shape != nullptr; shape = mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(shape)) {
         mInitMass += shape->getMass();
 
         if (!mIsCenterOfMassSetByUser) {
@@ -539,7 +528,7 @@ void RigidBody::recomputeMassInformation() {
     if (!mIsInertiaTensorSetByUser) {
 
         // Compute the inertia tensor using all the collision shapes
-        for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
+        for (ProxyShape* shape = mWorld.mProxyShapesComponents.getFirstProxyShapeOfBody(mEntity); shape != nullptr; shape = mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(shape)) {
 
             // Get the inertia tensor of the collision shape in its local-space
             Matrix3x3 inertiaTensor;
@@ -590,7 +579,7 @@ void RigidBody::updateBroadPhaseState() const {
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
 
     // For all the proxy collision shapes of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
+    for (ProxyShape* shape = mWorld.mProxyShapesComponents.getFirstProxyShapeOfBody(mEntity); shape != nullptr; shape = mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(shape)) {
 
         // Recompute the world-space AABB of the collision shape
         AABB aabb;

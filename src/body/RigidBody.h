@@ -232,7 +232,7 @@ class RigidBody : public CollisionBody {
                                               decimal mass);
 
         /// Remove a collision shape from the body
-        virtual void removeCollisionShape(const ProxyShape* proxyShape) override;
+        virtual void removeCollisionShape(ProxyShape* proxyShape) override;
 
         /// Recompute the center of mass, total mass and inertia tensor of the body using all
         /// the collision shapes attached to the body.

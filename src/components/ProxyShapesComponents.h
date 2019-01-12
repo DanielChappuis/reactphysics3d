@@ -180,6 +180,9 @@ class ProxyShapesComponents {
         /// Remove all the components of a given entity
         void removeComponents(Entity entity);
 
+        /// Remove a given proxy-shape
+        void removeComponent(const ProxyShape* proxyShape);
+
         /// Notify if a given entity is sleeping or not
         void setIsEntitySleeping(Entity entity, bool isSleeping);
 
@@ -200,6 +203,12 @@ class ProxyShapesComponents {
 
         /// Set the broad-phase id of a given proxy shape
         void setBroadPhaseId(const ProxyShape* proxyShape, int broadPhaseId);
+
+        /// Return the next proxy-shape in the linked-list of all proxy-shapes of a body
+        ProxyShape* getNextProxyShapeOfBody(const ProxyShape* proxyShape) const;
+
+        /// Return the first proxy-shape in the linked-list of all proxy-shapes of a body
+        ProxyShape* getFirstProxyShapeOfBody(Entity entity) const;
 };
 
 // Return the mass of a proxy-shape
@@ -248,6 +257,34 @@ inline void ProxyShapesComponents::setBroadPhaseId(const ProxyShape* proxyShape,
     assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
 
     mBroadPhaseIds[mMapProxyShapeToComponentIndex[proxyShape]] = broadPhaseId;
+}
+
+// Return the next proxy-shape in the linked-list of all proxy-shapes of a body
+inline ProxyShape* ProxyShapesComponents::getNextProxyShapeOfBody(const ProxyShape* proxyShape) const {
+
+    assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+    uint32 proxyShapeIndex = mMapProxyShapeToComponentIndex[proxyShape];
+    uint32 nextProxyShapeIndex = mNextBodyProxyShapes[proxyShapeIndex];
+
+    // If the current proxy-shape has a next one
+    if (proxyShapeIndex != nextProxyShapeIndex) {
+        return mProxyShapes[nextProxyShapeIndex];
+    }
+
+    return nullptr;
+}
+
+// Return the first proxy-shape in the linked-list of all proxy-shapes of a body
+inline ProxyShape* ProxyShapesComponents::getFirstProxyShapeOfBody(Entity entity) const {
+
+   auto it = mMapEntityToComponentIndex.find(entity);
+
+   if (it != mMapEntityToComponentIndex.end()) {
+       return mProxyShapes[it->second];
+   }
+
+   return nullptr;
 }
 
 }

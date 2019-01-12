@@ -71,10 +71,10 @@ class CollisionBody : public Body {
         BodyType mType;
 
         /// First element of the linked list of proxy collision shapes of this body
-        ProxyShape* mProxyCollisionShapes;
+        //ProxyShape* mProxyCollisionShapes;
 
         /// Number of collision shapes
-        uint mNbCollisionShapes;
+        //uint mNbCollisionShapes;
 
         /// First element of the linked list of contact manifolds involving this body
         ContactManifoldListElement* mContactManifoldsList;
@@ -149,7 +149,7 @@ class CollisionBody : public Body {
                                               const Transform& transform);
 
         /// Remove a collision shape from the body
-        virtual void removeCollisionShape(const ProxyShape* proxyShape);
+        virtual void removeCollisionShape(ProxyShape *proxyShape);
 
         /// Return the first element of the linked list of contact manifolds involving this body
         const ContactManifoldListElement* getContactManifoldsList() const;
@@ -216,24 +216,6 @@ inline BodyType CollisionBody::getType() const {
  */
 inline const ContactManifoldListElement* CollisionBody::getContactManifoldsList() const {
     return mContactManifoldsList;
-}
-
-// Return the linked list of proxy shapes of that body
-/**
-* @return The pointer of the first proxy shape of the linked-list of all the
-*         proxy shapes of the body
-*/
-inline ProxyShape* CollisionBody::getProxyShapesList() {
-    return mProxyCollisionShapes;
-}
-
-// Return the linked list of proxy shapes of that body
-/**
-* @return The pointer of the first proxy shape of the linked-list of all the
-*         proxy shapes of the body
-*/
-inline const ProxyShape* CollisionBody::getProxyShapesList() const {
-    return mProxyCollisionShapes;
 }
 
 /// Test if the collision body overlaps with a given AABB

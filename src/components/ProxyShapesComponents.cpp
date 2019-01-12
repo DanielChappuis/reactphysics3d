@@ -498,3 +498,11 @@ void ProxyShapesComponents::removeComponents(Entity entity) {
 
    assert(!mMapEntityToComponentIndex.containsKey(entity));
 }
+
+// Remove a given proxy-shape
+void ProxyShapesComponents::removeComponent(const ProxyShape* proxyShape) {
+
+    uint32 index = mMapProxyShapeToComponentIndex[proxyShape];
+
+    removeComponent(index);
+}

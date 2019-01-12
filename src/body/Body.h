@@ -71,6 +71,7 @@ class Body {
         /// removed from the broad-phase. If you set this value to "true",
         /// all the proxy shapes will be added to the broad-phase. A joint
         /// connected to an inactive body will also be inactive.
+        // TODO : Make sure we correctly use this field with ECS
         bool mIsActive;
 
         /// True if the body is sleeping (for sleeping technique)
