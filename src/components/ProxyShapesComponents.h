@@ -64,7 +64,7 @@ class ProxyShapesComponents {
 
         const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(ProxyShape*) + sizeof(int) + sizeof(AABB) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(decimal) + sizeof(uint32) +
-                sizeof(uint32);
+                sizeof(uint32) + sizeof(unsigned short) + sizeof(unsigned short);
 
         // -------------------- Attributes -------------------- //
 
@@ -119,6 +119,19 @@ class ProxyShapesComponents {
         /// mNextBodyProxyShapes[i] == i means that the proxy-shape component has no next proxy-shape
         uint32* mNextBodyProxyShapes;
 
+        /// Array of bits used to define the collision category of this shape.
+        /// You can set a single bit to one to define a category value for this
+        /// shape. This value is one (0x0001) by default. This variable can be used
+        /// together with the mCollideWithMaskBits variable so that given
+        /// categories of shapes collide with each other and do not collide with
+        /// other categories.
+        unsigned short* mCollisionCategoryBits;
+
+        /// Array of bits mask used to state which collision categories this shape can
+        /// collide with. This value is 0xFFFF by default. It means that this
+        /// proxy shape will collide with every collision categories by default.
+        unsigned short* mCollideWithMaskBits;
+
         // -------------------- Methods -------------------- //
 
         /// Remove a component at a given index
@@ -153,12 +166,15 @@ class ProxyShapesComponents {
             Transform localToBodyTransform;
             CollisionShape* collisionShape;
             decimal mass;
+            unsigned short collisionCategoryBits;
+            unsigned short collideWithMaskBits;
 
             /// Constructor
             ProxyShapeComponent(ProxyShape* proxyShape, int broadPhaseId, AABB localBounds, Transform localToBodyTransform,
-                                CollisionShape* collisionShape, decimal mass)
+                                CollisionShape* collisionShape, decimal mass, unsigned short collisionCategoryBits,
+                                unsigned short collideWithMaskBits)
                  :proxyShape(proxyShape), broadPhaseId(broadPhaseId), localBounds(localBounds), localToBodyTransform(localToBodyTransform),
-                  collisionShape(collisionShape), mass(mass) {
+                  collisionShape(collisionShape), mass(mass), collisionCategoryBits(collisionCategoryBits), collideWithMaskBits(collideWithMaskBits) {
 
             }
         };
@@ -209,6 +225,18 @@ class ProxyShapesComponents {
 
         /// Return the first proxy-shape in the linked-list of all proxy-shapes of a body
         ProxyShape* getFirstProxyShapeOfBody(Entity entity) const;
+
+        /// Return the collision category bits of a given proxy-shape
+        unsigned short getCollisionCategoryBits(const ProxyShape* proxyShape) const;
+
+        /// Set the collision category bits of a given proxy-shape
+        void setCollisionCategoryBits(const ProxyShape* proxyShape, unsigned short collisionCategoryBits);
+
+        /// Return the "collide with" mask bits of a given proxy-shape
+        unsigned short getCollideWithMaskBits(const ProxyShape* proxyShape) const;
+
+        /// Set the "collide with" mask bits of a given proxy-shape
+        void setCollideWithMaskBits(const ProxyShape* proxyShape, unsigned short collideWithMaskBits);
 };
 
 // Return the mass of a proxy-shape
@@ -285,6 +313,38 @@ inline ProxyShape* ProxyShapesComponents::getFirstProxyShapeOfBody(Entity entity
    }
 
    return nullptr;
+}
+
+// Return the collision category bits of a given proxy-shape
+inline unsigned short ProxyShapesComponents::getCollisionCategoryBits(const ProxyShape* proxyShape) const {
+
+    assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+    return mCollisionCategoryBits[mMapProxyShapeToComponentIndex[proxyShape]];
+}
+
+// Return the "collide with" mask bits of a given proxy-shape
+inline unsigned short ProxyShapesComponents::getCollideWithMaskBits(const ProxyShape* proxyShape) const {
+
+    assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+    return mCollideWithMaskBits[mMapProxyShapeToComponentIndex[proxyShape]];
+}
+
+// Set the collision category bits of a given proxy-shape
+inline void ProxyShapesComponents::setCollisionCategoryBits(const ProxyShape* proxyShape, unsigned short collisionCategoryBits) {
+
+    assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+    mCollisionCategoryBits[mMapProxyShapeToComponentIndex[proxyShape]] = collisionCategoryBits;
+}
+
+// Set the "collide with" mask bits of a given proxy-shape
+inline void ProxyShapesComponents::setCollideWithMaskBits(const ProxyShape* proxyShape, unsigned short collideWithMaskBits) {
+
+    assert(mMapProxyShapeToComponentIndex.containsKey(proxyShape));
+
+    mCollideWithMaskBits[mMapProxyShapeToComponentIndex[proxyShape]] = collideWithMaskBits;
 }
 
 }

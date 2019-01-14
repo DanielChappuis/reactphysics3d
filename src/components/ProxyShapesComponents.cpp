@@ -85,6 +85,8 @@ void ProxyShapesComponents::allocate(uint32 nbComponentsToAllocate) {
     decimal* newMasses = reinterpret_cast<decimal*>(newCollisionShapes + nbComponentsToAllocate);
     uint32* newPreviousBodyProxyShapes = reinterpret_cast<uint32*>(newMasses + nbComponentsToAllocate);
     uint32* newNextBodyProxyShapes = reinterpret_cast<uint32*>(newPreviousBodyProxyShapes + nbComponentsToAllocate);
+    unsigned short* newCollisionCategoryBits = reinterpret_cast<unsigned short*>(newNextBodyProxyShapes + nbComponentsToAllocate);
+    unsigned short* newCollideWithMaskBits = reinterpret_cast<unsigned short*>(newCollisionCategoryBits + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -99,6 +101,8 @@ void ProxyShapesComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newMasses, mMasses, mNbComponents * sizeof(decimal));
         memcpy(newPreviousBodyProxyShapes, mPreviousBodyProxyShapes, mNbComponents * sizeof(uint32));
         memcpy(newNextBodyProxyShapes, mNextBodyProxyShapes, mNbComponents * sizeof(uint32));
+        memcpy(newCollisionCategoryBits, mCollisionCategoryBits, mNbComponents * sizeof(unsigned short));
+        memcpy(newCollideWithMaskBits, mCollideWithMaskBits, mNbComponents * sizeof(unsigned short));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * COMPONENT_DATA_SIZE);
@@ -114,6 +118,8 @@ void ProxyShapesComponents::allocate(uint32 nbComponentsToAllocate) {
     mMasses = newMasses;
     mPreviousBodyProxyShapes = newPreviousBodyProxyShapes;
     mNextBodyProxyShapes = newNextBodyProxyShapes;
+    mCollisionCategoryBits = newCollisionCategoryBits;
+    mCollideWithMaskBits = newCollideWithMaskBits;
 
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
@@ -199,6 +205,8 @@ void ProxyShapesComponents::addComponent(Entity entity, bool isSleeping, const P
     new (mLocalToBodyTransforms + index) Transform(component.localToBodyTransform);
     mCollisionShapes[index] = component.collisionShape;
     new (mMasses + index) decimal(component.mass);
+    new (mCollisionCategoryBits + index) unsigned short(component.collisionCategoryBits);
+    new (mCollideWithMaskBits + index) unsigned short(component.collideWithMaskBits);
 
     mMapProxyShapeToComponentIndex.add(Pair<const ProxyShape*, uint32>(component.proxyShape, index));
 
@@ -232,6 +240,8 @@ void ProxyShapesComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInd
     new (mMasses + destIndex) decimal(mMasses[srcIndex]);
     new (mPreviousBodyProxyShapes + destIndex) uint32(hasPreviousProxyShape(srcIndex) ? mPreviousBodyProxyShapes[srcIndex] : destIndex);
     new (mNextBodyProxyShapes + destIndex) uint32(hasNextProxyShape(srcIndex) ? mNextBodyProxyShapes[srcIndex] : destIndex);
+    new (mCollisionCategoryBits + destIndex) unsigned short(mCollisionCategoryBits[srcIndex]);
+    new (mCollideWithMaskBits + destIndex) unsigned short(mCollideWithMaskBits[srcIndex]);
 
     // Update the the next proxy-shape index of the previous proxy-shape
     if (hasPreviousProxyShape(destIndex)) {
@@ -274,6 +284,8 @@ void ProxyShapesComponents::swapComponents(uint32 index1, uint32 index2) {
     decimal mass1 = mMasses[index1];
     uint32 previousProxyShape1 = hasPreviousProxyShape(index1) ? mPreviousBodyProxyShapes[index1] : index2;
     uint32 nextProxyShape1 = hasNextProxyShape(index1) ? mNextBodyProxyShapes[index1] : index2;
+    unsigned short collisionCategoryBits1 = mCollisionCategoryBits[index1];
+    unsigned short collideWithMaskBits1 = mCollideWithMaskBits[index1];
 
     const bool isFirstBodyProxyShape1 = mMapEntityToComponentIndex[mEntities[index1]] == index1;
 
@@ -292,6 +304,8 @@ void ProxyShapesComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mMasses + index2) decimal(mass1);
     new (mPreviousBodyProxyShapes + index2) uint32(previousProxyShape1);
     new (mNextBodyProxyShapes + index2) uint32(nextProxyShape1);
+    new (mCollisionCategoryBits + index2) unsigned short(collisionCategoryBits1);
+    new (mCollideWithMaskBits + index2) unsigned short(collideWithMaskBits1);
 
     // Update the the next proxy-shape index of the previous proxy-shape
     if (hasPreviousProxyShape(index2)) {

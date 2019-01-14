@@ -81,10 +81,9 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
     Vector3 localBoundsMax;
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
-
     ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
-                                                                   transform, collisionShape, decimal(1));
+                                                                   transform, collisionShape, decimal(1), 0x0001, 0xFFFF);
     mWorld.mProxyShapesComponents.addComponent(mEntity, mIsSleeping, proxyShapeComponent);
 
 #ifdef IS_PROFILING_ACTIVE

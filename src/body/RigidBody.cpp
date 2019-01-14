@@ -293,7 +293,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
 
     ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
-                                                                   transform, collisionShape, mass);
+                                                                   transform, collisionShape, mass, 0x0001, 0xFFFF);
     mWorld.mProxyShapesComponents.addComponent(mEntity, mIsSleeping, proxyShapeComponent);
 
 #ifdef IS_PROFILING_ACTIVE

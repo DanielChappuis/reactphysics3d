@@ -81,12 +81,12 @@ class ProxyShape {
         /// together with the mCollideWithMaskBits variable so that given
         /// categories of shapes collide with each other and do not collide with
         /// other categories.
-        unsigned short mCollisionCategoryBits;
+        //unsigned short mCollisionCategoryBits;
 
         /// Bits mask used to state which collision categories this shape can
         /// collide with. This value is 0xFFFF by default. It means that this
         /// proxy shape will collide with every collision categories by default.
-        unsigned short mCollideWithMaskBits;
+        //unsigned short mCollideWithMaskBits;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -231,22 +231,6 @@ inline void* ProxyShape::getUserData() const {
  */
 inline void ProxyShape::setUserData(void* userData) {
     mUserData = userData;
-}
-
-// Return the collision category bits
-/**
- * @return The collision category bits mask of the proxy shape
- */
-inline unsigned short ProxyShape::getCollisionCategoryBits() const {
-    return mCollisionCategoryBits;
-}
-
-// Return the collision bits mask
-/**
- * @return The bits mask that specifies with which collision category this shape will collide
- */
-inline unsigned short ProxyShape::getCollideWithMaskBits() const {
-    return mCollideWithMaskBits;
 }
 
 /// Test if the proxy shape overlaps with a given AABB

@@ -41,7 +41,7 @@ using namespace reactphysics3d;
  */
 ProxyShape::ProxyShape(CollisionBody* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mBody(body),
-            mUserData(nullptr), mCollisionCategoryBits(0x0001), mCollideWithMaskBits(0xFFFF) {
+            mUserData(nullptr) {
 
 }
 
@@ -77,13 +77,14 @@ bool ProxyShape::testPointInside(const Vector3& worldPoint) {
  * @param collisionCategoryBits The collision category bits mask of the proxy shape
  */
 void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
-    mCollisionCategoryBits = collisionCategoryBits;
+
+    mBody->mWorld.mProxyShapesComponents.setCollisionCategoryBits(this, collisionCategoryBits);
 
     int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(broadPhaseId) + ": Set collisionCategoryBits=" +
-             std::to_string(mCollisionCategoryBits));
+             std::to_string(collisionCategoryBits));
 }
 
 // Set the collision bits mask
@@ -91,13 +92,14 @@ void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) 
  * @param collideWithMaskBits The bits mask that specifies with which collision category this shape will collide
  */
 void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
-    mCollideWithMaskBits = collideWithMaskBits;
+
+    mBody->mWorld.mProxyShapesComponents.setCollideWithMaskBits(this, collideWithMaskBits);
 
     int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(broadPhaseId) + ": Set collideWithMaskBits=" +
-             std::to_string(mCollideWithMaskBits));
+             std::to_string(collideWithMaskBits));
 }
 
 // Set the local to parent body transform
@@ -205,6 +207,22 @@ bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     raycastInfo.worldNormal.normalize();
 
     return isHit;
+}
+
+// Return the collision category bits
+/**
+ * @return The collision category bits mask of the proxy shape
+ */
+unsigned short ProxyShape::getCollisionCategoryBits() const {
+    return mBody->mWorld.mProxyShapesComponents.getCollisionCategoryBits(this);
+}
+
+// Return the collision bits mask
+/**
+ * @return The bits mask that specifies with which collision category this shape will collide
+ */
+unsigned short ProxyShape::getCollideWithMaskBits() const {
+    return mBody->mWorld.mProxyShapesComponents.getCollideWithMaskBits(this);
 }
 
 // Return the local to world transform
