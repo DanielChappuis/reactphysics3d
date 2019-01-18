@@ -35,8 +35,8 @@ using namespace reactphysics3d;
 
 // Constructor
 ProxyShapesComponents::ProxyShapesComponents(MemoryAllocator& allocator)
-                    :mMemoryAllocator(allocator), mNbComponents(0), mNbAllocatedComponents(0),
-                     mSleepingStartIndex(0), mBuffer(nullptr), mMapEntityToComponentIndex(allocator),
+                    :Components(allocator),
+                     mSleepingStartIndex(0),
                      mMapProxyShapeToComponentIndex(allocator) {
 
     // Allocate memory for the components data

@@ -148,8 +148,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
 
     LinkedList<int> overlappingNodes(memoryManager.getPoolAllocator());
 
-    // For all collision shapes that have moved (or have been created) during the
-    // last simulation step
+    // For all collision shapes that have moved (or have been created) during the last simulation step
     for (auto it = mMovedShapes.begin(); it != mMovedShapes.end(); ++it) {
         int shapeID = *it;
 
@@ -224,7 +223,7 @@ void BroadPhaseAlgorithm::addOverlappingNodes(int referenceNodeId, const LinkedL
     LinkedList<int>::ListElement* elem = overlappingNodes.getListHead();
     while (elem != nullptr) {
 
-        // If both the nodes are the same, we do not create store the overlapping pair
+        // If both the nodes are the same, we do not create the overlapping pair
         if (referenceNodeId != elem->data) {
 
             // Add the new potential pair into the array of potential overlapping pairs

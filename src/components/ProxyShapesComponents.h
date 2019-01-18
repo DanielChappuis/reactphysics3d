@@ -31,6 +31,7 @@
 #include "engine/Entity.h"
 #include "containers/Map.h"
 #include "collision/shapes/AABB.h"
+#include "components/Components.h"
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -50,17 +51,11 @@ class ProxyShape;
  * link information to quickly know all the proxy shapes of a given entity (body). We also make
  * sure that proxy shapes of sleeping entities (bodies) are always stored at the end of the array.
  */
-class ProxyShapesComponents {
+class ProxyShapesComponents : public Components {
 
     private:
 
         // -------------------- Constants -------------------- //
-
-        /// Number of components to allocated at the beginning
-        const uint32 INIT_ALLOCATED_COMPONENTS = 10;
-
-        /// Number of valid entities to hit before stopping garbage collection
-        const uint32 GARBAGE_COLLECTION_MAX_VALID_ENTITIES = 5;
 
         const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(ProxyShape*) + sizeof(int) + sizeof(AABB) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(decimal) + sizeof(uint32) +
@@ -68,23 +63,8 @@ class ProxyShapesComponents {
 
         // -------------------- Attributes -------------------- //
 
-        /// Memory allocator
-        MemoryAllocator& mMemoryAllocator;
-
-        /// Current number of components
-        uint32 mNbComponents;
-
-        /// Number of allocated components
-        uint32 mNbAllocatedComponents;
-
         /// Index of the first component of a sleeping entity (sleeping components are stored at the end)
         uint32 mSleepingStartIndex;
-
-        /// Allocated memory for all the data of the components
-        void* mBuffer;
-
-        /// Map an entity to the index of its component in the array
-        Map<Entity, uint32> mMapEntityToComponentIndex;
 
         /// Map a proxy shape to the index of the corresponding component in the array
         Map<const ProxyShape*, uint32> mMapProxyShapeToComponentIndex;

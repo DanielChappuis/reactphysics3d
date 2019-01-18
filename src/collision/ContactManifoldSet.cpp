@@ -278,7 +278,6 @@ void ContactManifoldSet::clearObsoleteManifoldsAndContactPoints() {
     }
 }
 
-
 // Remove some contact manifolds and contact points if there are too many of them
 void ContactManifoldSet::reduce() {
 
