@@ -65,6 +65,7 @@ void NarrowPhaseInfo::addContactPoint(const Vector3& contactNormal, decimal penD
                      const Vector3& localPt1, const Vector3& localPt2) {
 
     assert(penDepth > decimal(0.0));
+    assert(contactNormal.length() > decimal(0.8));
 
     // Get the memory allocator
     MemoryAllocator& allocator = overlappingPair->getTemporaryAllocator();

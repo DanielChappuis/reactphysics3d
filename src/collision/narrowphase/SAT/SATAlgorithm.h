@@ -55,10 +55,11 @@ class SATAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-        /// Bias used to make sure the SAT algorithm returns the same penetration axis between frames
-        /// when there are multiple separating axis with the same penetration depth. The goal is to
-        /// make sure the contact manifold does not change too much between frames.
-        static const decimal SAME_SEPARATING_AXIS_BIAS;
+        /// Relative and absolute bias used to make sure the SAT algorithm returns the same penetration axis between frames
+        /// when there are multiple separating axis with almost the same penetration depth. The goal is to
+        /// make sure the contact manifold does not change too much between frames for better stability.
+        static const decimal SEPARATING_AXIS_RELATIVE_TOLERANCE;
+        static const decimal SEPARATING_AXIS_ABSOLUTE_TOLERANCE;
 
         /// Memory allocator
         MemoryAllocator& mMemoryAllocator;
