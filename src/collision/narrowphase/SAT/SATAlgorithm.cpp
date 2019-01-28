@@ -40,8 +40,8 @@
 using namespace reactphysics3d;
 
 // Static variables initialization
-const decimal SATAlgorithm::SEPARATING_AXIS_RELATIVE_TOLERANCE = decimal(1.02);
-const decimal SATAlgorithm::SEPARATING_AXIS_ABSOLUTE_TOLERANCE = decimal(0.005);
+const decimal SATAlgorithm::SEPARATING_AXIS_RELATIVE_TOLERANCE = decimal(1.002);
+const decimal SATAlgorithm::SEPARATING_AXIS_ABSOLUTE_TOLERANCE = decimal(0.0005);
 
 // Constructor
 SATAlgorithm::SATAlgorithm(MemoryAllocator& memoryAllocator) : mMemoryAllocator(memoryAllocator) {
@@ -698,7 +698,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
 
         // We use penetration axis of polygon 1
         isMinPenetrationFaceNormal = true;
-        minPenetrationDepth = penetrationDepth1;
+        minPenetrationDepth = std::min(penetrationDepth1, penetrationDepth2);
         minFaceIndex = faceIndex1;
         isMinPenetrationFaceNormalPolyhedron1 = true;
     }
@@ -706,7 +706,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
 
         // We use penetration axis of polygon 2
         isMinPenetrationFaceNormal = true;
-        minPenetrationDepth = penetrationDepth2;
+        minPenetrationDepth = std::min(penetrationDepth1, penetrationDepth2);
         minFaceIndex = faceIndex2;
         isMinPenetrationFaceNormalPolyhedron1 = false;
     }
