@@ -23,6 +23,7 @@
  - Bug [#62](https://github.com/DanielChappuis/reactphysics3d/issues/62) has been fixed.
  - Bug [#63](https://github.com/DanielChappuis/reactphysics3d/issues/63) has been fixed.
  - Bug [#82](https://github.com/DanielChappuis/reactphysics3d/issues/82) has been fixed.
+ - Bug [#85](https://github.com/DanielChappuis/reactphysics3d/issues/85) has been fixed.
  - Bug: the free() method was called in PoolAllocator instead of release() method of base allocator.
 
 ## Version 0.7.0 (May 1, 2018)
