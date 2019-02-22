@@ -100,6 +100,9 @@ DefaultPoolAllocator::~DefaultPoolAllocator() {
 // allocated memory.
 void* DefaultPoolAllocator::allocate(size_t size) {
 
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
+
     // We cannot allocate zero bytes
     if (size == 0) return nullptr;
 
@@ -172,6 +175,9 @@ void* DefaultPoolAllocator::allocate(size_t size) {
 
 // Release previously allocated memory.
 void DefaultPoolAllocator::release(void* pointer, size_t size) {
+
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
 
     // Cannot release a 0-byte allocated memory
     if (size == 0) return;

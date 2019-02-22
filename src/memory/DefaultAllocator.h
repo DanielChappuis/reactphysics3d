@@ -29,6 +29,7 @@
 // Libraries
 #include "memory/MemoryAllocator.h"
 #include <cstdlib>
+#include <mutex>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -38,6 +39,11 @@ namespace reactphysics3d {
  * This class represents a default memory allocator that uses default malloc/free methods
  */
 class DefaultAllocator : public MemoryAllocator {
+
+    protected:
+
+        /// Mutex
+        std::mutex mMutex;
 
     public:
 
@@ -50,11 +56,19 @@ class DefaultAllocator : public MemoryAllocator {
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
         virtual void* allocate(size_t size) override {
+
+            // Lock the method with a mutex
+            std::lock_guard<std::mutex> lock(mMutex);
+
             return malloc(size);
         }
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size) override {
+
+            // Lock the method with a mutex
+            std::lock_guard<std::mutex> lock(mMutex);
+
             free(pointer);
         }
 };

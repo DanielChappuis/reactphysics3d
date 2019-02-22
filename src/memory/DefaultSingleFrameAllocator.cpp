@@ -54,6 +54,9 @@ DefaultSingleFrameAllocator::~DefaultSingleFrameAllocator() {
 // allocated memory.
 void* DefaultSingleFrameAllocator::allocate(size_t size) {
 
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
+
     // Check that there is enough remaining memory in the buffer
     if (mCurrentOffset + size > mTotalSizeBytes) {
 
@@ -76,6 +79,9 @@ void* DefaultSingleFrameAllocator::allocate(size_t size) {
 
 // Release previously allocated memory.
 void DefaultSingleFrameAllocator::release(void* pointer, size_t size) {
+
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
 
     // If allocated memory is not within the single frame allocation range
     char* p = static_cast<char*>(pointer);

@@ -29,6 +29,7 @@
 // Libraries
 #include "MemoryAllocator.h"
 #include "configuration.h"
+#include <mutex>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -52,7 +53,11 @@ class DefaultSingleFrameAllocator : public SingleFrameAllocator {
         static const size_t INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES = 1048576; // 1Mb
 
         // -------------------- Attributes -------------------- //
-		/// Cached memory allocator used on construction
+
+        /// Mutex
+        std::mutex mMutex;
+
+        /// Cached memory allocator used on construction
 		MemoryAllocator* mBaseMemoryAllocator;
 
         /// Total size (in bytes) of memory of the allocator

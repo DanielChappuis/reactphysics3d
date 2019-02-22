@@ -29,6 +29,7 @@
 // Libraries
 #include "configuration.h"
 #include "MemoryAllocator.h"
+#include <mutex>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -100,6 +101,9 @@ class DefaultPoolAllocator : public MemoryAllocator {
 
         /// True if the mMapSizeToHeapIndex array has already been initialized
         static bool isMapSizeToHeadIndexInitialized;
+
+        /// Mutex
+        std::mutex mMutex;
 
         /// Pointers to the first free memory unit for each heap
         MemoryUnit* mFreeMemoryUnits[NB_HEAPS];
