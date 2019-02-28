@@ -51,19 +51,19 @@ class MemoryManager {
        static DefaultAllocator mDefaultAllocator;
 	   
        /// Default single frame memory allocator
-       static DefaultSingleFrameAllocator mDefaultSingleFrameAllocator;
+       DefaultSingleFrameAllocator mDefaultSingleFrameAllocator;
 
        /// Default pool memory allocator
-       static DefaultPoolAllocator mDefaultPoolAllocator;
+       DefaultPoolAllocator mDefaultPoolAllocator;
 
        /// Pointer to the base memory allocator to use
        static MemoryAllocator* mBaseAllocator;
 
        /// Single frame stack allocator
-       static SingleFrameAllocator* mSingleFrameAllocator;
+       SingleFrameAllocator* mSingleFrameAllocator;
 
        /// Memory pool allocator
-       static MemoryAllocator* mPoolAllocator;
+       MemoryAllocator* mPoolAllocator;
 
     public:
 
@@ -75,7 +75,7 @@ class MemoryManager {
        };
 
        /// Constructor
-       MemoryManager() = default;
+       MemoryManager();
 
        /// Destructor
        ~MemoryManager() = default;
@@ -99,10 +99,10 @@ class MemoryManager {
         static void setBaseAllocator(MemoryAllocator* memoryAllocator);
 
         /// Set the single frame memory allocator
-        static void setSingleFrameAllocator(SingleFrameAllocator* singleFrameAllocator);
+        void setSingleFrameAllocator(SingleFrameAllocator* singleFrameAllocator);
 
         /// Set the pool memory allocator
-        static void setPoolAllocator(MemoryAllocator* poolAllocator);
+        void setPoolAllocator(MemoryAllocator* poolAllocator);
 
         /// Reset the single frame allocator
         void resetFrameAllocator();
