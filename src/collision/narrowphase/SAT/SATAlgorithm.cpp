@@ -599,7 +599,8 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 }
 
                 // If the shapes were overlapping on the previous axis and still seem to overlap in this frame
-                if (lastFrameCollisionInfo->wasColliding && penetrationDepth > decimal(0.0)) {
+                if (lastFrameCollisionInfo->wasColliding && penetrationDepth > decimal(0.0) &&
+                    penetrationDepth < DECIMAL_LARGEST) {
 
                     // Compute the closest points between the two edges (in the local-space of poylhedron 2)
                     Vector3 closestPointPolyhedron1Edge, closestPointPolyhedron2Edge;
