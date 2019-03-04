@@ -25,7 +25,7 @@
 
 // Libraries
 #include "DynamicAABBTree.h"
-#include "BroadPhaseAlgorithm.h"
+#include "systems/BroadPhaseSystem.h"
 #include "containers/Stack.h"
 #include "utils/Profiler.h"
 

@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "BroadPhaseAlgorithm.h"
+#include "BroadPhaseSystem.h"
 #include "collision/CollisionDetection.h"
 #include "utils/Profiler.h"
 #include "collision/RaycastInfo.h"
@@ -35,7 +35,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection, ProxyShapesComponents& proxyShapesComponents)
+BroadPhaseSystem::BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapesComponents& proxyShapesComponents)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
                      mProxyShapesComponents(proxyShapesComponents),
                      mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
@@ -51,7 +51,7 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection,
 }
 
 // Return true if the two broad-phase collision shapes are overlapping
-bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
+bool BroadPhaseSystem::testOverlappingShapes(const ProxyShape* shape1,
                                                        const ProxyShape* shape2) const {
 
     if (shape1->getBroadPhaseId() == -1 || shape2->getBroadPhaseId() == -1) return false;
@@ -65,7 +65,7 @@ bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
 }
 
 // Ray casting method
-void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
+void BroadPhaseSystem::raycast(const Ray& ray, RaycastTest& raycastTest,
                                          unsigned short raycastWithCategoryMaskBits) const {
 
     RP3D_PROFILE("BroadPhaseAlgorithm::raycast()", mProfiler);
@@ -76,7 +76,7 @@ void BroadPhaseAlgorithm::raycast(const Ray& ray, RaycastTest& raycastTest,
 }
 
 // Add a proxy collision shape into the broad-phase collision detection
-void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
+void BroadPhaseSystem::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
 
     assert(proxyShape->getBroadPhaseId() == -1);
 
@@ -92,7 +92,7 @@ void BroadPhaseAlgorithm::addProxyCollisionShape(ProxyShape* proxyShape, const A
 }
 
 // Remove a proxy collision shape from the broad-phase collision detection
-void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
+void BroadPhaseSystem::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
     assert(proxyShape->getBroadPhaseId() != -1);
 
@@ -109,7 +109,7 @@ void BroadPhaseAlgorithm::removeProxyCollisionShape(ProxyShape* proxyShape) {
 }
 
 // Notify the broad-phase that a collision shape has moved and need to be updated
-void BroadPhaseAlgorithm::updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
+void BroadPhaseSystem::updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
                                                     const Vector3& displacement, bool forceReinsert) {
 
     int broadPhaseID = proxyShape->getBroadPhaseId();
@@ -129,7 +129,7 @@ void BroadPhaseAlgorithm::updateProxyCollisionShape(ProxyShape* proxyShape, cons
     }
 }
 
-void BroadPhaseAlgorithm::reportAllShapesOverlappingWithAABB(const AABB& aabb,
+void BroadPhaseSystem::reportAllShapesOverlappingWithAABB(const AABB& aabb,
                                                              LinkedList<int>& overlappingNodes) const {
 
     AABBOverlapCallback callback(overlappingNodes);
@@ -139,7 +139,7 @@ void BroadPhaseAlgorithm::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 }
 
 // Compute all the overlapping pairs of collision shapes
-void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) {
+void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager) {
 
     // TODO : Try to see if we can allocate potential pairs in single frame allocator
 
@@ -217,7 +217,7 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
 }
 
 // Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
-void BroadPhaseAlgorithm::addOverlappingNodes(int referenceNodeId, const LinkedList<int>& overlappingNodes) {
+void BroadPhaseSystem::addOverlappingNodes(int referenceNodeId, const LinkedList<int>& overlappingNodes) {
 
     // For each overlapping node in the linked list
     LinkedList<int>::ListElement* elem = overlappingNodes.getListHead();

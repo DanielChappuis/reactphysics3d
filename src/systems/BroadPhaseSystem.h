@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_BROAD_PHASE_ALGORITHM_H
 
 // Libraries
-#include "DynamicAABBTree.h"
+#include "collision/broadphase/DynamicAABBTree.h"
 #include "containers/LinkedList.h"
 #include "containers/Set.h"
 #include "components/ProxyShapesComponents.h"
@@ -37,7 +37,7 @@ namespace reactphysics3d {
 
 // Declarations
 class CollisionDetection;
-class BroadPhaseAlgorithm;
+class BroadPhaseSystem;
 class CollisionBody;
 class ProxyShape;
 class MemoryManager;
@@ -132,7 +132,7 @@ class BroadPhaseRaycastCallback : public DynamicAABBTreeRaycastCallback {
  * later for collision during the narrow-phase collision detection. A dynamic AABB
  * tree data structure is used for fast broad-phase collision detection.
  */
-class BroadPhaseAlgorithm {
+class BroadPhaseSystem {
 
     protected :
 
@@ -167,16 +167,16 @@ class BroadPhaseAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BroadPhaseAlgorithm(CollisionDetection& collisionDetection, ProxyShapesComponents& proxyShapesComponents);
+        BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapesComponents& proxyShapesComponents);
 
         /// Destructor
-        ~BroadPhaseAlgorithm() = default;
+        ~BroadPhaseSystem() = default;
 
         /// Deleted copy-constructor
-        BroadPhaseAlgorithm(const BroadPhaseAlgorithm& algorithm) = delete;
+        BroadPhaseSystem(const BroadPhaseSystem& algorithm) = delete;
 
         /// Deleted assignment operator
-        BroadPhaseAlgorithm& operator=(const BroadPhaseAlgorithm& algorithm) = delete;
+        BroadPhaseSystem& operator=(const BroadPhaseSystem& algorithm) = delete;
         
         /// Add a proxy collision shape into the broad-phase collision detection
         void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
@@ -238,13 +238,13 @@ inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1,
 }
 
 // Return the fat AABB of a given broad-phase shape
-inline const AABB& BroadPhaseAlgorithm::getFatAABB(int broadPhaseId) const  {
+inline const AABB& BroadPhaseSystem::getFatAABB(int broadPhaseId) const  {
     return mDynamicAABBTree.getFatAABB(broadPhaseId);
 }
 
 // Add a collision shape in the array of shapes that have moved in the last simulation step
 // and that need to be tested again for broad-phase overlapping.
-inline void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
+inline void BroadPhaseSystem::addMovedCollisionShape(int broadPhaseID) {
 
     // Store the broad-phase ID into the array of shapes that have moved
     mMovedShapes.add(broadPhaseID);
@@ -252,21 +252,21 @@ inline void BroadPhaseAlgorithm::addMovedCollisionShape(int broadPhaseID) {
 
 // Remove a collision shape from the array of shapes that have moved in the last simulation step
 // and that need to be tested again for broad-phase overlapping.
-inline void BroadPhaseAlgorithm::removeMovedCollisionShape(int broadPhaseID) {
+inline void BroadPhaseSystem::removeMovedCollisionShape(int broadPhaseID) {
 
     // Remove the broad-phase ID from the set
     mMovedShapes.remove(broadPhaseID);
 }
 
 // Return the proxy shape corresponding to the broad-phase node id in parameter
-inline ProxyShape* BroadPhaseAlgorithm::getProxyShapeForBroadPhaseId(int broadPhaseId) const {
+inline ProxyShape* BroadPhaseSystem::getProxyShapeForBroadPhaseId(int broadPhaseId) const {
     return static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(broadPhaseId));
 }
 
 #ifdef IS_PROFILING_ACTIVE
 
 // Set the profiler
-inline void BroadPhaseAlgorithm::setProfiler(Profiler* profiler) {
+inline void BroadPhaseSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 	mDynamicAABBTree.setProfiler(profiler);
 }

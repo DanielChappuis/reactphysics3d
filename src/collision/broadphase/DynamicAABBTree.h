@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class BroadPhaseAlgorithm;
+class BroadPhaseSystem;
 class BroadPhaseRaycastTestCallback;
 class DynamicAABBTreeOverlapCallback;
 class CollisionBody;

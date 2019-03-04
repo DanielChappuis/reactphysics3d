@@ -50,7 +50,7 @@ using namespace std;
 // Constructor
 CollisionDetection::CollisionDetection(CollisionWorld* world, ProxyShapesComponents& proxyShapesComponents, MemoryManager& memoryManager)
                    : mMemoryManager(memoryManager), mProxyShapesComponents(proxyShapesComponents), mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
-                     mOverlappingPairs(mMemoryManager.getPoolAllocator()), mBroadPhaseAlgorithm(*this, mProxyShapesComponents),
+                     mOverlappingPairs(mMemoryManager.getPoolAllocator()), mBroadPhaseSystem(*this, mProxyShapesComponents),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()), mIsCollisionShapesAdded(false),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator()) {
 
@@ -89,7 +89,7 @@ void CollisionDetection::computeBroadPhase() {
         // Ask the broad-phase to recompute the overlapping pairs of collision
         // shapes. This call can only add new overlapping pairs in the collision
         // detection.
-        mBroadPhaseAlgorithm.computeOverlappingPairs(mMemoryManager);
+        mBroadPhaseSystem.computeOverlappingPairs(mMemoryManager);
     }
 }
 
@@ -121,7 +121,7 @@ void CollisionDetection::computeMiddlePhase() {
 
         // Check if the two shapes are still overlapping. Otherwise, we destroy the
         // overlapping pair
-        if (!mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
+        if (!mBroadPhaseSystem.testOverlappingShapes(shape1, shape2)) {
 
             // Destroy the overlapping pair
             pair->~OverlappingPair();
@@ -393,7 +393,7 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
     }
 
     // Remove the body from the broad-phase
-    mBroadPhaseAlgorithm.removeProxyCollisionShape(proxyShape);
+    mBroadPhaseSystem.removeProxyCollisionShape(proxyShape);
 }
 
 void CollisionDetection::addAllContactManifoldsToBodies() {
@@ -420,7 +420,7 @@ void CollisionDetection::raycast(RaycastCallback* raycastCallback,
 
     // Ask the broad-phase algorithm to call the testRaycastAgainstShape()
     // callback method for each proxy shape hit by the ray in the broad-phase
-    mBroadPhaseAlgorithm.raycast(ray, rayCastTest, raycastWithCategoryMaskBits);
+    mBroadPhaseSystem.raycast(ray, rayCastTest, raycastWithCategoryMaskBits);
 }
 
 // Add a contact manifold to the linked list of contact manifolds of the two bodies involved
@@ -571,7 +571,7 @@ void CollisionDetection::testAABBOverlap(const AABB& aabb, OverlapCallback* over
 
     // Ask the broad-phase to get all the overlapping shapes
     LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
-    mBroadPhaseAlgorithm.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
+    mBroadPhaseSystem.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
 
     // For each overlaping proxy shape
     LinkedList<int>::ListElement* element = overlappingNodes.getListHead();
@@ -579,7 +579,7 @@ void CollisionDetection::testAABBOverlap(const AABB& aabb, OverlapCallback* over
 
         // Get the overlapping proxy shape
         int broadPhaseId = element->data;
-        ProxyShape* proxyShape = mBroadPhaseAlgorithm.getProxyShapeForBroadPhaseId(broadPhaseId);
+        ProxyShape* proxyShape = mBroadPhaseSystem.getProxyShapeForBroadPhaseId(broadPhaseId);
 
         CollisionBody* overlapBody = proxyShape->getBody();
 
@@ -662,11 +662,11 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
         if (bodyProxyShape->getBroadPhaseId() != -1) {
 
             // Get the AABB of the shape
-            const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->getBroadPhaseId());
+            const AABB& shapeAABB = mBroadPhaseSystem.getFatAABB(bodyProxyShape->getBroadPhaseId());
 
             // Ask the broad-phase to get all the overlapping shapes
             LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
-            mBroadPhaseAlgorithm.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
+            mBroadPhaseSystem.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
 
             const bodyindex bodyId = body->getId();
 
@@ -676,7 +676,7 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
 
                 // Get the overlapping proxy shape
                 int broadPhaseId = element->data;
-                ProxyShape* proxyShape = mBroadPhaseAlgorithm.getProxyShapeForBroadPhaseId(broadPhaseId);
+                ProxyShape* proxyShape = mBroadPhaseSystem.getProxyShapeForBroadPhaseId(broadPhaseId);
 
                 // If the proxy shape is from a body that we have not already reported collision and the
                 // two proxy collision shapes are not from the same body
@@ -818,11 +818,11 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
         if (bodyProxyShape->getBroadPhaseId() != -1) {
 
             // Get the AABB of the shape
-            const AABB& shapeAABB = mBroadPhaseAlgorithm.getFatAABB(bodyProxyShape->getBroadPhaseId());
+            const AABB& shapeAABB = mBroadPhaseSystem.getFatAABB(bodyProxyShape->getBroadPhaseId());
 
             // Ask the broad-phase to get all the overlapping shapes
             LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
-            mBroadPhaseAlgorithm.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
+            mBroadPhaseSystem.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
 
             const bodyindex bodyId = body->getId();
 
@@ -832,7 +832,7 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
 
                 // Get the overlapping proxy shape
                 int broadPhaseId = element->data;
-                ProxyShape* proxyShape = mBroadPhaseAlgorithm.getProxyShapeForBroadPhaseId(broadPhaseId);
+                ProxyShape* proxyShape = mBroadPhaseSystem.getProxyShapeForBroadPhaseId(broadPhaseId);
 
                 // If the two proxy collision shapes are not from the same body
                 if (proxyShape->getBody()->getId() != bodyId) {
@@ -948,7 +948,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
         // that the two shapes are still overlapping.
         if (((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) != 0 &&
              (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) != 0) &&
-             mBroadPhaseAlgorithm.testOverlappingShapes(shape1, shape2)) {
+             mBroadPhaseSystem.testOverlappingShapes(shape1, shape2)) {
 
             // Compute the middle-phase collision detection between the two shapes
             computeMiddlePhaseForProxyShapes(pair, narrowPhaseInput);
@@ -990,5 +990,5 @@ EventListener* CollisionDetection::getWorldEventListener() {
 // Return the world-space AABB of a given proxy shape
 const AABB CollisionDetection::getWorldAABB(const ProxyShape* proxyShape) const {
     assert(proxyShape->getBroadPhaseId() > -1);
-    return mBroadPhaseAlgorithm.getFatAABB(proxyShape->getBroadPhaseId());
+    return mBroadPhaseSystem.getFatAABB(proxyShape->getBroadPhaseId());
 }

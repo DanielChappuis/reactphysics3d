@@ -28,7 +28,7 @@
 
 // Libraries
 #include "body/CollisionBody.h"
-#include "broadphase/BroadPhaseAlgorithm.h"
+#include "systems/BroadPhaseSystem.h"
 #include "collision/shapes/CollisionShape.h"
 #include "engine/OverlappingPair.h"
 #include "collision/narrowphase/NarrowPhaseInput.h"
@@ -80,8 +80,8 @@ class CollisionDetection {
         /// Broad-phase overlapping pairs
         OverlappingPairMap mOverlappingPairs;
 
-        /// Broad-phase algorithm
-        BroadPhaseAlgorithm mBroadPhaseAlgorithm;
+        /// Broad-phase system
+        BroadPhaseSystem mBroadPhaseSystem;
 
         /// Set of pair of bodies that cannot collide between each other
         Set<bodyindexpair> mNoCollisionPairs;
@@ -245,7 +245,7 @@ inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape,
                                                        const AABB& aabb) {
     
     // Add the body to the broad-phase
-    mBroadPhaseAlgorithm.addProxyCollisionShape(proxyShape, aabb);
+    mBroadPhaseSystem.addProxyCollisionShape(proxyShape, aabb);
 
     mIsCollisionShapesAdded = true;
 }  
@@ -268,14 +268,14 @@ inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
 inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
 
     if (shape->getBroadPhaseId() != -1) {
-        mBroadPhaseAlgorithm.addMovedCollisionShape(shape->getBroadPhaseId());
+        mBroadPhaseSystem.addMovedCollisionShape(shape->getBroadPhaseId());
     }
 }
 
 // Update a proxy collision shape (that has moved for instance)
 inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
                                                           const Vector3& displacement, bool forceReinsert) {
-    mBroadPhaseAlgorithm.updateProxyCollisionShape(shape, aabb, displacement);
+    mBroadPhaseSystem.updateProxyCollisionShape(shape, aabb, displacement);
 }
 
 
@@ -294,7 +294,7 @@ inline MemoryManager& CollisionDetection::getMemoryManager() const {
 // Set the profiler
 inline void CollisionDetection::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
-	mBroadPhaseAlgorithm.setProfiler(profiler);
+    mBroadPhaseSystem.setProfiler(profiler);
     mCollisionDispatch.setProfiler(profiler);
 }
 
