@@ -39,8 +39,8 @@ using namespace reactphysics3d;
  * @param transform Transformation from collision shape local-space to body local-space
  * @param mass Mass of the collision shape (in kilograms)
  */
-ProxyShape::ProxyShape(CollisionBody* body, MemoryManager& memoryManager)
-           :mMemoryManager(memoryManager), mBody(body),
+ProxyShape::ProxyShape(Entity entity, CollisionBody* body, MemoryManager& memoryManager)
+           :mMemoryManager(memoryManager), mEntity(entity), mBody(body),
             mUserData(nullptr) {
 
 }
@@ -55,7 +55,7 @@ ProxyShape::~ProxyShape() {
  * @return Mass of the collision shape (in kilograms)
  */
 decimal ProxyShape::getMass() const {
-    return mBody->mWorld.mProxyShapesComponents.getMass(this);
+    return mBody->mWorld.mProxyShapesComponents.getMass(mEntity);
 }
 
 
@@ -66,9 +66,9 @@ decimal ProxyShape::getMass() const {
  */
 bool ProxyShape::testPointInside(const Vector3& worldPoint) {
     const Transform localToWorld = mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) *
-                                   mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
+                                   mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(mEntity);
     const Vector3 localPoint = localToWorld.getInverse() * worldPoint;
-    const CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    const CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(mEntity);
     return collisionShape->testPointInside(localPoint, this);
 }
 
@@ -78,9 +78,9 @@ bool ProxyShape::testPointInside(const Vector3& worldPoint) {
  */
 void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
 
-    mBody->mWorld.mProxyShapesComponents.setCollisionCategoryBits(this, collisionCategoryBits);
+    mBody->mWorld.mProxyShapesComponents.setCollisionCategoryBits(mEntity, collisionCategoryBits);
 
-    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
+    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(mEntity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(broadPhaseId) + ": Set collisionCategoryBits=" +
@@ -93,9 +93,9 @@ void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) 
  */
 void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
 
-    mBody->mWorld.mProxyShapesComponents.setCollideWithMaskBits(this, collideWithMaskBits);
+    mBody->mWorld.mProxyShapesComponents.setCollideWithMaskBits(mEntity, collideWithMaskBits);
 
-    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
+    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(mEntity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(broadPhaseId) + ": Set collideWithMaskBits=" +
@@ -106,14 +106,14 @@ void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
 void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
     //mLocalToBodyTransform = transform;
-    mBody->mWorld.mProxyShapesComponents.setLocalToBodyTransform(this, transform);
+    mBody->mWorld.mProxyShapesComponents.setLocalToBodyTransform(mEntity, transform);
 
     mBody->setIsSleeping(false);
 
     // Notify the body that the proxy shape has to be updated in the broad-phase
     mBody->updateProxyShapeInBroadPhase(this, true);
 
-    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
+    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(mEntity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(broadPhaseId) + ": Set localToBodyTransform=" +
@@ -126,7 +126,7 @@ void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
  */
 const AABB ProxyShape::getWorldAABB() const {
     AABB aabb;
-    CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(mEntity);
     collisionShape->computeAABB(aabb, getLocalToWorldTransform());
     return aabb;
 }
@@ -136,7 +136,7 @@ const AABB ProxyShape::getWorldAABB() const {
  * @return Pointer to the internal collision shape
  */
 const CollisionShape* ProxyShape::getCollisionShape() const {
-    return mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    return mBody->mWorld.mProxyShapesComponents.getCollisionShape(mEntity);
 }
 
 // Return the collision shape
@@ -144,12 +144,12 @@ const CollisionShape* ProxyShape::getCollisionShape() const {
 * @return Pointer to the internal collision shape
 */
 CollisionShape* ProxyShape::getCollisionShape() {
-    return mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    return mBody->mWorld.mProxyShapesComponents.getCollisionShape(mEntity);
 }
 
 // Return the broad-phase id
 int ProxyShape::getBroadPhaseId() const {
-    return mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(this);
+    return mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(mEntity);
 }
 
 // Return the local to parent body transform
@@ -158,25 +158,7 @@ int ProxyShape::getBroadPhaseId() const {
  *         to the local-space of the parent body
  */
 const Transform& ProxyShape::getLocalToBodyTransform() const {
-    return mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
-}
-
-// Return the next proxy shape in the linked list of proxy shapes
-/**
- * @return Pointer to the next proxy shape in the linked list of proxy shapes
- */
-ProxyShape* ProxyShape::getNext() {
-    // TODO : Delete this method
-    return mBody->mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(this);
-}
-
-// Return the next proxy shape in the linked list of proxy shapes
-/**
- * @return Pointer to the next proxy shape in the linked list of proxy shapes
- */
-const ProxyShape* ProxyShape::getNext() const {
-    // TODO : Delete this method
-    return mBody->mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(this);
+    return mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(mEntity);
 }
 
 // Raycast method with feedback information
@@ -198,7 +180,7 @@ bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
                  worldToLocalTransform * ray.point2,
                  ray.maxFraction);
 
-    const CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    const CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(mEntity);
     bool isHit = collisionShape->raycast(rayLocal, raycastInfo, this, mMemoryManager.getPoolAllocator());
 
     // Convert the raycast info into world-space
@@ -214,7 +196,7 @@ bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
  * @return The collision category bits mask of the proxy shape
  */
 unsigned short ProxyShape::getCollisionCategoryBits() const {
-    return mBody->mWorld.mProxyShapesComponents.getCollisionCategoryBits(this);
+    return mBody->mWorld.mProxyShapesComponents.getCollisionCategoryBits(mEntity);
 }
 
 // Return the collision bits mask
@@ -222,7 +204,7 @@ unsigned short ProxyShape::getCollisionCategoryBits() const {
  * @return The bits mask that specifies with which collision category this shape will collide
  */
 unsigned short ProxyShape::getCollideWithMaskBits() const {
-    return mBody->mWorld.mProxyShapesComponents.getCollideWithMaskBits(this);
+    return mBody->mWorld.mProxyShapesComponents.getCollideWithMaskBits(mEntity);
 }
 
 // Return the local to world transform
@@ -232,7 +214,7 @@ unsigned short ProxyShape::getCollideWithMaskBits() const {
  */
 const Transform ProxyShape::getLocalToWorldTransform() const {
     return mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) *
-           mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(this);
+           mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(mEntity);
 }
 
 #ifdef IS_PROFILING_ACTIVE
@@ -242,7 +224,7 @@ void ProxyShape::setProfiler(Profiler* profiler) {
 
     mProfiler = profiler;
 
-    CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(this);
+    CollisionShape* collisionShape = mBody->mWorld.mProxyShapesComponents.getCollisionShape(mEntity);
     collisionShape->setProfiler(profiler);
 }
 

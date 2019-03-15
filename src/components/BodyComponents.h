@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_TRANSFORM_COMPONENTS_H
-#define REACTPHYSICS3D_TRANSFORM_COMPONENTS_H
+#ifndef REACTPHYSICS3D_BODY_COMPONENTS_H
+#define REACTPHYSICS3D_BODY_COMPONENTS_H
 
 // Libraries
 #include "mathematics/Transform.h"
@@ -38,20 +38,20 @@ namespace reactphysics3d {
 // Class declarations
 class MemoryAllocator;
 class EntityManager;
+class Body;
 
-// Class TransformComponents
+// Class BodyComponents
 /**
- * This class represent the component of the ECS that contains the transforms of the
- * different entities. The position and orientation of the bodies are stored there.
+ * This class represent the component of the ECS that contains data about a physics body.
  * The components of the sleeping entities (bodies) are always stored at the end of the array.
  */
-class TransformComponents : public Components {
+class BodyComponents : public Components {
 
     private:
 
         // -------------------- Constants -------------------- //
 
-        const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(Transform);
+        const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(Body*) + sizeof(List<Entity>);
 
         // -------------------- Attributes -------------------- //
 
@@ -59,10 +59,13 @@ class TransformComponents : public Components {
         uint32 mSleepingStartIndex;
 
         /// Array of body entities of each component
-        Entity* mBodies;
+        Entity* mBodiesEntities;
 
-        /// Array of transform of each component
-        Transform* mTransforms;
+        /// Array of pointers to the corresponding bodies
+        Body** mBodies;
+
+        /// Array with the list of proxy-shapes of each body
+        List<Entity>* mProxyShapes;
 
         // -------------------- Methods -------------------- //
 
@@ -77,13 +80,13 @@ class TransformComponents : public Components {
 
     public:
 
-        /// Structure for the data of a transform component
-        struct TransformComponent {
+        /// Structure for the data of a body component
+        struct BodyComponent {
 
-            const Transform& transform;
+            Body* body;
 
             /// Constructor
-            TransformComponent(const Transform& transform) : transform(transform) {
+            BodyComponent(Body* body) : body(body) {
 
             }
         };
@@ -91,38 +94,66 @@ class TransformComponents : public Components {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        TransformComponents(MemoryAllocator& allocator);
+        BodyComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~TransformComponents();
+        virtual ~BodyComponents();
 
         /// Allocate memory for a given number of components
         void allocate(uint32 nbComponentsToAllocate);
 
         /// Add a component
-        void addComponent(Entity bodyEntity, bool isSleeping, const TransformComponent& component);
+        void addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component);
 
         /// Remove a component at a given index
         void removeComponent(Entity bodyEntity);
 
-        /// Return the transform of an entity
-        Transform& getTransform(Entity bodyEntity) const;
+        /// Add a proxy-shape to a body component
+        void addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity);
 
         /// Set the transform of an entity
-        void setTransform(Entity bodyEntity, const Transform& transform);
+        void removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity);
+
+        /// Return a pointer to a body
+        Body* getBody(Entity bodyEntity);
+
+        /// Return the list of proxy-shapes of a body
+        const List<Entity>& getProxyShapes(Entity bodyEntity) const;
 
         /// Notify if a given entity is sleeping or not
         void setIsEntitySleeping(Entity bodyEntity, bool isSleeping);
 };
 
-// Return the transform of an entity
-inline Transform& TransformComponents::getTransform(Entity bodyEntity) const {
-    return mTransforms[mMapEntityToComponentIndex[bodyEntity]];
+// Add a proxy-shape to a body component
+inline void BodyComponents::addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    mProxyShapes[mMapEntityToComponentIndex[bodyEntity]].add(proxyShapeEntity);
 }
 
 // Set the transform of an entity
-inline void TransformComponents::setTransform(Entity bodyEntity, const Transform& transform) {
-    mTransforms[mMapEntityToComponentIndex[bodyEntity]] = transform;
+inline void BodyComponents::removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    mProxyShapes[mMapEntityToComponentIndex[bodyEntity]].remove(proxyShapeEntity);
+}
+
+// Return a pointer to a body
+inline Body* BodyComponents::getBody(Entity bodyEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    return mBodies[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the list of proxy-shapes of a body
+inline const List<Entity>& BodyComponents::getProxyShapes(Entity bodyEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    return mProxyShapes[mMapEntityToComponentIndex[bodyEntity]];
 }
 
 }

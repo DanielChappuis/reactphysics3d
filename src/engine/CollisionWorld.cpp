@@ -38,9 +38,10 @@ uint CollisionWorld::mNbWorlds = 0;
 // Constructor
 CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
                : mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
-                 mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
-                 mCollisionDetection(this, mProxyShapesComponents, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0),
-                 mFreeBodiesIds(mMemoryManager.getPoolAllocator()), mEventListener(nullptr), mName(worldSettings.worldName),
+                 mBodyComponents(mMemoryManager.getBaseAllocator()), mTransformComponents(mMemoryManager.getBaseAllocator()),
+                 mProxyShapesComponents(mMemoryManager.getBaseAllocator()), mCollisionDetection(this, mProxyShapesComponents, mMemoryManager),
+                 mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0), mFreeBodiesIds(mMemoryManager.getPoolAllocator()),
+                 mEventListener(nullptr), mName(worldSettings.worldName),
                  mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {
 
@@ -131,6 +132,9 @@ CollisionWorld::~CollisionWorld() {
 #endif
 
     assert(mBodies.size() == 0);
+    assert(mBodyComponents.getNbComponents() == 0);
+    assert(mTransformComponents.getNbComponents() == 0);
+    assert(mProxyShapesComponents.getNbComponents() == 0);
 }
 
 // Create a collision body and add it to the world
@@ -149,7 +153,6 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     // Largest index cannot be used (it is used for invalid index)
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
-    // Add a transform component
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
 
     // Create the collision body
@@ -158,6 +161,10 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
                                         CollisionBody(*this, entity, bodyID);
 
     assert(collisionBody != nullptr);
+
+    // Add the components
+    BodyComponents::BodyComponent bodyComponent(collisionBody);
+    mBodyComponents.addComponent(entity, false, bodyComponent);
 
     // Add the collision body to the world
     mBodies.add(collisionBody);
@@ -197,8 +204,9 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Reset the contact manifold list of the body
     collisionBody->resetContactManifoldsList();
 
-    // Destroy the entity and its components
-    destroyEntity(collisionBody->getEntity());
+    mBodyComponents.removeComponent(collisionBody->getEntity());
+    mTransformComponents.removeComponent(collisionBody->getEntity());
+    mEntityManager.destroyEntity(collisionBody->getEntity());
 
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();
@@ -239,26 +247,19 @@ void CollisionWorld::resetContactManifoldListsOfBodies() {
 }
 
 // Notify the world if a body is sleeping or not
-void CollisionWorld::notifyBodySleeping(Entity entity, bool isSleeping) {
+void CollisionWorld::notifyBodySleeping(Entity bodyEntity, bool isSleeping) {
 
     // TODO : Make sure we notify all the components here ...
 
     // Notify all the components
-    mTransformComponents.setIsEntitySleeping(entity, isSleeping);
-    mProxyShapesComponents.setIsEntitySleeping(entity, isSleeping);
-}
+    mTransformComponents.setIsEntitySleeping(bodyEntity, isSleeping);
 
-// Destroy an entity and all the associated components
-void CollisionWorld::destroyEntity(Entity entity) {
+    // For each proxy-shape of the body
+    const List<Entity>& proxyShapesEntities = mBodyComponents.getProxyShapes(bodyEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
 
-    // Destroy the corresponding entity
-    mEntityManager.destroyEntity(entity);
-
-    // TODO : Make sure we notify all the components here ...
-
-    // Notify all the components
-    mTransformComponents.removeComponents(entity);
-    mProxyShapesComponents.removeComponents(entity);
+        mProxyShapesComponents.setIsEntitySleeping(proxyShapesEntities[i], isSleeping);
+    }
 }
 
 // Test if the AABBs of two bodies overlap

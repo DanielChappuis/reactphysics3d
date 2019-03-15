@@ -54,6 +54,9 @@ class ProxyShape {
         /// Reference to the memory manager
         MemoryManager& mMemoryManager;
 
+        /// Identifier of the entity in the ECS
+        Entity mEntity;
+
         /// Pointer to the parent body
         CollisionBody* mBody;
 
@@ -111,7 +114,7 @@ class ProxyShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyShape(CollisionBody* body, MemoryManager& memoryManager);
+        ProxyShape(Entity entity, CollisionBody* body, MemoryManager& memoryManager);
 
         /// Destructor
         virtual ~ProxyShape();
@@ -121,6 +124,9 @@ class ProxyShape {
 
         /// Deleted assignment operator
         ProxyShape& operator=(const ProxyShape& proxyShape) = delete;
+
+        /// Return the corresponding entity of the proxy-shape
+        Entity getEntity() const;
 
         /// Return the collision shape
         const CollisionShape* getCollisionShape() const;
@@ -170,12 +176,6 @@ class ProxyShape {
         /// Set the collision category bits
         void setCollisionCategoryBits(unsigned short collisionCategoryBits);
 
-        /// Return the next proxy shape in the linked list of proxy shapes
-        ProxyShape* getNext();
-
-        /// Return the next proxy shape in the linked list of proxy shapes
-        const ProxyShape* getNext() const;
-
         /// Return the broad-phase id
         int getBroadPhaseId() const;
 
@@ -208,6 +208,14 @@ class ProxyShape {
 		friend class MiddlePhaseTriangleCallback;
 
 };
+
+// Return the corresponding entity of the proxy-shape
+/**
+ * @return The entity of the proxy-shape
+ */
+inline Entity ProxyShape::getEntity() const {
+    return mEntity;
+}
 
 // Return the parent body
 /**

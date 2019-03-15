@@ -84,7 +84,7 @@ void BroadPhaseSystem::addProxyCollisionShape(ProxyShape* proxyShape, const AABB
     int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
 
     // Set the broad-phase ID of the proxy shape
-    mProxyShapesComponents.setBroadPhaseId(proxyShape, nodeId);
+    mProxyShapesComponents.setBroadPhaseId(proxyShape->getEntity(), nodeId);
 
     // Add the collision shape into the array of bodies that have moved (or have been created)
     // during the last simulation step
@@ -98,7 +98,7 @@ void BroadPhaseSystem::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
     int broadPhaseID = proxyShape->getBroadPhaseId();
 
-    mProxyShapesComponents.setBroadPhaseId(proxyShape, -1);
+    mProxyShapesComponents.setBroadPhaseId(proxyShape->getEntity(), -1);
 
     // Remove the collision shape from the dynamic AABB tree
     mDynamicAABBTree.removeObject(broadPhaseID);

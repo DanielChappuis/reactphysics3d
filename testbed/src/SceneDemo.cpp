@@ -380,8 +380,9 @@ void SceneDemo::renderAABBs(const openglframework::Matrix4& worldToCameraMatrix)
     for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
 
        // For each proxy shape of the object
-       rp3d::ProxyShape* proxyShape = (*it)->getCollisionBody()->getProxyShapesList();
-       while (proxyShape != nullptr) {
+       for (uint i=0; i < (*it)->getCollisionBody()->getNbProxyShapes(); i++) {
+
+           rp3d::ProxyShape* proxyShape = (*it)->getCollisionBody()->getProxyShape(i);
 
            // Get the broad-phase AABB corresponding to the proxy shape
            rp3d::AABB aabb = mPhysicsWorld->getWorldAABB(proxyShape);
@@ -392,8 +393,6 @@ void SceneDemo::renderAABBs(const openglframework::Matrix4& worldToCameraMatrix)
 
            // Render the AABB
            AABB::render(aabbCenter, aabbMax - aabbMin, Color::green(), mColorShader, worldToCameraMatrix);
-
-           proxyShape = proxyShape->getNext();
        }
     }
 }

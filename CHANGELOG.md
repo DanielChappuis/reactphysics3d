@@ -22,6 +22,9 @@
  - The CollisionWorld::setCollisionDispatch() method has been removed. In order to use a custom collision
    algorithm, you must not get the collision dispatch object with the
    CollisionWorld::getCollisionDispatch() method and set a collision algorithm to this object.
+ - The methods CollisionBody::getProxyShapesList() has been remove. You can now use the
+   CollisionBody::getNbProxyShapes() method to know the number of proxy-shapes of a body and the
+   CollisionBody::getProxyShape(uint proxyShapeIndex) method to get a given proxy-shape of the body.
 
 ## Version 0.7.0 (May 1, 2018)
 

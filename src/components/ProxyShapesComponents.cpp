@@ -36,8 +36,7 @@ using namespace reactphysics3d;
 // Constructor
 ProxyShapesComponents::ProxyShapesComponents(MemoryAllocator& allocator)
                     :Components(allocator),
-                     mSleepingStartIndex(0),
-                     mMapProxyShapeToComponentIndex(allocator) {
+                     mSleepingStartIndex(0) {
 
     // Allocate memory for the components data
     allocate(INIT_ALLOCATED_COMPONENTS);
@@ -76,31 +75,29 @@ void ProxyShapesComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(newBuffer != nullptr);
 
     // New pointers to components data
-    Entity* newEntities = static_cast<Entity*>(newBuffer);
-    ProxyShape** newProxyShapes = reinterpret_cast<ProxyShape**>(newEntities + nbComponentsToAllocate);
+    Entity* newProxyShapesEntities = static_cast<Entity*>(newBuffer);
+    Entity* newBodiesEntities = reinterpret_cast<Entity*>(newProxyShapesEntities + nbComponentsToAllocate);
+    ProxyShape** newProxyShapes = reinterpret_cast<ProxyShape**>(newBodiesEntities + nbComponentsToAllocate);
     int* newBroadPhaseIds = reinterpret_cast<int*>(newProxyShapes + nbComponentsToAllocate);
     AABB* newLocalBounds = reinterpret_cast<AABB*>(newBroadPhaseIds + nbComponentsToAllocate);
     Transform* newLocalToBodyTransforms = reinterpret_cast<Transform*>(newLocalBounds + nbComponentsToAllocate);
     CollisionShape** newCollisionShapes = reinterpret_cast<CollisionShape**>(newLocalToBodyTransforms + nbComponentsToAllocate);
     decimal* newMasses = reinterpret_cast<decimal*>(newCollisionShapes + nbComponentsToAllocate);
-    uint32* newPreviousBodyProxyShapes = reinterpret_cast<uint32*>(newMasses + nbComponentsToAllocate);
-    uint32* newNextBodyProxyShapes = reinterpret_cast<uint32*>(newPreviousBodyProxyShapes + nbComponentsToAllocate);
-    unsigned short* newCollisionCategoryBits = reinterpret_cast<unsigned short*>(newNextBodyProxyShapes + nbComponentsToAllocate);
+    unsigned short* newCollisionCategoryBits = reinterpret_cast<unsigned short*>(newMasses + nbComponentsToAllocate);
     unsigned short* newCollideWithMaskBits = reinterpret_cast<unsigned short*>(newCollisionCategoryBits + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
 
         // Copy component data from the previous buffer to the new one
-        memcpy(newEntities, mEntities, mNbComponents * sizeof(Entity));
+        memcpy(newProxyShapesEntities, mProxyShapesEntities, mNbComponents * sizeof(Entity));
+        memcpy(newBodiesEntities, mBodiesEntities, mNbComponents * sizeof(Entity));
         memcpy(newProxyShapes, mProxyShapes, mNbComponents * sizeof(ProxyShape*));
         memcpy(newBroadPhaseIds, mBroadPhaseIds, mNbComponents * sizeof(int));
         memcpy(newLocalBounds, mLocalBounds, mNbComponents * sizeof(AABB));
         memcpy(newLocalToBodyTransforms, mLocalToBodyTransforms, mNbComponents * sizeof(Transform));
         memcpy(newCollisionShapes, mCollisionShapes, mNbComponents * sizeof(CollisionShape*));
         memcpy(newMasses, mMasses, mNbComponents * sizeof(decimal));
-        memcpy(newPreviousBodyProxyShapes, mPreviousBodyProxyShapes, mNbComponents * sizeof(uint32));
-        memcpy(newNextBodyProxyShapes, mNextBodyProxyShapes, mNbComponents * sizeof(uint32));
         memcpy(newCollisionCategoryBits, mCollisionCategoryBits, mNbComponents * sizeof(unsigned short));
         memcpy(newCollideWithMaskBits, mCollideWithMaskBits, mNbComponents * sizeof(unsigned short));
 
@@ -109,63 +106,23 @@ void ProxyShapesComponents::allocate(uint32 nbComponentsToAllocate) {
     }
 
     mBuffer = newBuffer;
-    mEntities = newEntities;
+    mProxyShapesEntities = newProxyShapesEntities;
+    mBodiesEntities = newBodiesEntities;
+    mProxyShapesEntities = newProxyShapesEntities;
     mProxyShapes = newProxyShapes;
     mBroadPhaseIds = newBroadPhaseIds;
     mLocalBounds = newLocalBounds;
     mLocalToBodyTransforms = newLocalToBodyTransforms;
     mCollisionShapes = newCollisionShapes;
     mMasses = newMasses;
-    mPreviousBodyProxyShapes = newPreviousBodyProxyShapes;
-    mNextBodyProxyShapes = newNextBodyProxyShapes;
     mCollisionCategoryBits = newCollisionCategoryBits;
     mCollideWithMaskBits = newCollideWithMaskBits;
 
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
 
-// Add a new proxy-shape at the beginning of the linked-list of proxy-shapes of a given entity
-// If it is the first proxy-shape for the entity, it will create the first item of the linked-list
-void ProxyShapesComponents::linkProxyShapeWithEntity(Entity entity, uint32 proxyShapeComponentIndex) {
-
-    auto it = mMapEntityToComponentIndex.find(entity);
-    if (it != mMapEntityToComponentIndex.end()) {
-
-        // Get the first proxy-shape of the linked-list
-        uint32 firstProxyShapeIndex = (*it).second;
-
-        assert(!hasPreviousProxyShape(firstProxyShapeIndex));
-
-        // Update the previous index of the first item of the list
-        mPreviousBodyProxyShapes[firstProxyShapeIndex] = proxyShapeComponentIndex;
-
-        // Map the entity to the new head of the linked-list
-        mMapEntityToComponentIndex[entity] = proxyShapeComponentIndex;
-
-        // Add the new proxy-shape at the beginning of the linked-list
-        const uint32 nextIndex = firstProxyShapeIndex;
-        const uint32 previousIndex = proxyShapeComponentIndex;
-        new (mNextBodyProxyShapes + proxyShapeComponentIndex) uint32(nextIndex);
-        new (mPreviousBodyProxyShapes + proxyShapeComponentIndex) uint32(previousIndex);
-
-        assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[proxyShapeComponentIndex]] == proxyShapeComponentIndex);
-    }
-    else {      // If the entity does not have a proxy-shape yet
-
-        mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, proxyShapeComponentIndex));
-
-        // The new proxy-shape has no previous/next components in the linked-list
-        new (mNextBodyProxyShapes + proxyShapeComponentIndex) uint32(proxyShapeComponentIndex);
-        new (mPreviousBodyProxyShapes + proxyShapeComponentIndex) uint32(proxyShapeComponentIndex);
-
-        assert(!hasNextProxyShape(proxyShapeComponentIndex));
-    }
-
-    assert(!hasPreviousProxyShape(proxyShapeComponentIndex));
-}
-
 // Add a component
-void ProxyShapesComponents::addComponent(Entity entity, bool isSleeping, const ProxyShapeComponent& component) {
+void ProxyShapesComponents::addComponent(Entity proxyShapeEntity, bool isSleeping, const ProxyShapeComponent& component) {
 
     // If we need to allocate more components
     if (mNbComponents == mNbAllocatedComponents) {
@@ -198,8 +155,9 @@ void ProxyShapesComponents::addComponent(Entity entity, bool isSleeping, const P
     }
 
     // Insert the new component data
-    new (mEntities + index) Entity(entity);
-    mProxyShapes[index] = (component.proxyShape);
+    new (mProxyShapesEntities + index) Entity(proxyShapeEntity);
+    new (mBodiesEntities + index) Entity(component.bodyEntity);
+    mProxyShapes[index] = component.proxyShape;
     new (mBroadPhaseIds + index) int(component.broadPhaseId);
     new (mLocalBounds + index) AABB(component.localBounds);
     new (mLocalToBodyTransforms + index) Transform(component.localToBodyTransform);
@@ -208,86 +166,57 @@ void ProxyShapesComponents::addComponent(Entity entity, bool isSleeping, const P
     new (mCollisionCategoryBits + index) unsigned short(component.collisionCategoryBits);
     new (mCollideWithMaskBits + index) unsigned short(component.collideWithMaskBits);
 
-    mMapProxyShapeToComponentIndex.add(Pair<const ProxyShape*, uint32>(component.proxyShape, index));
+    // Map the entity with the new component lookup index
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(proxyShapeEntity, index));
 
     mNbComponents++;
 
-    // Map the entity with the new component lookup index
-    linkProxyShapeWithEntity(entity, index);
-
     assert(mSleepingStartIndex <= mNbComponents);
-    assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[index]] == index || !hasNextProxyShape(index));
-    assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[index]] == index || !hasPreviousProxyShape(index));
 }
 
 // Move a component from a source to a destination index in the components array
 // The destination location must contain a constructed object
 void ProxyShapesComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
 
-    const Entity entity = mEntities[srcIndex];
-
-    const bool isFirstProxyShapeOfBody = mMapEntityToComponentIndex[entity] == srcIndex;
-
-    assert(isFirstProxyShapeOfBody || hasPreviousProxyShape(srcIndex));
+    const Entity proxyShapeEntity = mProxyShapesEntities[srcIndex];
 
     // Copy the data of the source component to the destination location
-    new (mEntities + destIndex) Entity(mEntities[srcIndex]);
+    new (mProxyShapesEntities + destIndex) Entity(mProxyShapesEntities[srcIndex]);
+    new (mBodiesEntities + destIndex) Entity(mBodiesEntities[srcIndex]);
     mProxyShapes[destIndex] = mProxyShapes[srcIndex];
     new (mBroadPhaseIds + destIndex) int(mBroadPhaseIds[srcIndex]);
     new (mLocalBounds + destIndex) AABB(mLocalBounds[srcIndex]);
     new (mLocalToBodyTransforms + destIndex) Transform(mLocalToBodyTransforms[srcIndex]);
     mCollisionShapes[destIndex] = mCollisionShapes[srcIndex];
     new (mMasses + destIndex) decimal(mMasses[srcIndex]);
-    new (mPreviousBodyProxyShapes + destIndex) uint32(hasPreviousProxyShape(srcIndex) ? mPreviousBodyProxyShapes[srcIndex] : destIndex);
-    new (mNextBodyProxyShapes + destIndex) uint32(hasNextProxyShape(srcIndex) ? mNextBodyProxyShapes[srcIndex] : destIndex);
     new (mCollisionCategoryBits + destIndex) unsigned short(mCollisionCategoryBits[srcIndex]);
     new (mCollideWithMaskBits + destIndex) unsigned short(mCollideWithMaskBits[srcIndex]);
-
-    // Update the the next proxy-shape index of the previous proxy-shape
-    if (hasPreviousProxyShape(destIndex)) {
-        assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[destIndex]] == srcIndex);
-        mNextBodyProxyShapes[mPreviousBodyProxyShapes[destIndex]] = destIndex;
-    }
-
-    // Update the the previous proxy-shape index of the next proxy-shape
-    if (hasNextProxyShape(destIndex)) {
-        assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[destIndex]] == srcIndex);
-        mPreviousBodyProxyShapes[mNextBodyProxyShapes[destIndex]] = destIndex;
-    }
 
     // Destroy the source component
     destroyComponent(srcIndex);
 
-    // Update the entity to component index mapping if it is the first proxy-shape of the body
-    if (isFirstProxyShapeOfBody) {
+    assert(!mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
-        mMapEntityToComponentIndex[entity] = destIndex;
-        assert(mMapEntityToComponentIndex[mEntities[destIndex]] == destIndex);
-    }
+    // Update the entity to component index mapping
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(proxyShapeEntity, destIndex));
 
-    mMapProxyShapeToComponentIndex.add(Pair<const ProxyShape*, uint32>(mProxyShapes[destIndex], destIndex));
-
-    assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[destIndex]] == destIndex || !hasNextProxyShape(destIndex));
-    assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[destIndex]] == destIndex || !hasPreviousProxyShape(destIndex));
+    assert(mMapEntityToComponentIndex[mProxyShapesEntities[destIndex]] == destIndex);
 }
 
 // Swap two components in the array
 void ProxyShapesComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Copy component 1 data
-    Entity entity1(mEntities[index1]);
+    Entity proxyShapeEntity1(mProxyShapesEntities[index1]);
+    Entity bodyEntity1(mBodiesEntities[index1]);
     ProxyShape* proxyShape1 = mProxyShapes[index1];
     int broadPhaseId1 = mBroadPhaseIds[index1];
     AABB localBounds1 = mLocalBounds[index1];
     Transform localToBodyTransform1 = mLocalToBodyTransforms[index1];
     CollisionShape* collisionShape1 = mCollisionShapes[index1];
     decimal mass1 = mMasses[index1];
-    uint32 previousProxyShape1 = hasPreviousProxyShape(index1) ? mPreviousBodyProxyShapes[index1] : index2;
-    uint32 nextProxyShape1 = hasNextProxyShape(index1) ? mNextBodyProxyShapes[index1] : index2;
     unsigned short collisionCategoryBits1 = mCollisionCategoryBits[index1];
     unsigned short collideWithMaskBits1 = mCollideWithMaskBits[index1];
-
-    const bool isFirstBodyProxyShape1 = mMapEntityToComponentIndex[mEntities[index1]] == index1;
 
     // Destroy component 1
     destroyComponent(index1);
@@ -295,105 +224,37 @@ void ProxyShapesComponents::swapComponents(uint32 index1, uint32 index2) {
     moveComponentToIndex(index2, index1);
 
     // Reconstruct component 1 at component 2 location
-    new (mEntities + index2) Entity(entity1);
+    new (mProxyShapesEntities + index2) Entity(proxyShapeEntity1);
+    new (mBodiesEntities + index2) Entity(bodyEntity1);
     mProxyShapes[index2] = proxyShape1;
     new (mBroadPhaseIds + index2) int(broadPhaseId1);
     new (mLocalBounds + index2) AABB(localBounds1);
     new (mLocalToBodyTransforms + index2) Transform(localToBodyTransform1);
     mCollisionShapes[index2] = collisionShape1;
     new (mMasses + index2) decimal(mass1);
-    new (mPreviousBodyProxyShapes + index2) uint32(previousProxyShape1);
-    new (mNextBodyProxyShapes + index2) uint32(nextProxyShape1);
     new (mCollisionCategoryBits + index2) unsigned short(collisionCategoryBits1);
     new (mCollideWithMaskBits + index2) unsigned short(collideWithMaskBits1);
 
-    // Update the the next proxy-shape index of the previous proxy-shape
-    if (hasPreviousProxyShape(index2)) {
-        assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[index2]] == index1);
-        mNextBodyProxyShapes[mPreviousBodyProxyShapes[index2]] = index2;
-    }
+    // Update the entity to component index mapping
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(proxyShapeEntity1, index2));
 
-    // Update the the previous proxy-shape index of the next proxy-shape
-    if (hasNextProxyShape(index2)) {
-        assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[index2]] == index1);
-        mPreviousBodyProxyShapes[mNextBodyProxyShapes[index2]] = index2;
-    }
-
-    mMapProxyShapeToComponentIndex.add(Pair<const ProxyShape*, uint32>(mProxyShapes[index2], index2));
-
-    // Update the entity to component index mapping if it is the first body proxy-shape
-    if (isFirstBodyProxyShape1) {
-        assert(!hasPreviousProxyShape(index2));
-        mMapEntityToComponentIndex[entity1] = index2;
-    }
-
-    assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[index1]] == index1 || !hasNextProxyShape(index1));
-    assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[index2]] == index2 || !hasNextProxyShape(index2));
-    assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[index1]] == index1 || !hasPreviousProxyShape(index1));
-    assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[index2]] == index2 || !hasPreviousProxyShape(index2));
+    assert(mMapEntityToComponentIndex[mProxyShapesEntities[index1]] == index1);
+    assert(mMapEntityToComponentIndex[mProxyShapesEntities[index2]] == index2);
+    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
 // Remove a component at a given index
-void ProxyShapesComponents::removeComponent(uint32 index) {
+void ProxyShapesComponents::removeComponent(Entity proxyShapeEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+
+    uint index = mMapEntityToComponentIndex[proxyShapeEntity];
 
     assert(index < mNbComponents);
 
     // We want to keep the arrays tightly packed. Therefore, when a component is removed,
     // we replace it with the last element of the array. But we need to make sure that sleeping
     // and non-sleeping components stay grouped together.
-
-    // If the proxy-shape to destroy does not have a previous proxy-shape in the linked-list of proxy-shapes of its body
-    if (!hasPreviousProxyShape(index)) {
-
-        // Remove the mapping from entity to component index
-        mMapEntityToComponentIndex.remove(mEntities[index]);
-
-        // If the proxy-shape has a next proxy-shape in the linked-list
-        if (hasNextProxyShape(index)) {
-
-            assert(mEntities[index] == mEntities[mNextBodyProxyShapes[index]]);
-
-            mMapEntityToComponentIndex.add(Pair<Entity, uint32>(mEntities[mNextBodyProxyShapes[index]], mNextBodyProxyShapes[index]));
-        }
-    }
-
-    // Update the linked-list of proxy-shapes of a body when a proxy-shape is removed
-    if (hasPreviousProxyShape(index)) {
-
-        assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[index]] == index);
-        assert(mEntities[index] == mEntities[mPreviousBodyProxyShapes[index]]);
-
-        // If the current proxy-shape to remove has a next proxy-shape in the linked-list
-        if (hasNextProxyShape(index)) {
-
-            assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[index]] == index);
-
-            // Make sure the next proxy-shape will follow the previous proxy-shape in the linked-list
-            mNextBodyProxyShapes[mPreviousBodyProxyShapes[index]] = mNextBodyProxyShapes[index];
-        }
-        else {
-
-            mNextBodyProxyShapes[mPreviousBodyProxyShapes[index]] = mPreviousBodyProxyShapes[index];
-        }
-    }
-
-    // Update the linked-list of proxy-shapes of a body when a proxy-shape is removed
-    if (hasNextProxyShape(index)) {
-
-        assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[index]] == index);
-        assert(mEntities[index] == mEntities[mNextBodyProxyShapes[index]]);
-
-        // If the current proxy-shape to remove has a previous proxy-shape in the linked-list
-        if (hasPreviousProxyShape(index)) {
-
-            // Make sure the previous proxy-shape will precede the next proxy-shape in the linked-list
-            mPreviousBodyProxyShapes[mNextBodyProxyShapes[index]] = mPreviousBodyProxyShapes[index];
-        }
-        else {
-
-            mPreviousBodyProxyShapes[mNextBodyProxyShapes[index]] = mNextBodyProxyShapes[index];
-        }
-    }
 
     // Destroy the component
     destroyComponent(index);
@@ -427,30 +288,22 @@ void ProxyShapesComponents::removeComponent(uint32 index) {
         mSleepingStartIndex--;
     }
 
-    assert(mSleepingStartIndex <= mNbComponents);
     mNbComponents--;
-}
 
-// Return true if a given proxy-shape component has a previous proxy-shape in the linked-list of proxy-shapes of a body
-bool ProxyShapesComponents::hasPreviousProxyShape(uint32 index) const {
-    assert(index < mNbComponents);
-    return mPreviousBodyProxyShapes[index] != index;
-}
-
-// Return true if a given proxy-shape component has a next proxy-shape in the linked-list of proxy-shapes of a body
-bool ProxyShapesComponents::hasNextProxyShape(uint32 index) const {
-    assert(index < mNbComponents);
-    return mNextBodyProxyShapes[index] != index;
+    assert(mSleepingStartIndex <= mNbComponents);
+    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
 // Destroy a component at a given index
 void ProxyShapesComponents::destroyComponent(uint32 index) {
 
     assert(index < mNbComponents);
+    assert(mMapEntityToComponentIndex[mProxyShapesEntities[index]] == index);
 
-    mMapProxyShapeToComponentIndex.remove(mProxyShapes[index]);
+    mMapEntityToComponentIndex.remove(mProxyShapesEntities[index]);
 
-    mEntities[index].~Entity();
+    mProxyShapesEntities[index].~Entity();
+    mBodiesEntities[index].~Entity();
     mProxyShapes[index] = nullptr;
     mLocalBounds[index].~AABB();
     mLocalToBodyTransforms[index].~Transform();
@@ -492,31 +345,4 @@ void ProxyShapesComponents::setIsEntitySleeping(Entity entity, bool isSleeping) 
     }
 
     assert(mSleepingStartIndex <= mNbComponents);
-    assert(mPreviousBodyProxyShapes[mNextBodyProxyShapes[index]] == index || !hasNextProxyShape(index));
-    assert(mNextBodyProxyShapes[mPreviousBodyProxyShapes[index]] == index || !hasPreviousProxyShape(index));
-}
-
-// Remove all the components of a given entity
-void ProxyShapesComponents::removeComponents(Entity entity) {
-
-   auto it = mMapEntityToComponentIndex.find(entity);
-
-   // While there are components for this entity
-   while (it != mMapEntityToComponentIndex.end()) {
-
-       // Remove the component
-       removeComponent(it->second);
-
-       it = mMapEntityToComponentIndex.find(entity);
-   }
-
-   assert(!mMapEntityToComponentIndex.containsKey(entity));
-}
-
-// Remove a given proxy-shape
-void ProxyShapesComponents::removeComponent(const ProxyShape* proxyShape) {
-
-    uint32 index = mMapProxyShapeToComponentIndex[proxyShape];
-
-    removeComponent(index);
 }

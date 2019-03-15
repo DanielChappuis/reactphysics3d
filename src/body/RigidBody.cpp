@@ -281,9 +281,12 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          const Transform& transform,
                                          decimal mass) {
 
+    // Create a new entity for the proxy-shape
+    Entity proxyShapeEntity = mWorld.mEntityManager.createEntity();
+
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                      sizeof(ProxyShape))) ProxyShape(this, mWorld.mMemoryManager);
+                                      sizeof(ProxyShape))) ProxyShape(proxyShapeEntity, this, mWorld.mMemoryManager);
 
     // Add the proxy-shape component to the entity of the body
     Vector3 localBoundsMin;
@@ -291,10 +294,12 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
 
-    ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(proxyShape, -1,
+    ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, mass, 0x0001, 0xFFFF);
-    mWorld.mProxyShapesComponents.addComponent(mEntity, mIsSleeping, proxyShapeComponent);
+    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, mIsSleeping, proxyShapeComponent);
+
+    mWorld.mBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -500,11 +505,13 @@ void RigidBody::recomputeMassInformation() {
     assert(mType == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
-    for (ProxyShape* shape = mWorld.mProxyShapesComponents.getFirstProxyShapeOfBody(mEntity); shape != nullptr; shape = mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(shape)) {
-        mInitMass += shape->getMass();
+    const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+        mInitMass += proxyShape->getMass();
 
         if (!mIsCenterOfMassSetByUser) {
-            mCenterOfMassLocal += shape->getLocalToBodyTransform().getPosition() * shape->getMass();
+            mCenterOfMassLocal += proxyShape->getLocalToBodyTransform().getPosition() * proxyShape->getMass();
         }
     }
 
@@ -528,14 +535,17 @@ void RigidBody::recomputeMassInformation() {
     if (!mIsInertiaTensorSetByUser) {
 
         // Compute the inertia tensor using all the collision shapes
-        for (ProxyShape* shape = mWorld.mProxyShapesComponents.getFirstProxyShapeOfBody(mEntity); shape != nullptr; shape = mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(shape)) {
+        const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
+        for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+            ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
 
             // Get the inertia tensor of the collision shape in its local-space
             Matrix3x3 inertiaTensor;
-            shape->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, shape->getMass());
+            proxyShape->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, proxyShape->getMass());
 
             // Convert the collision shape inertia tensor into the local-space of the body
-            const Transform& shapeTransform = shape->getLocalToBodyTransform();
+            const Transform& shapeTransform = proxyShape->getLocalToBodyTransform();
             Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
             inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
 
@@ -550,7 +560,7 @@ void RigidBody::recomputeMassInformation() {
             offsetMatrix[0] += offset * (-offset.x);
             offsetMatrix[1] += offset * (-offset.y);
             offsetMatrix[2] += offset * (-offset.z);
-            offsetMatrix *= shape->getMass();
+            offsetMatrix *= proxyShape->getMass();
 
             inertiaTensorLocal += inertiaTensor + offsetMatrix;
         }
@@ -579,14 +589,20 @@ void RigidBody::updateBroadPhaseState() const {
  	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
 
     // For all the proxy collision shapes of the body
-    for (ProxyShape* shape = mWorld.mProxyShapesComponents.getFirstProxyShapeOfBody(mEntity); shape != nullptr; shape = mWorld.mProxyShapesComponents.getNextProxyShapeOfBody(shape)) {
+    const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
 
-        // Recompute the world-space AABB of the collision shape
-        AABB aabb;
-        shape->getCollisionShape()->computeAABB(aabb, transform * shape->getLocalToBodyTransform());
+        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
 
-        // Update the broad-phase state for the proxy collision shape
-        mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb, displacement);
+        if (proxyShape->getBroadPhaseId() != -1) {
+
+            // Recompute the world-space AABB of the collision shape
+            AABB aabb;
+            proxyShape->getCollisionShape()->computeAABB(aabb, transform * proxyShape->getLocalToBodyTransform());
+
+            // Update the broad-phase state for the proxy collision shape
+            mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, displacement);
+        }
     }
 }
 
@@ -598,12 +614,12 @@ void RigidBody::setProfiler(Profiler* profiler) {
 	CollisionBody::setProfiler(profiler);
 
 	// Set the profiler for each proxy shape
-	ProxyShape* proxyShape = getProxyShapesList();
-	while (proxyShape != nullptr) {
+    const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
 
 		proxyShape->setProfiler(profiler);
-
-		proxyShape = proxyShape->getNext();
 	}
 }
 

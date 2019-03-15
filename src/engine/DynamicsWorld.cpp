@@ -428,13 +428,15 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     // Largest index cannot be used (it is used for invalid index)
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
-    // Add a transform component
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                      sizeof(RigidBody))) RigidBody(transform, *this, entity, bodyID);
     assert(rigidBody != nullptr);
+
+    BodyComponents::BodyComponent bodyComponent(rigidBody);
+    mBodyComponents.addComponent(entity, false, bodyComponent);
 
     // Add the rigid body to the physics world
     mBodies.add(rigidBody);
@@ -480,7 +482,9 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     rigidBody->resetContactManifoldsList();
 
     // Destroy the corresponding entity and its components
-    destroyEntity(rigidBody->getEntity());
+    mBodyComponents.removeComponent(rigidBody->getEntity());
+    mTransformComponents.removeComponent(rigidBody->getEntity());
+    mEntityManager.destroyEntity(rigidBody->getEntity());
 
     // Call the destructor of the rigid body
     rigidBody->~RigidBody();

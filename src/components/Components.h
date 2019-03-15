@@ -86,6 +86,11 @@ class Components {
         virtual ~Components() {
 
         }
+
+        /// Return the number of components
+        uint32 getNbComponents() const {
+            return mNbComponents;
+        }
 };
 
 }

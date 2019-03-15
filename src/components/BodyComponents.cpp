@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "TransformComponents.h"
+#include "BodyComponents.h"
 #include "engine/EntityManager.h"
 #include <cassert>
 #include <random>
@@ -32,9 +32,8 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-
 // Constructor
-TransformComponents::TransformComponents(MemoryAllocator& allocator)
+BodyComponents::BodyComponents(MemoryAllocator& allocator)
                     :Components(allocator), mSleepingStartIndex(0){
 
     // Allocate memory for the components data
@@ -42,7 +41,7 @@ TransformComponents::TransformComponents(MemoryAllocator& allocator)
 }
 
 // Destructor
-TransformComponents::~TransformComponents() {
+BodyComponents::~BodyComponents() {
 
     if (mNbAllocatedComponents > 0) {
 
@@ -62,7 +61,7 @@ TransformComponents::~TransformComponents() {
 }
 
 // Allocate memory for a given number of components
-void TransformComponents::allocate(uint32 nbComponentsToAllocate) {
+void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
 
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
@@ -74,28 +73,31 @@ void TransformComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(newBuffer != nullptr);
 
     // New pointers to components data
-    Entity* newEntities = static_cast<Entity*>(newBuffer);
-    Transform* newTransforms = reinterpret_cast<Transform*>(newEntities + nbComponentsToAllocate);
+    Entity* newBodiesEntities = static_cast<Entity*>(newBuffer);
+    Body** newBodies = reinterpret_cast<Body**>(newBodiesEntities + nbComponentsToAllocate);
+    List<Entity>* newProxyShapes = reinterpret_cast<List<Entity>*>(newBodies + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
 
         // Copy component data from the previous buffer to the new one
-        memcpy(newTransforms, mTransforms, mNbComponents * sizeof(Transform));
-        memcpy(newEntities, mBodies, mNbComponents * sizeof(Entity));
+        memcpy(newBodiesEntities, mBodiesEntities, mNbComponents * sizeof(Entity));
+        memcpy(newBodies, mBodies, mNbComponents * sizeof(Body*));
+        memcpy(newProxyShapes, mProxyShapes, mNbComponents * sizeof(List<Entity>));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * COMPONENT_DATA_SIZE);
     }
 
     mBuffer = newBuffer;
-    mBodies = newEntities;
-    mTransforms = newTransforms;
+    mBodiesEntities = newBodiesEntities;
+    mBodies = newBodies;
+    mProxyShapes = newProxyShapes;
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
 
 // Add a component
-void TransformComponents::addComponent(Entity bodyEntity, bool isSleeping, const TransformComponent& component) {
+void BodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component) {
 
     // If we need to allocate more components
     if (mNbComponents == mNbAllocatedComponents) {
@@ -128,8 +130,9 @@ void TransformComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     }
 
     // Insert the new component data
-    new (mBodies + index) Entity(bodyEntity);
-    new (mTransforms + index) Transform(component.transform);
+    new (mBodiesEntities + index) Entity(bodyEntity);
+    mBodies[index] = component.body;
+    new (mProxyShapes + index) List<Entity>(mMemoryAllocator);
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(bodyEntity, index));
@@ -141,7 +144,7 @@ void TransformComponents::addComponent(Entity bodyEntity, bool isSleeping, const
 }
 
 // Remove a component at a given index
-void TransformComponents::removeComponent(Entity bodyEntity) {
+void BodyComponents::removeComponent(Entity bodyEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -192,7 +195,7 @@ void TransformComponents::removeComponent(Entity bodyEntity) {
 }
 
 // Notify if a given entity is sleeping or not
-void TransformComponents::setIsEntitySleeping(Entity entity, bool isSleeping) {
+void BodyComponents::setIsEntitySleeping(Entity entity, bool isSleeping) {
 
     const uint32 index = mMapEntityToComponentIndex[entity];
 
@@ -231,13 +234,14 @@ void TransformComponents::setIsEntitySleeping(Entity entity, bool isSleeping) {
 
 // Move a component from a source to a destination index in the components array
 // The destination location must contain a constructed object
-void TransformComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
+void BodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
 
-    const Entity entity = mBodies[srcIndex];
+    const Entity entity = mBodiesEntities[srcIndex];
 
     // Copy the data of the source component to the destination location
-    new (mBodies + destIndex) Entity(mBodies[srcIndex]);
-    new (mTransforms + destIndex) Transform(mTransforms[srcIndex]);
+    new (mBodiesEntities + destIndex) Entity(mBodiesEntities[srcIndex]);
+    mBodies[destIndex] = mBodies[srcIndex];
+    new (mProxyShapes + destIndex) List<Entity>(mProxyShapes[srcIndex]);
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -247,15 +251,16 @@ void TransformComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity, destIndex));
 
-    assert(mMapEntityToComponentIndex[mBodies[destIndex]] == destIndex);
+    assert(mMapEntityToComponentIndex[mBodiesEntities[destIndex]] == destIndex);
 }
 
 // Swap two components in the array
-void TransformComponents::swapComponents(uint32 index1, uint32 index2) {
+void BodyComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Copy component 1 data
-    Entity entity1(mBodies[index1]);
-    Transform transform1(mTransforms[index1]);
+    Entity entity1(mBodiesEntities[index1]);
+    Body* body1 = mBodies[index1];
+    List<Entity> proxyShapes1(mProxyShapes[index1]);
 
     // Destroy component 1
     destroyComponent(index1);
@@ -263,25 +268,27 @@ void TransformComponents::swapComponents(uint32 index1, uint32 index2) {
     moveComponentToIndex(index2, index1);
 
     // Reconstruct component 1 at component 2 location
-    new (mBodies + index2) Entity(entity1);
-    new (mTransforms + index2) Transform(transform1);
+    new (mBodiesEntities + index2) Entity(entity1);
+    new (mProxyShapes + index2) List<Entity>(proxyShapes1);
+    mBodies[index2] = body1;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity1, index2));
 
-    assert(mMapEntityToComponentIndex[mBodies[index1]] == index1);
-    assert(mMapEntityToComponentIndex[mBodies[index2]] == index2);
+    assert(mMapEntityToComponentIndex[mBodiesEntities[index1]] == index1);
+    assert(mMapEntityToComponentIndex[mBodiesEntities[index2]] == index2);
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
 // Destroy a component at a given index
-void TransformComponents::destroyComponent(uint32 index) {
+void BodyComponents::destroyComponent(uint32 index) {
 
     assert(index < mNbComponents);
-    assert(mMapEntityToComponentIndex[mBodies[index]] == index);
+    assert(mMapEntityToComponentIndex[mBodiesEntities[index]] == index);
 
-    mMapEntityToComponentIndex.remove(mBodies[index]);
+    mMapEntityToComponentIndex.remove(mBodiesEntities[index]);
 
-    mBodies[index].~Entity();
-    mTransforms[index].~Transform();
+    mBodiesEntities[index].~Entity();
+    mBodies[index] = nullptr;
+    mProxyShapes[index].~List<Entity>();
 }

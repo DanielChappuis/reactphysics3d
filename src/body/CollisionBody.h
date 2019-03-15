@@ -166,11 +166,17 @@ class CollisionBody : public Body {
         /// Compute and return the AABB of the body by merging all proxy shapes AABBs
         AABB getAABB() const;
 
-        /// Return the linked list of proxy shapes of that body
-        ProxyShape* getProxyShapesList();
+        /// Return a const pointer to a given proxy-shape of the body
+        const ProxyShape* getProxyShape(uint proxyShapeIndex) const;
+
+        /// Return a pointer to a given proxy-shape of the body
+        ProxyShape* getProxyShape(uint proxyShapeIndex);
 
         /// Return the linked list of proxy shapes of that body
         const ProxyShape* getProxyShapesList() const;
+
+        /// Return the number of proxy-shapes associated with this body
+        uint getNbProxyShapes() const;
 
         /// Return the world-space coordinates of a point given the local-space coordinates of the body
         Vector3 getWorldPoint(const Vector3& localPoint) const;

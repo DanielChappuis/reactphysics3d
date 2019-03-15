@@ -608,14 +608,18 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
     NarrowPhaseInput narrowPhaseInput(mMemoryManager.getPoolAllocator());
 
     // For each proxy shape proxy shape of the first body
-    ProxyShape* body1ProxyShape = body1->getProxyShapesList();
-    while (body1ProxyShape != nullptr) {
+    const List<Entity>& body1ProxyShapesEntities = mWorld->mBodyComponents.getProxyShapes(body1->getEntity());
+    const List<Entity>& body2ProxyShapesEntities = mWorld->mBodyComponents.getProxyShapes(body2->getEntity());
+    for (uint i=0; i < body1ProxyShapesEntities.size(); i++) {
+
+        ProxyShape* body1ProxyShape = mWorld->mProxyShapesComponents.getProxyShape(body1ProxyShapesEntities[i]);
 
         AABB aabb1 = body1ProxyShape->getWorldAABB();
 
         // For each proxy shape of the second body
-        ProxyShape* body2ProxyShape = body2->getProxyShapesList();
-        while (body2ProxyShape != nullptr) {
+        for (uint j=0; j < body2ProxyShapesEntities.size(); j++) {
+
+            ProxyShape* body2ProxyShape = mWorld->mProxyShapesComponents.getProxyShape(body2ProxyShapesEntities[j]);
 
             AABB aabb2 = body2ProxyShape->getWorldAABB();
 
@@ -630,13 +634,7 @@ bool CollisionDetection::testOverlap(CollisionBody* body1, CollisionBody* body2)
                 computeMiddlePhaseForProxyShapes(&pair, narrowPhaseInput);
 
             }
-
-            // Go to the next proxy shape
-            body2ProxyShape = body2ProxyShape->getNext();
         }
-
-        // Go to the next proxy shape
-        body1ProxyShape = body1ProxyShape->getNext();
     }
 
     // Test narrow-phase collision
@@ -656,8 +654,10 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
     NarrowPhaseInput narrowPhaseInput(mMemoryManager.getPoolAllocator());
 
     // For each proxy shape proxy shape of the body
-    ProxyShape* bodyProxyShape = body->getProxyShapesList();
-    while (bodyProxyShape != nullptr) {
+    const List<Entity>& proxyShapesEntities = mWorld->mBodyComponents.getProxyShapes(body->getEntity());
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+        ProxyShape* bodyProxyShape = mWorld->mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
 
         if (bodyProxyShape->getBroadPhaseId() != -1) {
 
@@ -713,9 +713,6 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
                 element = element->next;
             }
         }
-
-        // Go to the next proxy shape
-        bodyProxyShape = bodyProxyShape->getNext();
     }
 }
 
@@ -728,14 +725,18 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
     OverlappingPairMap overlappingPairs(mMemoryManager.getPoolAllocator());
 
     // For each proxy shape proxy shape of the first body
-    ProxyShape* body1ProxyShape = body1->getProxyShapesList();
-    while (body1ProxyShape != nullptr) {
+    const List<Entity>& body1ProxyShapesEntities = mWorld->mBodyComponents.getProxyShapes(body1->getEntity());
+    const List<Entity>& body2ProxyShapesEntities = mWorld->mBodyComponents.getProxyShapes(body2->getEntity());
+    for (uint i=0; i < body1ProxyShapesEntities.size(); i++) {
+
+        ProxyShape* body1ProxyShape = mWorld->mProxyShapesComponents.getProxyShape(body1ProxyShapesEntities[i]);
 
         AABB aabb1 = body1ProxyShape->getWorldAABB();
 
         // For each proxy shape of the second body
-        ProxyShape* body2ProxyShape = body2->getProxyShapesList();
-        while (body2ProxyShape != nullptr) {
+        for (uint j=0; j < body2ProxyShapesEntities.size(); j++) {
+
+            ProxyShape* body2ProxyShape = mWorld->mProxyShapesComponents.getProxyShape(body2ProxyShapesEntities[i]);
 
             AABB aabb2 = body2ProxyShape->getWorldAABB();
 
@@ -767,13 +768,7 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
                 // Compute the middle-phase collision detection between the two shapes
                 computeMiddlePhaseForProxyShapes(pair, narrowPhaseInput);
             }
-
-            // Go to the next proxy shape
-            body2ProxyShape = body2ProxyShape->getNext();
         }
-
-        // Go to the next proxy shape
-        body1ProxyShape = body1ProxyShape->getNext();
     }
 
     // Test narrow-phase collision
@@ -812,8 +807,10 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
     OverlappingPairMap overlappingPairs(mMemoryManager.getPoolAllocator());
 
     // For each proxy shape proxy shape of the body
-    ProxyShape* bodyProxyShape = body->getProxyShapesList();
-    while (bodyProxyShape != nullptr) {
+    const List<Entity>& proxyShapesEntities = mWorld->mBodyComponents.getProxyShapes(body->getEntity());
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+        ProxyShape* bodyProxyShape = mWorld->mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
 
         if (bodyProxyShape->getBroadPhaseId() != -1) {
 
@@ -870,9 +867,6 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
                 // Go to the next overlapping proxy shape
                 element = element->next;
             }
-
-            // Go to the next proxy shape
-            bodyProxyShape = bodyProxyShape->getNext();
         }
     }
 

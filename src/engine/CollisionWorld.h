@@ -33,6 +33,7 @@
 #include "constraint/Joint.h"
 #include "memory/MemoryManager.h"
 #include "engine/EntityManager.h"
+#include "components/BodyComponents.h"
 #include "components/TransformComponents.h"
 #include "components/ProxyShapesComponents.h"
 
@@ -71,6 +72,9 @@ class CollisionWorld {
 
         /// Entity Manager for the ECS
         EntityManager mEntityManager;
+
+        /// Body Components
+        BodyComponents mBodyComponents;
 
         /// Transform Components
         TransformComponents mTransformComponents;
@@ -127,9 +131,6 @@ class CollisionWorld {
 
         /// Notify the world if a body is sleeping or not
         void notifyBodySleeping(Entity entity, bool isSleeping);
-
-        /// Destroy an entity and all the associated components
-        void destroyEntity(Entity entity);
 
     public :
 
