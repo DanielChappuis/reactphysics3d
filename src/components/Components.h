@@ -48,8 +48,9 @@ class Components {
 
         // -------------------- Constants -------------------- //
 
+
         /// Number of components to allocated at the beginning
-        const uint32 INIT_ALLOCATED_COMPONENTS = 10;
+        const uint32 INIT_NB_ALLOCATED_COMPONENTS = 10;
 
         /// Number of valid entities to hit before stopping garbage collection
         const uint32 GARBAGE_COLLECTION_MAX_VALID_ENTITIES = 5;
@@ -62,6 +63,9 @@ class Components {
         /// Current number of components
         uint32 mNbComponents;
 
+        // Size (in bytes) of a single component
+        size_t mComponentDataSize;
+
         /// Number of allocated components
         uint32 mNbAllocatedComponents;
 
@@ -71,27 +75,48 @@ class Components {
         /// Map an entity to the index of its component in the array
         Map<Entity, uint32> mMapEntityToComponentIndex;
 
+        /// Index of the first component of a sleeping entity (sleeping components are stored at the end)
+        uint32 mSleepingStartIndex;
+
+        /// Compute the index where we need to insert the new component
+        uint32 prepareAddComponent(bool isSleeping);
+
+        /// Allocate memory for a given number of components
+        virtual void allocate(uint32 nbComponentsToAllocate)=0;
+
+        /// Destroy a component at a given index
+        virtual void destroyComponent(uint32 index);
+
+        /// Move a component from a source to a destination index in the components array
+        virtual void moveComponentToIndex(uint32 srcIndex, uint32 destIndex)=0;
+
+        /// Swap two components in the array
+        virtual void swapComponents(uint32 index1, uint32 index2)=0;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Components(MemoryAllocator& allocator)
-            : mMemoryAllocator(allocator), mNbComponents(0), mNbAllocatedComponents(0),
-              mBuffer(nullptr), mMapEntityToComponentIndex(allocator) {
-
-        }
+        Components(MemoryAllocator& allocator, size_t componentDataSize);
 
         /// Destructor
-        virtual ~Components() {
+        virtual ~Components();
 
-        }
+        /// Remove a component
+        void removeComponent(Entity entity);
+
+        // Notify if a given entity is sleeping or not
+        void setIsEntitySleeping(Entity entity, bool isSleeping);
 
         /// Return the number of components
-        uint32 getNbComponents() const {
-            return mNbComponents;
-        }
+        uint32 getNbComponents() const;
 };
+
+// Return the number of components
+inline uint32 Components::getNbComponents() const {
+    return mNbComponents;
+}
 
 }
 

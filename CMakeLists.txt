@@ -231,6 +231,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/engine/Entity.cpp"
     "src/engine/EntityManager.cpp"
     "src/systems/BroadPhaseSystem.cpp"
+    "src/components/Components.cpp"
     "src/components/BodyComponents.cpp"
     "src/components/TransformComponents.cpp"
     "src/components/ProxyShapesComponents.cpp"

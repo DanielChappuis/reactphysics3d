@@ -49,14 +49,7 @@ class BodyComponents : public Components {
 
     private:
 
-        // -------------------- Constants -------------------- //
-
-        const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(Body*) + sizeof(List<Entity>);
-
         // -------------------- Attributes -------------------- //
-
-        /// Index of the first component of a sleeping entity (sleeping components are stored at the end)
-        uint32 mSleepingStartIndex;
 
         /// Array of body entities of each component
         Entity* mBodiesEntities;
@@ -69,14 +62,17 @@ class BodyComponents : public Components {
 
         // -------------------- Methods -------------------- //
 
+        /// Allocate memory for a given number of components
+        virtual void allocate(uint32 nbComponentsToAllocate) override;
+
         /// Destroy a component at a given index
-        void destroyComponent(uint32 index);
+        virtual void destroyComponent(uint32 index) override;
 
         /// Move a component from a source to a destination index in the components array
-        void moveComponentToIndex(uint32 srcIndex, uint32 destIndex);
+        virtual void moveComponentToIndex(uint32 srcIndex, uint32 destIndex) override;
 
         /// Swap two components in the array
-        void swapComponents(uint32 index1, uint32 index2);
+        virtual void swapComponents(uint32 index1, uint32 index2) override;
 
     public:
 
@@ -97,16 +93,10 @@ class BodyComponents : public Components {
         BodyComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~BodyComponents();
-
-        /// Allocate memory for a given number of components
-        void allocate(uint32 nbComponentsToAllocate);
+        virtual ~BodyComponents() override = default;
 
         /// Add a component
         void addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component);
-
-        /// Remove a component at a given index
-        void removeComponent(Entity bodyEntity);
 
         /// Add a proxy-shape to a body component
         void addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity);

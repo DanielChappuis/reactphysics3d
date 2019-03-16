@@ -53,16 +53,7 @@ class ProxyShapesComponents : public Components {
 
     private:
 
-        // -------------------- Constants -------------------- //
-
-        const size_t COMPONENT_DATA_SIZE = sizeof(Entity) + sizeof(Entity) + sizeof(ProxyShape*) + sizeof(int) + sizeof(AABB) +
-                sizeof(Transform) + sizeof(CollisionShape*) + sizeof(decimal) + sizeof(unsigned short) +
-                sizeof(unsigned short);
-
         // -------------------- Attributes -------------------- //
-
-        /// Index of the first component of a sleeping entity (sleeping components are stored at the end)
-        uint32 mSleepingStartIndex;
 
         /// Array of entities of each component
         Entity* mBodiesEntities;
@@ -104,14 +95,17 @@ class ProxyShapesComponents : public Components {
 
         // -------------------- Methods -------------------- //
 
+        /// Allocate memory for a given number of components
+        virtual void allocate(uint32 nbComponentsToAllocate) override;
+
         /// Destroy a component at a given index
-        void destroyComponent(uint32 index);
+        virtual void destroyComponent(uint32 index) override;
 
         /// Move a component from a source to a destination index in the components array
-        void moveComponentToIndex(uint32 srcIndex, uint32 destIndex);
+        virtual void moveComponentToIndex(uint32 srcIndex, uint32 destIndex) override;
 
         /// Swap two components in the array
-        void swapComponents(uint32 index1, uint32 index2);
+        virtual void swapComponents(uint32 index1, uint32 index2) override;
 
     public:
 
@@ -144,19 +138,10 @@ class ProxyShapesComponents : public Components {
         ProxyShapesComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~ProxyShapesComponents();
-
-        /// Allocate memory for a given number of components
-        void allocate(uint32 nbComponentsToAllocate);
+        virtual ~ProxyShapesComponents() override = default;
 
         /// Add a component
         void addComponent(Entity proxyShapeEntity, bool isSleeping, const ProxyShapeComponent& component);
-
-        /// Remove a component at a given index
-        void removeComponent(Entity proxyShapeEntity);
-
-        /// Notify if a given entity is sleeping or not
-        void setIsEntitySleeping(Entity entity, bool isSleeping);
 
         /// Return the mass of a proxy-shape
         decimal getMass(Entity proxyShapeEntity) const;

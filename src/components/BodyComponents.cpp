@@ -34,30 +34,10 @@ using namespace reactphysics3d;
 
 // Constructor
 BodyComponents::BodyComponents(MemoryAllocator& allocator)
-                    :Components(allocator), mSleepingStartIndex(0){
+                    :Components(allocator, sizeof(Entity) + sizeof(Body*) + sizeof(List<Entity>)) {
 
     // Allocate memory for the components data
-    allocate(INIT_ALLOCATED_COMPONENTS);
-}
-
-// Destructor
-BodyComponents::~BodyComponents() {
-
-    if (mNbAllocatedComponents > 0) {
-
-        // Destroy all the remaining components
-        for (uint32 i = 0; i < mNbComponents; i++) {
-
-            // TODO : MAke sure we do not delete already deleted components
-            destroyComponent(i);
-        }
-
-        // Size for the data of a single component (in bytes)
-        const size_t totalSizeBytes = mNbAllocatedComponents * COMPONENT_DATA_SIZE;
-
-        // Release the allocated memory
-        mMemoryAllocator.release(mBuffer, totalSizeBytes);
-    }
+    allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Allocate memory for a given number of components
@@ -66,7 +46,7 @@ void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
     // Size for the data of a single component (in bytes)
-    const size_t totalSizeBytes = nbComponentsToAllocate * COMPONENT_DATA_SIZE;
+    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize;
 
     // Allocate memory
     void* newBuffer = mMemoryAllocator.allocate(totalSizeBytes);
@@ -86,7 +66,7 @@ void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newProxyShapes, mProxyShapes, mNbComponents * sizeof(List<Entity>));
 
         // Deallocate previous memory
-        mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * COMPONENT_DATA_SIZE);
+        mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
     }
 
     mBuffer = newBuffer;
@@ -99,35 +79,8 @@ void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
 // Add a component
 void BodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component) {
 
-    // If we need to allocate more components
-    if (mNbComponents == mNbAllocatedComponents) {
-        allocate(mNbAllocatedComponents * 2);
-    }
-
-    uint32 index;
-
-    // If the component to add is part of a sleeping entity or there are no sleeping entity
-    if (isSleeping) {
-
-        // Add the component at the end of the array
-        index = mNbComponents;
-
-        mSleepingStartIndex = index;
-    }
-    // If the component to add is not part of a sleeping entity
-    else {
-
-        // If there already are sleeping components
-        if (mSleepingStartIndex != mNbComponents) {
-
-            // Move the first sleeping component to the end of the array
-            moveComponentToIndex(mSleepingStartIndex, mNbComponents);
-        }
-
-        index = mSleepingStartIndex;
-
-        mSleepingStartIndex++;
-    }
+    // Prepare to add new component (allocate memory if necessary and compute insertion index)
+    uint32 index = prepareAddComponent(isSleeping);
 
     // Insert the new component data
     new (mBodiesEntities + index) Entity(bodyEntity);
@@ -138,95 +91,6 @@ void BodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const Body
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(bodyEntity, index));
 
     mNbComponents++;
-
-    assert(mSleepingStartIndex <= mNbComponents);
-    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
-}
-
-// Remove a component at a given index
-void BodyComponents::removeComponent(Entity bodyEntity) {
-
-    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-    uint index = mMapEntityToComponentIndex[bodyEntity];
-
-    assert(index < mNbComponents);
-
-    // We want to keep the arrays tightly packed. Therefore, when a component is removed,
-    // we replace it with the last element of the array. But we need to make sure that sleeping
-    // and non-sleeping components stay grouped together.
-
-    // Destroy the component
-    destroyComponent(index);
-
-    // If the component to remove is sleeping
-    if (index >= mSleepingStartIndex) {
-
-        // If the component is not the last one
-        if (index != mNbComponents - 1) {
-
-            // We replace it by the last sleeping component
-            moveComponentToIndex(mNbComponents - 1, index);
-        }
-    }
-    else {   // If the component to remove is not sleeping
-
-        // If it not the last awake component
-        if (index != mSleepingStartIndex - 1) {
-
-            // We replace it by the last awake component
-            moveComponentToIndex(mSleepingStartIndex - 1, index);
-        }
-
-        // If there are sleeping components at the end
-        if (mSleepingStartIndex != mNbComponents) {
-
-            // We replace the last awake component by the last sleeping component
-            moveComponentToIndex(mNbComponents - 1, mSleepingStartIndex - 1);
-        }
-
-        mSleepingStartIndex--;
-    }
-
-    mNbComponents--;
-
-    assert(mSleepingStartIndex <= mNbComponents);
-    assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
-}
-
-// Notify if a given entity is sleeping or not
-void BodyComponents::setIsEntitySleeping(Entity entity, bool isSleeping) {
-
-    const uint32 index = mMapEntityToComponentIndex[entity];
-
-    // If the component was sleeping and is not sleeping anymore
-    if (!isSleeping && index >= mSleepingStartIndex) {
-
-        assert(mSleepingStartIndex < mNbComponents);
-
-        // If the sleeping component is not the first sleeping component
-        if (mSleepingStartIndex != index) {
-
-            // Swap the first sleeping component with the one we need to wake up
-            swapComponents(index, mSleepingStartIndex);
-        }
-
-        mSleepingStartIndex++;
-    }
-    // If the component was awake and must now go to sleep
-    else if (isSleeping && index < mSleepingStartIndex) {
-
-        assert(mSleepingStartIndex > 0);
-
-        // If the awake component is not the only awake component
-        if (index != mSleepingStartIndex - 1) {
-
-            // Swap the last awake component with the one we need to put to sleep
-            swapComponents(index, mSleepingStartIndex - 1);
-        }
-
-        mSleepingStartIndex--;
-    }
 
     assert(mSleepingStartIndex <= mNbComponents);
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
@@ -283,7 +147,8 @@ void BodyComponents::swapComponents(uint32 index1, uint32 index2) {
 // Destroy a component at a given index
 void BodyComponents::destroyComponent(uint32 index) {
 
-    assert(index < mNbComponents);
+    Components::destroyComponent(index);
+
     assert(mMapEntityToComponentIndex[mBodiesEntities[index]] == index);
 
     mMapEntityToComponentIndex.remove(mBodiesEntities[index]);
