@@ -89,7 +89,7 @@ void TransformComponents::addComponent(Entity bodyEntity, bool isSleeping, const
 
     mNbComponents++;
 
-    assert(mSleepingStartIndex <= mNbComponents);
+    assert(mDisabledStartIndex <= mNbComponents);
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 

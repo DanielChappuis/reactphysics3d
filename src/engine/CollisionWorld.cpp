@@ -246,19 +246,20 @@ void CollisionWorld::resetContactManifoldListsOfBodies() {
     }
 }
 
-// Notify the world if a body is sleeping or not
-void CollisionWorld::notifyBodySleeping(Entity bodyEntity, bool isSleeping) {
+// Notify the world if a body is disabled (sleeping or inactive) or not
+void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     // TODO : Make sure we notify all the components here ...
 
     // Notify all the components
-    mTransformComponents.setIsEntitySleeping(bodyEntity, isSleeping);
+    mBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
     // For each proxy-shape of the body
     const List<Entity>& proxyShapesEntities = mBodyComponents.getProxyShapes(bodyEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
 
-        mProxyShapesComponents.setIsEntitySleeping(proxyShapesEntities[i], isSleeping);
+        mProxyShapesComponents.setIsEntityDisabled(proxyShapesEntities[i], isDisabled);
     }
 }
 

@@ -70,12 +70,6 @@ class CollisionBody : public Body {
         /// Type of body (static, kinematic or dynamic)
         BodyType mType;
 
-        /// First element of the linked list of proxy collision shapes of this body
-        //ProxyShape* mProxyCollisionShapes;
-
-        /// Number of collision shapes
-        //uint mNbCollisionShapes;
-
         /// First element of the linked list of contact manifolds involving this body
         ContactManifoldListElement* mContactManifoldsList;
 

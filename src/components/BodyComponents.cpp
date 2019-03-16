@@ -92,7 +92,7 @@ void BodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const Body
 
     mNbComponents++;
 
-    assert(mSleepingStartIndex <= mNbComponents);
+    assert(mDisabledStartIndex <= mNbComponents);
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 

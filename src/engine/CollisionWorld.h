@@ -129,8 +129,8 @@ class CollisionWorld {
         /// Reset all the contact manifolds linked list of each body
         void resetContactManifoldListsOfBodies();
 
-        /// Notify the world if a body is sleeping or not
-        void notifyBodySleeping(Entity entity, bool isSleeping);
+        /// Notify the world if a body is disabled (slepping or inactive) or not
+        void notifyBodyDisabled(Entity entity, bool isDisabled);
 
     public :
 

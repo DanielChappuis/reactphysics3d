@@ -125,7 +125,7 @@ void ProxyShapesComponents::addComponent(Entity proxyShapeEntity, bool isSleepin
 
     mNbComponents++;
 
-    assert(mSleepingStartIndex <= mNbComponents);
+    assert(mDisabledStartIndex <= mNbComponents);
 }
 
 // Move a component from a source to a destination index in the components array

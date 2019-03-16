@@ -268,6 +268,9 @@ void CollisionBody::setIsActive(bool isActive) {
 
     Body::setIsActive(isActive);
 
+    // Enable the components
+    mWorld.notifyBodyDisabled(mEntity, !isActive);
+
     // If we have to activate the body
     if (isActive) {
 
@@ -453,10 +456,12 @@ void CollisionBody::setTransform(const Transform& transform) {
 // Set the variable to know whether or not the body is sleeping
 void CollisionBody::setIsSleeping(bool isSleeping) {
 
+    if (mIsSleeping == isSleeping) return;
+
     Body::setIsSleeping(isSleeping);
 
     // Notify all the components
-    mWorld.notifyBodySleeping(mEntity, isSleeping);
+    mWorld.notifyBodyDisabled(mEntity, isSleeping);
 }
 
 // Return the world-space coordinates of a point given the local-space coordinates of the body

@@ -109,9 +109,6 @@ class BodyComponents : public Components {
 
         /// Return the list of proxy-shapes of a body
         const List<Entity>& getProxyShapes(Entity bodyEntity) const;
-
-        /// Notify if a given entity is sleeping or not
-        void setIsEntitySleeping(Entity bodyEntity, bool isSleeping);
 };
 
 // Add a proxy-shape to a body component

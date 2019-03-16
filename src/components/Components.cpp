@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 Components::Components(MemoryAllocator& allocator, size_t componentDataSize)
     : mMemoryAllocator(allocator), mNbComponents(0), mComponentDataSize(componentDataSize),
       mNbAllocatedComponents(0), mBuffer(nullptr), mMapEntityToComponentIndex(allocator),
-      mSleepingStartIndex(0) {
+      mDisabledStartIndex(0) {
 
 }
 
@@ -67,27 +67,27 @@ uint32 Components::prepareAddComponent(bool isSleeping) {
 
     uint32 index;
 
-    // If the component to add is part of a sleeping entity or there are no sleeping entity
+    // If the component to add is part of a disabled entity or there are no disabled entity
     if (isSleeping) {
 
         // Add the component at the end of the array
         index = mNbComponents;
 
-        mSleepingStartIndex = index;
+        mDisabledStartIndex = index;
     }
-    // If the component to add is not part of a sleeping entity
+    // If the component to add is not part of a disabled entity
     else {
 
-        // If there already are sleeping components
-        if (mSleepingStartIndex != mNbComponents) {
+        // If there already are disabled components
+        if (mDisabledStartIndex != mNbComponents) {
 
-            // Move the first sleeping component to the end of the array
-            moveComponentToIndex(mSleepingStartIndex, mNbComponents);
+            // Move the first disabled component to the end of the array
+            moveComponentToIndex(mDisabledStartIndex, mNbComponents);
         }
 
-        index = mSleepingStartIndex;
+        index = mDisabledStartIndex;
 
-        mSleepingStartIndex++;
+        mDisabledStartIndex++;
     }
 
     return index;
@@ -109,81 +109,81 @@ void Components::removeComponent(Entity entity) {
     assert(index < mNbComponents);
 
     // We want to keep the arrays tightly packed. Therefore, when a component is removed,
-    // we replace it with the last element of the array. But we need to make sure that sleeping
-    // and non-sleeping components stay grouped together.
+    // we replace it with the last element of the array. But we need to make sure that enabled
+    // and disabled components stay grouped together.
 
     // Destroy the component
     destroyComponent(index);
 
-    // If the component to remove is sleeping
-    if (index >= mSleepingStartIndex) {
+    // If the component to remove is disabled
+    if (index >= mDisabledStartIndex) {
 
         // If the component is not the last one
         if (index != mNbComponents - 1) {
 
-            // We replace it by the last sleeping component
+            // We replace it by the last disabled component
             moveComponentToIndex(mNbComponents - 1, index);
         }
     }
-    else {   // If the component to remove is not sleeping
+    else {   // If the component to remove is enabled
 
-        // If it not the last awake component
-        if (index != mSleepingStartIndex - 1) {
+        // If it not the last enabled component
+        if (index != mDisabledStartIndex - 1) {
 
-            // We replace it by the last awake component
-            moveComponentToIndex(mSleepingStartIndex - 1, index);
+            // We replace it by the last enabled component
+            moveComponentToIndex(mDisabledStartIndex - 1, index);
         }
 
-        // If there are sleeping components at the end
-        if (mSleepingStartIndex != mNbComponents) {
+        // If there are disabled components at the end
+        if (mDisabledStartIndex != mNbComponents) {
 
-            // We replace the last awake component by the last sleeping component
-            moveComponentToIndex(mNbComponents - 1, mSleepingStartIndex - 1);
+            // We replace the last enabled component by the last disabled component
+            moveComponentToIndex(mNbComponents - 1, mDisabledStartIndex - 1);
         }
 
-        mSleepingStartIndex--;
+        mDisabledStartIndex--;
     }
 
     mNbComponents--;
 
-    assert(mSleepingStartIndex <= mNbComponents);
+    assert(mDisabledStartIndex <= mNbComponents);
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
-// Notify if a given entity is sleeping or not
-void Components::setIsEntitySleeping(Entity entity, bool isSleeping) {
+// Notify if a given entity is disabled (sleeping or inactive) or not
+void Components::setIsEntityDisabled(Entity entity, bool isDisabled) {
 
     const uint32 index = mMapEntityToComponentIndex[entity];
 
-    // If the component was sleeping and is not sleeping anymore
-    if (!isSleeping && index >= mSleepingStartIndex) {
+    // If the component was disabled and is not disabled anymore
+    if (!isDisabled && index >= mDisabledStartIndex) {
 
-        assert(mSleepingStartIndex < mNbComponents);
+        assert(mDisabledStartIndex < mNbComponents);
 
-        // If the sleeping component is not the first sleeping component
-        if (mSleepingStartIndex != index) {
+        // If the disabled component is not the first disabled component
+        if (mDisabledStartIndex != index) {
 
-            // Swap the first sleeping component with the one we need to wake up
-            swapComponents(index, mSleepingStartIndex);
+            // Swap the first disabled component with the one we need to enable it
+            swapComponents(index, mDisabledStartIndex);
         }
 
-        mSleepingStartIndex++;
+        mDisabledStartIndex++;
     }
-    // If the component was awake and must now go to sleep
-    else if (isSleeping && index < mSleepingStartIndex) {
+    // If the component was enabled and must now be disabled
+    else if (isDisabled && index < mDisabledStartIndex) {
 
-        assert(mSleepingStartIndex > 0);
+        assert(mDisabledStartIndex > 0);
 
-        // If the awake component is not the only awake component
-        if (index != mSleepingStartIndex - 1) {
+        // If the enabled component is not the only enabled component
+        if (index != mDisabledStartIndex - 1) {
 
-            // Swap the last awake component with the one we need to put to sleep
-            swapComponents(index, mSleepingStartIndex - 1);
+            // Swap the last enabled component with the one we need to disable
+            swapComponents(index, mDisabledStartIndex - 1);
         }
 
-        mSleepingStartIndex--;
+        mDisabledStartIndex--;
     }
 
-    assert(mSleepingStartIndex <= mNbComponents);
+    assert(mDisabledStartIndex <= mNbComponents);
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }

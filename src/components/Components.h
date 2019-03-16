@@ -75,8 +75,9 @@ class Components {
         /// Map an entity to the index of its component in the array
         Map<Entity, uint32> mMapEntityToComponentIndex;
 
-        /// Index of the first component of a sleeping entity (sleeping components are stored at the end)
-        uint32 mSleepingStartIndex;
+        /// Index of the first component of a disabled (sleeping or inactive) entity
+        /// Disabled components are stored at the end of the components array
+        uint32 mDisabledStartIndex;
 
         /// Compute the index where we need to insert the new component
         uint32 prepareAddComponent(bool isSleeping);
@@ -106,8 +107,8 @@ class Components {
         /// Remove a component
         void removeComponent(Entity entity);
 
-        // Notify if a given entity is sleeping or not
-        void setIsEntitySleeping(Entity entity, bool isSleeping);
+        // Notify if a given entity is disabled (sleeping or inactive) or not
+        void setIsEntityDisabled(Entity entity, bool isDisabled);
 
         /// Return the number of components
         uint32 getNbComponents() const;
