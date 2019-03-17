@@ -84,7 +84,7 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
     Vector3 localBoundsMax;
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
-    ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
+    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, decimal(1), 0x0001, 0xFFFF);
     mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, mIsSleeping, proxyShapeComponent);
@@ -234,26 +234,8 @@ void CollisionBody::updateBroadPhaseState() const {
     const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
 
-        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
-
         // Update the proxy
-        updateProxyShapeInBroadPhase(proxyShape);
-    }
-}
-
-// Update the broad-phase state of a proxy collision shape of the body
-void CollisionBody::updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert) const {
-
-    const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
-
-    if (proxyShape->getBroadPhaseId() != -1) {
-
-        // Recompute the world-space AABB of the collision shape
-        AABB aabb;
-        proxyShape->getCollisionShape()->computeAABB(aabb, transform * proxyShape->getLocalToBodyTransform());
-
-        // Update the broad-phase state for the proxy collision shape
-        mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, Vector3(0, 0, 0), forceReinsert)	;
+        mWorld.mCollisionDetection.updateProxyShape(proxyShapesEntities[i]);
     }
 }
 
@@ -441,6 +423,8 @@ AABB CollisionBody::getAABB() const {
  *                  of the body into world-space
  */
 void CollisionBody::setTransform(const Transform& transform) {
+
+    // TODO : Make sure this method is never called from the internal physics engine
 
     // Update the transform of the body
     mWorld.mTransformComponents.setTransform(mEntity, transform);

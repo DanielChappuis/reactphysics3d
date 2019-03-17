@@ -30,7 +30,8 @@
 #include "collision/broadphase/DynamicAABBTree.h"
 #include "containers/LinkedList.h"
 #include "containers/Set.h"
-#include "components/ProxyShapesComponents.h"
+#include "components/ProxyShapeComponents.h"
+#include "components/TransformComponents.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -142,7 +143,10 @@ class BroadPhaseSystem {
         DynamicAABBTree mDynamicAABBTree;
 
         /// Reference to the proxy-shapes components
-        ProxyShapesComponents& mProxyShapesComponents;
+        ProxyShapeComponents& mProxyShapesComponents;
+
+        /// Reference to the transform components
+        TransformComponents& mTransformsComponents;
 
         /// Set with the broad-phase IDs of all collision shapes that have moved (or have been
         /// created) during the last simulation step. Those are the shapes that need to be tested
@@ -161,13 +165,21 @@ class BroadPhaseSystem {
 		Profiler* mProfiler;
 
 #endif
+        // -------------------- Methods -------------------- //
+
+        /// Notify the Dynamic AABB tree that a proxy-shape needs to be updated
+        void updateProxyShapeInternal(int broadPhaseId, const AABB& aabb, const Vector3& displacement);
+
+        /// Update the broad-phase state of some proxy-shapes components
+        void updateProxyShapesComponents(uint32 startIndex, uint32 endIndex);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapesComponents& proxyShapesComponents);
+        BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
+                         TransformComponents &transformComponents);
 
         /// Destructor
         ~BroadPhaseSystem() = default;
@@ -184,9 +196,11 @@ class BroadPhaseSystem {
         /// Remove a proxy collision shape from the broad-phase collision detection
         void removeProxyCollisionShape(ProxyShape* proxyShape);
 
-        /// Notify the broad-phase that a collision shape has moved and need to be updated
-        void updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
-                                       const Vector3& displacement, bool forceReinsert = false);
+        /// Update the broad-phase state of a single proxy-shape
+        void updateProxyShape(Entity proxyShapeEntity);
+
+        /// Update the broad-phase state of all the enabled proxy-shapes
+        void updateProxyShapes();
 
         /// Add a collision shape in the array of shapes that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.

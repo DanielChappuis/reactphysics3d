@@ -35,9 +35,10 @@
 using namespace reactphysics3d;
 
 // Constructor
-BroadPhaseSystem::BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapesComponents& proxyShapesComponents)
+BroadPhaseSystem::BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
+                                   TransformComponents& transformComponents)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
-                     mProxyShapesComponents(proxyShapesComponents),
+                     mProxyShapesComponents(proxyShapesComponents), mTransformsComponents(transformComponents),
                      mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mPotentialPairs(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
@@ -108,16 +109,32 @@ void BroadPhaseSystem::removeProxyCollisionShape(ProxyShape* proxyShape) {
     removeMovedCollisionShape(broadPhaseID);
 }
 
+// Update the broad-phase state of a single proxy-shape
+void BroadPhaseSystem::updateProxyShape(Entity proxyShapeEntity) {
+
+    assert(mProxyShapesComponents.mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+
+    // Get the index of the proxy-shape component in the array
+    uint32 index = mProxyShapesComponents.mMapEntityToComponentIndex[proxyShapeEntity];
+
+    // Update the proxy-shape component
+    updateProxyShapesComponents(index, index + 1);
+}
+
+// Update the broad-phase state of all the enabled proxy-shapes
+void BroadPhaseSystem::updateProxyShapes() {
+
+    // Update all the enabled proxy-shape components
+    updateProxyShapesComponents(0, mProxyShapesComponents.getNbEnabledComponents());
+}
+
 // Notify the broad-phase that a collision shape has moved and need to be updated
-void BroadPhaseSystem::updateProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb,
-                                                    const Vector3& displacement, bool forceReinsert) {
+void BroadPhaseSystem::updateProxyShapeInternal(int broadPhaseId, const AABB& aabb, const Vector3& displacement) {
 
-    int broadPhaseID = proxyShape->getBroadPhaseId();
-
-    assert(broadPhaseID >= 0);
+    assert(broadPhaseId >= 0);
 
     // Update the dynamic AABB tree according to the movement of the collision shape
-    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseID, aabb, displacement, forceReinsert);
+    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseId, aabb, displacement);
 
     // If the collision shape has moved out of its fat AABB (and therefore has been reinserted
     // into the tree).
@@ -125,7 +142,41 @@ void BroadPhaseSystem::updateProxyCollisionShape(ProxyShape* proxyShape, const A
 
         // Add the collision shape into the array of shapes that have moved (or have been created)
         // during the last simulation step
-        addMovedCollisionShape(broadPhaseID);
+        addMovedCollisionShape(broadPhaseId);
+    }
+}
+
+// Update the broad-phase state of some proxy-shapes components
+void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 endIndex) {
+
+    assert(startIndex <= endIndex);
+    assert(startIndex < mProxyShapesComponents.getNbComponents());
+    assert(endIndex <= mProxyShapesComponents.getNbComponents());
+
+    // Make sure we do not update disabled components
+    startIndex = std::min(startIndex, mProxyShapesComponents.getNbEnabledComponents());
+    endIndex = std::min(endIndex, mProxyShapesComponents.getNbEnabledComponents());
+
+    // For each proxy-shape component to update
+    for (uint32 i = startIndex; i < endIndex; i++) {
+
+        const int broadPhaseId = mProxyShapesComponents.mBroadPhaseIds[i];
+        if (broadPhaseId != -1) {
+
+            const Entity& bodyEntity = mProxyShapesComponents.mBodiesEntities[i];
+            const Transform& transform = mTransformsComponents.getTransform(bodyEntity);
+
+            // TODO : Use body linear velocity and compute displacement
+            const Vector3 displacement = Vector3::zero();
+            //const Vector3 displacement = world.mTimeStep * mLinearVelocity;
+
+            // Recompute the world-space AABB of the collision shape
+            AABB aabb;
+            mProxyShapesComponents.mCollisionShapes[i]->computeAABB(aabb, transform * mProxyShapesComponents.mLocalToBodyTransforms[i]);
+
+            // Update the broad-phase state for the proxy collision shape
+            updateProxyShapeInternal(broadPhaseId, aabb, displacement);
+        }
     }
 }
 

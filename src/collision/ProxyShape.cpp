@@ -105,13 +105,14 @@ void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
 // Set the local to parent body transform
 void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
+    // TODO : Make sure this method is never called by the internal physics engine
+
     //mLocalToBodyTransform = transform;
     mBody->mWorld.mProxyShapesComponents.setLocalToBodyTransform(mEntity, transform);
 
     mBody->setIsSleeping(false);
 
-    // Notify the body that the proxy shape has to be updated in the broad-phase
-    mBody->updateProxyShapeInBroadPhase(this, true);
+    mBody->mWorld.mCollisionDetection.updateProxyShape(mEntity);
 
     int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(mEntity);
 

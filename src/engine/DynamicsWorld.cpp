@@ -228,11 +228,11 @@ void DynamicsWorld::updateBodiesState() {
 
             // Update the world inverse inertia tensor of the body
             bodies[b]->updateInertiaTensorInverseWorld();
-
-            // Update the broad-phase state of the body
-            bodies[b]->updateBroadPhaseState();
         }
     }
+
+    // Update the proxy-shapes components
+    mCollisionDetection.updateProxyShapes();
 }
 
 // Initialize the bodies velocities arrays for the next simulation step.

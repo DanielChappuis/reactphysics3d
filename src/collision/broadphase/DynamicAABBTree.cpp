@@ -169,9 +169,8 @@ void DynamicAABBTree::removeObject(int nodeID) {
 /// nothing is done. Otherwise, the corresponding node is removed and reinserted into the tree.
 /// The method returns true if the object has been reinserted into the tree. The "displacement"
 /// argument is the linear velocity of the AABB multiplied by the elapsed time between two
-/// frames. If the "forceReinsert" parameter is true, we force a removal and reinsertion of the node
-/// (this can be useful if the shape AABB has become much smaller than the previous one for instance).
-bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector3& displacement, bool forceReinsert) {
+/// frames.
+bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector3& displacement) {
 
     RP3D_PROFILE("DynamicAABBTree::updateObject()", mProfiler);
 
@@ -180,7 +179,7 @@ bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector
     assert(mNodes[nodeID].height >= 0);
 
     // If the new AABB is still inside the fat AABB of the node
-    if (!forceReinsert && mNodes[nodeID].aabb.contains(newAABB)) {
+    if (mNodes[nodeID].aabb.contains(newAABB)) {
         return false;
     }
 

@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "ProxyShapesComponents.h"
+#include "ProxyShapeComponents.h"
 #include "engine/EntityManager.h"
 #include "collision/ProxyShape.h"
 #include <cassert>
@@ -34,7 +34,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-ProxyShapesComponents::ProxyShapesComponents(MemoryAllocator& allocator)
+ProxyShapeComponents::ProxyShapeComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(ProxyShape*) + sizeof(int) + sizeof(AABB) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(decimal) + sizeof(unsigned short) +
                 sizeof(unsigned short)) {
@@ -44,7 +44,7 @@ ProxyShapesComponents::ProxyShapesComponents(MemoryAllocator& allocator)
 }
 
 // Allocate memory for a given number of components
-void ProxyShapesComponents::allocate(uint32 nbComponentsToAllocate) {
+void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
 
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
@@ -103,7 +103,7 @@ void ProxyShapesComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void ProxyShapesComponents::addComponent(Entity proxyShapeEntity, bool isSleeping, const ProxyShapeComponent& component) {
+void ProxyShapeComponents::addComponent(Entity proxyShapeEntity, bool isSleeping, const ProxyShapeComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
     uint32 index = prepareAddComponent(isSleeping);
@@ -130,7 +130,7 @@ void ProxyShapesComponents::addComponent(Entity proxyShapeEntity, bool isSleepin
 
 // Move a component from a source to a destination index in the components array
 // The destination location must contain a constructed object
-void ProxyShapesComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
+void ProxyShapeComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
 
     const Entity proxyShapeEntity = mProxyShapesEntities[srcIndex];
 
@@ -158,7 +158,7 @@ void ProxyShapesComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInd
 }
 
 // Swap two components in the array
-void ProxyShapesComponents::swapComponents(uint32 index1, uint32 index2) {
+void ProxyShapeComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Copy component 1 data
     Entity proxyShapeEntity1(mProxyShapesEntities[index1]);
@@ -198,7 +198,7 @@ void ProxyShapesComponents::swapComponents(uint32 index1, uint32 index2) {
 }
 
 // Destroy a component at a given index
-void ProxyShapesComponents::destroyComponent(uint32 index) {
+void ProxyShapeComponents::destroyComponent(uint32 index) {
 
     Components::destroyComponent(index);
 

@@ -112,11 +112,19 @@ class Components {
 
         /// Return the number of components
         uint32 getNbComponents() const;
+
+        /// Return the number of enabled components
+        uint32 getNbEnabledComponents() const;
 };
 
 // Return the number of components
 inline uint32 Components::getNbComponents() const {
     return mNbComponents;
+}
+
+// Return the number of enabled components
+inline uint32 Components::getNbEnabledComponents() const {
+    return mDisabledStartIndex;
 }
 
 }

@@ -35,7 +35,7 @@
 #include "engine/EntityManager.h"
 #include "components/BodyComponents.h"
 #include "components/TransformComponents.h"
-#include "components/ProxyShapesComponents.h"
+#include "components/ProxyShapeComponents.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -80,7 +80,7 @@ class CollisionWorld {
         TransformComponents mTransformComponents;
 
         /// Proxy-Shapes Components
-        ProxyShapesComponents mProxyShapesComponents;
+        ProxyShapeComponents mProxyShapesComponents;
 
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;

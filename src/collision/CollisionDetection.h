@@ -35,7 +35,8 @@
 #include "collision/narrowphase/CollisionDispatch.h"
 #include "containers/Map.h"
 #include "containers/Set.h"
-#include "components/ProxyShapesComponents.h"
+#include "components/ProxyShapeComponents.h"
+#include "components/TransformComponents.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -68,8 +69,11 @@ class CollisionDetection {
         /// Memory manager
         MemoryManager& mMemoryManager;
 
-        /// Reference the the proxy-shapes components
-        ProxyShapesComponents& mProxyShapesComponents;
+        /// Reference the proxy-shape components
+        ProxyShapeComponents& mProxyShapesComponents;
+
+        /// Reference the transform components
+        TransformComponents& mTransformComponents;
 
         /// Collision Detection Dispatch configuration
         CollisionDispatch mCollisionDispatch;
@@ -149,7 +153,8 @@ class CollisionDetection {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetection(CollisionWorld* world, ProxyShapesComponents& proxyShapesComponents, MemoryManager& memoryManager);
+        CollisionDetection(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents,
+                           TransformComponents& transformComponents, MemoryManager& memoryManager);
 
         /// Destructor
         ~CollisionDetection() = default;
@@ -170,8 +175,10 @@ class CollisionDetection {
         void removeProxyCollisionShape(ProxyShape* proxyShape);
 
         /// Update a proxy collision shape (that has moved for instance)
-        void updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
-                                       const Vector3& displacement = Vector3(0, 0, 0), bool forceReinsert = false);
+        void updateProxyShape(Entity proxyShapeEntity);
+
+        /// Update all the enabled proxy-shapes
+        void updateProxyShapes();
 
         /// Add a pair of bodies that cannot collide with each other
         void addNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
@@ -272,13 +279,6 @@ inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape
     }
 }
 
-// Update a proxy collision shape (that has moved for instance)
-inline void CollisionDetection::updateProxyCollisionShape(ProxyShape* shape, const AABB& aabb,
-                                                          const Vector3& displacement, bool forceReinsert) {
-    mBroadPhaseSystem.updateProxyCollisionShape(shape, aabb, displacement);
-}
-
-
 // Return a pointer to the world
 inline CollisionWorld* CollisionDetection::getWorld() {
     return mWorld;
@@ -287,6 +287,18 @@ inline CollisionWorld* CollisionDetection::getWorld() {
 // Return a reference to the memory manager
 inline MemoryManager& CollisionDetection::getMemoryManager() const {
     return mMemoryManager;
+}
+
+// Update a proxy collision shape (that has moved for instance)
+inline void CollisionDetection::updateProxyShape(Entity proxyShapeEntity) {
+
+    // Update the proxy-shape component
+    mBroadPhaseSystem.updateProxyShape(proxyShapeEntity);
+}
+
+// Update all the enabled proxy-shapes
+inline void CollisionDetection::updateProxyShapes() {
+    mBroadPhaseSystem.updateProxyShapes();
 }
 
 #ifdef IS_PROFILING_ACTIVE

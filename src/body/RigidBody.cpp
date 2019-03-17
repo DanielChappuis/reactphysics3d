@@ -294,7 +294,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
 
-    ProxyShapesComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
+    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, mass, 0x0001, 0xFFFF);
     mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, mIsSleeping, proxyShapeComponent);
@@ -574,36 +574,6 @@ void RigidBody::recomputeMassInformation() {
 
     // Update the linear velocity of the center of mass
     mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
-}
-
-// Update the broad-phase state for this body (because it has moved for instance)
-void RigidBody::updateBroadPhaseState() const {
-
-    RP3D_PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
-
-    // TODO : Make sure we compute this in a system
-
-    const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
-
-    DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
- 	 const Vector3 displacement = world.mTimeStep * mLinearVelocity;
-
-    // For all the proxy collision shapes of the body
-    const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
-
-        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
-
-        if (proxyShape->getBroadPhaseId() != -1) {
-
-            // Recompute the world-space AABB of the collision shape
-            AABB aabb;
-            proxyShape->getCollisionShape()->computeAABB(aabb, transform * proxyShape->getLocalToBodyTransform());
-
-            // Update the broad-phase state for the proxy collision shape
-            mWorld.mCollisionDetection.updateProxyCollisionShape(proxyShape, aabb, displacement);
-        }
-    }
 }
 
 #ifdef IS_PROFILING_ACTIVE

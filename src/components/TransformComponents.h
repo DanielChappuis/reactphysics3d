@@ -100,6 +100,10 @@ class TransformComponents : public Components {
 
         /// Set the transform of an entity
         void setTransform(Entity bodyEntity, const Transform& transform);
+
+        // -------------------- Friendship -------------------- //
+
+        friend class BroadPhaseSystem;
 };
 
 // Return the transform of an entity

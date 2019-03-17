@@ -123,9 +123,6 @@ class RigidBody : public CollisionBody {
         /// Update the transform of the body after a change of the center of mass
         void updateTransformWithCenterOfMass();
 
-        /// Update the broad-phase state for this body (because it has moved for instance)
-        virtual void updateBroadPhaseState() const override;
-
         /// Update the world inverse inertia tensor of the body
         void updateInertiaTensorInverseWorld();
 

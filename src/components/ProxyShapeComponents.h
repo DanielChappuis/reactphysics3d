@@ -49,7 +49,7 @@ class ProxyShape;
  * different bodies. We also make sure that proxy shapes of sleeping entities (bodies) are
  * always stored at the end of the array.
  */
-class ProxyShapesComponents : public Components {
+class ProxyShapeComponents : public Components {
 
     private:
 
@@ -135,10 +135,10 @@ class ProxyShapesComponents : public Components {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyShapesComponents(MemoryAllocator& allocator);
+        ProxyShapeComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~ProxyShapesComponents() override = default;
+        virtual ~ProxyShapeComponents() override = default;
 
         /// Add a component
         void addComponent(Entity proxyShapeEntity, bool isSleeping, const ProxyShapeComponent& component);
@@ -175,10 +175,14 @@ class ProxyShapesComponents : public Components {
 
         /// Set the "collide with" mask bits of a given proxy-shape
         void setCollideWithMaskBits(Entity proxyShapeEntity, unsigned short collideWithMaskBits);
+
+        // -------------------- Friendship -------------------- //
+
+        friend class BroadPhaseSystem;
 };
 
 // Return the mass of a proxy-shape
-inline decimal ProxyShapesComponents::getMass(Entity proxyShapeEntity) const {
+inline decimal ProxyShapeComponents::getMass(Entity proxyShapeEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -186,7 +190,7 @@ inline decimal ProxyShapesComponents::getMass(Entity proxyShapeEntity) const {
 }
 
 // Return a pointer to a given proxy-shape
-inline ProxyShape* ProxyShapesComponents::getProxyShape(Entity proxyShapeEntity) const {
+inline ProxyShape* ProxyShapeComponents::getProxyShape(Entity proxyShapeEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -194,7 +198,7 @@ inline ProxyShape* ProxyShapesComponents::getProxyShape(Entity proxyShapeEntity)
 }
 
 // Return the local-to-body transform of a proxy-shape
-inline const Transform& ProxyShapesComponents::getLocalToBodyTransform(Entity proxyShapeEntity) const {
+inline const Transform& ProxyShapeComponents::getLocalToBodyTransform(Entity proxyShapeEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -202,7 +206,7 @@ inline const Transform& ProxyShapesComponents::getLocalToBodyTransform(Entity pr
 }
 
 // Set the local-to-body transform of a proxy-shape
-inline void ProxyShapesComponents::setLocalToBodyTransform(Entity proxyShapeEntity, const Transform& transform) {
+inline void ProxyShapeComponents::setLocalToBodyTransform(Entity proxyShapeEntity, const Transform& transform) {
 
    assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -210,7 +214,7 @@ inline void ProxyShapesComponents::setLocalToBodyTransform(Entity proxyShapeEnti
 }
 
 // Return a pointer to the collision shape of a proxy-shape
-inline CollisionShape* ProxyShapesComponents::getCollisionShape(Entity proxyShapeEntity) const {
+inline CollisionShape* ProxyShapeComponents::getCollisionShape(Entity proxyShapeEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -218,7 +222,7 @@ inline CollisionShape* ProxyShapesComponents::getCollisionShape(Entity proxyShap
 }
 
 // Return the broad-phase id of a given proxy shape
-inline int ProxyShapesComponents::getBroadPhaseId(Entity proxyShapeEntity) const {
+inline int ProxyShapeComponents::getBroadPhaseId(Entity proxyShapeEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -226,7 +230,7 @@ inline int ProxyShapesComponents::getBroadPhaseId(Entity proxyShapeEntity) const
 }
 
 // Set the broad-phase id of a given proxy shape
-inline void ProxyShapesComponents::setBroadPhaseId(Entity proxyShapeEntity, int broadPhaseId) {
+inline void ProxyShapeComponents::setBroadPhaseId(Entity proxyShapeEntity, int broadPhaseId) {
 
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -234,7 +238,7 @@ inline void ProxyShapesComponents::setBroadPhaseId(Entity proxyShapeEntity, int 
 }
 
 // Return the collision category bits of a given proxy-shape
-inline unsigned short ProxyShapesComponents::getCollisionCategoryBits(Entity proxyShapeEntity) const {
+inline unsigned short ProxyShapeComponents::getCollisionCategoryBits(Entity proxyShapeEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -242,7 +246,7 @@ inline unsigned short ProxyShapesComponents::getCollisionCategoryBits(Entity pro
 }
 
 // Return the "collide with" mask bits of a given proxy-shape
-inline unsigned short ProxyShapesComponents::getCollideWithMaskBits(Entity proxyShapeEntity) const {
+inline unsigned short ProxyShapeComponents::getCollideWithMaskBits(Entity proxyShapeEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -250,7 +254,7 @@ inline unsigned short ProxyShapesComponents::getCollideWithMaskBits(Entity proxy
 }
 
 // Set the collision category bits of a given proxy-shape
-inline void ProxyShapesComponents::setCollisionCategoryBits(Entity proxyShapeEntity, unsigned short collisionCategoryBits) {
+inline void ProxyShapeComponents::setCollisionCategoryBits(Entity proxyShapeEntity, unsigned short collisionCategoryBits) {
 
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -258,7 +262,7 @@ inline void ProxyShapesComponents::setCollisionCategoryBits(Entity proxyShapeEnt
 }
 
 // Set the "collide with" mask bits of a given proxy-shape
-inline void ProxyShapesComponents::setCollideWithMaskBits(Entity proxyShapeEntity, unsigned short collideWithMaskBits) {
+inline void ProxyShapeComponents::setCollideWithMaskBits(Entity proxyShapeEntity, unsigned short collideWithMaskBits) {
 
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 

@@ -243,10 +243,10 @@ class TestDynamicAABBTree : public Test {
 
             // ---- Update the object AABBs with the initial AABBs (no reinsertion) ----- //
 
-            tree.updateObject(object1Id, aabb1, Vector3::zero(), false);
-            tree.updateObject(object2Id, aabb2, Vector3::zero(), false);
-            tree.updateObject(object3Id, aabb3, Vector3::zero(), false);
-            tree.updateObject(object4Id, aabb4, Vector3::zero(), false);
+            tree.updateObject(object1Id, aabb1, Vector3::zero());
+            tree.updateObject(object2Id, aabb2, Vector3::zero());
+            tree.updateObject(object3Id, aabb3, Vector3::zero());
+            tree.updateObject(object4Id, aabb4, Vector3::zero());
 
             // AABB overlapping nothing
             mOverlapCallback.reset();
@@ -290,10 +290,10 @@ class TestDynamicAABBTree : public Test {
 
             // ---- Update the object AABBs with the initial AABBs (with reinsertion) ----- //
 
-            tree.updateObject(object1Id, aabb1, Vector3::zero(), true);
-            tree.updateObject(object2Id, aabb2, Vector3::zero(), true);
-            tree.updateObject(object3Id, aabb3, Vector3::zero(), true);
-            tree.updateObject(object4Id, aabb4, Vector3::zero(), true);
+            tree.updateObject(object1Id, aabb1, Vector3::zero());
+            tree.updateObject(object2Id, aabb2, Vector3::zero());
+            tree.updateObject(object3Id, aabb3, Vector3::zero());
+            tree.updateObject(object4Id, aabb4, Vector3::zero());
 
             // AABB overlapping nothing
             mOverlapCallback.reset();
@@ -438,10 +438,10 @@ class TestDynamicAABBTree : public Test {
 
             // ---- Update the object AABBs with the initial AABBs (no reinsertion) ----- //
 
-            tree.updateObject(object1Id, aabb1, Vector3::zero(), false);
-            tree.updateObject(object2Id, aabb2, Vector3::zero(), false);
-            tree.updateObject(object3Id, aabb3, Vector3::zero(), false);
-            tree.updateObject(object4Id, aabb4, Vector3::zero(), false);
+            tree.updateObject(object1Id, aabb1, Vector3::zero());
+            tree.updateObject(object2Id, aabb2, Vector3::zero());
+            tree.updateObject(object3Id, aabb3, Vector3::zero());
+            tree.updateObject(object4Id, aabb4, Vector3::zero());
 
             // Ray with no hits
             mRaycastCallback.reset();
@@ -477,10 +477,10 @@ class TestDynamicAABBTree : public Test {
 
             // ---- Update the object AABBs with the initial AABBs (with reinsertion) ----- //
 
-            tree.updateObject(object1Id, aabb1, Vector3::zero(), true);
-            tree.updateObject(object2Id, aabb2, Vector3::zero(), true);
-            tree.updateObject(object3Id, aabb3, Vector3::zero(), true);
-            tree.updateObject(object4Id, aabb4, Vector3::zero(), true);
+            tree.updateObject(object1Id, aabb1, Vector3::zero());
+            tree.updateObject(object2Id, aabb2, Vector3::zero());
+            tree.updateObject(object3Id, aabb3, Vector3::zero());
+            tree.updateObject(object4Id, aabb4, Vector3::zero());
 
             // Ray with no hits
             mRaycastCallback.reset();
