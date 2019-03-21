@@ -68,9 +68,6 @@ class ProxyShapeComponents : public Components {
         // TODO : Try to change type to uint32
         int* mBroadPhaseIds;
 
-        /// Local-space bounds of a proxy-shape
-        AABB* mLocalBounds;
-
         /// Transform from local-space of the proxy-shape to the body-space of its body
         Transform* mLocalToBodyTransforms;
 

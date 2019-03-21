@@ -174,9 +174,8 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 end
             const Entity& bodyEntity = mProxyShapesComponents.mBodiesEntities[i];
             const Transform& transform = mTransformsComponents.getTransform(bodyEntity);
 
-            Vector3 displacement(0, 0, 0);
-
             // If there is a dynamics component for the current entity
+            Vector3 displacement(0, 0, 0);
             if (mDynamicsComponents.hasComponent(bodyEntity)) {
 
                 // Get the linear velocity from the dynamics component
