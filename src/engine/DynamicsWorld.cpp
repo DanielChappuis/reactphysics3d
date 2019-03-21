@@ -50,7 +50,7 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
               : CollisionWorld(worldSettings, logger, profiler),
                 mContactSolver(mMemoryManager, mConfig),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
-                mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations),
+                mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
                 mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
                 mIsGravityEnabled(true), mConstrainedLinearVelocities(nullptr),
@@ -214,8 +214,8 @@ void DynamicsWorld::updateBodiesState() {
             uint index = bodies[b]->mArrayIndex;
 
             // Update the linear and angular velocity of the body
-            bodies[b]->mLinearVelocity = mConstrainedLinearVelocities[index];
-            bodies[b]->mAngularVelocity = mConstrainedAngularVelocities[index];
+            mDynamicsComponents.setLinearVelocity(bodies[b]->getEntity(), mConstrainedLinearVelocities[index]);
+            mDynamicsComponents.setAngularVelocity(bodies[b]->getEntity(), mConstrainedAngularVelocities[index]);
 
             // Update the position of the center of mass of the body
             bodies[b]->mCenterOfMassWorld = mConstrainedPositions[index];
@@ -429,6 +429,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
+    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(Vector3::zero(), Vector3::zero()));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,

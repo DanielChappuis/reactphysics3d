@@ -32,6 +32,7 @@
 #include "configuration.h"
 #include "utils/Logger.h"
 #include "engine/ContactSolver.h"
+#include "components/DynamicsComponents.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -216,6 +217,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Set the gravity vector of the world
         void setGravity(Vector3& gravity);
 
+        /// Return the current time step
+        decimal getTimeStep() const;
+
         /// Return if the gravity is on
         bool isGravityEnabled() const;
 
@@ -357,6 +361,14 @@ inline void DynamicsWorld::setGravity(Vector3& gravity) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: Set gravity vector to " + gravity.to_string());
+}
+
+// Return the current time step
+/**
+ * @return The current time step (in seconds)
+ */
+inline decimal DynamicsWorld::getTimeStep() const {
+    return mTimeStep;
 }
 
 // Return if the gravity is enaled

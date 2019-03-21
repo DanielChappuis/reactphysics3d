@@ -48,11 +48,12 @@ using namespace std;
 
 
 // Constructor
-CollisionDetection::CollisionDetection(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents, TransformComponents &transformComponents,
-                                       MemoryManager& memoryManager)
+CollisionDetection::CollisionDetection(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents, TransformComponents& transformComponents,
+                                       DynamicsComponents& dynamicsComponents, MemoryManager& memoryManager)
                    : mMemoryManager(memoryManager), mProxyShapesComponents(proxyShapesComponents), mTransformComponents(transformComponents),
                      mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
-                     mOverlappingPairs(mMemoryManager.getPoolAllocator()), mBroadPhaseSystem(*this, mProxyShapesComponents, mTransformComponents),
+                     mOverlappingPairs(mMemoryManager.getPoolAllocator()),
+                     mBroadPhaseSystem(*this, mProxyShapesComponents, mTransformComponents, dynamicsComponents),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()), mIsCollisionShapesAdded(false),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator()) {
 

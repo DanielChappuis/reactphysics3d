@@ -36,6 +36,7 @@
 #include "components/BodyComponents.h"
 #include "components/TransformComponents.h"
 #include "components/ProxyShapeComponents.h"
+#include "components/DynamicsComponents.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -81,6 +82,9 @@ class CollisionWorld {
 
         /// Proxy-Shapes Components
         ProxyShapeComponents mProxyShapesComponents;
+
+        /// Dynamics components of the bodies (linear, angular velocities)
+        DynamicsComponents mDynamicsComponents;
 
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;

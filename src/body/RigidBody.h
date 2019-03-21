@@ -70,10 +70,10 @@ class RigidBody : public CollisionBody {
         Vector3 mCenterOfMassWorld;
 
         /// Linear velocity of the body
-        Vector3 mLinearVelocity;
+        //Vector3 mLinearVelocity;
 
         /// Angular velocity of the body
-        Vector3 mAngularVelocity;
+        //Vector3 mAngularVelocity;
 
         /// Current external force on the body
         Vector3 mExternalForce;
@@ -260,22 +260,6 @@ inline decimal RigidBody::getMass() const {
     return mInitMass;
 }
 
-// Return the linear velocity
-/**
- * @return The linear velocity vector of the body
- */
-inline Vector3 RigidBody::getLinearVelocity() const {
-    return mLinearVelocity;
-}
-
-// Return the angular velocity of the body
-/**
- * @return The angular velocity vector of the body
- */
-inline Vector3 RigidBody::getAngularVelocity() const {
-    return mAngularVelocity;
-}
-
 // Get the inverse local inertia tensor of the body (in body coordinates)
 inline const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
     return mInertiaTensorLocalInverse;
@@ -343,19 +327,6 @@ inline const JointListElement* RigidBody::getJointsList() const {
  */
 inline JointListElement* RigidBody::getJointsList() {
     return mJointsList;
-}
-
-// Set the variable to know whether or not the body is sleeping
-inline void RigidBody::setIsSleeping(bool isSleeping) {
-
-    if (isSleeping) {
-        mLinearVelocity.setToZero();
-        mAngularVelocity.setToZero();
-        mExternalForce.setToZero();
-        mExternalTorque.setToZero();
-    }
-
-    CollisionBody::setIsSleeping(isSleeping);
 }
 
 // Apply an external force to the body at its center of mass.

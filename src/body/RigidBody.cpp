@@ -83,8 +83,8 @@ void RigidBody::setType(BodyType type) {
     if (mType == BodyType::STATIC) {
 
         // Reset the velocity to zero
-        mLinearVelocity.setToZero();
-        mAngularVelocity.setToZero();
+        mWorld.mDynamicsComponents.setLinearVelocity(mEntity, Vector3::zero());
+        mWorld.mDynamicsComponents.setAngularVelocity(mEntity, Vector3::zero());
     }
 
     // If it is a static or a kinematic body
@@ -189,7 +189,10 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
     mCenterOfMassWorld = mWorld.mTransformComponents.getTransform(mEntity) * mCenterOfMassLocal;
 
     // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    Vector3 linearVelocity = mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
+    linearVelocity += angularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mID) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
@@ -422,15 +425,15 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
     if (mType == BodyType::STATIC) return;
 
     // Update the linear velocity of the current body state
-    mLinearVelocity = linearVelocity;
+    mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
 
     // If the linear velocity is not zero, awake the body
-    if (mLinearVelocity.lengthSquare() > decimal(0.0)) {
+    if (linearVelocity.lengthSquare() > decimal(0.0)) {
         setIsSleeping(false);
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set linearVelocity=" + mLinearVelocity.to_string());
+             "Body " + std::to_string(mID) + ": Set linearVelocity=" + linearVelocity.to_string());
 }
 
 // Set the angular velocity.
@@ -439,19 +442,21 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 */
 void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 
+    // TODO : Make sure this method is not called from the internal physics engine
+
     // If it is a static body, we do nothing
     if (mType == BodyType::STATIC) return;
 
     // Set the angular velocity
-    mAngularVelocity = angularVelocity;
+    mWorld.mDynamicsComponents.setAngularVelocity(mEntity, angularVelocity);
 
     // If the velocity is not zero, awake the body
-    if (mAngularVelocity.lengthSquare() > decimal(0.0)) {
+    if (angularVelocity.lengthSquare() > decimal(0.0)) {
         setIsSleeping(false);
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set angularVelocity=" + mAngularVelocity.to_string());
+             "Body " + std::to_string(mID) + ": Set angularVelocity=" + angularVelocity.to_string());
 }
 
 // Set the current position and orientation
@@ -470,7 +475,10 @@ void RigidBody::setTransform(const Transform& transform) {
     mCenterOfMassWorld = transform * mCenterOfMassLocal;
 
     // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    Vector3 linearVelocity = mWorld.mDynamicsComponents.getLinearVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
+    linearVelocity += angularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
@@ -573,7 +581,39 @@ void RigidBody::recomputeMassInformation() {
     updateInertiaTensorInverseWorld();
 
     // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    Vector3 linearVelocity = mWorld.mDynamicsComponents.getLinearVelocity(mEntity);
+    Vector3 angularVelocity = mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
+    linearVelocity += angularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
+}
+
+// Return the linear velocity
+/**
+ * @return The linear velocity vector of the body
+ */
+Vector3 RigidBody::getLinearVelocity() const {
+    return mWorld.mDynamicsComponents.getLinearVelocity(mEntity);
+}
+
+// Return the angular velocity of the body
+/**
+ * @return The angular velocity vector of the body
+ */
+Vector3 RigidBody::getAngularVelocity() const {
+    return mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
+}
+
+// Set the variable to know whether or not the body is sleeping
+void RigidBody::setIsSleeping(bool isSleeping) {
+
+    if (isSleeping) {
+        mWorld.mDynamicsComponents.setLinearVelocity(mEntity, Vector3::zero());
+        mWorld.mDynamicsComponents.setAngularVelocity(mEntity, Vector3::zero());
+        mExternalForce.setToZero();
+        mExternalTorque.setToZero();
+    }
+
+    CollisionBody::setIsSleeping(isSleeping);
 }
 
 #ifdef IS_PROFILING_ACTIVE

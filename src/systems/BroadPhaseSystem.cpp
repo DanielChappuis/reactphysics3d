@@ -29,16 +29,17 @@
 #include "utils/Profiler.h"
 #include "collision/RaycastInfo.h"
 #include "memory/MemoryManager.h"
-#include "engine/CollisionWorld.h"
+#include "engine/DynamicsWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
 BroadPhaseSystem::BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
-                                   TransformComponents& transformComponents)
+                                   TransformComponents& transformComponents, DynamicsComponents& dynamicsComponents)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
                      mProxyShapesComponents(proxyShapesComponents), mTransformsComponents(transformComponents),
+                     mDynamicsComponents(dynamicsComponents),
                      mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mPotentialPairs(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
@@ -157,6 +158,13 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 end
     startIndex = std::min(startIndex, mProxyShapesComponents.getNbEnabledComponents());
     endIndex = std::min(endIndex, mProxyShapesComponents.getNbEnabledComponents());
 
+    // Get the time step if we are in a dynamics world
+    DynamicsWorld* dynamicsWorld = dynamic_cast<DynamicsWorld*>(mCollisionDetection.getWorld());
+    decimal timeStep = decimal(0.0);
+    if (dynamicsWorld != nullptr) {
+        timeStep = dynamicsWorld->getTimeStep();
+    }
+
     // For each proxy-shape component to update
     for (uint32 i = startIndex; i < endIndex; i++) {
 
@@ -166,9 +174,17 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 end
             const Entity& bodyEntity = mProxyShapesComponents.mBodiesEntities[i];
             const Transform& transform = mTransformsComponents.getTransform(bodyEntity);
 
-            // TODO : Use body linear velocity and compute displacement
-            const Vector3 displacement = Vector3::zero();
-            //const Vector3 displacement = world.mTimeStep * mLinearVelocity;
+            Vector3 displacement(0, 0, 0);
+
+            // If there is a dynamics component for the current entity
+            if (mDynamicsComponents.hasComponent(bodyEntity)) {
+
+                // Get the linear velocity from the dynamics component
+                const Vector3& linearVelocity = mDynamicsComponents.getLinearVelocity(bodyEntity);
+
+                // TODO : Use body linear velocity and compute displacement
+                displacement = timeStep * linearVelocity;
+            }
 
             // Recompute the world-space AABB of the collision shape
             AABB aabb;

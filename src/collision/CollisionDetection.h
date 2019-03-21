@@ -154,7 +154,8 @@ class CollisionDetection {
 
         /// Constructor
         CollisionDetection(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents,
-                           TransformComponents& transformComponents, MemoryManager& memoryManager);
+                           TransformComponents& transformComponents, DynamicsComponents& dynamicsComponents,
+                           MemoryManager& memoryManager);
 
         /// Destructor
         ~CollisionDetection() = default;

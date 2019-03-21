@@ -32,6 +32,7 @@
 #include "containers/Set.h"
 #include "components/ProxyShapeComponents.h"
 #include "components/TransformComponents.h"
+#include "components/DynamicsComponents.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -148,6 +149,9 @@ class BroadPhaseSystem {
         /// Reference to the transform components
         TransformComponents& mTransformsComponents;
 
+        /// Reference to the dynamics components
+        DynamicsComponents& mDynamicsComponents;
+
         /// Set with the broad-phase IDs of all collision shapes that have moved (or have been
         /// created) during the last simulation step. Those are the shapes that need to be tested
         /// for overlapping in the next simulation step.
@@ -179,7 +183,7 @@ class BroadPhaseSystem {
 
         /// Constructor
         BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
-                         TransformComponents &transformComponents);
+                         TransformComponents& transformComponents, DynamicsComponents& dynamicsComponents);
 
         /// Destructor
         ~BroadPhaseSystem() = default;
