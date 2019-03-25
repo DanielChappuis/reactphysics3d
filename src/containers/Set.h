@@ -94,12 +94,6 @@ class Set {
 
         // -------------------- Attributes -------------------- //
 
-        /// Object with hash operator
-        const Hash mHash;
-
-        /// Object with equality operator
-        const KeyEqual mEqual;
-
         /// Current number of used entries in the set
         int mNbUsedEntries;
 
@@ -212,11 +206,12 @@ class Set {
 
             if (mCapacity > 0) {
 
-               size_t hashCode = mHash(value);
+               size_t hashCode = Hash()(value);
                int bucket = hashCode % mCapacity;
+                auto keyEqual  = KeyEqual();
 
                for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
-                   if (mEntries[i].hashCode == hashCode && mEqual(*mEntries[i].value, value)) {
+                   if (mEntries[i].hashCode == hashCode && keyEqual(*mEntries[i].value, value)) {
                        return i;
                    }
                }
@@ -332,7 +327,7 @@ class Set {
                 }
 
                 /// Pre increment (++it)
-                Iterator operator++(int number) {
+                Iterator operator++(int) {
                     Iterator tmp = *this;
                     advance();
                     return tmp;
@@ -353,9 +348,8 @@ class Set {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Set(MemoryAllocator& allocator, size_t capacity = 0, const Hash& hash = Hash(),
-            const KeyEqual& equal = KeyEqual())
-            : mHash(hash), mEqual(equal), mNbUsedEntries(0), mNbFreeEntries(0), mCapacity(0), mBuckets(nullptr),
+        Set(MemoryAllocator& allocator, size_t capacity = 0)
+            : mNbUsedEntries(0), mNbFreeEntries(0), mCapacity(0), mBuckets(nullptr),
               mEntries(nullptr), mAllocator(allocator), mFreeIndex(-1) {
 
             // If the largest prime has not been computed yet
@@ -373,7 +367,7 @@ class Set {
 
         /// Copy constructor
         Set(const Set<V, Hash, KeyEqual>& set)
-          :mHash(set.mHash), mEqual(set.mEqual), mNbUsedEntries(set.mNbUsedEntries), mNbFreeEntries(set.mNbFreeEntries), mCapacity(set.mCapacity),
+          :mNbUsedEntries(set.mNbUsedEntries), mNbFreeEntries(set.mNbFreeEntries), mCapacity(set.mCapacity),
            mBuckets(nullptr), mEntries(nullptr), mAllocator(set.mAllocator), mFreeIndex(set.mFreeIndex) {
 
             if (mCapacity > 0) {
@@ -435,16 +429,18 @@ class Set {
             }
 
             // Compute the hash code of the value
-            size_t hashCode = mHash(value);
+            size_t hashCode = Hash()(value);
 
             // Compute the corresponding bucket index
             int bucket = hashCode % mCapacity;
+
+            auto keyEqual  = KeyEqual();
 
             // Check if the item is already in the set
             for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
 
                 // If there is already an item with the same value in the set
-                if (mEntries[i].hashCode == hashCode && mEqual(*mEntries[i].value, value)) {
+                if (mEntries[i].hashCode == hashCode && keyEqual(*mEntries[i].value, value)) {
 
                     return false;
                 }
@@ -501,12 +497,13 @@ class Set {
 
             if (mCapacity > 0) {
 
-                size_t hashcode = mHash(value);
+                size_t hashcode = Hash()(value);
+                auto keyEqual  = KeyEqual();
                 int bucket = hashcode % mCapacity;
                 int last = -1;
                 for (int i = mBuckets[bucket]; i >= 0; last = i, i = mEntries[i].next) {
 
-                    if (mEntries[i].hashCode == hashcode && mEqual(*mEntries[i].value, value)) {
+                    if (mEntries[i].hashCode == hashcode && keyEqual(*mEntries[i].value, value)) {
 
                         if (last < 0 ) {
                            mBuckets[bucket] = mEntries[i].next;
@@ -604,11 +601,12 @@ class Set {
 
             if (mCapacity > 0) {
 
-               size_t hashCode = mHash(value);
+               size_t hashCode = Hash()(value);
                bucket = hashCode % mCapacity;
+               auto keyEqual  = KeyEqual();
 
                for (int i = mBuckets[bucket]; i >= 0; i = mEntries[i].next) {
-                   if (mEntries[i].hashCode == hashCode && mEqual(*(mEntries[i].value), value)) {
+                   if (mEntries[i].hashCode == hashCode && keyEqual(*(mEntries[i].value), value)) {
                        entry = i;
                        break;
                    }
