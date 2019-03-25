@@ -593,8 +593,7 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
 }
 
 /// Report all shapes overlapping with the AABB given in parameter.
-void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
-                                                         DynamicAABBTreeOverlapCallback& callback) const {
+void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, DynamicAABBTreeOverlapCallback& callback) const {
 
     // Create a stack with the nodes to visit
     Stack<int, 64> stack(mAllocator);

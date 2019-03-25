@@ -573,15 +573,14 @@ void CollisionDetection::testAABBOverlap(const AABB& aabb, OverlapCallback* over
     Set<bodyindex> reportedBodies(mMemoryManager.getPoolAllocator());
 
     // Ask the broad-phase to get all the overlapping shapes
-    LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
+    List<int> overlappingNodes(mMemoryManager.getPoolAllocator());
     mBroadPhaseSystem.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
 
     // For each overlaping proxy shape
-    LinkedList<int>::ListElement* element = overlappingNodes.getListHead();
-    while (element != nullptr) {
+    for (uint i=0; i < overlappingNodes.size(); i++) {
 
         // Get the overlapping proxy shape
-        int broadPhaseId = element->data;
+        const int broadPhaseId = overlappingNodes[i];
         ProxyShape* proxyShape = mBroadPhaseSystem.getProxyShapeForBroadPhaseId(broadPhaseId);
 
         CollisionBody* overlapBody = proxyShape->getBody();
@@ -599,9 +598,6 @@ void CollisionDetection::testAABBOverlap(const AABB& aabb, OverlapCallback* over
                 overlapCallback->notifyOverlap(overlapBody);
             }
         }
-
-        // Go to the next overlapping proxy shape
-        element = element->next;
     }
 }
 
@@ -668,17 +664,16 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
             const AABB& shapeAABB = mBroadPhaseSystem.getFatAABB(bodyProxyShape->getBroadPhaseId());
 
             // Ask the broad-phase to get all the overlapping shapes
-            LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
+            List<int> overlappingNodes(mMemoryManager.getPoolAllocator());
             mBroadPhaseSystem.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
 
             const bodyindex bodyId = body->getId();
 
             // For each overlaping proxy shape
-            LinkedList<int>::ListElement* element = overlappingNodes.getListHead();
-            while (element != nullptr) {
+            for (uint i=0; i < overlappingNodes.size(); i++) {
 
                 // Get the overlapping proxy shape
-                int broadPhaseId = element->data;
+                const int broadPhaseId = overlappingNodes[i];
                 ProxyShape* proxyShape = mBroadPhaseSystem.getProxyShapeForBroadPhaseId(broadPhaseId);
 
                 // If the proxy shape is from a body that we have not already reported collision and the
@@ -711,9 +706,6 @@ void CollisionDetection::testOverlap(CollisionBody* body, OverlapCallback* overl
                         narrowPhaseInput.clear();
                     }
                 }
-
-                // Go to the next overlapping proxy shape
-                element = element->next;
             }
         }
     }
@@ -821,17 +813,16 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
             const AABB& shapeAABB = mBroadPhaseSystem.getFatAABB(bodyProxyShape->getBroadPhaseId());
 
             // Ask the broad-phase to get all the overlapping shapes
-            LinkedList<int> overlappingNodes(mMemoryManager.getPoolAllocator());
+            List<int> overlappingNodes(mMemoryManager.getPoolAllocator());
             mBroadPhaseSystem.reportAllShapesOverlappingWithAABB(shapeAABB, overlappingNodes);
 
             const bodyindex bodyId = body->getId();
 
             // For each overlaping proxy shape
-            LinkedList<int>::ListElement* element = overlappingNodes.getListHead();
-            while (element != nullptr) {
+            for (uint i=0; i < overlappingNodes.size(); i++) {
 
                 // Get the overlapping proxy shape
-                int broadPhaseId = element->data;
+                const int broadPhaseId = overlappingNodes[i];
                 ProxyShape* proxyShape = mBroadPhaseSystem.getProxyShapeForBroadPhaseId(broadPhaseId);
 
                 // If the two proxy collision shapes are not from the same body
@@ -866,9 +857,6 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
                         computeMiddlePhaseForProxyShapes(pair, narrowPhaseInput);
                     }
                 }
-
-                // Go to the next overlapping proxy shape
-                element = element->next;
             }
         }
     }

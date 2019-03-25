@@ -97,7 +97,7 @@ struct Entity {
         /// Equality operator
         bool operator==(const Entity& entity) const;
 
-        /// Inequality operator (it != end())
+        /// Inequality operator
         bool operator!=(const Entity& entity) const;
 
         // -------------------- Friendship -------------------- //
@@ -122,7 +122,7 @@ inline bool Entity::operator==(const Entity& entity) const {
     return entity.id == id;
 }
 
-// Inequality operator (it != end())
+// Inequality operator
 inline bool Entity::operator!=(const Entity& entity) const {
     return entity.id != id;
 }

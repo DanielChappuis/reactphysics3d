@@ -33,6 +33,8 @@
 #include "components/ProxyShapeComponents.h"
 #include "components/TransformComponents.h"
 #include "components/DynamicsComponents.h"
+#include "collision/broadphase/BroadPhasePair.h"
+#include <cstring>
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -45,45 +47,15 @@ class ProxyShape;
 class MemoryManager;
 class Profiler;
 
-// Structure BroadPhasePair
-/**
- * This structure represent a potential overlapping pair during the
- * broad-phase collision detection.
- */
-struct BroadPhasePair {
-
-    // -------------------- Attributes -------------------- //
-
-    /// Broad-phase ID of the first collision shape
-    int collisionShape1ID;
-
-    /// Broad-phase ID of the second collision shape
-    int collisionShape2ID;
-
-    // -------------------- Methods -------------------- //
-
-    /// Constructor
-    BroadPhasePair(int shapeId1, int shapeId2) {
-        collisionShape1ID = shapeId1;
-        collisionShape2ID = shapeId2;
-    }
-
-    /// Method used to compare two pairs for sorting algorithm
-    static bool smallerThan(const BroadPhasePair &pair1, const BroadPhasePair &pair2);
-};
-
 // class AABBOverlapCallback
 class AABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
-    private:
-
     public:
 
-        LinkedList<int>& mOverlappingNodes;
+        List<int>& mOverlappingNodes;
 
         // Constructor
-        AABBOverlapCallback(LinkedList<int>& overlappingNodes)
-             : mOverlappingNodes(overlappingNodes) {
+        AABBOverlapCallback(List<int>& overlappingNodes) : mOverlappingNodes(overlappingNodes) {
 
         }
 
@@ -158,7 +130,7 @@ class BroadPhaseSystem {
         Set<int> mMovedShapes;
 
         /// Temporary array of potential overlapping pairs (with potential duplicates)
-        List<BroadPhasePair> mPotentialPairs;
+        Set<BroadPhasePair> mPotentialPairs;
 
         /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;
@@ -215,10 +187,10 @@ class BroadPhaseSystem {
         void removeMovedCollisionShape(int broadPhaseID);
 
         /// Add potential overlapping pairs in the dynamic AABB tree
-        void addOverlappingNodes(int broadPhaseId1, const LinkedList<int>& overlappingNodes);
+        void addOverlappingNodes(int broadPhaseId1, const List<int>& overlappingNodes);
 
         /// Report all the shapes that are overlapping with a given AABB
-        void reportAllShapesOverlappingWithAABB(const AABB& aabb, LinkedList<int>& overlappingNodes) const;
+        void reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int>& overlappingNodes) const;
 
         /// Compute all the overlapping pairs of collision shapes
         void computeOverlappingPairs(MemoryManager& memoryManager);
@@ -243,17 +215,6 @@ class BroadPhaseSystem {
 #endif
 
 };
-
-// Method used to compare two pairs for sorting algorithm
-inline bool BroadPhasePair::smallerThan(const BroadPhasePair& pair1,
-                                        const BroadPhasePair& pair2) {
-
-    if (pair1.collisionShape1ID < pair2.collisionShape1ID) return true;
-    if (pair1.collisionShape1ID == pair2.collisionShape1ID) {
-        return pair1.collisionShape2ID < pair2.collisionShape2ID;
-    }
-    return false;
-}
 
 // Return the fat AABB of a given broad-phase shape
 inline const AABB& BroadPhaseSystem::getFatAABB(int broadPhaseId) const  {

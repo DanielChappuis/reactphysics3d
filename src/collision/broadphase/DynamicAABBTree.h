@@ -237,8 +237,7 @@ class DynamicAABBTree {
         void* getNodeDataPointer(int nodeID) const;
 
         /// Report all shapes overlapping with the AABB given in parameter.
-        void reportAllShapesOverlappingWithAABB(const AABB& aabb,
-                                                DynamicAABBTreeOverlapCallback& callback) const;
+        void reportAllShapesOverlappingWithAABB(const AABB& aabb, DynamicAABBTreeOverlapCallback& callback) const;
 
         /// Ray casting method
         void raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& callback) const;
