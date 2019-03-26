@@ -82,7 +82,6 @@ SET (REACTPHYSICS3D_HEADERS
     "src/body/RigidBody.h"
     "src/collision/ContactPointInfo.h"
     "src/collision/broadphase/DynamicAABBTree.h"
-    "src/collision/broadphase/BroadPhasePair.h"
     "src/collision/narrowphase/CollisionDispatch.h"
     "src/collision/narrowphase/GJK/VoronoiSimplex.h"
     "src/collision/narrowphase/GJK/GJKAlgorithm.h"

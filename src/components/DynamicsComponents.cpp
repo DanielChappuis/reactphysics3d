@@ -54,23 +54,24 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(newBuffer != nullptr);
 
     // New pointers to components data
-    Entity* newEntities = static_cast<Entity*>(newBuffer);
-    Vector3* newLinearVelocities = reinterpret_cast<Vector3*>(newEntities + nbComponentsToAllocate);
+    Entity* newBodies = static_cast<Entity*>(newBuffer);
+    Vector3* newLinearVelocities = reinterpret_cast<Vector3*>(newBodies + nbComponentsToAllocate);
     Vector3* newAngularVelocities = reinterpret_cast<Vector3*>(newLinearVelocities + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
 
         // Copy component data from the previous buffer to the new one
-        memcpy(newLinearVelocities, mLinearVelocities, mNbComponents * sizeof(Transform));
-        memcpy(newAngularVelocities, mAngularVelocities, mNbComponents * sizeof(Entity));
+        memcpy(newBodies, mBodies, mNbComponents * sizeof(Entity));
+        memcpy(newLinearVelocities, mLinearVelocities, mNbComponents * sizeof(Vector3));
+        memcpy(newAngularVelocities, mAngularVelocities, mNbComponents * sizeof(Vector3));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
     }
 
     mBuffer = newBuffer;
-    mBodies = newEntities;
+    mBodies = newBodies;
     mLinearVelocities = newLinearVelocities;
     mAngularVelocities = newAngularVelocities;
     mNbAllocatedComponents = nbComponentsToAllocate;
@@ -120,6 +121,9 @@ void DynamicsComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
 
 // Swap two components in the array
 void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
+
+    assert(mMapEntityToComponentIndex[mBodies[index1]] == index1);
+    assert(mMapEntityToComponentIndex[mBodies[index2]] == index2);
 
     // Copy component 1 data
     Entity entity1(mBodies[index1]);
