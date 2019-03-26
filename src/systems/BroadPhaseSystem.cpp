@@ -41,7 +41,6 @@ BroadPhaseSystem::BroadPhaseSystem(CollisionDetection& collisionDetection, Proxy
                      mProxyShapesComponents(proxyShapesComponents), mTransformsComponents(transformComponents),
                      mDynamicsComponents(dynamicsComponents),
                      mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
-                     mPotentialPairs(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -206,9 +205,6 @@ void BroadPhaseSystem::reportAllShapesOverlappingWithAABB(const AABB& aabb, List
 // Compute all the overlapping pairs of collision shapes
 void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager) {
 
-    // Reset the potential overlapping pairs
-    mPotentialPairs.clear();
-
     List<int> overlappingNodes(memoryManager.getPoolAllocator());
 
     // For all collision shapes that have moved (or have been created) during the last simulation step
@@ -237,55 +233,26 @@ void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager) {
     // Reset the array of collision shapes that have move (or have been created) during the
     // last simulation step
     mMovedShapes.clear();
-
-    // Check all the potential overlapping pairs avoiding duplicates to report unique overlapping pairs
-    auto it = mPotentialPairs.begin();
-    while (it != mPotentialPairs.end()) {
-
-        // Get a potential overlapping pair
-        BroadPhasePair& pair = *it;
-        ++it;
-
-        assert(pair.shape1BroadPhaseId != pair.shape2BroadPhaseId);
-
-        // Get the two collision shapes of the pair
-        ProxyShape* shape1 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair.shape1BroadPhaseId));
-        ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(pair.shape2BroadPhaseId));
-
-        // If the two proxy collision shapes are from the same body, skip it
-        if (shape1->getBody()->getId() != shape2->getBody()->getId()) {
-
-            // Notify the collision detection about the overlapping pair
-            mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);
-        }
-
-        // Skip the duplicate overlapping pairs
-        while (it != mPotentialPairs.end()) {
-
-            // Get the next pair
-            BroadPhasePair& nextPair = *it;
-
-            // If the next pair is different from the previous one, we stop skipping pairs
-            if (nextPair.shape1BroadPhaseId != pair.shape1BroadPhaseId ||
-                nextPair.shape2BroadPhaseId != pair.shape2BroadPhaseId) {
-                break;
-            }
-            ++it;
-        }
-    }
 }
 
 // Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
 void BroadPhaseSystem::addOverlappingNodes(int referenceNodeId, const List<int>& overlappingNodes) {
 
-    // For each overlapping node in the linked list
+    // For each overlapping node in the list
     for (uint i=0; i < overlappingNodes.size(); i++) {
 
-        // If both the nodes are the same, we do not create the overlapping pair
         if (referenceNodeId != overlappingNodes[i]) {
 
-            // Add the new potential pair into the array of potential overlapping pairs
-            mPotentialPairs.add(BroadPhasePair(referenceNodeId, overlappingNodes[i]));
+            // Get the two collision shapes of the pair
+            ProxyShape* shape1 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(referenceNodeId));
+            ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(overlappingNodes[i]));
+
+            // If the two proxy collision shapes are from the same body, skip it
+            if (shape1->getBody()->getId() != shape2->getBody()->getId()) {
+
+                // Notify the collision detection about the overlapping pair
+                mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);
+            }
         }
     }
 }

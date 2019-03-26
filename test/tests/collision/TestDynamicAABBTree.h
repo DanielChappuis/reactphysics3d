@@ -39,6 +39,7 @@ class TestOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
     public :
 
+        // TODO : Replace this by rp3d::List
         std::vector<int> mOverlapNodes;
 
         // Called when a overlapping node has been found during the call to

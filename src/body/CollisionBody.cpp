@@ -250,9 +250,6 @@ void CollisionBody::setIsActive(bool isActive) {
 
     Body::setIsActive(isActive);
 
-    // Enable the components
-    mWorld.notifyBodyDisabled(mEntity, !isActive);
-
     // If we have to activate the body
     if (isActive) {
 
@@ -426,6 +423,9 @@ void CollisionBody::setTransform(const Transform& transform) {
 
     // TODO : Make sure this method is never called from the internal physics engine
 
+    // Awake the body if it is sleeping
+    setIsSleeping(false);
+
     // Update the transform of the body
     mWorld.mTransformComponents.setTransform(mEntity, transform);
 
@@ -435,7 +435,6 @@ void CollisionBody::setTransform(const Transform& transform) {
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mID) + ": Set transform=" + transform.to_string());
 }
-
 
 // Set the variable to know whether or not the body is sleeping
 void CollisionBody::setIsSleeping(bool isSleeping) {

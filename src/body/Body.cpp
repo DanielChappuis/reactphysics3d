@@ -52,6 +52,8 @@ Body::Body(Entity entity, bodyindex id)
 void Body::setIsActive(bool isActive) {
     mIsActive = isActive;
 
+    setIsSleeping(isActive);
+
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mID) + ": Set isActive=" +
              (mIsActive ? "true" : "false"));
@@ -59,6 +61,12 @@ void Body::setIsActive(bool isActive) {
 
 // Set the variable to know whether or not the body is sleeping
 void Body::setIsSleeping(bool isSleeping) {
+
+    // If the body is not active, do nothing (it is sleeping)
+    if (!mIsActive) {
+        assert(mIsSleeping);
+        return;
+    }
 
     if (isSleeping) {
         mSleepTime = decimal(0.0);

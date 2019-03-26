@@ -101,6 +101,9 @@ class CollisionBody : public Body {
         /// Reset the mIsAlreadyInIsland variable of the body and contact manifolds
         int resetIsAlreadyInIslandAndCountManifolds();
 
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping) override;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -132,9 +135,6 @@ class CollisionBody : public Body {
         /// Set the current position and orientation
         virtual void setTransform(const Transform& transform);
 
-        /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping) override;
-
         /// Add a collision shape to the body.
         virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,
                                               const Transform& transform);
@@ -162,9 +162,6 @@ class CollisionBody : public Body {
 
         /// Return a pointer to a given proxy-shape of the body
         ProxyShape* getProxyShape(uint proxyShapeIndex);
-
-        /// Return the linked list of proxy shapes of that body
-        const ProxyShape* getProxyShapesList() const;
 
         /// Return the number of proxy-shapes associated with this body
         uint getNbProxyShapes() const;

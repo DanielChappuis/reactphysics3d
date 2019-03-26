@@ -33,7 +33,6 @@
 #include "components/ProxyShapeComponents.h"
 #include "components/TransformComponents.h"
 #include "components/DynamicsComponents.h"
-#include "collision/broadphase/BroadPhasePair.h"
 #include <cstring>
 
 /// Namespace ReactPhysics3D
@@ -128,9 +127,6 @@ class BroadPhaseSystem {
         /// created) during the last simulation step. Those are the shapes that need to be tested
         /// for overlapping in the next simulation step.
         Set<int> mMovedShapes;
-
-        /// Temporary array of potential overlapping pairs (with potential duplicates)
-        Set<BroadPhasePair> mPotentialPairs;
 
         /// Reference to the collision detection object
         CollisionDetection& mCollisionDetection;

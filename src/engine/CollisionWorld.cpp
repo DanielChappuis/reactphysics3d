@@ -256,6 +256,10 @@ void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
     mBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
+    if (mDynamicsComponents.hasComponent(bodyEntity)) {
+        mDynamicsComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    }
+
     // For each proxy-shape of the body
     const List<Entity>& proxyShapesEntities = mBodyComponents.getProxyShapes(bodyEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {

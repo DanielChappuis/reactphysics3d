@@ -345,15 +345,15 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
     assert(shape2->getBroadPhaseId() != -1);
     assert(shape1->getBroadPhaseId() != shape2->getBroadPhaseId());
 
-    // Check if the collision filtering allows collision between the two shapes
-    if ((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
-        (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) return;
-
     // Compute the overlapping pair ID
     Pair<uint, uint> pairID = OverlappingPair::computeID(shape1, shape2);
 
     // Check if the overlapping pair already exists
     if (mOverlappingPairs.containsKey(pairID)) return;
+
+    // Check if the collision filtering allows collision between the two shapes
+    if ((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
+        (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) return;
 
     // Create the overlapping pair and add it into the set of overlapping pairs
     OverlappingPair* newPair = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(OverlappingPair)))

@@ -603,7 +603,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, Dynam
     while(stack.getNbElements() > 0) {
 
         // Get the next node ID to visit
-        int nodeIDToVisit = stack.pop();
+        const int nodeIDToVisit = stack.pop();
 
         // Skip it if it is a null node
         if (nodeIDToVisit == TreeNode::NULL_TREE_NODE) continue;

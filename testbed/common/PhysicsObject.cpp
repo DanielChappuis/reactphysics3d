@@ -75,8 +75,6 @@ void PhysicsObject::setTransform(const rp3d::Transform& transform) {
     // Reset the transform
     mBody->setTransform(transform);
 
-    mBody->setIsSleeping(false);
-
     // Reset the velocity of the rigid body
     rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
     if (rigidBody != nullptr) {

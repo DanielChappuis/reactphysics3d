@@ -606,14 +606,14 @@ Vector3 RigidBody::getAngularVelocity() const {
 // Set the variable to know whether or not the body is sleeping
 void RigidBody::setIsSleeping(bool isSleeping) {
 
+    CollisionBody::setIsSleeping(isSleeping);
+
     if (isSleeping) {
         mWorld.mDynamicsComponents.setLinearVelocity(mEntity, Vector3::zero());
         mWorld.mDynamicsComponents.setAngularVelocity(mEntity, Vector3::zero());
         mExternalForce.setToZero();
         mExternalTorque.setToZero();
     }
-
-    CollisionBody::setIsSleeping(isSleeping);
 }
 
 #ifdef IS_PROFILING_ACTIVE
