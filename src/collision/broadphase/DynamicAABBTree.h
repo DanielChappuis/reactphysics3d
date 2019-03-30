@@ -29,6 +29,7 @@
 // Libraries
 #include "configuration.h"
 #include "collision/shapes/AABB.h"
+#include "containers/Set.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -235,6 +236,10 @@ class DynamicAABBTree {
 
         /// Return the data pointer of a given leaf node of the tree
         void* getNodeDataPointer(int nodeID) const;
+
+        /// Report all shapes overlapping with all the shapes in the map in parameter
+        void reportAllShapesOverlappingWithShapes(const List<int>& nodesToTest, size_t startIndex,
+                                                  size_t endIndex, List<Pair<int, int>>& outOverlappingNodes) const;
 
         /// Report all shapes overlapping with the AABB given in parameter.
         void reportAllShapesOverlappingWithAABB(const AABB& aabb, DynamicAABBTreeOverlapCallback& callback) const;

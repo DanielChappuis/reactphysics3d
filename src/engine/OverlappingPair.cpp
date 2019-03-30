@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                                  MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator,
                                  const WorldSettings& worldSettings)
-                : mPairID(computeID(shape1, shape2)), mContactManifoldSet(shape1, shape2, persistentMemoryAllocator, worldSettings),
+                : mPairID(computeID(shape1->getBroadPhaseId(), shape2->getBroadPhaseId())), mContactManifoldSet(shape1, shape2, persistentMemoryAllocator, worldSettings),
                   mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
                   mLastFrameCollisionInfos(mPersistentAllocator), mWorldSettings(worldSettings) {
     

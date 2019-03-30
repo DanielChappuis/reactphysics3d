@@ -182,14 +182,11 @@ class BroadPhaseSystem {
         /// step and that need to be tested again for broad-phase overlapping.
         void removeMovedCollisionShape(int broadPhaseID);
 
-        /// Add potential overlapping pairs in the dynamic AABB tree
-        void addOverlappingNodes(int broadPhaseId1, const List<int>& overlappingNodes);
-
         /// Report all the shapes that are overlapping with a given AABB
         void reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int>& overlappingNodes) const;
 
         /// Compute all the overlapping pairs of collision shapes
-        void computeOverlappingPairs(MemoryManager& memoryManager);
+        void computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int, int> >& overlappingNodes);
 
         /// Return the proxy shape corresponding to the broad-phase node id in parameter
         ProxyShape* getProxyShapeForBroadPhaseId(int broadPhaseId) const;
@@ -220,6 +217,8 @@ inline const AABB& BroadPhaseSystem::getFatAABB(int broadPhaseId) const  {
 // Add a collision shape in the array of shapes that have moved in the last simulation step
 // and that need to be tested again for broad-phase overlapping.
 inline void BroadPhaseSystem::addMovedCollisionShape(int broadPhaseID) {
+
+    assert(broadPhaseID != -1);
 
     // Store the broad-phase ID into the array of shapes that have moved
     mMovedShapes.add(broadPhaseID);

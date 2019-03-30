@@ -592,15 +592,66 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
     return nodeID;
 }
 
+/// Take a list of shapes to be tested for broad-phase overlap and return a list of pair of overlapping shapes
+void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const List<int>& nodesToTest, size_t startIndex,
+                                                           size_t endIndex, List<Pair<int, int>>& outOverlappingNodes) const {
+
+    // Create a stack with the nodes to visit
+    Stack<int> stack(mAllocator, 64);
+
+    // For each shape to be tested for overlap
+    for (uint i=startIndex; i < endIndex; i++) {
+
+        assert(nodesToTest[i] != -1);
+
+        stack.push(mRootNodeID);
+
+        const AABB& shapeAABB = getFatAABB(nodesToTest[i]);
+
+        // While there are still nodes to visit
+        while(stack.size() > 0) {
+
+            // Get the next node ID to visit
+            const int nodeIDToVisit = stack.pop();
+
+            // Skip it if it is a null node
+            if (nodeIDToVisit == TreeNode::NULL_TREE_NODE) continue;
+
+            // Get the corresponding node
+            const TreeNode* nodeToVisit = mNodes + nodeIDToVisit;
+
+            // If the AABB in parameter overlaps with the AABB of the node to visit
+            if (shapeAABB.testCollision(nodeToVisit->aabb)) {
+
+                // If the node is a leaf
+                if (nodeToVisit->isLeaf()) {
+
+                    // Add the node in the list of overlapping nodes
+                    outOverlappingNodes.add(Pair<int, int>(nodesToTest[i], nodeIDToVisit));
+                }
+                else {  // If the node is not a leaf
+
+                    // We need to visit its children
+                    stack.push(nodeToVisit->children[0]);
+                    stack.push(nodeToVisit->children[1]);
+                }
+            }
+        }
+
+        stack.clear();
+    }
+}
+
 /// Report all shapes overlapping with the AABB given in parameter.
+// TODO : Do not use this method anymore. Use
 void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, DynamicAABBTreeOverlapCallback& callback) const {
 
     // Create a stack with the nodes to visit
-    Stack<int, 64> stack(mAllocator);
+    Stack<int> stack(mAllocator, 64);
     stack.push(mRootNodeID);
 
     // While there are still nodes to visit
-    while(stack.getNbElements() > 0) {
+    while(stack.size() > 0) {
 
         // Get the next node ID to visit
         const int nodeIDToVisit = stack.pop();
@@ -637,12 +688,12 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &ca
 
     decimal maxFraction = ray.maxFraction;
 
-    Stack<int, 128> stack(mAllocator);
+    Stack<int> stack(mAllocator, 128);
     stack.push(mRootNodeID);
 
     // Walk through the tree from the root looking for proxy shapes
     // that overlap with the ray AABB
-    while (stack.getNbElements() > 0) {
+    while (stack.size() > 0) {
 
         // Get the next node in the stack
         int nodeID = stack.pop();

@@ -54,7 +54,7 @@ CollisionDetection::CollisionDetection(CollisionWorld* world, ProxyShapeComponen
                      mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
                      mOverlappingPairs(mMemoryManager.getPoolAllocator()),
                      mBroadPhaseSystem(*this, mProxyShapesComponents, mTransformComponents, dynamicsComponents),
-                     mNoCollisionPairs(mMemoryManager.getPoolAllocator()), mIsCollisionShapesAdded(false),
+                     mNoCollisionPairs(mMemoryManager.getPoolAllocator()), mMapBroadPhaseIdToProxyShapeEntity(memoryManager.getPoolAllocator()),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator()) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -86,13 +86,84 @@ void CollisionDetection::computeBroadPhase() {
 
     RP3D_PROFILE("CollisionDetection::computeBroadPhase()", mProfiler);
 
-    // If new collision shapes have been added to bodies
-    if (mIsCollisionShapesAdded) {
+    // Ask the broad-phase to compute all the shapes overlapping the shapes that
+    // have moved or have been added in the last frame. This call can only add new
+    // overlapping pairs in the collision detection.
+    List<Pair<int, int>> overlappingNodes(mMemoryManager.getPoolAllocator(), 32);
+    mBroadPhaseSystem.computeOverlappingPairs(mMemoryManager, overlappingNodes);
 
-        // Ask the broad-phase to recompute the overlapping pairs of collision
-        // shapes. This call can only add new overlapping pairs in the collision
-        // detection.
-        mBroadPhaseSystem.computeOverlappingPairs(mMemoryManager);
+    // Create new overlapping pairs if necessary
+    updateOverlappingPairs(overlappingNodes);
+}
+
+// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
+void CollisionDetection::updateOverlappingPairs(List<Pair<int, int>>& overlappingNodes) {
+
+    List<OverlappingPair*> newOverlappingPairs(mMemoryManager.getPoolAllocator(), overlappingNodes.size());
+
+    // For each overlapping pair of nodes
+    for (uint i=0; i < overlappingNodes.size(); i++) {
+
+        Pair<int, int> nodePair = overlappingNodes[i];
+
+        assert(nodePair.first != -1);
+        assert(nodePair.second != -1);
+
+        // Skip pairs with same overlapping nodes
+        if (nodePair.first != nodePair.second) {
+
+            // Get the two proxy-shapes
+            Entity proxyShape1Entity = mMapBroadPhaseIdToProxyShapeEntity[nodePair.first];
+            Entity proxyShape2Entity = mMapBroadPhaseIdToProxyShapeEntity[nodePair.second];
+
+            // Get the two bodies
+            Entity body1Entity = mProxyShapesComponents.getBody(proxyShape1Entity);
+            Entity body2Entity = mProxyShapesComponents.getBody(proxyShape2Entity);
+
+            // If the two proxy collision shapes are from the same body, skip it
+            if (body1Entity != body2Entity) {
+
+                // Compute the overlapping pair ID
+                Pair<uint, uint> pairID = OverlappingPair::computeID(nodePair.first, nodePair.second);
+
+                // Check if the overlapping pair already exists
+                if (!mOverlappingPairs.containsKey(pairID)) {
+
+                    unsigned short shape1CollideWithMaskBits = mProxyShapesComponents.getCollideWithMaskBits(proxyShape1Entity);
+                    unsigned short shape2CollideWithMaskBits = mProxyShapesComponents.getCollideWithMaskBits(proxyShape2Entity);
+
+                    unsigned short shape1CollisionCategoryBits = mProxyShapesComponents.getCollisionCategoryBits(proxyShape1Entity);
+                    unsigned short shape2CollisionCategoryBits = mProxyShapesComponents.getCollisionCategoryBits(proxyShape2Entity);
+
+                    // Check if the collision filtering allows collision between the two shapes
+                    if ((shape1CollideWithMaskBits & shape2CollisionCategoryBits) != 0 &&
+                        (shape1CollisionCategoryBits & shape2CollideWithMaskBits) != 0) {
+
+                        ProxyShape* shape1 = mProxyShapesComponents.getProxyShape(proxyShape1Entity);
+                        ProxyShape* shape2 = mProxyShapesComponents.getProxyShape(proxyShape2Entity);
+
+                        // Create the overlapping pair and add it into the set of overlapping pairs
+                        OverlappingPair* newPair = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(OverlappingPair)))
+                                                  OverlappingPair(shape1, shape2, mMemoryManager.getPoolAllocator(),
+                                                                  mMemoryManager.getSingleFrameAllocator(), mWorld->mConfig);
+
+                        assert(newPair != nullptr);
+
+                        // Add the new overlapping pair
+                        mOverlappingPairs.add(Pair<Pair<uint, uint>, OverlappingPair*>(pairID, newPair));
+                        newOverlappingPairs.add(newPair);
+                    }
+                }
+            }
+        }
+    }
+
+    // For each new overlapping pair
+    for (uint i=0; i < newOverlappingPairs.size(); i++) {
+
+        // Wake up the two bodies of the new overlapping pair
+        mWorld->notifyBodyDisabled(newOverlappingPairs[i]->getShape1()->getBody()->getEntity(), false);
+        mWorld->notifyBodyDisabled(newOverlappingPairs[i]->getShape1()->getBody()->getEntity(), false);
     }
 }
 
@@ -337,43 +408,11 @@ void CollisionDetection::computeNarrowPhase() {
     mNarrowPhaseInput.clear();
 }
 
-// Allow the broadphase to notify the collision detection about an overlapping pair.
-/// This method is called by the broad-phase collision detection algorithm
-void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2) {
-
-    assert(shape1->getBroadPhaseId() != -1);
-    assert(shape2->getBroadPhaseId() != -1);
-    assert(shape1->getBroadPhaseId() != shape2->getBroadPhaseId());
-
-    // Compute the overlapping pair ID
-    Pair<uint, uint> pairID = OverlappingPair::computeID(shape1, shape2);
-
-    // Check if the overlapping pair already exists
-    if (mOverlappingPairs.containsKey(pairID)) return;
-
-    // Check if the collision filtering allows collision between the two shapes
-    if ((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) == 0 ||
-        (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) == 0) return;
-
-    // Create the overlapping pair and add it into the set of overlapping pairs
-    OverlappingPair* newPair = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(OverlappingPair)))
-                              OverlappingPair(shape1, shape2, mMemoryManager.getPoolAllocator(),
-                                              mMemoryManager.getSingleFrameAllocator(), mWorld->mConfig);
-
-    assert(newPair != nullptr);
-
-    // Add the new overlapping pair
-    mOverlappingPairs.add(Pair<Pair<uint, uint>, OverlappingPair*>(pairID, newPair));
-
-    // Wake up the two bodies
-    shape1->getBody()->setIsSleeping(false);
-    shape2->getBody()->setIsSleeping(false);
-}
-
 // Remove a body from the collision detection
 void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
 
     assert(proxyShape->getBroadPhaseId() != -1);
+    assert(mMapBroadPhaseIdToProxyShapeEntity.containsKey(proxyShape->getBroadPhaseId()));
 
     // Remove all the overlapping pairs involving this proxy shape
     for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
@@ -394,6 +433,8 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
             ++it;
         }
     }
+
+    mMapBroadPhaseIdToProxyShapeEntity.remove(proxyShape->getBroadPhaseId());
 
     // Remove the body from the broad-phase
     mBroadPhaseSystem.removeProxyCollisionShape(proxyShape);
@@ -739,7 +780,7 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
             if (aabb1.testCollision(aabb2)) {
 
                 OverlappingPair* pair;
-                const Pair<uint, uint> pairID = OverlappingPair::computeID(body1ProxyShape, body2ProxyShape);
+                const Pair<uint, uint> pairID = OverlappingPair::computeID(body1ProxyShape->getBroadPhaseId(), body2ProxyShape->getBroadPhaseId());
 
                 // Try to retrieve a corresponding copy of the overlapping pair (if it exists)
                 auto itPair = overlappingPairs.find(pairID);
@@ -832,7 +873,7 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
                     if ((proxyShape->getCollisionCategoryBits() & categoryMaskBits) != 0) {
 
                         OverlappingPair* pair;
-                        const Pair<uint, uint> pairID = OverlappingPair::computeID(bodyProxyShape, proxyShape);
+                        const Pair<uint, uint> pairID = OverlappingPair::computeID(bodyProxyShape->getBroadPhaseId(), proxyShape->getBroadPhaseId());
 
                         // Try to retrieve a corresponding copy of the overlapping pair (if it exists)
                         auto itPair = overlappingPairs.find(pairID);
@@ -905,7 +946,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
         OverlappingPair* originalPair = it->second;
 
         OverlappingPair* pair;
-        const Pair<uint, uint> pairID = OverlappingPair::computeID(originalPair->getShape1(), originalPair->getShape2());
+        const Pair<uint, uint> pairID = OverlappingPair::computeID(originalPair->getShape1()->getBroadPhaseId(), originalPair->getShape2()->getBroadPhaseId());
 
         // Try to retrieve a corresponding copy of the overlapping pair (if it exists)
         auto itPair = overlappingPairs.find(pairID);

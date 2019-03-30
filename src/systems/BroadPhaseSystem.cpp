@@ -69,7 +69,7 @@ bool BroadPhaseSystem::testOverlappingShapes(const ProxyShape* shape1,
 void BroadPhaseSystem::raycast(const Ray& ray, RaycastTest& raycastTest,
                                          unsigned short raycastWithCategoryMaskBits) const {
 
-    RP3D_PROFILE("BroadPhaseAlgorithm::raycast()", mProfiler);
+    RP3D_PROFILE("BroadPhaseSystem::raycast()", mProfiler);
 
     BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
 
@@ -203,58 +203,17 @@ void BroadPhaseSystem::reportAllShapesOverlappingWithAABB(const AABB& aabb, List
 }
 
 // Compute all the overlapping pairs of collision shapes
-void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager) {
+void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int, int>>& overlappingNodes) {
 
-    List<int> overlappingNodes(memoryManager.getPoolAllocator());
+    // Get the list of the proxy-shapes that have moved or have been created in the last frame
+    List<int> shapesToTest = mMovedShapes.toList(memoryManager.getPoolAllocator());
 
-    // For all collision shapes that have moved (or have been created) during the last simulation step
-    for (auto it = mMovedShapes.begin(); it != mMovedShapes.end(); ++it) {
-        int shapeID = *it;
-
-        if (shapeID == -1) continue;
-
-        AABBOverlapCallback callback(overlappingNodes);
-
-        // Get the AABB of the shape
-        const AABB& shapeAABB = mDynamicAABBTree.getFatAABB(shapeID);
-
-        // Ask the dynamic AABB tree to report all collision shapes that overlap with
-        // this AABB. The method BroadPhase::notifiyOverlappingPair() will be called
-        // by the dynamic AABB tree for each potential overlapping pair.
-        mDynamicAABBTree.reportAllShapesOverlappingWithAABB(shapeAABB, callback);
-
-        // Add the potential overlapping pairs
-        addOverlappingNodes(shapeID, overlappingNodes);
-
-        // Remove all the elements of the linked list of overlapping nodes
-        overlappingNodes.clear();
-    }
+    // Ask the dynamic AABB tree to report all collision shapes that overlap with the shapes to test
+    mDynamicAABBTree.reportAllShapesOverlappingWithShapes(shapesToTest, 0, shapesToTest.size(), overlappingNodes);
 
     // Reset the array of collision shapes that have move (or have been created) during the
     // last simulation step
     mMovedShapes.clear();
-}
-
-// Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
-void BroadPhaseSystem::addOverlappingNodes(int referenceNodeId, const List<int>& overlappingNodes) {
-
-    // For each overlapping node in the list
-    for (uint i=0; i < overlappingNodes.size(); i++) {
-
-        if (referenceNodeId != overlappingNodes[i]) {
-
-            // Get the two collision shapes of the pair
-            ProxyShape* shape1 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(referenceNodeId));
-            ProxyShape* shape2 = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(overlappingNodes[i]));
-
-            // If the two proxy collision shapes are from the same body, skip it
-            if (shape1->getBody()->getId() != shape2->getBody()->getId()) {
-
-                // Notify the collision detection about the overlapping pair
-                mCollisionDetection.broadPhaseNotifyOverlappingPair(shape1, shape2);
-            }
-        }
-    }
 }
 
 // Called when a overlapping node has been found during the call to

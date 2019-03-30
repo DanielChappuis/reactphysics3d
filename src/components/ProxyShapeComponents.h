@@ -55,10 +55,10 @@ class ProxyShapeComponents : public Components {
 
         // -------------------- Attributes -------------------- //
 
-        /// Array of entities of each component
+        /// Array of body entity of each component
         Entity* mBodiesEntities;
 
-        /// Array of entities of each component
+        /// Array of proxy-shape entity of each component
         Entity* mProxyShapesEntities;
 
         /// Array of pointer to the proxy-shapes
@@ -140,6 +140,9 @@ class ProxyShapeComponents : public Components {
         /// Add a component
         void addComponent(Entity proxyShapeEntity, bool isSleeping, const ProxyShapeComponent& component);
 
+        /// Return the body entity of a given proxy-shape
+        Entity getBody(Entity proxyShapeEntity) const;
+
         /// Return the mass of a proxy-shape
         decimal getMass(Entity proxyShapeEntity) const;
 
@@ -177,6 +180,14 @@ class ProxyShapeComponents : public Components {
 
         friend class BroadPhaseSystem;
 };
+
+// Return the body entity of a given proxy-shape
+inline Entity ProxyShapeComponents::getBody(Entity proxyShapeEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+
+   return mBodiesEntities[mMapEntityToComponentIndex[proxyShapeEntity]];
+}
 
 // Return the mass of a proxy-shape
 inline decimal ProxyShapeComponents::getMass(Entity proxyShapeEntity) const {

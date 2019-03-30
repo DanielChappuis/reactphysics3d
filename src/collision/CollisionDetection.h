@@ -90,8 +90,8 @@ class CollisionDetection {
         /// Set of pair of bodies that cannot collide between each other
         Set<bodyindexpair> mNoCollisionPairs;
 
-        /// True if some collision shapes have been added previously
-        bool mIsCollisionShapesAdded;
+        /// Map a broad-phase id with the corresponding entity of the proxy-shape
+        Map<int, Entity> mMapBroadPhaseIdToProxyShapeEntity;
 
         /// Narrow-phase collision detection input
         NarrowPhaseInput mNarrowPhaseInput;
@@ -113,6 +113,9 @@ class CollisionDetection {
 
         /// Compute the narrow-phase collision detection
         void computeNarrowPhase();
+
+        /// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
+        void updateOverlappingPairs(List<Pair<int, int> >& overlappingNodes);
 
         /// Execute the narrow-phase collision detection algorithm on batches
         bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool stopFirstContactFound,
@@ -215,9 +218,6 @@ class CollisionDetection {
         /// Test and report collisions between all shapes of the world
         void testCollision(CollisionCallback* callback);
 
-        /// Allow the broadphase to notify the collision detection about an overlapping pair.
-        void broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2);
-
         /// Return a reference to the memory manager
         MemoryManager& getMemoryManager() const;
 
@@ -249,14 +249,18 @@ inline CollisionDispatch& CollisionDetection::getCollisionDispatch() {
 }
 
 // Add a body to the collision detection
-inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape,
-                                                       const AABB& aabb) {
-    
+inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
+
     // Add the body to the broad-phase
     mBroadPhaseSystem.addProxyCollisionShape(proxyShape, aabb);
 
-    mIsCollisionShapesAdded = true;
-}  
+    int broadPhaseId = mProxyShapesComponents.getBroadPhaseId(proxyShape->getEntity());
+
+    assert(!mMapBroadPhaseIdToProxyShapeEntity.containsKey(broadPhaseId));
+
+    // Add the mapping between the proxy-shape broad-phase id and its entity
+    mMapBroadPhaseIdToProxyShapeEntity.add(Pair<int, Entity>(broadPhaseId, proxyShape->getEntity()));
+}
 
 // Add a pair of bodies that cannot collide with each other
 inline void CollisionDetection::addNoCollisionPair(CollisionBody* body1,

@@ -466,9 +466,6 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
  */
 void RigidBody::setTransform(const Transform& transform) {
 
-    // Update the transform of the body
-    mWorld.mTransformComponents.setTransform(mEntity, transform);
-
     const Vector3 oldCenterOfMass = mCenterOfMassWorld;
 
     // Compute the new center of mass in world-space coordinates
@@ -480,14 +477,13 @@ void RigidBody::setTransform(const Transform& transform) {
     linearVelocity += angularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
     mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
 
+    CollisionBody::setTransform(transform);
+
+    // Update the transform of the body
+    mWorld.mTransformComponents.setTransform(mEntity, transform);
+
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
-
-    // Update the broad-phase state of the body
-    updateBroadPhaseState();
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set transform=" + transform.to_string());
 }
 
 // Recompute the center of mass, total mass and inertia tensor of the body using all

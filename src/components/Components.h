@@ -107,7 +107,10 @@ class Components {
         /// Remove a component
         void removeComponent(Entity entity);
 
-        /// Notify if a given entity is disabled (sleeping or inactive) or not
+        /// Return true if an entity is sleeping
+        bool getIsEntityDisabled(Entity entity) const;
+
+        /// Notify if a given entity is sleeping
         void setIsEntityDisabled(Entity entity, bool isDisabled);
 
         /// Return true if there is a component for a given entity
@@ -119,6 +122,12 @@ class Components {
         /// Return the number of enabled components
         uint32 getNbEnabledComponents() const;
 };
+
+// Return true if an entity is sleeping
+inline bool Components::getIsEntityDisabled(Entity entity) const {
+    assert(hasComponent(entity));
+    return mMapEntityToComponentIndex[entity] >= mDisabledStartIndex;
+}
 
 // Return true if there is a component for a given entity
 inline bool Components::hasComponent(Entity entity) const {

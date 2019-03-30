@@ -250,6 +250,8 @@ void CollisionWorld::resetContactManifoldListsOfBodies() {
 // Notify the world if a body is disabled (sleeping or inactive) or not
 void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
+    if (isDisabled == mBodyComponents.getIsEntityDisabled(bodyEntity)) return;
+
     // TODO : Make sure we notify all the components here ...
 
     // Notify all the components
