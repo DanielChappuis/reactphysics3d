@@ -27,6 +27,7 @@
 #define REACTPHYSICS3D_STACK_H
 
 // Libraries
+#include <memory>
 #include "configuration.h"
 #include "memory/MemoryAllocator.h"
 
@@ -34,10 +35,9 @@ namespace reactphysics3d {
 
 // Class Stack
 /**
- * This class represents a simple generic stack with an initial capacity. If the number
- * of elements exceeds the capacity, the heap will be used to allocated more memory.
+ * This class represents a simple generic stack.
   */
-template<typename T, uint capacity>
+template<typename T>
 class Stack {
 
     private:
@@ -47,84 +47,134 @@ class Stack {
         /// Reference to the memory allocator
         MemoryAllocator& mAllocator;
 
-        /// Initial array that contains the elements of the stack
-        T mInitArray[capacity];
-
-        /// Pointer to the first element of the stack
-        T* mElements;
+        /// Array that contains the elements of the stack
+        T* mArray;
 
         /// Number of elements in the stack
         uint mNbElements;
 
         /// Number of allocated elements in the stack
-        uint mNbAllocatedElements;
+        uint mCapacity;
+
+        // -------------------- Methods -------------------- //
+
+        /// Allocate more memory
+        void allocate(size_t capacity) {
+
+            T* newArray = static_cast<T*>(mAllocator.allocate(capacity * sizeof(T)));
+            assert(newArray != nullptr);
+
+            // If there
+            if (mCapacity > 0) {
+
+                if (mNbElements > 0) {
+
+                    // Copy the previous items in the new array
+                    std::uninitialized_copy(mArray, mArray + mNbElements, newArray);
+                }
+
+                // Release memory of the previous array
+                mAllocator.release(mArray, mCapacity * sizeof(T));
+            }
+
+            mArray = newArray;
+
+            mCapacity = capacity;
+        }
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Stack(MemoryAllocator& allocator)
-              :mAllocator(allocator), mElements(mInitArray), mNbElements(0), mNbAllocatedElements(capacity) {
+        Stack(MemoryAllocator& allocator, size_t capacity = 0)
+              :mAllocator(allocator), mArray(nullptr), mNbElements(0), mCapacity(0) {
 
+            if (capacity > 0) {
+                allocate(capacity);
+            }
+        }
+
+        /// Copy constructor
+        Stack(const Stack& stack)
+              :mAllocator(stack.mAllocator), mArray(nullptr),
+               mNbElements(stack.mNbElements), mCapacity(stack.mCapacity) {
+
+            if (mCapacity > 0) {
+
+                // Allocate memory for the buckets
+                mArray = static_cast<T*>(mAllocator.allocate(mCapacity * sizeof(T)));
+                assert(mArray != nullptr);
+
+                if (mNbElements > 0) {
+
+                    // Copy the items
+                    std::uninitialized_copy(stack.mArray, stack.mArray + mNbElements, mArray);
+                }
+            }
         }
 
         /// Destructor
         ~Stack() {
 
-            // If elements have been allocated on the heap
-            if (mInitArray != mElements) {
+            clear();
 
-                // Release the memory allocated on the heap
-                mAllocator.release(mElements, mNbAllocatedElements * sizeof(T));
+            // Release the memory allocated on the heap
+            mAllocator.release(mArray, mCapacity * sizeof(T));
+        }
+
+        /// Remove all the items from the stack
+        void clear() {
+
+            // Destruct the items
+            for (size_t i = 0; i < mNbElements; i++) {
+                mArray[i].~T();
             }
+
+            mNbElements = 0;
         }
 
         /// Push an element into the stack
-        void push(const T& element);
+        void push(const T& element) {
+
+            // If we need to allocate more elements
+            if (mNbElements == mCapacity) {
+
+                allocate(mCapacity > 0 ? mCapacity * 2 : 1);
+            }
+
+            // Copy the item into the array
+            new (mArray + mNbElements) T(element);
+
+            mNbElements++;
+        }
 
         /// Pop an element from the stack (remove it from the stack and return it)
-        T pop();
+        T pop() {
 
-        /// Return the number of elments in the stack
-        uint getNbElements() const;
+            assert(mNbElements > 0);
 
-};
+            mNbElements--;
 
-// Push an element into the stack
-template<typename T, uint capacity>
-inline void Stack<T, capacity>::push(const T& element) {
+            // Copy the item
+            T item = mArray[mNbElements];
 
-    // If we need to allocate more elements
-    if (mNbElements == mNbAllocatedElements) {
-        T* oldElements = mElements;
-        uint oldNbAllocatedElements = mNbAllocatedElements;
-        mNbAllocatedElements *= 2;
-        mElements = static_cast<T*>(mAllocator.allocate(mNbAllocatedElements * sizeof(T)));
-        assert(mElements);
-        memcpy(mElements, oldElements, mNbElements * sizeof(T));
-        if (oldElements != mInitArray) {
-            mAllocator.release(oldElements, oldNbAllocatedElements * sizeof(T));
+            // Call the destructor
+            mArray[mNbElements].~T();
+
+            return item;
         }
-    }
 
-    mElements[mNbElements] = element;
-    mNbElements++;
-}
+        /// Return the number of items in the stack
+        size_t size() const {
+            return mNbElements;
+        }
 
-// Pop an element from the stack (remove it from the stack and return it)
-template<typename T, uint capacity>
-inline T Stack<T, capacity>::pop() {
-    assert(mNbElements > 0);
-    mNbElements--;
-    return mElements[mNbElements];
-}
-
-// Return the number of elments in the stack
-template<typename T, uint capacity>
-inline uint Stack<T, capacity>::getNbElements() const {
-    return mNbElements;
-}
+        /// Return the capacity of the stack
+        size_t capacity() const {
+            return mCapacity;
+        }
+};
 
 }
 

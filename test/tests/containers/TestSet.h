@@ -90,6 +90,7 @@ class TestSet : public Test {
             testEquality();
             testAssignment();
             testIterators();
+            testConverters();
         }
 
         void testConstructors() {
@@ -418,6 +419,31 @@ class TestSet : public Test {
                 size++;
             }
             rp3d_test(set1.size() == size);
+        }
+
+        void testConverters() {
+
+            Set<int> set1(mAllocator);
+
+            rp3d_test(set1.begin() == set1.end());
+
+            set1.add(1);
+            set1.add(2);
+            set1.add(3);
+            set1.add(4);
+
+            List<int> list1 = set1.toList(mAllocator);
+            rp3d_test(list1.size() == 4);
+            rp3d_test(list1.find(1) != list1.end());
+            rp3d_test(list1.find(2) != list1.end());
+            rp3d_test(list1.find(3) != list1.end());
+            rp3d_test(list1.find(4) != list1.end());
+            rp3d_test(list1.find(5) == list1.end());
+            rp3d_test(list1.find(6) == list1.end());
+
+            Set<int> set2(mAllocator);
+            List<int> list2 = set2.toList(mAllocator);
+            rp3d_test(list2.size() == 0);
         }
  };
 

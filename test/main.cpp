@@ -43,6 +43,7 @@
 #include "tests/containers/TestMap.h"
 #include "tests/containers/TestSet.h"
 #include "tests/containers/TestDeque.h"
+#include "tests/containers/TestStack.h"
 
 using namespace reactphysics3d;
 
@@ -56,6 +57,7 @@ int main() {
     testSuite.addTest(new TestMap("Map"));
     testSuite.addTest(new TestSet("Set"));
     testSuite.addTest(new TestDeque("Deque"));
+    testSuite.addTest(new TestStack("Stack"));
 
     // ---------- Mathematics tests ---------- //
 

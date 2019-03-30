@@ -542,6 +542,20 @@ class Set {
             return end();
         }
 
+        /// Return a list with all the values of the set
+        List<V> toList(MemoryAllocator& listAllocator) {
+
+            List<V> list(listAllocator);
+
+            for (int i=0; i < mCapacity; i++) {
+                if (mEntries[i].value != nullptr) {
+                    list.add(*(mEntries[i].value));
+                }
+            }
+
+           return list;
+        }
+
         /// Clear the set
         void clear(bool releaseMemory = false) {
 
