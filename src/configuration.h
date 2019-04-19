@@ -154,13 +154,8 @@ struct WorldSettings {
     /// might enter sleeping mode
     decimal defaultSleepAngularVelocity = decimal(3.0) * (PI / decimal(180.0));
 
-    /// Maximum number of contact manifolds in an overlapping pair that involves two
-    /// convex collision shapes.
-    int nbMaxContactManifoldsConvexShape = 1;
-
-    /// Maximum number of contact manifolds in an overlapping pair that involves at
-    /// least one concave collision shape.
-    int nbMaxContactManifoldsConcaveShape = 3;
+    /// Maximum number of contact manifolds in an overlapping pair
+    uint nbMaxContactManifolds = 3;
 
     /// This is used to test if two contact manifold are similar (same contact normal) in order to
     /// merge them. If the cosine of the angle between the normals of the two manifold are larger
@@ -184,8 +179,7 @@ struct WorldSettings {
         ss << "defaultTimeBeforeSleep=" << defaultTimeBeforeSleep << std::endl;
         ss << "defaultSleepLinearVelocity=" << defaultSleepLinearVelocity << std::endl;
         ss << "defaultSleepAngularVelocity=" << defaultSleepAngularVelocity << std::endl;
-        ss << "nbMaxContactManifoldsConvexShape=" << nbMaxContactManifoldsConvexShape << std::endl;
-        ss << "nbMaxContactManifoldsConcaveShape=" << nbMaxContactManifoldsConcaveShape << std::endl;
+        ss << "nbMaxContactManifolds=" << nbMaxContactManifolds << std::endl;
         ss << "cosAngleSimilarContactManifold=" << cosAngleSimilarContactManifold << std::endl;
 
         return ss.str();

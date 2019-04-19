@@ -23,70 +23,53 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_CONTACT_POINT_INFO_H
-#define REACTPHYSICS3D_CONTACT_POINT_INFO_H
+#ifndef REACTPHYSICS3D_OVERLAPPING_PAIR_CONTACT_H
+#define REACTPHYSICS3D_OVERLAPPING_PAIR_CONTACT_H
 
 // Libraries
 #include "mathematics/mathematics.h"
 #include "configuration.h"
+#include "engine/OverlappingPair.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Declarations
-class CollisionBody;
-
-// Structure ContactPointInfo
+// Structure ContactPair
 /**
- * This structure contains informations about a collision contact
- * computed during the narrow-phase collision detection. Those
- * informations are used to compute the contact set for a contact
- * between two bodies.
+ * This structure represents a pair of shapes that are in contact during narrow-phase.
  */
-struct ContactPointInfo {
-
-    private:
-
-        // -------------------- Methods -------------------- //
+struct ContactPair {
 
     public:
 
         // -------------------- Attributes -------------------- //
 
-        /// Normalized normal vector of the collision contact in world space
-        Vector3 normal;
+        /// Overlapping pair Id
+        OverlappingPair::OverlappingPairId pairId;
 
-        /// Penetration depth of the contact
-        decimal penetrationDepth;
+        /// Indices of the potential contact manifolds
+        List<uint> potentialContactManifoldsIndices;
 
-        /// Contact point of body 1 in local space of body 1
-        Vector3 localPoint1;
+        /// Index of the first contact manifold in the array
+        uint contactManifoldsIndex;
 
-        /// Contact point of body 2 in local space of body 2
-        Vector3 localPoint2;
+        /// Number of contact manifolds
+        int8 nbContactManifolds;
 
-        // TODO : Remove this field
-        /// Pointer to the next contact point info
-        ContactPointInfo* next;
+        /// Index of the first contact point in the array of contact points
+        uint contactPointsIndex;
 
-        // TODO : Remove this field
-        /// True if the contact point has already been inserted into a manifold
-        bool isUsed;
+        /// Total number of contact points in all the manifolds of the contact pair
+        uint nbToTalContactPoints;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPointInfo(const Vector3& contactNormal, decimal penDepth,
-                         const Vector3& localPt1, const Vector3& localPt2)
-                         : normal(contactNormal), penetrationDepth(penDepth),
-                           localPoint1(localPt1), localPoint2(localPt2), next(nullptr), isUsed(false) {
+        ContactPair(OverlappingPair::OverlappingPairId pairId, MemoryAllocator& allocator)
+            : pairId(pairId), potentialContactManifoldsIndices(allocator), contactManifoldsIndex(0), nbContactManifolds(0),
+              contactPointsIndex(0), nbToTalContactPoints(0) {
 
-            assert(contactNormal.lengthSquare() > decimal(0.8));
-            assert(penDepth > decimal(0.0));
         }
-
-        /// Destructor
-        ~ContactPointInfo() = default;
 };
 
 }

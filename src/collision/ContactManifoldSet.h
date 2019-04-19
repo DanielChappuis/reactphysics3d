@@ -33,7 +33,6 @@ namespace reactphysics3d {
 
 // Declarations
 class ContactManifold;
-class ContactManifoldInfo;
 class ProxyShape;
 class MemoryAllocator;
 struct WorldSettings;

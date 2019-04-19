@@ -26,18 +26,33 @@
 // Libraries
 #include "ContactManifold.h"
 #include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
 
 using namespace reactphysics3d;
 
 // Constructor
+// TODO : REMOVE THIS CONSTRUCTOR
 ContactManifold::ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
                                  MemoryAllocator& memoryAllocator, const WorldSettings& worldSettings)
-                : mShape1(shape1), mShape2(shape2), mContactPoints(nullptr),
+                : mMemoryAllocator(memoryAllocator), mContactPointsIndex(0), mShape1(shape1), mShape2(shape2), mContactPoints(nullptr),
                   mNbContactPoints(0), mFrictionImpulse1(0.0), mFrictionImpulse2(0.0),
                   mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
-                  mMemoryAllocator(memoryAllocator), mNext(nullptr), mPrevious(nullptr), mIsObsolete(false),
+                  mNext(nullptr), mPrevious(nullptr), mIsObsolete(false),
                   mWorldSettings(worldSettings) {
     
+}
+
+// Constructor
+// TODO : REMOVE worldSettings from this constructor
+ContactManifold::ContactManifold(uint contactPointsIndex, int8 nbContactPoints, MemoryAllocator& allocator, const WorldSettings& worldSettings)
+                :mMemoryAllocator(allocator), mContactPointsIndex(0), mWorldSettings(worldSettings) {
+
+
+    mContactPoints = nullptr;
+    mNext = nullptr;
+    mPrevious = nullptr;
+    mContactPointsIndex = contactPointsIndex;
+    mNbContactPoints = nbContactPoints;
 }
 
 // Destructor
@@ -192,6 +207,7 @@ void ContactManifold::clearObsoleteContactPoints() {
 // This is based on the technique described by Dirk Gregorius in his
 // "Contacts Creation" GDC presentation. This method will reduce the number of
 // contact points to a maximum of 4 points (but it can be less).
+// TODO : REMOVE THIS METHOD
 void ContactManifold::reduce(const Transform& shape1ToWorldTransform) {
 
     assert(mContactPoints != nullptr);

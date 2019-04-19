@@ -112,17 +112,20 @@ class ContactPoint {
         /// Constructor
         ContactPoint(const ContactPointInfo* contactInfo, const WorldSettings& worldSettings);
 
+        /// Constructor
+        ContactPoint(const ContactPointInfo& contactInfo, const WorldSettings& worldSettings);
+
         /// Destructor
         ~ContactPoint() = default;
 
-        /// Deleted copy-constructor
-        ContactPoint(const ContactPoint& contact) = delete;
+        /// Copy-constructor
+        ContactPoint(const ContactPoint& contact) = default;
 
-        /// Deleted assignment operator
-        ContactPoint& operator=(const ContactPoint& contact) = delete;
+        /// Assignment operator
+        ContactPoint& operator=(const ContactPoint& contact) = default;
 
         /// Return the normal vector of the contact
-        Vector3 getNormal() const;
+        const Vector3& getNormal() const;
 
         /// Return the contact point on the first proxy shape in the local-space of the proxy shape
         const Vector3& getLocalPointOnShape1() const;
@@ -152,13 +155,14 @@ class ContactPoint {
         friend class ContactManifold;
         friend class ContactManifoldSet;
         friend class ContactSolver;
+        friend class CollisionDetection;
 };
 
 // Return the normal vector of the contact
 /**
  * @return The contact normal
  */
-inline Vector3 ContactPoint::getNormal() const {
+inline const Vector3& ContactPoint::getNormal() const {
     return mNormal;
 }
 

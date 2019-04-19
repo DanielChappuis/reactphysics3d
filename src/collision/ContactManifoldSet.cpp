@@ -110,8 +110,12 @@ int ContactManifoldSet::getTotalNbContactPoints() const {
 }
 
 // Return the maximum number of contact manifolds allowed between to collision shapes
+// TODO : Remove this method
 int ContactManifoldSet::computeNbMaxContactManifolds(const CollisionShape* shape1, const CollisionShape* shape2) {
 
+    return mWorldSettings.nbMaxContactManifolds;
+
+    /*
     // If both shapes are convex
     if (shape1->isConvex() && shape2->isConvex()) {
         return mWorldSettings.nbMaxContactManifoldsConvexShape;
@@ -120,6 +124,7 @@ int ContactManifoldSet::computeNbMaxContactManifolds(const CollisionShape* shape
     else {
         return mWorldSettings.nbMaxContactManifoldsConcaveShape;
     }
+    */
 }
 
 // Remove a contact manifold that is the least optimal (smaller penetration depth)

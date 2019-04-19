@@ -146,6 +146,9 @@ class OverlappingPair {
         /// Deleted assignment operator
         OverlappingPair& operator=(const OverlappingPair& pair) = delete;
 
+        /// Return the Id of the pair
+        OverlappingPairId getId() const;
+
         /// Return the pointer to first proxy collision shape
         ProxyShape* getShape1() const;
 
@@ -201,6 +204,11 @@ class OverlappingPair {
 
         friend class DynamicsWorld;
 };
+
+// Return the Id of the pair
+inline OverlappingPair::OverlappingPairId OverlappingPair::getId() const {
+    return mPairID;
+}
 
 // Return the pointer to first body
 inline ProxyShape* OverlappingPair::getShape1() const {

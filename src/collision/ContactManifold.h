@@ -100,6 +100,14 @@ class ContactManifold {
 
         // -------------------- Attributes -------------------- //
 
+        // TODO : For each of the attributes, check if we need to keep it or not
+
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
+
+        /// Index of the first contact point of the manifold in the list of contact points
+        uint mContactPointsIndex;
+
         /// Pointer to the first proxy shape of the contact
         ProxyShape* mShape1;
 
@@ -132,9 +140,6 @@ class ContactManifold {
 
         /// True if the contact manifold has already been added into an island
         bool mIsAlreadyInIsland;
-
-        /// Reference to the memory allocator
-        MemoryAllocator& mMemoryAllocator;
 
         /// Pointer to the next contact manifold in the linked-list
         ContactManifold* mNext;
@@ -224,14 +229,17 @@ class ContactManifold {
         ContactManifold(ProxyShape* shape1, ProxyShape* shape2, MemoryAllocator& memoryAllocator,
                         const WorldSettings& worldSettings);
 
+        /// Constructor
+        ContactManifold(uint contactPointsIndex, int8 nbContactPoints, MemoryAllocator& allocator, const WorldSettings& worldSettings);
+
         /// Destructor
         ~ContactManifold();
 
-        /// Deleted copy-constructor
-        ContactManifold(const ContactManifold& contactManifold) = delete;
+        /// Copy-constructor
+        ContactManifold(const ContactManifold& contactManifold) = default;
 
-        /// Deleted assignment operator
-        ContactManifold& operator=(const ContactManifold& contactManifold) = delete;
+        /// Assignment operator
+        ContactManifold& operator=(const ContactManifold& contactManifold) = default;
 
         /// Return a pointer to the first proxy shape of the contact
         ProxyShape* getShape1() const;
@@ -264,6 +272,7 @@ class ContactManifold {
         friend class CollisionBody;
         friend class ContactManifoldSet;
         friend class ContactSolver;
+        friend class CollisionDetection;
 };
 
 // Return a pointer to the first proxy shape of the contact
