@@ -28,6 +28,7 @@
 #include "collision/ContactPointInfo.h"
 #include "collision/shapes/TriangleShape.h"
 #include "engine/OverlappingPair.h"
+#include <iostream>
 
 using namespace reactphysics3d;
 
@@ -76,6 +77,10 @@ void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNor
     // Create the contact point info
     ContactPointInfo* contactPointInfo = new (allocator.allocate(sizeof(ContactPointInfo)))
             ContactPointInfo(contactNormal, penDepth, localPt1, localPt2);
+
+    // TODO : DELETE THIS
+    //std::cout << "Pair: " << overlappingPairs[index]->getId().first << ", " << overlappingPairs[index]->getId().second << std::endl;
+    //std::cout << ">> Contact Point: " << localPt1.x << ", " << localPt1.y << ", " << localPt1.z << std::endl;
 
     // Add it into the list of contact points
     contactPoints[index].add(contactPointInfo);
