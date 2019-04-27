@@ -50,6 +50,18 @@ struct ContactPair {
         /// Indices of the potential contact manifolds
         List<uint> potentialContactManifoldsIndices;
 
+        /// Entity of the first body of the manifold
+        Entity body1Entity;
+
+        /// Entity of the second body of the manifold
+        Entity body2Entity;
+
+        /// True if the manifold is already in an island
+        bool isAlreadyInIsland;
+
+        /// Index of the contact pair in the array of pairs
+        uint contactPairIndex;
+
         /// Index of the first contact manifold in the array
         uint contactManifoldsIndex;
 
@@ -65,8 +77,9 @@ struct ContactPair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPair(OverlappingPair::OverlappingPairId pairId, MemoryAllocator& allocator)
-            : pairId(pairId), potentialContactManifoldsIndices(allocator), contactManifoldsIndex(0), nbContactManifolds(0),
+        ContactPair(OverlappingPair::OverlappingPairId pairId, Entity body1Entity, Entity body2Entity, uint contactPairIndex, MemoryAllocator& allocator)
+            : pairId(pairId), potentialContactManifoldsIndices(allocator), body1Entity(body1Entity), body2Entity(body2Entity),
+              isAlreadyInIsland(false), contactPairIndex(contactPairIndex), contactManifoldsIndex(0), nbContactManifolds(0),
               contactPointsIndex(0), nbToTalContactPoints(0) {
 
         }

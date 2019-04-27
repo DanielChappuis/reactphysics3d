@@ -33,6 +33,7 @@
 #include "utils/Logger.h"
 #include "engine/ContactSolver.h"
 #include "components/DynamicsComponents.h"
+#include "engine/Islands.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -126,6 +127,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Current joint id
         uint mCurrentJointId;
 
+        /// All the islands of bodies of the current frame
+        Islands mIslands2;
+
         // -------------------- Methods -------------------- //
 
         /// Integrate the positions and orientations of rigid bodies.
@@ -148,6 +152,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Compute the islands of awake bodies.
         void computeIslands();
+
+        /// Compute the islands using potential contacts and joints and create the actual contacts.
+        void createIslands();
 
         /// Update the postion/orientation of the bodies
         void updateBodiesState();

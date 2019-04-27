@@ -82,9 +82,6 @@ class CollisionDetection {
         /// Reference the proxy-shape components
         ProxyShapeComponents& mProxyShapesComponents;
 
-        /// Reference the transform components
-        TransformComponents& mTransformComponents;
-
         /// Collision Detection Dispatch configuration
         CollisionDispatch mCollisionDispatch;
 
@@ -138,6 +135,12 @@ class CollisionDetection {
         /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
         Map<OverlappingPair::OverlappingPairId, uint>* mCurrentMapPairIdToContactPairIndex;
 
+        /// List of the indices of the contact pairs (in mCurrentContacPairs array) with contact pairs of
+        /// same islands packed together linearly and contact pairs that are not part of islands at the end.
+        /// This is used when we create contact manifolds and contact points so that there are also packed
+        /// together linearly if they are part of the same island.
+        List<uint> mContactPairsIndicesOrderingForContacts;
+
         /// First list with the contact manifolds
         List<ContactManifold> mContactManifolds1;
 
@@ -161,6 +164,9 @@ class CollisionDetection {
 
         /// Pointer to the contact points of the current frame (either mContactPoints1 or mContactPoints2)
         List<ContactPoint>* mCurrentContactPoints;
+
+        /// Map a body entity to the list of contact pairs in which it is involved
+        Map<Entity, List<uint>> mMapBodyToContactPairs;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -214,7 +220,7 @@ class CollisionDetection {
         /// Reduce the potential contact manifolds and contact points of the overlapping pair contacts
         void reducePotentialContactManifolds(const OverlappingPairMap& overlappingPairs);
 
-        /// Create the actual contact manifolds and contacts (from potential contacts)
+        /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
         void createContacts();
 
         /// Initialize the current contacts with the contacts from the previous frame (for warmstarting)

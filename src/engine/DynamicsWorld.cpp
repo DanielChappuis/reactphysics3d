@@ -32,7 +32,9 @@
 #include "utils/Profiler.h"
 #include "engine/EventListener.h"
 #include "engine/Island.h"
+#include "engine/Islands.h"
 #include "collision/ContactManifold.h"
+#include "containers/Stack.h"
 
 // Namespaces
 using namespace reactphysics3d;
@@ -60,7 +62,8 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
                 mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
                 mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity),
                 mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
-                mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0) {
+                mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0),
+                mIslands2(mMemoryManager.getSingleFrameAllocator()) {
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -128,6 +131,32 @@ void DynamicsWorld::update(decimal timeStep) {
     // Compute the islands (separate groups of bodies with constraints between each others)
     computeIslands();
 
+    // Create the islands
+    createIslands();
+
+    // TODO : DELETE THIS
+    /*
+    std::cout << "--------------------- FRAME ------------------------ " << std::endl;
+    std::cout << " ---- OLD ISLANDS -----" << std::endl;
+    for (uint i=0; i < mNbIslands; i++) {
+        std::cout << "Island " << i << std::endl;
+        for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
+            std::cout << "Body Id : " << mIslands[i]->getBodies()[b]->getId() << std::endl;
+        }
+    }
+
+    std::cout << " ---- NEW ISLANDS -----" << std::endl;
+    for (uint i=0; i < mIslands2.getNbIslands(); i++) {
+        std::cout << "Island " << i << std::endl;
+        for (uint b=0; b < mIslands2.bodyEntities[i].size(); b++) {
+            std::cout << "Body Id : " << mBodyComponents.getBody(mIslands2.bodyEntities[i][b])->getId() << std::endl;
+        }
+    }
+    */
+
+    // Create the actual narrow-phase contacts
+    mCollisionDetection.createContacts();
+
     // Integrate the velocities
     integrateRigidBodiesVelocities();
 
@@ -150,6 +179,9 @@ void DynamicsWorld::update(decimal timeStep) {
 
     // Reset the external force and torque applied to the bodies
     resetBodiesForceAndTorque();
+
+    // Reset the islands
+    mIslands2.clear();
 
     // Reset the single frame memory allocator
     mMemoryManager.resetFrameAllocator();
@@ -672,6 +704,7 @@ uint DynamicsWorld::computeNextAvailableJointId() {
     return jointId;
 }
 
+// TODO : DELETE THIS
 // Compute the islands of awake bodies.
 /// An island is an isolated group of rigid bodies that have constraints (joints or contacts)
 /// between each other. This method computes the islands at each time step as follows: For each
@@ -826,6 +859,179 @@ void DynamicsWorld::computeIslands() {
 
         mNbIslands++;
      }
+}
+
+// Compute the islands using potential contacts and joints
+/// We compute the islands before creating the actual contacts here because we want all
+/// the contact manifolds and contact points of the same island
+/// to be packed together into linear arrays of manifolds and contacts for better caching.
+/// An island is an isolated group of rigid bodies that have constraints (joints or contacts)
+/// between each other. This method computes the islands at each time step as follows: For each
+/// awake rigid body, we run a Depth First Search (DFS) through the constraint graph of that body
+/// (graph where nodes are the bodies and where the edges are the constraints between the bodies) to
+/// find all the bodies that are connected with it (the bodies that share joints or contacts with
+/// it). Then, we create an island with this group of connected bodies.
+void DynamicsWorld::createIslands() {
+
+    // TODO : Check if we handle kinematic bodies correctly in islands creation
+
+    // list of contact pairs involving a non-rigid body
+    List<uint> nonRigidBodiesContactPairs(mMemoryManager.getSingleFrameAllocator());
+
+    RP3D_PROFILE("DynamicsWorld::createIslandsAndContacts()", mProfiler);
+
+    // Reset all the isAlreadyInIsland variables of bodies and joints
+    for (uint b=0; b < mDynamicsComponents.getNbEnabledComponents(); b++) {
+        mDynamicsComponents.mIsAlreadyInIsland[b] = false;
+    }
+    for (List<Joint*>::Iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
+        (*it)->mIsAlreadyInIsland = false;
+    }
+
+    // Create a stack for the bodies to visit during the Depth First Search
+    Stack<Entity> bodyEntityIndicesToVisit(mMemoryManager.getSingleFrameAllocator());
+
+    uint nbTotalManifolds = 0;
+
+    // For each dynamic component
+    // TODO : Here we iterate on dynamic component where we can have static, kinematic and dynamic bodies. Maybe we should
+    //        not use a dynamic component for a static body.
+    for (uint b=0; b < mDynamicsComponents.getNbEnabledComponents(); b++) {
+
+        // If the body has already been added to an island, we go to the next body
+        if (mDynamicsComponents.mIsAlreadyInIsland[b]) continue;
+
+        // If the body is static, we go to the next body
+        // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
+        CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(mDynamicsComponents.mBodies[b]));
+        if (body->getType() == BodyType::STATIC) continue;
+
+        // Reset the stack of bodies to visit
+        bodyEntityIndicesToVisit.clear();
+
+        // Add the body into the stack of bodies to visit
+        mDynamicsComponents.mIsAlreadyInIsland[b] = true;
+        bodyEntityIndicesToVisit.push(mDynamicsComponents.mBodies[b]);
+
+        // Create the new island
+        uint32 islandIndex = mIslands2.addIsland(nbTotalManifolds);
+
+        // While there are still some bodies to visit in the stack
+        while (bodyEntityIndicesToVisit.size() > 0) {
+
+            // Get the next body to visit from the stack
+            const Entity bodyToVisitEntity = bodyEntityIndicesToVisit.pop();
+
+            // Awake the body if it is sleeping
+            notifyBodyDisabled(bodyToVisitEntity, false);
+
+            // Add the body into the island
+            mIslands2.bodyEntities[islandIndex].add(bodyToVisitEntity);
+
+            // If the current body is static, we do not want to perform the DFS
+            // search across that body
+            // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
+            RigidBody* rigidBodyToVisit = static_cast<RigidBody*>(mBodyComponents.getBody(bodyToVisitEntity));
+            if (rigidBodyToVisit->getType() == BodyType::STATIC) continue;
+
+            // If the body is involved in contacts with other bodies
+            auto itBodyContactPairs = mCollisionDetection.mMapBodyToContactPairs.find(bodyToVisitEntity);
+            if (itBodyContactPairs != mCollisionDetection.mMapBodyToContactPairs.end()) {
+
+                // For each contact pair in which the current body is involded
+                List<uint>& contactPairs = itBodyContactPairs->second;
+                for (uint p=0; p < contactPairs.size(); p++) {
+
+                    ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[contactPairs[p]];
+                    assert(pair.potentialContactManifoldsIndices.size() > 0);
+
+                    // Check if the current contact pair has already been added into an island
+                    if (pair.isAlreadyInIsland) continue;
+
+                    // Get the other body of the contact manifold
+                    // TODO : Maybe avoid those casts here
+                    RigidBody* body1 = dynamic_cast<RigidBody*>(mBodyComponents.getBody(pair.body1Entity));
+                    RigidBody* body2 = dynamic_cast<RigidBody*>(mBodyComponents.getBody(pair.body2Entity));
+
+                    // If the colliding body is a RigidBody (and not a CollisionBody instead)
+                    if (body1 != nullptr && body2 != nullptr) {
+
+                        nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
+
+                        // Add the pair into the list of pair to process to create contacts
+                        mCollisionDetection.mContactPairsIndicesOrderingForContacts.add(pair.contactPairIndex);
+
+                        // Add the contact manifold into the island
+                        mIslands2.nbContactManifolds[islandIndex] += pair.potentialContactManifoldsIndices.size();
+                        pair.isAlreadyInIsland = true;
+
+                        const Entity otherBodyEntity = pair.body1Entity == bodyToVisitEntity ? pair.body2Entity : pair.body1Entity;
+
+                        // Check if the other body has already been added to the island
+                        if (mDynamicsComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
+
+                        // Insert the other body into the stack of bodies to visit
+                        bodyEntityIndicesToVisit.push(otherBodyEntity);
+                        mDynamicsComponents.setIsAlreadyInIsland(otherBodyEntity, true);
+                    }
+                    else {
+
+                        // Add the contact pair index in the list of contact pairs that won't be part of islands
+                        nonRigidBodiesContactPairs.add(pair.contactPairIndex);
+                    }
+                }
+            }
+
+            // For each joint in which the current body is involved
+            JointListElement* jointElement;
+            for (jointElement = rigidBodyToVisit->mJointsList; jointElement != nullptr;
+                 jointElement = jointElement->next) {
+
+                Joint* joint = jointElement->joint;
+
+                // Check if the current joint has already been added into an island
+                if (joint->isAlreadyInIsland()) continue;
+
+                // Add the joint into the island
+                mIslands2.joints.add(joint);
+                joint->mIsAlreadyInIsland = true;
+
+                const Entity body1Entity = joint->getBody1()->getEntity();
+                const Entity body2Entity = joint->getBody2()->getEntity();
+                const Entity otherBodyEntity = body1Entity == bodyToVisitEntity ? body2Entity : body1Entity;
+
+                // TODO : Maybe avoid those casts here
+                // Get the other body of the contact manifold
+                RigidBody* body1 = static_cast<RigidBody*>(joint->getBody1());
+                RigidBody* body2 = static_cast<RigidBody*>(joint->getBody2());
+                RigidBody* otherBody = (body1->getId() == rigidBodyToVisit->getId()) ? body2 : body1;
+
+                // Check if the other body has already been added to the island
+                if (otherBody->mIsAlreadyInIsland) continue;
+
+                // Insert the other body into the stack of bodies to visit
+                bodyEntityIndicesToVisit.push(otherBodyEntity);
+                otherBody->mIsAlreadyInIsland = true;
+            }
+        }
+
+        // Reset the isAlreadyIsland variable of the static bodies so that they
+        // can also be included in the other islands
+        for (uint b=0; b < mDynamicsComponents.getNbEnabledComponents(); b++) {
+
+            // If the body is static, we go to the next body
+            // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
+            CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(mDynamicsComponents.mBodies[b]));
+            if (body->getType() == BodyType::STATIC) {
+                mDynamicsComponents.mIsAlreadyInIsland[b] = false;
+            }
+        }
+    }
+
+    // Add the contact pairs that are not part of islands at the end of the array of pairs for contacts creations
+    mCollisionDetection.mContactPairsIndicesOrderingForContacts.addRange(nonRigidBodiesContactPairs);
+
+    mCollisionDetection.mMapBodyToContactPairs.clear(true);
 }
 
 // Put bodies to sleep if needed.

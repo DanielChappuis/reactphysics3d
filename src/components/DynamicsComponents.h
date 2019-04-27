@@ -59,6 +59,9 @@ class DynamicsComponents : public Components {
         /// Array with the angular velocity of each component
         Vector3* mAngularVelocities;
 
+        /// Array with the boolean value to know if the body has already been added into an island
+        bool* mIsAlreadyInIsland;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -105,15 +108,22 @@ class DynamicsComponents : public Components {
         /// Return the angular velocity of an entity
         Vector3& getAngularVelocity(Entity bodyEntity) const;
 
+        /// Return true if the entity is already in an island
+        bool getIsAlreadyInIsland(Entity bodyEntity) const;
+
         /// Set the linear velocity of an entity
         void setLinearVelocity(Entity bodyEntity, const Vector3& linearVelocity);
 
         /// Set the angular velocity of an entity
         void setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity);
 
+        /// Set the value to know if the entity is already in an island
+        bool setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
+
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
+        friend class DynamicsWorld;
 };
 
 // Return the linear velocity of an entity
@@ -146,6 +156,22 @@ inline void DynamicsComponents::setAngularVelocity(Entity bodyEntity, const Vect
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = angularVelocity;
+}
+
+// Return true if the entity is already in an island
+inline bool DynamicsComponents::getIsAlreadyInIsland(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+/// Set the value to know if the entity is already in an island
+inline bool DynamicsComponents::setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]] = isAlreadyInIsland;
 }
 
 }

@@ -137,6 +137,7 @@ SET (REACTPHYSICS3D_HEADERS
     "src/engine/DynamicsWorld.h"
     "src/engine/EventListener.h"
     "src/engine/Island.h"
+    "src/engine/Islands.h"
     "src/engine/Material.h"
     "src/engine/OverlappingPair.h"
     "src/engine/Timer.h"
