@@ -36,7 +36,7 @@ using namespace reactphysics3d;
  * @param id ID of the new body
  */
 Body::Body(Entity entity, bodyindex id)
-     : mID(id), mEntity(entity), mIsAlreadyInIsland(false), mIsAllowedToSleep(true), mIsActive(true),
+     : mID(id), mEntity(entity), mIsAllowedToSleep(true), mIsActive(true),
        mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
 
 #ifdef IS_LOGGING_ACTIVE

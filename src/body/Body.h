@@ -57,9 +57,6 @@ class Body {
         /// Identifier of the entity in the ECS
         Entity mEntity;
 
-        /// True if the body has already been added in an island (for sleeping technique)
-        bool mIsAlreadyInIsland;
-
         /// True if the body is allowed to go to sleep for better efficiency
         bool mIsAllowedToSleep;
 
@@ -75,8 +72,10 @@ class Body {
         bool mIsActive;
 
         /// True if the body is sleeping (for sleeping technique)
+        // TODO : DELETE THIS
         bool mIsSleeping;
 
+        // TODO : Move this into the body components
         /// Elapsed time since the body velocity was bellow the sleep velocity
         decimal mSleepTime;
 

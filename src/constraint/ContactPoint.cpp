@@ -51,7 +51,7 @@ ContactPoint::ContactPoint(const ContactPointInfo& contactInfo, const WorldSetti
                mPenetrationDepth(contactInfo.penetrationDepth),
                mLocalPointOnShape1(contactInfo.localPoint1),
                mLocalPointOnShape2(contactInfo.localPoint2),
-               mIsRestingContact(false), mIsObsolete(false),
+               mIsRestingContact(false), mPenetrationImpulse(0), mIsObsolete(false),
                mWorldSettings(worldSettings) {
 
     assert(mPenetrationDepth > decimal(0.0));

@@ -163,12 +163,10 @@ class CollisionWorld {
         CollisionDispatch& getCollisionDispatch();
 
         /// Ray cast method
-        void raycast(const Ray& ray, RaycastCallback* raycastCallback,
-                     unsigned short raycastWithCategoryMaskBits = 0xFFFF) const;
+        void raycast(const Ray& ray, RaycastCallback* raycastCallback, unsigned short raycastWithCategoryMaskBits = 0xFFFF) const;
 
         /// Test if the AABBs of two bodies overlap
-        bool testAABBOverlap(const CollisionBody* body1,
-                             const CollisionBody* body2) const;
+        bool testAABBOverlap(const CollisionBody* body1, const CollisionBody* body2) const;
 
         /// Report all the bodies which have an AABB that overlaps with the AABB in parameter
         void testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);

@@ -30,6 +30,7 @@
 #include "configuration.h"
 #include "mathematics/Vector3.h"
 #include "mathematics/Matrix3x3.h"
+#include "engine/Islands.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -42,6 +43,8 @@ class MemoryManager;
 class Profiler;
 class Island;
 class RigidBody;
+class BodyComponents;
+class ProxyShapeComponents;
 
 // Class Contact Solver
 /**
@@ -280,18 +283,22 @@ class ContactSolver {
         MemoryManager& mMemoryManager;
 
         /// Split linear velocities for the position contact solver (split impulse)
+        // TODO : Use List<> here
         Vector3* mSplitLinearVelocities;
 
         /// Split angular velocities for the position contact solver (split impulse)
+        // TODO : Use List<> here
         Vector3* mSplitAngularVelocities;
 
         /// Current time step
         decimal mTimeStep;
 
         /// Contact constraints
+        // TODO : Use List<> here
         ContactManifoldSolver* mContactConstraints;
 
         /// Contact points
+        // TODO : Use List<> here
         ContactPointSolver* mContactPoints;
 
         /// Number of contact point constraints
@@ -301,10 +308,28 @@ class ContactSolver {
         uint mNbContactManifolds;
 
         /// Array of linear velocities
+        // TODO : Use List<> here
         Vector3* mLinearVelocities;
 
         /// Array of angular velocities
+        // TODO : Use List<> here
         Vector3* mAngularVelocities;
+
+        /// Reference to the islands
+        Islands& mIslands;
+
+        /// Pointer to the list of contact manifolds from narrow-phase
+        List<ContactManifold>* mAllContactManifolds;
+
+        /// Pointer to the list of contact points from narrow-phase
+        List<ContactPoint>* mAllContactPoints;
+
+        /// Reference to the body components
+        BodyComponents& mBodyComponents;
+
+        /// Reference to the proxy-shapes components
+        // TODO : Do we really need to use this ?
+        ProxyShapeComponents& mProxyShapeComponents;
 
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
@@ -346,16 +371,17 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(MemoryManager& memoryManager, const WorldSettings& worldSettings);
+        ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents,
+                      ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactSolver() = default;
 
         /// Initialize the contact constraints
-        void init(Island** islands, uint nbIslands, decimal timeStep);
+        void init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep);
 
         /// Initialize the constraint solver for a given island
-        void initializeForIsland(Island* island);
+        void initializeForIsland(uint islandIndex);
 
         /// Set the split velocities arrays
         void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,

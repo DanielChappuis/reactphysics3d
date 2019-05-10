@@ -29,6 +29,7 @@
 // Libraries
 #include "configuration.h"
 #include "mathematics/mathematics.h"
+#include "engine/Islands.h"
 
 namespace reactphysics3d {
 
@@ -153,6 +154,9 @@ class ConstraintSolver {
         /// True if the warm starting of the solver is active
         bool mIsWarmStartingActive;
 
+        /// Reference to the islands
+        Islands& mIslands;
+
         /// Constraint solver data used to initialize and solve the constraints
         ConstraintSolverData mConstraintSolverData;
 
@@ -167,19 +171,19 @@ class ConstraintSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver();
+        ConstraintSolver(Islands& islands);
 
         /// Destructor
         ~ConstraintSolver() = default;
 
         /// Initialize the constraint solver for a given island
-        void initializeForIsland(decimal dt, Island* island);
+        void initializeForIsland(decimal dt, uint islandIndex);
 
         /// Solve the constraints
-        void solveVelocityConstraints(Island* island);
+        void solveVelocityConstraints(uint islandIndex);
 
         /// Solve the position constraints
-        void solvePositionConstraints(Island* island);
+        void solvePositionConstraints(uint islandIndex);
 
         /// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
         bool getIsNonLinearGaussSeidelPositionCorrectionActive() const;

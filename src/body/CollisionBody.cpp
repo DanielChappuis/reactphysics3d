@@ -307,26 +307,6 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
     }
 }
 
-// Reset the mIsAlreadyInIsland variable of the body and contact manifolds.
-/// This method also returns the number of contact manifolds of the body.
-int CollisionBody::resetIsAlreadyInIslandAndCountManifolds() {
-
-    mIsAlreadyInIsland = false;
-
-    int nbManifolds = 0;
-
-    // Reset the mIsAlreadyInIsland variable of the contact manifolds for
-    // this body
-    ContactManifoldListElement* currentElement = mContactManifoldsList;
-    while (currentElement != nullptr) {
-        currentElement->getContactManifold()->mIsAlreadyInIsland = false;
-        currentElement = currentElement->getNext();
-        nbManifolds++;
-    }
-
-    return nbManifolds;
-}
-
 // Return true if a point is inside the collision body
 /// This method returns true if a point is inside any collision shape of the body
 /**

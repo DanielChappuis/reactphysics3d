@@ -178,6 +178,8 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
  */
 void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
+    // TODO : Check if we need to update the postion of the body here at the end (transform of the body)
+
     if (mType != BodyType::DYNAMIC) return;
 
     mIsCenterOfMassSetByUser = true;

@@ -38,14 +38,17 @@ ContactManifold::ContactManifold(ProxyShape* shape1, ProxyShape* shape2,
                   mNbContactPoints(0), mFrictionImpulse1(0.0), mFrictionImpulse2(0.0),
                   mFrictionTwistImpulse(0.0), mIsAlreadyInIsland(false),
                   mNext(nullptr), mPrevious(nullptr), mIsObsolete(false),
-                  mWorldSettings(worldSettings) {
+                  mWorldSettings(worldSettings), bodyEntity1(0, 0), bodyEntity2(0, 0), proxyShapeEntity1(0, 0), proxyShapeEntity2(0, 0) {
     
 }
 
 // Constructor
 // TODO : REMOVE worldSettings from this constructor
-ContactManifold::ContactManifold(uint contactPointsIndex, int8 nbContactPoints, MemoryAllocator& allocator, const WorldSettings& worldSettings)
-                :mMemoryAllocator(allocator), mContactPointsIndex(0), mWorldSettings(worldSettings) {
+ContactManifold::ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity proxyShapeEntity1, Entity proxyShapeEntity2,
+                                 uint contactPointsIndex, int8 nbContactPoints, MemoryAllocator& allocator, const WorldSettings& worldSettings)
+                :mMemoryAllocator(allocator), mContactPointsIndex(0), bodyEntity1(bodyEntity1), bodyEntity2(bodyEntity2),
+                 proxyShapeEntity1(proxyShapeEntity1), proxyShapeEntity2(proxyShapeEntity2), mFrictionImpulse1(0), mFrictionImpulse2(0),
+                 mFrictionTwistImpulse(0), mIsAlreadyInIsland(false), mWorldSettings(worldSettings) {
 
 
     mContactPoints = nullptr;

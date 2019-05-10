@@ -91,6 +91,7 @@ struct ContactManifoldListElement {
  */
 class ContactManifold {
 
+    // TODO : Check if we can use public fields in this class (maybe this class is used by users directly)
     private:
 
         // -------------------- Constants -------------------- //
@@ -107,6 +108,18 @@ class ContactManifold {
 
         /// Index of the first contact point of the manifold in the list of contact points
         uint mContactPointsIndex;
+
+        /// Entity of the first body in contact
+        Entity bodyEntity1;
+
+        /// Entity of the second body in contact
+        Entity bodyEntity2;
+
+        /// Entity of the first proxy-shape in contact
+        Entity proxyShapeEntity1;
+
+        /// Entity of the second proxy-shape in contact
+        Entity proxyShapeEntity2;
 
         /// Pointer to the first proxy shape of the contact
         ProxyShape* mShape1;
@@ -230,7 +243,9 @@ class ContactManifold {
                         const WorldSettings& worldSettings);
 
         /// Constructor
-        ContactManifold(uint contactPointsIndex, int8 nbContactPoints, MemoryAllocator& allocator, const WorldSettings& worldSettings);
+        ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity proxyShapeEntity1, Entity proxyShapeEntity2,
+                        uint contactPointsIndex, int8 nbContactPoints,
+                        MemoryAllocator& allocator, const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactManifold();
@@ -241,6 +256,7 @@ class ContactManifold {
         /// Assignment operator
         ContactManifold& operator=(const ContactManifold& contactManifold) = default;
 
+        /*
         /// Return a pointer to the first proxy shape of the contact
         ProxyShape* getShape1() const;
 
@@ -252,6 +268,7 @@ class ContactManifold {
 
         /// Return a pointer to the second body of the contact manifold
         CollisionBody* getBody2() const;
+        */
 
         /// Return the number of contact points in the manifold
         int8 getNbContactPoints() const;
@@ -275,6 +292,7 @@ class ContactManifold {
         friend class CollisionDetection;
 };
 
+/*
 // Return a pointer to the first proxy shape of the contact
 inline ProxyShape* ContactManifold::getShape1() const {
     return mShape1;
@@ -294,6 +312,7 @@ inline CollisionBody* ContactManifold::getBody1() const {
 inline CollisionBody* ContactManifold::getBody2() const {
     return mShape2->getBody();
 }
+*/
 
 // Return the number of contact points in the manifold
 inline int8 ContactManifold::getNbContactPoints() const {

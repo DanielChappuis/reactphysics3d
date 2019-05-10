@@ -172,14 +172,6 @@ void CollisionDetection::updateOverlappingPairs(List<Pair<int, int>>& overlappin
             }
         }
     }
-
-    // For each new overlapping pair
-    for (uint i=0; i < newOverlappingPairs.size(); i++) {
-
-        // Wake up the two bodies of the new overlapping pair
-        mWorld->notifyBodyDisabled(newOverlappingPairs[i]->getShape1()->getBody()->getEntity(), false);
-        mWorld->notifyBodyDisabled(newOverlappingPairs[i]->getShape1()->getBody()->getEntity(), false);
-    }
 }
 
 // Compute the middle-phase collision detection
@@ -201,12 +193,15 @@ void CollisionDetection::computeMiddlePhase() {
         // Make all the last frame collision info obsolete
         pair->makeLastFrameCollisionInfosObsolete();
 
+        const Entity proxyShape1Entity = pair->getShape1()->getEntity();
+        const Entity proxyShape2Entity = pair->getShape2()->getEntity();
+
         ProxyShape* shape1 = pair->getShape1();
         ProxyShape* shape2 = pair->getShape2();
 
-        assert(shape1->getBroadPhaseId() != -1);
-        assert(shape2->getBroadPhaseId() != -1);
-        assert(shape1->getBroadPhaseId() != shape2->getBroadPhaseId());
+        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != -1);
+        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity) != -1);
+        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity));
 
         // Check if the two shapes are still overlapping. Otherwise, we destroy the
         // overlapping pair
@@ -224,15 +219,18 @@ void CollisionDetection::computeMiddlePhase() {
         }
 
         // Check if the collision filtering allows collision between the two shapes
-        if (((shape1->getCollideWithMaskBits() & shape2->getCollisionCategoryBits()) != 0 &&
-             (shape1->getCollisionCategoryBits() & shape2->getCollideWithMaskBits()) != 0)) {
+        if ((mProxyShapesComponents.getCollideWithMaskBits(proxyShape1Entity) & mProxyShapesComponents.getCollisionCategoryBits(proxyShape2Entity)) != 0 &&
+            (mProxyShapesComponents.getCollisionCategoryBits(proxyShape1Entity) & mProxyShapesComponents.getCollideWithMaskBits(proxyShape2Entity)) != 0) {
 
             CollisionBody* const body1 = shape1->getBody();
             CollisionBody* const body2 = shape2->getBody();
 
+            const Entity body1Entity = body1->getEntity();
+            const Entity body2Entity = body2->getEntity();
+
             // Check that at least one body is awake and not static
-            bool isBody1Active = !body1->isSleeping() && body1->getType() != BodyType::STATIC;
-            bool isBody2Active = !body2->isSleeping() && body2->getType() != BodyType::STATIC;
+            bool isBody1Active = !mWorld->mBodyComponents.getIsEntityDisabled(body1Entity) && body1->getType() != BodyType::STATIC;
+            bool isBody2Active = !mWorld->mBodyComponents.getIsEntityDisabled(body2Entity) && body2->getType() != BodyType::STATIC;
             if (!isBody1Active && !isBody2Active) continue;
 
             // Check if the bodies are in the set of bodies that cannot collide between each other
@@ -500,7 +498,9 @@ void CollisionDetection::createContacts() {
             contactPair.nbToTalContactPoints += nbContactPoints;
 
             // We create a new contact manifold
-            ContactManifold contactManifold(contactPointsIndex, nbContactPoints, mMemoryManager.getPoolAllocator(), mWorld->mConfig);
+            ContactManifold contactManifold(contactPair.body1Entity, contactPair.body2Entity, contactPair.proxyShape1Entity,
+                                            contactPair.proxyShape2Entity, contactPointsIndex, nbContactPoints,
+                                            mMemoryManager.getPoolAllocator(), mWorld->mConfig);
 
             // Add the contact manifold
             mCurrentContactManifolds->add(contactManifold);
@@ -861,9 +861,14 @@ void CollisionDetection::processPotentialContacts(NarrowPhaseInfoBatch& narrowPh
                     Entity body1Entity = narrowPhaseInfoBatch.overlappingPairs[i]->getShape1()->getBody()->getEntity();
                     Entity body2Entity = narrowPhaseInfoBatch.overlappingPairs[i]->getShape2()->getBody()->getEntity();
 
+                    assert(!mWorld->mBodyComponents.getIsEntityDisabled(body1Entity) || !mWorld->mBodyComponents.getIsEntityDisabled(body2Entity));
+
                     // TODO : We should probably use a single frame allocator here
                     const uint newContactPairIndex = mCurrentContactPairs->size();
-                    ContactPair overlappingPairContact(pairId, body1Entity, body2Entity, newContactPairIndex, mMemoryManager.getPoolAllocator());
+                    ContactPair overlappingPairContact(pairId, body1Entity, body2Entity,
+                                                       narrowPhaseInfoBatch.overlappingPairs[i]->getShape1()->getEntity(),
+                                                       narrowPhaseInfoBatch.overlappingPairs[i]->getShape2()->getEntity(),
+                                                       newContactPairIndex, mMemoryManager.getPoolAllocator());
                     mCurrentContactPairs->add(overlappingPairContact);
                     pairContact = &((*mCurrentContactPairs)[newContactPairIndex]);
                     mCurrentMapPairIdToContactPairIndex->add(Pair<OverlappingPair::OverlappingPairId, uint>(pairId, newContactPairIndex));

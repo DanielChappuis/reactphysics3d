@@ -67,6 +67,7 @@ class CollisionBody : public Body {
 
         // -------------------- Attributes -------------------- //
 
+        // TODO : Move this into the dynamics components
         /// Type of body (static, kinematic or dynamic)
         BodyType mType;
 
@@ -97,9 +98,6 @@ class CollisionBody : public Body {
         /// Ask the broad-phase to test again the collision shapes of the body for collision
         /// (as if the body has moved).
         void askForBroadPhaseCollisionCheck() const;
-
-        /// Reset the mIsAlreadyInIsland variable of the body and contact manifolds
-        int resetIsAlreadyInIslandAndCountManifolds();
 
         /// Set the variable to know whether or not the body is sleeping
         virtual void setIsSleeping(bool isSleeping) override;

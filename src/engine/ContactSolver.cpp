@@ -30,6 +30,8 @@
 #include "constraint/ContactPoint.h"
 #include "utils/Profiler.h"
 #include "engine/Island.h"
+#include "components/BodyComponents.h"
+#include "components/ProxyShapeComponents.h"
 #include "collision/ContactManifold.h"
 
 using namespace reactphysics3d;
@@ -41,11 +43,13 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(MemoryManager& memoryManager, const WorldSettings& worldSettings)
+ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents,
+                             ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings)
               :mMemoryManager(memoryManager), mSplitLinearVelocities(nullptr),
                mSplitAngularVelocities(nullptr), mContactConstraints(nullptr),
                mContactPoints(nullptr), mLinearVelocities(nullptr), mAngularVelocities(nullptr),
-               mIsSplitImpulseActive(true), mWorldSettings(worldSettings) {
+               mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr), mBodyComponents(bodyComponents),
+               mProxyShapeComponents(proxyShapeComponents), mIsSplitImpulseActive(true), mWorldSettings(worldSettings) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -54,23 +58,18 @@ ContactSolver::ContactSolver(MemoryManager& memoryManager, const WorldSettings& 
 }
 
 // Initialize the contact constraints
-void ContactSolver::init(Island** islands, uint nbIslands, decimal timeStep) {
+void ContactSolver::init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep) {
+
+    mAllContactManifolds = contactManifolds;
+    mAllContactPoints = contactPoints;
 
     RP3D_PROFILE("ContactSolver::init()", mProfiler);
 
     mTimeStep = timeStep;
 
     // TODO : Try not to count manifolds and contact points here
-    uint nbContactManifolds = 0;
-    uint nbContactPoints = 0;
-    for (uint i = 0; i < nbIslands; i++) {
-        uint nbManifoldsInIsland = islands[i]->getNbContactManifolds();
-        nbContactManifolds += nbManifoldsInIsland;
-
-        for (uint j=0; j < nbManifoldsInIsland; j++) {
-            nbContactPoints += islands[i]->getContactManifolds()[j]->getNbContactPoints();
-        }
-    }
+    uint nbContactManifolds = mAllContactManifolds->size();
+    uint nbContactPoints = mAllContactPoints->size();
 
     mNbContactManifolds = 0;
     mNbContactPoints = 0;
@@ -90,10 +89,10 @@ void ContactSolver::init(Island** islands, uint nbIslands, decimal timeStep) {
     assert(mContactConstraints != nullptr);
 
     // For each island of the world
-    for (uint islandIndex = 0; islandIndex < nbIslands; islandIndex++) {
+    for (uint i = 0; i < mIslands.getNbIslands(); i++) {
 
-        if (islands[islandIndex]->getNbContactManifolds() > 0) {
-            initializeForIsland(islands[islandIndex]);
+        if (mIslands.nbContactManifolds[i] > 0) {
+            initializeForIsland(i);
         }
     }
 
@@ -102,33 +101,36 @@ void ContactSolver::init(Island** islands, uint nbIslands, decimal timeStep) {
 }
 
 // Initialize the constraint solver for a given island
-void ContactSolver::initializeForIsland(Island* island) {
+void ContactSolver::initializeForIsland(uint islandIndex) {
 
     RP3D_PROFILE("ContactSolver::initializeForIsland()", mProfiler);
 
-    assert(island != nullptr);
-    assert(island->getNbBodies() > 0);
-    assert(island->getNbContactManifolds() > 0);
+    assert(mIslands.bodyEntities[islandIndex].size() > 0);
+    assert(mIslands.nbContactManifolds[islandIndex] > 0);
     assert(mSplitLinearVelocities != nullptr);
     assert(mSplitAngularVelocities != nullptr);
 
     // For each contact manifold of the island
-    ContactManifold** contactManifolds = island->getContactManifolds();
-    for (uint i=0; i<island->getNbContactManifolds(); i++) {
+    uint contactManifoldsIndex = mIslands.contactManifoldsIndices[islandIndex];
+    uint nbContactManifolds = mIslands.nbContactManifolds[islandIndex];
+    for (uint m=contactManifoldsIndex; m < contactManifoldsIndex + nbContactManifolds; m++) {
 
-        ContactManifold* externalManifold = contactManifolds[i];
+        ContactManifold& externalManifold = (*mAllContactManifolds)[m];
 
-        assert(externalManifold->getNbContactPoints() > 0);
+        assert(externalManifold.getNbContactPoints() > 0);
 
         // Get the two bodies of the contact
-        RigidBody* body1 = static_cast<RigidBody*>(externalManifold->getBody1());
-        RigidBody* body2 = static_cast<RigidBody*>(externalManifold->getBody2());
+        RigidBody* body1 = static_cast<RigidBody*>(mBodyComponents.getBody(externalManifold.bodyEntity1));
+        RigidBody* body2 = static_cast<RigidBody*>(mBodyComponents.getBody(externalManifold.bodyEntity2));
         assert(body1 != nullptr);
         assert(body2 != nullptr);
+        assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity1));
+        assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity2));
 
         // Get the two contact shapes
-        const ProxyShape* shape1 = externalManifold->getShape1();
-        const ProxyShape* shape2 = externalManifold->getShape2();
+        // TODO : Do we really need to get the proxy-shape here
+        const ProxyShape* shape1 = mProxyShapeComponents.getProxyShape(externalManifold.proxyShapeEntity1);
+        const ProxyShape* shape2 = mProxyShapeComponents.getProxyShape(externalManifold.proxyShapeEntity2);
 
         // Get the position of the two bodies
         const Vector3& x1 = body1->mCenterOfMassWorld;
@@ -143,10 +145,10 @@ void ContactSolver::initializeForIsland(Island* island) {
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
         mContactConstraints[mNbContactManifolds].massInverseBody1 = body1->mMassInverse;
         mContactConstraints[mNbContactManifolds].massInverseBody2 = body2->mMassInverse;
-        mContactConstraints[mNbContactManifolds].nbContacts = externalManifold->getNbContactPoints();
+        mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.getNbContactPoints();
         mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
         mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(body1, body2);
-        mContactConstraints[mNbContactManifolds].externalContactManifold = externalManifold;
+        mContactConstraints[mNbContactManifolds].externalContactManifold = &externalManifold;
         mContactConstraints[mNbContactManifolds].normal.setToZero();
         mContactConstraints[mNbContactManifolds].frictionPointBody1.setToZero();
         mContactConstraints[mNbContactManifolds].frictionPointBody2.setToZero();
@@ -158,27 +160,30 @@ void ContactSolver::initializeForIsland(Island* island) {
         const Vector3& w2 = mAngularVelocities[mContactConstraints[mNbContactManifolds].indexBody2];
 
         // For each  contact point of the contact manifold
-        ContactPoint* externalContact = externalManifold->getContactPoints();
-        assert(externalContact != nullptr);
-        while (externalContact != nullptr) {
+        assert(externalManifold.getNbContactPoints() > 0);
+        uint contactPointsStartIndex = externalManifold.mContactPointsIndex;
+        uint nbContactPoints = externalManifold.mNbContactPoints;
+        for (uint c=contactPointsStartIndex; c < contactPointsStartIndex + nbContactPoints; c++) {
+
+            ContactPoint& externalContact = (*mAllContactPoints)[c];
 
             // Get the contact point on the two bodies
-            Vector3 p1 = shape1->getLocalToWorldTransform() * externalContact->getLocalPointOnShape1();
-            Vector3 p2 = shape2->getLocalToWorldTransform() * externalContact->getLocalPointOnShape2();
+            Vector3 p1 = shape1->getLocalToWorldTransform() * externalContact.getLocalPointOnShape1();
+            Vector3 p2 = shape2->getLocalToWorldTransform() * externalContact.getLocalPointOnShape2();
 
             new (mContactPoints + mNbContactPoints) ContactPointSolver();
-            mContactPoints[mNbContactPoints].externalContact = externalContact;
-            mContactPoints[mNbContactPoints].normal = externalContact->getNormal();
+            mContactPoints[mNbContactPoints].externalContact = &externalContact;
+            mContactPoints[mNbContactPoints].normal = externalContact.getNormal();
             mContactPoints[mNbContactPoints].r1.x = p1.x - x1.x;
             mContactPoints[mNbContactPoints].r1.y = p1.y - x1.y;
             mContactPoints[mNbContactPoints].r1.z = p1.z - x1.z;
             mContactPoints[mNbContactPoints].r2.x = p2.x - x2.x;
             mContactPoints[mNbContactPoints].r2.y = p2.y - x2.y;
             mContactPoints[mNbContactPoints].r2.z = p2.z - x2.z;
-            mContactPoints[mNbContactPoints].penetrationDepth = externalContact->getPenetrationDepth();
-            mContactPoints[mNbContactPoints].isRestingContact = externalContact->getIsRestingContact();
-            externalContact->setIsRestingContact(true);
-            mContactPoints[mNbContactPoints].penetrationImpulse = externalContact->getPenetrationImpulse();
+            mContactPoints[mNbContactPoints].penetrationDepth = externalContact.getPenetrationDepth();
+            mContactPoints[mNbContactPoints].isRestingContact = externalContact.getIsRestingContact();
+            externalContact.setIsRestingContact(true);
+            mContactPoints[mNbContactPoints].penetrationImpulse = externalContact.getPenetrationImpulse();
             mContactPoints[mNbContactPoints].penetrationSplitImpulse = 0.0;
 
             mContactConstraints[mNbContactManifolds].frictionPointBody1.x += p1.x;
@@ -240,8 +245,6 @@ void ContactSolver::initializeForIsland(Island* island) {
             mContactConstraints[mNbContactManifolds].normal.z += mContactPoints[mNbContactPoints].normal.z;
 
             mNbContactPoints++;
-
-            externalContact = externalContact->getNext();
         }
 
         mContactConstraints[mNbContactManifolds].frictionPointBody1 /=static_cast<decimal>(mContactConstraints[mNbContactManifolds].nbContacts);
@@ -252,13 +255,13 @@ void ContactSolver::initializeForIsland(Island* island) {
         mContactConstraints[mNbContactManifolds].r2Friction.x = mContactConstraints[mNbContactManifolds].frictionPointBody2.x - x2.x;
         mContactConstraints[mNbContactManifolds].r2Friction.y = mContactConstraints[mNbContactManifolds].frictionPointBody2.y - x2.y;
         mContactConstraints[mNbContactManifolds].r2Friction.z = mContactConstraints[mNbContactManifolds].frictionPointBody2.z - x2.z;
-        mContactConstraints[mNbContactManifolds].oldFrictionVector1 = externalManifold->getFrictionVector1();
-        mContactConstraints[mNbContactManifolds].oldFrictionVector2 = externalManifold->getFrictionVector2();
+        mContactConstraints[mNbContactManifolds].oldFrictionVector1 = externalManifold.getFrictionVector1();
+        mContactConstraints[mNbContactManifolds].oldFrictionVector2 = externalManifold.getFrictionVector2();
 
         // Initialize the accumulated impulses with the previous step accumulated impulses
-        mContactConstraints[mNbContactManifolds].friction1Impulse = externalManifold->getFrictionImpulse1();
-        mContactConstraints[mNbContactManifolds].friction2Impulse = externalManifold->getFrictionImpulse2();
-        mContactConstraints[mNbContactManifolds].frictionTwistImpulse = externalManifold->getFrictionTwistImpulse();
+        mContactConstraints[mNbContactManifolds].friction1Impulse = externalManifold.getFrictionImpulse1();
+        mContactConstraints[mNbContactManifolds].friction2Impulse = externalManifold.getFrictionImpulse2();
+        mContactConstraints[mNbContactManifolds].frictionTwistImpulse = externalManifold.getFrictionTwistImpulse();
 
         // Compute the inverse K matrix for the rolling resistance constraint
         bool isBody1DynamicType = body1->getType() == BodyType::DYNAMIC;
