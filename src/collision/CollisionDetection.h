@@ -193,13 +193,6 @@ class CollisionDetection {
         bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool stopFirstContactFound,
                                       bool reportContacts, MemoryAllocator& allocator);
 
-        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
-        /// involved in the corresponding contact.
-        void addContactManifoldToBody(OverlappingPair* pair);
-
-        /// Add all the contact manifold of colliding pairs to their bodies
-        void addAllContactManifoldsToBodies();
-
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
         void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
                                                NarrowPhaseInput& narrowPhaseInput);

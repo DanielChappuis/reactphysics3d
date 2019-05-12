@@ -415,6 +415,8 @@ std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(rp3d::DynamicsW
     // Get the list of contact manifolds from the world
     rp3d::List<const rp3d::ContactManifold*> manifolds = world->getContactsList();
 
+    // TODO : Uncomment and fix this
+    /*
     // For each contact manifold
     rp3d::List<const rp3d::ContactManifold*>::Iterator it;
     for (it = manifolds.begin(); it != manifolds.end(); ++it) {
@@ -433,8 +435,8 @@ std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(rp3d::DynamicsW
 
             contactPoint = contactPoint->getNext();
         }
-
     }
+    */
 
     return contactPoints;
 }

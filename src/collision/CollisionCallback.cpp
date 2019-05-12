@@ -42,6 +42,9 @@ CollisionCallback::CollisionCallbackInfo::CollisionCallbackInfo(OverlappingPair*
 
     assert(pair != nullptr);
 
+
+    // TODO : Rework how to report contacts
+    /*
     const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
 
     // For each contact manifold in the set of manifolds in the pair
@@ -61,11 +64,14 @@ CollisionCallback::CollisionCallbackInfo::CollisionCallbackInfo(OverlappingPair*
 
         contactManifold = contactManifold->getNext();
     }
+    */
 }
 
 // Destructor
 CollisionCallback::CollisionCallbackInfo::~CollisionCallbackInfo() {
 
+    // TODO : Rework how to report contacts
+    /*
     // Release memory allocator for the contact manifold list elements
     ContactManifoldListElement* element = contactManifoldElements;
     while (element != nullptr) {
@@ -79,5 +85,6 @@ CollisionCallback::CollisionCallbackInfo::~CollisionCallbackInfo() {
 
         element = nextElement;
     }
+    */
 }
 

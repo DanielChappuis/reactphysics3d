@@ -187,9 +187,6 @@ void CollisionDetection::computeMiddlePhase() {
 
         OverlappingPair* pair = it->second;
 
-        // Make all the contact manifolds and contact points of the pair obsolete
-        pair->makeContactsObsolete();
-
         // Make all the last frame collision info obsolete
         pair->makeLastFrameCollisionInfosObsolete();
 
@@ -420,9 +417,6 @@ void CollisionDetection::computeNarrowPhase() {
     // Reduce the number of contact points in the manifolds
     reducePotentialContactManifolds(mOverlappingPairs);
 
-    // Add all the contact manifolds (between colliding bodies) to the bodies
-    addAllContactManifoldsToBodies();
-
     // Report contacts to the user
     reportAllContacts();
 
@@ -499,8 +493,7 @@ void CollisionDetection::createContacts() {
 
             // We create a new contact manifold
             ContactManifold contactManifold(contactPair.body1Entity, contactPair.body2Entity, contactPair.proxyShape1Entity,
-                                            contactPair.proxyShape2Entity, contactPointsIndex, nbContactPoints,
-                                            mMemoryManager.getPoolAllocator(), mWorld->mConfig);
+                                            contactPair.proxyShape2Entity, contactPointsIndex, nbContactPoints);
 
             // Add the contact manifold
             mCurrentContactManifolds->add(contactManifold);
@@ -697,19 +690,6 @@ void CollisionDetection::removeProxyCollisionShape(ProxyShape* proxyShape) {
     mBroadPhaseSystem.removeProxyCollisionShape(proxyShape);
 }
 
-void CollisionDetection::addAllContactManifoldsToBodies() {
-
-    RP3D_PROFILE("CollisionDetection::addAllContactManifoldsToBodies()", mProfiler);
-
-    // For each overlapping pairs in contact during the narrow-phase
-    for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
-
-        // Add all the contact manifolds of the pair into the list of contact manifolds
-        // of the two bodies involved in the contact
-        addContactManifoldToBody(it->second);
-    }
-}
-
 // Ray casting method
 void CollisionDetection::raycast(RaycastCallback* raycastCallback,
                                         const Ray& ray,
@@ -722,42 +702,6 @@ void CollisionDetection::raycast(RaycastCallback* raycastCallback,
     // Ask the broad-phase algorithm to call the testRaycastAgainstShape()
     // callback method for each proxy shape hit by the ray in the broad-phase
     mBroadPhaseSystem.raycast(ray, rayCastTest, raycastWithCategoryMaskBits);
-}
-
-// Add a contact manifold to the linked list of contact manifolds of the two bodies involved
-// in the corresponding contact
-void CollisionDetection::addContactManifoldToBody(OverlappingPair* pair) {
-
-    assert(pair != nullptr);
-
-    CollisionBody* body1 = pair->getShape1()->getBody();
-    CollisionBody* body2 = pair->getShape2()->getBody();
-    const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
-
-    // For each contact manifold in the set of manifolds in the pair
-    ContactManifold* contactManifold = manifoldSet.getContactManifolds();
-    while (contactManifold != nullptr) {
-
-        assert(contactManifold->getNbContactPoints() > 0);
-
-        // Add the contact manifold at the beginning of the linked
-        // list of contact manifolds of the first body
-        ContactManifoldListElement* listElement1 = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                                                                sizeof(ContactManifoldListElement)))
-                                                      ContactManifoldListElement(contactManifold,
-                                                                         body1->mContactManifoldsList);
-        body1->mContactManifoldsList = listElement1;
-
-        // Add the contact manifold at the beginning of the linked
-        // list of the contact manifolds of the second body
-        ContactManifoldListElement* listElement2 = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                                                                sizeof(ContactManifoldListElement)))
-                                                      ContactManifoldListElement(contactManifold,
-                                                                         body2->mContactManifoldsList);
-        body2->mContactManifoldsList = listElement2;
-
-        contactManifold = contactManifold->getNext();
-    }
 }
 
 /// Convert the potential contact into actual contacts
@@ -774,22 +718,6 @@ void CollisionDetection::processPotentialContacts(NarrowPhaseInfoBatch& narrowPh
             // The previous frame collision info is now valid
             narrowPhaseInfoBatch.lastFrameCollisionInfos[i]->isValid = true;
         }
-
-        // ----- START OLD ----- //
-
-        if (narrowPhaseInfoBatch.isColliding[i]) {
-
-            assert(narrowPhaseInfoBatch.contactPoints[i].size() > 0);
-
-            // Transfer the contact points from the narrow phase info to the overlapping pair
-            // TOOD : COMMENT THIS
-            narrowPhaseInfoBatch.overlappingPairs[i]->addPotentialContactPoints(narrowPhaseInfoBatch, i);
-
-            // Remove the contacts points from the narrow phase info object.
-            //narrowPhaseInfoBatch.resetContactPoints(i);
-        }
-
-        // ----- END OLD ----- //
 
         // Add the potential contacts
         for (uint j=0; j < narrowPhaseInfoBatch.contactPoints[i].size(); j++) {
@@ -914,66 +842,7 @@ void CollisionDetection::processPotentialContacts(NarrowPhaseInfoBatch& narrowPh
 // Clear the obsolete manifolds and contact points and reduce the number of contacts points of the remaining manifolds
 void CollisionDetection::reducePotentialContactManifolds(const OverlappingPairMap& overlappingPairs) {
 
-    /*
-    // TODO : DELETE THIS
-    std::cout << "_______________ RECAP POTENTIAL CONTACTS___________________" << std::endl;
-    std::cout << "ContactPairs :" << std::endl;
-    for (uint i=0; i < mCurrentContactPairs->size(); i++) {
-
-        ContactPair& pair = (*mCurrentContactPairs)[i];
-        std::cout << "  PairId : (" << pair.pairId.first << ", " << pair.pairId.second << std::endl;
-        std::cout << "  Index : " << i << std::endl;
-        std::cout << "  >>Manifolds : " << std::endl;
-        for (uint j=0; j < pair.potentialContactManifoldsIndices.size(); j++) {
-
-            std::cout << "    >>Manifold Index : " << pair.potentialContactManifoldsIndices[j] << std::endl;
-        }
-    }
-    std::cout << "PotentialContactManifolds :" << std::endl;
-    for (uint i=0; i < mPotentialContactManifolds.size(); i++) {
-
-        ContactManifoldInfo& manifold = mPotentialContactManifolds[i];
-        std::cout << "  PairId : (" << manifold.pairId.first << ", " << manifold.pairId.second << std::endl;
-        std::cout << "  Index : " << i << std::endl;
-        std::cout << "  >>PotentialContactPoints : " << std::endl;
-        for (uint j=0; j < manifold.potentialContactPointsIndices.size(); j++) {
-            std::cout << "    >>Contact Point Index : " << manifold.potentialContactPointsIndices[j] << std::endl;
-        }
-    }
-    std::cout << "PotentialContactPoints :" << std::endl;
-    for (uint i=0; i < mPotentialContactPoints.size(); i++) {
-
-        ContactPointInfo& contactPoint = mPotentialContactPoints[i];
-        std::cout << "  Index : " << i << std::endl;
-        std::cout << "  Point : (" << contactPoint.localPoint1.x << ", " << contactPoint.localPoint1.y << ", " << contactPoint.localPoint1.z << std::endl;
-    }
-    std::cout << "PotentialContactPoints :" << std::endl;
-    for (auto it = mCurrentMapPairIdToContactPairIndex->begin(); it != mCurrentMapPairIdToContactPairIndex->end(); ++it) {
-
-        OverlappingPair::OverlappingPairId pairId = it->first;
-        uint index = it->second;
-        std::cout << "  PairId : " << pairId.first << ", " << pairId.second << std::endl;
-        std::cout << "  ContactPair Index : " << index << std::endl;
-    }
-    */
-
     RP3D_PROFILE("CollisionDetection::reducePotentialContactManifolds()", mProfiler);
-
-    // ----- OLD ----- //
-
-    // For each overlapping pairs in contact during the narrow-phase
-    for (auto it = overlappingPairs.begin(); it != overlappingPairs.end(); ++it) {
-
-        OverlappingPair* pair = it->second;
-
-        // Clear the obsolete contact manifolds and contact points
-        pair->clearObsoleteManifoldsAndContactPoints();
-
-        // Reduce the contact manifolds and contact points if there are too many of them
-        pair->reduceContactManifolds();
-    }
-
-    // ----- OLD ----- //
 
     // Reduce the number of potential contact manifolds in a contact pair
     for (uint i=0; i < mCurrentContactPairs->size(); i++) {
@@ -1236,6 +1105,8 @@ void CollisionDetection::reportAllContacts() {
 
     RP3D_PROFILE("CollisionDetection::reportAllContacts()", mProfiler);
 
+    // TODO : Rework how we report contacts
+    /*
     // For each overlapping pairs in contact during the narrow-phase
     for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
@@ -1250,6 +1121,7 @@ void CollisionDetection::reportAllContacts() {
              mWorld->mEventListener->newContact(collisionInfo);
         }
     }
+    */
 }
 
 // Compute the middle-phase collision detection between two proxy shapes
@@ -1499,6 +1371,8 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
     // Reduce the number of contact points in the manifolds
     reducePotentialContactManifolds(overlappingPairs);
 
+    // TODO : Rework how we report contacts
+    /*
     // For each overlapping pair
     for (auto it = overlappingPairs.begin(); it != overlappingPairs.end(); ++it) {
 
@@ -1515,6 +1389,7 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
         pair->~OverlappingPair();
         mMemoryManager.release(MemoryManager::AllocationType::Pool, pair, sizeof(OverlappingPair));
     }
+    */
 }
 
 // Test and report collisions between a body and all the others bodies of the world
@@ -1594,6 +1469,8 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
     // Reduce the number of contact points in the manifolds
     reducePotentialContactManifolds(overlappingPairs);
 
+    // TODO : Rework how we report contacts
+    /*
     // For each overlapping pair
     for (auto it = overlappingPairs.begin(); it != overlappingPairs.end(); ++it) {
 
@@ -1610,6 +1487,7 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
         pair->~OverlappingPair();
         mMemoryManager.release(MemoryManager::AllocationType::Pool, pair, sizeof(OverlappingPair));
     }
+    */
 }
 
 // Test and report collisions between all shapes of the world
@@ -1673,6 +1551,8 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
     // Reduce the number of contact points in the manifolds
     reducePotentialContactManifolds(overlappingPairs);
 
+    // TODO : Rework how we report contacts
+    /*
     // For each overlapping pair
     for (auto it = overlappingPairs.begin(); it != overlappingPairs.end(); ++it) {
 
@@ -1689,6 +1569,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
         pair->~OverlappingPair();
         mMemoryManager.release(MemoryManager::AllocationType::Pool, pair, sizeof(OverlappingPair));
     }
+    */
 }
 
 // Return the world event listener

@@ -130,9 +130,6 @@ class CollisionWorld {
         /// Return the next available body id
         bodyindex computeNextAvailableBodyId();
 
-        /// Reset all the contact manifolds linked list of each body
-        void resetContactManifoldListsOfBodies();
-
         /// Notify the world if a body is disabled (slepping or inactive) or not
         void notifyBodyDisabled(Entity entity, bool isDisabled);
 

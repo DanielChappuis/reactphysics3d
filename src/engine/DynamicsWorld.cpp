@@ -122,9 +122,6 @@ void DynamicsWorld::update(decimal timeStep) {
     // Notify the event listener about the beginning of an internal tick
     if (mEventListener != nullptr) mEventListener->beginInternalTick();
 
-    // Reset all the contact manifolds lists of each body
-    resetContactManifoldListsOfBodies();
-
     // Compute the collision detection
     mCollisionDetection.computeCollisionDetection();
 
@@ -503,9 +500,6 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     for (element = rigidBody->mJointsList; element != nullptr; element = element->next) {
         destroyJoint(element->joint);
     }
-
-    // Reset the contact manifold list of the body
-    rigidBody->resetContactManifoldsList();
 
     // Destroy the corresponding entity and its components
     mBodyComponents.removeComponent(rigidBody->getEntity());
@@ -963,6 +957,8 @@ List<const ContactManifold*> DynamicsWorld::getContactsList() {
 
     List<const ContactManifold*> contactManifolds(mMemoryManager.getPoolAllocator());
 
+    // TODO : Rework how to report contacts
+    /*
     // For each currently overlapping pair of bodies
     for (auto it = mCollisionDetection.mOverlappingPairs.begin();
          it != mCollisionDetection.mOverlappingPairs.end(); ++it) {
@@ -980,6 +976,7 @@ List<const ContactManifold*> DynamicsWorld::getContactsList() {
             manifold = manifold->getNext();
         }
     }
+    */
 
     // Return all the contact manifold
     return contactManifolds;

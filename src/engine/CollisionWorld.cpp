@@ -202,9 +202,6 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Add the body ID to the list of free IDs
     mFreeBodiesIds.add(collisionBody->getId());
 
-    // Reset the contact manifold list of the body
-    collisionBody->resetContactManifoldsList();
-
     mBodyComponents.removeComponent(collisionBody->getEntity());
     mTransformComponents.removeComponent(collisionBody->getEntity());
     mEntityManager.destroyEntity(collisionBody->getEntity());
@@ -234,17 +231,6 @@ bodyindex CollisionWorld::computeNextAvailableBodyId() {
     }
 
     return bodyID;
-}
-
-// Reset all the contact manifolds linked list of each body
-void CollisionWorld::resetContactManifoldListsOfBodies() {
-
-    // For each rigid body of the world
-    for (List<CollisionBody*>::Iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
-
-        // Reset the contact manifold list of the body
-        (*it)->resetContactManifoldsList();
-    }
 }
 
 // Notify the world if a body is disabled (sleeping or inactive) or not

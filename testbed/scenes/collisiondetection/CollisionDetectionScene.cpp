@@ -316,6 +316,8 @@ bool CollisionDetectionScene::keyboardEvent(int key, int scancode, int action, i
 // This method will be called for each reported contact point
 void ContactManager::notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) {
 
+    // TODO : Rework how to report contacts
+    /*
     // For each contact manifold
     rp3d::ContactManifoldListElement* manifoldElement = collisionCallbackInfo.contactManifoldElements;
     while (manifoldElement != nullptr) {
@@ -347,4 +349,5 @@ void ContactManager::notifyContact(const CollisionCallbackInfo& collisionCallbac
 
             manifoldElement = manifoldElement->getNext();
     }
+    */
 }

@@ -71,9 +71,6 @@ class CollisionBody : public Body {
         /// Type of body (static, kinematic or dynamic)
         BodyType mType;
 
-        /// First element of the linked list of contact manifolds involving this body
-        ContactManifoldListElement* mContactManifoldsList;
-
         /// Reference to the world the body belongs to
         CollisionWorld& mWorld;
 
@@ -85,9 +82,6 @@ class CollisionBody : public Body {
 #endif
 
         // -------------------- Methods -------------------- //
-
-        /// Reset the contact manifold lists
-        void resetContactManifoldsList();
 
         /// Remove all the collision shapes
         void removeAllCollisionShapes();
@@ -139,9 +133,6 @@ class CollisionBody : public Body {
 
         /// Remove a collision shape from the body
         virtual void removeCollisionShape(ProxyShape *proxyShape);
-
-        /// Return the first element of the linked list of contact manifolds involving this body
-        const ContactManifoldListElement* getContactManifoldsList() const;
 
         /// Return true if a point is inside the collision body
         bool testPointInside(const Vector3& worldPoint) const;
@@ -199,15 +190,6 @@ class CollisionBody : public Body {
  */
 inline BodyType CollisionBody::getType() const {
     return mType;
-}
-
-// Return the first element of the linked list of contact manifolds involving this body
-/**
- * @return A pointer to the first element of the linked-list with the contact
- *         manifolds of this body
- */
-inline const ContactManifoldListElement* CollisionBody::getContactManifoldsList() const {
-    return mContactManifoldsList;
 }
 
 /// Test if the collision body overlaps with a given AABB
