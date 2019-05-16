@@ -121,6 +121,9 @@ class Components {
 
         /// Return the number of enabled components
         uint32 getNbEnabledComponents() const;
+
+        /// Return the index in the arrays for a given entity
+        uint32 getEntityIndex(Entity entity) const;
 };
 
 // Return true if an entity is sleeping
@@ -144,6 +147,11 @@ inline uint32 Components::getNbEnabledComponents() const {
     return mDisabledStartIndex;
 }
 
+// Return the index in the arrays for a given entity
+inline uint32 Components::getEntityIndex(Entity entity) const {
+    assert(hasComponent(entity));
+    return mMapEntityToComponentIndex[entity];
+}
 }
 
 #endif

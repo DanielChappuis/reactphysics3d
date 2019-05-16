@@ -26,6 +26,7 @@
 // Libraries
 #include "HingeJoint.h"
 #include "engine/ConstraintSolver.h"
+#include "components/DynamicsComponents.h"
 
 using namespace reactphysics3d;
 
@@ -198,11 +199,14 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 // Warm start the constraint (apply the previous impulse at the beginning of the step)
 void HingeJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+
     // Get the velocities
-    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
-    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
-    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
-    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
     const decimal inverseMassBody1 = mBody1->mMassInverse;
@@ -254,11 +258,14 @@ void HingeJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 // Solve the velocity constraint
 void HingeJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+
     // Get the velocities
-    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
-    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
-    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
-    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
     decimal inverseMassBody1 = mBody1->mMassInverse;

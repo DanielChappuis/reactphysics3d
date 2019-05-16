@@ -59,6 +59,12 @@ class DynamicsComponents : public Components {
         /// Array with the angular velocity of each component
         Vector3* mAngularVelocities;
 
+        /// Array with the constrained linear velocity of each component
+        Vector3* mConstrainedLinearVelocities;
+
+        /// Array with the constrained angular velocity of each component
+        Vector3* mConstrainedAngularVelocities;
+
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
@@ -103,10 +109,16 @@ class DynamicsComponents : public Components {
         void addComponent(Entity bodyEntity, bool isSleeping, const DynamicsComponent& component);
 
         /// Return the linear velocity of an entity
-        Vector3& getLinearVelocity(Entity bodyEntity) const;
+        const Vector3& getLinearVelocity(Entity bodyEntity) const;
 
         /// Return the angular velocity of an entity
-        Vector3& getAngularVelocity(Entity bodyEntity) const;
+        const Vector3& getAngularVelocity(Entity bodyEntity) const;
+
+        /// Return the constrained linear velocity of an entity
+        const Vector3& getConstrainedLinearVelocity(Entity bodyEntity) const;
+
+        /// Return the constrained angular velocity of an entity
+        const Vector3& getConstrainedAngularVelocity(Entity bodyEntity) const;
 
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
@@ -117,17 +129,31 @@ class DynamicsComponents : public Components {
         /// Set the angular velocity of an entity
         void setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity);
 
+        /// Set the constrained linear velocity of an entity
+        void setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity);
+
+        /// Set the constrained angular velocity of an entity
+        void setConstrainedAngularVelocity(Entity bodyEntity, const Vector3& constrainedAngularVelocity);
+
         /// Set the value to know if the entity is already in an island
         bool setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
+
+
 
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
         friend class DynamicsWorld;
+        friend class ContactSolver;
+        friend class BallAndSocketJoint;
+        friend class FixedJoint;
+        friend class HingeJoint;
+        friend class SliderJoint;
+
 };
 
 // Return the linear velocity of an entity
-inline Vector3& DynamicsComponents::getLinearVelocity(Entity bodyEntity) const {
+inline const Vector3& DynamicsComponents::getLinearVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -135,7 +161,7 @@ inline Vector3& DynamicsComponents::getLinearVelocity(Entity bodyEntity) const {
 }
 
 // Return the angular velocity of an entity
-inline Vector3& DynamicsComponents::getAngularVelocity(Entity bodyEntity) const {
+inline const Vector3 &DynamicsComponents::getAngularVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -156,6 +182,41 @@ inline void DynamicsComponents::setAngularVelocity(Entity bodyEntity, const Vect
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = angularVelocity;
+}
+
+// Return the constrained linear velocity of an entity
+inline const Vector3 &DynamicsComponents::getConstrainedLinearVelocity(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   // TODO : DELETE THIS
+   uint testIndex = mMapEntityToComponentIndex[bodyEntity];
+
+   return mConstrainedLinearVelocities[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the constrained angular velocity of an entity
+inline const Vector3 &DynamicsComponents::getConstrainedAngularVelocity(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mConstrainedAngularVelocities[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the constrained linear velocity of an entity
+inline void DynamicsComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mConstrainedLinearVelocities[mMapEntityToComponentIndex[bodyEntity]] = constrainedLinearVelocity;
+}
+
+// Set the constrained angular velocity of an entity
+inline void DynamicsComponents::setConstrainedAngularVelocity(Entity bodyEntity, const Vector3& constrainedAngularVelocity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mConstrainedAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = constrainedAngularVelocity;
 }
 
 // Return true if the entity is already in an island

@@ -31,7 +31,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver(Islands& islands) : mIsWarmStartingActive(true), mIslands(islands) {
+ConstraintSolver::ConstraintSolver(Islands& islands, DynamicsComponents& dynamicsComponents)
+                 : mIsWarmStartingActive(true), mIslands(islands), mConstraintSolverData(dynamicsComponents) {
 
 #ifdef IS_PROFILING_ACTIVE
 

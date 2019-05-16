@@ -31,6 +31,7 @@
 #include "utils/Profiler.h"
 #include "engine/Island.h"
 #include "components/BodyComponents.h"
+#include "components/DynamicsComponents.h"
 #include "components/ProxyShapeComponents.h"
 #include "collision/ContactManifold.h"
 
@@ -43,13 +44,14 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents,
+ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents, DynamicsComponents& dynamicsComponents,
                              ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings)
               :mMemoryManager(memoryManager), mSplitLinearVelocities(nullptr),
                mSplitAngularVelocities(nullptr), mContactConstraints(nullptr),
-               mContactPoints(nullptr), mLinearVelocities(nullptr), mAngularVelocities(nullptr),
+               mContactPoints(nullptr),
                mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr), mBodyComponents(bodyComponents),
-               mProxyShapeComponents(proxyShapeComponents), mIsSplitImpulseActive(true), mWorldSettings(worldSettings) {
+               mDynamicsComponents(dynamicsComponents), mProxyShapeComponents(proxyShapeComponents), mIsSplitImpulseActive(true),
+               mWorldSettings(worldSettings) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -141,6 +143,8 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
         new (mContactConstraints + mNbContactManifolds) ContactManifoldSolver();
         mContactConstraints[mNbContactManifolds].indexBody1 = body1->mArrayIndex;
         mContactConstraints[mNbContactManifolds].indexBody2 = body2->mArrayIndex;
+        mContactConstraints[mNbContactManifolds].dynamicsComponentIndexBody1 = mDynamicsComponents.getEntityIndex(body1->getEntity());
+        mContactConstraints[mNbContactManifolds].dynamicsComponentIndexBody2 = mDynamicsComponents.getEntityIndex(body2->getEntity());
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
         mContactConstraints[mNbContactManifolds].massInverseBody1 = body1->mMassInverse;
@@ -154,10 +158,10 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].frictionPointBody2.setToZero();
 
         // Get the velocities of the bodies
-        const Vector3& v1 = mLinearVelocities[mContactConstraints[mNbContactManifolds].indexBody1];
-        const Vector3& w1 = mAngularVelocities[mContactConstraints[mNbContactManifolds].indexBody1];
-        const Vector3& v2 = mLinearVelocities[mContactConstraints[mNbContactManifolds].indexBody2];
-        const Vector3& w2 = mAngularVelocities[mContactConstraints[mNbContactManifolds].indexBody2];
+        const Vector3& v1 = mDynamicsComponents.getLinearVelocity(externalManifold.bodyEntity1);
+        const Vector3& w1 = mDynamicsComponents.getAngularVelocity(externalManifold.bodyEntity1);
+        const Vector3& v2 = mDynamicsComponents.getLinearVelocity(externalManifold.bodyEntity2);
+        const Vector3& w2 = mDynamicsComponents.getAngularVelocity(externalManifold.bodyEntity2);
 
         // For each  contact point of the contact manifold
         assert(externalManifold.getNbContactPoints() > 0);
@@ -346,6 +350,7 @@ void ContactSolver::warmStart() {
 
         for (short int i=0; i<mContactConstraints[c].nbContacts; i++) {
 
+
             // If it is not a new contact (this contact was already existing at last time step)
             if (mContactPoints[contactPointIndex].isRestingContact) {
 
@@ -357,22 +362,22 @@ void ContactSolver::warmStart() {
                 Vector3 impulsePenetration(mContactPoints[contactPointIndex].normal.x * mContactPoints[contactPointIndex].penetrationImpulse,
                                            mContactPoints[contactPointIndex].normal.y * mContactPoints[contactPointIndex].penetrationImpulse,
                                            mContactPoints[contactPointIndex].normal.z * mContactPoints[contactPointIndex].penetrationImpulse);
-                mLinearVelocities[mContactConstraints[c].indexBody1].x -= mContactConstraints[c].massInverseBody1 * impulsePenetration.x;
-                mLinearVelocities[mContactConstraints[c].indexBody1].y -= mContactConstraints[c].massInverseBody1 * impulsePenetration.y;
-                mLinearVelocities[mContactConstraints[c].indexBody1].z -= mContactConstraints[c].massInverseBody1 * impulsePenetration.z;
+                mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactConstraints[c].massInverseBody1 * impulsePenetration.x;
+                mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactConstraints[c].massInverseBody1 * impulsePenetration.y;
+                mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactConstraints[c].massInverseBody1 * impulsePenetration.z;
 
-                mAngularVelocities[mContactConstraints[c].indexBody1].x -= mContactPoints[contactPointIndex].i1TimesR1CrossN.x * mContactPoints[contactPointIndex].penetrationImpulse;
-                mAngularVelocities[mContactConstraints[c].indexBody1].y -= mContactPoints[contactPointIndex].i1TimesR1CrossN.y * mContactPoints[contactPointIndex].penetrationImpulse;
-                mAngularVelocities[mContactConstraints[c].indexBody1].z -= mContactPoints[contactPointIndex].i1TimesR1CrossN.z * mContactPoints[contactPointIndex].penetrationImpulse;
+                mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactPoints[contactPointIndex].i1TimesR1CrossN.x * mContactPoints[contactPointIndex].penetrationImpulse;
+                mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactPoints[contactPointIndex].i1TimesR1CrossN.y * mContactPoints[contactPointIndex].penetrationImpulse;
+                mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactPoints[contactPointIndex].i1TimesR1CrossN.z * mContactPoints[contactPointIndex].penetrationImpulse;
 
                 // Update the velocities of the body 2 by applying the impulse P
-                mLinearVelocities[mContactConstraints[c].indexBody2].x += mContactConstraints[c].massInverseBody2 * impulsePenetration.x;
-                mLinearVelocities[mContactConstraints[c].indexBody2].y += mContactConstraints[c].massInverseBody2 * impulsePenetration.y;
-                mLinearVelocities[mContactConstraints[c].indexBody2].z += mContactConstraints[c].massInverseBody2 * impulsePenetration.z;
+                mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactConstraints[c].massInverseBody2 * impulsePenetration.x;
+                mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactConstraints[c].massInverseBody2 * impulsePenetration.y;
+                mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactConstraints[c].massInverseBody2 * impulsePenetration.z;
 
-                mAngularVelocities[mContactConstraints[c].indexBody2].x += mContactPoints[contactPointIndex].i2TimesR2CrossN.x * mContactPoints[contactPointIndex].penetrationImpulse;
-                mAngularVelocities[mContactConstraints[c].indexBody2].y += mContactPoints[contactPointIndex].i2TimesR2CrossN.y * mContactPoints[contactPointIndex].penetrationImpulse;
-                mAngularVelocities[mContactConstraints[c].indexBody2].z += mContactPoints[contactPointIndex].i2TimesR2CrossN.z * mContactPoints[contactPointIndex].penetrationImpulse;
+                mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactPoints[contactPointIndex].i2TimesR2CrossN.x * mContactPoints[contactPointIndex].penetrationImpulse;
+                mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactPoints[contactPointIndex].i2TimesR2CrossN.y * mContactPoints[contactPointIndex].penetrationImpulse;
+                mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactPoints[contactPointIndex].i2TimesR2CrossN.z * mContactPoints[contactPointIndex].penetrationImpulse;
             }
             else {  // If it is a new contact point
 
@@ -412,12 +417,12 @@ void ContactSolver::warmStart() {
                                         mContactConstraints[c].r2CrossT1.z * mContactConstraints[c].friction1Impulse);
 
             // Update the velocities of the body 1 by applying the impulse P
-            mLinearVelocities[mContactConstraints[c].indexBody1] -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2;
-            mAngularVelocities[mContactConstraints[c].indexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
 
             // Update the velocities of the body 1 by applying the impulse P
-            mLinearVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].massInverseBody2 * linearImpulseBody2;
-            mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].massInverseBody2 * linearImpulseBody2;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
 
             // ------ Second friction constraint at the center of the contact manifold ----- //
 
@@ -433,18 +438,18 @@ void ContactSolver::warmStart() {
             angularImpulseBody2.z = mContactConstraints[c].r2CrossT2.z * mContactConstraints[c].friction2Impulse;
 
             // Update the velocities of the body 1 by applying the impulse P
-            mLinearVelocities[mContactConstraints[c].indexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x;
-            mLinearVelocities[mContactConstraints[c].indexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.y;
-            mLinearVelocities[mContactConstraints[c].indexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.z;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.y;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.z;
 
-            mAngularVelocities[mContactConstraints[c].indexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
 
             // Update the velocities of the body 2 by applying the impulse P
-            mLinearVelocities[mContactConstraints[c].indexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.x;
-            mLinearVelocities[mContactConstraints[c].indexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.y;
-            mLinearVelocities[mContactConstraints[c].indexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.z;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.x;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.y;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.z;
 
-            mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
 
             // ------ Twist friction constraint at the center of the contact manifold ------ //
 
@@ -458,10 +463,10 @@ void ContactSolver::warmStart() {
             angularImpulseBody2.z = mContactConstraints[c].normal.z * mContactConstraints[c].frictionTwistImpulse;
 
             // Update the velocities of the body 1 by applying the impulse P
-            mAngularVelocities[mContactConstraints[c].indexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
 
             // Update the velocities of the body 2 by applying the impulse P
-            mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
 
             // ------ Rolling resistance at the center of the contact manifold ------ //
 
@@ -469,10 +474,10 @@ void ContactSolver::warmStart() {
             angularImpulseBody2 = mContactConstraints[c].rollingResistanceImpulse;
 
             // Update the velocities of the body 1 by applying the impulse P
-            mAngularVelocities[mContactConstraints[c].indexBody1] -= mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody2;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] -= mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody2;
 
             // Update the velocities of the body 1 by applying the impulse P
-            mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
         }
         else {  // If it is a new contact manifold
 
@@ -500,10 +505,10 @@ void ContactSolver::solve() {
         decimal sumPenetrationImpulse = 0.0;
 
         // Get the constrained velocities
-        const Vector3& v1 = mLinearVelocities[mContactConstraints[c].indexBody1];
-        const Vector3& w1 = mAngularVelocities[mContactConstraints[c].indexBody1];
-        const Vector3& v2 = mLinearVelocities[mContactConstraints[c].indexBody2];
-        const Vector3& w2 = mAngularVelocities[mContactConstraints[c].indexBody2];
+        const Vector3& v1 = mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1];
+        const Vector3& w1 = mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1];
+        const Vector3& v2 = mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2];
+        const Vector3& w2 = mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2];
 
         for (short int i=0; i<mContactConstraints[c].nbContacts; i++) {
 
@@ -546,22 +551,22 @@ void ContactSolver::solve() {
                                   mContactPoints[contactPointIndex].normal.z * deltaLambda);
 
             // Update the velocities of the body 1 by applying the impulse P
-            mLinearVelocities[mContactConstraints[c].indexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulse.x;
-            mLinearVelocities[mContactConstraints[c].indexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulse.y;
-            mLinearVelocities[mContactConstraints[c].indexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulse.z;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulse.x;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulse.y;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulse.z;
 
-            mAngularVelocities[mContactConstraints[c].indexBody1].x -= mContactPoints[contactPointIndex].i1TimesR1CrossN.x * deltaLambda;
-            mAngularVelocities[mContactConstraints[c].indexBody1].y -= mContactPoints[contactPointIndex].i1TimesR1CrossN.y * deltaLambda;
-            mAngularVelocities[mContactConstraints[c].indexBody1].z -= mContactPoints[contactPointIndex].i1TimesR1CrossN.z * deltaLambda;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactPoints[contactPointIndex].i1TimesR1CrossN.x * deltaLambda;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactPoints[contactPointIndex].i1TimesR1CrossN.y * deltaLambda;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactPoints[contactPointIndex].i1TimesR1CrossN.z * deltaLambda;
 
             // Update the velocities of the body 2 by applying the impulse P
-            mLinearVelocities[mContactConstraints[c].indexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulse.x;
-            mLinearVelocities[mContactConstraints[c].indexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulse.y;
-            mLinearVelocities[mContactConstraints[c].indexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulse.z;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulse.x;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulse.y;
+            mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulse.z;
 
-            mAngularVelocities[mContactConstraints[c].indexBody2].x += mContactPoints[contactPointIndex].i2TimesR2CrossN.x * deltaLambda;
-            mAngularVelocities[mContactConstraints[c].indexBody2].y += mContactPoints[contactPointIndex].i2TimesR2CrossN.y * deltaLambda;
-            mAngularVelocities[mContactConstraints[c].indexBody2].z += mContactPoints[contactPointIndex].i2TimesR2CrossN.z * deltaLambda;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactPoints[contactPointIndex].i2TimesR2CrossN.x * deltaLambda;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactPoints[contactPointIndex].i2TimesR2CrossN.y * deltaLambda;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactPoints[contactPointIndex].i2TimesR2CrossN.z * deltaLambda;
 
             sumPenetrationImpulse += mContactPoints[contactPointIndex].penetrationImpulse;
 
@@ -653,18 +658,18 @@ void ContactSolver::solve() {
                                     mContactConstraints[c].r2CrossT1.z * deltaLambda);
 
         // Update the velocities of the body 1 by applying the impulse P
-        mLinearVelocities[mContactConstraints[c].indexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x;
-        mLinearVelocities[mContactConstraints[c].indexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.y;
-        mLinearVelocities[mContactConstraints[c].indexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.z;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.y;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.z;
 
-        mAngularVelocities[mContactConstraints[c].indexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
+        mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
 
         // Update the velocities of the body 2 by applying the impulse P
-        mLinearVelocities[mContactConstraints[c].indexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.x;
-        mLinearVelocities[mContactConstraints[c].indexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.y;
-        mLinearVelocities[mContactConstraints[c].indexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.z;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.x;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.y;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.z;
 
-        mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
+        mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
 
         // ------ Second friction constraint at the center of the contact manifol ----- //
 
@@ -702,16 +707,16 @@ void ContactSolver::solve() {
         angularImpulseBody2.z = mContactConstraints[c].r2CrossT2.z * deltaLambda;
 
         // Update the velocities of the body 1 by applying the impulse P
-        mLinearVelocities[mContactConstraints[c].indexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x;
-        mLinearVelocities[mContactConstraints[c].indexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.y;
-        mLinearVelocities[mContactConstraints[c].indexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.z;
-        mAngularVelocities[mContactConstraints[c].indexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.y;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.z;
+        mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] += mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody1;
 
         // Update the velocities of the body 2 by applying the impulse P
-        mLinearVelocities[mContactConstraints[c].indexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.x;
-        mLinearVelocities[mContactConstraints[c].indexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.y;
-        mLinearVelocities[mContactConstraints[c].indexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.z;
-        mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.x;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.y;
+        mDynamicsComponents.mConstrainedLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulseBody2.z;
+        mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
 
         // ------ Twist friction constraint at the center of the contact manifol ------ //
 
@@ -734,10 +739,10 @@ void ContactSolver::solve() {
         angularImpulseBody2.z = mContactConstraints[c].normal.z * deltaLambda;
 
         // Update the velocities of the body 1 by applying the impulse P
-        mAngularVelocities[mContactConstraints[c].indexBody1] -= mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody2;
+        mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] -= mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody2;
 
         // Update the velocities of the body 1 by applying the impulse P
-        mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
+        mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
 
         // --------- Rolling resistance constraint at the center of the contact manifold --------- //
 
@@ -755,10 +760,10 @@ void ContactSolver::solve() {
             deltaLambdaRolling = mContactConstraints[c].rollingResistanceImpulse - lambdaTempRolling;
 
             // Update the velocities of the body 1 by applying the impulse P
-            mAngularVelocities[mContactConstraints[c].indexBody1] -= mContactConstraints[c].inverseInertiaTensorBody1 * deltaLambdaRolling;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1] -= mContactConstraints[c].inverseInertiaTensorBody1 * deltaLambdaRolling;
 
             // Update the velocities of the body 2 by applying the impulse P
-            mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * deltaLambdaRolling;
+            mDynamicsComponents.mConstrainedAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * deltaLambdaRolling;
         }
     }
 }

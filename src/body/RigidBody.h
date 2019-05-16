@@ -53,6 +53,7 @@ class RigidBody : public CollisionBody {
     private :
 
         /// Index of the body in arrays for contact/constraint solver
+        // TODO : REMOVE THIS
         uint mArrayIndex;
 
     protected :

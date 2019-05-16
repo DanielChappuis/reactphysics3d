@@ -50,19 +50,15 @@ using namespace std;
 DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
               : CollisionWorld(worldSettings, logger, profiler),
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
-                mContactSolver(mMemoryManager, mIslands, mBodyComponents, mProxyShapesComponents, mConfig),
-                mConstraintSolver(mIslands),
+                mContactSolver(mMemoryManager, mIslands, mBodyComponents, mDynamicsComponents, mProxyShapesComponents, mConfig),
+                mConstraintSolver(mIslands, mDynamicsComponents),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
                 mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
-                mIsGravityEnabled(true), mConstrainedLinearVelocities(nullptr),
-                mConstrainedAngularVelocities(nullptr), mSplitLinearVelocities(nullptr),
-                mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
-                mConstrainedOrientations(nullptr),
-                mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
-                mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity),
-                mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
+                mIsGravityEnabled(true), mSplitLinearVelocities(nullptr), mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
+                mConstrainedOrientations(nullptr), mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
+                mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
                 mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -181,8 +177,8 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
 
             // Get the constrained velocity
             uint indexArray = body->mArrayIndex;
-            Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
-            Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
+            Vector3 newLinVelocity = mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity);
+            Vector3 newAngVelocity = mDynamicsComponents.getConstrainedAngularVelocity(bodyEntity);
 
             // TODO : Remove this
             Vector3 testLinVel = newLinVelocity;
@@ -229,8 +225,8 @@ void DynamicsWorld::updateBodiesState() {
             uint index = body->mArrayIndex;
 
             // Update the linear and angular velocity of the body
-            mDynamicsComponents.setLinearVelocity(bodyEntity, mConstrainedLinearVelocities[index]);
-            mDynamicsComponents.setAngularVelocity(bodyEntity, mConstrainedAngularVelocities[index]);
+            mDynamicsComponents.setLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity));
+            mDynamicsComponents.setAngularVelocity(bodyEntity, mDynamicsComponents.getConstrainedAngularVelocity(bodyEntity));
 
             // Update the position of the center of mass of the body
             body->mCenterOfMassWorld = mConstrainedPositions[index];
@@ -267,18 +263,12 @@ void DynamicsWorld::initVelocityArrays() {
                                                                            nbBodies * sizeof(Vector3)));
     mSplitAngularVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
                                                                             nbBodies * sizeof(Vector3)));
-    mConstrainedLinearVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                                 nbBodies * sizeof(Vector3)));
-    mConstrainedAngularVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                                  nbBodies * sizeof(Vector3)));
     mConstrainedPositions = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
                                                                           nbBodies * sizeof(Vector3)));
     mConstrainedOrientations = static_cast<Quaternion*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
                                                                                 nbBodies * sizeof(Quaternion)));
     assert(mSplitLinearVelocities != nullptr);
     assert(mSplitAngularVelocities != nullptr);
-    assert(mConstrainedLinearVelocities != nullptr);
-    assert(mConstrainedAngularVelocities != nullptr);
     assert(mConstrainedPositions != nullptr);
     assert(mConstrainedOrientations != nullptr);
 
@@ -324,18 +314,17 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             assert(indexBody < mRigidBodies.size());
 
             // Integrate the external force to get the new velocity of the body
-            mConstrainedLinearVelocities[indexBody] = body->getLinearVelocity() +
-                                        mTimeStep * body->mMassInverse * body->mExternalForce;
-            mConstrainedAngularVelocities[indexBody] = body->getAngularVelocity() +
-                                        mTimeStep * body->getInertiaTensorInverseWorld() *
-                                        body->mExternalTorque;
+            mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, body->getLinearVelocity() +
+                                        mTimeStep * body->mMassInverse * body->mExternalForce);
+            mDynamicsComponents.setConstrainedAngularVelocity(bodyEntity, body->getAngularVelocity() +
+                                        mTimeStep * body->getInertiaTensorInverseWorld() * body->mExternalTorque);
 
             // If the gravity has to be applied to this rigid body
             if (body->isGravityEnabled() && mIsGravityEnabled) {
 
                 // Integrate the gravity force
-                mConstrainedLinearVelocities[indexBody] += mTimeStep * body->mMassInverse *
-                        body->getMass() * mGravity;
+                mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity) + mTimeStep * body->mMassInverse *
+                        body->getMass() * mGravity);
             }
 
             // Apply the velocity damping
@@ -355,8 +344,8 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             decimal angDampingFactor = body->getAngularDamping();
             decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
             decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
-            mConstrainedLinearVelocities[indexBody] *= linearDamping;
-            mConstrainedAngularVelocities[indexBody] *= angularDamping;
+            mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity) * linearDamping);
+            mDynamicsComponents.setConstrainedAngularVelocity(bodyEntity, mDynamicsComponents.getConstrainedAngularVelocity(bodyEntity) * angularDamping);
         }
     }
 }
@@ -368,10 +357,6 @@ void DynamicsWorld::solveContactsAndConstraints() {
 
     // Set the velocities arrays
     mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
-    mContactSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities,
-                                                  mConstrainedAngularVelocities);
-    mConstraintSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities,
-                                                     mConstrainedAngularVelocities);
     mConstraintSolver.setConstrainedPositionsArrays(mConstrainedPositions,
                                                     mConstrainedOrientations);
 

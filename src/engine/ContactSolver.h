@@ -44,6 +44,7 @@ class Profiler;
 class Island;
 class RigidBody;
 class BodyComponents;
+class DynamicsComponents;
 class ProxyShapeComponents;
 
 // Class Contact Solver
@@ -174,10 +175,18 @@ class ContactSolver {
             ContactManifold* externalContactManifold;
 
             /// Index of body 1 in the constraint solver
+            // TODO : Remove this
             int32 indexBody1;
 
             /// Index of body 2 in the constraint solver
+            // TODO : Remove this
             int32 indexBody2;
+
+            /// Index of body 1 in the dynamics components arrays
+            uint32 dynamicsComponentIndexBody1;
+
+            /// Index of body 2 in the dynamics components arrays
+            uint32 dynamicsComponentIndexBody2;
 
             /// Inverse of the mass of body 1
             decimal massInverseBody1;
@@ -307,14 +316,6 @@ class ContactSolver {
         /// Number of contact constraints
         uint mNbContactManifolds;
 
-        /// Array of linear velocities
-        // TODO : Use List<> here
-        Vector3* mLinearVelocities;
-
-        /// Array of angular velocities
-        // TODO : Use List<> here
-        Vector3* mAngularVelocities;
-
         /// Reference to the islands
         Islands& mIslands;
 
@@ -326,6 +327,9 @@ class ContactSolver {
 
         /// Reference to the body components
         BodyComponents& mBodyComponents;
+
+        /// Reference to the dynamics components
+        DynamicsComponents& mDynamicsComponents;
 
         /// Reference to the proxy-shapes components
         // TODO : Do we really need to use this ?
@@ -372,7 +376,8 @@ class ContactSolver {
 
         /// Constructor
         ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents,
-                      ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings);
+                      DynamicsComponents& dynamicsComponents, ProxyShapeComponents& proxyShapeComponents,
+                      const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactSolver() = default;
@@ -386,10 +391,6 @@ class ContactSolver {
         /// Set the split velocities arrays
         void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
                                       Vector3* splitAngularVelocities);
-
-        /// Set the constrained velocities arrays
-        void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
-                                            Vector3* constrainedAngularVelocities);
 
         /// Store the computed impulses to use them to
         /// warm start the solver at the next iteration
@@ -421,17 +422,6 @@ inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelociti
 
     mSplitLinearVelocities = splitLinearVelocities;
     mSplitAngularVelocities = splitAngularVelocities;
-}
-
-// Set the constrained velocities arrays
-inline void ContactSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
-                                                          Vector3* constrainedAngularVelocities) {
-
-    assert(constrainedLinearVelocities != nullptr);
-    assert(constrainedAngularVelocities != nullptr);
-
-    mLinearVelocities = constrainedLinearVelocities;
-    mAngularVelocities = constrainedAngularVelocities;
 }
 
 // Return true if the split impulses position correction technique is used for contacts

@@ -89,16 +89,6 @@ class DynamicsWorld : public CollisionWorld {
         bool mIsGravityEnabled;
 
         // TODO : Move this into dynamic components
-        /// Array of constrained linear velocities (state of the linear velocities
-        /// after solving the constraints)
-        Vector3* mConstrainedLinearVelocities;
-
-        // TODO : Move this into dynamic components
-        /// Array of constrained angular velocities (state of the angular velocities
-        /// after solving the constraints)
-        Vector3* mConstrainedAngularVelocities;
-
-        // TODO : Move this into dynamic components
         /// Split linear velocities for the position contact solver (split impulse)
         Vector3* mSplitLinearVelocities;
 

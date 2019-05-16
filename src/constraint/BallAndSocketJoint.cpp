@@ -26,6 +26,7 @@
 // Libraries
 #include "BallAndSocketJoint.h"
 #include "engine/ConstraintSolver.h"
+#include "components/DynamicsComponents.h"
 
 using namespace reactphysics3d;
 
@@ -98,11 +99,14 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
 // Warm start the constraint (apply the previous impulse at the beginning of the step)
 void BallAndSocketJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+
     // Get the velocities
-    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
-    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
-    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
-    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Compute the impulse P=J^T * lambda for the body 1
     const Vector3 linearImpulseBody1 = -mImpulse;
@@ -123,11 +127,14 @@ void BallAndSocketJoint::warmstart(const ConstraintSolverData& constraintSolverD
 // Solve the velocity constraint
 void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+
     // Get the velocities
-    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
-    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
-    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
-    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Compute J*v
     const Vector3 Jv = v2 + w2.cross(mR2World) - v1 - w1.cross(mR1World);
