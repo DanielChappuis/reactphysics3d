@@ -71,6 +71,12 @@ class DynamicsComponents : public Components {
         /// Array with the split angular velocity of each component
         Vector3* mSplitAngularVelocities;
 
+        /// Array with the external force of each component
+        Vector3* mExternalForces;
+
+        /// Array with the external torque of each component
+        Vector3* mExternalTorques;
+
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
@@ -132,6 +138,12 @@ class DynamicsComponents : public Components {
         /// Return the split angular velocity of an entity
         const Vector3& getSplitAngularVelocity(Entity bodyEntity) const;
 
+        /// Return the external force of an entity
+        const Vector3& getExternalForce(Entity bodyEntity) const;
+
+        /// Return the external torque of an entity
+        const Vector3& getExternalTorque(Entity bodyEntity) const;
+
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
 
@@ -152,6 +164,12 @@ class DynamicsComponents : public Components {
 
         /// Set the split angular velocity of an entity
         void setSplitAngularVelocity(Entity bodyEntity, const Vector3& splitAngularVelocity);
+
+        /// Set the external force of an entity
+        void setExternalForce(Entity bodyEntity, const Vector3& externalForce);
+
+        /// Set the external force of an entity
+        void setExternalTorque(Entity bodyEntity, const Vector3& externalTorque);
 
         /// Set the value to know if the entity is already in an island
         bool setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
@@ -234,6 +252,22 @@ inline const Vector3& DynamicsComponents::getSplitAngularVelocity(Entity bodyEnt
    return mSplitAngularVelocities[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+// Return the external force of an entity
+inline const Vector3& DynamicsComponents::getExternalForce(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mExternalForces[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the external torque of an entity
+inline const Vector3& DynamicsComponents::getExternalTorque(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mExternalTorques[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the constrained linear velocity of an entity
 inline void DynamicsComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
 
@@ -264,6 +298,22 @@ inline void DynamicsComponents::setSplitAngularVelocity(Entity bodyEntity, const
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mSplitAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = splitAngularVelocity;
+}
+
+// Set the external force of an entity
+inline void DynamicsComponents::setExternalForce(Entity bodyEntity, const Vector3& externalForce) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mExternalForces[mMapEntityToComponentIndex[bodyEntity]] = externalForce;
+}
+
+// Set the external force of an entity
+inline void DynamicsComponents::setExternalTorque(Entity bodyEntity, const Vector3& externalTorque) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mExternalTorques[mMapEntityToComponentIndex[bodyEntity]] = externalTorque;
 }
 
 // Return true if the entity is already in an island

@@ -261,10 +261,9 @@ class DynamicsWorld : public CollisionWorld {
 inline void DynamicsWorld::resetBodiesForceAndTorque() {
 
     // For each body of the world
-    List<RigidBody*>::Iterator it;
-    for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-        (*it)->mExternalForce.setToZero();
-        (*it)->mExternalTorque.setToZero();
+    for (uint32 i=0; i < mDynamicsComponents.getNbComponents(); i++) {
+        mDynamicsComponents.mExternalForces[i].setToZero();
+        mDynamicsComponents.mExternalTorques[i].setToZero();
     }
 }
 

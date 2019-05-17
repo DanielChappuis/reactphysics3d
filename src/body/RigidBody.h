@@ -70,18 +70,6 @@ class RigidBody : public CollisionBody {
         /// Center of mass of the body in world-space coordinates
         Vector3 mCenterOfMassWorld;
 
-        /// Linear velocity of the body
-        //Vector3 mLinearVelocity;
-
-        /// Angular velocity of the body
-        //Vector3 mAngularVelocity;
-
-        /// Current external force on the body
-        Vector3 mExternalForce;
-
-        /// Current external torque on the body
-        Vector3 mExternalTorque;
-
         /// Inverse Local inertia tensor of the body (in local-space) set
         /// by the user with respect to the center of mass of the body
         Matrix3x3 mUserInertiaTensorLocalInverse;
@@ -328,76 +316,6 @@ inline const JointListElement* RigidBody::getJointsList() const {
  */
 inline JointListElement* RigidBody::getJointsList() {
     return mJointsList;
-}
-
-// Apply an external force to the body at its center of mass.
-/// If the body is sleeping, calling this method will wake it up. Note that the
-/// force will we added to the sum of the applied forces and that this sum will be
-/// reset to zero at the end of each call of the DynamicsWorld::update() method.
-/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
-/**
- * @param force The external force to apply on the center of mass of the body
- */
-inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
-
-    // If it is not a dynamic body, we do nothing
-    if (mType != BodyType::DYNAMIC) return;
-
-    // Awake the body if it was sleeping
-    if (mIsSleeping) {
-        setIsSleeping(false);
-    }
-
-    // Add the force
-    mExternalForce += force;
-}
-
-// Apply an external force to the body at a given point (in world-space coordinates).
-/// If the point is not at the center of mass of the body, it will also
-/// generate some torque and therefore, change the angular velocity of the body.
-/// If the body is sleeping, calling this method will wake it up. Note that the
-/// force will we added to the sum of the applied forces and that this sum will be
-/// reset to zero at the end of each call of the DynamicsWorld::update() method.
-/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
-/**
- * @param force The force to apply on the body
- * @param point The point where the force is applied (in world-space coordinates)
- */
-inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
-
-    // If it is not a dynamic body, we do nothing
-    if (mType != BodyType::DYNAMIC) return;
-
-    // Awake the body if it was sleeping
-    if (mIsSleeping) {
-        setIsSleeping(false);
-    }
-
-    // Add the force and torque
-    mExternalForce += force;
-    mExternalTorque += (point - mCenterOfMassWorld).cross(force);
-}
-
-// Apply an external torque to the body.
-/// If the body is sleeping, calling this method will wake it up. Note that the
-/// force will we added to the sum of the applied torques and that this sum will be
-/// reset to zero at the end of each call of the DynamicsWorld::update() method.
-/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
-/**
- * @param torque The external torque to apply on the body
- */
-inline void RigidBody::applyTorque(const Vector3& torque) {
-
-    // If it is not a dynamic body, we do nothing
-    if (mType != BodyType::DYNAMIC) return;
-
-    // Awake the body if it was sleeping
-    if (mIsSleeping) {
-        setIsSleeping(false);
-    }
-
-    // Add the torque
-    mExternalTorque += torque;
 }
 
 }

@@ -234,9 +234,6 @@ void DynamicsWorld::updateBodiesState() {
             // Update the orientation of the body
             mTransformComponents.getTransform(bodyEntity).setOrientation(mConstrainedOrientations[index].getUnit());
 
-            // TODO : REMOVE THIS
-            assert(mConstrainedOrientations[index].lengthSquare() < 1.5 * 1.5);
-
             // Update the transform of the body (using the new center of mass and new orientation)
             body->updateTransformWithCenterOfMass();
 
@@ -318,9 +315,9 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
             // Integrate the external force to get the new velocity of the body
             mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, body->getLinearVelocity() +
-                                        mTimeStep * body->mMassInverse * body->mExternalForce);
+                                        mTimeStep * body->mMassInverse * mDynamicsComponents.getExternalForce(bodyEntity));
             mDynamicsComponents.setConstrainedAngularVelocity(bodyEntity, body->getAngularVelocity() +
-                                        mTimeStep * body->getInertiaTensorInverseWorld() * body->mExternalTorque);
+                                        mTimeStep * body->getInertiaTensorInverseWorld() * mDynamicsComponents.getExternalTorque(bodyEntity));
 
             // If the gravity has to be applied to this rigid body
             if (body->isGravityEnabled() && mIsGravityEnabled) {

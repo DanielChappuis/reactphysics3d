@@ -114,8 +114,38 @@ void RigidBody::setType(BodyType type) {
     askForBroadPhaseCollisionCheck();
 
     // Reset the force and torque on the body
-    mExternalForce.setToZero();
-    mExternalTorque.setToZero();
+    mWorld.mDynamicsComponents.setExternalForce(mEntity, Vector3::zero());
+    mWorld.mDynamicsComponents.setExternalTorque(mEntity, Vector3::zero());
+}
+
+// Apply an external force to the body at a given point (in world-space coordinates).
+/// If the point is not at the center of mass of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The force to apply on the body
+ * @param point The point where the force is applied (in world-space coordinates)
+ */
+inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mType != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    const Vector3& externalForce = mWorld.mDynamicsComponents.getExternalForce(mEntity);
+    mWorld.mDynamicsComponents.setExternalForce(mEntity, externalForce + force);
+
+    // Add the torque
+    const Vector3& externalTorque = mWorld.mDynamicsComponents.getExternalTorque(mEntity);
+    mWorld.mDynamicsComponents.setExternalTorque(mEntity, externalTorque + (point - mCenterOfMassWorld).cross(force));
 }
 
 // Set the local inertia tensor of the body (in local-space coordinates)
@@ -140,6 +170,29 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mID) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+}
+
+// Apply an external force to the body at its center of mass.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The external force to apply on the center of mass of the body
+ */
+inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mType != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    const Vector3& externalForce = mWorld.mDynamicsComponents.getExternalForce(mEntity);
+    mWorld.mDynamicsComponents.setExternalForce(mEntity, externalForce + force);
 }
 
 // Set the inverse local inertia tensor of the body (in local-space coordinates)
@@ -598,16 +651,40 @@ Vector3 RigidBody::getAngularVelocity() const {
     return mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
 }
 
+// Apply an external torque to the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied torques and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param torque The external torque to apply on the body
+ */
+inline void RigidBody::applyTorque(const Vector3& torque) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mType != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mIsSleeping) {
+        setIsSleeping(false);
+    }
+
+    // Add the torque
+    const Vector3& externalTorque = mWorld.mDynamicsComponents.getExternalTorque(mEntity);
+    mWorld.mDynamicsComponents.setExternalTorque(mEntity, externalTorque + torque);
+}
+
 // Set the variable to know whether or not the body is sleeping
 void RigidBody::setIsSleeping(bool isSleeping) {
 
     CollisionBody::setIsSleeping(isSleeping);
 
     if (isSleeping) {
+
         mWorld.mDynamicsComponents.setLinearVelocity(mEntity, Vector3::zero());
         mWorld.mDynamicsComponents.setAngularVelocity(mEntity, Vector3::zero());
-        mExternalForce.setToZero();
-        mExternalTorque.setToZero();
+        mWorld.mDynamicsComponents.setExternalForce(mEntity, Vector3::zero());
+        mWorld.mDynamicsComponents.setExternalTorque(mEntity, Vector3::zero());
     }
 }
 
