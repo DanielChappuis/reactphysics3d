@@ -56,7 +56,7 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
                 mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
-                mIsGravityEnabled(true), mSplitLinearVelocities(nullptr), mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
+                mIsGravityEnabled(true), mConstrainedPositions(nullptr),
                 mConstrainedOrientations(nullptr), mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
                 mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
                 mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0) {
@@ -187,8 +187,8 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             // to update the position)
             if (mContactSolver.isSplitImpulseActive()) {
 
-                newLinVelocity += mSplitLinearVelocities[indexArray];
-                newAngVelocity += mSplitAngularVelocities[indexArray];
+                newLinVelocity += mDynamicsComponents.getSplitLinearVelocity(bodyEntity);
+                newAngVelocity += mDynamicsComponents.getSplitAngularVelocity(bodyEntity);
             }
 
             // Get current position and orientation of the body
@@ -259,16 +259,10 @@ void DynamicsWorld::initVelocityArrays() {
 
     assert(mDynamicsComponents.getNbComponents() == nbBodies);
 
-    mSplitLinearVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                           nbBodies * sizeof(Vector3)));
-    mSplitAngularVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                            nbBodies * sizeof(Vector3)));
     mConstrainedPositions = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
                                                                           nbBodies * sizeof(Vector3)));
     mConstrainedOrientations = static_cast<Quaternion*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
                                                                                 nbBodies * sizeof(Quaternion)));
-    assert(mSplitLinearVelocities != nullptr);
-    assert(mSplitAngularVelocities != nullptr);
     assert(mConstrainedPositions != nullptr);
     assert(mConstrainedOrientations != nullptr);
 
@@ -276,10 +270,16 @@ void DynamicsWorld::initVelocityArrays() {
     uint i = 0;
     for (List<RigidBody*>::Iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
-        mSplitLinearVelocities[i].setToZero();
-        mSplitAngularVelocities[i].setToZero();
-
         (*it)->mArrayIndex = i++;
+    }
+}
+
+// Reset the split velocities of the bodies
+void DynamicsWorld::resetSplitVelocities() {
+
+    for(uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+        mDynamicsComponents.mSplitLinearVelocities[i].setToZero();
+        mDynamicsComponents.mSplitAngularVelocities[i].setToZero();
     }
 }
 
@@ -295,6 +295,9 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
     // Initialize the bodies velocity arrays
     initVelocityArrays();
 
+    // Reset the split velocities of the bodies
+    resetSplitVelocities();
+
     // TODO : We should loop over non-sleeping dynamic components here and not over islands
 
     // For each island of the world
@@ -309,8 +312,8 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
             const uint indexBody = body->mArrayIndex;
 
-            assert(mSplitLinearVelocities[indexBody] == Vector3(0, 0, 0));
-            assert(mSplitAngularVelocities[indexBody] == Vector3(0, 0, 0));
+            assert(mDynamicsComponents.getSplitLinearVelocity(bodyEntity) == Vector3(0, 0, 0));
+            assert(mDynamicsComponents.getSplitAngularVelocity(bodyEntity) == Vector3(0, 0, 0));
             assert(indexBody < mRigidBodies.size());
 
             // Integrate the external force to get the new velocity of the body
@@ -356,7 +359,6 @@ void DynamicsWorld::solveContactsAndConstraints() {
     RP3D_PROFILE("DynamicsWorld::solveContactsAndConstraints()", mProfiler);
 
     // Set the velocities arrays
-    mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
     mConstraintSolver.setConstrainedPositionsArrays(mConstrainedPositions,
                                                     mConstrainedOrientations);
 

@@ -46,9 +46,7 @@ const decimal ContactSolver::SLOP = decimal(0.01);
 // Constructor
 ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents, DynamicsComponents& dynamicsComponents,
                              ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings)
-              :mMemoryManager(memoryManager), mSplitLinearVelocities(nullptr),
-               mSplitAngularVelocities(nullptr), mContactConstraints(nullptr),
-               mContactPoints(nullptr),
+              :mMemoryManager(memoryManager), mContactConstraints(nullptr), mContactPoints(nullptr),
                mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr), mBodyComponents(bodyComponents),
                mDynamicsComponents(dynamicsComponents), mProxyShapeComponents(proxyShapeComponents), mIsSplitImpulseActive(true),
                mWorldSettings(worldSettings) {
@@ -109,8 +107,6 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
 
     assert(mIslands.bodyEntities[islandIndex].size() > 0);
     assert(mIslands.nbContactManifolds[islandIndex] > 0);
-    assert(mSplitLinearVelocities != nullptr);
-    assert(mSplitAngularVelocities != nullptr);
 
     // For each contact manifold of the island
     uint contactManifoldsIndex = mIslands.contactManifoldsIndices[islandIndex];
@@ -574,10 +570,10 @@ void ContactSolver::solve() {
             if (mIsSplitImpulseActive) {
 
                 // Split impulse (position correction)
-                const Vector3& v1Split = mSplitLinearVelocities[mContactConstraints[c].indexBody1];
-                const Vector3& w1Split = mSplitAngularVelocities[mContactConstraints[c].indexBody1];
-                const Vector3& v2Split = mSplitLinearVelocities[mContactConstraints[c].indexBody2];
-                const Vector3& w2Split = mSplitAngularVelocities[mContactConstraints[c].indexBody2];
+                const Vector3& v1Split = mDynamicsComponents.mSplitLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1];
+                const Vector3& w1Split = mDynamicsComponents.mSplitAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1];
+                const Vector3& v2Split = mDynamicsComponents.mSplitLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2];
+                const Vector3& w2Split = mDynamicsComponents.mSplitAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2];
 
                 //Vector3 deltaVSplit = v2Split + w2Split.cross(mContactPoints[contactPointIndex].r2) - v1Split - w1Split.cross(mContactPoints[contactPointIndex].r1);
                 Vector3 deltaVSplit(v2Split.x + w2Split.y * mContactPoints[contactPointIndex].r2.z - w2Split.z * mContactPoints[contactPointIndex].r2.y - v1Split.x -
@@ -602,22 +598,22 @@ void ContactSolver::solve() {
                                       mContactPoints[contactPointIndex].normal.z * deltaLambdaSplit);
 
                 // Update the velocities of the body 1 by applying the impulse P
-                mSplitLinearVelocities[mContactConstraints[c].indexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulse.x;
-                mSplitLinearVelocities[mContactConstraints[c].indexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulse.y;
-                mSplitLinearVelocities[mContactConstraints[c].indexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulse.z;
+                mDynamicsComponents.mSplitLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulse.x;
+                mDynamicsComponents.mSplitLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulse.y;
+                mDynamicsComponents.mSplitLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactConstraints[c].massInverseBody1 * linearImpulse.z;
 
-                mSplitAngularVelocities[mContactConstraints[c].indexBody1].x -= mContactPoints[contactPointIndex].i1TimesR1CrossN.x * deltaLambdaSplit;
-                mSplitAngularVelocities[mContactConstraints[c].indexBody1].y -= mContactPoints[contactPointIndex].i1TimesR1CrossN.y * deltaLambdaSplit;
-                mSplitAngularVelocities[mContactConstraints[c].indexBody1].z -= mContactPoints[contactPointIndex].i1TimesR1CrossN.z * deltaLambdaSplit;
+                mDynamicsComponents.mSplitAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].x -= mContactPoints[contactPointIndex].i1TimesR1CrossN.x * deltaLambdaSplit;
+                mDynamicsComponents.mSplitAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].y -= mContactPoints[contactPointIndex].i1TimesR1CrossN.y * deltaLambdaSplit;
+                mDynamicsComponents.mSplitAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody1].z -= mContactPoints[contactPointIndex].i1TimesR1CrossN.z * deltaLambdaSplit;
 
                 // Update the velocities of the body 1 by applying the impulse P
-                mSplitLinearVelocities[mContactConstraints[c].indexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulse.x;
-                mSplitLinearVelocities[mContactConstraints[c].indexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulse.y;
-                mSplitLinearVelocities[mContactConstraints[c].indexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulse.z;
+                mDynamicsComponents.mSplitLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactConstraints[c].massInverseBody2 * linearImpulse.x;
+                mDynamicsComponents.mSplitLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactConstraints[c].massInverseBody2 * linearImpulse.y;
+                mDynamicsComponents.mSplitLinearVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactConstraints[c].massInverseBody2 * linearImpulse.z;
 
-                mSplitAngularVelocities[mContactConstraints[c].indexBody2].x += mContactPoints[contactPointIndex].i2TimesR2CrossN.x * deltaLambdaSplit;
-                mSplitAngularVelocities[mContactConstraints[c].indexBody2].y += mContactPoints[contactPointIndex].i2TimesR2CrossN.y * deltaLambdaSplit;
-                mSplitAngularVelocities[mContactConstraints[c].indexBody2].z += mContactPoints[contactPointIndex].i2TimesR2CrossN.z * deltaLambdaSplit;
+                mDynamicsComponents.mSplitAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].x += mContactPoints[contactPointIndex].i2TimesR2CrossN.x * deltaLambdaSplit;
+                mDynamicsComponents.mSplitAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].y += mContactPoints[contactPointIndex].i2TimesR2CrossN.y * deltaLambdaSplit;
+                mDynamicsComponents.mSplitAngularVelocities[mContactConstraints[c].dynamicsComponentIndexBody2].z += mContactPoints[contactPointIndex].i2TimesR2CrossN.z * deltaLambdaSplit;
             }
 
             contactPointIndex++;

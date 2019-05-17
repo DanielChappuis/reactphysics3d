@@ -65,6 +65,12 @@ class DynamicsComponents : public Components {
         /// Array with the constrained angular velocity of each component
         Vector3* mConstrainedAngularVelocities;
 
+        /// Array with the split linear velocity of each component
+        Vector3* mSplitLinearVelocities;
+
+        /// Array with the split angular velocity of each component
+        Vector3* mSplitAngularVelocities;
+
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
@@ -120,6 +126,12 @@ class DynamicsComponents : public Components {
         /// Return the constrained angular velocity of an entity
         const Vector3& getConstrainedAngularVelocity(Entity bodyEntity) const;
 
+        /// Return the split linear velocity of an entity
+        const Vector3& getSplitLinearVelocity(Entity bodyEntity) const;
+
+        /// Return the split angular velocity of an entity
+        const Vector3& getSplitAngularVelocity(Entity bodyEntity) const;
+
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
 
@@ -134,6 +146,12 @@ class DynamicsComponents : public Components {
 
         /// Set the constrained angular velocity of an entity
         void setConstrainedAngularVelocity(Entity bodyEntity, const Vector3& constrainedAngularVelocity);
+
+        /// Set the split linear velocity of an entity
+        void setSplitLinearVelocity(Entity bodyEntity, const Vector3& splitLinearVelocity);
+
+        /// Set the split angular velocity of an entity
+        void setSplitAngularVelocity(Entity bodyEntity, const Vector3& splitAngularVelocity);
 
         /// Set the value to know if the entity is already in an island
         bool setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
@@ -185,22 +203,35 @@ inline void DynamicsComponents::setAngularVelocity(Entity bodyEntity, const Vect
 }
 
 // Return the constrained linear velocity of an entity
-inline const Vector3 &DynamicsComponents::getConstrainedLinearVelocity(Entity bodyEntity) const {
+inline const Vector3& DynamicsComponents::getConstrainedLinearVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   // TODO : DELETE THIS
-   uint testIndex = mMapEntityToComponentIndex[bodyEntity];
 
    return mConstrainedLinearVelocities[mMapEntityToComponentIndex[bodyEntity]];
 }
 
 // Return the constrained angular velocity of an entity
-inline const Vector3 &DynamicsComponents::getConstrainedAngularVelocity(Entity bodyEntity) const {
+inline const Vector3& DynamicsComponents::getConstrainedAngularVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    return mConstrainedAngularVelocities[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the split linear velocity of an entity
+inline const Vector3& DynamicsComponents::getSplitLinearVelocity(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mSplitLinearVelocities[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the split angular velocity of an entity
+inline const Vector3& DynamicsComponents::getSplitAngularVelocity(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mSplitAngularVelocities[mMapEntityToComponentIndex[bodyEntity]];
 }
 
 // Set the constrained linear velocity of an entity
@@ -217,6 +248,22 @@ inline void DynamicsComponents::setConstrainedAngularVelocity(Entity bodyEntity,
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mConstrainedAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = constrainedAngularVelocity;
+}
+
+// Set the split linear velocity of an entity
+inline void DynamicsComponents::setSplitLinearVelocity(Entity bodyEntity, const Vector3& splitLinearVelocity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mSplitLinearVelocities[mMapEntityToComponentIndex[bodyEntity]] = splitLinearVelocity;
+}
+
+// Set the split angular velocity of an entity
+inline void DynamicsComponents::setSplitAngularVelocity(Entity bodyEntity, const Vector3& splitAngularVelocity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mSplitAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = splitAngularVelocity;
 }
 
 // Return true if the entity is already in an island

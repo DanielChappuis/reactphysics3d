@@ -291,14 +291,6 @@ class ContactSolver {
         /// Memory manager
         MemoryManager& mMemoryManager;
 
-        /// Split linear velocities for the position contact solver (split impulse)
-        // TODO : Use List<> here
-        Vector3* mSplitLinearVelocities;
-
-        /// Split angular velocities for the position contact solver (split impulse)
-        // TODO : Use List<> here
-        Vector3* mSplitAngularVelocities;
-
         /// Current time step
         decimal mTimeStep;
 
@@ -388,10 +380,6 @@ class ContactSolver {
         /// Initialize the constraint solver for a given island
         void initializeForIsland(uint islandIndex);
 
-        /// Set the split velocities arrays
-        void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
-                                      Vector3* splitAngularVelocities);
-
         /// Store the computed impulses to use them to
         /// warm start the solver at the next iteration
         void storeImpulses();
@@ -412,17 +400,6 @@ class ContactSolver {
 
 #endif
 };
-
-// Set the split velocities arrays
-inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
-                                                    Vector3* splitAngularVelocities) {
-
-    assert(splitLinearVelocities != nullptr);
-    assert(splitAngularVelocities != nullptr);
-
-    mSplitLinearVelocities = splitLinearVelocities;
-    mSplitAngularVelocities = splitAngularVelocities;
-}
 
 // Return true if the split impulses position correction technique is used for contacts
 inline bool ContactSolver::isSplitImpulseActive() const {

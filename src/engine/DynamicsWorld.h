@@ -88,14 +88,6 @@ class DynamicsWorld : public CollisionWorld {
         /// True if the gravity force is on
         bool mIsGravityEnabled;
 
-        // TODO : Move this into dynamic components
-        /// Split linear velocities for the position contact solver (split impulse)
-        Vector3* mSplitLinearVelocities;
-
-        // TODO : Move this into dynamic components
-        /// Split angular velocities for the position contact solver (split impulse)
-        Vector3* mSplitAngularVelocities;
-
         /// Array of constrained rigid bodies position (for position error correction)
         Vector3* mConstrainedPositions;
 
@@ -128,6 +120,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Initialize the bodies velocities arrays for the next simulation step.
         void initVelocityArrays();
+
+        /// Reset the split velocities of the bodies
+        void resetSplitVelocities();
 
         /// Integrate the velocities of rigid bodies.
         void integrateRigidBodiesVelocities();
