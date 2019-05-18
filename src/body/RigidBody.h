@@ -89,12 +89,6 @@ class RigidBody : public CollisionBody {
         /// Material properties of the rigid body
         Material mMaterial;
 
-        /// Linear velocity damping factor
-        decimal mLinearDamping;
-
-        /// Angular velocity damping factor
-        decimal mAngularDamping;
-
         /// First element of the linked list of joints involving this body
         JointListElement* mJointsList;
 
@@ -284,22 +278,6 @@ inline bool RigidBody::isGravityEnabled() const {
  */
 inline Material& RigidBody::getMaterial() {
     return mMaterial;
-}
-
-// Return the linear velocity damping factor
-/**
- * @return The linear damping factor of this body
- */
-inline decimal RigidBody::getLinearDamping() const {
-    return mLinearDamping;
-}
-
-// Return the angular velocity damping factor
-/**
- * @return The angular damping factor of this body
- */
-inline decimal RigidBody::getAngularDamping() const {
-    return mAngularDamping;
 }
 
 // Return the first element of the linked list of joints involving this body

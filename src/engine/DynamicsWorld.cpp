@@ -340,8 +340,8 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
             //                              => e^(-x) ~ 1 - x
             //                 => v2 = v1 * (1 - c * dt)
-            decimal linDampingFactor = body->getLinearDamping();
-            decimal angDampingFactor = body->getAngularDamping();
+            decimal linDampingFactor = mDynamicsComponents.getLinearDamping(bodyEntity);
+            decimal angDampingFactor = mDynamicsComponents.getAngularDamping(bodyEntity);
             decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
             decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
             mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity) * linearDamping);

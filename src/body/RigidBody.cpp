@@ -42,7 +42,7 @@ using namespace reactphysics3d;
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id)
           : CollisionBody(world, entity, id), mArrayIndex(0), mInitMass(decimal(1.0)),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
-            mIsGravityEnabled(true), mMaterial(world.mConfig), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
+            mIsGravityEnabled(true), mMaterial(world.mConfig),
             mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
     // Compute the inverse mass
@@ -193,6 +193,22 @@ inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
     // Add the force
     const Vector3& externalForce = mWorld.mDynamicsComponents.getExternalForce(mEntity);
     mWorld.mDynamicsComponents.setExternalForce(mEntity, externalForce + force);
+}
+
+// Return the linear velocity damping factor
+/**
+ * @return The linear damping factor of this body
+ */
+decimal RigidBody::getLinearDamping() const {
+    return mWorld.mDynamicsComponents.getLinearDamping(mEntity);
+}
+
+// Return the angular velocity damping factor
+/**
+ * @return The angular damping factor of this body
+ */
+decimal RigidBody::getAngularDamping() const {
+    return mWorld.mDynamicsComponents.getAngularDamping(mEntity);
 }
 
 // Set the inverse local inertia tensor of the body (in local-space coordinates)
@@ -427,10 +443,10 @@ void RigidBody::enableGravity(bool isEnabled) {
  */
 void RigidBody::setLinearDamping(decimal linearDamping) {
     assert(linearDamping >= decimal(0.0));
-    mLinearDamping = linearDamping;
+    mWorld.mDynamicsComponents.setLinearDamping(mEntity, linearDamping);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set linearDamping=" + std::to_string(mLinearDamping));
+             "Body " + std::to_string(mID) + ": Set linearDamping=" + std::to_string(linearDamping));
 }
 
 // Set the angular damping factor. This is the ratio of the angular velocity
@@ -440,10 +456,10 @@ void RigidBody::setLinearDamping(decimal linearDamping) {
  */
 void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
-    mAngularDamping = angularDamping;
+    mWorld.mDynamicsComponents.setAngularDamping(mEntity, angularDamping);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set angularDamping=" + std::to_string(mAngularDamping));
+             "Body " + std::to_string(mID) + ": Set angularDamping=" + std::to_string(angularDamping));
 }
 
 /// Update the transform of the body after a change of the center of mass

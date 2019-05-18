@@ -77,6 +77,12 @@ class DynamicsComponents : public Components {
         /// Array with the external torque of each component
         Vector3* mExternalTorques;
 
+        /// Array with the linear damping factor of each component
+        decimal* mLinearDampings;
+
+        /// Array with the angular damping factor of each component
+        decimal* mAngularDampings;
+
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
@@ -144,6 +150,12 @@ class DynamicsComponents : public Components {
         /// Return the external torque of an entity
         const Vector3& getExternalTorque(Entity bodyEntity) const;
 
+        /// Return the linear damping factor of an entity
+        decimal getLinearDamping(Entity bodyEntity) const;
+
+        /// Return the angular damping factor of an entity
+        decimal getAngularDamping(Entity bodyEntity) const;
+
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
 
@@ -171,10 +183,14 @@ class DynamicsComponents : public Components {
         /// Set the external force of an entity
         void setExternalTorque(Entity bodyEntity, const Vector3& externalTorque);
 
+        /// Set the linear damping factor of an entity
+        void setLinearDamping(Entity bodyEntity, decimal linearDamping);
+
+        /// Set the angular damping factor of an entity
+        void setAngularDamping(Entity bodyEntity, decimal angularDamping);
+
         /// Set the value to know if the entity is already in an island
         bool setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
-
-
 
         // -------------------- Friendship -------------------- //
 
@@ -268,6 +284,22 @@ inline const Vector3& DynamicsComponents::getExternalTorque(Entity bodyEntity) c
    return mExternalTorques[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+// Return the linear damping factor of an entity
+inline decimal DynamicsComponents::getLinearDamping(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mLinearDampings[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the angular damping factor of an entity
+inline decimal DynamicsComponents::getAngularDamping(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mAngularDampings[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the constrained linear velocity of an entity
 inline void DynamicsComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
 
@@ -314,6 +346,22 @@ inline void DynamicsComponents::setExternalTorque(Entity bodyEntity, const Vecto
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mExternalTorques[mMapEntityToComponentIndex[bodyEntity]] = externalTorque;
+}
+
+// Set the linear damping factor of an entity
+inline void DynamicsComponents::setLinearDamping(Entity bodyEntity, decimal linearDamping) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mLinearDampings[mMapEntityToComponentIndex[bodyEntity]] = linearDamping;
+}
+
+// Set the angular damping factor of an entity
+inline void DynamicsComponents::setAngularDamping(Entity bodyEntity, decimal angularDamping) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mAngularDampings[mMapEntityToComponentIndex[bodyEntity]] = angularDamping;
 }
 
 // Return true if the entity is already in an island
