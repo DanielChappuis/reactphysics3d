@@ -143,8 +143,8 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].dynamicsComponentIndexBody2 = mDynamicsComponents.getEntityIndex(body2->getEntity());
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
-        mContactConstraints[mNbContactManifolds].massInverseBody1 = body1->mMassInverse;
-        mContactConstraints[mNbContactManifolds].massInverseBody2 = body2->mMassInverse;
+        mContactConstraints[mNbContactManifolds].massInverseBody1 = mDynamicsComponents.getMassInverse(body1->getEntity());
+        mContactConstraints[mNbContactManifolds].massInverseBody2 = mDynamicsComponents.getMassInverse(body2->getEntity());
         mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.getNbContactPoints();
         mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
         mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(body1, body2);

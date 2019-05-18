@@ -83,6 +83,12 @@ class DynamicsComponents : public Components {
         /// Array with the angular damping factor of each component
         decimal* mAngularDampings;
 
+        /// Array with the initial mass of each component
+        decimal* mInitMasses;
+
+        /// Array with the inverse mass of each component
+        decimal* mInverseMasses;
+
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
@@ -156,6 +162,12 @@ class DynamicsComponents : public Components {
         /// Return the angular damping factor of an entity
         decimal getAngularDamping(Entity bodyEntity) const;
 
+        /// Return the initial mass of an entity
+        decimal getInitMass(Entity bodyEntity) const;
+
+        /// Return the mass inverse of an entity
+        decimal getMassInverse(Entity bodyEntity) const;
+
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
 
@@ -188,6 +200,12 @@ class DynamicsComponents : public Components {
 
         /// Set the angular damping factor of an entity
         void setAngularDamping(Entity bodyEntity, decimal angularDamping);
+
+        /// Set the initial mass of an entity
+        void setInitMass(Entity bodyEntity, decimal initMass);
+
+        /// Set the inverse mass of an entity
+        void setMassInverse(Entity bodyEntity, decimal inverseMass);
 
         /// Set the value to know if the entity is already in an island
         bool setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
@@ -300,6 +318,22 @@ inline decimal DynamicsComponents::getAngularDamping(Entity bodyEntity) const {
    return mAngularDampings[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+// Return the initial mass of an entity
+inline decimal DynamicsComponents::getInitMass(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mInitMasses[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the inverse mass of an entity
+inline decimal DynamicsComponents::getMassInverse(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mInverseMasses[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the constrained linear velocity of an entity
 inline void DynamicsComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
 
@@ -362,6 +396,22 @@ inline void DynamicsComponents::setAngularDamping(Entity bodyEntity, decimal ang
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mAngularDampings[mMapEntityToComponentIndex[bodyEntity]] = angularDamping;
+}
+
+// Set the initial mass of an entity
+inline void DynamicsComponents::setInitMass(Entity bodyEntity, decimal initMass) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mInitMasses[mMapEntityToComponentIndex[bodyEntity]] = initMass;
+}
+
+// Set the mass inverse of an entity
+inline void DynamicsComponents::setMassInverse(Entity bodyEntity, decimal inverseMass) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mInverseMasses[mMapEntityToComponentIndex[bodyEntity]] = inverseMass;
 }
 
 // Return true if the entity is already in an island

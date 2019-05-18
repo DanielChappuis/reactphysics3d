@@ -68,7 +68,9 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
     Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mR2World);
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix)
-    decimal inverseMassBodies = mBody1->mMassInverse + mBody2->mMassInverse;
+    decimal body1MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody1->getEntity());
+    decimal body2MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody2->getEntity());
+    decimal inverseMassBodies =  body1MassInverse + body2MassInverse;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
                                     0, 0, inverseMassBodies) +
@@ -113,14 +115,14 @@ void BallAndSocketJoint::warmstart(const ConstraintSolverData& constraintSolverD
     const Vector3 angularImpulseBody1 = mImpulse.cross(mR1World);
 
     // Apply the impulse to the body 1
-    v1 += mBody1->mMassInverse * linearImpulseBody1;
+    v1 += constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity) * linearImpulseBody1;
     w1 += mI1 * angularImpulseBody1;
 
     // Compute the impulse P=J^T * lambda for the body 2
     const Vector3 angularImpulseBody2 = -mImpulse.cross(mR2World);
 
     // Apply the impulse to the body to the body 2
-    v2 += mBody2->mMassInverse * mImpulse;
+    v2 += constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity) * mImpulse;
     w2 += mI2 * angularImpulseBody2;
 }
 
@@ -148,14 +150,14 @@ void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& con
     const Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
 
     // Apply the impulse to the body 1
-    v1 += mBody1->mMassInverse * linearImpulseBody1;
+    v1 += constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity) * linearImpulseBody1;
     w1 += mI1 * angularImpulseBody1;
 
     // Compute the impulse P=J^T * lambda for the body 2
     const Vector3 angularImpulseBody2 = -deltaLambda.cross(mR2World);
 
     // Apply the impulse to the body 2
-    v2 += mBody2->mMassInverse * deltaLambda;
+    v2 += constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity) * deltaLambda;
     w2 += mI2 * angularImpulseBody2;
 }
 
@@ -173,8 +175,8 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
     Quaternion& q2 = constraintSolverData.orientations[mIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->mMassInverse;
-    decimal inverseMassBody2 = mBody2->mMassInverse;
+    const decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    const decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // Recompute the inverse inertia tensors
     mI1 = mBody1->getInertiaTensorInverseWorld();

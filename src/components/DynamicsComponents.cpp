@@ -36,8 +36,8 @@ using namespace reactphysics3d;
 // Constructor
 DynamicsComponents::DynamicsComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
-                                           sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
-                                           sizeof(Vector3) + sizeof(bool)) {
+                                           sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(decimal) +
+                                           sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(bool)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -67,7 +67,9 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     Vector3* newExternalTorques = reinterpret_cast<Vector3*>(newExternalForces + nbComponentsToAllocate);
     decimal* newLinearDampings = reinterpret_cast<decimal*>(newExternalTorques + nbComponentsToAllocate);
     decimal* newAngularDampings = reinterpret_cast<decimal*>(newLinearDampings + nbComponentsToAllocate);
-    bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newAngularDampings + nbComponentsToAllocate);
+    decimal* newInitMasses = reinterpret_cast<decimal*>(newAngularDampings + nbComponentsToAllocate);
+    decimal* newInverseMasses = reinterpret_cast<decimal*>(newInitMasses + nbComponentsToAllocate);
+    bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newInverseMasses + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -84,6 +86,8 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newExternalTorques, mExternalTorques, mNbComponents * sizeof(Vector3));
         memcpy(newLinearDampings, mLinearDampings, mNbComponents * sizeof(decimal));
         memcpy(newAngularDampings, mAngularDampings, mNbComponents * sizeof(decimal));
+        memcpy(newInitMasses, mInitMasses, mNbComponents * sizeof(decimal));
+        memcpy(newInverseMasses, mInverseMasses, mNbComponents * sizeof(decimal));
         memcpy(newIsAlreadyInIsland, mIsAlreadyInIsland, mNbComponents * sizeof(bool));
 
         // Deallocate previous memory
@@ -102,6 +106,8 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     mExternalTorques = newExternalTorques;
     mLinearDampings = newLinearDampings;
     mAngularDampings = newAngularDampings;
+    mInitMasses = newInitMasses;
+    mInverseMasses = newInverseMasses;
     mIsAlreadyInIsland = newIsAlreadyInIsland;
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
@@ -124,6 +130,8 @@ void DynamicsComponents::addComponent(Entity bodyEntity, bool isSleeping, const 
     new (mExternalTorques + index) Vector3(0, 0, 0);
     mLinearDampings[index] = decimal(0.0);
     mAngularDampings[index] = decimal(0.0);
+    mInitMasses[index] = decimal(1.0);
+    mInverseMasses[index] = decimal(1.0);
     mIsAlreadyInIsland[index] = false;
 
     // Map the entity with the new component lookup index
@@ -153,6 +161,8 @@ void DynamicsComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
     new (mExternalTorques + destIndex) Vector3(mExternalTorques[srcIndex]);
     mLinearDampings[destIndex] = mLinearDampings[srcIndex];
     mAngularDampings[destIndex] = mAngularDampings[srcIndex];
+    mInitMasses[destIndex] = mInitMasses[srcIndex];
+    mInverseMasses[destIndex] = mInverseMasses[srcIndex];
     mIsAlreadyInIsland[destIndex] = mIsAlreadyInIsland[srcIndex];
 
     // Destroy the source component
@@ -184,6 +194,8 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
     Vector3 externalTorque1(mExternalTorques[index1]);
     decimal linearDamping1 = mLinearDampings[index1];
     decimal angularDamping1 = mAngularDampings[index1];
+    decimal initMass1 = mInitMasses[index1];
+    decimal inverseMass1 = mInverseMasses[index1];
     bool isAlreadyInIsland1 = mIsAlreadyInIsland[index1];
 
     // Destroy component 1
@@ -203,6 +215,8 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mExternalTorques + index2) Vector3(externalTorque1);
     mLinearDampings[index2] = linearDamping1;
     mAngularDampings[index2] = angularDamping1;
+    mInitMasses[index2] = initMass1;
+    mInverseMasses[index2] = inverseMass1;
     mIsAlreadyInIsland[index2] = isAlreadyInIsland1;
 
     // Update the entity to component index mapping

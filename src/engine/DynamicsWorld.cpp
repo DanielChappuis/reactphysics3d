@@ -314,16 +314,17 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
             assert(indexBody < mRigidBodies.size());
 
             // Integrate the external force to get the new velocity of the body
-            mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, body->getLinearVelocity() +
-                                        mTimeStep * body->mMassInverse * mDynamicsComponents.getExternalForce(bodyEntity));
-            mDynamicsComponents.setConstrainedAngularVelocity(bodyEntity, body->getAngularVelocity() +
+            mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getLinearVelocity(bodyEntity) +
+                                        mTimeStep * mDynamicsComponents.getMassInverse(bodyEntity) * mDynamicsComponents.getExternalForce(bodyEntity));
+            mDynamicsComponents.setConstrainedAngularVelocity(bodyEntity, mDynamicsComponents.getAngularVelocity(bodyEntity) +
                                         mTimeStep * body->getInertiaTensorInverseWorld() * mDynamicsComponents.getExternalTorque(bodyEntity));
 
             // If the gravity has to be applied to this rigid body
             if (body->isGravityEnabled() && mIsGravityEnabled) {
 
                 // Integrate the gravity force
-                mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity) + mTimeStep * body->mMassInverse *
+                mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity) +
+                                                                 mTimeStep * mDynamicsComponents.getMassInverse(bodyEntity) *
                         body->getMass() * mGravity);
             }
 

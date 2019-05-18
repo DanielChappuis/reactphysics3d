@@ -60,9 +60,6 @@ class RigidBody : public CollisionBody {
 
         // -------------------- Attributes -------------------- //
 
-        /// Intial mass of the body
-        decimal mInitMass;
-
         /// Center of mass of the body in local-space coordinates.
         /// The center of mass can therefore be different from the body origin
         Vector3 mCenterOfMassLocal;
@@ -79,9 +76,6 @@ class RigidBody : public CollisionBody {
 
         /// Inverse of the world inertia tensor of the body
         Matrix3x3 mInertiaTensorInverseWorld;
-
-        /// Inverse of the mass of the body
-        decimal mMassInverse;
 
         /// True if the gravity needs to be applied to this rigid body
         bool mIsGravityEnabled;
@@ -234,14 +228,6 @@ class RigidBody : public CollisionBody {
         friend class HingeJoint;
         friend class FixedJoint;
 };
-
-// Method that return the mass of the body
-/**
- * @return The mass (in kilograms) of the body
- */
-inline decimal RigidBody::getMass() const {
-    return mInitMass;
-}
 
 // Get the inverse local inertia tensor of the body (in body coordinates)
 inline const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {

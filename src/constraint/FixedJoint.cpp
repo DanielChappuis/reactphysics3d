@@ -83,7 +83,9 @@ void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
     Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mR2World);
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
-    decimal inverseMassBodies = mBody1->mMassInverse + mBody2->mMassInverse;
+    const decimal body1MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody1->getEntity());
+    const decimal body2MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody2->getEntity());
+    const decimal inverseMassBodies = body1MassInverse + body2MassInverse;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
                                     0, 0, inverseMassBodies) +
@@ -140,8 +142,8 @@ void FixedJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
     Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass of the bodies
-    const decimal inverseMassBody1 = mBody1->mMassInverse;
-    const decimal inverseMassBody2 = mBody2->mMassInverse;
+    const decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    const decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // Compute the impulse P=J^T * lambda for the 3 translation constraints for body 1
     Vector3 linearImpulseBody1 = -mImpulseTranslation;
@@ -178,8 +180,8 @@ void FixedJoint::solveVelocityConstraint(const ConstraintSolverData& constraintS
     Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass of the bodies
-    decimal inverseMassBody1 = mBody1->mMassInverse;
-    decimal inverseMassBody2 = mBody2->mMassInverse;
+    decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // --------------- Translation Constraints --------------- //
 
@@ -239,8 +241,8 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     Quaternion& q2 = constraintSolverData.orientations[mIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->mMassInverse;
-    decimal inverseMassBody2 = mBody2->mMassInverse;
+    decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // Recompute the inverse inertia tensors
     mI1 = mBody1->getInertiaTensorInverseWorld();
@@ -257,7 +259,7 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // --------------- Translation Constraints --------------- //
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
-    decimal inverseMassBodies = mBody1->mMassInverse + mBody2->mMassInverse;
+    decimal inverseMassBodies = inverseMassBody1 + inverseMassBody2;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
                                     0, 0, inverseMassBodies) +

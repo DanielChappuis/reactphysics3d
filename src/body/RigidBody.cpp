@@ -40,13 +40,13 @@ using namespace reactphysics3d;
 * @param id The ID of the body
 */
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id)
-          : CollisionBody(world, entity, id), mArrayIndex(0), mInitMass(decimal(1.0)),
+          : CollisionBody(world, entity, id), mArrayIndex(0),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
             mIsGravityEnabled(true), mMaterial(world.mConfig),
             mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
     // Compute the inverse mass
-    mMassInverse = decimal(1.0) / mInitMass;
+    mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
@@ -91,12 +91,12 @@ void RigidBody::setType(BodyType type) {
     if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
-        mMassInverse = decimal(0.0);
+        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(0));
         mInertiaTensorLocalInverse.setToZero();
         mInertiaTensorInverseWorld.setToZero();
     }
     else {  // If it is a dynamic body
-        mMassInverse = decimal(1.0) / mInitMass;
+        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
 
         if (mIsInertiaTensorSetByUser) {
             mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
@@ -116,6 +116,14 @@ void RigidBody::setType(BodyType type) {
     // Reset the force and torque on the body
     mWorld.mDynamicsComponents.setExternalForce(mEntity, Vector3::zero());
     mWorld.mDynamicsComponents.setExternalTorque(mEntity, Vector3::zero());
+}
+
+// Method that return the mass of the body
+/**
+ * @return The mass (in kilograms) of the body
+ */
+decimal RigidBody::getMass() const {
+    return mWorld.mDynamicsComponents.getInitMass(mEntity);
 }
 
 // Apply an external force to the body at a given point (in world-space coordinates).
@@ -274,14 +282,14 @@ void RigidBody::setMass(decimal mass) {
 
     if (mType != BodyType::DYNAMIC) return;
 
-    mInitMass = mass;
+    mWorld.mDynamicsComponents.setInitMass(mEntity, mass);
 
-    if (mInitMass > decimal(0.0)) {
-        mMassInverse = decimal(1.0) / mInitMass;
+    if (mWorld.mDynamicsComponents.getInitMass(mEntity) > decimal(0.0)) {
+        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
     }
     else {
-        mInitMass = decimal(1.0);
-        mMassInverse = decimal(1.0);
+        mWorld.mDynamicsComponents.setInitMass(mEntity, decimal(1.0));
+        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0));
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
@@ -558,8 +566,8 @@ void RigidBody::setTransform(const Transform& transform) {
 // the collision shapes attached to the body.
 void RigidBody::recomputeMassInformation() {
 
-    mInitMass = decimal(0.0);
-    mMassInverse = decimal(0.0);
+    mWorld.mDynamicsComponents.setInitMass(mEntity, decimal(0.0));
+    mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(0.0));
     if (!mIsInertiaTensorSetByUser) mInertiaTensorLocalInverse.setToZero();
     if (!mIsInertiaTensorSetByUser) mInertiaTensorInverseWorld.setToZero();
     if (!mIsCenterOfMassSetByUser) mCenterOfMassLocal.setToZero();
@@ -580,15 +588,15 @@ void RigidBody::recomputeMassInformation() {
     const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
         ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
-        mInitMass += proxyShape->getMass();
+        mWorld.mDynamicsComponents.setInitMass(mEntity, mWorld.mDynamicsComponents.getInitMass(mEntity) + proxyShape->getMass());
 
         if (!mIsCenterOfMassSetByUser) {
             mCenterOfMassLocal += proxyShape->getLocalToBodyTransform().getPosition() * proxyShape->getMass();
         }
     }
 
-    if (mInitMass > decimal(0.0)) {
-        mMassInverse = decimal(1.0) / mInitMass;
+    if (mWorld.mDynamicsComponents.getInitMass(mEntity) > decimal(0.0)) {
+        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
     }
     else {
         mCenterOfMassWorld = transform.getPosition();
@@ -599,7 +607,7 @@ void RigidBody::recomputeMassInformation() {
     const Vector3 oldCenterOfMass = mCenterOfMassWorld;
 
     if (!mIsCenterOfMassSetByUser) {
-        mCenterOfMassLocal *= mMassInverse;
+        mCenterOfMassLocal *= mWorld.mDynamicsComponents.getMassInverse(mEntity);
     }
 
     mCenterOfMassWorld = transform * mCenterOfMassLocal;
