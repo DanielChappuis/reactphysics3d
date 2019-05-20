@@ -54,18 +54,12 @@ struct ConstraintSolverData {
         /// Reference to the dynamics components
         DynamicsComponents& dynamicsComponents;
 
-        /// Reference to the bodies positions
-        Vector3* positions;
-
-        /// Reference to the bodies orientations
-        Quaternion* orientations;
-
         /// True if warm starting of the solver is active
         bool isWarmStartingActive;
 
         /// Constructor
         ConstraintSolverData(DynamicsComponents& dynamicsComponents)
-            :dynamicsComponents(dynamicsComponents), positions(nullptr), orientations(nullptr) {
+            :dynamicsComponents(dynamicsComponents) {
 
         }
 
@@ -189,10 +183,6 @@ class ConstraintSolver {
         /// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
         void setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive);
 
-        /// Set the constrained positions/orientations arrays
-        void setConstrainedPositionsArrays(Vector3* constrainedPositions,
-                                           Quaternion* constrainedOrientations);
-
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Set the profiler
@@ -201,17 +191,6 @@ class ConstraintSolver {
 #endif
 
 };
-
-// Set the constrained positions/orientations arrays
-inline void ConstraintSolver::setConstrainedPositionsArrays(Vector3* constrainedPositions,
-                                                           Quaternion* constrainedOrientations) {
-
-    assert(constrainedPositions != nullptr);
-    assert(constrainedOrientations != nullptr);
-
-    mConstraintSolverData.positions = constrainedPositions;
-    mConstraintSolverData.orientations = constrainedOrientations;
-}
 
 #ifdef IS_PROFILING_ACTIVE
 

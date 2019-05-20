@@ -96,6 +96,12 @@ class DynamicsComponents : public Components {
         /// Array with the inverse of the world inertia tensor of each component
         Matrix3x3* mInverseInertiaTensorsWorld;
 
+        /// Array with the constrained position of each component (for position error correction)
+        Vector3* mConstrainedPositions;
+
+        /// Array of constrained orientation for each component (for position error correction)
+        Quaternion* mConstrainedOrientations;
+
         /// True if the gravity needs to be applied to this component
         bool* mIsGravityEnabled;
 
@@ -184,6 +190,12 @@ class DynamicsComponents : public Components {
         /// Return the inverse world inertia tensor of an entity
         const Matrix3x3& getInertiaTensorWorldInverse(Entity bodyEntity);
 
+        /// Return the constrained position of an entity
+        const Vector3& getConstrainedPosition(Entity bodyEntity);
+
+        /// Return the constrained orientation of an entity
+        const Quaternion& getConstrainedOrientation(Entity bodyEntity);
+
         /// Return true if gravity is enabled for this entity
         bool getIsGravityEnabled(Entity bodyEntity) const;
 
@@ -231,6 +243,12 @@ class DynamicsComponents : public Components {
 
         /// Set the inverse world inertia tensor of an entity
         void setInverseInertiaTensorWorld(Entity bodyEntity, const Matrix3x3& inertiaTensorWorldInverse);
+
+        /// Set the constrained position of an entity
+        void setConstrainedPosition(Entity bodyEntity, const Vector3& constrainedPosition);
+
+        /// Set the constrained orientation of an entity
+        void setConstrainedOrientation(Entity bodyEntity, const Quaternion& constrainedOrientation);
 
         /// Set the value to know if the gravity is enabled for this entity
         bool setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled);
@@ -378,6 +396,22 @@ inline const Matrix3x3& DynamicsComponents::getInertiaTensorWorldInverse(Entity 
    return mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+// Return the constrained position of an entity
+inline const Vector3& DynamicsComponents::getConstrainedPosition(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mConstrainedPositions[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the constrained orientation of an entity
+inline const Quaternion& DynamicsComponents::getConstrainedOrientation(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mConstrainedOrientations[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the constrained linear velocity of an entity
 inline void DynamicsComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
 
@@ -472,6 +506,22 @@ inline void DynamicsComponents::setInverseInertiaTensorWorld(Entity bodyEntity, 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]] = inertiaTensorWorldInverse;
+}
+
+// Set the constrained position of an entity
+inline void DynamicsComponents::setConstrainedPosition(Entity bodyEntity, const Vector3& constrainedPosition) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mConstrainedPositions[mMapEntityToComponentIndex[bodyEntity]] = constrainedPosition;
+}
+
+// Set the constrained orientation of an entity
+inline void DynamicsComponents::setConstrainedOrientation(Entity bodyEntity, const Quaternion& constrainedOrientation) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mConstrainedOrientations[mMapEntityToComponentIndex[bodyEntity]] = constrainedOrientation;
 }
 
 // Return true if gravity is enabled for this entity

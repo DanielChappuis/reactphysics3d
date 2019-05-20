@@ -88,12 +88,6 @@ class DynamicsWorld : public CollisionWorld {
         /// True if the gravity force is on
         bool mIsGravityEnabled;
 
-        /// Array of constrained rigid bodies position (for position error correction)
-        Vector3* mConstrainedPositions;
-
-        /// Array of constrained rigid bodies orientation (for position error correction)
-        Quaternion* mConstrainedOrientations;
-
         /// Sleep linear velocity threshold
         decimal mSleepLinearVelocity;
 

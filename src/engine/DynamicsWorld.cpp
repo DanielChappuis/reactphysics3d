@@ -56,8 +56,7 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
                 mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
-                mIsGravityEnabled(true), mConstrainedPositions(nullptr),
-                mConstrainedOrientations(nullptr), mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
+                mIsGravityEnabled(true),  mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
                 mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
                 mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0) {
 
@@ -176,7 +175,6 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             RigidBody* body = static_cast<RigidBody*>(mBodyComponents.getBody(bodyEntity));
 
             // Get the constrained velocity
-            uint indexArray = body->mArrayIndex;
             Vector3 newLinVelocity = mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity);
             Vector3 newAngVelocity = mDynamicsComponents.getConstrainedAngularVelocity(bodyEntity);
 
@@ -196,10 +194,10 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
             const Quaternion& currentOrientation = mTransformComponents.getTransform(body->getEntity()).getOrientation();
 
             // Update the new constrained position and orientation of the body
-            mConstrainedPositions[indexArray] = currentPosition + newLinVelocity * mTimeStep;
-            mConstrainedOrientations[indexArray] = currentOrientation +
+            mDynamicsComponents.setConstrainedPosition(bodyEntity, currentPosition + newLinVelocity * mTimeStep);
+            mDynamicsComponents.setConstrainedOrientation(bodyEntity, currentOrientation +
                                                    Quaternion(0, newAngVelocity) *
-                                                   currentOrientation * decimal(0.5) * mTimeStep;
+                                                   currentOrientation * decimal(0.5) * mTimeStep);
         }
     }
 }
@@ -229,10 +227,11 @@ void DynamicsWorld::updateBodiesState() {
             mDynamicsComponents.setAngularVelocity(bodyEntity, mDynamicsComponents.getConstrainedAngularVelocity(bodyEntity));
 
             // Update the position of the center of mass of the body
-            body->mCenterOfMassWorld = mConstrainedPositions[index];
+            body->mCenterOfMassWorld = mDynamicsComponents.getConstrainedPosition(bodyEntity);
 
             // Update the orientation of the body
-            mTransformComponents.getTransform(bodyEntity).setOrientation(mConstrainedOrientations[index].getUnit());
+            const Quaternion& constrainedOrientation = mDynamicsComponents.getConstrainedOrientation(bodyEntity);
+            mTransformComponents.getTransform(bodyEntity).setOrientation(constrainedOrientation.getUnit());
 
             // Update the transform of the body (using the new center of mass and new orientation)
             body->updateTransformWithCenterOfMass();
@@ -255,13 +254,6 @@ void DynamicsWorld::initVelocityArrays() {
     uint nbBodies = mRigidBodies.size();
 
     assert(mDynamicsComponents.getNbComponents() == nbBodies);
-
-    mConstrainedPositions = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                          nbBodies * sizeof(Vector3)));
-    mConstrainedOrientations = static_cast<Quaternion*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                                nbBodies * sizeof(Quaternion)));
-    assert(mConstrainedPositions != nullptr);
-    assert(mConstrainedOrientations != nullptr);
 
     // Initialize the map of body indexes in the velocity arrays
     uint i = 0;
@@ -347,10 +339,6 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 void DynamicsWorld::solveContactsAndConstraints() {
 
     RP3D_PROFILE("DynamicsWorld::solveContactsAndConstraints()", mProfiler);
-
-    // Set the velocities arrays
-    mConstraintSolver.setConstrainedPositionsArrays(mConstrainedPositions,
-                                                    mConstrainedOrientations);
 
     // ---------- Solve velocity constraints for joints and contacts ---------- //
 

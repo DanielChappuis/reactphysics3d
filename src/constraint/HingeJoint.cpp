@@ -414,10 +414,10 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies positions and orientations
-    Vector3& x1 = constraintSolverData.positions[mIndexBody1];
-    Vector3& x2 = constraintSolverData.positions[mIndexBody2];
-    Quaternion& q1 = constraintSolverData.orientations[mIndexBody1];
-    Quaternion& q2 = constraintSolverData.orientations[mIndexBody2];
+    Vector3 x1 = constraintSolverData.dynamicsComponents.getConstrainedPosition(mBody1Entity);
+    Vector3 x2 = constraintSolverData.dynamicsComponents.getConstrainedPosition(mBody2Entity);
+    Quaternion q1 = constraintSolverData.dynamicsComponents.getConstrainedOrientation(mBody1Entity);
+    Quaternion q2 = constraintSolverData.dynamicsComponents.getConstrainedOrientation(mBody2Entity);
 
     // Get the inverse mass and inverse inertia tensors of the bodies
     decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
@@ -614,6 +614,11 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
             q2.normalize();
         }
     }
+
+    constraintSolverData.dynamicsComponents.setConstrainedPosition(mBody1Entity, x1);
+    constraintSolverData.dynamicsComponents.setConstrainedPosition(mBody2Entity, x2);
+    constraintSolverData.dynamicsComponents.setConstrainedOrientation(mBody1Entity, q1);
+    constraintSolverData.dynamicsComponents.setConstrainedOrientation(mBody2Entity, q2);
 }
 
 
