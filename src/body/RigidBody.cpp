@@ -42,8 +42,7 @@ using namespace reactphysics3d;
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id)
           : CollisionBody(world, entity, id), mArrayIndex(0),
             mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
-            mIsGravityEnabled(true), mMaterial(world.mConfig),
-            mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
+            mMaterial(world.mConfig), mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
     // Compute the inverse mass
     mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
@@ -92,14 +91,14 @@ void RigidBody::setType(BodyType type) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
         mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(0));
-        mInertiaTensorLocalInverse.setToZero();
-        mInertiaTensorInverseWorld.setToZero();
+        mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+        mWorld.mDynamicsComponents.setInverseInertiaTensorWorld(mEntity, Matrix3x3::zero());
     }
     else {  // If it is a dynamic body
         mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
 
         if (mIsInertiaTensorSetByUser) {
-            mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
+            mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
         }
     }
 
@@ -116,6 +115,27 @@ void RigidBody::setType(BodyType type) {
     // Reset the force and torque on the body
     mWorld.mDynamicsComponents.setExternalForce(mEntity, Vector3::zero());
     mWorld.mDynamicsComponents.setExternalTorque(mEntity, Vector3::zero());
+}
+
+// Get the inverse local inertia tensor of the body (in body coordinates)
+const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
+    return mWorld.mDynamicsComponents.getInertiaTensorLocalInverse(mEntity);
+}
+
+// Return the inverse of the inertia tensor in world coordinates.
+/// The inertia tensor I_w in world coordinates is computed with the
+/// local inverse inertia tensor I_b^-1 in body coordinates
+/// by I_w = R * I_b^-1 * R^T
+/// where R is the rotation matrix (and R^T its transpose) of the
+/// current orientation quaternion of the body
+/**
+ * @return The 3x3 inverse inertia tensor matrix of the body in world-space
+ *         coordinates
+ */
+Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
+
+    // Compute and return the inertia tensor in world coordinates
+    return mWorld.mDynamicsComponents.getInertiaTensorWorldInverse(mEntity);
 }
 
 // Method that return the mass of the body
@@ -171,7 +191,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
     if (mType != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
-    mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
+    mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
@@ -234,7 +254,7 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
     if (mType != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
-    mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
+    mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
@@ -337,7 +357,8 @@ void RigidBody::updateInertiaTensorInverseWorld() {
     // TODO : Make sure we do this in a system
 
     Matrix3x3 orientation = mWorld.mTransformComponents.getTransform(mEntity).getOrientation().getMatrix();
-    mInertiaTensorInverseWorld = orientation * mInertiaTensorLocalInverse * orientation.getTranspose();
+    const Matrix3x3& inverseInertiaLocalTensor = mWorld.mDynamicsComponents.getInertiaTensorLocalInverse(mEntity);
+    mWorld.mDynamicsComponents.setInverseInertiaTensorWorld(mEntity, orientation * inverseInertiaLocalTensor * orientation.getTranspose());
 }
 
 // Add a collision shape to the body.
@@ -437,11 +458,11 @@ void RigidBody::removeCollisionShape(ProxyShape* proxyShape) {
  * @param isEnabled True if you want the gravity to be applied to this body
  */
 void RigidBody::enableGravity(bool isEnabled) {
-    mIsGravityEnabled = isEnabled;
+    mWorld.mDynamicsComponents.setIsGravityEnabled(mEntity, isEnabled);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mID) + ": Set isGravityEnabled=" +
-             (mIsGravityEnabled ? "true" : "false"));
+             (isEnabled ? "true" : "false"));
 }
 
 // Set the linear damping factor. This is the ratio of the linear velocity
@@ -568,8 +589,8 @@ void RigidBody::recomputeMassInformation() {
 
     mWorld.mDynamicsComponents.setInitMass(mEntity, decimal(0.0));
     mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(0.0));
-    if (!mIsInertiaTensorSetByUser) mInertiaTensorLocalInverse.setToZero();
-    if (!mIsInertiaTensorSetByUser) mInertiaTensorInverseWorld.setToZero();
+    if (!mIsInertiaTensorSetByUser) mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+    if (!mIsInertiaTensorSetByUser) mWorld.mDynamicsComponents.setInverseInertiaTensorWorld(mEntity, Matrix3x3::zero());
     if (!mIsCenterOfMassSetByUser) mCenterOfMassLocal.setToZero();
     Matrix3x3 inertiaTensorLocal;
     inertiaTensorLocal.setToZero();
@@ -646,7 +667,7 @@ void RigidBody::recomputeMassInformation() {
         }
 
         // Compute the local inverse inertia tensor
-        mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
+        mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
     }
 
     // Update the world inverse inertia tensor
@@ -673,6 +694,14 @@ Vector3 RigidBody::getLinearVelocity() const {
  */
 Vector3 RigidBody::getAngularVelocity() const {
     return mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
+}
+
+// Return true if the gravity needs to be applied to this rigid body
+/**
+ * @return True if the gravity is applied to the body
+ */
+bool RigidBody::isGravityEnabled() const {
+    return mWorld.mDynamicsComponents.getIsGravityEnabled(mEntity);
 }
 
 // Apply an external torque to the body.

@@ -295,59 +295,51 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
     // Reset the split velocities of the bodies
     resetSplitVelocities();
 
-    // TODO : We should loop over non-sleeping dynamic components here and not over islands
+    // Integration component velocities using force/torque
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-    // For each island of the world
-    for (uint i=0; i < mIslands.getNbIslands(); i++) {
+        assert(mDynamicsComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
+        assert(mDynamicsComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
 
-        // For each body of the island
-        for (uint b=0; b < mIslands.bodyEntities[i].size(); b++) {
+        // Integrate the external force to get the new velocity of the body
+        mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mLinearVelocities[i] + mTimeStep *
+                                                              mDynamicsComponents.mInverseMasses[i] * mDynamicsComponents.mExternalForces[i];
+        mDynamicsComponents.mConstrainedAngularVelocities[i] = mDynamicsComponents.mAngularVelocities[i] +
+                                                               mTimeStep * mDynamicsComponents.mInverseInertiaTensorsWorld[i] * mDynamicsComponents.mExternalTorques[i];
+    }
 
-            const Entity bodyEntity = mIslands.bodyEntities[i][b];
+    // Apply gravity force
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+        // If the gravity has to be applied to this rigid body
+        if (mDynamicsComponents.mIsGravityEnabled[i] && mIsGravityEnabled) {
 
-            RigidBody* body = static_cast<RigidBody*>(mBodyComponents.getBody(bodyEntity));
-
-            const uint indexBody = body->mArrayIndex;
-
-            assert(mDynamicsComponents.getSplitLinearVelocity(bodyEntity) == Vector3(0, 0, 0));
-            assert(mDynamicsComponents.getSplitAngularVelocity(bodyEntity) == Vector3(0, 0, 0));
-            assert(indexBody < mRigidBodies.size());
-
-            // Integrate the external force to get the new velocity of the body
-            mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getLinearVelocity(bodyEntity) +
-                                        mTimeStep * mDynamicsComponents.getMassInverse(bodyEntity) * mDynamicsComponents.getExternalForce(bodyEntity));
-            mDynamicsComponents.setConstrainedAngularVelocity(bodyEntity, mDynamicsComponents.getAngularVelocity(bodyEntity) +
-                                        mTimeStep * body->getInertiaTensorInverseWorld() * mDynamicsComponents.getExternalTorque(bodyEntity));
-
-            // If the gravity has to be applied to this rigid body
-            if (body->isGravityEnabled() && mIsGravityEnabled) {
-
-                // Integrate the gravity force
-                mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity) +
-                                                                 mTimeStep * mDynamicsComponents.getMassInverse(bodyEntity) *
-                        body->getMass() * mGravity);
-            }
-
-            // Apply the velocity damping
-            // Damping force : F_c = -c' * v (c=damping factor)
-            // Equation      : m * dv/dt = -c' * v
-            //                 => dv/dt = -c * v (with c=c'/m)
-            //                 => dv/dt + c * v = 0
-            // Solution      : v(t) = v0 * e^(-c * t)
-            //                 => v(t + dt) = v0 * e^(-c(t + dt))
-            //                              = v0 * e^(-ct) * e^(-c * dt)
-            //                              = v(t) * e^(-c * dt)
-            //                 => v2 = v1 * e^(-c * dt)
-            // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
-            //                              => e^(-x) ~ 1 - x
-            //                 => v2 = v1 * (1 - c * dt)
-            decimal linDampingFactor = mDynamicsComponents.getLinearDamping(bodyEntity);
-            decimal angDampingFactor = mDynamicsComponents.getAngularDamping(bodyEntity);
-            decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
-            decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
-            mDynamicsComponents.setConstrainedLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity) * linearDamping);
-            mDynamicsComponents.setConstrainedAngularVelocity(bodyEntity, mDynamicsComponents.getConstrainedAngularVelocity(bodyEntity) * angularDamping);
+            // Integrate the gravity force
+            mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i] + mTimeStep *
+                                                                  mDynamicsComponents.mInverseMasses[i] * mDynamicsComponents.mInitMasses[i] * mGravity;
         }
+    }
+
+    // Apply the velocity damping
+    // Damping force : F_c = -c' * v (c=damping factor)
+    // Equation      : m * dv/dt = -c' * v
+    //                 => dv/dt = -c * v (with c=c'/m)
+    //                 => dv/dt + c * v = 0
+    // Solution      : v(t) = v0 * e^(-c * t)
+    //                 => v(t + dt) = v0 * e^(-c(t + dt))
+    //                              = v0 * e^(-ct) * e^(-c * dt)
+    //                              = v(t) * e^(-c * dt)
+    //                 => v2 = v1 * e^(-c * dt)
+    // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
+    //                              => e^(-x) ~ 1 - x
+    //                 => v2 = v1 * (1 - c * dt)
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+
+        const decimal linDampingFactor = mDynamicsComponents.mLinearDampings[i];
+        const decimal angDampingFactor = mDynamicsComponents.mAngularDampings[i];
+        const decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
+        const decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
+        mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i] * linearDamping;
+        mDynamicsComponents.mConstrainedAngularVelocities[i] = mDynamicsComponents.mConstrainedAngularVelocities[i] * angularDamping;
     }
 }
 

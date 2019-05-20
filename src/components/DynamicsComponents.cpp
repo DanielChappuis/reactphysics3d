@@ -37,7 +37,8 @@ using namespace reactphysics3d;
 DynamicsComponents::DynamicsComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                            sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(decimal) +
-                                           sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(bool)) {
+                                           sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(Matrix3x3) + sizeof(Matrix3x3) +
+                                           sizeof(bool) + sizeof(bool)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -69,7 +70,10 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     decimal* newAngularDampings = reinterpret_cast<decimal*>(newLinearDampings + nbComponentsToAllocate);
     decimal* newInitMasses = reinterpret_cast<decimal*>(newAngularDampings + nbComponentsToAllocate);
     decimal* newInverseMasses = reinterpret_cast<decimal*>(newInitMasses + nbComponentsToAllocate);
-    bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newInverseMasses + nbComponentsToAllocate);
+    Matrix3x3* newInertiaTensorLocalInverses = reinterpret_cast<Matrix3x3*>(newInverseMasses + nbComponentsToAllocate);
+    Matrix3x3* newInertiaTensorWorldInverses = reinterpret_cast<Matrix3x3*>(newInertiaTensorLocalInverses + nbComponentsToAllocate);
+    bool* newIsGravityEnabled = reinterpret_cast<bool*>(newInertiaTensorWorldInverses + nbComponentsToAllocate);
+    bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newIsGravityEnabled + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -88,6 +92,9 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newAngularDampings, mAngularDampings, mNbComponents * sizeof(decimal));
         memcpy(newInitMasses, mInitMasses, mNbComponents * sizeof(decimal));
         memcpy(newInverseMasses, mInverseMasses, mNbComponents * sizeof(decimal));
+        memcpy(newInertiaTensorLocalInverses, mInverseInertiaTensorsLocal, mNbComponents * sizeof(Matrix3x3));
+        memcpy(newInertiaTensorWorldInverses, mInverseInertiaTensorsWorld, mNbComponents * sizeof(Matrix3x3));
+        memcpy(newIsGravityEnabled, mIsGravityEnabled, mNbComponents * sizeof(bool));
         memcpy(newIsAlreadyInIsland, mIsAlreadyInIsland, mNbComponents * sizeof(bool));
 
         // Deallocate previous memory
@@ -108,6 +115,9 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     mAngularDampings = newAngularDampings;
     mInitMasses = newInitMasses;
     mInverseMasses = newInverseMasses;
+    mInverseInertiaTensorsLocal = newInertiaTensorLocalInverses;
+    mInverseInertiaTensorsWorld = newInertiaTensorWorldInverses;
+    mIsGravityEnabled = newIsGravityEnabled;
     mIsAlreadyInIsland = newIsAlreadyInIsland;
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
@@ -132,6 +142,9 @@ void DynamicsComponents::addComponent(Entity bodyEntity, bool isSleeping, const 
     mAngularDampings[index] = decimal(0.0);
     mInitMasses[index] = decimal(1.0);
     mInverseMasses[index] = decimal(1.0);
+    new (mInverseInertiaTensorsLocal + index) Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+    new (mInverseInertiaTensorsWorld + index) Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+    mIsGravityEnabled[index] = true;
     mIsAlreadyInIsland[index] = false;
 
     // Map the entity with the new component lookup index
@@ -163,6 +176,9 @@ void DynamicsComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
     mAngularDampings[destIndex] = mAngularDampings[srcIndex];
     mInitMasses[destIndex] = mInitMasses[srcIndex];
     mInverseMasses[destIndex] = mInverseMasses[srcIndex];
+    mInverseInertiaTensorsLocal[destIndex] = mInverseInertiaTensorsLocal[srcIndex];
+    mInverseInertiaTensorsWorld[destIndex] = mInverseInertiaTensorsWorld[srcIndex];
+    mIsGravityEnabled[destIndex] = mIsGravityEnabled[srcIndex];
     mIsAlreadyInIsland[destIndex] = mIsAlreadyInIsland[srcIndex];
 
     // Destroy the source component
@@ -196,6 +212,9 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
     decimal angularDamping1 = mAngularDampings[index1];
     decimal initMass1 = mInitMasses[index1];
     decimal inverseMass1 = mInverseMasses[index1];
+    Matrix3x3 inertiaTensorLocalInverse1 = mInverseInertiaTensorsLocal[index1];
+    Matrix3x3 inertiaTensorWorldInverse1 = mInverseInertiaTensorsWorld[index1];
+    bool isGravityEnabled1 = mIsGravityEnabled[index1];
     bool isAlreadyInIsland1 = mIsAlreadyInIsland[index1];
 
     // Destroy component 1
@@ -217,6 +236,9 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
     mAngularDampings[index2] = angularDamping1;
     mInitMasses[index2] = initMass1;
     mInverseMasses[index2] = inverseMass1;
+    mInverseInertiaTensorsLocal[index2] = inertiaTensorLocalInverse1;
+    mInverseInertiaTensorsWorld[index2] = inertiaTensorWorldInverse1;
+    mIsGravityEnabled[index2] = isGravityEnabled1;
     mIsAlreadyInIsland[index2] = isAlreadyInIsland1;
 
     // Update the entity to component index mapping
@@ -245,4 +267,6 @@ void DynamicsComponents::destroyComponent(uint32 index) {
     mSplitAngularVelocities[index].~Vector3();
     mExternalForces[index].~Vector3();
     mExternalTorques[index].~Vector3();
+    mInverseInertiaTensorsLocal[index].~Matrix3x3();
+    mInverseInertiaTensorsWorld[index].~Matrix3x3();
 }

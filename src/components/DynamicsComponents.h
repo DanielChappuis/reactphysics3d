@@ -30,6 +30,7 @@
 #include "mathematics/Transform.h"
 #include "engine/Entity.h"
 #include "components/Components.h"
+#include "mathematics/Matrix3x3.h"
 #include "containers/Map.h"
 
 // ReactPhysics3D namespace
@@ -88,6 +89,15 @@ class DynamicsComponents : public Components {
 
         /// Array with the inverse mass of each component
         decimal* mInverseMasses;
+
+        /// Array with the inverse of the inertia tensor of each component
+        Matrix3x3* mInverseInertiaTensorsLocal;
+
+        /// Array with the inverse of the world inertia tensor of each component
+        Matrix3x3* mInverseInertiaTensorsWorld;
+
+        /// True if the gravity needs to be applied to this component
+        bool* mIsGravityEnabled;
 
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
@@ -168,6 +178,15 @@ class DynamicsComponents : public Components {
         /// Return the mass inverse of an entity
         decimal getMassInverse(Entity bodyEntity) const;
 
+        /// Return the inverse local inertia tensor of an entity
+        const Matrix3x3& getInertiaTensorLocalInverse(Entity bodyEntity);
+
+        /// Return the inverse world inertia tensor of an entity
+        const Matrix3x3& getInertiaTensorWorldInverse(Entity bodyEntity);
+
+        /// Return true if gravity is enabled for this entity
+        bool getIsGravityEnabled(Entity bodyEntity) const;
+
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
 
@@ -206,6 +225,15 @@ class DynamicsComponents : public Components {
 
         /// Set the inverse mass of an entity
         void setMassInverse(Entity bodyEntity, decimal inverseMass);
+
+        /// Set the inverse local inertia tensor of an entity
+        void setInverseInertiaTensorLocal(Entity bodyEntity, const Matrix3x3& inertiaTensorLocalInverse);
+
+        /// Set the inverse world inertia tensor of an entity
+        void setInverseInertiaTensorWorld(Entity bodyEntity, const Matrix3x3& inertiaTensorWorldInverse);
+
+        /// Set the value to know if the gravity is enabled for this entity
+        bool setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled);
 
         /// Set the value to know if the entity is already in an island
         bool setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
@@ -334,6 +362,22 @@ inline decimal DynamicsComponents::getMassInverse(Entity bodyEntity) const {
    return mInverseMasses[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+// Return the inverse local inertia tensor of an entity
+inline const Matrix3x3& DynamicsComponents::getInertiaTensorLocalInverse(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mInverseInertiaTensorsLocal[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the inverse world inertia tensor of an entity
+inline const Matrix3x3& DynamicsComponents::getInertiaTensorWorldInverse(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the constrained linear velocity of an entity
 inline void DynamicsComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
 
@@ -414,12 +458,44 @@ inline void DynamicsComponents::setMassInverse(Entity bodyEntity, decimal invers
    mInverseMasses[mMapEntityToComponentIndex[bodyEntity]] = inverseMass;
 }
 
+// Set the inverse local inertia tensor of an entity
+inline void DynamicsComponents::setInverseInertiaTensorLocal(Entity bodyEntity, const Matrix3x3& inertiaTensorLocalInverse) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mInverseInertiaTensorsLocal[mMapEntityToComponentIndex[bodyEntity]] = inertiaTensorLocalInverse;
+}
+
+// Set the inverse world inertia tensor of an entity
+inline void DynamicsComponents::setInverseInertiaTensorWorld(Entity bodyEntity, const Matrix3x3& inertiaTensorWorldInverse) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]] = inertiaTensorWorldInverse;
+}
+
+// Return true if gravity is enabled for this entity
+inline bool DynamicsComponents::getIsGravityEnabled(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mIsGravityEnabled[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Return true if the entity is already in an island
 inline bool DynamicsComponents::getIsAlreadyInIsland(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    return mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the value to know if the gravity is enabled for this entity
+inline bool DynamicsComponents::setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mIsGravityEnabled[mMapEntityToComponentIndex[bodyEntity]] = isGravityEnabled;
 }
 
 /// Set the value to know if the entity is already in an island

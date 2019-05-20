@@ -71,15 +71,6 @@ class RigidBody : public CollisionBody {
         /// by the user with respect to the center of mass of the body
         Matrix3x3 mUserInertiaTensorLocalInverse;
 
-        /// Inverse of the inertia tensor of the body
-        Matrix3x3 mInertiaTensorLocalInverse;
-
-        /// Inverse of the world inertia tensor of the body
-        Matrix3x3 mInertiaTensorInverseWorld;
-
-        /// True if the gravity needs to be applied to this rigid body
-        bool mIsGravityEnabled;
-
         /// Material properties of the rigid body
         Material mMaterial;
 
@@ -228,35 +219,6 @@ class RigidBody : public CollisionBody {
         friend class HingeJoint;
         friend class FixedJoint;
 };
-
-// Get the inverse local inertia tensor of the body (in body coordinates)
-inline const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
-    return mInertiaTensorLocalInverse;
-}
-
-// Return the inverse of the inertia tensor in world coordinates.
-/// The inertia tensor I_w in world coordinates is computed with the
-/// local inverse inertia tensor I_b^-1 in body coordinates
-/// by I_w = R * I_b^-1 * R^T
-/// where R is the rotation matrix (and R^T its transpose) of the
-/// current orientation quaternion of the body
-/**
- * @return The 3x3 inverse inertia tensor matrix of the body in world-space
- *         coordinates
- */
-inline Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
-
-    // Compute and return the inertia tensor in world coordinates
-    return mInertiaTensorInverseWorld;
-}
-
-// Return true if the gravity needs to be applied to this rigid body
-/**
- * @return True if the gravity is applied to the body
- */
-inline bool RigidBody::isGravityEnabled() const {
-    return mIsGravityEnabled;
-}
 
 // Return a reference to the material properties of the rigid body
 /**
