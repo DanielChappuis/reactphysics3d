@@ -112,9 +112,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Reset the external force and torque applied to the bodies
         void resetBodiesForceAndTorque();
 
-        /// Initialize the bodies velocities arrays for the next simulation step.
-        void initVelocityArrays();
-
         /// Reset the split velocities of the bodies
         void resetSplitVelocities();
 

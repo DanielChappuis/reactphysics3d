@@ -174,14 +174,6 @@ class ContactSolver {
             /// Pointer to the external contact manifold
             ContactManifold* externalContactManifold;
 
-            /// Index of body 1 in the constraint solver
-            // TODO : Remove this
-            int32 indexBody1;
-
-            /// Index of body 2 in the constraint solver
-            // TODO : Remove this
-            int32 indexBody2;
-
             /// Index of body 1 in the dynamics components arrays
             uint32 dynamicsComponentIndexBody1;
 

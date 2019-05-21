@@ -140,12 +140,6 @@ class Joint {
         /// Type of the joint
         const JointType mType;
 
-        /// Body 1 index in the velocity array to solve the constraint
-        uint mIndexBody1;
-
-        /// Body 2 index in the velocity array to solve the constraint
-        uint mIndexBody2;
-
         /// Position correction technique used for the constraint (used for joints)
         JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
 

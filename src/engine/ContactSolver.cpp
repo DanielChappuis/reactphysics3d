@@ -131,14 +131,12 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
         const ProxyShape* shape2 = mProxyShapeComponents.getProxyShape(externalManifold.proxyShapeEntity2);
 
         // Get the position of the two bodies
-        const Vector3& x1 = body1->mCenterOfMassWorld;
-        const Vector3& x2 = body2->mCenterOfMassWorld;
+        const Vector3& x1 = mDynamicsComponents.getCenterOfMassWorld(externalManifold.bodyEntity1);
+        const Vector3& x2 = mDynamicsComponents.getCenterOfMassWorld(externalManifold.bodyEntity2);
 
         // Initialize the internal contact manifold structure using the external
         // contact manifold
         new (mContactConstraints + mNbContactManifolds) ContactManifoldSolver();
-        mContactConstraints[mNbContactManifolds].indexBody1 = body1->mArrayIndex;
-        mContactConstraints[mNbContactManifolds].indexBody2 = body2->mArrayIndex;
         mContactConstraints[mNbContactManifolds].dynamicsComponentIndexBody1 = mDynamicsComponents.getEntityIndex(body1->getEntity());
         mContactConstraints[mNbContactManifolds].dynamicsComponentIndexBody2 = mDynamicsComponents.getEntityIndex(body2->getEntity());
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();

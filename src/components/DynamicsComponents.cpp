@@ -38,7 +38,8 @@ DynamicsComponents::DynamicsComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                            sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(decimal) +
                                            sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(Matrix3x3) + sizeof(Matrix3x3) +
-                                           sizeof(Vector3) + sizeof(Quaternion) + sizeof(bool) + sizeof(bool)) {
+                                           sizeof(Vector3) + sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) + sizeof(bool) +
+                                           sizeof(bool)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -74,7 +75,9 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     Matrix3x3* newInertiaTensorWorldInverses = reinterpret_cast<Matrix3x3*>(newInertiaTensorLocalInverses + nbComponentsToAllocate);
     Vector3* newConstrainedPositions = reinterpret_cast<Vector3*>(newInertiaTensorWorldInverses + nbComponentsToAllocate);
     Quaternion* newConstrainedOrientations = reinterpret_cast<Quaternion*>(newConstrainedPositions + nbComponentsToAllocate);
-    bool* newIsGravityEnabled = reinterpret_cast<bool*>(newConstrainedOrientations + nbComponentsToAllocate);
+    Vector3* newCentersOfMassLocal = reinterpret_cast<Vector3*>(newConstrainedOrientations + nbComponentsToAllocate);
+    Vector3* newCentersOfMassWorld = reinterpret_cast<Vector3*>(newCentersOfMassLocal + nbComponentsToAllocate);
+    bool* newIsGravityEnabled = reinterpret_cast<bool*>(newCentersOfMassWorld + nbComponentsToAllocate);
     bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newIsGravityEnabled + nbComponentsToAllocate);
 
     // If there was already components before
@@ -98,6 +101,8 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newInertiaTensorWorldInverses, mInverseInertiaTensorsWorld, mNbComponents * sizeof(Matrix3x3));
         memcpy(newConstrainedPositions, mConstrainedPositions, mNbComponents * sizeof(Vector3));
         memcpy(newConstrainedOrientations, mConstrainedOrientations, mNbComponents * sizeof(Quaternion));
+        memcpy(newCentersOfMassLocal, mCentersOfMassLocal, mNbComponents * sizeof(Vector3));
+        memcpy(newCentersOfMassWorld, mCentersOfMassWorld, mNbComponents * sizeof(Vector3));
         memcpy(newIsGravityEnabled, mIsGravityEnabled, mNbComponents * sizeof(bool));
         memcpy(newIsAlreadyInIsland, mIsAlreadyInIsland, mNbComponents * sizeof(bool));
 
@@ -123,6 +128,8 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     mInverseInertiaTensorsWorld = newInertiaTensorWorldInverses;
     mConstrainedPositions = newConstrainedPositions;
     mConstrainedOrientations = newConstrainedOrientations;
+    mCentersOfMassLocal = newCentersOfMassLocal;
+    mCentersOfMassWorld = newCentersOfMassWorld;
     mIsGravityEnabled = newIsGravityEnabled;
     mIsAlreadyInIsland = newIsAlreadyInIsland;
     mNbAllocatedComponents = nbComponentsToAllocate;
@@ -136,8 +143,8 @@ void DynamicsComponents::addComponent(Entity bodyEntity, bool isSleeping, const 
 
     // Insert the new component data
     new (mBodies + index) Entity(bodyEntity);
-    new (mLinearVelocities + index) Vector3(component.linearVelocity);
-    new (mAngularVelocities + index) Vector3(component.angularVelocity);
+    new (mLinearVelocities + index) Vector3(0, 0, 0);
+    new (mAngularVelocities + index) Vector3(0, 0, 0);
     new (mConstrainedLinearVelocities + index) Vector3(0, 0, 0);
     new (mConstrainedAngularVelocities + index) Vector3(0, 0, 0);
     new (mSplitLinearVelocities + index) Vector3(0, 0, 0);
@@ -152,6 +159,8 @@ void DynamicsComponents::addComponent(Entity bodyEntity, bool isSleeping, const 
     new (mInverseInertiaTensorsWorld + index) Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
     new (mConstrainedPositions + index) Vector3(0, 0, 0);
     new (mConstrainedOrientations + index) Quaternion(0, 0, 0, 1);
+    new (mCentersOfMassLocal + index) Vector3(0, 0, 0);
+    new (mCentersOfMassWorld + index) Vector3(component.worldPosition);
     mIsGravityEnabled[index] = true;
     mIsAlreadyInIsland[index] = false;
 
@@ -184,10 +193,12 @@ void DynamicsComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
     mAngularDampings[destIndex] = mAngularDampings[srcIndex];
     mInitMasses[destIndex] = mInitMasses[srcIndex];
     mInverseMasses[destIndex] = mInverseMasses[srcIndex];
-    mInverseInertiaTensorsLocal[destIndex] = mInverseInertiaTensorsLocal[srcIndex];
-    mInverseInertiaTensorsWorld[destIndex] = mInverseInertiaTensorsWorld[srcIndex];
-    mConstrainedPositions[destIndex] = mConstrainedPositions[srcIndex];
-    mConstrainedOrientations[destIndex] = mConstrainedOrientations[srcIndex];
+    new (mInverseInertiaTensorsLocal + destIndex) Matrix3x3(mInverseInertiaTensorsLocal[srcIndex]);
+    new (mInverseInertiaTensorsWorld + destIndex) Matrix3x3(mInverseInertiaTensorsWorld[srcIndex]);
+    new (mConstrainedPositions + destIndex) Vector3(mConstrainedPositions[srcIndex]);
+    new (mConstrainedOrientations + destIndex) Quaternion(mConstrainedOrientations[srcIndex]);
+    new (mCentersOfMassLocal + destIndex) Vector3(mCentersOfMassLocal[srcIndex]);
+    new (mCentersOfMassWorld + destIndex) Vector3(mCentersOfMassWorld[srcIndex]);
     mIsGravityEnabled[destIndex] = mIsGravityEnabled[srcIndex];
     mIsAlreadyInIsland[destIndex] = mIsAlreadyInIsland[srcIndex];
 
@@ -226,6 +237,8 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
     Matrix3x3 inertiaTensorWorldInverse1 = mInverseInertiaTensorsWorld[index1];
     Vector3 constrainedPosition1 = mConstrainedPositions[index1];
     Quaternion constrainedOrientation1 = mConstrainedOrientations[index1];
+    Vector3 centerOfMassLocal1 = mCentersOfMassLocal[index1];
+    Vector3 centerOfMassWorld1 = mCentersOfMassWorld[index1];
     bool isGravityEnabled1 = mIsGravityEnabled[index1];
     bool isAlreadyInIsland1 = mIsAlreadyInIsland[index1];
 
@@ -252,6 +265,8 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
     mInverseInertiaTensorsWorld[index2] = inertiaTensorWorldInverse1;
     mConstrainedPositions[index2] = constrainedPosition1;
     mConstrainedOrientations[index2] = constrainedOrientation1;
+    mCentersOfMassLocal[index2] = centerOfMassLocal1;
+    mCentersOfMassWorld[index2] = centerOfMassWorld1;
     mIsGravityEnabled[index2] = isGravityEnabled1;
     mIsAlreadyInIsland[index2] = isAlreadyInIsland1;
 
@@ -285,4 +300,6 @@ void DynamicsComponents::destroyComponent(uint32 index) {
     mInverseInertiaTensorsWorld[index].~Matrix3x3();
     mConstrainedPositions[index].~Vector3();
     mConstrainedOrientations[index].~Quaternion();
+    mCentersOfMassLocal[index].~Vector3();
+    mCentersOfMassWorld[index].~Vector3();
 }

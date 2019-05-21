@@ -163,42 +163,27 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
 
     RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesPositions()", mProfiler);
     
-    // TODO : We should loop over non-sleeping dynamic components here and not over islands
+    const decimal isSplitImpulseActive = mContactSolver.isSplitImpulseActive() ? decimal(1.0) : decimal(0.0);
 
-    // For each island of the world
-    for (uint i=0; i < mIslands.getNbIslands(); i++) {
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-        // For each body of the island
-        for (uint b=0; b < mIslands.bodyEntities[i].size(); b++) {
+        // Get the constrained velocity
+        Vector3 newLinVelocity = mDynamicsComponents.mConstrainedLinearVelocities[i];
+        Vector3 newAngVelocity = mDynamicsComponents.mConstrainedAngularVelocities[i];
 
-            const Entity bodyEntity = mIslands.bodyEntities[i][b];
-            RigidBody* body = static_cast<RigidBody*>(mBodyComponents.getBody(bodyEntity));
+        // Add the split impulse velocity from Contact Solver (only used
+        // to update the position)
+        newLinVelocity += isSplitImpulseActive * mDynamicsComponents.mSplitLinearVelocities[i];
+        newAngVelocity += isSplitImpulseActive * mDynamicsComponents.mSplitAngularVelocities[i];
 
-            // Get the constrained velocity
-            Vector3 newLinVelocity = mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity);
-            Vector3 newAngVelocity = mDynamicsComponents.getConstrainedAngularVelocity(bodyEntity);
+        // Get current position and orientation of the body
+        const Vector3& currentPosition = mDynamicsComponents.mCentersOfMassWorld[i];
+        const Quaternion& currentOrientation = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).getOrientation();
 
-            // TODO : Remove this
-            Vector3 testLinVel = newLinVelocity;
-
-            // Add the split impulse velocity from Contact Solver (only used
-            // to update the position)
-            if (mContactSolver.isSplitImpulseActive()) {
-
-                newLinVelocity += mDynamicsComponents.getSplitLinearVelocity(bodyEntity);
-                newAngVelocity += mDynamicsComponents.getSplitAngularVelocity(bodyEntity);
-            }
-
-            // Get current position and orientation of the body
-            const Vector3& currentPosition = body->mCenterOfMassWorld;
-            const Quaternion& currentOrientation = mTransformComponents.getTransform(body->getEntity()).getOrientation();
-
-            // Update the new constrained position and orientation of the body
-            mDynamicsComponents.setConstrainedPosition(bodyEntity, currentPosition + newLinVelocity * mTimeStep);
-            mDynamicsComponents.setConstrainedOrientation(bodyEntity, currentOrientation +
-                                                   Quaternion(0, newAngVelocity) *
-                                                   currentOrientation * decimal(0.5) * mTimeStep);
-        }
+        // Update the new constrained position and orientation of the body
+        mDynamicsComponents.mConstrainedPositions[i] = currentPosition + newLinVelocity * mTimeStep;
+        mDynamicsComponents.mConstrainedOrientations[i] = currentOrientation + Quaternion(0, newAngVelocity) *
+                                                          currentOrientation * decimal(0.5) * mTimeStep;
     }
 }
 
@@ -209,58 +194,39 @@ void DynamicsWorld::updateBodiesState() {
 
     // TODO : Make sure we compute this in a system
 
-    // TODO : We should loop over non-sleeping dynamic components here and not over islands
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-    // For each island of the world
-    for (uint islandIndex = 0; islandIndex < mIslands.getNbIslands(); islandIndex++) {
+        // Update the linear and angular velocity of the body
+        mDynamicsComponents.mLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i];
+        mDynamicsComponents.mAngularVelocities[i] = mDynamicsComponents.mConstrainedAngularVelocities[i];
 
-        // For each body of the island
-        for (uint b=0; b < mIslands.bodyEntities[islandIndex].size(); b++) {
+        // Update the position of the center of mass of the body
+        mDynamicsComponents.mCentersOfMassWorld[i] = mDynamicsComponents.mConstrainedPositions[i];
 
-            Entity bodyEntity = mIslands.bodyEntities[islandIndex][b];
-            RigidBody* body = static_cast<RigidBody*>(mBodyComponents.getBody(bodyEntity));
+        // Update the orientation of the body
+        const Quaternion& constrainedOrientation = mDynamicsComponents.mConstrainedOrientations[i];
+        mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).setOrientation(constrainedOrientation.getUnit());
+    }
 
-            uint index = body->mArrayIndex;
+    // Update the transform of the body (using the new center of mass and new orientation)
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-            // Update the linear and angular velocity of the body
-            mDynamicsComponents.setLinearVelocity(bodyEntity, mDynamicsComponents.getConstrainedLinearVelocity(bodyEntity));
-            mDynamicsComponents.setAngularVelocity(bodyEntity, mDynamicsComponents.getConstrainedAngularVelocity(bodyEntity));
+        Transform& transform = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]);
+        const Vector3& centerOfMassWorld = mDynamicsComponents.mCentersOfMassWorld[i];
+        const Vector3& centerOfMassLocal = mDynamicsComponents.mCentersOfMassLocal[i];
+        transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
+    }
 
-            // Update the position of the center of mass of the body
-            body->mCenterOfMassWorld = mDynamicsComponents.getConstrainedPosition(bodyEntity);
+    // Update the world inverse inertia tensor of the body
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-            // Update the orientation of the body
-            const Quaternion& constrainedOrientation = mDynamicsComponents.getConstrainedOrientation(bodyEntity);
-            mTransformComponents.getTransform(bodyEntity).setOrientation(constrainedOrientation.getUnit());
-
-            // Update the transform of the body (using the new center of mass and new orientation)
-            body->updateTransformWithCenterOfMass();
-
-            // Update the world inverse inertia tensor of the body
-            body->updateInertiaTensorInverseWorld();
-        }
+        Matrix3x3 orientation = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).getOrientation().getMatrix();
+        const Matrix3x3& inverseInertiaLocalTensor = mDynamicsComponents.mInverseInertiaTensorsLocal[i];
+        mDynamicsComponents.mInverseInertiaTensorsWorld[i] = orientation * inverseInertiaLocalTensor * orientation.getTranspose();
     }
 
     // Update the proxy-shapes components
     mCollisionDetection.updateProxyShapes();
-}
-
-// Initialize the bodies velocities arrays for the next simulation step.
-void DynamicsWorld::initVelocityArrays() {
-
-    RP3D_PROFILE("DynamicsWorld::initVelocityArrays()", mProfiler);
-
-    // Allocate memory for the bodies velocity arrays
-    uint nbBodies = mRigidBodies.size();
-
-    assert(mDynamicsComponents.getNbComponents() == nbBodies);
-
-    // Initialize the map of body indexes in the velocity arrays
-    uint i = 0;
-    for (List<RigidBody*>::Iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-
-        (*it)->mArrayIndex = i++;
-    }
 }
 
 // Reset the split velocities of the bodies
@@ -280,9 +246,6 @@ void DynamicsWorld::resetSplitVelocities() {
 void DynamicsWorld::integrateRigidBodiesVelocities() {
 
     RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()", mProfiler);
-
-    // Initialize the bodies velocity arrays
-    initVelocityArrays();
 
     // Reset the split velocities of the bodies
     resetSplitVelocities();
@@ -416,7 +379,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
-    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(Vector3::zero(), Vector3::zero()));
+    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(transform.getPosition()));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,

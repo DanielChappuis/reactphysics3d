@@ -40,9 +40,8 @@ using namespace reactphysics3d;
 * @param id The ID of the body
 */
 RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id)
-          : CollisionBody(world, entity, id), mArrayIndex(0),
-            mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
-            mMaterial(world.mConfig), mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
+          : CollisionBody(world, entity, id),  mMaterial(world.mConfig), mJointsList(nullptr),
+            mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
     // Compute the inverse mass
     mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
@@ -173,7 +172,8 @@ inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 
     // Add the torque
     const Vector3& externalTorque = mWorld.mDynamicsComponents.getExternalTorque(mEntity);
-    mWorld.mDynamicsComponents.setExternalTorque(mEntity, externalTorque + (point - mCenterOfMassWorld).cross(force));
+    const Vector3& centerOfMassWorld = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    mWorld.mDynamicsComponents.setExternalTorque(mEntity, externalTorque + (point - centerOfMassWorld).cross(force));
 }
 
 // Set the local inertia tensor of the body (in local-space coordinates)
@@ -278,16 +278,18 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
     mIsCenterOfMassSetByUser = true;
 
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
-    mCenterOfMassLocal = centerOfMassLocal;
+    const Vector3 oldCenterOfMass = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    mWorld.mDynamicsComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
 
     // Compute the center of mass in world-space coordinates
-    mCenterOfMassWorld = mWorld.mTransformComponents.getTransform(mEntity) * mCenterOfMassLocal;
+    const Vector3& updatedCenterOfMassLocal = mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity);
+    mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * updatedCenterOfMassLocal);
 
     // Update the linear velocity of the center of mass
     Vector3 linearVelocity = mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
     const Vector3& angularVelocity = mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
-    linearVelocity += angularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    const Vector3& centerOfMassWorld = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
     mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
@@ -498,7 +500,9 @@ void RigidBody::updateTransformWithCenterOfMass() {
 
     // Translate the body according to the translation of the center of mass position
     Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
-    transform.setPosition(mCenterOfMassWorld - transform.getOrientation() * mCenterOfMassLocal);
+    const Vector3& centerOfMassWorld = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    const Vector3& centerOfMassLocal = mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity);
+    transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
 }
 
 // Set a new material for this rigid body
@@ -563,15 +567,17 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
  */
 void RigidBody::setTransform(const Transform& transform) {
 
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
+    const Vector3 oldCenterOfMass = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
 
     // Compute the new center of mass in world-space coordinates
-    mCenterOfMassWorld = transform * mCenterOfMassLocal;
+    const Vector3& centerOfMassLocal = mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity);
+    mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform * centerOfMassLocal);
 
     // Update the linear velocity of the center of mass
     Vector3 linearVelocity = mWorld.mDynamicsComponents.getLinearVelocity(mEntity);
     const Vector3& angularVelocity = mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
-    linearVelocity += angularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    const Vector3& centerOfMassWorld = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
     mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
 
     CollisionBody::setTransform(transform);
@@ -591,7 +597,7 @@ void RigidBody::recomputeMassInformation() {
     mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(0.0));
     if (!mIsInertiaTensorSetByUser) mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
     if (!mIsInertiaTensorSetByUser) mWorld.mDynamicsComponents.setInverseInertiaTensorWorld(mEntity, Matrix3x3::zero());
-    if (!mIsCenterOfMassSetByUser) mCenterOfMassLocal.setToZero();
+    if (!mIsCenterOfMassSetByUser) mWorld.mDynamicsComponents.setCenterOfMassLocal(mEntity, Vector3::zero());
     Matrix3x3 inertiaTensorLocal;
     inertiaTensorLocal.setToZero();
 
@@ -599,7 +605,7 @@ void RigidBody::recomputeMassInformation() {
 
     // If it is a STATIC or a KINEMATIC body
     if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
-        mCenterOfMassWorld = transform.getPosition();
+        mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
         return;
     }
 
@@ -612,7 +618,8 @@ void RigidBody::recomputeMassInformation() {
         mWorld.mDynamicsComponents.setInitMass(mEntity, mWorld.mDynamicsComponents.getInitMass(mEntity) + proxyShape->getMass());
 
         if (!mIsCenterOfMassSetByUser) {
-            mCenterOfMassLocal += proxyShape->getLocalToBodyTransform().getPosition() * proxyShape->getMass();
+            mWorld.mDynamicsComponents.setCenterOfMassLocal(mEntity, mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity) +
+                                                            proxyShape->getLocalToBodyTransform().getPosition() * proxyShape->getMass());
         }
     }
 
@@ -620,18 +627,18 @@ void RigidBody::recomputeMassInformation() {
         mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
     }
     else {
-        mCenterOfMassWorld = transform.getPosition();
+        mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
         return;
     }
 
     // Compute the center of mass
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
+    const Vector3 oldCenterOfMass = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
 
     if (!mIsCenterOfMassSetByUser) {
-        mCenterOfMassLocal *= mWorld.mDynamicsComponents.getMassInverse(mEntity);
+        mWorld.mDynamicsComponents.setCenterOfMassLocal(mEntity, mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity) * mWorld.mDynamicsComponents.getMassInverse(mEntity));
     }
 
-    mCenterOfMassWorld = transform * mCenterOfMassLocal;
+    mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform * mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity));
 
     if (!mIsInertiaTensorSetByUser) {
 
@@ -652,7 +659,7 @@ void RigidBody::recomputeMassInformation() {
 
             // Use the parallel axis theorem to convert the inertia tensor w.r.t the collision shape
             // center into a inertia tensor w.r.t to the body origin.
-            Vector3 offset = shapeTransform.getPosition() - mCenterOfMassLocal;
+            Vector3 offset = shapeTransform.getPosition() - mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity);
             decimal offsetSquare = offset.lengthSquare();
             Matrix3x3 offsetMatrix;
             offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
@@ -676,7 +683,7 @@ void RigidBody::recomputeMassInformation() {
     // Update the linear velocity of the center of mass
     Vector3 linearVelocity = mWorld.mDynamicsComponents.getLinearVelocity(mEntity);
     Vector3 angularVelocity = mWorld.mDynamicsComponents.getAngularVelocity(mEntity);
-    linearVelocity += angularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    linearVelocity += angularVelocity.cross(mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity) - oldCenterOfMass);
     mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
 }
 

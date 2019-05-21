@@ -67,13 +67,9 @@ HingeJoint::HingeJoint(uint id, const HingeJointInfo& jointInfo)
 // Initialize before solving the constraint
 void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
-    // Initialize the bodies index in the velocity array
-    mIndexBody1 = mBody1->mArrayIndex;
-    mIndexBody2 = mBody2->mArrayIndex;
-
     // Get the bodies positions and orientations
-    const Vector3& x1 = mBody1->mCenterOfMassWorld;
-    const Vector3& x2 = mBody2->mCenterOfMassWorld;
+    const Vector3& x1 = constraintSolverData.dynamicsComponents.getCenterOfMassWorld(mBody1Entity);
+    const Vector3& x2 = constraintSolverData.dynamicsComponents.getCenterOfMassWorld(mBody2Entity);
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 

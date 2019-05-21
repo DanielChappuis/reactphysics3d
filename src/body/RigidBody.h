@@ -50,22 +50,9 @@ class MemoryManager;
   */
 class RigidBody : public CollisionBody {
 
-    private :
-
-        /// Index of the body in arrays for contact/constraint solver
-        // TODO : REMOVE THIS
-        uint mArrayIndex;
-
     protected :
 
         // -------------------- Attributes -------------------- //
-
-        /// Center of mass of the body in local-space coordinates.
-        /// The center of mass can therefore be different from the body origin
-        Vector3 mCenterOfMassLocal;
-
-        /// Center of mass of the body in world-space coordinates
-        Vector3 mCenterOfMassWorld;
 
         /// Inverse Local inertia tensor of the body (in local-space) set
         /// by the user with respect to the center of mass of the body

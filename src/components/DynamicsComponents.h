@@ -102,6 +102,12 @@ class DynamicsComponents : public Components {
         /// Array of constrained orientation for each component (for position error correction)
         Quaternion* mConstrainedOrientations;
 
+        /// Array of center of mass of each component (in local-space coordinates)
+        Vector3* mCentersOfMassLocal;
+
+        /// Array of center of mass of each component (in world-space coordinates)
+        Vector3* mCentersOfMassWorld;
+
         /// True if the gravity needs to be applied to this component
         bool* mIsGravityEnabled;
 
@@ -127,12 +133,11 @@ class DynamicsComponents : public Components {
         /// Structure for the data of a transform component
         struct DynamicsComponent {
 
-            const Vector3& linearVelocity;
-            const Vector3& angularVelocity;
+            const Vector3& worldPosition;
 
             /// Constructor
-            DynamicsComponent(const Vector3& linearVelocity, const Vector3& angularVelocity)
-                : linearVelocity(linearVelocity), angularVelocity(angularVelocity) {
+            DynamicsComponent(const Vector3& worldPosition)
+                : worldPosition(worldPosition) {
 
             }
         };
@@ -196,6 +201,12 @@ class DynamicsComponents : public Components {
         /// Return the constrained orientation of an entity
         const Quaternion& getConstrainedOrientation(Entity bodyEntity);
 
+        /// Return the local center of mass of an entity
+        const Vector3& getCenterOfMassLocal(Entity bodyEntity);
+
+        /// Return the world center of mass of an entity
+        const Vector3& getCenterOfMassWorld(Entity bodyEntity);
+
         /// Return true if gravity is enabled for this entity
         bool getIsGravityEnabled(Entity bodyEntity) const;
 
@@ -249,6 +260,12 @@ class DynamicsComponents : public Components {
 
         /// Set the constrained orientation of an entity
         void setConstrainedOrientation(Entity bodyEntity, const Quaternion& constrainedOrientation);
+
+        /// Set the local center of mass of an entity
+        void setCenterOfMassLocal(Entity bodyEntity, const Vector3& centerOfMassLocal);
+
+        /// Set the world center of mass of an entity
+        void setCenterOfMassWorld(Entity bodyEntity, const Vector3& centerOfMassWorld);
 
         /// Set the value to know if the gravity is enabled for this entity
         bool setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled);
@@ -412,6 +429,22 @@ inline const Quaternion& DynamicsComponents::getConstrainedOrientation(Entity bo
    return mConstrainedOrientations[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+// Return the local center of mass of an entity
+inline const Vector3& DynamicsComponents::getCenterOfMassLocal(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mCentersOfMassLocal[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the world center of mass of an entity
+inline const Vector3& DynamicsComponents::getCenterOfMassWorld(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mCentersOfMassWorld[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the constrained linear velocity of an entity
 inline void DynamicsComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
 
@@ -522,6 +555,22 @@ inline void DynamicsComponents::setConstrainedOrientation(Entity bodyEntity, con
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mConstrainedOrientations[mMapEntityToComponentIndex[bodyEntity]] = constrainedOrientation;
+}
+
+// Set the local center of mass of an entity
+inline void DynamicsComponents::setCenterOfMassLocal(Entity bodyEntity, const Vector3& centerOfMassLocal) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mCentersOfMassLocal[mMapEntityToComponentIndex[bodyEntity]] = centerOfMassLocal;
+}
+
+// Set the world center of mass of an entity
+inline void DynamicsComponents::setCenterOfMassWorld(Entity bodyEntity, const Vector3& centerOfMassWorld) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mCentersOfMassWorld[mMapEntityToComponentIndex[bodyEntity]] = centerOfMassWorld;
 }
 
 // Return true if gravity is enabled for this entity
