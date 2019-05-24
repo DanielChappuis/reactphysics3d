@@ -109,6 +109,36 @@ void CollisionDetection::computeBroadPhase() {
 
     // Create new overlapping pairs if necessary
     updateOverlappingPairs(overlappingNodes);
+
+    // Remove non overlapping pairs
+    removeNonOverlappingPairs();
+}
+
+// Remove pairs that are not overlapping anymore
+void CollisionDetection::removeNonOverlappingPairs() {
+
+    // For each possible collision pair of bodies
+    for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
+
+        OverlappingPair* pair = it->second;
+
+        ProxyShape* shape1 = pair->getShape1();
+        ProxyShape* shape2 = pair->getShape2();
+
+        // Check if the two shapes are still overlapping. Otherwise, we destroy the overlapping pair
+        if (!mBroadPhaseSystem.testOverlappingShapes(shape1, shape2)) {
+
+            // Destroy the overlapping pair
+            pair->~OverlappingPair();
+
+            mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, pair, sizeof(OverlappingPair));
+            it = mOverlappingPairs.remove(it);
+            continue;
+        }
+        else {
+            ++it;
+        }
+    }
 }
 
 // Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
@@ -183,7 +213,7 @@ void CollisionDetection::computeMiddlePhase() {
     mNarrowPhaseInput.reserveMemory();
 
     // For each possible collision pair of bodies
-    for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
+    for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
 
         OverlappingPair* pair = it->second;
 
@@ -199,21 +229,6 @@ void CollisionDetection::computeMiddlePhase() {
         assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != -1);
         assert(mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity) != -1);
         assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity));
-
-        // Check if the two shapes are still overlapping. Otherwise, we destroy the
-        // overlapping pair
-        if (!mBroadPhaseSystem.testOverlappingShapes(shape1, shape2)) {
-
-            // Destroy the overlapping pair
-            pair->~OverlappingPair();
-
-            mWorld->mMemoryManager.release(MemoryManager::AllocationType::Pool, pair, sizeof(OverlappingPair));
-            it = mOverlappingPairs.remove(it);
-            continue;
-        }
-        else {
-            ++it;
-        }
 
         // Check if the collision filtering allows collision between the two shapes
         if ((mProxyShapesComponents.getCollideWithMaskBits(proxyShape1Entity) & mProxyShapesComponents.getCollisionCategoryBits(proxyShape2Entity)) != 0 &&
@@ -398,9 +413,6 @@ void CollisionDetection::processAllPotentialContacts(NarrowPhaseInput& narrowPha
 // Compute the narrow-phase collision detection
 void CollisionDetection::computeNarrowPhase() {
 
-    // TODO : DELETE THIS
-    //std::cout << "---------------------- NARROW PHASE ----------------------------------------" << std::endl;
-
     RP3D_PROFILE("CollisionDetection::computeNarrowPhase()", mProfiler);
 
     MemoryAllocator& allocator = mMemoryManager.getSingleFrameAllocator();
@@ -415,7 +427,7 @@ void CollisionDetection::computeNarrowPhase() {
     processAllPotentialContacts(mNarrowPhaseInput, true);
 
     // Reduce the number of contact points in the manifolds
-    reducePotentialContactManifolds(mOverlappingPairs);
+    reducePotentialContactManifolds();
 
     // Report contacts to the user
     reportAllContacts();
@@ -840,7 +852,7 @@ void CollisionDetection::processPotentialContacts(NarrowPhaseInfoBatch& narrowPh
 }
 
 // Clear the obsolete manifolds and contact points and reduce the number of contacts points of the remaining manifolds
-void CollisionDetection::reducePotentialContactManifolds(const OverlappingPairMap& overlappingPairs) {
+void CollisionDetection::reducePotentialContactManifolds() {
 
     RP3D_PROFILE("CollisionDetection::reducePotentialContactManifolds()", mProfiler);
 
@@ -1369,7 +1381,7 @@ void CollisionDetection::testCollision(CollisionBody* body1, CollisionBody* body
     processAllPotentialContacts(narrowPhaseInput, false);
 
     // Reduce the number of contact points in the manifolds
-    reducePotentialContactManifolds(overlappingPairs);
+    //reducePotentialContactManifolds(overlappingPairs);
 
     // TODO : Rework how we report contacts
     /*
@@ -1467,7 +1479,7 @@ void CollisionDetection::testCollision(CollisionBody* body, CollisionCallback* c
     processAllPotentialContacts(narrowPhaseInput, false);
 
     // Reduce the number of contact points in the manifolds
-    reducePotentialContactManifolds(overlappingPairs);
+    //reducePotentialContactManifolds(overlappingPairs);
 
     // TODO : Rework how we report contacts
     /*
@@ -1549,7 +1561,7 @@ void CollisionDetection::testCollision(CollisionCallback* callback) {
     processAllPotentialContacts(narrowPhaseInput, false);
 
     // Reduce the number of contact points in the manifolds
-    reducePotentialContactManifolds(overlappingPairs);
+    //reducePotentialContactManifolds(overlappingPairs);
 
     // TODO : Rework how we report contacts
     /*

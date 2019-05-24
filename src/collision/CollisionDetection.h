@@ -189,6 +189,9 @@ class CollisionDetection {
         /// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
         void updateOverlappingPairs(List<Pair<int, int> >& overlappingNodes);
 
+        /// Remove pairs that are not overlapping anymore
+        void removeNonOverlappingPairs();
+
         /// Execute the narrow-phase collision detection algorithm on batches
         bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool stopFirstContactFound,
                                       bool reportContacts, MemoryAllocator& allocator);
@@ -211,7 +214,7 @@ class CollisionDetection {
         void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo);
 
         /// Reduce the potential contact manifolds and contact points of the overlapping pair contacts
-        void reducePotentialContactManifolds(const OverlappingPairMap& overlappingPairs);
+        void reducePotentialContactManifolds();
 
         /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
         void createContacts();

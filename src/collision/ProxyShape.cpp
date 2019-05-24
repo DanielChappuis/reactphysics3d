@@ -78,6 +78,10 @@ bool ProxyShape::testPointInside(const Vector3& worldPoint) {
  */
 void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
 
+    // TODO : Here we should probably remove all overlapping pairs with this shape in the
+    //        broad-phase and add the shape in the "has moved" shape list so it is reevaluated
+    //        with the new mask bits
+
     mBody->mWorld.mProxyShapesComponents.setCollisionCategoryBits(mEntity, collisionCategoryBits);
 
     int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(mEntity);
@@ -92,6 +96,10 @@ void ProxyShape::setCollisionCategoryBits(unsigned short collisionCategoryBits) 
  * @param collideWithMaskBits The bits mask that specifies with which collision category this shape will collide
  */
 void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
+
+    // TODO : Here we should probably remove all overlapping pairs with this shape in the
+    //        broad-phase and add the shape in the "has moved" shape list so it is reevaluated
+    //        with the new mask bits
 
     mBody->mWorld.mProxyShapesComponents.setCollideWithMaskBits(mEntity, collideWithMaskBits);
 
