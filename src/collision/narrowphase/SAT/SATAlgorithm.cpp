@@ -54,7 +54,7 @@ SATAlgorithm::SATAlgorithm(MemoryAllocator& memoryAllocator) : mMemoryAllocator(
 // Test collision between a sphere and a convex mesh
 bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                                          uint batchStartIndex, uint batchNbItems,
-                                                         bool reportContacts, bool stopFirstContactFound) const {
+                                                         bool reportContacts) const {
 
     bool isCollisionFound = false;
 
@@ -136,9 +136,6 @@ bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& n
 
         narrowPhaseInfoBatch.isColliding[batchIndex] = true;
         isCollisionFound = true;
-        if (stopFirstContactFound) {
-            return isCollisionFound;
-        }
     }
 
     return isCollisionFound;
@@ -476,7 +473,7 @@ bool SATAlgorithm::isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, c
 }
 
 // Test collision between two convex polyhedrons
-bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, bool reportContacts, bool stopFirstContactFound) const {
+bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, bool reportContacts) const {
 
     RP3D_PROFILE("SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron()", mProfiler);
 
@@ -548,9 +545,6 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                         // Therefore, we can return without running the whole SAT algorithm
                         narrowPhaseInfoBatch.isColliding[batchIndex] = true;
                         isCollisionFound = true;
-                        if (stopFirstContactFound) {
-                            return isCollisionFound;
-                        }
                         continue;
                     }
 
@@ -591,9 +585,6 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                         // Therefore, we can return without running the whole SAT algorithm
                         narrowPhaseInfoBatch.isColliding[batchIndex] = true;
                         isCollisionFound = true;
-                        if (stopFirstContactFound) {
-                            return isCollisionFound;
-                        }
                         continue;
                     }
 
@@ -683,9 +674,6 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                             // we return without running the whole SAT algorithm
                             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
                             isCollisionFound = true;
-                            if (stopFirstContactFound) {
-                                return isCollisionFound;
-                            }
                             continue;
                         }
 
@@ -878,9 +866,6 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
 
         narrowPhaseInfoBatch.isColliding[batchIndex] = true;
         isCollisionFound = true;
-        if (stopFirstContactFound) {
-            return isCollisionFound;
-        }
     }
 
     return isCollisionFound;

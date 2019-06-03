@@ -256,37 +256,10 @@ void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
     }
 }
 
-// Test if the AABBs of two bodies overlap
-/**
- * @param body1 Pointer to the first body to test
- * @param body2 Pointer to the second body to test
- * @return True if the AABBs of the two bodies overlap and false otherwise
- */
-bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
-                                     const CollisionBody* body2) const {
-
-    // If one of the body is not active, we return no overlap
-    if (!body1->isActive() || !body2->isActive()) return false;
-
-    // Compute the AABBs of both bodies
-    AABB body1AABB = body1->getAABB();
-    AABB body2AABB = body2->getAABB();
-
-    // Return true if the two AABBs overlap
-    return body1AABB.testCollision(body2AABB);
-}
-
-// Report all the bodies which have an AABB that overlaps with the AABB in parameter
-/**
- * @param aabb AABB used to test for overlap
- * @param overlapCallback Pointer to the callback class to report overlap
- * @param categoryMaskBits bits mask used to filter the bodies to test overlap with
- */
-void CollisionWorld::testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
-    mCollisionDetection.testAABBOverlap(aabb, overlapCallback, categoryMaskBits);
-}
-
 // Return true if two bodies overlap
+/// Use this method if you are not interested in contacts but if you simply want to know
+/// if the two bodies overlap. If you want to get the contacts, you need to use the
+/// testCollision() method instead.
 /**
  * @param body1 Pointer to the first body
  * @param body2 Pointer to a second body

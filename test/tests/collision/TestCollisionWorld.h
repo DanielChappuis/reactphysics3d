@@ -32,6 +32,7 @@
 #include "constraint/ContactPoint.h"
 #include "collision/ContactManifold.h"
 #include <map>
+#include <vector>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -481,7 +482,6 @@ class TestCollisionWorld : public Test {
 
 			testNoCollisions();
 			testNoOverlap();
-			testNoAABBOverlap();
 
 			testSphereVsSphereCollision();
 			testSphereVsBoxCollision();
@@ -624,21 +624,6 @@ class TestCollisionWorld : public Test {
             rp3d_test(!mWorld->testOverlap(mBoxBody2, mSphereBody2));
 		}
 
-		void testNoAABBOverlap() {
-
-			// All the shapes of the world are not touching when they are created.
-			// Here we test that at the beginning, there is no AABB overlap at all.
-
-			// Two bodies test
-
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody1, mBoxBody2));
-            rp3d_test(!mWorld->testAABBOverlap(mSphereBody1, mSphereBody2));
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody1, mSphereBody1));
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody1, mSphereBody2));
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody2, mSphereBody1));
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody2, mSphereBody2));
-		}
-
 		void testSphereVsSphereCollision() {
 
 			Transform initTransform1 = mSphereBody1->getTransform();
@@ -650,10 +635,6 @@ class TestCollisionWorld : public Test {
 			// Move spheres to collide with each other
 			mSphereBody1->setTransform(transform1);
 			mSphereBody2->setTransform(transform2);
-
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mSphereBody2));
 
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
@@ -771,10 +752,6 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mBoxBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mBoxBody1));
-
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -881,10 +858,6 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mBoxBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mBoxBody1));
-
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -990,10 +963,6 @@ class TestCollisionWorld : public Test {
 			// Move spheres to collide with each other
 			mSphereBody1->setTransform(transform1);
 			mBoxBody1->setTransform(transform2);
-
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mBoxBody1));
 
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
@@ -1111,10 +1080,6 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mCapsuleBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mCapsuleBody1));
-
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -1220,10 +1185,6 @@ class TestCollisionWorld : public Test {
 			// Move spheres to collide with each other
 			mSphereBody1->setTransform(transform1);
 			mCapsuleBody1->setTransform(transform2);
-
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mCapsuleBody1));
 
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
@@ -1341,10 +1302,6 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mConvexMeshBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mConvexMeshBody1));
-
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -1451,10 +1408,6 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mConvexMeshBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mConvexMeshBody1));
-
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -1560,10 +1513,6 @@ class TestCollisionWorld : public Test {
 			// Move spheres to collide with each other
 			mSphereBody1->setTransform(transform1);
 			mConvexMeshBody1->setTransform(transform2);
-
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mConvexMeshBody1));
 
 			mOverlapCallback.reset();
 			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
@@ -1681,10 +1630,6 @@ class TestCollisionWorld : public Test {
             mSphereBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mConcaveMeshBody));
-
             mOverlapCallback.reset();
             mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -1800,10 +1745,6 @@ class TestCollisionWorld : public Test {
             // Move spheres to collide with each other
             mBoxBody1->setTransform(transform1);
             mBoxBody2->setTransform(transform2);
-
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mBoxBody1, mBoxBody2));
 
             mOverlapCallback.reset();
             mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
@@ -1965,10 +1906,6 @@ class TestCollisionWorld : public Test {
             mBoxBody1->setTransform(transform1);
             mConvexMeshBody2->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mBoxBody1, mConvexMeshBody2));
-
             mOverlapCallback.reset();
             mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -2128,10 +2065,6 @@ class TestCollisionWorld : public Test {
             // Move spheres to collide with each other
             mConvexMeshBody1->setTransform(transform1);
             mConvexMeshBody2->setTransform(transform2);
-
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mConvexMeshBody1, mConvexMeshBody2));
 
             mOverlapCallback.reset();
             mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
@@ -2293,10 +2226,6 @@ class TestCollisionWorld : public Test {
             mBoxBody1->setTransform(transform1);
             mCapsuleBody1->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mBoxBody1, mCapsuleBody1));
-
             mOverlapCallback.reset();
             mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -2411,10 +2340,6 @@ class TestCollisionWorld : public Test {
             // Move spheres to collide with each other
             mConvexMeshBody1->setTransform(transform1);
             mCapsuleBody1->setTransform(transform2);
-
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mConvexMeshBody1, mCapsuleBody1));
 
             mOverlapCallback.reset();
             mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
@@ -2531,10 +2456,6 @@ class TestCollisionWorld : public Test {
             mBoxBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mBoxBody1, mConcaveMeshBody));
-
             mOverlapCallback.reset();
             mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -2633,10 +2554,6 @@ class TestCollisionWorld : public Test {
             mConvexMeshBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mConvexMeshBody1, mConcaveMeshBody));
-
             mOverlapCallback.reset();
             mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
             rp3d_test(mOverlapCallback.hasOverlap());
@@ -2734,10 +2651,6 @@ class TestCollisionWorld : public Test {
             // Move spheres to collide with each other
             mCapsuleBody1->setTransform(transform1);
             mCapsuleBody2->setTransform(transform2);
-
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mCapsuleBody1, mCapsuleBody2));
 
             mOverlapCallback.reset();
             mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
@@ -2844,10 +2757,6 @@ class TestCollisionWorld : public Test {
             // Move spheres to collide with each other
             mCapsuleBody1->setTransform(transform1);
             mCapsuleBody2->setTransform(transform2);
-
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mCapsuleBody1, mCapsuleBody2));
 
             mOverlapCallback.reset();
             mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
@@ -2964,10 +2873,6 @@ class TestCollisionWorld : public Test {
             // Move spheres to collide with each other
             mCapsuleBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
-
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mCapsuleBody1, mConcaveMeshBody));
 
             mOverlapCallback.reset();
             mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);

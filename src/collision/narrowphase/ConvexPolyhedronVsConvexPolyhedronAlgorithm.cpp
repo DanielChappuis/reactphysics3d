@@ -37,8 +37,7 @@ using namespace reactphysics3d;
 // by Dirk Gregorius.
 bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                                                 uint batchStartIndex, uint batchNbItems,
-                                                                bool reportContacts, bool stopFirstContactFound,
-                                                                MemoryAllocator& memoryAllocator) {
+                                                                bool reportContacts,  MemoryAllocator& memoryAllocator) {
 
     // Run the SAT algorithm to find the separating axis and compute contact point
     SATAlgorithm satAlgorithm(memoryAllocator);
@@ -50,7 +49,7 @@ bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoB
 #endif
 
     bool isCollisionFound = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfoBatch, batchStartIndex,
-                                                                                         batchNbItems, reportContacts, stopFirstContactFound);
+                                                                                         batchNbItems, reportContacts);
 
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
@@ -59,10 +58,6 @@ bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoB
 
         lastFrameCollisionInfo->wasUsingSAT = true;
         lastFrameCollisionInfo->wasUsingGJK = false;
-
-        if (isCollisionFound && stopFirstContactFound) {
-            return isCollisionFound;
-        }
     }
 
     return isCollisionFound;

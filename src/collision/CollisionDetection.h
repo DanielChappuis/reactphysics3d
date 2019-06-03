@@ -181,40 +181,46 @@ class CollisionDetection {
         void computeBroadPhase();
 
         /// Compute the middle-phase collision detection
-        void computeMiddlePhase();
+        void computeMiddlePhase(OverlappingPairMap& overlappingPairs, NarrowPhaseInput& narrowPhaseInput);
 
         /// Compute the narrow-phase collision detection
         void computeNarrowPhase();
 
+        /// Compute the narrow-phase collision detection for the testCollision() methods
+        bool computeNarrowPhaseSnapshot(NarrowPhaseInput& narrowPhaseInput, bool reportContacts);
+
         /// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
-        void updateOverlappingPairs(List<Pair<int, int> >& overlappingNodes);
+        void updateOverlappingPairs(const List<Pair<int, int>>& overlappingNodes);
 
         /// Remove pairs that are not overlapping anymore
         void removeNonOverlappingPairs();
 
         /// Execute the narrow-phase collision detection algorithm on batches
-        bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool stopFirstContactFound,
-                                      bool reportContacts, MemoryAllocator& allocator);
+        bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool reportContacts, MemoryAllocator& allocator);
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
         void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
                                                NarrowPhaseInput& narrowPhaseInput);
-
-        /// Compute the middle-phase collision detection between two proxy shapes
-        void computeMiddlePhaseForProxyShapes(OverlappingPair* pair, NarrowPhaseInput& outNarrowPhaseInput);
 
         /// Swap the previous and current contacts lists
         void swapPreviousAndCurrentContacts();
 
         /// Convert the potential contact into actual contacts
         void processPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                      bool updateLastFrameInfo);
+                                      bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
+                                      Map<OverlappingPair::OverlappingPairId, uint>* mapPairIdToContactPairIndex,
+                                      List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs,
+                                      Map<Entity, List<uint>>& mapBodyToContactPairs);
 
         /// Process the potential contacts after narrow-phase collision detection
-        void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo);
+        void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
+                                         Map<OverlappingPair::OverlappingPairId, uint>* mapPairIdToContactPairIndex,
+                                         List<ContactManifoldInfo> &potentialContactManifolds, List<ContactPair>* contactPairs,
+                                         Map<Entity, List<uint>>& mapBodyToContactPairs);
 
         /// Reduce the potential contact manifolds and contact points of the overlapping pair contacts
-        void reducePotentialContactManifolds();
+        void reducePotentialContactManifolds(List<ContactPair>* contactPairs, List<ContactManifoldInfo>& potentialContactManifolds,
+                                             const List<ContactPointInfo>& potentialContactPoints) const;
 
         /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
         void createContacts();
@@ -223,16 +229,24 @@ class CollisionDetection {
         void initContactsWithPreviousOnes();
 
         /// Reduce the number of contact points of a potential contact manifold
-        void reduceContactPoints(ContactManifoldInfo& manifold, const Transform& shape1ToWorldTransform);
+        void reduceContactPoints(ContactManifoldInfo& manifold, const Transform& shape1ToWorldTransform,
+                                 const List<ContactPointInfo>& potentialContactPoints) const;
 
         /// Report contacts for all the colliding overlapping pairs
         void reportAllContacts();
 
         /// Return the largest depth of all the contact points of a potential manifold
-        decimal computePotentialManifoldLargestContactDepth(const ContactManifoldInfo& manifold) const;
+        decimal computePotentialManifoldLargestContactDepth(const ContactManifoldInfo& manifold,
+                                                            const List<ContactPointInfo>& potentialContactPoints) const;
 
         /// Process the potential contacts where one collion is a concave shape
         void processSmoothMeshContacts(OverlappingPair* pair);
+
+        /// Filter the overlapping pairs to keep only the pairs where a given body is involved
+        void filterOverlappingPairs(Entity bodyEntity, OverlappingPairMap& outFilteredPairs) const;
+
+        /// Filter the overlapping pairs to keep only the pairs where two given bodies are involved
+        void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, OverlappingPairMap& outFilteredPairs) const;
 
     public :
 
@@ -283,22 +297,22 @@ class CollisionDetection {
         void raycast(RaycastCallback* raycastCallback, const Ray& ray,
                      unsigned short raycastWithCategoryMaskBits) const;
 
-        /// Report all the bodies that overlap with the aabb in parameter
-        void testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
-
-        /// Return true if two bodies overlap
+        /// Return true if two bodies (collide) overlap
         bool testOverlap(CollisionBody* body1, CollisionBody* body2);
 
-        /// Report all the bodies that overlap with the body in parameter
-        void testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
+        /// Report all the bodies that overlap (collide) with the body in parameter
+        void testOverlap(CollisionBody* body, OverlapCallback* callback);
 
-        /// Test and report collisions between two bodies
+        /// Report all the bodies that overlap (collide) in the world
+        void testOverlap(OverlapCallback* overlapCallback);
+
+        /// Test collision and report contacts between two bodies.
         void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback);
 
-        /// Test and report collisions between a body and all the others bodies of the world
-        void testCollision(CollisionBody* body, CollisionCallback* callback, unsigned short categoryMaskBits = 0xFFFF);
+        /// Test collision and report all the contacts involving the body in parameter
+        void testCollision(CollisionBody* body, CollisionCallback* callback);
 
-        /// Test and report collisions between all shapes of the world
+        /// Test collision and report contacts between each colliding bodies in the world
         void testCollision(CollisionCallback* callback);
 
         /// Return a reference to the memory manager

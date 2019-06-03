@@ -41,8 +41,7 @@ using namespace reactphysics3d;
 // by Dirk Gregorius.
 bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                                        uint batchStartIndex, uint batchNbItems,
-                                                       bool reportContacts, bool stopFirstContactFound,
-                                                       MemoryAllocator& memoryAllocator) {
+                                                       bool reportContacts, MemoryAllocator& memoryAllocator) {
 
     bool isCollisionFound = false;
 
@@ -166,9 +165,6 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
             // Colision found
             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
             isCollisionFound = true;
-            if (stopFirstContactFound) {
-                return isCollisionFound;
-            }
             continue;
         }
 
@@ -183,9 +179,6 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
 
             if (narrowPhaseInfoBatch.isColliding[batchIndex]) {
                 isCollisionFound = true;
-                if (stopFirstContactFound) {
-                    return isCollisionFound;
-                }
             }
         }
     }

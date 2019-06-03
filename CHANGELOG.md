@@ -1,5 +1,12 @@
 # Changelog
 
+## Develop
+
+### Changed
+
+ - The CollisionWorld::testCollision() methods do not have the 'categoryMaskBits' parameter anymore.
+ - The CollisionWorld::testOverlap() methods do not have the 'categoryMaskBits' parameter anymore.
+
 ## Release Candidate
 
 ### Fixed
@@ -25,6 +32,7 @@
  - The methods CollisionBody::getProxyShapesList() has been remove. You can now use the
    CollisionBody::getNbProxyShapes() method to know the number of proxy-shapes of a body and the
    CollisionBody::getProxyShape(uint proxyShapeIndex) method to get a given proxy-shape of the body.
+ - The CollisionWorld::testAABBOverlap() methods have been removed.
 
 ## Version 0.7.0 (May 1, 2018)
 
