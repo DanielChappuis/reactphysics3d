@@ -98,7 +98,7 @@ SceneDemo::~SceneDemo() {
 	mColorShader.destroy();
 
     // Destroy the contact points
-    removeAllContactPoints();
+    removeAllVisualContactPoints();
 
     // Destroy rendering data for the AABB
     AABB::destroy();
@@ -345,20 +345,17 @@ void SceneDemo::drawTextureQuad() {
 void SceneDemo::updateContactPoints() {
 
     // Remove the previous contact points
-    removeAllContactPoints();
+    removeAllVisualContactPoints();
 
     if (mIsContactPointsDisplayed) {
 
-        // Get the current contact points of the scene
-        std::vector<ContactPoint> contactPoints = getContactPoints();
-
         // For each contact point
-        std::vector<ContactPoint>::const_iterator it;
-        for (it = contactPoints.begin(); it != contactPoints.end(); ++it) {
+        std::vector<SceneContactPoint>::const_iterator it;
+        for (it = mContactPoints.begin(); it != mContactPoints.end(); ++it) {
 
             // Create a visual contact point for rendering
             VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath, it->point + it->normal, it->color);
-            mContactPoints.push_back(point);
+            mVisualContactPoints.push_back(point);
         }
     }
 }
@@ -367,8 +364,8 @@ void SceneDemo::updateContactPoints() {
 void SceneDemo::renderContactPoints(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Render all the contact points
-    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-         it != mContactPoints.end(); ++it) {
+    for (std::vector<VisualContactPoint*>::iterator it = mVisualContactPoints.begin();
+         it != mVisualContactPoints.end(); ++it) {
         (*it)->render(mColorShader, worldToCameraMatrix);
     }
 }
@@ -397,48 +394,14 @@ void SceneDemo::renderAABBs(const openglframework::Matrix4& worldToCameraMatrix)
     }
 }
 
-void SceneDemo::removeAllContactPoints() {
+void SceneDemo::removeAllVisualContactPoints() {
 
     // Destroy all the visual contact points
-    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-         it != mContactPoints.end(); ++it) {
+    for (std::vector<VisualContactPoint*>::iterator it = mVisualContactPoints.begin();
+         it != mVisualContactPoints.end(); ++it) {
         delete (*it);
     }
-    mContactPoints.clear();
-}
-
-// Return all the contact points of the scene
-std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(rp3d::DynamicsWorld* world) {
-
-    std::vector<ContactPoint> contactPoints;
-
-    // Get the list of contact manifolds from the world
-    rp3d::List<const rp3d::ContactManifold*> manifolds = world->getContactsList();
-
-    // TODO : Uncomment and fix this
-    /*
-    // For each contact manifold
-    rp3d::List<const rp3d::ContactManifold*>::Iterator it;
-    for (it = manifolds.begin(); it != manifolds.end(); ++it) {
-
-        const rp3d::ContactManifold* manifold = *it;
-
-        // For each contact point of the manifold
-        rp3d::ContactPoint* contactPoint = manifold->getContactPoints();
-        while (contactPoint != nullptr) {
-
-            rp3d::Vector3 point = manifold->getShape1()->getLocalToWorldTransform() * contactPoint->getLocalPointOnShape1();
-			rp3d::Vector3 normalWorld = contactPoint->getNormal();
-			openglframework::Vector3 normal = openglframework::Vector3(normalWorld.x, normalWorld.y, normalWorld.z);
-            ContactPoint contact(openglframework::Vector3(point.x, point.y, point.z), normal, openglframework::Color::red());
-            contactPoints.push_back(contact);
-
-            contactPoint = contactPoint->getNext();
-        }
-    }
-    */
-
-    return contactPoints;
+    mVisualContactPoints.clear();
 }
 
 // Update the engine settings

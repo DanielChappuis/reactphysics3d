@@ -49,7 +49,9 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    dynamicsWorld->setEventListener(this);
+    mPhysicsWorld = dynamicsWorld;
 
     for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
 
@@ -198,6 +200,8 @@ CollisionShapesScene::~CollisionShapesScene() {
 
 /// Reset the scene
 void CollisionShapesScene::reset() {
+
+    SceneDemo::reset();
 
     const float radius = 3.0f;
 

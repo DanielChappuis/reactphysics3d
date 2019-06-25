@@ -6,6 +6,12 @@
 
  - The CollisionWorld::testCollision() methods do not have the 'categoryMaskBits' parameter anymore.
  - The CollisionWorld::testOverlap() methods do not have the 'categoryMaskBits' parameter anymore.
+ - Many methods in the EventListener class have changed. Check the user manual for more information.
+ - The way to retrieve contacts from a CollisionCallbackInfo object has changed. Check the user manual for more information.
+
+### Removed
+
+ - DynamicsWorld::getContactsList(). You need to use the EventListener class to retrieve contacts now.
 
 ## Release Candidate
 

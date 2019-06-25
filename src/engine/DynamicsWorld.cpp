@@ -126,6 +126,9 @@ void DynamicsWorld::update(decimal timeStep) {
     // Create the actual narrow-phase contacts
     mCollisionDetection.createContacts();
 
+    // Report the contacts to the user
+    mCollisionDetection.reportContacts();
+
     // Integrate the velocities
     integrateRigidBodiesVelocities();
 
@@ -875,37 +878,4 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) );
-}
-
-// Return the list of all contacts of the world
-/**
- * @return A pointer to the first contact manifold in the linked-list of manifolds
- */
-List<const ContactManifold*> DynamicsWorld::getContactsList() {
-
-    List<const ContactManifold*> contactManifolds(mMemoryManager.getPoolAllocator());
-
-    // TODO : Rework how to report contacts
-    /*
-    // For each currently overlapping pair of bodies
-    for (auto it = mCollisionDetection.mOverlappingPairs.begin();
-         it != mCollisionDetection.mOverlappingPairs.end(); ++it) {
-
-        OverlappingPair* pair = it->second;
-
-        // For each contact manifold of the pair
-        const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
-        ContactManifold* manifold = manifoldSet.getContactManifolds();
-        while (manifold != nullptr) {
-
-            // Get the contact manifold
-            contactManifolds.add(manifold);
-
-            manifold = manifold->getNext();
-        }
-    }
-    */
-
-    // Return all the contact manifold
-    return contactManifolds;
 }

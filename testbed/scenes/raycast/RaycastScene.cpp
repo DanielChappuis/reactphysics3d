@@ -196,6 +196,8 @@ void RaycastScene::changeBody() {
 // Reset the scene
 void RaycastScene::reset() {
 
+    SceneDemo::reset();
+
     std::vector<PhysicsObject*>::iterator it;
     for (it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
         (*it)->setTransform(rp3d::Transform(rp3d::Vector3::zero(), rp3d::Quaternion::identity()));

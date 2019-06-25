@@ -140,6 +140,8 @@ class Body {
         void setLogger(Logger* logger);
 #endif
 
+        // TODO : Check if those operators are still used
+
         /// Smaller than operator
         bool operator<(const Body& body2) const;
 

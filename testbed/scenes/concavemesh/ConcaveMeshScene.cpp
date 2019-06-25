@@ -49,7 +49,9 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    dynamicsWorld->setEventListener(this);
+    mPhysicsWorld = dynamicsWorld;
 
     // ---------- Create the boxes ----------- //
     for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
@@ -205,6 +207,8 @@ ConcaveMeshScene::~ConcaveMeshScene() {
 
 // Reset the scene
 void ConcaveMeshScene::reset() {
+
+    SceneDemo::reset();
 
     const float radius = 15.0f;
 

@@ -186,8 +186,17 @@ class CollisionDetection {
         /// Compute the narrow-phase collision detection
         void computeNarrowPhase();
 
+        /// Compute the narrow-phase collision detection for the testOverlap() methods.
+        bool computeNarrowPhaseOverlapSnapshot(NarrowPhaseInput& narrowPhaseInput, OverlapCallback* callback);
+
         /// Compute the narrow-phase collision detection for the testCollision() methods
-        bool computeNarrowPhaseSnapshot(NarrowPhaseInput& narrowPhaseInput, bool reportContacts);
+        bool computeNarrowPhaseCollisionSnapshot(NarrowPhaseInput& narrowPhaseInput, CollisionCallback& callback);
+
+        /// Process the potential contacts after narrow-phase collision detection
+        void computeSnapshotContactPairs(NarrowPhaseInput& narrowPhaseInput, List<Pair<Entity, Entity>>& overlapPairs) const;
+
+        /// Convert the potential contact into actual contacts
+        void computeSnapshotContactPairs(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, List<Pair<Entity, Entity>>& overlapPairs) const;
 
         /// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
         void updateOverlappingPairs(const List<Pair<int, int>>& overlappingNodes);
@@ -225,6 +234,12 @@ class CollisionDetection {
         /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
         void createContacts();
 
+        /// Create the actual contact manifolds and contacts points for testCollision() methods
+        void createSnapshotContacts(List<ContactPair>& contactPairs, List<ContactManifold> &contactManifolds,
+                                    List<ContactPoint>& contactPoints,
+                                    List<ContactManifoldInfo>& potentialContactManifolds,
+                                    List<ContactPointInfo>& potentialContactPoints);
+
         /// Initialize the current contacts with the contacts from the previous frame (for warmstarting)
         void initContactsWithPreviousOnes();
 
@@ -232,8 +247,9 @@ class CollisionDetection {
         void reduceContactPoints(ContactManifoldInfo& manifold, const Transform& shape1ToWorldTransform,
                                  const List<ContactPointInfo>& potentialContactPoints) const;
 
-        /// Report contacts for all the colliding overlapping pairs
-        void reportAllContacts();
+        /// Report contacts
+        void reportContacts(CollisionCallback& callback, List<ContactPair>* contactPairs,
+                            List<ContactManifold>* manifolds, List<ContactPoint>* contactPoints);
 
         /// Return the largest depth of all the contact points of a potential manifold
         decimal computePotentialManifoldLargestContactDepth(const ContactManifoldInfo& manifold,
@@ -290,6 +306,9 @@ class CollisionDetection {
         /// Ask for a collision shape to be tested again during broad-phase.
         void askForBroadPhaseCollisionCheck(ProxyShape* shape);
 
+        /// Report contacts
+        void reportContacts();
+
         /// Compute the collision detection
         void computeCollisionDetection();
 
@@ -301,19 +320,19 @@ class CollisionDetection {
         bool testOverlap(CollisionBody* body1, CollisionBody* body2);
 
         /// Report all the bodies that overlap (collide) with the body in parameter
-        void testOverlap(CollisionBody* body, OverlapCallback* callback);
+        void testOverlap(CollisionBody* body, OverlapCallback& callback);
 
         /// Report all the bodies that overlap (collide) in the world
-        void testOverlap(OverlapCallback* overlapCallback);
+        void testOverlap(OverlapCallback& overlapCallback);
 
         /// Test collision and report contacts between two bodies.
-        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback);
+        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback);
 
         /// Test collision and report all the contacts involving the body in parameter
-        void testCollision(CollisionBody* body, CollisionCallback* callback);
+        void testCollision(CollisionBody* body, CollisionCallback& callback);
 
         /// Test collision and report contacts between each colliding bodies in the world
-        void testCollision(CollisionCallback* callback);
+        void testCollision(CollisionCallback& callback);
 
         /// Return a reference to the memory manager
         MemoryManager& getMemoryManager() const;

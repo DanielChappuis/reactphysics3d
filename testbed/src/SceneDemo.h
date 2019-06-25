@@ -60,7 +60,7 @@ class SceneDemo : public Scene {
         static int shadowMapTextureLevel;
 
         /// All the visual contact points
-        std::vector<VisualContactPoint*> mContactPoints;
+        std::vector<VisualContactPoint*> mVisualContactPoints;
 
         /// Shadow map bias matrix
         openglframework::Matrix4 mShadowMapBiasMatrix;
@@ -123,7 +123,7 @@ class SceneDemo : public Scene {
         void renderAABBs(const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Remove all contact points
-        void removeAllContactPoints();
+        void removeAllVisualContactPoints();
 
         /// Return a reference to the dynamics world
         rp3d::DynamicsWorld* getDynamicsWorld();
@@ -144,6 +144,9 @@ class SceneDemo : public Scene {
         /// Update the scene
         virtual void update() override;
 
+        /// Reset the scene
+        virtual void reset() override;
+
 		/// Update the physics world (take a simulation step)
 		/// Can be called several times per frame
 		virtual void updatePhysics() override;
@@ -159,9 +162,6 @@ class SceneDemo : public Scene {
 
         /// Enabled/Disable the shadow mapping
         virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
-
-        /// Return all the contact points of the scene
-        std::vector<ContactPoint> computeContactPointsOfWorld(reactphysics3d::DynamicsWorld *world);
 };
 
 // Enabled/Disable the shadow mapping
@@ -182,6 +182,14 @@ inline rp3d::DynamicsWorld* SceneDemo::getDynamicsWorld() {
 // Return a reference to the dynamics world
 inline const rp3d::DynamicsWorld* SceneDemo::getDynamicsWorld() const {
     return dynamic_cast<rp3d::DynamicsWorld*>(mPhysicsWorld);
+}
+
+// Reset the scene
+inline void SceneDemo::reset() {
+
+    Scene::reset();
+
+    removeAllVisualContactPoints();
 }
 
 #endif

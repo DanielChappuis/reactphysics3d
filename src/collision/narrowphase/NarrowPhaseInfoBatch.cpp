@@ -78,10 +78,6 @@ void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNor
     ContactPointInfo* contactPointInfo = new (allocator.allocate(sizeof(ContactPointInfo)))
             ContactPointInfo(contactNormal, penDepth, localPt1, localPt2);
 
-    // TODO : DELETE THIS
-    //std::cout << "Pair: " << overlappingPairs[index]->getId().first << ", " << overlappingPairs[index]->getId().second << std::endl;
-    //std::cout << ">> Contact Point: " << localPt1.x << ", " << localPt1.y << ", " << localPt1.z << std::endl;
-
     // Add it into the list of contact points
     contactPoints[index].add(contactPointInfo);
 }

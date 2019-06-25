@@ -162,9 +162,6 @@ class ContactManifold {
         /// Return the number of contact points in the manifold
         int8 getNbContactPoints() const;
 
-        /// Return a pointer to the first contact point of the manifold
-        ContactPoint* getContactPoints() const;
-
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;

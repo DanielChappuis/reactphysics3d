@@ -25,66 +25,71 @@
 
 // Libraries
 #include "collision/CollisionCallback.h"
-#include "engine/OverlappingPair.h"
-#include "memory/MemoryAllocator.h"
-#include "collision/ContactManifold.h"
-#include "memory/MemoryManager.h"
+#include "collision/ContactPair.h"
+#include "constraint/ContactPoint.h"
+#include "engine/CollisionWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-CollisionCallback::CollisionCallbackInfo::CollisionCallbackInfo(OverlappingPair* pair, MemoryManager& memoryManager) :
-    contactManifoldElements(nullptr), body1(pair->getShape1()->getBody()),
-    body2(pair->getShape2()->getBody()),
-    proxyShape1(pair->getShape1()), proxyShape2(pair->getShape2()),
-    mMemoryManager(memoryManager) {
+CollisionCallback::ContactPoint::ContactPoint(const reactphysics3d::ContactPoint& contactPoint) : mContactPoint(contactPoint) {
 
-    assert(pair != nullptr);
-
-
-    // TODO : Rework how to report contacts
-    /*
-    const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
-
-    // For each contact manifold in the set of manifolds in the pair
-    ContactManifold* contactManifold = manifoldSet.getContactManifolds();
-	assert(contactManifold != nullptr);
-    while (contactManifold != nullptr) {
-
-        assert(contactManifold->getNbContactPoints() > 0);
-
-        // Add the contact manifold at the beginning of the linked
-        // list of contact manifolds of the first body
-        ContactManifoldListElement* element = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                                                           sizeof(ContactManifoldListElement)))
-                                                      ContactManifoldListElement(contactManifold,
-                                                                         contactManifoldElements);
-        contactManifoldElements = element;
-
-        contactManifold = contactManifold->getNext();
-    }
-    */
 }
 
-// Destructor
-CollisionCallback::CollisionCallbackInfo::~CollisionCallbackInfo() {
+// Contact Pair Constructor
+CollisionCallback::ContactPair::ContactPair(const reactphysics3d::ContactPair& contactPair,
+                                            List<reactphysics3d::ContactPoint>* contactPoints, CollisionWorld& world)
+                               :mContactPair(contactPair), mContactPoints(contactPoints),
+                                mWorld(world) {
 
-    // TODO : Rework how to report contacts
-    /*
-    // Release memory allocator for the contact manifold list elements
-    ContactManifoldListElement* element = contactManifoldElements;
-    while (element != nullptr) {
-
-        ContactManifoldListElement* nextElement = element->getNext();
-
-        // Delete and release memory
-        element->~ContactManifoldListElement();
-        mMemoryManager.release(MemoryManager::AllocationType::Pool, element,
-                               sizeof(ContactManifoldListElement));
-
-        element = nextElement;
-    }
-    */
 }
 
+// Return a pointer to the first body in contact
+CollisionBody* CollisionCallback::ContactPair::getBody1() const {
+    return static_cast<CollisionBody*>(mWorld.mBodyComponents.getBody(mContactPair.body1Entity));
+}
+
+// Return a pointer to the second body in contact
+CollisionBody* CollisionCallback::ContactPair::getBody2() const {
+    return static_cast<CollisionBody*>(mWorld.mBodyComponents.getBody(mContactPair.body2Entity));
+}
+
+// Return a pointer to the first proxy-shape in contact (in body 1)
+ProxyShape* CollisionCallback::ContactPair::getProxyShape1() const {
+    return mWorld.mProxyShapesComponents.getProxyShape(mContactPair.proxyShape1Entity);
+}
+
+// Return a pointer to the second proxy-shape in contact (in body 1)
+ProxyShape* CollisionCallback::ContactPair::getProxyShape2() const {
+    return mWorld.mProxyShapesComponents.getProxyShape(mContactPair.proxyShape2Entity);
+}
+
+// CollisionCallbackInfo Constructor
+CollisionCallback::CallbackData::CallbackData(List<reactphysics3d::ContactPair>* contactPairs, List<ContactManifold>* manifolds,
+                                                                List<reactphysics3d::ContactPoint>* contactPoints, CollisionWorld& world)
+                      :mContactPairs(contactPairs), mContactManifolds(manifolds), mContactPoints(contactPoints), mWorld(world) {
+
+}
+
+// Return a given contact point of the contact pair
+/// Note that the returned ContactPoint object is only valid during the call of the CollisionCallback::onContact()
+/// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the ContactPoint
+/// object itself because it won't be valid after the CollisionCallback::onContact() call.
+CollisionCallback::ContactPoint CollisionCallback::ContactPair::getContactPoint(uint index) const {
+
+    assert(index < getNbContactPoints());
+
+    return CollisionCallback::ContactPoint((*mContactPoints)[mContactPair.contactPointsIndex + index]);
+}
+
+// Return a given contact pair
+/// Note that the returned ContactPair object is only valid during the call of the CollisionCallback::onContact()
+/// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the ContactPair
+/// object itself because it won't be valid after the CollisionCallback::onContact() call.
+CollisionCallback::ContactPair CollisionCallback::CallbackData::getContactPair(uint index) const {
+
+    assert(index < getNbContactPairs());
+
+    return CollisionCallback::ContactPair((*mContactPairs)[index], mContactPoints, mWorld);
+}

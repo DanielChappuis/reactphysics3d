@@ -37,6 +37,8 @@
 #include "components/TransformComponents.h"
 #include "components/ProxyShapeComponents.h"
 #include "components/DynamicsComponents.h"
+#include "collision/CollisionCallback.h"
+#include "collision/OverlapCallback.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -166,19 +168,19 @@ class CollisionWorld {
         bool testOverlap(CollisionBody* body1, CollisionBody* body2);
 
         /// Report all the bodies that overlap (collide) with the body in parameter
-        void testOverlap(CollisionBody* body, OverlapCallback* overlapCallback);
+        void testOverlap(CollisionBody* body, OverlapCallback& overlapCallback);
 
         /// Report all the bodies that overlap (collide) in the world
-        void testOverlap(OverlapCallback* overlapCallback);
+        void testOverlap(OverlapCallback& overlapCallback);
 
         /// Test collision and report contacts between two bodies.
-        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback);
+        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback);
 
         /// Test collision and report all the contacts involving the body in parameter
-        void testCollision(CollisionBody* body, CollisionCallback* callback);
+        void testCollision(CollisionBody* body, CollisionCallback& callback);
 
         /// Test collision and report contacts between each colliding bodies in the world
-        void testCollision(CollisionCallback* callback);
+        void testCollision(CollisionCallback& callback);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -207,6 +209,8 @@ class CollisionWorld {
         friend class RigidBody;
         friend class ProxyShape;
         friend class ConvexMeshShape;
+        friend class CollisionCallback::ContactPair;
+        friend class OverlapCallback::OverlapPair;
 };
 
 // Set the collision dispatch configuration
@@ -243,7 +247,7 @@ inline void CollisionWorld::raycast(const Ray& ray,
  * @param body2 Pointer to the second body to test
  * @param callback Pointer to the object with the callback method
  */
-inline void CollisionWorld::testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback) {
+inline void CollisionWorld::testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback) {
     mCollisionDetection.testCollision(body1, body2, callback);
 }
 
@@ -256,7 +260,7 @@ inline void CollisionWorld::testCollision(CollisionBody* body1, CollisionBody* b
  * @param body Pointer to the body against which we need to test collision
  * @param callback Pointer to the object with the callback method to report contacts
  */
-inline void CollisionWorld::testCollision(CollisionBody* body, CollisionCallback* callback) {
+inline void CollisionWorld::testCollision(CollisionBody* body, CollisionCallback& callback) {
     mCollisionDetection.testCollision(body, callback);
 }
 
@@ -268,7 +272,7 @@ inline void CollisionWorld::testCollision(CollisionBody* body, CollisionCallback
 /**
  * @param callback Pointer to the object with the callback method to report contacts
  */
-inline void CollisionWorld::testCollision(CollisionCallback* callback) {
+inline void CollisionWorld::testCollision(CollisionCallback& callback) {
     mCollisionDetection.testCollision(callback);
 }
 
@@ -280,7 +284,7 @@ inline void CollisionWorld::testCollision(CollisionCallback* callback) {
  * @param body Pointer to the collision body to test overlap with
  * @param overlapCallback Pointer to the callback class to report overlap
  */
-inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* overlapCallback) {
+inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback& overlapCallback) {
     mCollisionDetection.testOverlap(body, overlapCallback);
 }
 
@@ -288,7 +292,7 @@ inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* ov
 /// Use this method if you are not interested in contacts but if you simply want to know
 /// which bodies overlap. If you want to get the contacts, you need to use the
 /// testCollision() method instead.
-inline void CollisionWorld::testOverlap(OverlapCallback* overlapCallback) {
+inline void CollisionWorld::testOverlap(OverlapCallback& overlapCallback) {
     mCollisionDetection.testOverlap(overlapCallback);
 }
 

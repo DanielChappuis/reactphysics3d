@@ -24,25 +24,30 @@
 ********************************************************************************/
 
 // Libraries
-#include "ContactManifold.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifoldInfo.h"
+#include "collision/OverlapCallback.h"
+#include "engine/CollisionWorld.h"
 
+// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-// Constructor
-ContactManifold::ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity proxyShapeEntity1, Entity proxyShapeEntity2,
-                                 uint contactPointsIndex, int8 nbContactPoints)
-                :mContactPointsIndex(0), bodyEntity1(bodyEntity1), bodyEntity2(bodyEntity2),
-                 proxyShapeEntity1(proxyShapeEntity1), proxyShapeEntity2(proxyShapeEntity2), mFrictionImpulse1(0), mFrictionImpulse2(0),
-                 mFrictionTwistImpulse(0), mIsAlreadyInIsland(false) {
+// Contact Pair Constructor
+OverlapCallback::OverlapPair::OverlapPair(Pair<Entity, Entity>& overlapPair, CollisionWorld& world)
+                             : mOverlapPair(overlapPair), mWorld(world) {
 
-
-    mContactPointsIndex = contactPointsIndex;
-    mNbContactPoints = nbContactPoints;
 }
 
-// Destructor
-ContactManifold::~ContactManifold() {
+// Return a pointer to the first body in contact
+CollisionBody* OverlapCallback::OverlapPair::getBody1() const {
+    return static_cast<CollisionBody*>(mWorld.mBodyComponents.getBody(mOverlapPair.first));
+}
+
+// Return a pointer to the second body in contact
+CollisionBody* OverlapCallback::OverlapPair::getBody2() const {
+    return static_cast<CollisionBody*>(mWorld.mBodyComponents.getBody(mOverlapPair.second));
+}
+
+// CollisionCallbackData Constructor
+OverlapCallback::CallbackData::CallbackData(List<Pair<Entity, Entity>>& overlapBodies, CollisionWorld& world)
+                :mOverlapBodies(overlapBodies), mWorld(world) {
 
 }

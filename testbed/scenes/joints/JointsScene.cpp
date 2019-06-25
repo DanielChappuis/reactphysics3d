@@ -48,7 +48,9 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    dynamicsWorld->setEventListener(this);
+    mPhysicsWorld = dynamicsWorld;
 
     // Create the Ball-and-Socket joint
     createBallAndSocketJoints();
@@ -128,6 +130,8 @@ void JointsScene::updatePhysics() {
 
 // Reset the scene
 void JointsScene::reset() {
+
+    SceneDemo::reset();
 
     openglframework::Vector3 positionBox(0, 15, 5);
     openglframework::Vector3 boxDimension(1, 1, 1);

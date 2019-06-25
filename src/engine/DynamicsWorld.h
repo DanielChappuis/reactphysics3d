@@ -240,9 +240,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
 
-        /// Return the list of all contacts of the world
-        List<const ContactManifold*> getContactsList();
-
         // -------------------- Friendship -------------------- //
 
         friend class RigidBody;

@@ -239,6 +239,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/components/ProxyShapeComponents.cpp"
     "src/components/DynamicsComponents.cpp"
     "src/collision/CollisionCallback.cpp"
+    "src/collision/OverlapCallback.cpp"
     "src/mathematics/mathematics_functions.cpp"
     "src/mathematics/Matrix2x2.cpp"
     "src/mathematics/Matrix3x3.cpp"

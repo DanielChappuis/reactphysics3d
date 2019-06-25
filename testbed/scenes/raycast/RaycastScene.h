@@ -65,7 +65,7 @@ class RaycastManager : public rp3d::RaycastCallback {
     private:
 
         /// All the visual contact points
-        std::vector<ContactPoint> mHitPoints;
+        std::vector<SceneContactPoint> mHitPoints;
 
         /// Contact point mesh folder path
         std::string mMeshFolderPath;
@@ -85,7 +85,7 @@ class RaycastManager : public rp3d::RaycastCallback {
 
             rp3d::Vector3 hitPos = raycastInfo.worldPoint;
             openglframework::Vector3 position(hitPos.x, hitPos.y, hitPos.z);
-            mHitPoints.push_back(ContactPoint(position, normal, openglframework::Color::red()));
+            mHitPoints.push_back(SceneContactPoint(position, normal, openglframework::Color::red()));
 
             return raycastInfo.hitFraction;
         }
@@ -95,7 +95,7 @@ class RaycastManager : public rp3d::RaycastCallback {
             mHitPoints.clear();
         }
 
-        std::vector<ContactPoint> getHitPoints() const {
+        std::vector<SceneContactPoint> getHitPoints() const {
             return mHitPoints;
         }
 };
@@ -181,9 +181,6 @@ class RaycastScene : public SceneDemo {
 
         /// Display/Hide the contact points
         virtual void setIsContactPointsDisplayed(bool display) override;
-
-        /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() override;
 };
 
 // Display or not the surface normals at hit points
@@ -199,11 +196,6 @@ inline void RaycastScene::setIsShadowMappingEnabled(bool isShadowMappingEnabled)
 // Display/Hide the contact points
 inline void RaycastScene::setIsContactPointsDisplayed(bool display) {
     SceneDemo::setIsContactPointsDisplayed(true);
-}
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> RaycastScene::getContactPoints() {
-    return mRaycastManager.getHitPoints();
 }
 
 }

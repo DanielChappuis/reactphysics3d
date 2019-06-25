@@ -96,15 +96,7 @@ class ConcaveMeshScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
-
-        /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() override;
 };
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> ConcaveMeshScene::getContactPoints() {
-    return computeContactPointsOfWorld(getDynamicsWorld());
-}
 
 }
 

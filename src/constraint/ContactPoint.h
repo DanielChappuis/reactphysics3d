@@ -93,18 +93,6 @@ class ContactPoint {
         /// Set the mIsRestingContact variable
         void setIsRestingContact(bool isRestingContact);
 
-        /// Set to true to make the contact point obsolete
-        void setIsObsolete(bool isObselete);
-
-        /// Set the next contact point in the linked list
-        void setNext(ContactPoint* next);
-
-        /// Set the previous contact point in the linked list
-        void setPrevious(ContactPoint* previous);
-
-        /// Return true if the contact point is obsolete
-        bool getIsObsolete() const;
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -138,12 +126,6 @@ class ContactPoint {
 
         /// Return true if the contact is a resting contact
         bool getIsRestingContact() const;
-
-        /// Return the previous contact point in the linked list
-        inline ContactPoint* getPrevious() const;
-
-        /// Return the next contact point in the linked list
-        ContactPoint* getNext() const;
 
         /// Return the penetration depth
         decimal getPenetrationDepth() const;
@@ -218,54 +200,6 @@ inline bool ContactPoint::getIsRestingContact() const {
  */
 inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
-}
-
-// Return true if the contact point is obsolete
-/**
- * @return True if the contact is obsolete
- */
-inline bool ContactPoint::getIsObsolete() const {
-    return mIsObsolete;
-}
-
-// Set to true to make the contact point obsolete
-/**
- * @param isObsolete True if the contact is obsolete
- */
-inline void ContactPoint::setIsObsolete(bool isObsolete) {
-    mIsObsolete = isObsolete;
-}
-
-// Return the next contact point in the linked list
-/**
- * @return A pointer to the next contact point in the linked-list of points
- */
-inline ContactPoint* ContactPoint::getNext() const {
-   return mNext;
-}
-
-// Set the next contact point in the linked list
-/**
- * @param next Pointer to the next contact point in the linked-list of points
- */
-inline void ContactPoint::setNext(ContactPoint* next) {
-    mNext = next;
-}
-
-// Return the previous contact point in the linked list
-/**
- * @return A pointer to the previous contact point in the linked-list of points
- */
-inline ContactPoint* ContactPoint::getPrevious() const {
-   return mPrevious;
-}
-
-// Set the previous contact point in the linked list
-/**
- * @param previous Pointer to the previous contact point in the linked-list of points
- */
-inline void ContactPoint::setPrevious(ContactPoint* previous) {
-    mPrevious = previous;
 }
 
 // Return the penetration depth of the contact

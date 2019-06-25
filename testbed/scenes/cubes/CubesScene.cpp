@@ -47,7 +47,9 @@ CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    dynamicsWorld->setEventListener(this);
+    mPhysicsWorld = dynamicsWorld;
 
     // Create all the cubes of the scene
     for (int i=0; i<NB_CUBES; i++) {
@@ -116,6 +118,8 @@ CubesScene::~CubesScene() {
 
 // Reset the scene
 void CubesScene::reset() {
+
+    SceneDemo::reset();
 
     float radius = 2.0f;
 
