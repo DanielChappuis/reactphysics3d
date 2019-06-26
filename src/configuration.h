@@ -129,7 +129,7 @@ struct WorldSettings {
     decimal defaultBounciness = decimal(0.5);
 
     /// Velocity threshold for contact velocity restitution
-    decimal restitutionVelocityThreshold = decimal(1.0);
+    decimal restitutionVelocityThreshold = decimal(0.5);
 
     /// Default rolling resistance
     decimal defaultRollingRestistance = decimal(0.0);
