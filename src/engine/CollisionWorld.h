@@ -37,6 +37,8 @@
 #include "components/TransformComponents.h"
 #include "components/ProxyShapeComponents.h"
 #include "components/DynamicsComponents.h"
+#include "collision/CollisionCallback.h"
+#include "collision/OverlapCallback.h"
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -130,9 +132,6 @@ class CollisionWorld {
         /// Return the next available body id
         bodyindex computeNextAvailableBodyId();
 
-        /// Reset all the contact manifolds linked list of each body
-        void resetContactManifoldListsOfBodies();
-
         /// Notify the world if a body is disabled (slepping or inactive) or not
         void notifyBodyDisabled(Entity entity, bool isDisabled);
 
@@ -163,30 +162,25 @@ class CollisionWorld {
         CollisionDispatch& getCollisionDispatch();
 
         /// Ray cast method
-        void raycast(const Ray& ray, RaycastCallback* raycastCallback,
-                     unsigned short raycastWithCategoryMaskBits = 0xFFFF) const;
+        void raycast(const Ray& ray, RaycastCallback* raycastCallback, unsigned short raycastWithCategoryMaskBits = 0xFFFF) const;
 
-        /// Test if the AABBs of two bodies overlap
-        bool testAABBOverlap(const CollisionBody* body1,
-                             const CollisionBody* body2) const;
-
-        /// Report all the bodies which have an AABB that overlaps with the AABB in parameter
-        void testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
-
-        /// Return true if two bodies overlap
+        /// Return true if two bodies overlap (collide)
         bool testOverlap(CollisionBody* body1, CollisionBody* body2);
 
-        /// Report all the bodies that overlap with the body in parameter
-        void testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
+        /// Report all the bodies that overlap (collide) with the body in parameter
+        void testOverlap(CollisionBody* body, OverlapCallback& overlapCallback);
 
-        /// Test and report collisions between two bodies
-        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback);
+        /// Report all the bodies that overlap (collide) in the world
+        void testOverlap(OverlapCallback& overlapCallback);
 
-        /// Test and report collisions between a body and all the others bodies of the world
-        void testCollision(CollisionBody* body, CollisionCallback* callback, unsigned short categoryMaskBits = 0xFFFF);
+        /// Test collision and report contacts between two bodies.
+        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback);
 
-        /// Test and report collisions between all shapes of the world
-        void testCollision(CollisionCallback* callback);
+        /// Test collision and report all the contacts involving the body in parameter
+        void testCollision(CollisionBody* body, CollisionCallback& callback);
+
+        /// Test collision and report contacts between each colliding bodies in the world
+        void testCollision(CollisionCallback& callback);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -215,6 +209,8 @@ class CollisionWorld {
         friend class RigidBody;
         friend class ProxyShape;
         friend class ConvexMeshShape;
+        friend class CollisionCallback::ContactPair;
+        friend class OverlapCallback::OverlapPair;
 };
 
 // Set the collision dispatch configuration
@@ -241,42 +237,63 @@ inline void CollisionWorld::raycast(const Ray& ray,
     mCollisionDetection.raycast(raycastCallback, ray, raycastWithCategoryMaskBits);
 }
 
-// Test and report collisions between two bodies
+// Test collision and report contacts between two bodies.
+/// Use this method if you only want to get all the contacts between two bodies.
+/// All the contacts will be reported using the callback object in paramater.
+/// If you are not interested in the contacts but you only want to know if the bodies collide,
+/// you can use the testOverlap() method instead.
 /**
  * @param body1 Pointer to the first body to test
  * @param body2 Pointer to the second body to test
  * @param callback Pointer to the object with the callback method
  */
-inline void CollisionWorld::testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback) {
+inline void CollisionWorld::testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback) {
     mCollisionDetection.testCollision(body1, body2, callback);
 }
 
-// Test and report collisions between a body and all the others bodies of the world
+// Test collision and report all the contacts involving the body in parameter
+/// Use this method if you only want to get all the contacts involving a given body.
+/// All the contacts will be reported using the callback object in paramater.
+/// If you are not interested in the contacts but you only want to know if the bodies collide,
+/// you can use the testOverlap() method instead.
 /**
  * @param body Pointer to the body against which we need to test collision
  * @param callback Pointer to the object with the callback method to report contacts
- * @param categoryMaskBits Bits mask corresponding to the category of bodies we need to test collision with
  */
-inline void CollisionWorld::testCollision(CollisionBody* body, CollisionCallback* callback, unsigned short categoryMaskBits) {
-    mCollisionDetection.testCollision(body, callback, categoryMaskBits);
+inline void CollisionWorld::testCollision(CollisionBody* body, CollisionCallback& callback) {
+    mCollisionDetection.testCollision(body, callback);
 }
 
-// Test and report collisions between all bodies of the world
+// Test collision and report contacts between each colliding bodies in the world
+/// Use this method if you want to get all the contacts between colliding bodies in the world.
+/// All the contacts will be reported using the callback object in paramater.
+/// If you are not interested in the contacts but you only want to know if the bodies collide,
+/// you can use the testOverlap() method instead.
 /**
  * @param callback Pointer to the object with the callback method to report contacts
  */
-inline void CollisionWorld::testCollision(CollisionCallback* callback) {
+inline void CollisionWorld::testCollision(CollisionCallback& callback) {
     mCollisionDetection.testCollision(callback);
 }
 
-// Report all the bodies that overlap with the body in parameter
+// Report all the bodies that overlap (collide) with the body in parameter
+/// Use this method if you are not interested in contacts but if you simply want to know
+/// which bodies overlap with the body in parameter. If you want to get the contacts, you need to use the
+/// testCollision() method instead.
 /**
  * @param body Pointer to the collision body to test overlap with
  * @param overlapCallback Pointer to the callback class to report overlap
- * @param categoryMaskBits bits mask used to filter the bodies to test overlap with
  */
-inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
-    mCollisionDetection.testOverlap(body, overlapCallback, categoryMaskBits);
+inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback& overlapCallback) {
+    mCollisionDetection.testOverlap(body, overlapCallback);
+}
+
+// Report all the bodies that overlap (collide) in the world
+/// Use this method if you are not interested in contacts but if you simply want to know
+/// which bodies overlap. If you want to get the contacts, you need to use the
+/// testCollision() method instead.
+inline void CollisionWorld::testOverlap(OverlapCallback& overlapCallback) {
+    mCollisionDetection.testOverlap(overlapCallback);
 }
 
 // Return the name of the world

@@ -30,6 +30,11 @@
 #include "body/CollisionBody.h"
 #include "systems/BroadPhaseSystem.h"
 #include "collision/shapes/CollisionShape.h"
+#include "collision/ContactPointInfo.h"
+#include "constraint/ContactPoint.h"
+#include "collision/ContactManifoldInfo.h"
+#include "collision/ContactManifold.h"
+#include "collision/ContactPair.h"
 #include "engine/OverlappingPair.h"
 #include "collision/narrowphase/NarrowPhaseInput.h"
 #include "collision/narrowphase/CollisionDispatch.h"
@@ -64,6 +69,11 @@ class CollisionDetection {
 
         using OverlappingPairMap = Map<Pair<uint, uint>, OverlappingPair*>;
 
+        // -------------------- Constants -------------------- //
+
+        /// Maximum number of contact points in a reduced contact manifold
+        const int8 MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
+
         // -------------------- Attributes -------------------- //
 
         /// Memory manager
@@ -71,9 +81,6 @@ class CollisionDetection {
 
         /// Reference the proxy-shape components
         ProxyShapeComponents& mProxyShapesComponents;
-
-        /// Reference the transform components
-        TransformComponents& mTransformComponents;
 
         /// Collision Detection Dispatch configuration
         CollisionDispatch mCollisionDispatch;
@@ -96,6 +103,71 @@ class CollisionDetection {
         /// Narrow-phase collision detection input
         NarrowPhaseInput mNarrowPhaseInput;
 
+        /// List of the potential contact points
+        List<ContactPointInfo> mPotentialContactPoints;
+
+        /// List of the potential contact manifolds
+        List<ContactManifoldInfo> mPotentialContactManifolds;
+
+        /// First list of narrow-phase pair contacts
+        List<ContactPair> mContactPairs1;
+
+        /// Second list of narrow-phase pair contacts
+        List<ContactPair> mContactPairs2;
+
+        /// Pointer to the list of contact pairs of the previous frame (either mContactPairs1 or mContactPairs2)
+        List<ContactPair>* mPreviousContactPairs;
+
+        /// Pointer to the list of contact pairs of the current frame (either mContactPairs1 or mContactPairs2)
+        List<ContactPair>* mCurrentContactPairs;
+
+        /// First map of overlapping pair id to the index of the corresponding pair contact
+        Map<OverlappingPair::OverlappingPairId, uint> mMapPairIdToContactPairIndex1;
+
+        /// Second map of overlapping pair id to the index of the corresponding pair contact
+        Map<OverlappingPair::OverlappingPairId, uint> mMapPairIdToContactPairIndex2;
+
+        /// Pointer to the map of overlappingPairId to the index of contact pair of the previous frame
+        /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
+        Map<OverlappingPair::OverlappingPairId, uint>* mPreviousMapPairIdToContactPairIndex;
+
+        /// Pointer to the map of overlappingPairId to the index of contact pair of the current frame
+        /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
+        Map<OverlappingPair::OverlappingPairId, uint>* mCurrentMapPairIdToContactPairIndex;
+
+        /// List of the indices of the contact pairs (in mCurrentContacPairs array) with contact pairs of
+        /// same islands packed together linearly and contact pairs that are not part of islands at the end.
+        /// This is used when we create contact manifolds and contact points so that there are also packed
+        /// together linearly if they are part of the same island.
+        List<uint> mContactPairsIndicesOrderingForContacts;
+
+        /// First list with the contact manifolds
+        List<ContactManifold> mContactManifolds1;
+
+        /// Second list with the contact manifolds
+        List<ContactManifold> mContactManifolds2;
+
+        /// Pointer to the list of contact manifolds from the previous frame (either mContactManifolds1 or mContactManifolds2)
+        List<ContactManifold>* mPreviousContactManifolds;
+
+        /// Pointer to the list of contact manifolds from the current frame (either mContactManifolds1 or mContactManifolds2)
+        List<ContactManifold>* mCurrentContactManifolds;
+
+        /// Second list of contact points (contact points from either the current frame of the previous frame)
+        List<ContactPoint> mContactPoints1;
+
+        /// Second list of contact points (contact points from either the current frame of the previous frame)
+        List<ContactPoint> mContactPoints2;
+
+        /// Pointer to the contact points of the previous frame (either mContactPoints1 or mContactPoints2)
+        List<ContactPoint>* mPreviousContactPoints;
+
+        /// Pointer to the contact points of the current frame (either mContactPoints1 or mContactPoints2)
+        List<ContactPoint>* mCurrentContactPoints;
+
+        /// Map a body entity to the list of contact pairs in which it is involved
+        Map<Entity, List<uint>> mMapBodyToContactPairs;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -109,47 +181,88 @@ class CollisionDetection {
         void computeBroadPhase();
 
         /// Compute the middle-phase collision detection
-        void computeMiddlePhase();
+        void computeMiddlePhase(OverlappingPairMap& overlappingPairs, NarrowPhaseInput& narrowPhaseInput);
 
         /// Compute the narrow-phase collision detection
         void computeNarrowPhase();
 
+        /// Compute the narrow-phase collision detection for the testOverlap() methods.
+        bool computeNarrowPhaseOverlapSnapshot(NarrowPhaseInput& narrowPhaseInput, OverlapCallback* callback);
+
+        /// Compute the narrow-phase collision detection for the testCollision() methods
+        bool computeNarrowPhaseCollisionSnapshot(NarrowPhaseInput& narrowPhaseInput, CollisionCallback& callback);
+
+        /// Process the potential contacts after narrow-phase collision detection
+        void computeSnapshotContactPairs(NarrowPhaseInput& narrowPhaseInput, List<Pair<Entity, Entity>>& overlapPairs) const;
+
+        /// Convert the potential contact into actual contacts
+        void computeSnapshotContactPairs(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, List<Pair<Entity, Entity>>& overlapPairs) const;
+
         /// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
-        void updateOverlappingPairs(List<Pair<int, int> >& overlappingNodes);
+        void updateOverlappingPairs(const List<Pair<int, int>>& overlappingNodes);
+
+        /// Remove pairs that are not overlapping anymore
+        void removeNonOverlappingPairs();
 
         /// Execute the narrow-phase collision detection algorithm on batches
-        bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool stopFirstContactFound,
-                                      bool reportContacts, MemoryAllocator& allocator);
-
-        /// Add a contact manifold to the linked list of contact manifolds of the two bodies
-        /// involved in the corresponding contact.
-        void addContactManifoldToBody(OverlappingPair* pair);
-
-        /// Add all the contact manifold of colliding pairs to their bodies
-        void addAllContactManifoldsToBodies();
+        bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool reportContacts, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& allocator);
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
         void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
                                                NarrowPhaseInput& narrowPhaseInput);
 
-        /// Compute the middle-phase collision detection between two proxy shapes
-        void computeMiddlePhaseForProxyShapes(OverlappingPair* pair, NarrowPhaseInput& outNarrowPhaseInput);
+        /// Swap the previous and current contacts lists
+        void swapPreviousAndCurrentContacts();
 
         /// Convert the potential contact into actual contacts
         void processPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                      bool updateLastFrameInfo);
+                                      bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
+                                      Map<OverlappingPair::OverlappingPairId, uint>* mapPairIdToContactPairIndex,
+                                      List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs,
+                                      Map<Entity, List<uint>>& mapBodyToContactPairs);
 
         /// Process the potential contacts after narrow-phase collision detection
-        void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo);
+        void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
+                                         Map<OverlappingPair::OverlappingPairId, uint>* mapPairIdToContactPairIndex,
+                                         List<ContactManifoldInfo> &potentialContactManifolds, List<ContactPair>* contactPairs,
+                                         Map<Entity, List<uint>>& mapBodyToContactPairs);
 
-        /// Clear the obsolete manifolds and contact points and reduce the number of contacts points of the remaining manifolds
-        void reduceContactManifolds(const OverlappingPairMap& overlappingPairs);
+        /// Reduce the potential contact manifolds and contact points of the overlapping pair contacts
+        void reducePotentialContactManifolds(List<ContactPair>* contactPairs, List<ContactManifoldInfo>& potentialContactManifolds,
+                                             const List<ContactPointInfo>& potentialContactPoints) const;
 
-        /// Report contacts for all the colliding overlapping pairs
-        void reportAllContacts();
+        /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
+        void createContacts();
+
+        /// Create the actual contact manifolds and contacts points for testCollision() methods
+        void createSnapshotContacts(List<ContactPair>& contactPairs, List<ContactManifold> &contactManifolds,
+                                    List<ContactPoint>& contactPoints,
+                                    List<ContactManifoldInfo>& potentialContactManifolds,
+                                    List<ContactPointInfo>& potentialContactPoints);
+
+        /// Initialize the current contacts with the contacts from the previous frame (for warmstarting)
+        void initContactsWithPreviousOnes();
+
+        /// Reduce the number of contact points of a potential contact manifold
+        void reduceContactPoints(ContactManifoldInfo& manifold, const Transform& shape1ToWorldTransform,
+                                 const List<ContactPointInfo>& potentialContactPoints) const;
+
+        /// Report contacts
+        void reportContacts(CollisionCallback& callback, List<ContactPair>* contactPairs,
+                            List<ContactManifold>* manifolds, List<ContactPoint>* contactPoints);
+
+        /// Return the largest depth of all the contact points of a potential manifold
+        decimal computePotentialManifoldLargestContactDepth(const ContactManifoldInfo& manifold,
+                                                            const List<ContactPointInfo>& potentialContactPoints) const;
 
         /// Process the potential contacts where one collion is a concave shape
         void processSmoothMeshContacts(OverlappingPair* pair);
+
+        /// Filter the overlapping pairs to keep only the pairs where a given body is involved
+        void filterOverlappingPairs(Entity bodyEntity, OverlappingPairMap& outFilteredPairs) const;
+
+        /// Filter the overlapping pairs to keep only the pairs where two given bodies are involved
+        void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, OverlappingPairMap& outFilteredPairs) const;
 
     public :
 
@@ -193,6 +306,9 @@ class CollisionDetection {
         /// Ask for a collision shape to be tested again during broad-phase.
         void askForBroadPhaseCollisionCheck(ProxyShape* shape);
 
+        /// Report contacts
+        void reportContacts();
+
         /// Compute the collision detection
         void computeCollisionDetection();
 
@@ -200,23 +316,23 @@ class CollisionDetection {
         void raycast(RaycastCallback* raycastCallback, const Ray& ray,
                      unsigned short raycastWithCategoryMaskBits) const;
 
-        /// Report all the bodies that overlap with the aabb in parameter
-        void testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
-
-        /// Return true if two bodies overlap
+        /// Return true if two bodies (collide) overlap
         bool testOverlap(CollisionBody* body1, CollisionBody* body2);
 
-        /// Report all the bodies that overlap with the body in parameter
-        void testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits = 0xFFFF);
+        /// Report all the bodies that overlap (collide) with the body in parameter
+        void testOverlap(CollisionBody* body, OverlapCallback& callback);
 
-        /// Test and report collisions between two bodies
-        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback* callback);
+        /// Report all the bodies that overlap (collide) in the world
+        void testOverlap(OverlapCallback& overlapCallback);
 
-        /// Test and report collisions between a body and all the others bodies of the world
-        void testCollision(CollisionBody* body, CollisionCallback* callback, unsigned short categoryMaskBits = 0xFFFF);
+        /// Test collision and report contacts between two bodies.
+        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback);
 
-        /// Test and report collisions between all shapes of the world
-        void testCollision(CollisionCallback* callback);
+        /// Test collision and report all the contacts involving the body in parameter
+        void testCollision(CollisionBody* body, CollisionCallback& callback);
+
+        /// Test collision and report contacts between each colliding bodies in the world
+        void testCollision(CollisionCallback& callback);
 
         /// Return a reference to the memory manager
         MemoryManager& getMemoryManager() const;

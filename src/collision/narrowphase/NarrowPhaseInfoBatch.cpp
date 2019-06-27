@@ -28,6 +28,7 @@
 #include "collision/ContactPointInfo.h"
 #include "collision/shapes/TriangleShape.h"
 #include "engine/OverlappingPair.h"
+#include <iostream>
 
 using namespace reactphysics3d;
 

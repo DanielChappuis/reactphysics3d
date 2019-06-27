@@ -29,6 +29,7 @@
 // Libraries
 #include "configuration.h"
 #include "mathematics/mathematics.h"
+#include "engine/Islands.h"
 
 namespace reactphysics3d {
 
@@ -36,6 +37,7 @@ namespace reactphysics3d {
 class Joint;
 class Island;
 class Profiler;
+class DynamicsComponents;
 
 // Structure ConstraintSolverData
 /**
@@ -49,24 +51,15 @@ struct ConstraintSolverData {
         /// Current time step of the simulation
         decimal timeStep;
 
-        /// Array with the bodies linear velocities
-        Vector3* linearVelocities;
-
-        /// Array with the bodies angular velocities
-        Vector3* angularVelocities;
-
-        /// Reference to the bodies positions
-        Vector3* positions;
-
-        /// Reference to the bodies orientations
-        Quaternion* orientations;
+        /// Reference to the dynamics components
+        DynamicsComponents& dynamicsComponents;
 
         /// True if warm starting of the solver is active
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData() :linearVelocities(nullptr), angularVelocities(nullptr),
-                                positions(nullptr), orientations(nullptr) {
+        ConstraintSolverData(DynamicsComponents& dynamicsComponents)
+            :dynamicsComponents(dynamicsComponents) {
 
         }
 
@@ -153,6 +146,9 @@ class ConstraintSolver {
         /// True if the warm starting of the solver is active
         bool mIsWarmStartingActive;
 
+        /// Reference to the islands
+        Islands& mIslands;
+
         /// Constraint solver data used to initialize and solve the constraints
         ConstraintSolverData mConstraintSolverData;
 
@@ -167,33 +163,25 @@ class ConstraintSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver();
+        ConstraintSolver(Islands& islands, DynamicsComponents& dynamicsComponents);
 
         /// Destructor
         ~ConstraintSolver() = default;
 
         /// Initialize the constraint solver for a given island
-        void initializeForIsland(decimal dt, Island* island);
+        void initializeForIsland(decimal dt, uint islandIndex);
 
         /// Solve the constraints
-        void solveVelocityConstraints(Island* island);
+        void solveVelocityConstraints(uint islandIndex);
 
         /// Solve the position constraints
-        void solvePositionConstraints(Island* island);
+        void solvePositionConstraints(uint islandIndex);
 
         /// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
         bool getIsNonLinearGaussSeidelPositionCorrectionActive() const;
 
         /// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
         void setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive);
-
-        /// Set the constrained velocities arrays
-        void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
-                                            Vector3* constrainedAngularVelocities);
-
-        /// Set the constrained positions/orientations arrays
-        void setConstrainedPositionsArrays(Vector3* constrainedPositions,
-                                           Quaternion* constrainedOrientations);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -203,28 +191,6 @@ class ConstraintSolver {
 #endif
 
 };
-
-// Set the constrained velocities arrays
-inline void ConstraintSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
-                                                            Vector3* constrainedAngularVelocities) {
-
-    assert(constrainedLinearVelocities != nullptr);
-    assert(constrainedAngularVelocities != nullptr);
-
-    mConstraintSolverData.linearVelocities = constrainedLinearVelocities;
-    mConstraintSolverData.angularVelocities = constrainedAngularVelocities;
-}
-
-// Set the constrained positions/orientations arrays
-inline void ConstraintSolver::setConstrainedPositionsArrays(Vector3* constrainedPositions,
-                                                           Quaternion* constrainedOrientations) {
-
-    assert(constrainedPositions != nullptr);
-    assert(constrainedOrientations != nullptr);
-
-    mConstraintSolverData.positions = constrainedPositions;
-    mConstraintSolverData.orientations = constrainedOrientations;
-}
 
 #ifdef IS_PROFILING_ACTIVE
 

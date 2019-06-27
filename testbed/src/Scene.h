@@ -31,7 +31,7 @@
 #include "reactphysics3d.h"
 
 // Structure ContactPoint
-struct ContactPoint {
+struct SceneContactPoint {
 
     public:
         openglframework::Vector3 point;
@@ -39,7 +39,7 @@ struct ContactPoint {
 		openglframework::Color color;
 
         /// Constructor
-        ContactPoint(const openglframework::Vector3& pointWorld, const openglframework::Vector3& normalWorld, const openglframework::Color colorPoint)
+        SceneContactPoint(const openglframework::Vector3& pointWorld, const openglframework::Vector3& normalWorld, const openglframework::Color colorPoint)
 			        : point(pointWorld), normal(normalWorld), color(colorPoint) {
 
         }
@@ -88,7 +88,7 @@ struct EngineSettings {
 
 // Class Scene
 // Abstract class that represents a 3D scene.
-class Scene {
+class Scene : public rp3d::EventListener {
 
     protected:
 
@@ -130,11 +130,14 @@ class Scene {
         /// True if contact points are displayed
         bool mIsContactPointsDisplayed;
 
-        /// True if the AABBs of the phycis objects are displayed
+        /// True if the AABBs of the physics objects are displayed
         bool mIsAABBsDisplayed;
 
         /// True if we render shapes in wireframe mode
         bool mIsWireframeEnabled;
+
+        /// Contact points
+        std::vector<SceneContactPoint> mContactPoints;
 
         // -------------------- Methods -------------------- //
 
@@ -165,7 +168,7 @@ class Scene {
         Scene(const std::string& name, EngineSettings& engineSettings, bool isShadowMappingEnabled = false);
 
         /// Destructor
-        virtual ~Scene();
+        virtual ~Scene() override;
 
         /// Reshape the view
         virtual void reshape(int width, int height);
@@ -181,7 +184,7 @@ class Scene {
         virtual void render()=0;
 
         /// Reset the scene
-        virtual void reset()=0;
+        virtual void reset();
 
         /// Called when a keyboard event occurs
         virtual bool keyboardEvent(int key, int scancode, int action, int mods);
@@ -230,11 +233,11 @@ class Scene {
         /// Enable/disbale wireframe rendering
         void setIsWireframeEnabled(bool isEnabled);
 
-        /// Return all the contact points of the scene
-        std::vector<ContactPoint> virtual getContactPoints();
-
         /// Update the engine settings
         virtual void updateEngineSettings() = 0;
+
+        /// Called when some contacts occur
+        virtual void onContact(const rp3d::CollisionCallback::CallbackData& callbackData) override;
 };
 
 // Called when a keyboard event occurs
@@ -245,6 +248,11 @@ inline bool Scene::keyboardEvent(int key, int scancode, int action, int mods) {
 /// Reshape the view
 inline void Scene::reshape(int width, int height) {
     mCamera.setDimensions(width, height);
+}
+
+// Reset the scene
+inline void Scene::reset() {
+    mContactPoints.clear();
 }
 
 // Return a reference to the camera
@@ -304,13 +312,6 @@ inline bool Scene::getIsWireframeEnabled() const {
 // Enable/disbale wireframe rendering
 inline void Scene::setIsWireframeEnabled(bool isEnabled) {
     mIsWireframeEnabled = isEnabled;
-}
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> Scene::getContactPoints() {
-
-    // Return an empty list of contact points
-    return std::vector<ContactPoint>();
 }
 
 #endif

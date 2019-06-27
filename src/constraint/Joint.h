@@ -124,19 +124,21 @@ class Joint {
         uint mId;
 
         /// Pointer to the first body of the joint
+        // TODO : Use Entities instead
         RigidBody* const mBody1;
 
         /// Pointer to the second body of the joint
+        // TODO : Use Entities instead
         RigidBody* const mBody2;
+
+        /// Entity of the first body of the joint
+        Entity mBody1Entity;
+
+        /// Entity of the second body of the joint
+        Entity mBody2Entity;
 
         /// Type of the joint
         const JointType mType;
-
-        /// Body 1 index in the velocity array to solve the constraint
-        uint mIndexBody1;
-
-        /// Body 2 index in the velocity array to solve the constraint
-        uint mIndexBody2;
 
         /// Position correction technique used for the constraint (used for joints)
         JointsPositionCorrectionTechnique mPositionCorrectionTechnique;

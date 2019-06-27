@@ -35,7 +35,7 @@ using namespace collisiondetectionscene;
 // Constructor
 CollisionDetectionScene::CollisionDetectionScene(const std::string& name, EngineSettings& settings)
        : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
-         mContactManager(mPhongShader, mMeshFolderPath),
+         mContactManager(mPhongShader, mMeshFolderPath, mContactPoints),
          mAreNormalsDisplayed(false) {
 
     mSelectedShapeIndex = 0;
@@ -160,6 +160,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
 // Reset the scene
 void CollisionDetectionScene::reset() {
 
+    SceneDemo::reset();
+
     mSphere1->setTransform(rp3d::Transform(rp3d::Vector3(15, 5, 0), rp3d::Quaternion::identity()));
     mSphere2->setTransform(rp3d::Transform(rp3d::Vector3(0, 6, 0), rp3d::Quaternion::identity()));
     mCapsule1->setTransform(rp3d::Transform(rp3d::Vector3(-8, 7, 0), rp3d::Quaternion::identity()));
@@ -206,8 +208,6 @@ CollisionDetectionScene::~CollisionDetectionScene() {
     mPhysicsWorld->destroyCollisionBody(mHeightField->getCollisionBody());
 	delete mHeightField;
 
-    mContactManager.resetPoints();
-
     // Destroy the static data for the visual contact points
     VisualContactPoint::destroyStaticData();
 
@@ -218,9 +218,9 @@ CollisionDetectionScene::~CollisionDetectionScene() {
 // Take a step for the simulation
 void CollisionDetectionScene::update() {
 
-    mContactManager.resetPoints();
+    mContactPoints.clear();
 
-    mPhysicsWorld->testCollision(&mContactManager);
+    mPhysicsWorld->testCollision(mContactManager);
 
     SceneDemo::update();
 }
@@ -313,38 +313,33 @@ bool CollisionDetectionScene::keyboardEvent(int key, int scancode, int action, i
     return false;
 }
 
-// This method will be called for each reported contact point
-void ContactManager::notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) {
+// This method is called when some contacts occur
+void ContactManager::onContact(const CallbackData& callbackData) {
 
-    // For each contact manifold
-    rp3d::ContactManifoldListElement* manifoldElement = collisionCallbackInfo.contactManifoldElements;
-    while (manifoldElement != nullptr) {
+    // For each contact pair
+    for (uint p=0; p < callbackData.getNbContactPairs(); p++) {
 
-    // Get the contact manifold
-    rp3d::ContactManifold* contactManifold = manifoldElement->getContactManifold();
+        ContactPair contactPair = callbackData.getContactPair(p);
 
-    // For each contact point
-    rp3d::ContactPoint* contactPoint = contactManifold->getContactPoints();
-    while (contactPoint != nullptr) {
+        // For each contact point of the contact pair
+        for (uint c=0; c < contactPair.getNbContactPoints(); c++) {
 
-        // Contact normal
-        rp3d::Vector3 normal = contactPoint->getNormal();
-        openglframework::Vector3 contactNormal(normal.x, normal.y, normal.z);
+            ContactPoint contactPoint = contactPair.getContactPoint(c);
 
-        rp3d::Vector3 point1 = contactPoint->getLocalPointOnShape1();
-        point1 = collisionCallbackInfo.proxyShape1->getLocalToWorldTransform() * point1;
+            // Contact normal
+            rp3d::Vector3 normal = contactPoint.getWorldNormal();
+            openglframework::Vector3 contactNormal(normal.x, normal.y, normal.z);
 
-        openglframework::Vector3 position1(point1.x, point1.y, point1.z);
-        mContactPoints.push_back(ContactPoint(position1, contactNormal, openglframework::Color::red()));
+            rp3d::Vector3 point1 = contactPoint.getLocalPointOnShape1();
+            point1 = contactPair.getProxyShape1()->getLocalToWorldTransform() * point1;
 
-        rp3d::Vector3 point2 = contactPoint->getLocalPointOnShape2();
-        point2 = collisionCallbackInfo.proxyShape2->getLocalToWorldTransform() * point2;
-        openglframework::Vector3 position2(point2.x, point2.y, point2.z);
-        mContactPoints.push_back(ContactPoint(position2, contactNormal, openglframework::Color::blue()));
+            openglframework::Vector3 position1(point1.x, point1.y, point1.z);
+            mContactPoints.push_back(SceneContactPoint(position1, contactNormal, openglframework::Color::red()));
 
-        contactPoint = contactPoint->getNext();
-    }
-
-            manifoldElement = manifoldElement->getNext();
+            rp3d::Vector3 point2 = contactPoint.getLocalPointOnShape2();
+            point2 = contactPair.getProxyShape2()->getLocalToWorldTransform() * point2;
+            openglframework::Vector3 position2(point2.x, point2.y, point2.z);
+            mContactPoints.push_back(SceneContactPoint(position2, contactNormal, openglframework::Color::blue()));
+        }
     }
 }

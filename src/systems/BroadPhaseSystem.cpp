@@ -52,8 +52,8 @@ BroadPhaseSystem::BroadPhaseSystem(CollisionDetection& collisionDetection, Proxy
 }
 
 // Return true if the two broad-phase collision shapes are overlapping
-bool BroadPhaseSystem::testOverlappingShapes(const ProxyShape* shape1,
-                                                       const ProxyShape* shape2) const {
+// TODO : Use proxy-shape entities in parameters
+bool BroadPhaseSystem::testOverlappingShapes(const ProxyShape* shape1, const ProxyShape* shape2) const {
 
     if (shape1->getBroadPhaseId() == -1 || shape2->getBroadPhaseId() == -1) return false;
 

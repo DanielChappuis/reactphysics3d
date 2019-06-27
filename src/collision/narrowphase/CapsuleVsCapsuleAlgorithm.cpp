@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                              bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
+                                              bool reportContacts, MemoryAllocator& memoryAllocator) {
     
     bool isCollisionFound = false;
 
@@ -154,9 +154,6 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
 
                 narrowPhaseInfoBatch.isColliding[batchIndex] = true;
                 isCollisionFound = true;
-                if (stopFirstContactFound) {
-                    return isCollisionFound;
-                }
                 continue;
             }
         }
@@ -234,9 +231,6 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
 
             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
             isCollisionFound = true;
-            if (stopFirstContactFound) {
-                return isCollisionFound;
-            }
         }
     }
 

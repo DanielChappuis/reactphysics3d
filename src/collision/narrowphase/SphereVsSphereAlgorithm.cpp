@@ -32,7 +32,7 @@
 using namespace reactphysics3d;  
 
 bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                            bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
+                                            bool reportContacts, MemoryAllocator& memoryAllocator) {
 
     bool isCollisionFound = false;
 
@@ -94,9 +94,6 @@ bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& 
 
             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
             isCollisionFound = true;
-            if (stopFirstContactFound) {
-                return isCollisionFound;
-            }
         }
     }
 

@@ -543,7 +543,7 @@ class Set {
         }
 
         /// Return a list with all the values of the set
-        List<V> toList(MemoryAllocator& listAllocator) {
+        List<V> toList(MemoryAllocator& listAllocator) const {
 
             List<V> list(listAllocator);
 

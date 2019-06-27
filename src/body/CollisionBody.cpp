@@ -40,8 +40,7 @@ using namespace reactphysics3d;
  * @param id ID of the body
  */
 CollisionBody::CollisionBody(CollisionWorld& world, Entity entity, bodyindex id)
-              : Body(entity, id), mType(BodyType::DYNAMIC),
-                mContactManifoldsList(nullptr), mWorld(world) {
+              : Body(entity, id), mType(BodyType::DYNAMIC), mWorld(world) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -51,7 +50,7 @@ CollisionBody::CollisionBody(CollisionWorld& world, Entity entity, bodyindex id)
 
 // Destructor
 CollisionBody::~CollisionBody() {
-    assert(mContactManifoldsList == nullptr);
+
 }
 
 // Add a collision shape to the body. Note that you can share a collision
@@ -198,23 +197,6 @@ void CollisionBody::removeAllCollisionShapes() {
     }
 }
 
-// Reset the contact manifold lists
-void CollisionBody::resetContactManifoldsList() {
-
-    // Delete the linked list of contact manifolds of that body
-    ContactManifoldListElement* currentElement = mContactManifoldsList;
-    while (currentElement != nullptr) {
-        ContactManifoldListElement* nextElement = currentElement->getNext();
-
-        // Delete the current element
-        currentElement->~ContactManifoldListElement();
-        mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, currentElement, sizeof(ContactManifoldListElement));
-
-        currentElement = nextElement;
-    }
-    mContactManifoldsList = nullptr;
-}
-
 // Return the current position and orientation
 /**
  * @return The current transformation of the body that transforms the local-space
@@ -283,9 +265,6 @@ void CollisionBody::setIsActive(bool isActive) {
                 mWorld.mCollisionDetection.removeProxyCollisionShape(proxyShape);
             }
         }
-
-        // Reset the contact manifold list of the body
-        resetContactManifoldsList();
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
@@ -305,26 +284,6 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
 
         mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(proxyShape);
     }
-}
-
-// Reset the mIsAlreadyInIsland variable of the body and contact manifolds.
-/// This method also returns the number of contact manifolds of the body.
-int CollisionBody::resetIsAlreadyInIslandAndCountManifolds() {
-
-    mIsAlreadyInIsland = false;
-
-    int nbManifolds = 0;
-
-    // Reset the mIsAlreadyInIsland variable of the contact manifolds for
-    // this body
-    ContactManifoldListElement* currentElement = mContactManifoldsList;
-    while (currentElement != nullptr) {
-        currentElement->getContactManifold()->mIsAlreadyInIsland = false;
-        currentElement = currentElement->getNext();
-        nbManifolds++;
-    }
-
-    return nbManifolds;
 }
 
 // Return true if a point is inside the collision body

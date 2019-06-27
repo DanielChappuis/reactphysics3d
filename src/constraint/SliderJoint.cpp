@@ -26,6 +26,7 @@
 // Libraries
 #include "SliderJoint.h"
 #include "engine/ConstraintSolver.h"
+#include "components/DynamicsComponents.h"
 
 using namespace reactphysics3d;
 
@@ -74,13 +75,9 @@ SliderJoint::SliderJoint(uint id, const SliderJointInfo& jointInfo)
 // Initialize before solving the constraint
 void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
-    // Initialize the bodies index in the veloc ity array
-    mIndexBody1 = mBody1->mArrayIndex;
-    mIndexBody2 = mBody2->mArrayIndex;
-
     // Get the bodies positions and orientations
-    const Vector3& x1 = mBody1->mCenterOfMassWorld;
-    const Vector3& x2 = mBody2->mCenterOfMassWorld;
+    const Vector3& x1 = constraintSolverData.dynamicsComponents.getCenterOfMassWorld(mBody1Entity);
+    const Vector3& x2 = constraintSolverData.dynamicsComponents.getCenterOfMassWorld(mBody2Entity);
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 
@@ -127,7 +124,9 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
     // constraints (2x2 matrix)
-    decimal sumInverseMass = mBody1->mMassInverse + mBody2->mMassInverse;
+    const decimal body1MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody1->getEntity());
+    const decimal body2MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody2->getEntity());
+    const decimal sumInverseMass = body1MassInverse + body2MassInverse;
     Vector3 I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
     Vector3 I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
     Vector3 I2R2CrossN1 = mI2 * mR2CrossN1;
@@ -173,7 +172,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
-        mInverseMassMatrixLimit = mBody1->mMassInverse + mBody2->mMassInverse +
+        mInverseMassMatrixLimit = sumInverseMass +
                                   mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis) +
                                   mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
         mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0.0) ?
@@ -196,7 +195,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     if (mIsMotorEnabled) {
 
         // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
-        mInverseMassMatrixMotor = mBody1->mMassInverse + mBody2->mMassInverse;
+        mInverseMassMatrixMotor = sumInverseMass;
         mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0.0) ?
                     decimal(1.0) / mInverseMassMatrixMotor : decimal(0.0);
     }
@@ -216,15 +215,18 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 // Warm start the constraint (apply the previous impulse at the beginning of the step)
 void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+
     // Get the velocities
-    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
-    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
-    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
-    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    const decimal inverseMassBody1 = mBody1->mMassInverse;
-    const decimal inverseMassBody2 = mBody2->mMassInverse;
+    const decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    const decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // Compute the impulse P=J^T * lambda for the lower and upper limits constraints of body 1
     decimal impulseLimits = mImpulseUpperLimit - mImpulseLowerLimit;
@@ -275,15 +277,18 @@ void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 // Solve the velocity constraint
 void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+
     // Get the velocities
-    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
-    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
-    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
-    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->mMassInverse;
-    decimal inverseMassBody2 = mBody2->mMassInverse;
+    decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // --------------- Translation Constraints --------------- //
 
@@ -437,14 +442,14 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies positions and orientations
-    Vector3& x1 = constraintSolverData.positions[mIndexBody1];
-    Vector3& x2 = constraintSolverData.positions[mIndexBody2];
-    Quaternion& q1 = constraintSolverData.orientations[mIndexBody1];
-    Quaternion& q2 = constraintSolverData.orientations[mIndexBody2];
+    Vector3 x1 = constraintSolverData.dynamicsComponents.getConstrainedPosition(mBody1Entity);
+    Vector3 x2 = constraintSolverData.dynamicsComponents.getConstrainedPosition(mBody2Entity);
+    Quaternion q1 = constraintSolverData.dynamicsComponents.getConstrainedOrientation(mBody1Entity);
+    Quaternion q2 = constraintSolverData.dynamicsComponents.getConstrainedOrientation(mBody2Entity);
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->mMassInverse;
-    decimal inverseMassBody2 = mBody2->mMassInverse;
+    const decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    const decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // Recompute the inertia tensor of bodies
     mI1 = mBody1->getInertiaTensorInverseWorld();
@@ -483,7 +488,9 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // Recompute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
     // constraints (2x2 matrix)
-    decimal sumInverseMass = mBody1->mMassInverse + mBody2->mMassInverse;
+    const decimal body1MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    const decimal body2MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
+    decimal sumInverseMass = body1MassInverse + body2MassInverse;
     Vector3 I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
     Vector3 I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
     Vector3 I2R2CrossN1 = mI2 * mR2CrossN1;
@@ -603,7 +610,9 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
         if (mIsLowerLimitViolated || mIsUpperLimitViolated) {
 
             // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
-            mInverseMassMatrixLimit = mBody1->mMassInverse + mBody2->mMassInverse +
+            const decimal body1MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+            const decimal body2MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
+            mInverseMassMatrixLimit = body1MassInverse + body2MassInverse +
                                     mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis) +
                                     mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
             mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0.0) ?
@@ -676,6 +685,11 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
             q2.normalize();
         }
     }
+
+    constraintSolverData.dynamicsComponents.setConstrainedPosition(mBody1Entity, x1);
+    constraintSolverData.dynamicsComponents.setConstrainedPosition(mBody2Entity, x2);
+    constraintSolverData.dynamicsComponents.setConstrainedOrientation(mBody1Entity, q1);
+    constraintSolverData.dynamicsComponents.setConstrainedOrientation(mBody2Entity, q2);
 }
 
 // Enable/Disable the limits of the joint

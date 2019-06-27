@@ -33,6 +33,7 @@
 #include "utils/Logger.h"
 #include "engine/ContactSolver.h"
 #include "components/DynamicsComponents.h"
+#include "engine/Islands.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -53,6 +54,9 @@ class DynamicsWorld : public CollisionWorld {
     protected :
 
         // -------------------- Attributes -------------------- //
+
+        /// All the islands of bodies of the current frame
+        Islands mIslands;
 
         /// Contact solver
         ContactSolver mContactSolver;
@@ -84,32 +88,6 @@ class DynamicsWorld : public CollisionWorld {
         /// True if the gravity force is on
         bool mIsGravityEnabled;
 
-        /// Array of constrained linear velocities (state of the linear velocities
-        /// after solving the constraints)
-        Vector3* mConstrainedLinearVelocities;
-
-        /// Array of constrained angular velocities (state of the angular velocities
-        /// after solving the constraints)
-        Vector3* mConstrainedAngularVelocities;
-
-        /// Split linear velocities for the position contact solver (split impulse)
-        Vector3* mSplitLinearVelocities;
-
-        /// Split angular velocities for the position contact solver (split impulse)
-        Vector3* mSplitAngularVelocities;
-
-        /// Array of constrained rigid bodies position (for position error correction)
-        Vector3* mConstrainedPositions;
-
-        /// Array of constrained rigid bodies orientation (for position error correction)
-        Quaternion* mConstrainedOrientations;
-
-        /// Number of islands in the world
-        uint mNbIslands;
-
-        /// Array with all the islands of awaken bodies
-        Island** mIslands;
-
         /// Sleep linear velocity threshold
         decimal mSleepLinearVelocity;
 
@@ -134,8 +112,8 @@ class DynamicsWorld : public CollisionWorld {
         /// Reset the external force and torque applied to the bodies
         void resetBodiesForceAndTorque();
 
-        /// Initialize the bodies velocities arrays for the next simulation step.
-        void initVelocityArrays();
+        /// Reset the split velocities of the bodies
+        void resetSplitVelocities();
 
         /// Integrate the velocities of rigid bodies.
         void integrateRigidBodiesVelocities();
@@ -148,6 +126,9 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Compute the islands of awake bodies.
         void computeIslands();
+
+        /// Compute the islands using potential contacts and joints and create the actual contacts.
+        void createIslands();
 
         /// Update the postion/orientation of the bodies
         void updateBodiesState();
@@ -259,9 +240,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
 
-        /// Return the list of all contacts of the world
-        List<const ContactManifold*> getContactsList();
-
         // -------------------- Friendship -------------------- //
 
         friend class RigidBody;
@@ -271,10 +249,9 @@ class DynamicsWorld : public CollisionWorld {
 inline void DynamicsWorld::resetBodiesForceAndTorque() {
 
     // For each body of the world
-    List<RigidBody*>::Iterator it;
-    for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-        (*it)->mExternalForce.setToZero();
-        (*it)->mExternalTorque.setToZero();
+    for (uint32 i=0; i < mDynamicsComponents.getNbComponents(); i++) {
+        mDynamicsComponents.mExternalForces[i].setToZero();
+        mDynamicsComponents.mExternalTorques[i].setToZero();
     }
 }
 

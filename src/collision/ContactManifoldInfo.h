@@ -23,26 +23,45 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_CONTACT_MANIFOLD_INFO_H
+#define REACTPHYSICS3D_CONTACT_MANIFOLD_INFO_H
+
 // Libraries
-#include "ContactManifold.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifoldInfo.h"
+#include "mathematics/mathematics.h"
+#include "configuration.h"
+#include "engine/OverlappingPair.h"
 
-using namespace reactphysics3d;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Constructor
-ContactManifold::ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity proxyShapeEntity1, Entity proxyShapeEntity2,
-                                 uint contactPointsIndex, int8 nbContactPoints)
-                :mContactPointsIndex(0), bodyEntity1(bodyEntity1), bodyEntity2(bodyEntity2),
-                 proxyShapeEntity1(proxyShapeEntity1), proxyShapeEntity2(proxyShapeEntity2), mFrictionImpulse1(0), mFrictionImpulse2(0),
-                 mFrictionTwistImpulse(0), mIsAlreadyInIsland(false) {
+// Structure ContactManifoldInfo
+/**
+ * This structure contains informations about a collision contact
+ * manifold computed during the narrow-phase collision detection.
+ */
+struct ContactManifoldInfo {
+
+    public:
+
+        // -------------------- Attributes -------------------- //
+
+        /// Indices of the contact points in the mPotentialContactPoints array
+        List<uint> potentialContactPointsIndices;
+
+        /// Overlapping pair id
+        OverlappingPair::OverlappingPairId pairId;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        ContactManifoldInfo(OverlappingPair::OverlappingPairId pairId, MemoryAllocator& allocator)
+               : potentialContactPointsIndices(allocator), pairId(pairId) {
+
+        }
 
 
-    mContactPointsIndex = contactPointsIndex;
-    mNbContactPoints = nbContactPoints;
+};
+
 }
 
-// Destructor
-ContactManifold::~ContactManifold() {
-
-}
+#endif

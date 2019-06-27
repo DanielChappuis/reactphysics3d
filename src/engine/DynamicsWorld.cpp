@@ -32,7 +32,9 @@
 #include "utils/Profiler.h"
 #include "engine/EventListener.h"
 #include "engine/Island.h"
+#include "engine/Islands.h"
 #include "collision/ContactManifold.h"
+#include "containers/Stack.h"
 
 // Namespaces
 using namespace reactphysics3d;
@@ -45,21 +47,17 @@ using namespace std;
  * @param logger Pointer to the logger
  * @param profiler Pointer to the profiler
  */
-DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings,
-                             Logger* logger, Profiler* profiler)
+DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
               : CollisionWorld(worldSettings, logger, profiler),
-                mContactSolver(mMemoryManager, mConfig),
+                mIslands(mMemoryManager.getSingleFrameAllocator()),
+                mContactSolver(mMemoryManager, mIslands, mBodyComponents, mDynamicsComponents, mProxyShapesComponents, mConfig),
+                mConstraintSolver(mIslands, mDynamicsComponents),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
                 mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
-                mIsGravityEnabled(true), mConstrainedLinearVelocities(nullptr),
-                mConstrainedAngularVelocities(nullptr), mSplitLinearVelocities(nullptr),
-                mSplitAngularVelocities(nullptr), mConstrainedPositions(nullptr),
-                mConstrainedOrientations(nullptr), mNbIslands(0), mIslands(nullptr),
-                mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
-                mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity),
-                mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
+                mIsGravityEnabled(true),  mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
+                mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
                 mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -119,14 +117,17 @@ void DynamicsWorld::update(decimal timeStep) {
     // Notify the event listener about the beginning of an internal tick
     if (mEventListener != nullptr) mEventListener->beginInternalTick();
 
-    // Reset all the contact manifolds lists of each body
-    resetContactManifoldListsOfBodies();
-
     // Compute the collision detection
     mCollisionDetection.computeCollisionDetection();
 
-    // Compute the islands (separate groups of bodies with constraints between each others)
-    computeIslands();
+    // Create the islands
+    createIslands();
+
+    // Create the actual narrow-phase contacts
+    mCollisionDetection.createContacts();
+
+    // Report the contacts to the user
+    mCollisionDetection.reportContacts();
 
     // Integrate the velocities
     integrateRigidBodiesVelocities();
@@ -151,6 +152,9 @@ void DynamicsWorld::update(decimal timeStep) {
     // Reset the external force and torque applied to the bodies
     resetBodiesForceAndTorque();
 
+    // Reset the islands
+    mIslands.clear();
+
     // Reset the single frame memory allocator
     mMemoryManager.resetFrameAllocator();
 }
@@ -162,37 +166,27 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
 
     RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesPositions()", mProfiler);
     
-    // For each island of the world
-    for (uint i=0; i < mNbIslands; i++) {
+    const decimal isSplitImpulseActive = mContactSolver.isSplitImpulseActive() ? decimal(1.0) : decimal(0.0);
 
-        RigidBody** bodies = mIslands[i]->getBodies();
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-        // For each body of the island
-        for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
+        // Get the constrained velocity
+        Vector3 newLinVelocity = mDynamicsComponents.mConstrainedLinearVelocities[i];
+        Vector3 newAngVelocity = mDynamicsComponents.mConstrainedAngularVelocities[i];
 
-            // Get the constrained velocity
-            uint indexArray = bodies[b]->mArrayIndex;
-            Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
-            Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
+        // Add the split impulse velocity from Contact Solver (only used
+        // to update the position)
+        newLinVelocity += isSplitImpulseActive * mDynamicsComponents.mSplitLinearVelocities[i];
+        newAngVelocity += isSplitImpulseActive * mDynamicsComponents.mSplitAngularVelocities[i];
 
-            // Add the split impulse velocity from Contact Solver (only used
-            // to update the position)
-            if (mContactSolver.isSplitImpulseActive()) {
+        // Get current position and orientation of the body
+        const Vector3& currentPosition = mDynamicsComponents.mCentersOfMassWorld[i];
+        const Quaternion& currentOrientation = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).getOrientation();
 
-                newLinVelocity += mSplitLinearVelocities[indexArray];
-                newAngVelocity += mSplitAngularVelocities[indexArray];
-            }
-
-            // Get current position and orientation of the body
-            const Vector3& currentPosition = bodies[b]->mCenterOfMassWorld;
-            const Quaternion& currentOrientation = mTransformComponents.getTransform(bodies[b]->getEntity()).getOrientation();
-
-            // Update the new constrained position and orientation of the body
-            mConstrainedPositions[indexArray] = currentPosition + newLinVelocity * mTimeStep;
-            mConstrainedOrientations[indexArray] = currentOrientation +
-                                                   Quaternion(0, newAngVelocity) *
-                                                   currentOrientation * decimal(0.5) * mTimeStep;
-        }
+        // Update the new constrained position and orientation of the body
+        mDynamicsComponents.mConstrainedPositions[i] = currentPosition + newLinVelocity * mTimeStep;
+        mDynamicsComponents.mConstrainedOrientations[i] = currentOrientation + Quaternion(0, newAngVelocity) *
+                                                          currentOrientation * decimal(0.5) * mTimeStep;
     }
 }
 
@@ -203,73 +197,47 @@ void DynamicsWorld::updateBodiesState() {
 
     // TODO : Make sure we compute this in a system
 
-    // For each island of the world
-    for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-        // For each body of the island
-        RigidBody** bodies = mIslands[islandIndex]->getBodies();
+        // Update the linear and angular velocity of the body
+        mDynamicsComponents.mLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i];
+        mDynamicsComponents.mAngularVelocities[i] = mDynamicsComponents.mConstrainedAngularVelocities[i];
 
-        for (uint b=0; b < mIslands[islandIndex]->getNbBodies(); b++) {
+        // Update the position of the center of mass of the body
+        mDynamicsComponents.mCentersOfMassWorld[i] = mDynamicsComponents.mConstrainedPositions[i];
 
-            uint index = bodies[b]->mArrayIndex;
+        // Update the orientation of the body
+        const Quaternion& constrainedOrientation = mDynamicsComponents.mConstrainedOrientations[i];
+        mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).setOrientation(constrainedOrientation.getUnit());
+    }
 
-            // Update the linear and angular velocity of the body
-            mDynamicsComponents.setLinearVelocity(bodies[b]->getEntity(), mConstrainedLinearVelocities[index]);
-            mDynamicsComponents.setAngularVelocity(bodies[b]->getEntity(), mConstrainedAngularVelocities[index]);
+    // Update the transform of the body (using the new center of mass and new orientation)
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-            // Update the position of the center of mass of the body
-            bodies[b]->mCenterOfMassWorld = mConstrainedPositions[index];
+        Transform& transform = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]);
+        const Vector3& centerOfMassWorld = mDynamicsComponents.mCentersOfMassWorld[i];
+        const Vector3& centerOfMassLocal = mDynamicsComponents.mCentersOfMassLocal[i];
+        transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
+    }
 
-            // Update the orientation of the body
-            mTransformComponents.getTransform(bodies[b]->getEntity()).setOrientation(mConstrainedOrientations[index].getUnit());
+    // Update the world inverse inertia tensor of the body
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-            // Update the transform of the body (using the new center of mass and new orientation)
-            bodies[b]->updateTransformWithCenterOfMass();
-
-            // Update the world inverse inertia tensor of the body
-            bodies[b]->updateInertiaTensorInverseWorld();
-        }
+        Matrix3x3 orientation = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).getOrientation().getMatrix();
+        const Matrix3x3& inverseInertiaLocalTensor = mDynamicsComponents.mInverseInertiaTensorsLocal[i];
+        mDynamicsComponents.mInverseInertiaTensorsWorld[i] = orientation * inverseInertiaLocalTensor * orientation.getTranspose();
     }
 
     // Update the proxy-shapes components
     mCollisionDetection.updateProxyShapes();
 }
 
-// Initialize the bodies velocities arrays for the next simulation step.
-void DynamicsWorld::initVelocityArrays() {
+// Reset the split velocities of the bodies
+void DynamicsWorld::resetSplitVelocities() {
 
-    RP3D_PROFILE("DynamicsWorld::initVelocityArrays()", mProfiler);
-
-    // Allocate memory for the bodies velocity arrays
-    uint nbBodies = mRigidBodies.size();
-
-    mSplitLinearVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                           nbBodies * sizeof(Vector3)));
-    mSplitAngularVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                            nbBodies * sizeof(Vector3)));
-    mConstrainedLinearVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                                 nbBodies * sizeof(Vector3)));
-    mConstrainedAngularVelocities = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                                  nbBodies * sizeof(Vector3)));
-    mConstrainedPositions = static_cast<Vector3*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                          nbBodies * sizeof(Vector3)));
-    mConstrainedOrientations = static_cast<Quaternion*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                                nbBodies * sizeof(Quaternion)));
-    assert(mSplitLinearVelocities != nullptr);
-    assert(mSplitAngularVelocities != nullptr);
-    assert(mConstrainedLinearVelocities != nullptr);
-    assert(mConstrainedAngularVelocities != nullptr);
-    assert(mConstrainedPositions != nullptr);
-    assert(mConstrainedOrientations != nullptr);
-
-    // Initialize the map of body indexes in the velocity arrays
-    uint i = 0;
-    for (List<RigidBody*>::Iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-
-        mSplitLinearVelocities[i].setToZero();
-        mSplitAngularVelocities[i].setToZero();
-
-        (*it)->mArrayIndex = i++;
+    for(uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+        mDynamicsComponents.mSplitLinearVelocities[i].setToZero();
+        mDynamicsComponents.mSplitAngularVelocities[i].setToZero();
     }
 }
 
@@ -282,60 +250,54 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
     RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()", mProfiler);
 
-    // Initialize the bodies velocity arrays
-    initVelocityArrays();
+    // Reset the split velocities of the bodies
+    resetSplitVelocities();
 
-    // For each island of the world
-    for (uint i=0; i < mNbIslands; i++) {
+    // Integration component velocities using force/torque
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
-        RigidBody** bodies = mIslands[i]->getBodies();
+        assert(mDynamicsComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
+        assert(mDynamicsComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
 
-        // For each body of the island
-        for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
+        // Integrate the external force to get the new velocity of the body
+        mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mLinearVelocities[i] + mTimeStep *
+                                                              mDynamicsComponents.mInverseMasses[i] * mDynamicsComponents.mExternalForces[i];
+        mDynamicsComponents.mConstrainedAngularVelocities[i] = mDynamicsComponents.mAngularVelocities[i] +
+                                                               mTimeStep * mDynamicsComponents.mInverseInertiaTensorsWorld[i] * mDynamicsComponents.mExternalTorques[i];
+    }
 
-            // Insert the body into the map of constrained velocities
-            uint indexBody = bodies[b]->mArrayIndex;
+    // Apply gravity force
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+        // If the gravity has to be applied to this rigid body
+        if (mDynamicsComponents.mIsGravityEnabled[i] && mIsGravityEnabled) {
 
-            assert(mSplitLinearVelocities[indexBody] == Vector3(0, 0, 0));
-            assert(mSplitAngularVelocities[indexBody] == Vector3(0, 0, 0));
-
-            // Integrate the external force to get the new velocity of the body
-            mConstrainedLinearVelocities[indexBody] = bodies[b]->getLinearVelocity() +
-                                        mTimeStep * bodies[b]->mMassInverse * bodies[b]->mExternalForce;
-            mConstrainedAngularVelocities[indexBody] = bodies[b]->getAngularVelocity() +
-                                        mTimeStep * bodies[b]->getInertiaTensorInverseWorld() *
-                                        bodies[b]->mExternalTorque;
-
-            // If the gravity has to be applied to this rigid body
-            if (bodies[b]->isGravityEnabled() && mIsGravityEnabled) {
-
-                // Integrate the gravity force
-                mConstrainedLinearVelocities[indexBody] += mTimeStep * bodies[b]->mMassInverse *
-                        bodies[b]->getMass() * mGravity;
-            }
-
-            // Apply the velocity damping
-            // Damping force : F_c = -c' * v (c=damping factor)
-            // Equation      : m * dv/dt = -c' * v
-            //                 => dv/dt = -c * v (with c=c'/m)
-            //                 => dv/dt + c * v = 0
-            // Solution      : v(t) = v0 * e^(-c * t)
-            //                 => v(t + dt) = v0 * e^(-c(t + dt))
-            //                              = v0 * e^(-ct) * e^(-c * dt)
-            //                              = v(t) * e^(-c * dt)
-            //                 => v2 = v1 * e^(-c * dt)
-            // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
-            //                              => e^(-x) ~ 1 - x
-            //                 => v2 = v1 * (1 - c * dt)
-            decimal linDampingFactor = bodies[b]->getLinearDamping();
-            decimal angDampingFactor = bodies[b]->getAngularDamping();
-            decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
-            decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
-            mConstrainedLinearVelocities[indexBody] *= linearDamping;
-            mConstrainedAngularVelocities[indexBody] *= angularDamping;
-
-            indexBody++;
+            // Integrate the gravity force
+            mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i] + mTimeStep *
+                                                                  mDynamicsComponents.mInverseMasses[i] * mDynamicsComponents.mInitMasses[i] * mGravity;
         }
+    }
+
+    // Apply the velocity damping
+    // Damping force : F_c = -c' * v (c=damping factor)
+    // Equation      : m * dv/dt = -c' * v
+    //                 => dv/dt = -c * v (with c=c'/m)
+    //                 => dv/dt + c * v = 0
+    // Solution      : v(t) = v0 * e^(-c * t)
+    //                 => v(t + dt) = v0 * e^(-c(t + dt))
+    //                              = v0 * e^(-ct) * e^(-c * dt)
+    //                              = v(t) * e^(-c * dt)
+    //                 => v2 = v1 * e^(-c * dt)
+    // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
+    //                              => e^(-x) ~ 1 - x
+    //                 => v2 = v1 * (1 - c * dt)
+    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+
+        const decimal linDampingFactor = mDynamicsComponents.mLinearDampings[i];
+        const decimal angDampingFactor = mDynamicsComponents.mAngularDampings[i];
+        const decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
+        const decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
+        mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i] * linearDamping;
+        mDynamicsComponents.mConstrainedAngularVelocities[i] = mDynamicsComponents.mConstrainedAngularVelocities[i] * angularDamping;
     }
 }
 
@@ -344,40 +306,31 @@ void DynamicsWorld::solveContactsAndConstraints() {
 
     RP3D_PROFILE("DynamicsWorld::solveContactsAndConstraints()", mProfiler);
 
-    // Set the velocities arrays
-    mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
-    mContactSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities,
-                                                  mConstrainedAngularVelocities);
-    mConstraintSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities,
-                                                     mConstrainedAngularVelocities);
-    mConstraintSolver.setConstrainedPositionsArrays(mConstrainedPositions,
-                                                    mConstrainedOrientations);
-
     // ---------- Solve velocity constraints for joints and contacts ---------- //
 
     // Initialize the contact solver
-    mContactSolver.init(mIslands, mNbIslands, mTimeStep);
+    mContactSolver.init(mCollisionDetection.mCurrentContactManifolds, mCollisionDetection.mCurrentContactPoints, mTimeStep);
 
     // For each island of the world
-    for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
+    for (uint islandIndex = 0; islandIndex < mIslands.getNbIslands(); islandIndex++) {
 
         // If there are constraints to solve
-        if (mIslands[islandIndex]->getNbJoints() > 0) {
+        if (mIslands.joints[islandIndex].size() > 0) {
 
             // Initialize the constraint solver
-            mConstraintSolver.initializeForIsland(mTimeStep, mIslands[islandIndex]);
+            mConstraintSolver.initializeForIsland(mTimeStep, islandIndex);
         }
     }
 
     // For each iteration of the velocity solver
     for (uint i=0; i<mNbVelocitySolverIterations; i++) {
 
-        for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
+        for (uint islandIndex = 0; islandIndex < mIslands.getNbIslands(); islandIndex++) {
 
             // Solve the constraints
-            if (mIslands[islandIndex]->getNbJoints() > 0) {
+            if (mIslands.joints[islandIndex].size() > 0) {
 
-                mConstraintSolver.solveVelocityConstraints(mIslands[islandIndex]);
+                mConstraintSolver.solveVelocityConstraints(islandIndex);
             }
         }
 
@@ -396,17 +349,17 @@ void DynamicsWorld::solvePositionCorrection() {
     if (mJoints.size() == 0) return;
 
     // For each island of the world
-    for (uint islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
+    for (uint islandIndex = 0; islandIndex < mIslands.getNbIslands(); islandIndex++) {
 
         // ---------- Solve the position error correction for the constraints ---------- //
 
-        if (mIslands[islandIndex]->getNbJoints() > 0) {
+        if (mIslands.joints[islandIndex].size() > 0) {
 
             // For each iteration of the position (error correction) solver
             for (uint i=0; i<mNbPositionSolverIterations; i++) {
 
                 // Solve the position constraints
-                mConstraintSolver.solvePositionConstraints(mIslands[islandIndex]);
+                mConstraintSolver.solvePositionConstraints(islandIndex);
             }
         }
     }
@@ -429,7 +382,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
 
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
-    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(Vector3::zero(), Vector3::zero()));
+    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(transform.getPosition()));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
@@ -478,9 +431,6 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     for (element = rigidBody->mJointsList; element != nullptr; element = element->next) {
         destroyJoint(element->joint);
     }
-
-    // Reset the contact manifold list of the body
-    rigidBody->resetContactManifoldsList();
 
     // Destroy the corresponding entity and its components
     mBodyComponents.removeComponent(rigidBody->getEntity());
@@ -672,123 +622,133 @@ uint DynamicsWorld::computeNextAvailableJointId() {
     return jointId;
 }
 
-// Compute the islands of awake bodies.
+// Compute the islands using potential contacts and joints
+/// We compute the islands before creating the actual contacts here because we want all
+/// the contact manifolds and contact points of the same island
+/// to be packed together into linear arrays of manifolds and contacts for better caching.
 /// An island is an isolated group of rigid bodies that have constraints (joints or contacts)
 /// between each other. This method computes the islands at each time step as follows: For each
 /// awake rigid body, we run a Depth First Search (DFS) through the constraint graph of that body
 /// (graph where nodes are the bodies and where the edges are the constraints between the bodies) to
 /// find all the bodies that are connected with it (the bodies that share joints or contacts with
 /// it). Then, we create an island with this group of connected bodies.
-void DynamicsWorld::computeIslands() {
+void DynamicsWorld::createIslands() {
 
-    RP3D_PROFILE("DynamicsWorld::computeIslands()", mProfiler);
+    // TODO : Check if we handle kinematic bodies correctly in islands creation
 
-    uint nbBodies = mRigidBodies.size();
+    // list of contact pairs involving a non-rigid body
+    List<uint> nonRigidBodiesContactPairs(mMemoryManager.getSingleFrameAllocator());
 
-    // Allocate and create the array of islands pointer. This memory is allocated
-    // in the single frame allocator
-    mIslands = static_cast<Island**>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                             sizeof(Island*) * nbBodies));
-    mNbIslands = 0;
+    RP3D_PROFILE("DynamicsWorld::createIslands()", mProfiler);
 
-    int nbContactManifolds = 0;
+    // Reset all the isAlreadyInIsland variables of bodies and joints
+    for (uint b=0; b < mDynamicsComponents.getNbComponents(); b++) {
 
-    // Reset all the isAlreadyInIsland variables of bodies, joints and contact manifolds
-    for (List<RigidBody*>::Iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-        int nbBodyManifolds = (*it)->resetIsAlreadyInIslandAndCountManifolds();
-        nbContactManifolds += nbBodyManifolds;
+        mDynamicsComponents.mIsAlreadyInIsland[b] = false;
     }
     for (List<Joint*>::Iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
         (*it)->mIsAlreadyInIsland = false;
     }
 
-    // Create a stack (using an array) for the rigid bodies to visit during the Depth First Search
-    size_t nbBytesStack = sizeof(RigidBody*) * nbBodies;
-    RigidBody** stackBodiesToVisit = static_cast<RigidBody**>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                                                      nbBytesStack));
+    // Create a stack for the bodies to visit during the Depth First Search
+    Stack<Entity> bodyEntityIndicesToVisit(mMemoryManager.getSingleFrameAllocator());
 
-    // For each rigid body of the world
-    for (List<RigidBody*>::Iterator it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
+    uint nbTotalManifolds = 0;
 
-        RigidBody* body = *it;
+    // For each dynamic component
+    // TODO : Here we iterate on dynamic component where we can have static, kinematic and dynamic bodies. Maybe we should
+    //        not use a dynamic component for a static body.
+    for (uint b=0; b < mDynamicsComponents.getNbEnabledComponents(); b++) {
 
         // If the body has already been added to an island, we go to the next body
-        if (body->mIsAlreadyInIsland) continue;
+        if (mDynamicsComponents.mIsAlreadyInIsland[b]) continue;
 
         // If the body is static, we go to the next body
+        // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
+        CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(mDynamicsComponents.mBodies[b]));
         if (body->getType() == BodyType::STATIC) continue;
 
-        // If the body is sleeping or inactive, we go to the next body
-        if (body->isSleeping() || !body->isActive()) continue;
-
         // Reset the stack of bodies to visit
-        uint stackIndex = 0;
-        stackBodiesToVisit[stackIndex] = body;
-        stackIndex++;
-        body->mIsAlreadyInIsland = true;
+        bodyEntityIndicesToVisit.clear();
+
+        // Add the body into the stack of bodies to visit
+        mDynamicsComponents.mIsAlreadyInIsland[b] = true;
+        bodyEntityIndicesToVisit.push(mDynamicsComponents.mBodies[b]);
 
         // Create the new island
-        void* allocatedMemoryIsland = mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
-                                                              sizeof(Island));
-        mIslands[mNbIslands] = new (allocatedMemoryIsland) Island(nbBodies, nbContactManifolds, mJoints.size(),
-                                                                  mMemoryManager);
+        uint32 islandIndex = mIslands.addIsland(nbTotalManifolds);
 
         // While there are still some bodies to visit in the stack
-        while (stackIndex > 0) {
+        while (bodyEntityIndicesToVisit.size() > 0) {
 
             // Get the next body to visit from the stack
-            stackIndex--;
-            RigidBody* bodyToVisit = stackBodiesToVisit[stackIndex];
-            assert(bodyToVisit->isActive());
-
-            // Awake the body if it is sleeping
-            bodyToVisit->setIsSleeping(false);
+            const Entity bodyToVisitEntity = bodyEntityIndicesToVisit.pop();
 
             // Add the body into the island
-            mIslands[mNbIslands]->addBody(bodyToVisit);
+            mIslands.bodyEntities[islandIndex].add(bodyToVisitEntity);
 
             // If the current body is static, we do not want to perform the DFS
             // search across that body
-            if (bodyToVisit->getType() == BodyType::STATIC) continue;
+            // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
+            RigidBody* rigidBodyToVisit = static_cast<RigidBody*>(mBodyComponents.getBody(bodyToVisitEntity));
 
-            // For each contact manifold in which the current body is involded
-            ContactManifoldListElement* contactElement;
-            for (contactElement = bodyToVisit->mContactManifoldsList; contactElement != nullptr;
-                 contactElement = contactElement->getNext()) {
+            // Awake the body if it is sleeping
+            rigidBodyToVisit->setIsSleeping(false);
 
-                ContactManifold* contactManifold = contactElement->getContactManifold();
+            if (rigidBodyToVisit->getType() == BodyType::STATIC) continue;
 
-                assert(contactManifold->getNbContactPoints() > 0);
+            // If the body is involved in contacts with other bodies
+            auto itBodyContactPairs = mCollisionDetection.mMapBodyToContactPairs.find(bodyToVisitEntity);
+            if (itBodyContactPairs != mCollisionDetection.mMapBodyToContactPairs.end()) {
 
-                // Check if the current contact manifold has already been added into an island
-                if (contactManifold->isAlreadyInIsland()) continue;
+                // For each contact pair in which the current body is involded
+                List<uint>& contactPairs = itBodyContactPairs->second;
+                for (uint p=0; p < contactPairs.size(); p++) {
 
-                // Get the other body of the contact manifold
-                RigidBody* body1 = dynamic_cast<RigidBody*>(contactManifold->getBody1());
-                RigidBody* body2 = dynamic_cast<RigidBody*>(contactManifold->getBody2());
+                    ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[contactPairs[p]];
+                    assert(pair.potentialContactManifoldsIndices.size() > 0);
 
-                // If the colliding body is a RigidBody (and not a CollisionBody instead)
-                if (body1 != nullptr && body2 != nullptr) {
+                    // Check if the current contact pair has already been added into an island
+                    if (pair.isAlreadyInIsland) continue;
 
-                    // Add the contact manifold into the island
-                    mIslands[mNbIslands]->addContactManifold(contactManifold);
-                    contactManifold->mIsAlreadyInIsland = true;
+                    // Get the other body of the contact manifold
+                    // TODO : Maybe avoid those casts here
+                    RigidBody* body1 = dynamic_cast<RigidBody*>(mBodyComponents.getBody(pair.body1Entity));
+                    RigidBody* body2 = dynamic_cast<RigidBody*>(mBodyComponents.getBody(pair.body2Entity));
 
-                    RigidBody* otherBody = (body1->getId() == bodyToVisit->getId()) ? body2 : body1;
+                    // If the colliding body is a RigidBody (and not a CollisionBody instead)
+                    if (body1 != nullptr && body2 != nullptr) {
 
-                    // Check if the other body has already been added to the island
-                    if (otherBody->mIsAlreadyInIsland) continue;
+                        nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
 
-                    // Insert the other body into the stack of bodies to visit
-                    stackBodiesToVisit[stackIndex] = otherBody;
-                    stackIndex++;
-                    otherBody->mIsAlreadyInIsland = true;
+                        // Add the pair into the list of pair to process to create contacts
+                        mCollisionDetection.mContactPairsIndicesOrderingForContacts.add(pair.contactPairIndex);
+
+                        // Add the contact manifold into the island
+                        mIslands.nbContactManifolds[islandIndex] += pair.potentialContactManifoldsIndices.size();
+                        pair.isAlreadyInIsland = true;
+
+                        const Entity otherBodyEntity = pair.body1Entity == bodyToVisitEntity ? pair.body2Entity : pair.body1Entity;
+
+                        // Check if the other body has already been added to the island
+                        if (mDynamicsComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
+
+                        // Insert the other body into the stack of bodies to visit
+                        bodyEntityIndicesToVisit.push(otherBodyEntity);
+                        mDynamicsComponents.setIsAlreadyInIsland(otherBodyEntity, true);
+                    }
+                    else {
+
+                        // Add the contact pair index in the list of contact pairs that won't be part of islands
+                        nonRigidBodiesContactPairs.add(pair.contactPairIndex);
+                        pair.isAlreadyInIsland = true;
+                    }
                 }
             }
 
             // For each joint in which the current body is involved
             JointListElement* jointElement;
-            for (jointElement = bodyToVisit->mJointsList; jointElement != nullptr;
+            for (jointElement = rigidBodyToVisit->mJointsList; jointElement != nullptr;
                  jointElement = jointElement->next) {
 
                 Joint* joint = jointElement->joint;
@@ -797,35 +757,41 @@ void DynamicsWorld::computeIslands() {
                 if (joint->isAlreadyInIsland()) continue;
 
                 // Add the joint into the island
-                mIslands[mNbIslands]->addJoint(joint);
+                mIslands.joints[islandIndex].add(joint);
                 joint->mIsAlreadyInIsland = true;
 
-                // Get the other body of the contact manifold
-                RigidBody* body1 = static_cast<RigidBody*>(joint->getBody1());
-                RigidBody* body2 = static_cast<RigidBody*>(joint->getBody2());
-                RigidBody* otherBody = (body1->getId() == bodyToVisit->getId()) ? body2 : body1;
+                const Entity body1Entity = joint->getBody1()->getEntity();
+                const Entity body2Entity = joint->getBody2()->getEntity();
+                const Entity otherBodyEntity = body1Entity == bodyToVisitEntity ? body2Entity : body1Entity;
 
                 // Check if the other body has already been added to the island
-                if (otherBody->mIsAlreadyInIsland) continue;
+                if (mDynamicsComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
 
                 // Insert the other body into the stack of bodies to visit
-                stackBodiesToVisit[stackIndex] = otherBody;
-                stackIndex++;
-                otherBody->mIsAlreadyInIsland = true;
+                bodyEntityIndicesToVisit.push(otherBodyEntity);
+                mDynamicsComponents.setIsAlreadyInIsland(otherBodyEntity, true);
             }
         }
 
         // Reset the isAlreadyIsland variable of the static bodies so that they
         // can also be included in the other islands
-        for (uint i=0; i < mIslands[mNbIslands]->mNbBodies; i++) {
+        for (uint j=0; j < mDynamicsComponents.getNbEnabledComponents(); j++) {
 
-            if (mIslands[mNbIslands]->mBodies[i]->getType() == BodyType::STATIC) {
-                mIslands[mNbIslands]->mBodies[i]->mIsAlreadyInIsland = false;
+            // If the body is static, we go to the next body
+            // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
+            CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(mDynamicsComponents.mBodies[j]));
+            if (body->getType() == BodyType::STATIC) {
+                mDynamicsComponents.mIsAlreadyInIsland[j] = false;
             }
         }
+    }
 
-        mNbIslands++;
-     }
+    // Add the contact pairs that are not part of islands at the end of the array of pairs for contacts creations
+    mCollisionDetection.mContactPairsIndicesOrderingForContacts.addRange(nonRigidBodiesContactPairs);
+
+    assert(mCollisionDetection.mCurrentContactPairs->size() == mCollisionDetection.mContactPairsIndicesOrderingForContacts.size());
+
+    mCollisionDetection.mMapBodyToContactPairs.clear(true);
 }
 
 // Put bodies to sleep if needed.
@@ -839,32 +805,36 @@ void DynamicsWorld::updateSleepingBodies() {
     const decimal sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;
 
     // For each island of the world
-    for (uint i=0; i<mNbIslands; i++) {
+    for (uint i=0; i<mIslands.getNbIslands(); i++) {
 
         decimal minSleepTime = DECIMAL_LARGEST;
 
         // For each body of the island
-        RigidBody** bodies = mIslands[i]->getBodies();
-        for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
+        for (uint b=0; b < mIslands.bodyEntities[i].size(); b++) {
+
+            const Entity bodyEntity = mIslands.bodyEntities[i][b];
+
+            // TODO : We should not have to do this cast here to get type of body
+            CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(bodyEntity));
 
             // Skip static bodies
-            if (bodies[b]->getType() == BodyType::STATIC) continue;
+            if (body->getType() == BodyType::STATIC) continue;
 
             // If the body is velocity is large enough to stay awake
-            if (bodies[b]->getLinearVelocity().lengthSquare() > sleepLinearVelocitySquare ||
-                bodies[b]->getAngularVelocity().lengthSquare() > sleepAngularVelocitySquare ||
-                !bodies[b]->isAllowedToSleep()) {
+            if (mDynamicsComponents.getLinearVelocity(bodyEntity).lengthSquare() > sleepLinearVelocitySquare ||
+                mDynamicsComponents.getAngularVelocity(bodyEntity).lengthSquare() > sleepAngularVelocitySquare ||
+                !body->isAllowedToSleep()) {
 
                 // Reset the sleep time of the body
-                bodies[b]->mSleepTime = decimal(0.0);
+                body->mSleepTime = decimal(0.0);
                 minSleepTime = decimal(0.0);
             }
-            else {  // If the body velocity is bellow the sleeping velocity threshold
+            else {  // If the body velocity is below the sleeping velocity threshold
 
                 // Increase the sleep time
-                bodies[b]->mSleepTime += mTimeStep;
-                if (bodies[b]->mSleepTime < minSleepTime) {
-                    minSleepTime = bodies[b]->mSleepTime;
+                body->mSleepTime += mTimeStep;
+                if (body->mSleepTime < minSleepTime) {
+                    minSleepTime = body->mSleepTime;
                 }
             }
         }
@@ -875,8 +845,11 @@ void DynamicsWorld::updateSleepingBodies() {
         if (minSleepTime >= mTimeBeforeSleep) {
 
             // Put all the bodies of the island to sleep
-            for (uint b=0; b < mIslands[i]->getNbBodies(); b++) {
-                bodies[b]->setIsSleeping(true);
+            for (uint b=0; b < mIslands.bodyEntities[i].size(); b++) {
+
+                const Entity bodyEntity = mIslands.bodyEntities[i][b];
+                CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(bodyEntity));
+                body->setIsSleeping(true);
             }
         }
     }
@@ -905,34 +878,4 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) );
-}
-
-// Return the list of all contacts of the world
-/**
- * @return A pointer to the first contact manifold in the linked-list of manifolds
- */
-List<const ContactManifold*> DynamicsWorld::getContactsList() {
-
-    List<const ContactManifold*> contactManifolds(mMemoryManager.getPoolAllocator());
-
-    // For each currently overlapping pair of bodies
-    for (auto it = mCollisionDetection.mOverlappingPairs.begin();
-         it != mCollisionDetection.mOverlappingPairs.end(); ++it) {
-
-        OverlappingPair* pair = it->second;
-
-        // For each contact manifold of the pair
-        const ContactManifoldSet& manifoldSet = pair->getContactManifoldSet();
-        ContactManifold* manifold = manifoldSet.getContactManifolds();
-        while (manifold != nullptr) {
-
-            // Get the contact manifold
-            contactManifolds.add(manifold);
-
-            manifold = manifold->getNext();
-        }
-    }
-
-    // Return all the contact manifold
-    return contactManifolds;
 }

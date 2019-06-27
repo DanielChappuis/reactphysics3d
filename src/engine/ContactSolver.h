@@ -30,6 +30,7 @@
 #include "configuration.h"
 #include "mathematics/Vector3.h"
 #include "mathematics/Matrix3x3.h"
+#include "engine/Islands.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -42,6 +43,9 @@ class MemoryManager;
 class Profiler;
 class Island;
 class RigidBody;
+class BodyComponents;
+class DynamicsComponents;
+class ProxyShapeComponents;
 
 // Class Contact Solver
 /**
@@ -170,11 +174,11 @@ class ContactSolver {
             /// Pointer to the external contact manifold
             ContactManifold* externalContactManifold;
 
-            /// Index of body 1 in the constraint solver
-            int32 indexBody1;
+            /// Index of body 1 in the dynamics components arrays
+            uint32 dynamicsComponentIndexBody1;
 
-            /// Index of body 2 in the constraint solver
-            int32 indexBody2;
+            /// Index of body 2 in the dynamics components arrays
+            uint32 dynamicsComponentIndexBody2;
 
             /// Inverse of the mass of body 1
             decimal massInverseBody1;
@@ -279,19 +283,15 @@ class ContactSolver {
         /// Memory manager
         MemoryManager& mMemoryManager;
 
-        /// Split linear velocities for the position contact solver (split impulse)
-        Vector3* mSplitLinearVelocities;
-
-        /// Split angular velocities for the position contact solver (split impulse)
-        Vector3* mSplitAngularVelocities;
-
         /// Current time step
         decimal mTimeStep;
 
         /// Contact constraints
+        // TODO : Use List<> here
         ContactManifoldSolver* mContactConstraints;
 
         /// Contact points
+        // TODO : Use List<> here
         ContactPointSolver* mContactPoints;
 
         /// Number of contact point constraints
@@ -300,11 +300,24 @@ class ContactSolver {
         /// Number of contact constraints
         uint mNbContactManifolds;
 
-        /// Array of linear velocities
-        Vector3* mLinearVelocities;
+        /// Reference to the islands
+        Islands& mIslands;
 
-        /// Array of angular velocities
-        Vector3* mAngularVelocities;
+        /// Pointer to the list of contact manifolds from narrow-phase
+        List<ContactManifold>* mAllContactManifolds;
+
+        /// Pointer to the list of contact points from narrow-phase
+        List<ContactPoint>* mAllContactPoints;
+
+        /// Reference to the body components
+        BodyComponents& mBodyComponents;
+
+        /// Reference to the dynamics components
+        DynamicsComponents& mDynamicsComponents;
+
+        /// Reference to the proxy-shapes components
+        // TODO : Do we really need to use this ?
+        ProxyShapeComponents& mProxyShapeComponents;
 
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
@@ -346,24 +359,18 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(MemoryManager& memoryManager, const WorldSettings& worldSettings);
+        ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents,
+                      DynamicsComponents& dynamicsComponents, ProxyShapeComponents& proxyShapeComponents,
+                      const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactSolver() = default;
 
         /// Initialize the contact constraints
-        void init(Island** islands, uint nbIslands, decimal timeStep);
+        void init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep);
 
         /// Initialize the constraint solver for a given island
-        void initializeForIsland(Island* island);
-
-        /// Set the split velocities arrays
-        void setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
-                                      Vector3* splitAngularVelocities);
-
-        /// Set the constrained velocities arrays
-        void setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
-                                            Vector3* constrainedAngularVelocities);
+        void initializeForIsland(uint islandIndex);
 
         /// Store the computed impulses to use them to
         /// warm start the solver at the next iteration
@@ -385,28 +392,6 @@ class ContactSolver {
 
 #endif
 };
-
-// Set the split velocities arrays
-inline void ContactSolver::setSplitVelocitiesArrays(Vector3* splitLinearVelocities,
-                                                    Vector3* splitAngularVelocities) {
-
-    assert(splitLinearVelocities != nullptr);
-    assert(splitAngularVelocities != nullptr);
-
-    mSplitLinearVelocities = splitLinearVelocities;
-    mSplitAngularVelocities = splitAngularVelocities;
-}
-
-// Set the constrained velocities arrays
-inline void ContactSolver::setConstrainedVelocitiesArrays(Vector3* constrainedLinearVelocities,
-                                                          Vector3* constrainedAngularVelocities) {
-
-    assert(constrainedLinearVelocities != nullptr);
-    assert(constrainedAngularVelocities != nullptr);
-
-    mLinearVelocities = constrainedLinearVelocities;
-    mAngularVelocities = constrainedAngularVelocities;
-}
 
 // Return true if the split impulses position correction technique is used for contacts
 inline bool ContactSolver::isSplitImpulseActive() const {

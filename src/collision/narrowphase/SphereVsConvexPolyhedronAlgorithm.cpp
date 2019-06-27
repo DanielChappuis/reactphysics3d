@@ -36,7 +36,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                                      bool reportContacts, bool stopFirstContactFound, MemoryAllocator& memoryAllocator) {
+                                                      bool reportContacts, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator) {
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
@@ -73,9 +73,6 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
             // Return true
             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
             isCollisionFound = true;
-            if (stopFirstContactFound) {
-                return isCollisionFound;
-            }
             continue;
         }
 
@@ -83,7 +80,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
         if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::INTERPENETRATE) {
 
             // Run the SAT algorithm to find the separating axis and compute contact point
-            SATAlgorithm satAlgorithm(memoryAllocator);
+            SATAlgorithm satAlgorithm(clipWithPreviousAxisIfStillColliding, memoryAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -91,14 +88,10 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
 
 #endif
 
-            isCollisionFound |= satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex, 1, reportContacts, stopFirstContactFound);
+            isCollisionFound |= satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex, 1, reportContacts);
 
             lastFrameCollisionInfo->wasUsingGJK = false;
             lastFrameCollisionInfo->wasUsingSAT = true;
-
-            if (isCollisionFound && stopFirstContactFound) {
-                return isCollisionFound;
-            }
 
             continue;
         }

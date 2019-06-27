@@ -26,6 +26,7 @@
 // Libraries
 #include "HingeJoint.h"
 #include "engine/ConstraintSolver.h"
+#include "components/DynamicsComponents.h"
 
 using namespace reactphysics3d;
 
@@ -66,13 +67,9 @@ HingeJoint::HingeJoint(uint id, const HingeJointInfo& jointInfo)
 // Initialize before solving the constraint
 void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
-    // Initialize the bodies index in the velocity array
-    mIndexBody1 = mBody1->mArrayIndex;
-    mIndexBody2 = mBody2->mArrayIndex;
-
     // Get the bodies positions and orientations
-    const Vector3& x1 = mBody1->mCenterOfMassWorld;
-    const Vector3& x2 = mBody2->mCenterOfMassWorld;
+    const Vector3& x1 = constraintSolverData.dynamicsComponents.getCenterOfMassWorld(mBody1Entity);
+    const Vector3& x2 = constraintSolverData.dynamicsComponents.getCenterOfMassWorld(mBody2Entity);
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 
@@ -116,7 +113,9 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
     Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mR2World);
 
     // Compute the inverse mass matrix K=JM^-1J^t for the 3 translation constraints (3x3 matrix)
-    decimal inverseMassBodies = mBody1->mMassInverse + mBody2->mMassInverse;
+    decimal body1MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody1->getEntity());
+    decimal body2MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody2->getEntity());
+    decimal inverseMassBodies = body1MassInverse + body2MassInverse;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
                                     0, 0, inverseMassBodies) +
@@ -198,15 +197,18 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 // Warm start the constraint (apply the previous impulse at the beginning of the step)
 void HingeJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+
     // Get the velocities
-    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
-    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
-    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
-    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    const decimal inverseMassBody1 = mBody1->mMassInverse;
-    const decimal inverseMassBody2 = mBody2->mMassInverse;
+    const decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    const decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // Compute the impulse P=J^T * lambda for the 2 rotation constraints
     Vector3 rotationImpulse = -mB2CrossA1 * mImpulseRotation.x - mC2CrossA1 * mImpulseRotation.y;
@@ -254,15 +256,18 @@ void HingeJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 // Solve the velocity constraint
 void HingeJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+
     // Get the velocities
-    Vector3& v1 = constraintSolverData.linearVelocities[mIndexBody1];
-    Vector3& v2 = constraintSolverData.linearVelocities[mIndexBody2];
-    Vector3& w1 = constraintSolverData.angularVelocities[mIndexBody1];
-    Vector3& w2 = constraintSolverData.angularVelocities[mIndexBody2];
+    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->mMassInverse;
-    decimal inverseMassBody2 = mBody2->mMassInverse;
+    decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // --------------- Translation Constraints --------------- //
 
@@ -405,14 +410,14 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies positions and orientations
-    Vector3& x1 = constraintSolverData.positions[mIndexBody1];
-    Vector3& x2 = constraintSolverData.positions[mIndexBody2];
-    Quaternion& q1 = constraintSolverData.orientations[mIndexBody1];
-    Quaternion& q2 = constraintSolverData.orientations[mIndexBody2];
+    Vector3 x1 = constraintSolverData.dynamicsComponents.getConstrainedPosition(mBody1Entity);
+    Vector3 x2 = constraintSolverData.dynamicsComponents.getConstrainedPosition(mBody2Entity);
+    Quaternion q1 = constraintSolverData.dynamicsComponents.getConstrainedOrientation(mBody1Entity);
+    Quaternion q2 = constraintSolverData.dynamicsComponents.getConstrainedOrientation(mBody2Entity);
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = mBody1->mMassInverse;
-    decimal inverseMassBody2 = mBody2->mMassInverse;
+    decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
 
     // Recompute the inverse inertia tensors
     mI1 = mBody1->getInertiaTensorInverseWorld();
@@ -448,7 +453,9 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // --------------- Translation Constraints --------------- //
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
-    decimal inverseMassBodies = mBody1->mMassInverse + mBody2->mMassInverse;
+    const decimal body1InverseMass = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
+    const decimal body2InverseMass = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
+    decimal inverseMassBodies = body1InverseMass + body2InverseMass;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
                                     0, 0, inverseMassBodies) +
@@ -603,6 +610,11 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
             q2.normalize();
         }
     }
+
+    constraintSolverData.dynamicsComponents.setConstrainedPosition(mBody1Entity, x1);
+    constraintSolverData.dynamicsComponents.setConstrainedPosition(mBody2Entity, x2);
+    constraintSolverData.dynamicsComponents.setConstrainedOrientation(mBody1Entity, q1);
+    constraintSolverData.dynamicsComponents.setConstrainedOrientation(mBody2Entity, q2);
 }
 
 

@@ -31,7 +31,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver() : mIsWarmStartingActive(true) {
+ConstraintSolver::ConstraintSolver(Islands& islands, DynamicsComponents& dynamicsComponents)
+                 : mIsWarmStartingActive(true), mIslands(islands), mConstraintSolverData(dynamicsComponents) {
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -42,13 +43,12 @@ ConstraintSolver::ConstraintSolver() : mIsWarmStartingActive(true) {
 }
 
 // Initialize the constraint solver for a given island
-void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
+void ConstraintSolver::initializeForIsland(decimal dt, uint islandIndex) {
 
     RP3D_PROFILE("ConstraintSolver::initializeForIsland()", mProfiler);
 
-    assert(island != nullptr);
-    assert(island->getNbBodies() > 0);
-    assert(island->getNbJoints() > 0);
+    assert(mIslands.bodyEntities[islandIndex].size() > 0);
+    assert(mIslands.joints[islandIndex].size() > 0);
 
     // Set the current time step
     mTimeStep = dt;
@@ -58,49 +58,44 @@ void ConstraintSolver::initializeForIsland(decimal dt, Island* island) {
     mConstraintSolverData.isWarmStartingActive = mIsWarmStartingActive;
 
     // For each joint of the island
-    Joint** joints = island->getJoints();
-    for (uint i=0; i<island->getNbJoints(); i++) {
+    for (uint i=0; i<mIslands.joints[islandIndex].size(); i++) {
 
         // Initialize the constraint before solving it
-        joints[i]->initBeforeSolve(mConstraintSolverData);
+        mIslands.joints[islandIndex][i]->initBeforeSolve(mConstraintSolverData);
 
         // Warm-start the constraint if warm-starting is enabled
         if (mIsWarmStartingActive) {
-            joints[i]->warmstart(mConstraintSolverData);
+            mIslands.joints[islandIndex][i]->warmstart(mConstraintSolverData);
         }
     }
 }
 
 // Solve the velocity constraints
-void ConstraintSolver::solveVelocityConstraints(Island* island) {
+void ConstraintSolver::solveVelocityConstraints(uint islandIndex) {
 
     RP3D_PROFILE("ConstraintSolver::solveVelocityConstraints()", mProfiler);
 
-    assert(island != nullptr);
-    assert(island->getNbJoints() > 0);
+    assert(mIslands.joints[islandIndex].size() > 0);
 
     // For each joint of the island
-    Joint** joints = island->getJoints();
-    for (uint i=0; i<island->getNbJoints(); i++) {
+    for (uint i=0; i<mIslands.joints[islandIndex].size(); i++) {
 
         // Solve the constraint
-        joints[i]->solveVelocityConstraint(mConstraintSolverData);
+        mIslands.joints[islandIndex][i]->solveVelocityConstraint(mConstraintSolverData);
     }
 }
 
 // Solve the position constraints
-void ConstraintSolver::solvePositionConstraints(Island* island) {
+void ConstraintSolver::solvePositionConstraints(uint islandIndex) {
 
     RP3D_PROFILE("ConstraintSolver::solvePositionConstraints()", mProfiler);
 
-    assert(island != nullptr);
-    assert(island->getNbJoints() > 0);
+    assert(mIslands.joints[islandIndex].size() > 0);
 
     // For each joint of the island
-    Joint** joints = island->getJoints();
-    for (uint i=0; i < island->getNbJoints(); i++) {
+    for (uint i=0; i<mIslands.joints[islandIndex].size(); i++) {
 
         // Solve the constraint
-        joints[i]->solvePositionConstraint(mConstraintSolverData);
+        mIslands.joints[islandIndex][i]->solvePositionConstraint(mConstraintSolverData);
     }
 }

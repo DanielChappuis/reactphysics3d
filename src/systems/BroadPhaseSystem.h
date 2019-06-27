@@ -186,7 +186,7 @@ class BroadPhaseSystem {
         void reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int>& overlappingNodes) const;
 
         /// Compute all the overlapping pairs of collision shapes
-        void computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int, int> >& overlappingNodes);
+        void computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int, int>>& overlappingNodes);
 
         /// Return the proxy shape corresponding to the broad-phase node id in parameter
         ProxyShape* getProxyShapeForBroadPhaseId(int broadPhaseId) const;

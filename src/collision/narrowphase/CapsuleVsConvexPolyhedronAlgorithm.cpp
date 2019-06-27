@@ -41,14 +41,14 @@ using namespace reactphysics3d;
 // by Dirk Gregorius.
 bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                                        uint batchStartIndex, uint batchNbItems,
-                                                       bool reportContacts, bool stopFirstContactFound,
+                                                       bool reportContacts, bool clipWithPreviousAxisIfStillColliding,
                                                        MemoryAllocator& memoryAllocator) {
 
     bool isCollisionFound = false;
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
-    SATAlgorithm satAlgorithm(memoryAllocator);
+    SATAlgorithm satAlgorithm(clipWithPreviousAxisIfStillColliding, memoryAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -166,9 +166,6 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
             // Colision found
             narrowPhaseInfoBatch.isColliding[batchIndex] = true;
             isCollisionFound = true;
-            if (stopFirstContactFound) {
-                return isCollisionFound;
-            }
             continue;
         }
 
@@ -183,9 +180,6 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
 
             if (narrowPhaseInfoBatch.isColliding[batchIndex]) {
                 isCollisionFound = true;
-                if (stopFirstContactFound) {
-                    return isCollisionFound;
-                }
             }
         }
     }

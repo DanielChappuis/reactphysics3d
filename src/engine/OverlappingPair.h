@@ -27,7 +27,6 @@
 #define	REACTPHYSICS3D_OVERLAPPING_PAIR_H
 
 // Libraries
-#include "collision/ContactManifoldSet.h"
 #include "collision/ProxyShape.h"
 #include "containers/Map.h"
 #include "containers/Pair.h"
@@ -110,8 +109,9 @@ class OverlappingPair {
         /// Pair ID
         OverlappingPairId mPairID;
 
-        /// Set of persistent contact manifolds
-        ContactManifoldSet mContactManifoldSet;
+        // TODO : Replace this by entities
+        ProxyShape* mProxyShape1;
+        ProxyShape* mProxyShape2;
 
         /// Persistent memory allocator
         MemoryAllocator& mPersistentAllocator;
@@ -146,6 +146,9 @@ class OverlappingPair {
         /// Deleted assignment operator
         OverlappingPair& operator=(const OverlappingPair& pair) = delete;
 
+        /// Return the Id of the pair
+        OverlappingPairId getId() const;
+
         /// Return the pointer to first proxy collision shape
         ProxyShape* getShape1() const;
 
@@ -155,29 +158,11 @@ class OverlappingPair {
         /// Return the last frame collision info
         LastFrameCollisionInfo* getLastFrameCollisionInfo(ShapeIdPair& shapeIds);
 
-        /// Return the a reference to the contact manifold set
-        const ContactManifoldSet& getContactManifoldSet();
-
-        /// Add potential contact-points from narrow-phase into potential contact manifolds
-        void addPotentialContactPoints(const NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex);
-
         /// Return a reference to the temporary memory allocator
         MemoryAllocator& getTemporaryAllocator();
 
         /// Return true if one of the shapes of the pair is a concave shape
         bool hasConcaveShape() const;
-
-		/// Return true if the overlapping pair has contact manifolds with contacts
-		bool hasContacts() const;
-
-        /// Make the contact manifolds and contact points obsolete
-        void makeContactsObsolete();
-
-        /// Clear the obsolete contact manifold and contact points
-        void clearObsoleteManifoldsAndContactPoints();
-
-        /// Reduce the contact manifolds that have too many contact points
-        void reduceContactManifolds();
 
         /// Add a new last frame collision info if it does not exist for the given shapes already
         LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2);
@@ -202,14 +187,19 @@ class OverlappingPair {
         friend class DynamicsWorld;
 };
 
+// Return the Id of the pair
+inline OverlappingPair::OverlappingPairId OverlappingPair::getId() const {
+    return mPairID;
+}
+
 // Return the pointer to first body
 inline ProxyShape* OverlappingPair::getShape1() const {
-    return mContactManifoldSet.getShape1();
-}          
+    return mProxyShape1;
+}
 
 // Return the pointer to second body
 inline ProxyShape* OverlappingPair::getShape2() const {
-    return mContactManifoldSet.getShape2();
+    return mProxyShape2;
 }                
 
 // Return the last frame collision info for a given shape id or nullptr if none is found
@@ -220,17 +210,6 @@ inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(ShapeI
     }
 
     return nullptr;
-}
-
-// Return the contact manifold
-inline const ContactManifoldSet& OverlappingPair::getContactManifoldSet() {
-    return mContactManifoldSet;
-}
-
-// Make the contact manifolds and contact points obsolete
-inline void OverlappingPair::makeContactsObsolete() {
-
-    mContactManifoldSet.makeContactsObsolete();
 }
 
 // Return the pair of bodies index
@@ -268,29 +247,9 @@ inline bool OverlappingPair::hasConcaveShape() const {
            !getShape2()->getCollisionShape()->isConvex();
 }
 
-// Return true if the overlapping pair has contact manifolds with contacts
-inline bool OverlappingPair::hasContacts() const {
-	return mContactManifoldSet.getContactManifolds() != nullptr;
-}
-
-// Clear the obsolete contact manifold and contact points
-inline void OverlappingPair::clearObsoleteManifoldsAndContactPoints() {
-    mContactManifoldSet.clearObsoleteManifoldsAndContactPoints();
-}
-
-// Reduce the contact manifolds that have too many contact points
-inline void OverlappingPair::reduceContactManifolds() {
-   mContactManifoldSet.reduce();
-}
-
 // Return the last frame collision info for a given pair of shape ids
 inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const {
     return mLastFrameCollisionInfos[ShapeIdPair(shapeId1, shapeId2)];
-}
-
-// Create a new potential contact manifold using contact-points from narrow-phase
-inline void OverlappingPair::addPotentialContactPoints(const NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) {
-    mContactManifoldSet.addContactPoints(narrowPhaseInfoBatch, batchIndex);
 }
 
 }
