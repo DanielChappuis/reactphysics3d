@@ -64,17 +64,17 @@ class RaycastManager : public rp3d::RaycastCallback {
 
     private:
 
-        /// All the visual contact points
-        std::vector<SceneContactPoint> mHitPoints;
+        /// Reference to the list of contact points of the scene
+        std::vector<SceneContactPoint>& mHitPoints;
 
         /// Contact point mesh folder path
         std::string mMeshFolderPath;
 
    public:
 
-        RaycastManager(openglframework::Shader& shader,
-                       const std::string& meshFolderPath)
-            : mMeshFolderPath(meshFolderPath) {
+        RaycastManager(openglframework::Shader& shader, const std::string& meshFolderPath,
+                       std::vector<SceneContactPoint>& hitPoints)
+            : mMeshFolderPath(meshFolderPath), mHitPoints(hitPoints) {
 
         }
 

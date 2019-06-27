@@ -33,7 +33,7 @@ using namespace raycastscene;
 // Constructor
 RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
        : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
-         mRaycastManager(mPhongShader, mMeshFolderPath), mCurrentBodyIndex(-1),
+         mRaycastManager(mPhongShader, mMeshFolderPath, mContactPoints), mCurrentBodyIndex(-1),
          mAreNormalsDisplayed(false), mVBOVertices(GL_ARRAY_BUFFER) {
 
     mIsContactPointsDisplayed = true;
