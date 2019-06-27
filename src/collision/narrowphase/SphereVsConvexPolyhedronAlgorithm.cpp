@@ -36,7 +36,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                                      bool reportContacts, MemoryAllocator& memoryAllocator) {
+                                                      bool reportContacts, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator) {
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
@@ -80,7 +80,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
         if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::INTERPENETRATE) {
 
             // Run the SAT algorithm to find the separating axis and compute contact point
-            SATAlgorithm satAlgorithm(memoryAllocator);
+            SATAlgorithm satAlgorithm(clipWithPreviousAxisIfStillColliding, memoryAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 

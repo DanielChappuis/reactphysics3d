@@ -205,7 +205,7 @@ class CollisionDetection {
         void removeNonOverlappingPairs();
 
         /// Execute the narrow-phase collision detection algorithm on batches
-        bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool reportContacts, MemoryAllocator& allocator);
+        bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool reportContacts, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& allocator);
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
         void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,

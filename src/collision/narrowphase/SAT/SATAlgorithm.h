@@ -60,6 +60,20 @@ class SATAlgorithm {
         /// make sure the contact manifold does not change too much between frames.
         static const decimal SAME_SEPARATING_AXIS_BIAS;
 
+        /// True means that if two shapes were colliding last time (previous frame) and are still colliding
+        /// we use the previous (minimum penetration depth) axis to clip the colliding features and we don't
+        /// recompute a new (minimum penetration depth) axis. This value must be true for a dynamic simulation
+        /// because it uses temporal coherence and clip the colliding features with the previous
+        /// axis (this is good for stability). However, when we use the testCollision() methods, the penetration
+        /// depths might be very large and we always want the current true axis with minimum penetration depth.
+        /// In this case, this value must be set to false. Consider the following situation. Two shapes start overlaping
+        /// with "x" being the axis of minimum penetration depth. Then, if the shapes move but are still penetrating,
+        /// it is possible that the axis of minimum penetration depth changes for axis "y" for instance. If this value
+        /// if true, we will always use the axis of the previous collision test and therefore always report that the
+        /// penetrating axis is "x" even if it has changed to axis "y" during the collision. This is not what we want
+        /// when we call the testCollision() methods.
+        bool mClipWithPreviousAxisIfStillColliding;
+
         /// Memory allocator
         MemoryAllocator& mMemoryAllocator;
 
@@ -126,7 +140,7 @@ class SATAlgorithm {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SATAlgorithm(MemoryAllocator& memoryAllocator);
+        SATAlgorithm(bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator);
 
         /// Destructor
         ~SATAlgorithm() = default;

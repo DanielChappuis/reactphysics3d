@@ -43,7 +43,8 @@ using namespace reactphysics3d;
 const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
 
 // Constructor
-SATAlgorithm::SATAlgorithm(MemoryAllocator& memoryAllocator) : mMemoryAllocator(memoryAllocator) {
+SATAlgorithm::SATAlgorithm(bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator)
+             : mClipWithPreviousAxisIfStillColliding(clipWithPreviousAxisIfStillColliding), mMemoryAllocator(memoryAllocator) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -525,7 +526,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 }
 
                 // The two shapes were overlapping in the previous frame and still seem to overlap in this one
-                if (lastFrameCollisionInfo->wasColliding && penetrationDepth > decimal(0.0)) {
+                if (lastFrameCollisionInfo->wasColliding && mClipWithPreviousAxisIfStillColliding && penetrationDepth > decimal(0.0)) {
 
                     minPenetrationDepth = penetrationDepth;
                     minFaceIndex = lastFrameCollisionInfo->satMinAxisFaceIndex;
@@ -565,7 +566,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 }
 
                 // The two shapes were overlapping in the previous frame and still seem to overlap in this one
-                if (lastFrameCollisionInfo->wasColliding && penetrationDepth > decimal(0.0)) {
+                if (lastFrameCollisionInfo->wasColliding && mClipWithPreviousAxisIfStillColliding && penetrationDepth > decimal(0.0)) {
 
                     minPenetrationDepth = penetrationDepth;
                     minFaceIndex = lastFrameCollisionInfo->satMinAxisFaceIndex;
@@ -623,7 +624,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     }
 
                     // If the shapes were overlapping on the previous axis and still seem to overlap in this frame
-                    if (lastFrameCollisionInfo->wasColliding && penetrationDepth > decimal(0.0)) {
+                    if (lastFrameCollisionInfo->wasColliding && mClipWithPreviousAxisIfStillColliding && penetrationDepth > decimal(0.0)) {
 
                         // Compute the closest points between the two edges (in the local-space of poylhedron 2)
                         Vector3 closestPointPolyhedron1Edge, closestPointPolyhedron2Edge;

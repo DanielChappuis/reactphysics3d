@@ -37,10 +37,10 @@ using namespace reactphysics3d;
 // by Dirk Gregorius.
 bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                                                 uint batchStartIndex, uint batchNbItems,
-                                                                bool reportContacts,  MemoryAllocator& memoryAllocator) {
+                                                                bool reportContacts, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator) {
 
     // Run the SAT algorithm to find the separating axis and compute contact point
-    SATAlgorithm satAlgorithm(memoryAllocator);
+    SATAlgorithm satAlgorithm(clipWithPreviousAxisIfStillColliding, memoryAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 

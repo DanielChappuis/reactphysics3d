@@ -72,7 +72,7 @@ class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
 
         /// Compute the narrow-phase collision detection between a sphere and a convex polyhedron
         bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, bool reportContacts,
-                           MemoryAllocator& memoryAllocator);
+                           bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator);
 };
 
 }

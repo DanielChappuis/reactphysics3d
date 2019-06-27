@@ -335,7 +335,8 @@ void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair
 }
 
 // Execute the narrow-phase collision detection algorithm on batches
-bool CollisionDetection::testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool reportContacts, MemoryAllocator& allocator) {
+bool CollisionDetection::testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool reportContacts,
+                                                  bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& allocator) {
 
     bool contactFound = false;
 
@@ -366,13 +367,13 @@ bool CollisionDetection::testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseI
         contactFound |= capsuleVsCapsuleAlgo->testCollision(capsuleVsCapsuleBatch, 0, capsuleVsCapsuleBatch.getNbObjects(), reportContacts, allocator);
     }
     if (sphereVsConvexPolyhedronBatch.getNbObjects() > 0) {
-        contactFound |= sphereVsConvexPolyAlgo->testCollision(sphereVsConvexPolyhedronBatch, 0, sphereVsConvexPolyhedronBatch.getNbObjects(), reportContacts, allocator);
+        contactFound |= sphereVsConvexPolyAlgo->testCollision(sphereVsConvexPolyhedronBatch, 0, sphereVsConvexPolyhedronBatch.getNbObjects(), reportContacts, clipWithPreviousAxisIfStillColliding, allocator);
     }
     if (capsuleVsConvexPolyhedronBatch.getNbObjects() > 0) {
-        contactFound |= capsuleVsConvexPolyAlgo->testCollision(capsuleVsConvexPolyhedronBatch, 0, capsuleVsConvexPolyhedronBatch.getNbObjects(), reportContacts, allocator);
+        contactFound |= capsuleVsConvexPolyAlgo->testCollision(capsuleVsConvexPolyhedronBatch, 0, capsuleVsConvexPolyhedronBatch.getNbObjects(), reportContacts, clipWithPreviousAxisIfStillColliding, allocator);
     }
     if (convexPolyhedronVsConvexPolyhedronBatch.getNbObjects() > 0) {
-        contactFound |= convexPolyVsConvexPolyAlgo->testCollision(convexPolyhedronVsConvexPolyhedronBatch, 0, convexPolyhedronVsConvexPolyhedronBatch.getNbObjects(), reportContacts, allocator);
+        contactFound |= convexPolyVsConvexPolyAlgo->testCollision(convexPolyhedronVsConvexPolyhedronBatch, 0, convexPolyhedronVsConvexPolyhedronBatch.getNbObjects(), reportContacts, clipWithPreviousAxisIfStillColliding, allocator);
     }
 
     return contactFound;
@@ -423,7 +424,7 @@ void CollisionDetection::computeNarrowPhase() {
     swapPreviousAndCurrentContacts();
 
     // Test the narrow-phase collision detection on the batches to be tested
-    testNarrowPhaseCollision(mNarrowPhaseInput, true, allocator);
+    testNarrowPhaseCollision(mNarrowPhaseInput, true, true, allocator);
 
     // Process all the potential contacts after narrow-phase collision
     processAllPotentialContacts(mNarrowPhaseInput, true, mPotentialContactPoints, mCurrentMapPairIdToContactPairIndex,
@@ -449,7 +450,7 @@ bool CollisionDetection::computeNarrowPhaseOverlapSnapshot(NarrowPhaseInput& nar
     MemoryAllocator& allocator = mMemoryManager.getPoolAllocator();
 
     // Test the narrow-phase collision detection on the batches to be tested
-    bool collisionFound = testNarrowPhaseCollision(narrowPhaseInput, false, allocator);
+    bool collisionFound = testNarrowPhaseCollision(narrowPhaseInput, false, false, allocator);
     if (collisionFound && callback != nullptr) {
 
         // Compute the overlapping bodies
@@ -503,6 +504,7 @@ void CollisionDetection::computeSnapshotContactPairs(NarrowPhaseInfoBatch& narro
         narrowPhaseInfoBatch.resetContactPoints(i);
     }
 }
+
 // Compute the narrow-phase collision detection for the testCollision() methods.
 // This method returns true if contacts are found.
 bool CollisionDetection::computeNarrowPhaseCollisionSnapshot(NarrowPhaseInput& narrowPhaseInput, CollisionCallback& callback) {
@@ -512,7 +514,7 @@ bool CollisionDetection::computeNarrowPhaseCollisionSnapshot(NarrowPhaseInput& n
     MemoryAllocator& allocator = mMemoryManager.getPoolAllocator();
 
     // Test the narrow-phase collision detection on the batches to be tested
-    bool collisionFound = testNarrowPhaseCollision(narrowPhaseInput, true, allocator);
+    bool collisionFound = testNarrowPhaseCollision(narrowPhaseInput, true, false, allocator);
 
     // If collision has been found, create contacts
     if (collisionFound) {

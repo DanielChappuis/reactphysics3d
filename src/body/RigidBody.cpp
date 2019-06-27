@@ -156,7 +156,7 @@ decimal RigidBody::getMass() const {
  * @param force The force to apply on the body
  * @param point The point where the force is applied (in world-space coordinates)
  */
-inline void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
+void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
     if (mType != BodyType::DYNAMIC) return;
@@ -208,7 +208,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 /**
  * @param force The external force to apply on the center of mass of the body
  */
-inline void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
+void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
     // If it is not a dynamic body, we do nothing
     if (mType != BodyType::DYNAMIC) return;
@@ -719,7 +719,7 @@ bool RigidBody::isGravityEnabled() const {
 /**
  * @param torque The external torque to apply on the body
  */
-inline void RigidBody::applyTorque(const Vector3& torque) {
+void RigidBody::applyTorque(const Vector3& torque) {
 
     // If it is not a dynamic body, we do nothing
     if (mType != BodyType::DYNAMIC) return;

@@ -66,7 +66,7 @@ class ConvexPolyhedronVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm 
 
         /// Compute the narrow-phase collision detection between two convex polyhedra
         bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, bool reportContacts,
-                           MemoryAllocator& memoryAllocator);
+                           bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator);
 };
 
 }
