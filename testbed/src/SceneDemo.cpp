@@ -124,6 +124,9 @@ void SceneDemo::update() {
 // Can be called several times per frame
 void SceneDemo::updatePhysics() {
 
+    // Clear contacts points
+    mContactPoints.clear();
+
     if (getDynamicsWorld() != nullptr) {
 
         // Take a simulation step

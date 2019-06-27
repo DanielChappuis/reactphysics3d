@@ -189,9 +189,6 @@ void Scene::rotate(int xMouse, int yMouse) {
 // Called when some contacts occur
 void Scene::onContact(const rp3d::CollisionCallback::CallbackData& callbackData) {
 
-    // Clear contacts points
-    mContactPoints.clear();
-
     // For each contact pair
     for (uint p=0; p < callbackData.getNbContactPairs(); p++) {
 
