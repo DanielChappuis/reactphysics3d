@@ -30,9 +30,11 @@ using namespace reactphysics3d;
 
 // Static variables
 DefaultAllocator MemoryManager::mDefaultAllocator;
-DefaultSingleFrameAllocator MemoryManager::mDefaultSingleFrameAllocator;
-DefaultPoolAllocator MemoryManager::mDefaultPoolAllocator;
 MemoryAllocator* MemoryManager::mBaseAllocator = &mDefaultAllocator;
-MemoryAllocator* MemoryManager::mPoolAllocator = &mDefaultPoolAllocator;
-SingleFrameAllocator* MemoryManager::mSingleFrameAllocator = &mDefaultSingleFrameAllocator;
 
+// Constructor
+MemoryManager::MemoryManager() {
+
+    mSingleFrameAllocator = &mDefaultSingleFrameAllocator;
+    mPoolAllocator = &mDefaultPoolAllocator;
+}

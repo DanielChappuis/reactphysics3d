@@ -52,3 +52,9 @@ your application, it is recommended to checkout the "master" branch.
 ## Issues
 
 If you find any issue with the library, you can report it on the issue tracker [here](https://github.com/DanielChappuis/reactphysics3d/issues).
+
+## Credits
+
+Thanks a lot to Erin Catto, Dirk Gregorius, Erwin Coumans, Pierre Terdiman and Christer Ericson for their amazing GDC presentations,
+their physics engines, their books or articles and their contributions on many physics engine forums.
+

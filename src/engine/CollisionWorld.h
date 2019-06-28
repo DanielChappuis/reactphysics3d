@@ -165,6 +165,9 @@ class CollisionWorld {
         /// Test and report collisions between all shapes of the world
         void testCollision(CollisionCallback* callback);
 
+        /// Return a reference to the memory manager of the world
+        MemoryManager& getMemoryManager();
+
 #ifdef IS_PROFILING_ACTIVE
 
         /// Return a reference to the profiler
@@ -253,6 +256,11 @@ inline void CollisionWorld::testCollision(CollisionCallback* callback) {
  */
 inline void CollisionWorld::testOverlap(CollisionBody* body, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
     mCollisionDetection.testOverlap(body, overlapCallback, categoryMaskBits);
+}
+
+// Return a reference to the memory manager of the world
+inline MemoryManager& CollisionWorld::getMemoryManager() {
+    return mMemoryManager;
 }
 
 // Return the name of the world

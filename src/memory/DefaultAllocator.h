@@ -39,6 +39,8 @@ namespace reactphysics3d {
  */
 class DefaultAllocator : public MemoryAllocator {
 
+    protected:
+
     public:
 
         /// Destructor
@@ -50,11 +52,13 @@ class DefaultAllocator : public MemoryAllocator {
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
         virtual void* allocate(size_t size) override {
+
             return malloc(size);
         }
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size) override {
+
             free(pointer);
         }
 };

@@ -40,7 +40,8 @@
 using namespace reactphysics3d;
 
 // Static variables initialization
-const decimal SATAlgorithm::SAME_SEPARATING_AXIS_BIAS = decimal(0.001);
+const decimal SATAlgorithm::SEPARATING_AXIS_RELATIVE_TOLERANCE = decimal(1.002);
+const decimal SATAlgorithm::SEPARATING_AXIS_ABSOLUTE_TOLERANCE = decimal(0.0005);
 
 // Constructor
 SATAlgorithm::SATAlgorithm(MemoryAllocator& memoryAllocator) : mMemoryAllocator(memoryAllocator) {
@@ -478,8 +479,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
     uint minSeparatingEdge2Index = 0;
     Vector3 separatingEdge1A, separatingEdge1B;
     Vector3 separatingEdge2A, separatingEdge2B;
-    Vector3 minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
-    bool isShape1Triangle = polyhedron1->getName() == CollisionShapeName::TRIANGLE;
+    const bool isShape1Triangle = polyhedron1->getName() == CollisionShapeName::TRIANGLE;
 
     LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfo->getLastFrameCollisionInfo();
 
@@ -633,7 +633,6 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                            normal = polyhedron1ToPolyhedron2.getOrientation() * ((polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge) - polyhedron1->getCentroid());
                         }
 
-                        //Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
                         Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * normal.getUnit();
 
                         // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
@@ -657,40 +656,58 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
         }
     }
 
+    minPenetrationDepth = DECIMAL_LARGEST;
+    isMinPenetrationFaceNormal = false;
+
     // Test all the face normals of the polyhedron 1 for separating axis
-    uint faceIndex;
-    decimal penetrationDepth = testFacesDirectionPolyhedronVsPolyhedron(polyhedron1, polyhedron2, polyhedron1ToPolyhedron2, faceIndex);
-    if (penetrationDepth <= decimal(0.0)) {
+    uint faceIndex1;
+    decimal penetrationDepth1 = testFacesDirectionPolyhedronVsPolyhedron(polyhedron1, polyhedron2, polyhedron1ToPolyhedron2, faceIndex1);
+    if (penetrationDepth1 <= decimal(0.0)) {
 
         lastFrameCollisionInfo->satIsAxisFacePolyhedron1 = true;
         lastFrameCollisionInfo->satIsAxisFacePolyhedron2 = false;
-        lastFrameCollisionInfo->satMinAxisFaceIndex = faceIndex;
+        lastFrameCollisionInfo->satMinAxisFaceIndex = faceIndex1;
 
         // We have found a separating axis
         return false;
-    }
-    if (penetrationDepth < minPenetrationDepth - SAME_SEPARATING_AXIS_BIAS) {
-        isMinPenetrationFaceNormal = true;
-        minPenetrationDepth = penetrationDepth;
-        minFaceIndex = faceIndex;
-        isMinPenetrationFaceNormalPolyhedron1 = true;
     }
 
     // Test all the face normals of the polyhedron 2 for separating axis
-    penetrationDepth = testFacesDirectionPolyhedronVsPolyhedron(polyhedron2, polyhedron1, polyhedron2ToPolyhedron1, faceIndex);
-    if (penetrationDepth <= decimal(0.0)) {
+    uint faceIndex2;
+    decimal penetrationDepth2 = testFacesDirectionPolyhedronVsPolyhedron(polyhedron2, polyhedron1, polyhedron2ToPolyhedron1, faceIndex2);
+    if (penetrationDepth2 <= decimal(0.0)) {
 
         lastFrameCollisionInfo->satIsAxisFacePolyhedron1 = false;
         lastFrameCollisionInfo->satIsAxisFacePolyhedron2 = true;
-        lastFrameCollisionInfo->satMinAxisFaceIndex = faceIndex;
+        lastFrameCollisionInfo->satMinAxisFaceIndex = faceIndex2;
 
         // We have found a separating axis
         return false;
     }
-    if (penetrationDepth < minPenetrationDepth - SAME_SEPARATING_AXIS_BIAS) {
+
+    // Here we know that we have found penetration along both axis of a face of polyhedron1 and a face of
+    // polyhedron2. If the two penetration depths are almost the same, we need to make sure we always prefer
+    // one axis to the other for consistency between frames. This is to prevent the contact manifolds to switch
+    // from one reference axis to the other for a face to face resting contact for instance. This is better for
+    // stability. To do this, we use a relative and absolute bias to move penetrationDepth2 a little bit to the right.
+    // Now if:
+    //  penetrationDepth1 < penetrationDepth2: Nothing happens and we use axis of polygon 1
+    //  penetrationDepth1 ~ penetrationDepth2: Until penetrationDepth1 becomes significantly less than penetrationDepth2 we still use axis of polygon 1
+    //  penetrationDepth1 >> penetrationDepth2: penetrationDepth2 is now significantly less than penetrationDepth1 and we use polygon 2 axis
+    if (penetrationDepth1 < penetrationDepth2 * SEPARATING_AXIS_RELATIVE_TOLERANCE + SEPARATING_AXIS_ABSOLUTE_TOLERANCE) {
+
+        // We use penetration axis of polygon 1
         isMinPenetrationFaceNormal = true;
-        minPenetrationDepth = penetrationDepth;
-        minFaceIndex = faceIndex;
+        minPenetrationDepth = std::min(penetrationDepth1, penetrationDepth2);
+        minFaceIndex = faceIndex1;
+        isMinPenetrationFaceNormalPolyhedron1 = true;
+    }
+    else {
+
+        // We use penetration axis of polygon 2
+        isMinPenetrationFaceNormal = true;
+        minPenetrationDepth = std::min(penetrationDepth1, penetrationDepth2);
+        minFaceIndex = faceIndex2;
         isMinPenetrationFaceNormalPolyhedron1 = false;
     }
 
@@ -735,7 +752,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     return false;
                 }
 
-                if (penetrationDepth < minPenetrationDepth - SAME_SEPARATING_AXIS_BIAS) {
+                if (penetrationDepth < minPenetrationDepth) {
 
                     minPenetrationDepth = penetrationDepth;
                     isMinPenetrationFaceNormalPolyhedron1 = false;
@@ -746,7 +763,6 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     separatingEdge1B = edge1B;
                     separatingEdge2A = edge2A;
                     separatingEdge2B = edge2B;
-                    minEdgeVsEdgeSeparatingAxisPolyhedron2Space = separatingAxisPolyhedron2Space;
                 }
             }
         }
@@ -807,14 +823,18 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
             else {
                normal = polyhedron1ToPolyhedron2.getOrientation() * ((polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge) - polyhedron1->getCentroid());
             }
-            //Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
-            Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * normal.getUnit();
+            const Vector3 unitNormal = normal.getUnit();
+            assert(unitNormal.length() > decimal(0.7));
+            Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * unitNormal;
+            assert(normalWorld.length() > decimal(0.7));
 
             // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
             TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfo->collisionShape1, narrowPhaseInfo->collisionShape2,
                                                             closestPointPolyhedron1EdgeLocalSpace, closestPointPolyhedron2Edge,
                                                             narrowPhaseInfo->shape1ToWorldTransform, narrowPhaseInfo->shape2ToWorldTransform,
                                                             minPenetrationDepth, normalWorld);
+
+            assert(normalWorld.length() > decimal(0.7));
 
             // Create the contact point
             narrowPhaseInfo->addContactPoint(normalWorld, minPenetrationDepth,

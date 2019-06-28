@@ -52,7 +52,8 @@ class DefaultSingleFrameAllocator : public SingleFrameAllocator {
         static const size_t INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES = 1048576; // 1Mb
 
         // -------------------- Attributes -------------------- //
-		/// Cached memory allocator used on construction
+
+        /// Cached memory allocator used on construction
 		MemoryAllocator* mBaseMemoryAllocator;
 
         /// Total size (in bytes) of memory of the allocator

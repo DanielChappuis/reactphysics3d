@@ -615,14 +615,16 @@ void ContactSolver::solve() {
             contactPointIndex++;
         }
 
-        // ------ First friction constraint at the center of the contact manifol ------ //
+        // ------ First friction constraint at the center of the contact manifold ------ //
 
         // Compute J*v
         // deltaV = v2 + w2.cross(mContactConstraints[c].r2Friction) - v1 - w1.cross(mContactConstraints[c].r1Friction);
         Vector3 deltaV(v2.x + w2.y * mContactConstraints[c].r2Friction.z - w2.z * mContactConstraints[c].r2Friction.y - v1.x -
                        w1.y * mContactConstraints[c].r1Friction.z + w1.z * mContactConstraints[c].r1Friction.y,
+
                        v2.y + w2.z * mContactConstraints[c].r2Friction.x - w2.x * mContactConstraints[c].r2Friction.z - v1.y -
                        w1.z * mContactConstraints[c].r1Friction.x + w1.x * mContactConstraints[c].r1Friction.z,
+
                        v2.z + w2.x * mContactConstraints[c].r2Friction.y - w2.y * mContactConstraints[c].r2Friction.x - v1.z -
                        w1.x * mContactConstraints[c].r1Friction.y + w1.y * mContactConstraints[c].r1Friction.x);
         decimal Jv = deltaV.x * mContactConstraints[c].frictionVector1.x +
@@ -649,6 +651,7 @@ void ContactSolver::solve() {
                                     mContactConstraints[c].r2CrossT1.y * deltaLambda,
                                     mContactConstraints[c].r2CrossT1.z * deltaLambda);
 
+
         // Update the velocities of the body 1 by applying the impulse P
         mLinearVelocities[mContactConstraints[c].indexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x;
         mLinearVelocities[mContactConstraints[c].indexBody1].y -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.y;
@@ -663,15 +666,15 @@ void ContactSolver::solve() {
 
         mAngularVelocities[mContactConstraints[c].indexBody2] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
 
-        // ------ Second friction constraint at the center of the contact manifol ----- //
+        // ------ Second friction constraint at the center of the contact manifold ----- //
 
         // Compute J*v
         //deltaV = v2 + w2.cross(mContactConstraints[c].r2Friction) - v1 - w1.cross(mContactConstraints[c].r1Friction);
-        deltaV.x = v2.x + w2.y * mContactConstraints[c].r2Friction.z - v2.z * mContactConstraints[c].r2Friction.y  - v1.x -
+        deltaV.x = v2.x + w2.y * mContactConstraints[c].r2Friction.z - w2.z * mContactConstraints[c].r2Friction.y  - v1.x -
                    w1.y * mContactConstraints[c].r1Friction.z + w1.z * mContactConstraints[c].r1Friction.y;
-        deltaV.y = v2.y + w2.z * mContactConstraints[c].r2Friction.x - v2.x * mContactConstraints[c].r2Friction.z  - v1.y -
+        deltaV.y = v2.y + w2.z * mContactConstraints[c].r2Friction.x - w2.x * mContactConstraints[c].r2Friction.z  - v1.y -
                    w1.z * mContactConstraints[c].r1Friction.x + w1.x * mContactConstraints[c].r1Friction.z;
-        deltaV.z = v2.z + w2.x * mContactConstraints[c].r2Friction.y - v2.y * mContactConstraints[c].r2Friction.x  - v1.z -
+        deltaV.z = v2.z + w2.x * mContactConstraints[c].r2Friction.y - w2.y * mContactConstraints[c].r2Friction.x  - v1.z -
                    w1.x * mContactConstraints[c].r1Friction.y + w1.y * mContactConstraints[c].r1Friction.x;
         Jv = deltaV.x * mContactConstraints[c].frictionVector2.x + deltaV.y * mContactConstraints[c].frictionVector2.y +
              deltaV.z * mContactConstraints[c].frictionVector2.z;
@@ -841,7 +844,7 @@ void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
         contact.frictionVector1 = contact.normal.getOneUnitOrthogonalVector();
     }
 
-    // The second friction vector is computed by the cross product of the firs
+    // The second friction vector is computed by the cross product of the first
     // friction vector and the contact normal
     contact.frictionVector2 = contact.normal.cross(contact.frictionVector1).getUnit();
 }

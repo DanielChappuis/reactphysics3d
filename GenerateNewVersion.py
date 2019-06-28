@@ -19,7 +19,7 @@ def findReplaceText(directory, findRegex, substituteExpr, filePattern):
       
 # ----- Code ----- # 
 
-# Read new version number from user
+# Read old version number from user
 oldVersion = raw_input("Enter the old version string: ")
 
 # Read new version number from user
@@ -32,8 +32,12 @@ file.write(newVersion + "\n")
 file.close()
 print("Version number has been updated in VERSION file")        
 
-# Update the RP3D version number in the documentation/API/Doxyfile 
+# Update the RP3D version number in the documentation/API/Doxyfile file 
 findReplaceText("documentation/API/", r'(PROJECT_NUMBER[ \t]+=[ \t]+)"[\d\.]+"', r'\g<1>"' + newVersion + '"', "Doxyfile")
+print("Version number has been updated in documentation/API/Doxyfile file")        
+
+# Update the RP3D version number in the documentation/UserManual/title.tex file
+findReplaceText("documentation/UserManual/", r'(Version:[\s]+)[\d\.]+', r'\g<1>' + newVersion, "title.tex")
 print("Version number has been updated in documentation/API/Doxyfile file")        
 
 # Update the RP3D version number in the src/configuration.h file
@@ -48,4 +52,3 @@ print("Copyright date has been updated in LICENSE file")
 findReplaceText("src/", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "*.h")
 findReplaceText("src/", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "*.cpp")
 print("Copyright date in license has been updated in all source code files")        
-
