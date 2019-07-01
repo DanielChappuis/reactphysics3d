@@ -256,7 +256,7 @@ SET_TARGET_PROPERTIES(reactphysics3d PROPERTIES PUBLIC_HEADER "${REACTPHYSICS3D_
 
 # Version number and soname for the library
 SET_TARGET_PROPERTIES(reactphysics3d  PROPERTIES
-          VERSION "0.7.0" 
+          VERSION "0.7.1" 
           SOVERSION "0.7" 
 )
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## Release Candidate
+## Version 0.7.1 (July 01, 2019)
 
 ### Added
 

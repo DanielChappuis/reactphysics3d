@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2018 Daniel Chappuis                                       *
+* Copyright (c) 2010-2019 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -106,7 +106,7 @@ constexpr decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
 constexpr decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
 
 /// Current version of ReactPhysics3D
-const std::string RP3D_VERSION = std::string("0.7.0");
+const std::string RP3D_VERSION = std::string("0.7.1");
 
 /// Structure WorldSettings
 /**
