@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2018 Daniel Chappuis                                       *
+* Copyright (c) 2010-2019 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -599,7 +599,8 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 }
 
                 // If the shapes were overlapping on the previous axis and still seem to overlap in this frame
-                if (lastFrameCollisionInfo->wasColliding && penetrationDepth > decimal(0.0)) {
+                if (lastFrameCollisionInfo->wasColliding && penetrationDepth > decimal(0.0) &&
+                    penetrationDepth < DECIMAL_LARGEST) {
 
                     // Compute the closest points between the two edges (in the local-space of poylhedron 2)
                     Vector3 closestPointPolyhedron1Edge, closestPointPolyhedron2Edge;

@@ -1,3 +1,6 @@
+# This is a Python script that can be called when creating a new release version of the library.
+# This script will automatically update some string with the new version number in the code and documentation.
+
 # ----- Imports ----- #
 import os
 import fnmatch
@@ -38,11 +41,15 @@ print("Version number has been updated in documentation/API/Doxyfile file")
 
 # Update the RP3D version number in the documentation/UserManual/title.tex file
 findReplaceText("documentation/UserManual/", r'(Version:[\s]+)[\d\.]+', r'\g<1>' + newVersion, "title.tex")
-print("Version number has been updated in documentation/API/Doxyfile file")        
+print("Version number has been updated in documentation/UserManual/title.tex file")        
 
 # Update the RP3D version number in the src/configuration.h file
 findReplaceText("src/", r'(RP3D_VERSION[ \t]+=[ \t]+std::string\()"[\d\.]+"', r'\g<1>"' + newVersion + '"', "configuration.h")
 print("Version number has been updated in src/configuration.h file")        
+
+# Update the RP3D version number in the src/reactphysics3d.h file
+findReplaceText("src/", r'(\* Version[ \t]+)[\d\.]+', r'\g<1>' + newVersion, "reactphysics3d.h")
+print("Version number has been updated in src/reactphysics3d.h file")        
 
 # Update the copyright date in LICENSE file
 findReplaceText("./", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "LICENSE")
