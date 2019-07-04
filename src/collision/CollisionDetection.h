@@ -95,7 +95,7 @@ class CollisionDetection {
         BroadPhaseSystem mBroadPhaseSystem;
 
         /// Set of pair of bodies that cannot collide between each other
-        Set<bodyindexpair> mNoCollisionPairs;
+        Set<bodypair> mNoCollisionPairs;
 
         /// Map a broad-phase id with the corresponding entity of the proxy-shape
         Map<int, Entity> mMapBroadPhaseIdToProxyShapeEntity;

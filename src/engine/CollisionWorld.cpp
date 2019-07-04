@@ -41,9 +41,8 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
                  mBodyComponents(mMemoryManager.getBaseAllocator()), mTransformComponents(mMemoryManager.getBaseAllocator()),
                  mProxyShapesComponents(mMemoryManager.getBaseAllocator()), mDynamicsComponents(mMemoryManager.getBaseAllocator()),
                  mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mDynamicsComponents, mMemoryManager),
-                 mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0), mFreeBodiesIds(mMemoryManager.getPoolAllocator()),
-                 mEventListener(nullptr), mName(worldSettings.worldName),
-                 mIsProfilerCreatedByUser(profiler != nullptr),
+                 mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
+                 mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {
 
     // Automatically generate a name for the world
@@ -148,18 +147,12 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     // Create a new entity for the body
     Entity entity = mEntityManager.createEntity();
 
-    // Get the next available body ID
-    bodyindex bodyID = computeNextAvailableBodyId();
-
-    // Largest index cannot be used (it is used for invalid index)
-    assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
-
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
 
     // Create the collision body
     CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                         sizeof(CollisionBody)))
-                                        CollisionBody(*this, entity, bodyID);
+                                        CollisionBody(*this, entity);
 
     assert(collisionBody != nullptr);
 
@@ -181,7 +174,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 #endif
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(bodyID) + ": New collision body created");
+             "Body " + std::to_string(entity.id) + ": New collision body created");
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -194,13 +187,10 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(collisionBody->getId()) + ": collision body destroyed");
+             "Body " + std::to_string(collisionBody->getEntity().id) + ": collision body destroyed");
 
     // Remove all the collision shapes of the body
     collisionBody->removeAllCollisionShapes();
-
-    // Add the body ID to the list of free IDs
-    mFreeBodiesIds.add(collisionBody->getId());
 
     mBodyComponents.removeComponent(collisionBody->getEntity());
     mTransformComponents.removeComponent(collisionBody->getEntity());
@@ -214,23 +204,6 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
     // Free the object from the memory allocator
     mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
-}
-
-// Return the next available body ID
-bodyindex CollisionWorld::computeNextAvailableBodyId() {
-
-    // Compute the body ID
-    bodyindex bodyID;
-    if (mFreeBodiesIds.size() != 0) {
-        bodyID = mFreeBodiesIds[mFreeBodiesIds.size() - 1];
-        mFreeBodiesIds.removeAt(mFreeBodiesIds.size() - 1);
-    }
-    else {
-        bodyID = mCurrentBodyId;
-        mCurrentBodyId++;
-    }
-
-    return bodyID;
 }
 
 // Notify the world if a body is disabled (sleeping or inactive) or not

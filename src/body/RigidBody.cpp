@@ -39,8 +39,8 @@ using namespace reactphysics3d;
 * @param world The world where the body has been added
 * @param id The ID of the body
 */
-RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id)
-          : CollisionBody(world, entity, id),  mMaterial(world.mConfig), mJointsList(nullptr),
+RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity)
+          : CollisionBody(world, entity),  mMaterial(world.mConfig), mJointsList(nullptr),
             mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
     // Compute the inverse mass
@@ -197,7 +197,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
     updateInertiaTensorInverseWorld();
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
 }
 
 // Apply an external force to the body at its center of mass.
@@ -260,7 +260,7 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
     updateInertiaTensorInverseWorld();
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set inverseInertiaTensorLocal=" + inverseInertiaTensorLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set inverseInertiaTensorLocal=" + inverseInertiaTensorLocal.to_string());
 }
 
 // Set the local center of mass of the body (in local-space coordinates)
@@ -293,7 +293,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
     mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
 }
 
 // Set the mass of the rigid body
@@ -315,7 +315,7 @@ void RigidBody::setMass(decimal mass) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set mass=" + std::to_string(mass));
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(mass));
 }
 
 // Remove a joint from the joints list
@@ -429,7 +429,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     recomputeMassInformation();
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
+             "Body " + std::to_string(mEntity.id) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
@@ -463,7 +463,7 @@ void RigidBody::enableGravity(bool isEnabled) {
     mWorld.mDynamicsComponents.setIsGravityEnabled(mEntity, isEnabled);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isGravityEnabled=" +
+             "Body " + std::to_string(mEntity.id) + ": Set isGravityEnabled=" +
              (isEnabled ? "true" : "false"));
 }
 
@@ -477,7 +477,7 @@ void RigidBody::setLinearDamping(decimal linearDamping) {
     mWorld.mDynamicsComponents.setLinearDamping(mEntity, linearDamping);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set linearDamping=" + std::to_string(linearDamping));
+             "Body " + std::to_string(mEntity.id) + ": Set linearDamping=" + std::to_string(linearDamping));
 }
 
 // Set the angular damping factor. This is the ratio of the angular velocity
@@ -490,7 +490,7 @@ void RigidBody::setAngularDamping(decimal angularDamping) {
     mWorld.mDynamicsComponents.setAngularDamping(mEntity, angularDamping);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set angularDamping=" + std::to_string(angularDamping));
+             "Body " + std::to_string(mEntity.id) + ": Set angularDamping=" + std::to_string(angularDamping));
 }
 
 /// Update the transform of the body after a change of the center of mass
@@ -513,7 +513,7 @@ void RigidBody::setMaterial(const Material& material) {
     mMaterial = material;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set Material" + mMaterial.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string());
 }
 
 // Set the linear velocity of the rigid body.
@@ -534,7 +534,7 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set linearVelocity=" + linearVelocity.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set linearVelocity=" + linearVelocity.to_string());
 }
 
 // Set the angular velocity.
@@ -557,7 +557,7 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set angularVelocity=" + angularVelocity.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set angularVelocity=" + angularVelocity.to_string());
 }
 
 // Set the current position and orientation

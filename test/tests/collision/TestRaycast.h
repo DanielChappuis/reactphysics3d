@@ -66,7 +66,7 @@ class WorldRaycastCallback : public RaycastCallback {
 
         virtual decimal notifyRaycastHit(const RaycastInfo& info) override {
 
-            if (shapeToTest->getBody()->getId() == info.body->getId()) {
+            if (shapeToTest->getBody()->getEntity() == info.body->getEntity()) {
                 raycastInfo.body = info.body;
                 raycastInfo.hitFraction = info.hitFraction;
                 raycastInfo.proxyShape = info.proxyShape;

@@ -180,7 +180,7 @@ class OverlappingPair {
         static OverlappingPairId computeID(int shape1BroadPhaseId, int shape2BroadPhaseId);
 
         /// Return the pair of bodies index of the pair
-        static bodyindexpair computeBodiesIndexPair(CollisionBody* body1, CollisionBody* body2);
+        static bodypair computeBodiesIndexPair(CollisionBody* body1, CollisionBody* body2);
 
         // -------------------- Friendship -------------------- //
 
@@ -225,13 +225,13 @@ inline OverlappingPair::OverlappingPairId OverlappingPair::computeID(int shape1B
 }
 
 // Return the pair of bodies index
-inline bodyindexpair OverlappingPair::computeBodiesIndexPair(CollisionBody* body1,
+inline bodypair OverlappingPair::computeBodiesIndexPair(CollisionBody* body1,
                                                              CollisionBody* body2) {
 
     // Construct the pair of body index
-    bodyindexpair indexPair = body1->getId() < body2->getId() ?
-                                 bodyindexpair(body1->getId(), body2->getId()) :
-                                 bodyindexpair(body2->getId(), body1->getId());
+    bodypair indexPair = body1->getEntity().id < body2->getEntity().id ?
+                                 bodypair(body1->getEntity(), body2->getEntity()) :
+                                 bodypair(body2->getEntity(), body1->getEntity());
     assert(indexPair.first != indexPair.second);
     return indexPair;
 }

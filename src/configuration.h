@@ -62,8 +62,8 @@ using int32 = std::int32_t;
 using uint32 = std::uint32_t;
 
 // TODO : Delete this
-using bodyindex = luint;
-using bodyindexpair = Pair<bodyindex, bodyindex>;
+struct Entity;
+using bodypair = Pair<Entity, Entity>;
 
 // ------------------- Enumerations ------------------- //
 

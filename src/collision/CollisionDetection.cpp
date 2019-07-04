@@ -244,7 +244,7 @@ void CollisionDetection::computeMiddlePhase(OverlappingPairMap& overlappingPairs
             if (!isBody1Active && !isBody2Active) continue;
 
             // Check if the bodies are in the set of bodies that cannot collide between each other
-            bodyindexpair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
+            bodypair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1, body2);
             if (mNoCollisionPairs.contains(bodiesIndex) > 0) continue;
 
 			bool isShape1Convex = shape1->getCollisionShape()->isConvex();

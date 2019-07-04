@@ -39,8 +39,8 @@ using namespace reactphysics3d;
  * @param world The physics world where the body is created
  * @param id ID of the body
  */
-CollisionBody::CollisionBody(CollisionWorld& world, Entity entity, bodyindex id)
-              : Body(entity, id), mType(BodyType::DYNAMIC), mWorld(world) {
+CollisionBody::CollisionBody(CollisionWorld& world, Entity entity)
+              : Body(entity), mType(BodyType::DYNAMIC), mWorld(world) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -112,7 +112,7 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
     mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
+             "Body " + std::to_string(mEntity.id) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
@@ -166,7 +166,7 @@ ProxyShape* CollisionBody::getProxyShape(uint proxyShapeIndex) {
 void CollisionBody::removeCollisionShape(ProxyShape* proxyShape) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " removed from body");
+             "Body " + std::to_string(mEntity.id) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " removed from body");
 
     // Remove the proxy-shape from the broad-phase
     if (proxyShape->getBroadPhaseId() != -1) {
@@ -268,7 +268,7 @@ void CollisionBody::setIsActive(bool isActive) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isActive=" +
+             "Body " + std::to_string(mEntity.id) + ": Set isActive=" +
              (mIsActive ? "true" : "false"));
 }
 
@@ -392,7 +392,7 @@ void CollisionBody::setTransform(const Transform& transform) {
     updateBroadPhaseState();
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set transform=" + transform.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set transform=" + transform.to_string());
 }
 
 // Set the variable to know whether or not the body is sleeping
@@ -465,7 +465,7 @@ void CollisionBody::setType(BodyType type) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set type=" +
+             "Body " + std::to_string(mEntity.id) + ": Set type=" +
              (mType == BodyType::STATIC ? "Static" : (mType == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
 }
 

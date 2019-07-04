@@ -35,8 +35,8 @@ using namespace reactphysics3d;
 /**
  * @param id ID of the new body
  */
-Body::Body(Entity entity, bodyindex id)
-     : mID(id), mEntity(entity), mIsAllowedToSleep(true), mIsActive(true),
+Body::Body(Entity entity)
+     : mEntity(entity), mIsAllowedToSleep(true), mIsActive(true),
        mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
 
 #ifdef IS_LOGGING_ACTIVE
@@ -55,7 +55,7 @@ void Body::setIsActive(bool isActive) {
     setIsSleeping(isActive);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isActive=" +
+             "Body " + std::to_string(mEntity.id) + ": Set isActive=" +
              (mIsActive ? "true" : "false"));
 }
 
@@ -82,7 +82,7 @@ void Body::setIsSleeping(bool isSleeping) {
         mIsSleeping = isSleeping;
 
         RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isSleeping=" +
+             "Body " + std::to_string(mEntity.id) + ": Set isSleeping=" +
              (mIsSleeping ? "true" : "false"));
     }
 }
@@ -97,7 +97,7 @@ void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
     if (!mIsAllowedToSleep) setIsSleeping(false);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isAllowedToSleep=" +
+             "Body " + std::to_string(mEntity.id) + ": Set isAllowedToSleep=" +
              (mIsAllowedToSleep ? "true" : "false"));
 }
 

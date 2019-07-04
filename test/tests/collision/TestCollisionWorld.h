@@ -631,7 +631,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -655,7 +655,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -676,7 +676,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -697,7 +697,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -747,7 +747,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -771,7 +771,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -792,7 +792,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -813,7 +813,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -853,7 +853,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = std::sqrt(4.5f) * Vector3(1, -1, 0);
@@ -877,7 +877,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -898,7 +898,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -919,7 +919,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -959,7 +959,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = std::sqrt(9.0f / 3.0f) * Vector3(1, -1, -1);
@@ -983,7 +983,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1004,7 +1004,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1025,7 +1025,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1075,7 +1075,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			Vector3 localBody1Point(0, -3, 0);
@@ -1099,7 +1099,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1120,7 +1120,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1141,7 +1141,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1181,7 +1181,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = Vector3(3, 0, 0);
@@ -1205,7 +1205,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1226,7 +1226,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1247,7 +1247,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1297,7 +1297,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -1321,7 +1321,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1342,7 +1342,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1363,7 +1363,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1403,7 +1403,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = std::sqrt(4.5f) * Vector3(1, -1, 0);
@@ -1427,7 +1427,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1448,7 +1448,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1469,7 +1469,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1509,7 +1509,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = std::sqrt(9.0f / 3.0f) * Vector3(1, -1, -1);
@@ -1533,7 +1533,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1554,7 +1554,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1575,7 +1575,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1625,7 +1625,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point(0, -3, 0);
@@ -1649,7 +1649,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1670,7 +1670,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1691,7 +1691,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1741,7 +1741,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -1783,7 +1783,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1812,7 +1812,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1842,7 +1842,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1901,7 +1901,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -1943,7 +1943,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1972,7 +1972,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2002,7 +2002,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2061,7 +2061,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -2103,7 +2103,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2132,7 +2132,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2162,7 +2162,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2221,7 +2221,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(3, 1, 0);
@@ -2244,7 +2244,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2265,7 +2265,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2286,7 +2286,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2336,7 +2336,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(3, 1, 0);
@@ -2359,7 +2359,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2380,7 +2380,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2401,7 +2401,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2647,7 +2647,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point(2, 3, 0);
@@ -2671,7 +2671,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2692,7 +2692,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2713,7 +2713,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2753,7 +2753,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             localBody1Point = Vector3(0, 5, 0);
@@ -2777,7 +2777,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2798,7 +2798,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2819,7 +2819,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2869,7 +2869,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point(0, -5, 0);
@@ -2893,7 +2893,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2914,7 +2914,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2935,7 +2935,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,

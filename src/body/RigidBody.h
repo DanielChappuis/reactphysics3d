@@ -86,7 +86,7 @@ class RigidBody : public CollisionBody {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RigidBody(const Transform& transform, CollisionWorld& world, Entity entity, bodyindex id);
+        RigidBody(const Transform& transform, CollisionWorld& world, Entity entity);
 
         /// Destructor
         virtual ~RigidBody() override;

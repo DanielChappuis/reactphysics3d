@@ -94,12 +94,6 @@ class CollisionWorld {
         /// All the bodies (rigid and soft) of the world
         List<CollisionBody*> mBodies;
 
-        /// Current body id
-        bodyindex mCurrentBodyId;
-
-        /// List of free ids for rigid bodies
-        List<luint> mFreeBodiesIds;
-
         /// Pointer to an event listener object
         EventListener* mEventListener;
 
@@ -128,9 +122,6 @@ class CollisionWorld {
         static uint mNbWorlds;
 
         // -------------------- Methods -------------------- //
-
-        /// Return the next available body id
-        bodyindex computeNextAvailableBodyId();
 
         /// Notify the world if a body is disabled (slepping or inactive) or not
         void notifyBodyDisabled(Entity entity, bool isDisabled);

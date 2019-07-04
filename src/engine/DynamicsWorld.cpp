@@ -375,18 +375,12 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     // Create a new entity for the body
     Entity entity = mEntityManager.createEntity();
 
-    // Compute the body ID
-    bodyindex bodyID = computeNextAvailableBodyId();
-
-    // Largest index cannot be used (it is used for invalid index)
-    assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
-
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
     mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(transform.getPosition()));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                     sizeof(RigidBody))) RigidBody(transform, *this, entity, bodyID);
+                                     sizeof(RigidBody))) RigidBody(transform, *this, entity);
     assert(rigidBody != nullptr);
 
     BodyComponents::BodyComponent bodyComponent(rigidBody);
@@ -405,7 +399,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 #endif
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(bodyID) + ": New collision body created");
+             "Body " + std::to_string(entity.id) + ": New collision body created");
 
     // Return the pointer to the rigid body
     return rigidBody;
@@ -418,13 +412,10 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(rigidBody->getId()) + ": rigid body destroyed");
+             "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body destroyed");
 
     // Remove all the collision shapes of the body
     rigidBody->removeAllCollisionShapes();
-
-    // Add the body ID to the list of free IDs
-    mFreeBodiesIds.add(rigidBody->getId());
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     JointListElement* element;
@@ -590,7 +581,7 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
     joint->mBody1->mJointsList = jointListElement1;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(joint->mBody1->getId()) + ": Joint " + std::to_string(joint->getId()) +
+             "Body " + std::to_string(joint->mBody1->getEntity().id) + ": Joint " + std::to_string(joint->getId()) +
              " added to body");
 
     // Add the joint at the beginning of the linked list of joints of the second body
@@ -601,7 +592,7 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
     joint->mBody2->mJointsList = jointListElement2;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(joint->mBody2->getId()) + ": Joint " + std::to_string(joint->getId()) +
+             "Body " + std::to_string(joint->mBody2->getEntity().id) + ": Joint " + std::to_string(joint->getId()) +
              " added to body");
 }
 

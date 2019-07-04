@@ -50,10 +50,6 @@ class Body {
 
         // -------------------- Attributes -------------------- //
 
-        /// ID of the body
-        // TODO : Remove this
-        bodyindex mID;
-
         /// Identifier of the entity in the ECS
         Entity mEntity;
 
@@ -93,7 +89,7 @@ class Body {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Body(Entity entity, bodyindex id);
+        Body(Entity entity);
 
         /// Deleted copy-constructor
         Body(const Body& body) = delete;
@@ -103,9 +99,6 @@ class Body {
 
         /// Destructor
         virtual ~Body() = default;
-
-        /// Return the ID of the body
-        bodyindex getId() const;
 
         /// Return the corresponding entity of the body
         Entity getEntity() const;
@@ -142,6 +135,7 @@ class Body {
 
         // TODO : Check if those operators are still used
 
+        /*
         /// Smaller than operator
         bool operator<(const Body& body2) const;
 
@@ -153,19 +147,12 @@ class Body {
 
         /// Not equal operator
         bool operator!=(const Body& body2) const;
+        */
 
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
 };
-
-// Return the id of the body
-/**
- * @return The id of the body
- */
-inline bodyindex Body::getId() const {
-    return mID;
-}
 
 // Return the corresponding entity of the body
 /**
@@ -224,6 +211,7 @@ inline void Body::setLogger(Logger* logger) {
 
 #endif
 
+/*
 // Smaller than operator
 inline bool Body::operator<(const Body& body2) const {
     return (mID < body2.mID);
@@ -243,7 +231,8 @@ inline bool Body::operator==(const Body& body2) const {
 inline bool Body::operator!=(const Body& body2) const {
     return (mID != body2.mID);
 }               
+*/
 
 }
 
- #endif
+#endif
