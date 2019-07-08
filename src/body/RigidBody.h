@@ -81,6 +81,9 @@ class RigidBody : public CollisionBody {
         /// Update the world inverse inertia tensor of the body
         void updateInertiaTensorInverseWorld();
 
+        /// Set the variable to know whether or not the body is sleeping
+        virtual void setIsSleeping(bool isSleeping) override;
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -117,9 +120,6 @@ class RigidBody : public CollisionBody {
 
         /// Set the angular velocity.
         void setAngularVelocity(const Vector3& angularVelocity);
-
-        /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping) override;
 
         /// Set the local inertia tensor of the body (in body coordinates)
         void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);

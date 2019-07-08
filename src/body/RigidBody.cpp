@@ -162,7 +162,7 @@ void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
     if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
-    if (mIsSleeping) {
+    if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
         setIsSleeping(false);
     }
 
@@ -214,7 +214,7 @@ void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
     if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
-    if (mIsSleeping) {
+    if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
         setIsSleeping(false);
     }
 
@@ -399,7 +399,8 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, mass, 0x0001, 0xFFFF);
-    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, mIsSleeping, proxyShapeComponent);
+    bool isSleeping = mWorld.mBodyComponents.getIsSleeping(mEntity);
+    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, isSleeping, proxyShapeComponent);
 
     mWorld.mBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
 
@@ -725,7 +726,7 @@ void RigidBody::applyTorque(const Vector3& torque) {
     if (mType != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
-    if (mIsSleeping) {
+    if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
         setIsSleeping(false);
     }
 

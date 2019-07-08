@@ -817,15 +817,17 @@ void DynamicsWorld::updateSleepingBodies() {
                 !body->isAllowedToSleep()) {
 
                 // Reset the sleep time of the body
-                body->mSleepTime = decimal(0.0);
+                mBodyComponents.setSleepTime(body->getEntity(), decimal(0.0));
                 minSleepTime = decimal(0.0);
             }
             else {  // If the body velocity is below the sleeping velocity threshold
 
                 // Increase the sleep time
-                body->mSleepTime += mTimeStep;
-                if (body->mSleepTime < minSleepTime) {
-                    minSleepTime = body->mSleepTime;
+                decimal sleepTime = mBodyComponents.getSleepTime(body->getEntity());
+                mBodyComponents.setSleepTime(body->getEntity(), sleepTime + mTimeStep);
+                sleepTime = mBodyComponents.getSleepTime(body->getEntity());
+                if (sleepTime < minSleepTime) {
+                    minSleepTime = sleepTime;
                 }
             }
         }

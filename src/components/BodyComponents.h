@@ -60,6 +60,21 @@ class BodyComponents : public Components {
         /// Array with the list of proxy-shapes of each body
         List<Entity>* mProxyShapes;
 
+        /// Array of boolean values to know if the body is allowed to go to sleep
+        bool* mIsAllowedToSleep;
+
+        /// Array of boolean values to know if the body is active.
+        bool* mIsActive;
+
+        /// Array of boolean values to know if the body is sleeping
+        bool* mIsSleeping;
+
+        /// Array with values for elapsed time since the body velocity was bellow the sleep velocity
+        decimal* mSleepTimes;
+
+        /// Array of pointers that can be used to attach user data to the body
+        void** mUserData;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -109,6 +124,36 @@ class BodyComponents : public Components {
 
         /// Return the list of proxy-shapes of a body
         const List<Entity>& getProxyShapes(Entity bodyEntity) const;
+
+        /// Return true if the body is allowed to sleep
+        bool getIsAllowedToSleep(Entity bodyEntity) const;
+
+        /// Set the value to know if the body is allowed to sleep
+        void setIsAllowedToSleep(Entity bodyEntity, bool isAllowedToSleep) const;
+
+        /// Return true if the body is active
+        bool getIsActive(Entity bodyEntity) const;
+
+        /// Set the value to know if the body is active
+        void setIsActive(Entity bodyEntity, bool isActive) const;
+
+        /// Return true if the body is sleeping
+        bool getIsSleeping(Entity bodyEntity) const;
+
+        /// Set the value to know if the body is sleeping
+        void setIsSleeping(Entity bodyEntity, bool isSleeping) const;
+
+        /// Return the sleep time
+        decimal getSleepTime(Entity bodyEntity) const;
+
+        /// Set the sleep time
+        void setSleepTime(Entity bodyEntity, decimal sleepTime) const;
+
+        /// Return the user data associated with the body
+        void* getUserData(Entity bodyEntity) const;
+
+        /// Set the user data associated with the body
+        void setUserData(Entity bodyEntity, void* userData) const;
 };
 
 // Add a proxy-shape to a body component
@@ -141,6 +186,86 @@ inline const List<Entity>& BodyComponents::getProxyShapes(Entity bodyEntity) con
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
     return mProxyShapes[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return true if the body is allowed to sleep
+inline bool BodyComponents::getIsAllowedToSleep(Entity bodyEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    return mIsAllowedToSleep[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the value to know if the body is allowed to sleep
+inline void BodyComponents::setIsAllowedToSleep(Entity bodyEntity, bool isAllowedToSleep) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    mIsAllowedToSleep[mMapEntityToComponentIndex[bodyEntity]] = isAllowedToSleep;
+}
+
+// Return true if the body is active
+inline bool BodyComponents::getIsActive(Entity bodyEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    return mIsActive[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the value to know if the body is active
+inline void BodyComponents::setIsActive(Entity bodyEntity, bool isActive) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    mIsActive[mMapEntityToComponentIndex[bodyEntity]] = isActive;
+}
+
+// Return true if the body is sleeping
+inline bool BodyComponents::getIsSleeping(Entity bodyEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    return mIsSleeping[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the value to know if the body is sleeping
+inline void BodyComponents::setIsSleeping(Entity bodyEntity, bool isSleeping) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    mIsSleeping[mMapEntityToComponentIndex[bodyEntity]] = isSleeping;
+}
+
+// Return the sleep time
+inline decimal BodyComponents::getSleepTime(Entity bodyEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    return mSleepTimes[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the sleep time
+inline void BodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTime) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    mSleepTimes[mMapEntityToComponentIndex[bodyEntity]] = sleepTime;
+}
+
+// Return the user data associated with the body
+inline void* BodyComponents::getUserData(Entity bodyEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    return mUserData[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the user data associated with the body
+inline void BodyComponents::setUserData(Entity bodyEntity, void* userData) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+    mUserData[mMapEntityToComponentIndex[bodyEntity]] = userData;
 }
 
 }

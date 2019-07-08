@@ -206,7 +206,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
 }
 
-// Notify the world if a body is disabled (sleeping or inactive) or not
+// Notify the world if a body is disabled (sleeping) or not
 void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     if (isDisabled == mBodyComponents.getIsEntityDisabled(bodyEntity)) return;

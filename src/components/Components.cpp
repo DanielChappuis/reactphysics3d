@@ -150,7 +150,7 @@ void Components::removeComponent(Entity entity) {
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
-// Notify if a given entity is disabled (sleeping or inactive) or not
+// Notify if a given entity is disabled (sleeping) or not
 void Components::setIsEntityDisabled(Entity entity, bool isDisabled) {
 
     const uint32 index = mMapEntityToComponentIndex[entity];

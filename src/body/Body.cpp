@@ -25,6 +25,7 @@
 
 // Libraries
 #include "Body.h"
+#include "engine/CollisionWorld.h"
 #include "collision/shapes/CollisionShape.h"
 #include "utils/Logger.h"
 
@@ -35,9 +36,8 @@ using namespace reactphysics3d;
 /**
  * @param id ID of the new body
  */
-Body::Body(Entity entity)
-     : mEntity(entity), mIsAllowedToSleep(true), mIsActive(true),
-       mIsSleeping(false), mSleepTime(0), mUserData(nullptr) {
+Body::Body(Entity entity, CollisionWorld& world)
+     : mEntity(entity), mWorld(world) {
 
 #ifdef IS_LOGGING_ACTIVE
         mLogger = nullptr;
@@ -46,44 +46,54 @@ Body::Body(Entity entity)
 }
 
 // Set whether or not the body is active
+/// An inactive body does not participate in collision detection,
+/// is not simulated and will not be hit in a ray casting query.
+/// A body is active by default. If you set this
+/// value to "false", all the proxy shapes of this body will be
+/// removed from the broad-phase. If you set this value to "true",
+/// all the proxy shapes will be added to the broad-phase. A joint
+/// connected to an inactive body will also be inactive.
 /**
  * @param isActive True if you want to activate the body
  */
 void Body::setIsActive(bool isActive) {
-    mIsActive = isActive;
 
-    setIsSleeping(isActive);
+    setIsSleeping(!isActive);
+
+    mWorld.mBodyComponents.setIsActive(mEntity, isActive);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set isActive=" +
-             (mIsActive ? "true" : "false"));
+             (isActive ? "true" : "false"));
 }
 
 // Set the variable to know whether or not the body is sleeping
 void Body::setIsSleeping(bool isSleeping) {
 
+    bool isBodySleeping = mWorld.mBodyComponents.getIsSleeping(mEntity);
+
     // If the body is not active, do nothing (it is sleeping)
-    if (!mIsActive) {
-        assert(mIsSleeping);
+    if (!mWorld.mBodyComponents.getIsActive(mEntity)) {
+        assert(isBodySleeping);
         return;
     }
 
     if (isSleeping) {
-        mSleepTime = decimal(0.0);
+        mWorld.mBodyComponents.setSleepTime(mEntity, decimal(0.0));
     }
     else {
-        if (mIsSleeping) {
-            mSleepTime = decimal(0.0);
+        if (isBodySleeping) {
+            mWorld.mBodyComponents.setSleepTime(mEntity, decimal(0.0));
         }
     }
 
-    if (mIsSleeping != isSleeping) {
+    if (isBodySleeping != isSleeping) {
 
-        mIsSleeping = isSleeping;
+        mWorld.mBodyComponents.setIsSleeping(mEntity, isSleeping);
 
         RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set isSleeping=" +
-             (mIsSleeping ? "true" : "false"));
+             (isSleeping ? "true" : "false"));
     }
 }
 
@@ -92,12 +102,52 @@ void Body::setIsSleeping(bool isSleeping) {
  * @param isAllowedToSleep True if the body is allowed to sleep
  */
 void Body::setIsAllowedToSleep(bool isAllowedToSleep) {
-    mIsAllowedToSleep = isAllowedToSleep;
 
-    if (!mIsAllowedToSleep) setIsSleeping(false);
+    mWorld.mBodyComponents.setIsAllowedToSleep(mEntity, isAllowedToSleep);
+
+    if (!isAllowedToSleep) setIsSleeping(false);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set isAllowedToSleep=" +
-             (mIsAllowedToSleep ? "true" : "false"));
+             (isAllowedToSleep ? "true" : "false"));
 }
 
+// Return whether or not the body is allowed to sleep
+/**
+ * @return True if the body is allowed to sleep and false otherwise
+ */
+bool Body::isAllowedToSleep() const {
+    return mWorld.mBodyComponents.getIsAllowedToSleep(mEntity);
+}
+
+// Return whether or not the body is sleeping
+/**
+ * @return True if the body is currently sleeping and false otherwise
+ */
+bool Body::isSleeping() const {
+    return mWorld.mBodyComponents.getIsSleeping(mEntity);
+}
+
+// Return true if the body is active
+/**
+ * @return True if the body currently active and false otherwise
+ */
+bool Body::isActive() const {
+    return mWorld.mBodyComponents.getIsActive(mEntity);
+}
+
+// Return a pointer to the user data attached to this body
+/**
+ * @return A pointer to the user data you have attached to the body
+ */
+void* Body::getUserData() const {
+    return mWorld.mBodyComponents.getUserData(mEntity);
+}
+
+// Attach user data to this body
+/**
+ * @param userData A pointer to the user data you want to attach to the body
+ */
+void Body::setUserData(void* userData) {
+    mWorld.mBodyComponents.setUserData(mEntity, userData);
+}

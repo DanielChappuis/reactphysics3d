@@ -196,6 +196,7 @@ class CollisionWorld {
         // -------------------- Friendship -------------------- //
 
         friend class CollisionDetection;
+        friend class Body;
         friend class CollisionBody;
         friend class RigidBody;
         friend class ProxyShape;

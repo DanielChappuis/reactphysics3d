@@ -40,7 +40,7 @@ using namespace reactphysics3d;
  * @param id ID of the body
  */
 CollisionBody::CollisionBody(CollisionWorld& world, Entity entity)
-              : Body(entity), mType(BodyType::DYNAMIC), mWorld(world) {
+              : Body(entity, world), mType(BodyType::DYNAMIC) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -68,8 +68,7 @@ CollisionBody::~CollisionBody() {
  * @return A pointer to the proxy shape that has been created to link the body to
  *         the new collision shape you have added.
  */
-ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
-                                             const Transform& transform) {
+ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape, const Transform& transform) {
 
     // Create a new entity for the proxy-shape
     Entity proxyShapeEntity = mWorld.mEntityManager.createEntity();
@@ -86,7 +85,8 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape,
     ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, decimal(1), 0x0001, 0xFFFF);
-    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, mIsSleeping, proxyShapeComponent);
+    bool isSleeping = mWorld.mBodyComponents.getIsSleeping(mEntity);
+    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, isSleeping, proxyShapeComponent);
 
     mWorld.mBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
 
@@ -228,7 +228,7 @@ void CollisionBody::updateBroadPhaseState() const {
 void CollisionBody::setIsActive(bool isActive) {
 
     // If the state does not change
-    if (mIsActive == isActive) return;
+    if (mWorld.mBodyComponents.getIsActive(mEntity) == isActive) return;
 
     Body::setIsActive(isActive);
 
@@ -269,7 +269,7 @@ void CollisionBody::setIsActive(bool isActive) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set isActive=" +
-             (mIsActive ? "true" : "false"));
+             (isActive ? "true" : "false"));
 }
 
 // Ask the broad-phase to test again the collision shapes of the body for collision
@@ -318,7 +318,7 @@ bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 
     // If the body is not active, it cannot be hit by rays
-    if (!mIsActive) return false;
+    if (!mWorld.mBodyComponents.getIsActive(mEntity)) return false;
 
     bool isHit = false;
     Ray rayTemp(ray);
@@ -398,7 +398,7 @@ void CollisionBody::setTransform(const Transform& transform) {
 // Set the variable to know whether or not the body is sleeping
 void CollisionBody::setIsSleeping(bool isSleeping) {
 
-    if (mIsSleeping == isSleeping) return;
+    if (mWorld.mBodyComponents.getIsSleeping(mEntity) == isSleeping) return;
 
     Body::setIsSleeping(isSleeping);
 

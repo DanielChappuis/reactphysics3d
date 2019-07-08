@@ -71,9 +71,6 @@ class CollisionBody : public Body {
         /// Type of body (static, kinematic or dynamic)
         BodyType mType;
 
-        /// Reference to the world the body belongs to
-        CollisionWorld& mWorld;
-
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler

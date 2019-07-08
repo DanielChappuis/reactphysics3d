@@ -107,10 +107,10 @@ class Components {
         /// Remove a component
         void removeComponent(Entity entity);
 
-        /// Return true if an entity is sleeping
+        /// Return true if an entity is disabled
         bool getIsEntityDisabled(Entity entity) const;
 
-        /// Notify if a given entity is sleeping
+        /// Notify if a given entity is disabled
         void setIsEntityDisabled(Entity entity, bool isDisabled);
 
         /// Return true if there is a component for a given entity
