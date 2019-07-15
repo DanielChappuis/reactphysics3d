@@ -39,7 +39,7 @@ DynamicsComponents::DynamicsComponents(MemoryAllocator& allocator)
                                            sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(decimal) +
                                            sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(Matrix3x3) + sizeof(Matrix3x3) +
                                            sizeof(Vector3) + sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) + sizeof(bool) +
-                                           sizeof(bool)) {
+                                           sizeof(bool) + sizeof(BodyType)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -79,6 +79,7 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     Vector3* newCentersOfMassWorld = reinterpret_cast<Vector3*>(newCentersOfMassLocal + nbComponentsToAllocate);
     bool* newIsGravityEnabled = reinterpret_cast<bool*>(newCentersOfMassWorld + nbComponentsToAllocate);
     bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newIsGravityEnabled + nbComponentsToAllocate);
+    BodyType* newBodyTypes = reinterpret_cast<BodyType*>(newIsAlreadyInIsland + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -105,6 +106,7 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newCentersOfMassWorld, mCentersOfMassWorld, mNbComponents * sizeof(Vector3));
         memcpy(newIsGravityEnabled, mIsGravityEnabled, mNbComponents * sizeof(bool));
         memcpy(newIsAlreadyInIsland, mIsAlreadyInIsland, mNbComponents * sizeof(bool));
+        memcpy(newBodyTypes, mBodyTypes, mNbComponents * sizeof(BodyType));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -132,6 +134,8 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
     mCentersOfMassWorld = newCentersOfMassWorld;
     mIsGravityEnabled = newIsGravityEnabled;
     mIsAlreadyInIsland = newIsAlreadyInIsland;
+    mBodyTypes = newBodyTypes;
+
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
 
@@ -163,6 +167,7 @@ void DynamicsComponents::addComponent(Entity bodyEntity, bool isSleeping, const 
     new (mCentersOfMassWorld + index) Vector3(component.worldPosition);
     mIsGravityEnabled[index] = true;
     mIsAlreadyInIsland[index] = false;
+    mBodyTypes[index] = component.bodyType;
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(bodyEntity, index));
@@ -201,6 +206,7 @@ void DynamicsComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
     new (mCentersOfMassWorld + destIndex) Vector3(mCentersOfMassWorld[srcIndex]);
     mIsGravityEnabled[destIndex] = mIsGravityEnabled[srcIndex];
     mIsAlreadyInIsland[destIndex] = mIsAlreadyInIsland[srcIndex];
+    mBodyTypes[destIndex] = mBodyTypes[srcIndex];
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -241,6 +247,7 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
     Vector3 centerOfMassWorld1 = mCentersOfMassWorld[index1];
     bool isGravityEnabled1 = mIsGravityEnabled[index1];
     bool isAlreadyInIsland1 = mIsAlreadyInIsland[index1];
+    BodyType bodyType1 = mBodyTypes[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -269,6 +276,7 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
     mCentersOfMassWorld[index2] = centerOfMassWorld1;
     mIsGravityEnabled[index2] = isGravityEnabled1;
     mIsAlreadyInIsland[index2] = isAlreadyInIsland1;
+    mBodyTypes[index2] = bodyType1;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity1, index2));

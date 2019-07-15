@@ -35,7 +35,6 @@ namespace reactphysics3d {
 // Declarations
 class ContactPoint;
 struct SphereVsSphereNarrowPhaseInfoBatch;
-class Body;
 
 // Class SphereVsSphereAlgorithm
 /**

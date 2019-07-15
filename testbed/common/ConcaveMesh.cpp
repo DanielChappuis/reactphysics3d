@@ -150,9 +150,12 @@ void ConcaveMesh::render(openglframework::Shader& shader,
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    openglframework::Color currentColor = mBody->isSleeping() ? mSleepingColor : mColor;
-    openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-    shader.setVector4Uniform("vertexColor", color, false);
+    rp3d::RigidBody* rigidBody = static_cast<rp3d::RigidBody*>(mBody);
+    if (rigidBody != nullptr) {
+        openglframework::Color currentColor = rigidBody->isSleeping() ? mSleepingColor : mColor;
+        openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
+        shader.setVector4Uniform("vertexColor", color, false);
+    }
 
     // Bind the VAO
     mVAO.bind();

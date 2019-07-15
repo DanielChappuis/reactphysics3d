@@ -33,7 +33,6 @@
 namespace reactphysics3d {
 
 class CollisionDetection;
-class Body;
 class ContactManifoldInfo;
 class PoolAllocator;
 class OverlappingPair;

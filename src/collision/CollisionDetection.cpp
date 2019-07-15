@@ -27,7 +27,6 @@
 #include "CollisionDetection.h"
 #include "engine/CollisionWorld.h"
 #include "collision/OverlapCallback.h"
-#include "body/Body.h"
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/ConcaveShape.h"
 #include "collision/ContactManifoldInfo.h"
@@ -238,9 +237,14 @@ void CollisionDetection::computeMiddlePhase(OverlappingPairMap& overlappingPairs
             const Entity body1Entity = body1->getEntity();
             const Entity body2Entity = body2->getEntity();
 
+            const bool isStaticRigidBody1 = mWorld->mDynamicsComponents.hasComponent(body1Entity) &&
+                                            mWorld->mDynamicsComponents.getBodyType(body1Entity) == BodyType::STATIC;
+            const bool isStaticRigidBody2 = mWorld->mDynamicsComponents.hasComponent(body2Entity) &&
+                                            mWorld->mDynamicsComponents.getBodyType(body2Entity) == BodyType::STATIC;
+
             // Check that at least one body is enabled (active and awake) and not static
-            bool isBody1Active = !mWorld->mBodyComponents.getIsEntityDisabled(body1Entity) && body1->getType() != BodyType::STATIC;
-            bool isBody2Active = !mWorld->mBodyComponents.getIsEntityDisabled(body2Entity) && body2->getType() != BodyType::STATIC;
+            bool isBody1Active = !mWorld->mBodyComponents.getIsEntityDisabled(body1Entity) && !isStaticRigidBody1;
+            bool isBody2Active = !mWorld->mBodyComponents.getIsEntityDisabled(body2Entity) && !isStaticRigidBody2;
             if (!isBody1Active && !isBody2Active) continue;
 
             // Check if the bodies are in the set of bodies that cannot collide between each other

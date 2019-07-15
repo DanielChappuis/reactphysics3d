@@ -40,6 +40,7 @@ struct JointListElement;
 class Joint;
 class DynamicsWorld;
 class MemoryManager;
+enum class BodyType;
 
 // Class RigidBody
 /**
@@ -82,7 +83,7 @@ class RigidBody : public CollisionBody {
         void updateInertiaTensorInverseWorld();
 
         /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping) override;
+         void setIsSleeping(bool isSleeping);
 
     public :
 
@@ -99,9 +100,6 @@ class RigidBody : public CollisionBody {
 
         /// Deleted assignment operator
         RigidBody& operator=(const RigidBody& body) = delete;
-
-        /// Set the type of the body (static, kinematic or dynamic)
-        void setType(BodyType type);
 
         /// Set the current position and orientation
         virtual void setTransform(const Transform& transform) override;
@@ -138,6 +136,12 @@ class RigidBody : public CollisionBody {
 
         /// Set the mass of the rigid body
         void setMass(decimal mass);
+
+        /// Return the type of the body
+        BodyType getType() const;
+
+        /// Set the type of the body
+        void setType(BodyType type);
 
         /// Return true if the gravity needs to be applied to this rigid body
         bool isGravityEnabled() const;
@@ -177,6 +181,18 @@ class RigidBody : public CollisionBody {
 
         /// Apply an external torque to the body.
         void applyTorque(const Vector3& torque);
+
+        /// Return whether or not the body is allowed to sleep
+        bool isAllowedToSleep() const;
+
+        /// Set whether or not the body is allowed to go to sleep
+        void setIsAllowedToSleep(bool isAllowedToSleep);
+
+        /// Return whether or not the body is sleeping
+        bool isSleeping() const;
+
+        /// Set whether or not the body is active
+        virtual void setIsActive(bool isActive) override;
 
         /// Add a collision shape to the body.
         virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,

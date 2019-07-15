@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cassert>
-#include "Body.h"
+#include "engine/Entity.h"
 #include "collision/shapes/AABB.h"
 #include "mathematics/Transform.h"
 #include "configuration.h"
@@ -44,32 +44,30 @@ class CollisionShape;
 struct RaycastInfo;
 class PoolAllocator;
 class Profiler;
-
-/// Enumeration for the type of a body
-/// STATIC : A static body has infinite mass, zero velocity but the position can be
-///          changed manually. A static body does not collide with other static or kinematic bodies.
-/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
-///             position is computed by the physics engine. A kinematic body does not collide with
-///             other static or kinematic bodies.
-/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
-///           position is determined by the physics engine. A dynamic body can collide with other
-///           dynamic, static or kinematic bodies.
-enum class BodyType {STATIC, KINEMATIC, DYNAMIC};
+class Logger;
 
 // Class CollisionBody
 /**
  * This class represents a body that is able to collide with others
- * bodies. This class inherits from the Body class.
+ * bodies.
  */
-class CollisionBody : public Body {
+class CollisionBody {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        // TODO : Move this into the dynamics components
-        /// Type of body (static, kinematic or dynamic)
-        BodyType mType;
+        /// Identifier of the entity in the ECS
+        Entity mEntity;
+
+        /// Reference to the world the body belongs to
+        CollisionWorld& mWorld;
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Logger
+        Logger* mLogger;
+#endif
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -90,9 +88,6 @@ class CollisionBody : public Body {
         /// (as if the body has moved).
         void askForBroadPhaseCollisionCheck() const;
 
-        /// Set the variable to know whether or not the body is sleeping
-        virtual void setIsSleeping(bool isSleeping) override;
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -101,7 +96,7 @@ class CollisionBody : public Body {
         CollisionBody(CollisionWorld& world, Entity entity);
 
         /// Destructor
-        virtual ~CollisionBody() override;
+        virtual ~CollisionBody();
 
         /// Deleted copy-constructor
         CollisionBody(const CollisionBody& body) = delete;
@@ -109,14 +104,20 @@ class CollisionBody : public Body {
         /// Deleted assignment operator
         CollisionBody& operator=(const CollisionBody& body) = delete;
 
-        /// Return the type of the body
-        BodyType getType() const;
+        /// Return the corresponding entity of the body
+        Entity getEntity() const;
 
-        /// Set the type of the body
-        void setType(BodyType type);
+        /// Return true if the body is active
+        bool isActive() const;
+
+        /// Return a pointer to the user data attached to this body
+        void* getUserData() const;
+
+        /// Attach user data to this body
+        void setUserData(void* userData);
 
         /// Set whether or not the body is active
-        virtual void setIsActive(bool isActive) override;
+        virtual void setIsActive(bool isActive);
 
         /// Return the current position and orientation
         const Transform& getTransform() const;
@@ -125,8 +126,7 @@ class CollisionBody : public Body {
         virtual void setTransform(const Transform& transform);
 
         /// Add a collision shape to the body.
-        virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,
-                                              const Transform& transform);
+        virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape, const Transform& transform);
 
         /// Remove a collision shape from the body
         virtual void removeCollisionShape(ProxyShape *proxyShape);
@@ -164,6 +164,12 @@ class CollisionBody : public Body {
         /// Return the body local-space coordinates of a vector given in the world-space coordinates
         Vector3 getLocalVector(const Vector3& worldVector) const;
 
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Set the logger
+        void setLogger(Logger* logger);
+#endif
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Set the profiler
@@ -181,14 +187,6 @@ class CollisionBody : public Body {
         friend class ProxyShape;
 };
 
-// Return the type of the body
-/**
- * @return the type of the body (STATIC, KINEMATIC, DYNAMIC)
- */
-inline BodyType CollisionBody::getType() const {
-    return mType;
-}
-
 /// Test if the collision body overlaps with a given AABB
 /**
 * @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
@@ -197,6 +195,23 @@ inline BodyType CollisionBody::getType() const {
 inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getAABB());
 }
+
+// Return the corresponding entity of the body
+/**
+ * @return The entity of the body
+ */
+inline Entity CollisionBody::getEntity() const {
+    return mEntity;
+}
+
+#ifdef IS_LOGGING_ACTIVE
+
+// Set the logger
+inline void CollisionBody::setLogger(Logger* logger) {
+    mLogger = logger;
+}
+
+#endif
 
 #ifdef IS_PROFILING_ACTIVE
 

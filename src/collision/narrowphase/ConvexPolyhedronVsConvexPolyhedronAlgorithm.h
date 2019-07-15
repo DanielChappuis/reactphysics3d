@@ -33,7 +33,6 @@
 namespace reactphysics3d {
 
 // Declarations
-class Body;
 class ContactPoint;
 
 // Class ConvexPolyhedronVsConvexPolyhedronAlgorithm

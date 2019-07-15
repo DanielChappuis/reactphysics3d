@@ -34,7 +34,6 @@ namespace reactphysics3d {
 
 // Declarations
 class ContactPoint;
-class Body;
 
 // Class CapsuleVsConvexPolyhedronAlgorithm
 /**

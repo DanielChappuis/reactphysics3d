@@ -376,7 +376,8 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     Entity entity = mEntityManager.createEntity();
 
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
-    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(transform.getPosition()));
+    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(transform.getPosition(),
+                                                                                          BodyType::DYNAMIC));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
@@ -655,9 +656,7 @@ void DynamicsWorld::createIslands() {
         if (mDynamicsComponents.mIsAlreadyInIsland[b]) continue;
 
         // If the body is static, we go to the next body
-        // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
-        CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(mDynamicsComponents.mBodies[b]));
-        if (body->getType() == BodyType::STATIC) continue;
+        if (mDynamicsComponents.mBodyTypes[b] == BodyType::STATIC) continue;
 
         // Reset the stack of bodies to visit
         bodyEntityIndicesToVisit.clear();
@@ -678,14 +677,14 @@ void DynamicsWorld::createIslands() {
             // Add the body into the island
             mIslands.bodyEntities[islandIndex].add(bodyToVisitEntity);
 
-            // If the current body is static, we do not want to perform the DFS
-            // search across that body
             // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
             RigidBody* rigidBodyToVisit = static_cast<RigidBody*>(mBodyComponents.getBody(bodyToVisitEntity));
 
             // Awake the body if it is sleeping
             rigidBodyToVisit->setIsSleeping(false);
 
+            // If the current body is static, we do not want to perform the DFS
+            // search across that body
             if (rigidBodyToVisit->getType() == BodyType::STATIC) continue;
 
             // If the body is involved in contacts with other bodies
@@ -768,10 +767,7 @@ void DynamicsWorld::createIslands() {
         // can also be included in the other islands
         for (uint j=0; j < mDynamicsComponents.getNbEnabledComponents(); j++) {
 
-            // If the body is static, we go to the next body
-            // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
-            CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(mDynamicsComponents.mBodies[j]));
-            if (body->getType() == BodyType::STATIC) {
+            if (mDynamicsComponents.mBodyTypes[j] == BodyType::STATIC) {
                 mDynamicsComponents.mIsAlreadyInIsland[j] = false;
             }
         }
@@ -805,16 +801,16 @@ void DynamicsWorld::updateSleepingBodies() {
 
             const Entity bodyEntity = mIslands.bodyEntities[i][b];
 
-            // TODO : We should not have to do this cast here to get type of body
-            CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(bodyEntity));
+            // TODO : We should use a RigidBody* type here
+            CollisionBody* body = mBodyComponents.getBody(bodyEntity);
 
             // Skip static bodies
-            if (body->getType() == BodyType::STATIC) continue;
+            if (mDynamicsComponents.getBodyType(body->getEntity()) == BodyType::STATIC) continue;
 
             // If the body is velocity is large enough to stay awake
             if (mDynamicsComponents.getLinearVelocity(bodyEntity).lengthSquare() > sleepLinearVelocitySquare ||
                 mDynamicsComponents.getAngularVelocity(bodyEntity).lengthSquare() > sleepAngularVelocitySquare ||
-                !body->isAllowedToSleep()) {
+                !mBodyComponents.getIsAllowedToSleep(body->getEntity())) {
 
                 // Reset the sleep time of the body
                 mBodyComponents.setSleepTime(body->getEntity(), decimal(0.0));
@@ -840,8 +836,9 @@ void DynamicsWorld::updateSleepingBodies() {
             // Put all the bodies of the island to sleep
             for (uint b=0; b < mIslands.bodyEntities[i].size(); b++) {
 
+                // TODO : We should use a RigidBody* type here (remove the cast)
                 const Entity bodyEntity = mIslands.bodyEntities[i][b];
-                CollisionBody* body = static_cast<CollisionBody*>(mBodyComponents.getBody(bodyEntity));
+                RigidBody* body = static_cast<RigidBody*>(mBodyComponents.getBody(bodyEntity));
                 body->setIsSleeping(true);
             }
         }

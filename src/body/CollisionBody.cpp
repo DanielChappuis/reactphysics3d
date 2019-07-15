@@ -40,7 +40,11 @@ using namespace reactphysics3d;
  * @param id ID of the body
  */
 CollisionBody::CollisionBody(CollisionWorld& world, Entity entity)
-              : Body(entity, world), mType(BodyType::DYNAMIC) {
+              : mEntity(entity), mWorld(world)  {
+
+#ifdef IS_LOGGING_ACTIVE
+        mLogger = nullptr;
+#endif
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -230,7 +234,7 @@ void CollisionBody::setIsActive(bool isActive) {
     // If the state does not change
     if (mWorld.mBodyComponents.getIsActive(mEntity) == isActive) return;
 
-    Body::setIsActive(isActive);
+    mWorld.mBodyComponents.setIsActive(mEntity, isActive);
 
     // If we have to activate the body
     if (isActive) {
@@ -382,9 +386,6 @@ void CollisionBody::setTransform(const Transform& transform) {
 
     // TODO : Make sure this method is never called from the internal physics engine
 
-    // Awake the body if it is sleeping
-    setIsSleeping(false);
-
     // Update the transform of the body
     mWorld.mTransformComponents.setTransform(mEntity, transform);
 
@@ -395,15 +396,28 @@ void CollisionBody::setTransform(const Transform& transform) {
              "Body " + std::to_string(mEntity.id) + ": Set transform=" + transform.to_string());
 }
 
-// Set the variable to know whether or not the body is sleeping
-void CollisionBody::setIsSleeping(bool isSleeping) {
+// Return true if the body is active
+/**
+ * @return True if the body currently active and false otherwise
+ */
+bool CollisionBody::isActive() const {
+    return mWorld.mBodyComponents.getIsActive(mEntity);
+}
 
-    if (mWorld.mBodyComponents.getIsSleeping(mEntity) == isSleeping) return;
+// Return a pointer to the user data attached to this body
+/**
+ * @return A pointer to the user data you have attached to the body
+ */
+void* CollisionBody::getUserData() const {
+    return mWorld.mBodyComponents.getUserData(mEntity);
+}
 
-    Body::setIsSleeping(isSleeping);
-
-    // Notify all the components
-    mWorld.notifyBodyDisabled(mEntity, isSleeping);
+// Attach user data to this body
+/**
+ * @param userData A pointer to the user data you want to attach to the body
+ */
+void CollisionBody::setUserData(void* userData) {
+    mWorld.mBodyComponents.setUserData(mEntity, userData);
 }
 
 // Return the world-space coordinates of a point given the local-space coordinates of the body
@@ -441,31 +455,3 @@ Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
 Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
     return mWorld.mTransformComponents.getTransform(mEntity).getOrientation().getInverse() * worldVector;
 }
-
-// Set the type of the body
-/// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
-/// STATIC : A static body has infinite mass, zero velocity but the position can be
-///          changed manually. A static body does not collide with other static or kinematic bodies.
-/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
-///             position is computed by the physics engine. A kinematic body does not collide with
-///             other static or kinematic bodies.
-/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
-///           position is determined by the physics engine. A dynamic body can collide with other
-///           dynamic, static or kinematic bodies.
-/**
- * @param type The type of the body (STATIC, KINEMATIC, DYNAMIC)
- */
-void CollisionBody::setType(BodyType type) {
-    mType = type;
-
-    if (mType == BodyType::STATIC) {
-
-        // Update the broad-phase state of the body
-        updateBroadPhaseState();
-    }
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set type=" +
-             (mType == BodyType::STATIC ? "Static" : (mType == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
-}
-

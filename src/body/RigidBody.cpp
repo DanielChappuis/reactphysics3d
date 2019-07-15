@@ -55,6 +55,11 @@ RigidBody::~RigidBody() {
     assert(mJointsList == nullptr);
 }
 
+// Return the type of the body
+BodyType RigidBody::getType() const {
+    return mWorld.mDynamicsComponents.getBodyType(mEntity);
+}
+
 // Set the type of the body
 /// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
 /// STATIC : A static body has infinite mass, zero velocity but the position can be
@@ -70,15 +75,15 @@ RigidBody::~RigidBody() {
  */
 void RigidBody::setType(BodyType type) {
 
-    if (mType == type) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) == type) return;
 
-    CollisionBody::setType(type);
+    mWorld.mDynamicsComponents.setBodyType(mEntity, type);
 
     // Recompute the total mass, center of mass and inertia tensor
     recomputeMassInformation();
 
     // If it is a static body
-    if (mType == BodyType::STATIC) {
+    if (type == BodyType::STATIC) {
 
         // Reset the velocity to zero
         mWorld.mDynamicsComponents.setLinearVelocity(mEntity, Vector3::zero());
@@ -86,7 +91,7 @@ void RigidBody::setType(BodyType type) {
     }
 
     // If it is a static or a kinematic body
-    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
+    if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
         mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(0));
@@ -114,6 +119,10 @@ void RigidBody::setType(BodyType type) {
     // Reset the force and torque on the body
     mWorld.mDynamicsComponents.setExternalForce(mEntity, Vector3::zero());
     mWorld.mDynamicsComponents.setExternalTorque(mEntity, Vector3::zero());
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set type=" +
+             (type == BodyType::STATIC ? "Static" : (type == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
 }
 
 // Get the inverse local inertia tensor of the body (in body coordinates)
@@ -159,7 +168,7 @@ decimal RigidBody::getMass() const {
 void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
@@ -188,7 +197,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
     mUserInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
     mIsInertiaTensorSetByUser = true;
 
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
     mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
@@ -211,7 +220,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
@@ -251,7 +260,7 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
     mUserInertiaTensorLocalInverse = inverseInertiaTensorLocal;
     mIsInertiaTensorSetByUser = true;
 
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
     mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
@@ -274,7 +283,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
     // TODO : Check if we need to update the postion of the body here at the end (transform of the body)
 
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     mIsCenterOfMassSetByUser = true;
 
@@ -302,7 +311,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
  */
 void RigidBody::setMass(decimal mass) {
 
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     mWorld.mDynamicsComponents.setInitMass(mEntity, mass);
 
@@ -524,7 +533,7 @@ void RigidBody::setMaterial(const Material& material) {
 void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == BodyType::STATIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) == BodyType::STATIC) return;
 
     // Update the linear velocity of the current body state
     mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
@@ -547,7 +556,7 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
     // TODO : Make sure this method is not called from the internal physics engine
 
     // If it is a static body, we do nothing
-    if (mType == BodyType::STATIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) == BodyType::STATIC) return;
 
     // Set the angular velocity
     mWorld.mDynamicsComponents.setAngularVelocity(mEntity, angularVelocity);
@@ -588,6 +597,9 @@ void RigidBody::setTransform(const Transform& transform) {
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
+
+    // Awake the body if it is sleeping
+    setIsSleeping(false);
 }
 
 // Recompute the center of mass, total mass and inertia tensor of the body using all
@@ -605,12 +617,13 @@ void RigidBody::recomputeMassInformation() {
     const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
 
     // If it is a STATIC or a KINEMATIC body
-    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
+    BodyType type = mWorld.mDynamicsComponents.getBodyType(mEntity);
+    if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
         mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
         return;
     }
 
-    assert(mType == BodyType::DYNAMIC);
+    assert(mWorld.mDynamicsComponents.getBodyType(mEntity) == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
     const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
@@ -723,7 +736,7 @@ bool RigidBody::isGravityEnabled() const {
 void RigidBody::applyTorque(const Vector3& torque) {
 
     // If it is not a dynamic body, we do nothing
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
@@ -738,7 +751,29 @@ void RigidBody::applyTorque(const Vector3& torque) {
 // Set the variable to know whether or not the body is sleeping
 void RigidBody::setIsSleeping(bool isSleeping) {
 
-    CollisionBody::setIsSleeping(isSleeping);
+    bool isBodySleeping = mWorld.mBodyComponents.getIsSleeping(mEntity);
+
+    if (isBodySleeping == isSleeping) return;
+
+    // If the body is not active, do nothing (it is sleeping)
+    if (!mWorld.mBodyComponents.getIsActive(mEntity)) {
+        assert(isBodySleeping);
+        return;
+    }
+
+    if (isSleeping) {
+        mWorld.mBodyComponents.setSleepTime(mEntity, decimal(0.0));
+    }
+    else {
+        if (isBodySleeping) {
+            mWorld.mBodyComponents.setSleepTime(mEntity, decimal(0.0));
+        }
+    }
+
+    mWorld.mBodyComponents.setIsSleeping(mEntity, isSleeping);
+
+    // Notify all the components
+    mWorld.notifyBodyDisabled(mEntity, isSleeping);
 
     if (isSleeping) {
 
@@ -747,6 +782,56 @@ void RigidBody::setIsSleeping(bool isSleeping) {
         mWorld.mDynamicsComponents.setExternalForce(mEntity, Vector3::zero());
         mWorld.mDynamicsComponents.setExternalTorque(mEntity, Vector3::zero());
     }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+         "Body " + std::to_string(mEntity.id) + ": Set isSleeping=" +
+         (isSleeping ? "true" : "false"));
+
+}
+
+// Set whether or not the body is allowed to go to sleep
+/**
+ * @param isAllowedToSleep True if the body is allowed to sleep
+ */
+void RigidBody::setIsAllowedToSleep(bool isAllowedToSleep) {
+
+    mWorld.mBodyComponents.setIsAllowedToSleep(mEntity, isAllowedToSleep);
+
+    if (!isAllowedToSleep) setIsSleeping(false);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set isAllowedToSleep=" +
+             (isAllowedToSleep ? "true" : "false"));
+}
+
+// Return whether or not the body is allowed to sleep
+/**
+ * @return True if the body is allowed to sleep and false otherwise
+ */
+bool RigidBody::isAllowedToSleep() const {
+    return mWorld.mBodyComponents.getIsAllowedToSleep(mEntity);
+}
+
+// Return whether or not the body is sleeping
+/**
+ * @return True if the body is currently sleeping and false otherwise
+ */
+bool RigidBody::isSleeping() const {
+    return mWorld.mBodyComponents.getIsSleeping(mEntity);
+}
+
+// Set whether or not the body is active
+/**
+ * @param isActive True if you want to activate the body
+ */
+void RigidBody::setIsActive(bool isActive) {
+
+    // If the state does not change
+    if (mWorld.mBodyComponents.getIsActive(mEntity) == isActive) return;
+
+    setIsSleeping(!isActive);
+
+    CollisionBody::setIsActive(isActive);
 }
 
 #ifdef IS_PROFILING_ACTIVE

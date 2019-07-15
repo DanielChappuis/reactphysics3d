@@ -77,7 +77,6 @@ SET (REACTPHYSICS3D_HEADERS
     "src/configuration.h"
     "src/decimal.h"
     "src/reactphysics3d.h"
-    "src/body/Body.h"
     "src/body/CollisionBody.h"
     "src/body/RigidBody.h"
     "src/collision/ContactPointInfo.h"
@@ -175,7 +174,6 @@ SET (REACTPHYSICS3D_HEADERS
 
 # Source files
 SET (REACTPHYSICS3D_SOURCES
-    "src/body/Body.cpp"
     "src/body/CollisionBody.cpp"
     "src/body/RigidBody.cpp"
     "src/collision/broadphase/DynamicAABBTree.cpp"

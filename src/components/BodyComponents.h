@@ -38,7 +38,7 @@ namespace reactphysics3d {
 // Class declarations
 class MemoryAllocator;
 class EntityManager;
-class Body;
+class CollisionBody;
 
 // Class BodyComponents
 /**
@@ -55,7 +55,7 @@ class BodyComponents : public Components {
         Entity* mBodiesEntities;
 
         /// Array of pointers to the corresponding bodies
-        Body** mBodies;
+        CollisionBody** mBodies;
 
         /// Array with the list of proxy-shapes of each body
         List<Entity>* mProxyShapes;
@@ -69,7 +69,7 @@ class BodyComponents : public Components {
         /// Array of boolean values to know if the body is sleeping
         bool* mIsSleeping;
 
-        /// Array with values for elapsed time since the body velocity was bellow the sleep velocity
+        /// Array with values for elapsed time since the body velocity was below the sleep velocity
         decimal* mSleepTimes;
 
         /// Array of pointers that can be used to attach user data to the body
@@ -94,10 +94,10 @@ class BodyComponents : public Components {
         /// Structure for the data of a body component
         struct BodyComponent {
 
-            Body* body;
+            CollisionBody* body;
 
             /// Constructor
-            BodyComponent(Body* body) : body(body) {
+            BodyComponent(CollisionBody* body) : body(body) {
 
             }
         };
@@ -120,7 +120,7 @@ class BodyComponents : public Components {
         void removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity);
 
         /// Return a pointer to a body
-        Body* getBody(Entity bodyEntity);
+        CollisionBody* getBody(Entity bodyEntity);
 
         /// Return the list of proxy-shapes of a body
         const List<Entity>& getProxyShapes(Entity bodyEntity) const;
@@ -173,7 +173,7 @@ inline void BodyComponents::removeProxyShapeFromBody(Entity bodyEntity, Entity p
 }
 
 // Return a pointer to a body
-inline Body* BodyComponents::getBody(Entity bodyEntity) {
+inline CollisionBody *BodyComponents::getBody(Entity bodyEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 

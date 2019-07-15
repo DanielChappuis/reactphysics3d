@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 
 // Constructor
 BodyComponents::BodyComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(Body*) + sizeof(List<Entity>) +
+                    :Components(allocator, sizeof(Entity) + sizeof(CollisionBody*) + sizeof(List<Entity>) +
                                 sizeof(bool) + sizeof(bool) + sizeof(bool) + sizeof(decimal) +
                                 sizeof(void*)) {
 
@@ -56,7 +56,7 @@ void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
 
     // New pointers to components data
     Entity* newBodiesEntities = static_cast<Entity*>(newBuffer);
-    Body** newBodies = reinterpret_cast<Body**>(newBodiesEntities + nbComponentsToAllocate);
+    CollisionBody** newBodies = reinterpret_cast<CollisionBody**>(newBodiesEntities + nbComponentsToAllocate);
     List<Entity>* newProxyShapes = reinterpret_cast<List<Entity>*>(newBodies + nbComponentsToAllocate);
     bool* newIsAllowedToSleep = reinterpret_cast<bool*>(newProxyShapes + nbComponentsToAllocate);
     bool* newIsActive = reinterpret_cast<bool*>(newIsAllowedToSleep + nbComponentsToAllocate);
@@ -69,7 +69,7 @@ void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
 
         // Copy component data from the previous buffer to the new one
         memcpy(newBodiesEntities, mBodiesEntities, mNbComponents * sizeof(Entity));
-        memcpy(newBodies, mBodies, mNbComponents * sizeof(Body*));
+        memcpy(newBodies, mBodies, mNbComponents * sizeof(CollisionBody*));
         memcpy(newProxyShapes, mProxyShapes, mNbComponents * sizeof(List<Entity>));
         memcpy(newIsAllowedToSleep, mIsAllowedToSleep, mNbComponents * sizeof(bool));
         memcpy(newIsActive, mIsActive, mNbComponents * sizeof(bool));
@@ -150,7 +150,7 @@ void BodyComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Copy component 1 data
     Entity entity1(mBodiesEntities[index1]);
-    Body* body1 = mBodies[index1];
+    CollisionBody* body1 = mBodies[index1];
     List<Entity> proxyShapes1(mProxyShapes[index1]);
     bool isAllowedToSleep1 = mIsAllowedToSleep[index1];
     bool isActive1 = mIsActive[index1];

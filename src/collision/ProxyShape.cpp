@@ -115,10 +115,12 @@ void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
     // TODO : Make sure this method is never called by the internal physics engine
 
-    //mLocalToBodyTransform = transform;
     mBody->mWorld.mProxyShapesComponents.setLocalToBodyTransform(mEntity, transform);
 
-    mBody->setIsSleeping(false);
+    RigidBody* rigidBody = static_cast<RigidBody*>(mBody);
+    if (rigidBody != nullptr) {
+        mBody->mWorld.mBodyComponents.setIsSleeping(mBody->getEntity(), false);
+    }
 
     mBody->mWorld.mCollisionDetection.updateProxyShape(mEntity);
 

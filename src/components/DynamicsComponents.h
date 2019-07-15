@@ -40,10 +40,22 @@ namespace reactphysics3d {
 class MemoryAllocator;
 class EntityManager;
 
+/// Enumeration for the type of a body
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+enum class BodyType {STATIC, KINEMATIC, DYNAMIC};
+
 // Class DynamicsComponents
 /**
  * This class represent the component of the ECS that contains the variables concerning dynamics
- * like velocities.
+ * like velocities. A rigid body that is not static always has a dynamics component. A rigid body
+ * that is static does not have one because it is not simulated by dynamics.
  */
 class DynamicsComponents : public Components {
 
@@ -114,6 +126,9 @@ class DynamicsComponents : public Components {
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
+        /// Array with the type of bodies (static, kinematic or dynamic)
+        BodyType* mBodyTypes;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -135,9 +150,11 @@ class DynamicsComponents : public Components {
 
             const Vector3& worldPosition;
 
+            BodyType bodyType;
+
             /// Constructor
-            DynamicsComponent(const Vector3& worldPosition)
-                : worldPosition(worldPosition) {
+            DynamicsComponent(const Vector3& worldPosition, BodyType bodyType)
+                : worldPosition(worldPosition), bodyType(bodyType) {
 
             }
         };
@@ -268,10 +285,16 @@ class DynamicsComponents : public Components {
         void setCenterOfMassWorld(Entity bodyEntity, const Vector3& centerOfMassWorld);
 
         /// Set the value to know if the gravity is enabled for this entity
-        bool setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled);
+        void setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled);
 
         /// Set the value to know if the entity is already in an island
-        bool setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
+        void setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
+
+        /// Return the body type of a body
+        BodyType getBodyType(Entity bodyEntity);
+
+        /// Set the body type of a body
+        void setBodyType(Entity bodyEntity, BodyType bodyType);
 
         // -------------------- Friendship -------------------- //
 
@@ -282,7 +305,6 @@ class DynamicsComponents : public Components {
         friend class FixedJoint;
         friend class HingeJoint;
         friend class SliderJoint;
-
 };
 
 // Return the linear velocity of an entity
@@ -590,7 +612,7 @@ inline bool DynamicsComponents::getIsAlreadyInIsland(Entity bodyEntity) const {
 }
 
 // Set the value to know if the gravity is enabled for this entity
-inline bool DynamicsComponents::setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled) {
+inline void DynamicsComponents::setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -598,11 +620,27 @@ inline bool DynamicsComponents::setIsGravityEnabled(Entity bodyEntity, bool isGr
 }
 
 /// Set the value to know if the entity is already in an island
-inline bool DynamicsComponents::setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland) {
+inline void DynamicsComponents::setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]] = isAlreadyInIsland;
+}
+
+// Return the body type of a body
+inline BodyType DynamicsComponents::getBodyType(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mBodyTypes[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the body type of a body
+inline void DynamicsComponents::setBodyType(Entity bodyEntity, BodyType bodyType) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mBodyTypes[mMapEntityToComponentIndex[bodyEntity]] = bodyType;
 }
 
 }
