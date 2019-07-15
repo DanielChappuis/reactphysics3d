@@ -33,7 +33,7 @@
 #include "constraint/Joint.h"
 #include "memory/MemoryManager.h"
 #include "engine/EntityManager.h"
-#include "components/BodyComponents.h"
+#include "components/CollisionBodyComponents.h"
 #include "components/TransformComponents.h"
 #include "components/ProxyShapeComponents.h"
 #include "components/DynamicsComponents.h"
@@ -77,7 +77,7 @@ class CollisionWorld {
         EntityManager mEntityManager;
 
         /// Body Components
-        BodyComponents mBodyComponents;
+        CollisionBodyComponents mBodyComponents;
 
         /// Transform Components
         TransformComponents mTransformComponents;

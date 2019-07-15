@@ -384,7 +384,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
                                      sizeof(RigidBody))) RigidBody(transform, *this, entity);
     assert(rigidBody != nullptr);
 
-    BodyComponents::BodyComponent bodyComponent(rigidBody);
+    CollisionBodyComponents::BodyComponent bodyComponent(rigidBody);
     mBodyComponents.addComponent(entity, false, bodyComponent);
 
     // Add the rigid body to the physics world

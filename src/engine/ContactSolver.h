@@ -43,7 +43,7 @@ class MemoryManager;
 class Profiler;
 class Island;
 class RigidBody;
-class BodyComponents;
+class CollisionBodyComponents;
 class DynamicsComponents;
 class ProxyShapeComponents;
 
@@ -310,7 +310,7 @@ class ContactSolver {
         List<ContactPoint>* mAllContactPoints;
 
         /// Reference to the body components
-        BodyComponents& mBodyComponents;
+        CollisionBodyComponents& mBodyComponents;
 
         /// Reference to the dynamics components
         DynamicsComponents& mDynamicsComponents;
@@ -359,7 +359,7 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents,
+        ContactSolver(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
                       DynamicsComponents& dynamicsComponents, ProxyShapeComponents& proxyShapeComponents,
                       const WorldSettings& worldSettings);
 

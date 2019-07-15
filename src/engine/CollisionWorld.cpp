@@ -157,7 +157,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     assert(collisionBody != nullptr);
 
     // Add the components
-    BodyComponents::BodyComponent bodyComponent(collisionBody);
+    CollisionBodyComponents::BodyComponent bodyComponent(collisionBody);
     mBodyComponents.addComponent(entity, false, bodyComponent);
 
     // Add the collision body to the world

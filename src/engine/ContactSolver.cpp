@@ -30,7 +30,7 @@
 #include "constraint/ContactPoint.h"
 #include "utils/Profiler.h"
 #include "engine/Island.h"
-#include "components/BodyComponents.h"
+#include "components/CollisionBodyComponents.h"
 #include "components/DynamicsComponents.h"
 #include "components/ProxyShapeComponents.h"
 #include "collision/ContactManifold.h"
@@ -44,7 +44,7 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, BodyComponents& bodyComponents, DynamicsComponents& dynamicsComponents,
+ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents, DynamicsComponents& dynamicsComponents,
                              ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings)
               :mMemoryManager(memoryManager), mContactConstraints(nullptr), mContactPoints(nullptr),
                mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr), mBodyComponents(bodyComponents),

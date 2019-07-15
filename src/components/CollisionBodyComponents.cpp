@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "BodyComponents.h"
+#include "CollisionBodyComponents.h"
 #include "engine/EntityManager.h"
 #include <cassert>
 #include <random>
@@ -33,7 +33,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-BodyComponents::BodyComponents(MemoryAllocator& allocator)
+CollisionBodyComponents::CollisionBodyComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(CollisionBody*) + sizeof(List<Entity>) +
                                 sizeof(bool) + sizeof(bool) + sizeof(bool) + sizeof(decimal) +
                                 sizeof(void*)) {
@@ -43,7 +43,7 @@ BodyComponents::BodyComponents(MemoryAllocator& allocator)
 }
 
 // Allocate memory for a given number of components
-void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
+void CollisionBodyComponents::allocate(uint32 nbComponentsToAllocate) {
 
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
@@ -94,7 +94,7 @@ void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void BodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component) {
+void CollisionBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
     uint32 index = prepareAddComponent(isSleeping);
@@ -120,7 +120,7 @@ void BodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const Body
 
 // Move a component from a source to a destination index in the components array
 // The destination location must contain a constructed object
-void BodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
+void CollisionBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
 
     const Entity entity = mBodiesEntities[srcIndex];
 
@@ -146,7 +146,7 @@ void BodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
 }
 
 // Swap two components in the array
-void BodyComponents::swapComponents(uint32 index1, uint32 index2) {
+void CollisionBodyComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Copy component 1 data
     Entity entity1(mBodiesEntities[index1]);
@@ -181,7 +181,7 @@ void BodyComponents::swapComponents(uint32 index1, uint32 index2) {
 }
 
 // Destroy a component at a given index
-void BodyComponents::destroyComponent(uint32 index) {
+void CollisionBodyComponents::destroyComponent(uint32 index) {
 
     Components::destroyComponent(index);
 

@@ -40,12 +40,12 @@ class MemoryAllocator;
 class EntityManager;
 class CollisionBody;
 
-// Class BodyComponents
+// Class CollisionBodyComponents
 /**
- * This class represent the component of the ECS that contains data about a physics body.
+ * This class represent the component of the ECS that contains data about a collision body.
  * The components of the sleeping entities (bodies) are always stored at the end of the array.
  */
-class BodyComponents : public Components {
+class CollisionBodyComponents : public Components {
 
     private:
 
@@ -105,10 +105,10 @@ class BodyComponents : public Components {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BodyComponents(MemoryAllocator& allocator);
+        CollisionBodyComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~BodyComponents() override = default;
+        virtual ~CollisionBodyComponents() override = default;
 
         /// Add a component
         void addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component);
@@ -157,7 +157,7 @@ class BodyComponents : public Components {
 };
 
 // Add a proxy-shape to a body component
-inline void BodyComponents::addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity) {
+inline void CollisionBodyComponents::addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -165,7 +165,7 @@ inline void BodyComponents::addProxyShapeToBody(Entity bodyEntity, Entity proxyS
 }
 
 // Set the transform of an entity
-inline void BodyComponents::removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity) {
+inline void CollisionBodyComponents::removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -173,7 +173,7 @@ inline void BodyComponents::removeProxyShapeFromBody(Entity bodyEntity, Entity p
 }
 
 // Return a pointer to a body
-inline CollisionBody *BodyComponents::getBody(Entity bodyEntity) {
+inline CollisionBody *CollisionBodyComponents::getBody(Entity bodyEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -181,7 +181,7 @@ inline CollisionBody *BodyComponents::getBody(Entity bodyEntity) {
 }
 
 // Return the list of proxy-shapes of a body
-inline const List<Entity>& BodyComponents::getProxyShapes(Entity bodyEntity) const {
+inline const List<Entity>& CollisionBodyComponents::getProxyShapes(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -189,7 +189,7 @@ inline const List<Entity>& BodyComponents::getProxyShapes(Entity bodyEntity) con
 }
 
 // Return true if the body is allowed to sleep
-inline bool BodyComponents::getIsAllowedToSleep(Entity bodyEntity) const {
+inline bool CollisionBodyComponents::getIsAllowedToSleep(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -197,7 +197,7 @@ inline bool BodyComponents::getIsAllowedToSleep(Entity bodyEntity) const {
 }
 
 // Set the value to know if the body is allowed to sleep
-inline void BodyComponents::setIsAllowedToSleep(Entity bodyEntity, bool isAllowedToSleep) const {
+inline void CollisionBodyComponents::setIsAllowedToSleep(Entity bodyEntity, bool isAllowedToSleep) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -205,7 +205,7 @@ inline void BodyComponents::setIsAllowedToSleep(Entity bodyEntity, bool isAllowe
 }
 
 // Return true if the body is active
-inline bool BodyComponents::getIsActive(Entity bodyEntity) const {
+inline bool CollisionBodyComponents::getIsActive(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -213,7 +213,7 @@ inline bool BodyComponents::getIsActive(Entity bodyEntity) const {
 }
 
 // Set the value to know if the body is active
-inline void BodyComponents::setIsActive(Entity bodyEntity, bool isActive) const {
+inline void CollisionBodyComponents::setIsActive(Entity bodyEntity, bool isActive) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -221,7 +221,7 @@ inline void BodyComponents::setIsActive(Entity bodyEntity, bool isActive) const 
 }
 
 // Return true if the body is sleeping
-inline bool BodyComponents::getIsSleeping(Entity bodyEntity) const {
+inline bool CollisionBodyComponents::getIsSleeping(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -229,7 +229,7 @@ inline bool BodyComponents::getIsSleeping(Entity bodyEntity) const {
 }
 
 // Set the value to know if the body is sleeping
-inline void BodyComponents::setIsSleeping(Entity bodyEntity, bool isSleeping) const {
+inline void CollisionBodyComponents::setIsSleeping(Entity bodyEntity, bool isSleeping) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -237,7 +237,7 @@ inline void BodyComponents::setIsSleeping(Entity bodyEntity, bool isSleeping) co
 }
 
 // Return the sleep time
-inline decimal BodyComponents::getSleepTime(Entity bodyEntity) const {
+inline decimal CollisionBodyComponents::getSleepTime(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -245,7 +245,7 @@ inline decimal BodyComponents::getSleepTime(Entity bodyEntity) const {
 }
 
 // Set the sleep time
-inline void BodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTime) const {
+inline void CollisionBodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTime) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -253,7 +253,7 @@ inline void BodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTime) c
 }
 
 // Return the user data associated with the body
-inline void* BodyComponents::getUserData(Entity bodyEntity) const {
+inline void* CollisionBodyComponents::getUserData(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -261,7 +261,7 @@ inline void* BodyComponents::getUserData(Entity bodyEntity) const {
 }
 
 // Set the user data associated with the body
-inline void BodyComponents::setUserData(Entity bodyEntity, void* userData) const {
+inline void CollisionBodyComponents::setUserData(Entity bodyEntity, void* userData) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
