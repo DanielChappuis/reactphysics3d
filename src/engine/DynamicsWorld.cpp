@@ -50,7 +50,7 @@ using namespace std;
 DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
               : CollisionWorld(worldSettings, logger, profiler),
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
-                mContactSolver(mMemoryManager, mIslands, mBodyComponents, mDynamicsComponents, mProxyShapesComponents, mConfig),
+                mContactSolver(mMemoryManager, mIslands, mCollisionBodyComponents, mDynamicsComponents, mProxyShapesComponents, mConfig),
                 mConstraintSolver(mIslands, mDynamicsComponents),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
@@ -384,8 +384,11 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
                                      sizeof(RigidBody))) RigidBody(transform, *this, entity);
     assert(rigidBody != nullptr);
 
-    CollisionBodyComponents::BodyComponent bodyComponent(rigidBody);
-    mBodyComponents.addComponent(entity, false, bodyComponent);
+    CollisionBodyComponents::CollisionBodyComponent bodyComponent(rigidBody);
+    mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
+
+    RigidBodyComponents::RigidBodyComponent rigidBodyComponent(rigidBody);
+    mRigidBodyComponents.addComponent(entity, false, rigidBodyComponent);
 
     // Add the rigid body to the physics world
     mBodies.add(rigidBody);
@@ -425,7 +428,8 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     }
 
     // Destroy the corresponding entity and its components
-    mBodyComponents.removeComponent(rigidBody->getEntity());
+    mCollisionBodyComponents.removeComponent(rigidBody->getEntity());
+    mRigidBodyComponents.removeComponent(rigidBody->getEntity());
     mTransformComponents.removeComponent(rigidBody->getEntity());
     mEntityManager.destroyEntity(rigidBody->getEntity());
 
@@ -678,7 +682,7 @@ void DynamicsWorld::createIslands() {
             mIslands.bodyEntities[islandIndex].add(bodyToVisitEntity);
 
             // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
-            RigidBody* rigidBodyToVisit = static_cast<RigidBody*>(mBodyComponents.getBody(bodyToVisitEntity));
+            RigidBody* rigidBodyToVisit = static_cast<RigidBody*>(mCollisionBodyComponents.getBody(bodyToVisitEntity));
 
             // Awake the body if it is sleeping
             rigidBodyToVisit->setIsSleeping(false);
@@ -703,8 +707,8 @@ void DynamicsWorld::createIslands() {
 
                     // Get the other body of the contact manifold
                     // TODO : Maybe avoid those casts here
-                    RigidBody* body1 = dynamic_cast<RigidBody*>(mBodyComponents.getBody(pair.body1Entity));
-                    RigidBody* body2 = dynamic_cast<RigidBody*>(mBodyComponents.getBody(pair.body2Entity));
+                    RigidBody* body1 = dynamic_cast<RigidBody*>(mCollisionBodyComponents.getBody(pair.body1Entity));
+                    RigidBody* body2 = dynamic_cast<RigidBody*>(mCollisionBodyComponents.getBody(pair.body2Entity));
 
                     // If the colliding body is a RigidBody (and not a CollisionBody instead)
                     if (body1 != nullptr && body2 != nullptr) {
@@ -801,8 +805,7 @@ void DynamicsWorld::updateSleepingBodies() {
 
             const Entity bodyEntity = mIslands.bodyEntities[i][b];
 
-            // TODO : We should use a RigidBody* type here
-            CollisionBody* body = mBodyComponents.getBody(bodyEntity);
+            RigidBody* body = mRigidBodyComponents.getRigidBody(bodyEntity);
 
             // Skip static bodies
             if (mDynamicsComponents.getBodyType(body->getEntity()) == BodyType::STATIC) continue;
@@ -810,18 +813,18 @@ void DynamicsWorld::updateSleepingBodies() {
             // If the body is velocity is large enough to stay awake
             if (mDynamicsComponents.getLinearVelocity(bodyEntity).lengthSquare() > sleepLinearVelocitySquare ||
                 mDynamicsComponents.getAngularVelocity(bodyEntity).lengthSquare() > sleepAngularVelocitySquare ||
-                !mBodyComponents.getIsAllowedToSleep(body->getEntity())) {
+                !mRigidBodyComponents.getIsAllowedToSleep(body->getEntity())) {
 
                 // Reset the sleep time of the body
-                mBodyComponents.setSleepTime(body->getEntity(), decimal(0.0));
+                mRigidBodyComponents.setSleepTime(body->getEntity(), decimal(0.0));
                 minSleepTime = decimal(0.0);
             }
             else {  // If the body velocity is below the sleeping velocity threshold
 
                 // Increase the sleep time
-                decimal sleepTime = mBodyComponents.getSleepTime(body->getEntity());
-                mBodyComponents.setSleepTime(body->getEntity(), sleepTime + mTimeStep);
-                sleepTime = mBodyComponents.getSleepTime(body->getEntity());
+                decimal sleepTime = mRigidBodyComponents.getSleepTime(body->getEntity());
+                mRigidBodyComponents.setSleepTime(body->getEntity(), sleepTime + mTimeStep);
+                sleepTime = mRigidBodyComponents.getSleepTime(body->getEntity());
                 if (sleepTime < minSleepTime) {
                     minSleepTime = sleepTime;
                 }
@@ -838,7 +841,7 @@ void DynamicsWorld::updateSleepingBodies() {
 
                 // TODO : We should use a RigidBody* type here (remove the cast)
                 const Entity bodyEntity = mIslands.bodyEntities[i][b];
-                RigidBody* body = static_cast<RigidBody*>(mBodyComponents.getBody(bodyEntity));
+                RigidBody* body = static_cast<RigidBody*>(mCollisionBodyComponents.getBody(bodyEntity));
                 body->setIsSleeping(true);
             }
         }

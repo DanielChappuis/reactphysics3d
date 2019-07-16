@@ -171,7 +171,7 @@ void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
     if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
-    if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
         setIsSleeping(false);
     }
 
@@ -223,7 +223,7 @@ void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
     if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
-    if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
         setIsSleeping(false);
     }
 
@@ -408,10 +408,10 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, mass, 0x0001, 0xFFFF);
-    bool isSleeping = mWorld.mBodyComponents.getIsSleeping(mEntity);
+    bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
     mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, isSleeping, proxyShapeComponent);
 
-    mWorld.mBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
+    mWorld.mCollisionBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -626,7 +626,7 @@ void RigidBody::recomputeMassInformation() {
     assert(mWorld.mDynamicsComponents.getBodyType(mEntity) == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
-    const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
+    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
         ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
         mWorld.mDynamicsComponents.setInitMass(mEntity, mWorld.mDynamicsComponents.getInitMass(mEntity) + proxyShape->getMass());
@@ -657,7 +657,7 @@ void RigidBody::recomputeMassInformation() {
     if (!mIsInertiaTensorSetByUser) {
 
         // Compute the inertia tensor using all the collision shapes
-        const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
+        const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
         for (uint i=0; i < proxyShapesEntities.size(); i++) {
 
             ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
@@ -739,7 +739,7 @@ void RigidBody::applyTorque(const Vector3& torque) {
     if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
-    if (mWorld.mBodyComponents.getIsSleeping(mEntity)) {
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
         setIsSleeping(false);
     }
 
@@ -751,26 +751,26 @@ void RigidBody::applyTorque(const Vector3& torque) {
 // Set the variable to know whether or not the body is sleeping
 void RigidBody::setIsSleeping(bool isSleeping) {
 
-    bool isBodySleeping = mWorld.mBodyComponents.getIsSleeping(mEntity);
+    bool isBodySleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
 
     if (isBodySleeping == isSleeping) return;
 
     // If the body is not active, do nothing (it is sleeping)
-    if (!mWorld.mBodyComponents.getIsActive(mEntity)) {
+    if (!mWorld.mCollisionBodyComponents.getIsActive(mEntity)) {
         assert(isBodySleeping);
         return;
     }
 
     if (isSleeping) {
-        mWorld.mBodyComponents.setSleepTime(mEntity, decimal(0.0));
+        mWorld.mRigidBodyComponents.setSleepTime(mEntity, decimal(0.0));
     }
     else {
         if (isBodySleeping) {
-            mWorld.mBodyComponents.setSleepTime(mEntity, decimal(0.0));
+            mWorld.mRigidBodyComponents.setSleepTime(mEntity, decimal(0.0));
         }
     }
 
-    mWorld.mBodyComponents.setIsSleeping(mEntity, isSleeping);
+    mWorld.mRigidBodyComponents.setIsSleeping(mEntity, isSleeping);
 
     // Notify all the components
     mWorld.notifyBodyDisabled(mEntity, isSleeping);
@@ -795,7 +795,7 @@ void RigidBody::setIsSleeping(bool isSleeping) {
  */
 void RigidBody::setIsAllowedToSleep(bool isAllowedToSleep) {
 
-    mWorld.mBodyComponents.setIsAllowedToSleep(mEntity, isAllowedToSleep);
+    mWorld.mRigidBodyComponents.setIsAllowedToSleep(mEntity, isAllowedToSleep);
 
     if (!isAllowedToSleep) setIsSleeping(false);
 
@@ -809,7 +809,7 @@ void RigidBody::setIsAllowedToSleep(bool isAllowedToSleep) {
  * @return True if the body is allowed to sleep and false otherwise
  */
 bool RigidBody::isAllowedToSleep() const {
-    return mWorld.mBodyComponents.getIsAllowedToSleep(mEntity);
+    return mWorld.mRigidBodyComponents.getIsAllowedToSleep(mEntity);
 }
 
 // Return whether or not the body is sleeping
@@ -817,7 +817,7 @@ bool RigidBody::isAllowedToSleep() const {
  * @return True if the body is currently sleeping and false otherwise
  */
 bool RigidBody::isSleeping() const {
-    return mWorld.mBodyComponents.getIsSleeping(mEntity);
+    return mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
 }
 
 // Set whether or not the body is active
@@ -827,7 +827,7 @@ bool RigidBody::isSleeping() const {
 void RigidBody::setIsActive(bool isActive) {
 
     // If the state does not change
-    if (mWorld.mBodyComponents.getIsActive(mEntity) == isActive) return;
+    if (mWorld.mCollisionBodyComponents.getIsActive(mEntity) == isActive) return;
 
     setIsSleeping(!isActive);
 
@@ -842,7 +842,7 @@ void RigidBody::setProfiler(Profiler* profiler) {
 	CollisionBody::setProfiler(profiler);
 
 	// Set the profiler for each proxy shape
-    const List<Entity>& proxyShapesEntities = mWorld.mBodyComponents.getProxyShapes(mEntity);
+    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
 
         ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);

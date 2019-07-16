@@ -140,12 +140,10 @@ void Sphere::render(openglframework::Shader& shader, const openglframework::Matr
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    rp3d::RigidBody* rigidBody = static_cast<rp3d::RigidBody*>(mBody);
-    if (rigidBody != nullptr) {
-        openglframework::Color currentColor = rigidBody->isSleeping() ? mSleepingColor : mColor;
-        openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-        shader.setVector4Uniform("vertexColor", color, false);
-    }
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
+    openglframework::Color currentColor = rigidBody != nullptr && rigidBody->isSleeping() ? mSleepingColor : mColor;
+    openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
+    shader.setVector4Uniform("vertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();

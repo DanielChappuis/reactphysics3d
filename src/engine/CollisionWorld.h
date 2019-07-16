@@ -34,6 +34,7 @@
 #include "memory/MemoryManager.h"
 #include "engine/EntityManager.h"
 #include "components/CollisionBodyComponents.h"
+#include "components/RigidBodyComponents.h"
 #include "components/TransformComponents.h"
 #include "components/ProxyShapeComponents.h"
 #include "components/DynamicsComponents.h"
@@ -76,8 +77,11 @@ class CollisionWorld {
         /// Entity Manager for the ECS
         EntityManager mEntityManager;
 
-        /// Body Components
-        CollisionBodyComponents mBodyComponents;
+        /// Collision Body Components
+        CollisionBodyComponents mCollisionBodyComponents;
+
+        /// Rigid Body Components
+        RigidBodyComponents mRigidBodyComponents;
 
         /// Transform Components
         TransformComponents mTransformComponents;

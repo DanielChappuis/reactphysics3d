@@ -243,8 +243,8 @@ void CollisionDetection::computeMiddlePhase(OverlappingPairMap& overlappingPairs
                                             mWorld->mDynamicsComponents.getBodyType(body2Entity) == BodyType::STATIC;
 
             // Check that at least one body is enabled (active and awake) and not static
-            bool isBody1Active = !mWorld->mBodyComponents.getIsEntityDisabled(body1Entity) && !isStaticRigidBody1;
-            bool isBody2Active = !mWorld->mBodyComponents.getIsEntityDisabled(body2Entity) && !isStaticRigidBody2;
+            bool isBody1Active = !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) && !isStaticRigidBody1;
+            bool isBody2Active = !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity) && !isStaticRigidBody2;
             if (!isBody1Active && !isBody2Active) continue;
 
             // Check if the bodies are in the set of bodies that cannot collide between each other
@@ -932,7 +932,7 @@ void CollisionDetection::processPotentialContacts(NarrowPhaseInfoBatch& narrowPh
                     Entity body1Entity = narrowPhaseInfoBatch.overlappingPairs[i]->getShape1()->getBody()->getEntity();
                     Entity body2Entity = narrowPhaseInfoBatch.overlappingPairs[i]->getShape2()->getBody()->getEntity();
 
-                    assert(!mWorld->mBodyComponents.getIsEntityDisabled(body1Entity) || !mWorld->mBodyComponents.getIsEntityDisabled(body2Entity));
+                    assert(!mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) || !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity));
 
                     // TODO : We should probably use a single frame allocator here
                     const uint newContactPairIndex = contactPairs->size();

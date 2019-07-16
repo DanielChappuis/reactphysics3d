@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_COLLISION_BODY_COMPONENTS_H
-#define REACTPHYSICS3D_COLLISION_BODY_COMPONENTS_H
+#ifndef REACTPHYSICS3D_RIGID_BODY_COMPONENTS_H
+#define REACTPHYSICS3D_RIGID_BODY_COMPONENTS_H
 
 // Libraries
 #include "mathematics/Transform.h"
@@ -38,14 +38,14 @@ namespace reactphysics3d {
 // Class declarations
 class MemoryAllocator;
 class EntityManager;
-class CollisionBody;
+class RigidBody;
 
-// Class CollisionBodyComponents
+// Class RigidBodyComponents
 /**
- * This class represent the component of the ECS that contains data about a collision body.
+ * This class represent the component of the ECS that contains data about a rigid body.
  * The components of the sleeping entities (bodies) are always stored at the end of the array.
  */
-class CollisionBodyComponents : public Components {
+class RigidBodyComponents : public Components {
 
     private:
 
@@ -54,17 +54,17 @@ class CollisionBodyComponents : public Components {
         /// Array of body entities of each component
         Entity* mBodiesEntities;
 
-        /// Array of pointers to the corresponding bodies
-        CollisionBody** mBodies;
+        /// Array of pointers to the corresponding rigid bodies
+        RigidBody** mRigidBodies;
 
-        /// Array with the list of proxy-shapes of each body
-        List<Entity>* mProxyShapes;
+        /// Array of boolean values to know if the body is allowed to go to sleep
+        bool* mIsAllowedToSleep;
 
-        /// Array of boolean values to know if the body is active.
-        bool* mIsActive;
+        /// Array of boolean values to know if the body is sleeping
+        bool* mIsSleeping;
 
-        /// Array of pointers that can be used to attach user data to the body
-        void** mUserData;
+        /// Array with values for elapsed time since the body velocity was below the sleep velocity
+        decimal* mSleepTimes;
 
         // -------------------- Methods -------------------- //
 
@@ -82,13 +82,13 @@ class CollisionBodyComponents : public Components {
 
     public:
 
-        /// Structure for the data of a collision body component
-        struct CollisionBodyComponent {
+        /// Structure for the data of a rigid body component
+        struct RigidBodyComponent {
 
-            CollisionBody* body;
+            RigidBody* body;
 
             /// Constructor
-            CollisionBodyComponent(CollisionBody* body) : body(body) {
+            RigidBodyComponent(RigidBody* body) : body(body) {
 
             }
         };
@@ -96,101 +96,90 @@ class CollisionBodyComponents : public Components {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionBodyComponents(MemoryAllocator& allocator);
+        RigidBodyComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~CollisionBodyComponents() override = default;
+        virtual ~RigidBodyComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity bodyEntity, bool isSleeping, const CollisionBodyComponent& component);
+        void addComponent(Entity bodyEntity, bool isSleeping, const RigidBodyComponent& component);
 
-        /// Add a proxy-shape to a body component
-        void addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity);
+        /// Return a pointer to a rigid body
+        RigidBody* getRigidBody(Entity bodyEntity);
 
-        /// Set the transform of an entity
-        void removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity);
+        /// Return true if the body is allowed to sleep
+        bool getIsAllowedToSleep(Entity bodyEntity) const;
 
-        /// Return a pointer to a body
-        CollisionBody* getBody(Entity bodyEntity);
+        /// Set the value to know if the body is allowed to sleep
+        void setIsAllowedToSleep(Entity bodyEntity, bool isAllowedToSleep) const;
 
-        /// Return the list of proxy-shapes of a body
-        const List<Entity>& getProxyShapes(Entity bodyEntity) const;
+        /// Return true if the body is sleeping
+        bool getIsSleeping(Entity bodyEntity) const;
 
-        /// Return true if the body is active
-        bool getIsActive(Entity bodyEntity) const;
+        /// Set the value to know if the body is sleeping
+        void setIsSleeping(Entity bodyEntity, bool isSleeping) const;
 
-        /// Set the value to know if the body is active
-        void setIsActive(Entity bodyEntity, bool isActive) const;
+        /// Return the sleep time
+        decimal getSleepTime(Entity bodyEntity) const;
 
-        /// Return the user data associated with the body
-        void* getUserData(Entity bodyEntity) const;
-
-        /// Set the user data associated with the body
-        void setUserData(Entity bodyEntity, void* userData) const;
+        /// Set the sleep time
+        void setSleepTime(Entity bodyEntity, decimal sleepTime) const;
 };
 
-// Add a proxy-shape to a body component
-inline void CollisionBodyComponents::addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity) {
+// Return a pointer to a body rigid
+inline RigidBody* RigidBodyComponents::getRigidBody(Entity bodyEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    mProxyShapes[mMapEntityToComponentIndex[bodyEntity]].add(proxyShapeEntity);
+    return mRigidBodies[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Set the transform of an entity
-inline void CollisionBodyComponents::removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity) {
+// Return true if the body is allowed to sleep
+inline bool RigidBodyComponents::getIsAllowedToSleep(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    mProxyShapes[mMapEntityToComponentIndex[bodyEntity]].remove(proxyShapeEntity);
+    return mIsAllowedToSleep[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Return a pointer to a body
-inline CollisionBody *CollisionBodyComponents::getBody(Entity bodyEntity) {
+// Set the value to know if the body is allowed to sleep
+inline void RigidBodyComponents::setIsAllowedToSleep(Entity bodyEntity, bool isAllowedToSleep) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    return mBodies[mMapEntityToComponentIndex[bodyEntity]];
+    mIsAllowedToSleep[mMapEntityToComponentIndex[bodyEntity]] = isAllowedToSleep;
 }
 
-// Return the list of proxy-shapes of a body
-inline const List<Entity>& CollisionBodyComponents::getProxyShapes(Entity bodyEntity) const {
+// Return true if the body is sleeping
+inline bool RigidBodyComponents::getIsSleeping(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    return mProxyShapes[mMapEntityToComponentIndex[bodyEntity]];
+    return mIsSleeping[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Return true if the body is active
-inline bool CollisionBodyComponents::getIsActive(Entity bodyEntity) const {
+// Set the value to know if the body is sleeping
+inline void RigidBodyComponents::setIsSleeping(Entity bodyEntity, bool isSleeping) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    return mIsActive[mMapEntityToComponentIndex[bodyEntity]];
+    mIsSleeping[mMapEntityToComponentIndex[bodyEntity]] = isSleeping;
 }
 
-// Set the value to know if the body is active
-inline void CollisionBodyComponents::setIsActive(Entity bodyEntity, bool isActive) const {
+// Return the sleep time
+inline decimal RigidBodyComponents::getSleepTime(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    mIsActive[mMapEntityToComponentIndex[bodyEntity]] = isActive;
+    return mSleepTimes[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Return the user data associated with the body
-inline void* CollisionBodyComponents::getUserData(Entity bodyEntity) const {
+// Set the sleep time
+inline void RigidBodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTime) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    return mUserData[mMapEntityToComponentIndex[bodyEntity]];
-}
-
-// Set the user data associated with the body
-inline void CollisionBodyComponents::setUserData(Entity bodyEntity, void* userData) const {
-
-    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-    mUserData[mMapEntityToComponentIndex[bodyEntity]] = userData;
+    mSleepTimes[mMapEntityToComponentIndex[bodyEntity]] = sleepTime;
 }
 
 }

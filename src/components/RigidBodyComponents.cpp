@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "CollisionBodyComponents.h"
+#include "RigidBodyComponents.h"
 #include "engine/EntityManager.h"
 #include <cassert>
 #include <random>
@@ -33,16 +33,16 @@
 using namespace reactphysics3d;
 
 // Constructor
-CollisionBodyComponents::CollisionBodyComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(CollisionBody*) + sizeof(List<Entity>) +
-                                sizeof(bool) + sizeof(void*)) {
+RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
+                    :Components(allocator, sizeof(Entity) + sizeof(RigidBody*) +
+                                sizeof(bool) + sizeof(bool) + sizeof(decimal) ) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Allocate memory for a given number of components
-void CollisionBodyComponents::allocate(uint32 nbComponentsToAllocate) {
+void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
 
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
@@ -55,20 +55,20 @@ void CollisionBodyComponents::allocate(uint32 nbComponentsToAllocate) {
 
     // New pointers to components data
     Entity* newBodiesEntities = static_cast<Entity*>(newBuffer);
-    CollisionBody** newBodies = reinterpret_cast<CollisionBody**>(newBodiesEntities + nbComponentsToAllocate);
-    List<Entity>* newProxyShapes = reinterpret_cast<List<Entity>*>(newBodies + nbComponentsToAllocate);
-    bool* newIsActive = reinterpret_cast<bool*>(newProxyShapes + nbComponentsToAllocate);
-    void** newUserData = reinterpret_cast<void**>(newIsActive + nbComponentsToAllocate);
+    RigidBody** newBodies = reinterpret_cast<RigidBody**>(newBodiesEntities + nbComponentsToAllocate);
+    bool* newIsAllowedToSleep = reinterpret_cast<bool*>(newBodies + nbComponentsToAllocate);
+    bool* newIsSleeping = reinterpret_cast<bool*>(newIsAllowedToSleep + nbComponentsToAllocate);
+    decimal* newSleepTimes = reinterpret_cast<decimal*>(newIsSleeping + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
 
         // Copy component data from the previous buffer to the new one
         memcpy(newBodiesEntities, mBodiesEntities, mNbComponents * sizeof(Entity));
-        memcpy(newBodies, mBodies, mNbComponents * sizeof(CollisionBody*));
-        memcpy(newProxyShapes, mProxyShapes, mNbComponents * sizeof(List<Entity>));
-        memcpy(newIsActive, mIsActive, mNbComponents * sizeof(bool));
-        memcpy(newUserData, mUserData, mNbComponents * sizeof(void*));
+        memcpy(newBodies, mRigidBodies, mNbComponents * sizeof(RigidBody*));
+        memcpy(newIsAllowedToSleep, mIsAllowedToSleep, mNbComponents * sizeof(bool));
+        memcpy(newIsSleeping, mIsSleeping, mNbComponents * sizeof(bool));
+        memcpy(newSleepTimes, mSleepTimes, mNbComponents * sizeof(bool));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -76,25 +76,25 @@ void CollisionBodyComponents::allocate(uint32 nbComponentsToAllocate) {
 
     mBuffer = newBuffer;
     mBodiesEntities = newBodiesEntities;
-    mBodies = newBodies;
-    mProxyShapes = newProxyShapes;
-    mIsActive = newIsActive;
-    mUserData = newUserData;
+    mRigidBodies = newBodies;
+    mIsAllowedToSleep = newIsAllowedToSleep;
+    mIsSleeping = newIsSleeping;
+    mSleepTimes = newSleepTimes;
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
 
 // Add a component
-void CollisionBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const CollisionBodyComponent& component) {
+void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const RigidBodyComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
     uint32 index = prepareAddComponent(isSleeping);
 
     // Insert the new component data
     new (mBodiesEntities + index) Entity(bodyEntity);
-    mBodies[index] = component.body;
-    new (mProxyShapes + index) List<Entity>(mMemoryAllocator);
-    mIsActive[index] = true;
-    mUserData[index] = nullptr;
+    mRigidBodies[index] = component.body;
+    mIsAllowedToSleep[index] = true;
+    mIsSleeping[index] = false;
+    mSleepTimes[index] = decimal(0);
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(bodyEntity, index));
@@ -107,16 +107,16 @@ void CollisionBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, c
 
 // Move a component from a source to a destination index in the components array
 // The destination location must contain a constructed object
-void CollisionBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
+void RigidBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
 
     const Entity entity = mBodiesEntities[srcIndex];
 
     // Copy the data of the source component to the destination location
     new (mBodiesEntities + destIndex) Entity(mBodiesEntities[srcIndex]);
-    mBodies[destIndex] = mBodies[srcIndex];
-    new (mProxyShapes + destIndex) List<Entity>(mProxyShapes[srcIndex]);
-    mIsActive[destIndex] = mIsActive[srcIndex];
-    mUserData[destIndex] = mUserData[srcIndex];
+    mRigidBodies[destIndex] = mRigidBodies[srcIndex];
+    mIsAllowedToSleep[destIndex] = mIsAllowedToSleep[srcIndex];
+    mIsSleeping[destIndex] = mIsSleeping[srcIndex];
+    mSleepTimes[destIndex] = mSleepTimes[srcIndex];
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -130,14 +130,14 @@ void CollisionBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destI
 }
 
 // Swap two components in the array
-void CollisionBodyComponents::swapComponents(uint32 index1, uint32 index2) {
+void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Copy component 1 data
     Entity entity1(mBodiesEntities[index1]);
-    CollisionBody* body1 = mBodies[index1];
-    List<Entity> proxyShapes1(mProxyShapes[index1]);
-    bool isActive1 = mIsActive[index1];
-    void* userData1 = mUserData[index1];
+    RigidBody* body1 = mRigidBodies[index1];
+    bool isAllowedToSleep1 = mIsAllowedToSleep[index1];
+    bool isSleeping1 = mIsSleeping[index1];
+    decimal sleepTime1 = mSleepTimes[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -146,10 +146,10 @@ void CollisionBodyComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Reconstruct component 1 at component 2 location
     new (mBodiesEntities + index2) Entity(entity1);
-    new (mProxyShapes + index2) List<Entity>(proxyShapes1);
-    mBodies[index2] = body1;
-    mIsActive[index2] = isActive1;
-    mUserData[index2] = userData1;
+    mRigidBodies[index2] = body1;
+    mIsAllowedToSleep[index2] = isAllowedToSleep1;
+    mIsSleeping[index2] = isSleeping1;
+    mSleepTimes[index2] = sleepTime1;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity1, index2));
@@ -160,7 +160,7 @@ void CollisionBodyComponents::swapComponents(uint32 index1, uint32 index2) {
 }
 
 // Destroy a component at a given index
-void CollisionBodyComponents::destroyComponent(uint32 index) {
+void RigidBodyComponents::destroyComponent(uint32 index) {
 
     Components::destroyComponent(index);
 
@@ -169,7 +169,5 @@ void CollisionBodyComponents::destroyComponent(uint32 index) {
     mMapEntityToComponentIndex.remove(mBodiesEntities[index]);
 
     mBodiesEntities[index].~Entity();
-    mBodies[index] = nullptr;
-    mProxyShapes[index].~List<Entity>();
-    mUserData[index] = nullptr;
+    mRigidBodies[index] = nullptr;
 }

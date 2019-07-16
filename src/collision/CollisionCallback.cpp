@@ -47,12 +47,12 @@ CollisionCallback::ContactPair::ContactPair(const reactphysics3d::ContactPair& c
 
 // Return a pointer to the first body in contact
 CollisionBody* CollisionCallback::ContactPair::getBody1() const {
-    return static_cast<CollisionBody*>(mWorld.mBodyComponents.getBody(mContactPair.body1Entity));
+    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mContactPair.body1Entity));
 }
 
 // Return a pointer to the second body in contact
 CollisionBody* CollisionCallback::ContactPair::getBody2() const {
-    return static_cast<CollisionBody*>(mWorld.mBodyComponents.getBody(mContactPair.body2Entity));
+    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mContactPair.body2Entity));
 }
 
 // Return a pointer to the first proxy-shape in contact (in body 1)

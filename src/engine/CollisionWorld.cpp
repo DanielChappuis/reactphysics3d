@@ -38,8 +38,9 @@ uint CollisionWorld::mNbWorlds = 0;
 // Constructor
 CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
                : mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
-                 mBodyComponents(mMemoryManager.getBaseAllocator()), mTransformComponents(mMemoryManager.getBaseAllocator()),
-                 mProxyShapesComponents(mMemoryManager.getBaseAllocator()), mDynamicsComponents(mMemoryManager.getBaseAllocator()),
+                 mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
+                 mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
+                 mDynamicsComponents(mMemoryManager.getBaseAllocator()),
                  mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mDynamicsComponents, mMemoryManager),
                  mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
@@ -132,7 +133,7 @@ CollisionWorld::~CollisionWorld() {
 #endif
 
     assert(mBodies.size() == 0);
-    assert(mBodyComponents.getNbComponents() == 0);
+    assert(mCollisionBodyComponents.getNbComponents() == 0);
     assert(mTransformComponents.getNbComponents() == 0);
     assert(mProxyShapesComponents.getNbComponents() == 0);
 }
@@ -157,8 +158,8 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
     assert(collisionBody != nullptr);
 
     // Add the components
-    CollisionBodyComponents::BodyComponent bodyComponent(collisionBody);
-    mBodyComponents.addComponent(entity, false, bodyComponent);
+    CollisionBodyComponents::CollisionBodyComponent bodyComponent(collisionBody);
+    mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
 
     // Add the collision body to the world
     mBodies.add(collisionBody);
@@ -192,7 +193,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Remove all the collision shapes of the body
     collisionBody->removeAllCollisionShapes();
 
-    mBodyComponents.removeComponent(collisionBody->getEntity());
+    mCollisionBodyComponents.removeComponent(collisionBody->getEntity());
     mTransformComponents.removeComponent(collisionBody->getEntity());
     mEntityManager.destroyEntity(collisionBody->getEntity());
 
@@ -209,12 +210,13 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 // Notify the world if a body is disabled (sleeping) or not
 void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
-    if (isDisabled == mBodyComponents.getIsEntityDisabled(bodyEntity)) return;
+    if (isDisabled == mCollisionBodyComponents.getIsEntityDisabled(bodyEntity)) return;
 
     // TODO : Make sure we notify all the components here ...
 
     // Notify all the components
-    mBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    mCollisionBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
     if (mDynamicsComponents.hasComponent(bodyEntity)) {
@@ -222,7 +224,7 @@ void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
     }
 
     // For each proxy-shape of the body
-    const List<Entity>& proxyShapesEntities = mBodyComponents.getProxyShapes(bodyEntity);
+    const List<Entity>& proxyShapesEntities = mCollisionBodyComponents.getProxyShapes(bodyEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
 
         mProxyShapesComponents.setIsEntityDisabled(proxyShapesEntities[i], isDisabled);

@@ -195,6 +195,8 @@ class RigidBody : public CollisionBody {
         virtual void setIsActive(bool isActive) override;
 
         /// Add a collision shape to the body.
+        // TODO : Remove the mass from this parameter so that we can correctly use inheritance here
+        //        The user will then need to call ProxyShape->setMass() to set the mass of the shape
         virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,
                                               const Transform& transform,
                                               decimal mass);

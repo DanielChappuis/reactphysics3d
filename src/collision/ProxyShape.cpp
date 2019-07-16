@@ -119,7 +119,7 @@ void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
     RigidBody* rigidBody = static_cast<RigidBody*>(mBody);
     if (rigidBody != nullptr) {
-        mBody->mWorld.mBodyComponents.setIsSleeping(mBody->getEntity(), false);
+        mBody->mWorld.mRigidBodyComponents.setIsSleeping(mBody->getEntity(), false);
     }
 
     mBody->mWorld.mCollisionDetection.updateProxyShape(mEntity);

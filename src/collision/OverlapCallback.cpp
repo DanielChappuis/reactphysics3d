@@ -38,12 +38,12 @@ OverlapCallback::OverlapPair::OverlapPair(Pair<Entity, Entity>& overlapPair, Col
 
 // Return a pointer to the first body in contact
 CollisionBody* OverlapCallback::OverlapPair::getBody1() const {
-    return static_cast<CollisionBody*>(mWorld.mBodyComponents.getBody(mOverlapPair.first));
+    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mOverlapPair.first));
 }
 
 // Return a pointer to the second body in contact
 CollisionBody* OverlapCallback::OverlapPair::getBody2() const {
-    return static_cast<CollisionBody*>(mWorld.mBodyComponents.getBody(mOverlapPair.second));
+    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mOverlapPair.second));
 }
 
 // CollisionCallbackData Constructor
