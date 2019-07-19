@@ -376,8 +376,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     Entity entity = mEntityManager.createEntity();
 
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
-    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(transform.getPosition(),
-                                                                                          BodyType::DYNAMIC));
+    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(transform.getPosition()));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
@@ -387,7 +386,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     CollisionBodyComponents::CollisionBodyComponent bodyComponent(rigidBody);
     mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
 
-    RigidBodyComponents::RigidBodyComponent rigidBodyComponent(rigidBody);
+    RigidBodyComponents::RigidBodyComponent rigidBodyComponent(rigidBody, BodyType::DYNAMIC);
     mRigidBodyComponents.addComponent(entity, false, rigidBodyComponent);
 
     // Add the rigid body to the physics world
@@ -660,7 +659,8 @@ void DynamicsWorld::createIslands() {
         if (mDynamicsComponents.mIsAlreadyInIsland[b]) continue;
 
         // If the body is static, we go to the next body
-        if (mDynamicsComponents.mBodyTypes[b] == BodyType::STATIC) continue;
+        // TODO : Check if we still need this test if we loop over dynamicsComponents and static bodies are not part of them
+        if (mRigidBodyComponents.getBodyType(mDynamicsComponents.mBodies[b]) == BodyType::STATIC) continue;
 
         // Reset the stack of bodies to visit
         bodyEntityIndicesToVisit.clear();
@@ -771,7 +771,7 @@ void DynamicsWorld::createIslands() {
         // can also be included in the other islands
         for (uint j=0; j < mDynamicsComponents.getNbEnabledComponents(); j++) {
 
-            if (mDynamicsComponents.mBodyTypes[j] == BodyType::STATIC) {
+            if (mRigidBodyComponents.getBodyType(mDynamicsComponents.mBodies[j]) == BodyType::STATIC) {
                 mDynamicsComponents.mIsAlreadyInIsland[j] = false;
             }
         }
@@ -808,7 +808,7 @@ void DynamicsWorld::updateSleepingBodies() {
             RigidBody* body = mRigidBodyComponents.getRigidBody(bodyEntity);
 
             // Skip static bodies
-            if (mDynamicsComponents.getBodyType(body->getEntity()) == BodyType::STATIC) continue;
+            if (mRigidBodyComponents.getBodyType(bodyEntity) == BodyType::STATIC) continue;
 
             // If the body is velocity is large enough to stay awake
             if (mDynamicsComponents.getLinearVelocity(bodyEntity).lengthSquare() > sleepLinearVelocitySquare ||

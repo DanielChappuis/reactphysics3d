@@ -126,9 +126,6 @@ class DynamicsComponents : public Components {
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
-        /// Array with the type of bodies (static, kinematic or dynamic)
-        BodyType* mBodyTypes;
-
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -150,11 +147,9 @@ class DynamicsComponents : public Components {
 
             const Vector3& worldPosition;
 
-            BodyType bodyType;
-
             /// Constructor
-            DynamicsComponent(const Vector3& worldPosition, BodyType bodyType)
-                : worldPosition(worldPosition), bodyType(bodyType) {
+            DynamicsComponent(const Vector3& worldPosition)
+                : worldPosition(worldPosition) {
 
             }
         };
@@ -289,12 +284,6 @@ class DynamicsComponents : public Components {
 
         /// Set the value to know if the entity is already in an island
         void setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
-
-        /// Return the body type of a body
-        BodyType getBodyType(Entity bodyEntity);
-
-        /// Set the body type of a body
-        void setBodyType(Entity bodyEntity, BodyType bodyType);
 
         // -------------------- Friendship -------------------- //
 
@@ -619,28 +608,12 @@ inline void DynamicsComponents::setIsGravityEnabled(Entity bodyEntity, bool isGr
    mIsGravityEnabled[mMapEntityToComponentIndex[bodyEntity]] = isGravityEnabled;
 }
 
-/// Set the value to know if the entity is already in an island
+// Set the value to know if the entity is already in an island
 inline void DynamicsComponents::setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]] = isAlreadyInIsland;
-}
-
-// Return the body type of a body
-inline BodyType DynamicsComponents::getBodyType(Entity bodyEntity) {
-
-   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   return mBodyTypes[mMapEntityToComponentIndex[bodyEntity]];
-}
-
-// Set the body type of a body
-inline void DynamicsComponents::setBodyType(Entity bodyEntity, BodyType bodyType) {
-
-   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   mBodyTypes[mMapEntityToComponentIndex[bodyEntity]] = bodyType;
 }
 
 }

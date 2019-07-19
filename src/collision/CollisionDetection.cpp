@@ -237,10 +237,10 @@ void CollisionDetection::computeMiddlePhase(OverlappingPairMap& overlappingPairs
             const Entity body1Entity = body1->getEntity();
             const Entity body2Entity = body2->getEntity();
 
-            const bool isStaticRigidBody1 = mWorld->mDynamicsComponents.hasComponent(body1Entity) &&
-                                            mWorld->mDynamicsComponents.getBodyType(body1Entity) == BodyType::STATIC;
-            const bool isStaticRigidBody2 = mWorld->mDynamicsComponents.hasComponent(body2Entity) &&
-                                            mWorld->mDynamicsComponents.getBodyType(body2Entity) == BodyType::STATIC;
+            const bool isStaticRigidBody1 = mWorld->mRigidBodyComponents.hasComponent(body1Entity) &&
+                                            mWorld->mRigidBodyComponents.getBodyType(body1Entity) == BodyType::STATIC;
+            const bool isStaticRigidBody2 = mWorld->mRigidBodyComponents.hasComponent(body2Entity) &&
+                                            mWorld->mRigidBodyComponents.getBodyType(body2Entity) == BodyType::STATIC;
 
             // Check that at least one body is enabled (active and awake) and not static
             bool isBody1Active = !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) && !isStaticRigidBody1;

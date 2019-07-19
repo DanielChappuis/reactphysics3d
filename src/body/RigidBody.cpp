@@ -57,7 +57,7 @@ RigidBody::~RigidBody() {
 
 // Return the type of the body
 BodyType RigidBody::getType() const {
-    return mWorld.mDynamicsComponents.getBodyType(mEntity);
+    return mWorld.mRigidBodyComponents.getBodyType(mEntity);
 }
 
 // Set the type of the body
@@ -75,9 +75,9 @@ BodyType RigidBody::getType() const {
  */
 void RigidBody::setType(BodyType type) {
 
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) == type) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == type) return;
 
-    mWorld.mDynamicsComponents.setBodyType(mEntity, type);
+    mWorld.mRigidBodyComponents.setBodyType(mEntity, type);
 
     // Recompute the total mass, center of mass and inertia tensor
     recomputeMassInformation();
@@ -168,7 +168,7 @@ decimal RigidBody::getMass() const {
 void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
@@ -197,7 +197,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
     mUserInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
     mIsInertiaTensorSetByUser = true;
 
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
     mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
@@ -220,7 +220,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
     // If it is not a dynamic body, we do nothing
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
@@ -260,7 +260,7 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
     mUserInertiaTensorLocalInverse = inverseInertiaTensorLocal;
     mIsInertiaTensorSetByUser = true;
 
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
     mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
@@ -283,7 +283,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
     // TODO : Check if we need to update the postion of the body here at the end (transform of the body)
 
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     mIsCenterOfMassSetByUser = true;
 
@@ -311,7 +311,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
  */
 void RigidBody::setMass(decimal mass) {
 
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     mWorld.mDynamicsComponents.setInitMass(mEntity, mass);
 
@@ -533,7 +533,7 @@ void RigidBody::setMaterial(const Material& material) {
 void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 
     // If it is a static body, we do nothing
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) == BodyType::STATIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
 
     // Update the linear velocity of the current body state
     mWorld.mDynamicsComponents.setLinearVelocity(mEntity, linearVelocity);
@@ -556,7 +556,7 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
     // TODO : Make sure this method is not called from the internal physics engine
 
     // If it is a static body, we do nothing
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) == BodyType::STATIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
 
     // Set the angular velocity
     mWorld.mDynamicsComponents.setAngularVelocity(mEntity, angularVelocity);
@@ -617,13 +617,13 @@ void RigidBody::recomputeMassInformation() {
     const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
 
     // If it is a STATIC or a KINEMATIC body
-    BodyType type = mWorld.mDynamicsComponents.getBodyType(mEntity);
+    BodyType type = mWorld.mRigidBodyComponents.getBodyType(mEntity);
     if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
         mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
         return;
     }
 
-    assert(mWorld.mDynamicsComponents.getBodyType(mEntity) == BodyType::DYNAMIC);
+    assert(mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
     const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
@@ -736,7 +736,7 @@ bool RigidBody::isGravityEnabled() const {
 void RigidBody::applyTorque(const Vector3& torque) {
 
     // If it is not a dynamic body, we do nothing
-    if (mWorld.mDynamicsComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Awake the body if it was sleeping
     if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {

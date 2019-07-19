@@ -39,6 +39,7 @@ namespace reactphysics3d {
 class MemoryAllocator;
 class EntityManager;
 class RigidBody;
+enum class BodyType;
 
 // Class RigidBodyComponents
 /**
@@ -66,6 +67,9 @@ class RigidBodyComponents : public Components {
         /// Array with values for elapsed time since the body velocity was below the sleep velocity
         decimal* mSleepTimes;
 
+        /// Array with the type of bodies (static, kinematic or dynamic)
+        BodyType* mBodyTypes;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -86,9 +90,10 @@ class RigidBodyComponents : public Components {
         struct RigidBodyComponent {
 
             RigidBody* body;
+            BodyType bodyType;
 
             /// Constructor
-            RigidBodyComponent(RigidBody* body) : body(body) {
+            RigidBodyComponent(RigidBody* body, BodyType bodyType) : body(body), bodyType(bodyType) {
 
             }
         };
@@ -124,6 +129,13 @@ class RigidBodyComponents : public Components {
 
         /// Set the sleep time
         void setSleepTime(Entity bodyEntity, decimal sleepTime) const;
+
+        /// Return the body type of a body
+        BodyType getBodyType(Entity bodyEntity);
+
+        /// Set the body type of a body
+        void setBodyType(Entity bodyEntity, BodyType bodyType);
+
 };
 
 // Return a pointer to a body rigid
@@ -181,6 +193,23 @@ inline void RigidBodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTi
 
     mSleepTimes[mMapEntityToComponentIndex[bodyEntity]] = sleepTime;
 }
+
+// Return the body type of a body
+inline BodyType RigidBodyComponents::getBodyType(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mBodyTypes[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the body type of a body
+inline void RigidBodyComponents::setBodyType(Entity bodyEntity, BodyType bodyType) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mBodyTypes[mMapEntityToComponentIndex[bodyEntity]] = bodyType;
+}
+
 
 }
 

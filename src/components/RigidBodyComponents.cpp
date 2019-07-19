@@ -26,6 +26,7 @@
 // Libraries
 #include "RigidBodyComponents.h"
 #include "engine/EntityManager.h"
+#include "body/RigidBody.h"
 #include <cassert>
 #include <random>
 
@@ -35,7 +36,7 @@ using namespace reactphysics3d;
 // Constructor
 RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(RigidBody*) +
-                                sizeof(bool) + sizeof(bool) + sizeof(decimal) ) {
+                                sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(BodyType)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -59,6 +60,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     bool* newIsAllowedToSleep = reinterpret_cast<bool*>(newBodies + nbComponentsToAllocate);
     bool* newIsSleeping = reinterpret_cast<bool*>(newIsAllowedToSleep + nbComponentsToAllocate);
     decimal* newSleepTimes = reinterpret_cast<decimal*>(newIsSleeping + nbComponentsToAllocate);
+    BodyType* newBodyTypes = reinterpret_cast<BodyType*>(newSleepTimes + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -69,6 +71,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newIsAllowedToSleep, mIsAllowedToSleep, mNbComponents * sizeof(bool));
         memcpy(newIsSleeping, mIsSleeping, mNbComponents * sizeof(bool));
         memcpy(newSleepTimes, mSleepTimes, mNbComponents * sizeof(bool));
+        memcpy(newBodyTypes, mBodyTypes, mNbComponents * sizeof(BodyType));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -81,6 +84,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     mIsSleeping = newIsSleeping;
     mSleepTimes = newSleepTimes;
     mNbAllocatedComponents = nbComponentsToAllocate;
+    mBodyTypes = newBodyTypes;
 }
 
 // Add a component
@@ -95,6 +99,7 @@ void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     mIsAllowedToSleep[index] = true;
     mIsSleeping[index] = false;
     mSleepTimes[index] = decimal(0);
+    mBodyTypes[index] = component.bodyType;
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(bodyEntity, index));
@@ -117,6 +122,7 @@ void RigidBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex
     mIsAllowedToSleep[destIndex] = mIsAllowedToSleep[srcIndex];
     mIsSleeping[destIndex] = mIsSleeping[srcIndex];
     mSleepTimes[destIndex] = mSleepTimes[srcIndex];
+    mBodyTypes[destIndex] = mBodyTypes[srcIndex];
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -138,6 +144,7 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     bool isAllowedToSleep1 = mIsAllowedToSleep[index1];
     bool isSleeping1 = mIsSleeping[index1];
     decimal sleepTime1 = mSleepTimes[index1];
+    BodyType bodyType1 = mBodyTypes[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -150,6 +157,7 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     mIsAllowedToSleep[index2] = isAllowedToSleep1;
     mIsSleeping[index2] = isSleeping1;
     mSleepTimes[index2] = sleepTime1;
+    mBodyTypes[index2] = bodyType1;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity1, index2));
