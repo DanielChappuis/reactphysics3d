@@ -32,7 +32,7 @@
 #include "containers/Set.h"
 #include "components/ProxyShapeComponents.h"
 #include "components/TransformComponents.h"
-#include "components/DynamicsComponents.h"
+#include "components/RigidBodyComponents.h"
 #include <cstring>
 
 /// Namespace ReactPhysics3D
@@ -120,8 +120,8 @@ class BroadPhaseSystem {
         /// Reference to the transform components
         TransformComponents& mTransformsComponents;
 
-        /// Reference to the dynamics components
-        DynamicsComponents& mDynamicsComponents;
+        /// Reference to the rigid body components
+        RigidBodyComponents& mRigidBodyComponents;
 
         /// Set with the broad-phase IDs of all collision shapes that have moved (or have been
         /// created) during the last simulation step. Those are the shapes that need to be tested
@@ -151,7 +151,7 @@ class BroadPhaseSystem {
 
         /// Constructor
         BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
-                         TransformComponents& transformComponents, DynamicsComponents& dynamicsComponents);
+                         TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents);
 
         /// Destructor
         ~BroadPhaseSystem() = default;

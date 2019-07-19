@@ -41,7 +41,7 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
                  mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
                  mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
                  mDynamicsComponents(mMemoryManager.getBaseAllocator()),
-                 mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mDynamicsComponents, mMemoryManager),
+                 mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mRigidBodyComponents, mMemoryManager),
                  mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {

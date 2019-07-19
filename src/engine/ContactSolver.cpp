@@ -44,12 +44,13 @@ const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolver::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents, DynamicsComponents& dynamicsComponents,
+ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
+                             RigidBodyComponents& rigidBodyComponents, DynamicsComponents& dynamicsComponents,
                              ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings)
               :mMemoryManager(memoryManager), mContactConstraints(nullptr), mContactPoints(nullptr),
                mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr), mBodyComponents(bodyComponents),
-               mDynamicsComponents(dynamicsComponents), mProxyShapeComponents(proxyShapeComponents), mIsSplitImpulseActive(true),
-               mWorldSettings(worldSettings) {
+               mRigidBodyComponents(rigidBodyComponents), mDynamicsComponents(dynamicsComponents),
+               mProxyShapeComponents(proxyShapeComponents), mIsSplitImpulseActive(true), mWorldSettings(worldSettings) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -152,10 +153,10 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].frictionPointBody2.setToZero();
 
         // Get the velocities of the bodies
-        const Vector3& v1 = mDynamicsComponents.getLinearVelocity(externalManifold.bodyEntity1);
-        const Vector3& w1 = mDynamicsComponents.getAngularVelocity(externalManifold.bodyEntity1);
-        const Vector3& v2 = mDynamicsComponents.getLinearVelocity(externalManifold.bodyEntity2);
-        const Vector3& w2 = mDynamicsComponents.getAngularVelocity(externalManifold.bodyEntity2);
+        const Vector3& v1 = mRigidBodyComponents.getLinearVelocity(externalManifold.bodyEntity1);
+        const Vector3& w1 = mRigidBodyComponents.getAngularVelocity(externalManifold.bodyEntity1);
+        const Vector3& v2 = mRigidBodyComponents.getLinearVelocity(externalManifold.bodyEntity2);
+        const Vector3& w2 = mRigidBodyComponents.getAngularVelocity(externalManifold.bodyEntity2);
 
         // For each  contact point of the contact manifold
         assert(externalManifold.getNbContactPoints() > 0);

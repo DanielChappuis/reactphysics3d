@@ -53,11 +53,11 @@ using namespace std;
 
 // Constructor
 CollisionDetection::CollisionDetection(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents, TransformComponents& transformComponents,
-                                       DynamicsComponents& dynamicsComponents, MemoryManager& memoryManager)
+                                       RigidBodyComponents& rigidBodyComponents, MemoryManager& memoryManager)
                    : mMemoryManager(memoryManager), mProxyShapesComponents(proxyShapesComponents),
                      mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
                      mOverlappingPairs(mMemoryManager.getPoolAllocator()),
-                     mBroadPhaseSystem(*this, mProxyShapesComponents, transformComponents, dynamicsComponents),
+                     mBroadPhaseSystem(*this, mProxyShapesComponents, transformComponents, rigidBodyComponents),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()), mMapBroadPhaseIdToProxyShapeEntity(memoryManager.getPoolAllocator()),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator()), mPotentialContactPoints(mMemoryManager.getSingleFrameAllocator()),
                      // TODO : We should probably use single frame allocator for mPotentialContactPoints, mPotentialContactManifolds,  mMapPairIdToOverlappingPairContacts

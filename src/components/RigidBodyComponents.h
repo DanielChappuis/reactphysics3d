@@ -41,6 +41,17 @@ class EntityManager;
 class RigidBody;
 enum class BodyType;
 
+/// Enumeration for the type of a body
+/// STATIC : A static body has infinite mass, zero velocity but the position can be
+///          changed manually. A static body does not collide with other static or kinematic bodies.
+/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+///             position is computed by the physics engine. A kinematic body does not collide with
+///             other static or kinematic bodies.
+/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+///           position is determined by the physics engine. A dynamic body can collide with other
+///           dynamic, static or kinematic bodies.
+enum class BodyType {STATIC, KINEMATIC, DYNAMIC};
+
 // Class RigidBodyComponents
 /**
  * This class represent the component of the ECS that contains data about a rigid body.
@@ -69,6 +80,12 @@ class RigidBodyComponents : public Components {
 
         /// Array with the type of bodies (static, kinematic or dynamic)
         BodyType* mBodyTypes;
+
+        /// Array with the linear velocity of each component
+        Vector3* mLinearVelocities;
+
+        /// Array with the angular velocity of each component
+        Vector3* mAngularVelocities;
 
         // -------------------- Methods -------------------- //
 
@@ -136,6 +153,17 @@ class RigidBodyComponents : public Components {
         /// Set the body type of a body
         void setBodyType(Entity bodyEntity, BodyType bodyType);
 
+        /// Return the linear velocity of an entity
+        const Vector3& getLinearVelocity(Entity bodyEntity) const;
+
+        /// Set the linear velocity of an entity
+        void setLinearVelocity(Entity bodyEntity, const Vector3& linearVelocity);
+
+        /// Return the angular velocity of an entity
+        const Vector3& getAngularVelocity(Entity bodyEntity) const;
+
+        /// Set the angular velocity of an entity
+        void setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity);
 };
 
 // Return a pointer to a body rigid
@@ -208,6 +236,38 @@ inline void RigidBodyComponents::setBodyType(Entity bodyEntity, BodyType bodyTyp
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mBodyTypes[mMapEntityToComponentIndex[bodyEntity]] = bodyType;
+}
+
+// Return the linear velocity of an entity
+inline const Vector3& RigidBodyComponents::getLinearVelocity(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mLinearVelocities[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the angular velocity of an entity
+inline const Vector3& RigidBodyComponents::getAngularVelocity(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mAngularVelocities[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the linear velocity of an entity
+inline void RigidBodyComponents::setLinearVelocity(Entity bodyEntity, const Vector3& linearVelocity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mLinearVelocities[mMapEntityToComponentIndex[bodyEntity]] = linearVelocity;
+}
+
+// Set the angular velocity of an entity
+inline void RigidBodyComponents::setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = angularVelocity;
 }
 
 

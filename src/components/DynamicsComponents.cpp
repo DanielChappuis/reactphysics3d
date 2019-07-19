@@ -32,11 +32,10 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-
 // Constructor
 DynamicsComponents::DynamicsComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
-                                           sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(decimal) +
+                                           sizeof(Vector3) + sizeof(Vector3) + sizeof(decimal) +
                                            sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(Matrix3x3) + sizeof(Matrix3x3) +
                                            sizeof(Vector3) + sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) + sizeof(bool) +
                                            sizeof(bool)) {
@@ -59,9 +58,7 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
 
     // New pointers to components data
     Entity* newBodies = static_cast<Entity*>(newBuffer);
-    Vector3* newLinearVelocities = reinterpret_cast<Vector3*>(newBodies + nbComponentsToAllocate);
-    Vector3* newAngularVelocities = reinterpret_cast<Vector3*>(newLinearVelocities + nbComponentsToAllocate);
-    Vector3* newConstrainedLinearVelocities = reinterpret_cast<Vector3*>(newAngularVelocities + nbComponentsToAllocate);
+    Vector3* newConstrainedLinearVelocities = reinterpret_cast<Vector3*>(newBodies + nbComponentsToAllocate);
     Vector3* newConstrainedAngularVelocities = reinterpret_cast<Vector3*>(newConstrainedLinearVelocities + nbComponentsToAllocate);
     Vector3* newSplitLinearVelocities = reinterpret_cast<Vector3*>(newConstrainedAngularVelocities + nbComponentsToAllocate);
     Vector3* newSplitAngularVelocities = reinterpret_cast<Vector3*>(newSplitLinearVelocities + nbComponentsToAllocate);
@@ -85,8 +82,6 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
 
         // Copy component data from the previous buffer to the new one
         memcpy(newBodies, mBodies, mNbComponents * sizeof(Entity));
-        memcpy(newLinearVelocities, mLinearVelocities, mNbComponents * sizeof(Vector3));
-        memcpy(newAngularVelocities, mAngularVelocities, mNbComponents * sizeof(Vector3));
         memcpy(newConstrainedLinearVelocities, mConstrainedLinearVelocities, mNbComponents * sizeof(Vector3));
         memcpy(newConstrainedAngularVelocities, mConstrainedAngularVelocities, mNbComponents * sizeof(Vector3));
         memcpy(newSplitLinearVelocities, mSplitLinearVelocities, mNbComponents * sizeof(Vector3));
@@ -112,8 +107,6 @@ void DynamicsComponents::allocate(uint32 nbComponentsToAllocate) {
 
     mBuffer = newBuffer;
     mBodies = newBodies;
-    mLinearVelocities = newLinearVelocities;
-    mAngularVelocities = newAngularVelocities;
     mConstrainedLinearVelocities = newConstrainedLinearVelocities;
     mConstrainedAngularVelocities = newConstrainedAngularVelocities;
     mSplitLinearVelocities = newSplitLinearVelocities;
@@ -144,8 +137,6 @@ void DynamicsComponents::addComponent(Entity bodyEntity, bool isSleeping, const 
 
     // Insert the new component data
     new (mBodies + index) Entity(bodyEntity);
-    new (mLinearVelocities + index) Vector3(0, 0, 0);
-    new (mAngularVelocities + index) Vector3(0, 0, 0);
     new (mConstrainedLinearVelocities + index) Vector3(0, 0, 0);
     new (mConstrainedAngularVelocities + index) Vector3(0, 0, 0);
     new (mSplitLinearVelocities + index) Vector3(0, 0, 0);
@@ -182,8 +173,6 @@ void DynamicsComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
 
     // Copy the data of the source component to the destination location
     new (mBodies + destIndex) Entity(mBodies[srcIndex]);
-    new (mLinearVelocities + destIndex) Vector3(mLinearVelocities[srcIndex]);
-    new (mAngularVelocities + destIndex) Vector3(mAngularVelocities[srcIndex]);
     new (mConstrainedLinearVelocities + destIndex) Vector3(mConstrainedLinearVelocities[srcIndex]);
     new (mConstrainedAngularVelocities + destIndex) Vector3(mConstrainedAngularVelocities[srcIndex]);
     new (mSplitLinearVelocities + destIndex) Vector3(mSplitLinearVelocities[srcIndex]);
@@ -222,8 +211,6 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Copy component 1 data
     Entity entity1(mBodies[index1]);
-    Vector3 linearVelocity1(mLinearVelocities[index1]);
-    Vector3 angularVelocity1(mAngularVelocities[index1]);
     Vector3 constrainedLinearVelocity1(mConstrainedLinearVelocities[index1]);
     Vector3 constrainedAngularVelocity1(mConstrainedAngularVelocities[index1]);
     Vector3 splitLinearVelocity1(mSplitLinearVelocities[index1]);
@@ -250,8 +237,6 @@ void DynamicsComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Reconstruct component 1 at component 2 location
     new (mBodies + index2) Entity(entity1);
-    new (mLinearVelocities + index2) Vector3(linearVelocity1);
-    new (mAngularVelocities + index2) Vector3(angularVelocity1);
     new (mConstrainedLinearVelocities + index2) Vector3(constrainedLinearVelocity1);
     new (mConstrainedAngularVelocities + index2) Vector3(constrainedAngularVelocity1);
     new (mSplitLinearVelocities + index2) Vector3(splitLinearVelocity1);
@@ -289,8 +274,6 @@ void DynamicsComponents::destroyComponent(uint32 index) {
     mMapEntityToComponentIndex.remove(mBodies[index]);
 
     mBodies[index].~Entity();
-    mLinearVelocities[index].~Vector3();
-    mAngularVelocities[index].~Vector3();
     mConstrainedLinearVelocities[index].~Vector3();
     mConstrainedAngularVelocities[index].~Vector3();
     mSplitLinearVelocities[index].~Vector3();

@@ -36,7 +36,8 @@ using namespace reactphysics3d;
 // Constructor
 RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(RigidBody*) +
-                                sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(BodyType)) {
+                                sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(BodyType) +
+                                sizeof(Vector3) + sizeof(Vector3)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -61,6 +62,8 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     bool* newIsSleeping = reinterpret_cast<bool*>(newIsAllowedToSleep + nbComponentsToAllocate);
     decimal* newSleepTimes = reinterpret_cast<decimal*>(newIsSleeping + nbComponentsToAllocate);
     BodyType* newBodyTypes = reinterpret_cast<BodyType*>(newSleepTimes + nbComponentsToAllocate);
+    Vector3* newLinearVelocities = reinterpret_cast<Vector3*>(newBodyTypes + nbComponentsToAllocate);
+    Vector3* newAngularVelocities = reinterpret_cast<Vector3*>(newLinearVelocities + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -72,6 +75,8 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newIsSleeping, mIsSleeping, mNbComponents * sizeof(bool));
         memcpy(newSleepTimes, mSleepTimes, mNbComponents * sizeof(bool));
         memcpy(newBodyTypes, mBodyTypes, mNbComponents * sizeof(BodyType));
+        memcpy(newLinearVelocities, mLinearVelocities, mNbComponents * sizeof(Vector3));
+        memcpy(newAngularVelocities, mAngularVelocities, mNbComponents * sizeof(Vector3));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -85,6 +90,8 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     mSleepTimes = newSleepTimes;
     mNbAllocatedComponents = nbComponentsToAllocate;
     mBodyTypes = newBodyTypes;
+    mLinearVelocities = newLinearVelocities;
+    mAngularVelocities = newAngularVelocities;
 }
 
 // Add a component
@@ -100,6 +107,8 @@ void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     mIsSleeping[index] = false;
     mSleepTimes[index] = decimal(0);
     mBodyTypes[index] = component.bodyType;
+    new (mLinearVelocities + index) Vector3(0, 0, 0);
+    new (mAngularVelocities + index) Vector3(0, 0, 0);
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(bodyEntity, index));
@@ -123,6 +132,8 @@ void RigidBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex
     mIsSleeping[destIndex] = mIsSleeping[srcIndex];
     mSleepTimes[destIndex] = mSleepTimes[srcIndex];
     mBodyTypes[destIndex] = mBodyTypes[srcIndex];
+    new (mLinearVelocities + destIndex) Vector3(mLinearVelocities[srcIndex]);
+    new (mAngularVelocities + destIndex) Vector3(mAngularVelocities[srcIndex]);
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -145,6 +156,8 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     bool isSleeping1 = mIsSleeping[index1];
     decimal sleepTime1 = mSleepTimes[index1];
     BodyType bodyType1 = mBodyTypes[index1];
+    Vector3 linearVelocity1(mLinearVelocities[index1]);
+    Vector3 angularVelocity1(mAngularVelocities[index1]);
 
     // Destroy component 1
     destroyComponent(index1);
@@ -158,6 +171,8 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     mIsSleeping[index2] = isSleeping1;
     mSleepTimes[index2] = sleepTime1;
     mBodyTypes[index2] = bodyType1;
+    new (mLinearVelocities + index2) Vector3(linearVelocity1);
+    new (mAngularVelocities + index2) Vector3(angularVelocity1);
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity1, index2));
@@ -178,4 +193,6 @@ void RigidBodyComponents::destroyComponent(uint32 index) {
 
     mBodiesEntities[index].~Entity();
     mRigidBodies[index] = nullptr;
+    mLinearVelocities[index].~Vector3();
+    mAngularVelocities[index].~Vector3();
 }

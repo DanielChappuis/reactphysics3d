@@ -40,17 +40,6 @@ namespace reactphysics3d {
 class MemoryAllocator;
 class EntityManager;
 
-/// Enumeration for the type of a body
-/// STATIC : A static body has infinite mass, zero velocity but the position can be
-///          changed manually. A static body does not collide with other static or kinematic bodies.
-/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
-///             position is computed by the physics engine. A kinematic body does not collide with
-///             other static or kinematic bodies.
-/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
-///           position is determined by the physics engine. A dynamic body can collide with other
-///           dynamic, static or kinematic bodies.
-enum class BodyType {STATIC, KINEMATIC, DYNAMIC};
-
 // Class DynamicsComponents
 /**
  * This class represent the component of the ECS that contains the variables concerning dynamics
@@ -65,12 +54,6 @@ class DynamicsComponents : public Components {
 
         /// Array of body entities of each component
         Entity* mBodies;
-
-        /// Array with the linear velocity of each component
-        Vector3* mLinearVelocities;
-
-        /// Array with the angular velocity of each component
-        Vector3* mAngularVelocities;
 
         /// Array with the constrained linear velocity of each component
         Vector3* mConstrainedLinearVelocities;
@@ -165,12 +148,6 @@ class DynamicsComponents : public Components {
         /// Add a component
         void addComponent(Entity bodyEntity, bool isSleeping, const DynamicsComponent& component);
 
-        /// Return the linear velocity of an entity
-        const Vector3& getLinearVelocity(Entity bodyEntity) const;
-
-        /// Return the angular velocity of an entity
-        const Vector3& getAngularVelocity(Entity bodyEntity) const;
-
         /// Return the constrained linear velocity of an entity
         const Vector3& getConstrainedLinearVelocity(Entity bodyEntity) const;
 
@@ -224,12 +201,6 @@ class DynamicsComponents : public Components {
 
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
-
-        /// Set the linear velocity of an entity
-        void setLinearVelocity(Entity bodyEntity, const Vector3& linearVelocity);
-
-        /// Set the angular velocity of an entity
-        void setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity);
 
         /// Set the constrained linear velocity of an entity
         void setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity);
@@ -295,38 +266,6 @@ class DynamicsComponents : public Components {
         friend class HingeJoint;
         friend class SliderJoint;
 };
-
-// Return the linear velocity of an entity
-inline const Vector3& DynamicsComponents::getLinearVelocity(Entity bodyEntity) const {
-
-   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   return mLinearVelocities[mMapEntityToComponentIndex[bodyEntity]];
-}
-
-// Return the angular velocity of an entity
-inline const Vector3 &DynamicsComponents::getAngularVelocity(Entity bodyEntity) const {
-
-   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   return mAngularVelocities[mMapEntityToComponentIndex[bodyEntity]];
-}
-
-// Set the linear velocity of an entity
-inline void DynamicsComponents::setLinearVelocity(Entity bodyEntity, const Vector3& linearVelocity) {
-
-   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   mLinearVelocities[mMapEntityToComponentIndex[bodyEntity]] = linearVelocity;
-}
-
-// Set the angular velocity of an entity
-inline void DynamicsComponents::setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity) {
-
-   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   mAngularVelocities[mMapEntityToComponentIndex[bodyEntity]] = angularVelocity;
-}
 
 // Return the constrained linear velocity of an entity
 inline const Vector3& DynamicsComponents::getConstrainedLinearVelocity(Entity bodyEntity) const {

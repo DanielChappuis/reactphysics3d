@@ -45,6 +45,7 @@ class Island;
 class RigidBody;
 class CollisionBodyComponents;
 class DynamicsComponents;
+class RigidBodyComponents;
 class ProxyShapeComponents;
 
 // Class Contact Solver
@@ -313,6 +314,9 @@ class ContactSolver {
         CollisionBodyComponents& mBodyComponents;
 
         /// Reference to the dynamics components
+        RigidBodyComponents& mRigidBodyComponents;
+
+        /// Reference to the dynamics components
         DynamicsComponents& mDynamicsComponents;
 
         /// Reference to the proxy-shapes components
@@ -360,8 +364,8 @@ class ContactSolver {
 
         /// Constructor
         ContactSolver(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
-                      DynamicsComponents& dynamicsComponents, ProxyShapeComponents& proxyShapeComponents,
-                      const WorldSettings& worldSettings);
+                      RigidBodyComponents& rigidBodyComponents, DynamicsComponents &dynamicsComponents,
+                      ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactSolver() = default;

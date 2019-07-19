@@ -27,6 +27,7 @@
 #include "SliderJoint.h"
 #include "engine/ConstraintSolver.h"
 #include "components/DynamicsComponents.h"
+#include "components/RigidBodyComponents.h"
 
 using namespace reactphysics3d;
 

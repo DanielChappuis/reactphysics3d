@@ -50,7 +50,8 @@ using namespace std;
 DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
               : CollisionWorld(worldSettings, logger, profiler),
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
-                mContactSolver(mMemoryManager, mIslands, mCollisionBodyComponents, mDynamicsComponents, mProxyShapesComponents, mConfig),
+                mContactSolver(mMemoryManager, mIslands, mCollisionBodyComponents, mRigidBodyComponents, mDynamicsComponents,
+                               mProxyShapesComponents, mConfig),
                 mConstraintSolver(mIslands, mDynamicsComponents),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
@@ -200,8 +201,8 @@ void DynamicsWorld::updateBodiesState() {
     for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
 
         // Update the linear and angular velocity of the body
-        mDynamicsComponents.mLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i];
-        mDynamicsComponents.mAngularVelocities[i] = mDynamicsComponents.mConstrainedAngularVelocities[i];
+        mRigidBodyComponents.setLinearVelocity(mDynamicsComponents.mBodies[i], mDynamicsComponents.mConstrainedLinearVelocities[i]);
+        mRigidBodyComponents.setAngularVelocity(mDynamicsComponents.mBodies[i], mDynamicsComponents.mConstrainedAngularVelocities[i]);
 
         // Update the position of the center of mass of the body
         mDynamicsComponents.mCentersOfMassWorld[i] = mDynamicsComponents.mConstrainedPositions[i];
@@ -259,11 +260,14 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
         assert(mDynamicsComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
         assert(mDynamicsComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
 
+        const Vector3& linearVelocity = mRigidBodyComponents.getLinearVelocity(mDynamicsComponents.mBodies[i]);
+        const Vector3& angularVelocity = mRigidBodyComponents.getAngularVelocity(mDynamicsComponents.mBodies[i]);
+
         // Integrate the external force to get the new velocity of the body
-        mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mLinearVelocities[i] + mTimeStep *
+        mDynamicsComponents.mConstrainedLinearVelocities[i] = linearVelocity + mTimeStep *
                                                               mDynamicsComponents.mInverseMasses[i] * mDynamicsComponents.mExternalForces[i];
-        mDynamicsComponents.mConstrainedAngularVelocities[i] = mDynamicsComponents.mAngularVelocities[i] +
-                                                               mTimeStep * mDynamicsComponents.mInverseInertiaTensorsWorld[i] * mDynamicsComponents.mExternalTorques[i];
+        mDynamicsComponents.mConstrainedAngularVelocities[i] = angularVelocity + mTimeStep *
+                                                 mDynamicsComponents.mInverseInertiaTensorsWorld[i] * mDynamicsComponents.mExternalTorques[i];
     }
 
     // Apply gravity force
@@ -805,26 +809,24 @@ void DynamicsWorld::updateSleepingBodies() {
 
             const Entity bodyEntity = mIslands.bodyEntities[i][b];
 
-            RigidBody* body = mRigidBodyComponents.getRigidBody(bodyEntity);
-
             // Skip static bodies
             if (mRigidBodyComponents.getBodyType(bodyEntity) == BodyType::STATIC) continue;
 
             // If the body is velocity is large enough to stay awake
-            if (mDynamicsComponents.getLinearVelocity(bodyEntity).lengthSquare() > sleepLinearVelocitySquare ||
-                mDynamicsComponents.getAngularVelocity(bodyEntity).lengthSquare() > sleepAngularVelocitySquare ||
-                !mRigidBodyComponents.getIsAllowedToSleep(body->getEntity())) {
+            if (mRigidBodyComponents.getLinearVelocity(bodyEntity).lengthSquare() > sleepLinearVelocitySquare ||
+                mRigidBodyComponents.getAngularVelocity(bodyEntity).lengthSquare() > sleepAngularVelocitySquare ||
+                !mRigidBodyComponents.getIsAllowedToSleep(bodyEntity)) {
 
                 // Reset the sleep time of the body
-                mRigidBodyComponents.setSleepTime(body->getEntity(), decimal(0.0));
+                mRigidBodyComponents.setSleepTime(bodyEntity, decimal(0.0));
                 minSleepTime = decimal(0.0);
             }
             else {  // If the body velocity is below the sleeping velocity threshold
 
                 // Increase the sleep time
-                decimal sleepTime = mRigidBodyComponents.getSleepTime(body->getEntity());
-                mRigidBodyComponents.setSleepTime(body->getEntity(), sleepTime + mTimeStep);
-                sleepTime = mRigidBodyComponents.getSleepTime(body->getEntity());
+                decimal sleepTime = mRigidBodyComponents.getSleepTime(bodyEntity);
+                mRigidBodyComponents.setSleepTime(bodyEntity, sleepTime + mTimeStep);
+                sleepTime = mRigidBodyComponents.getSleepTime(bodyEntity);
                 if (sleepTime < minSleepTime) {
                     minSleepTime = sleepTime;
                 }

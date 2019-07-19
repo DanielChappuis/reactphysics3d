@@ -270,7 +270,7 @@ class CollisionDetection {
 
         /// Constructor
         CollisionDetection(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents,
-                           TransformComponents& transformComponents, DynamicsComponents& dynamicsComponents,
+                           TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents,
                            MemoryManager& memoryManager);
 
         /// Destructor

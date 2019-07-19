@@ -36,11 +36,10 @@ using namespace reactphysics3d;
 
 // Constructor
 BroadPhaseSystem::BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
-                                   TransformComponents& transformComponents, DynamicsComponents& dynamicsComponents)
+                                   TransformComponents& transformComponents, RigidBodyComponents &rigidBodyComponents)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
                      mProxyShapesComponents(proxyShapesComponents), mTransformsComponents(transformComponents),
-                     mDynamicsComponents(dynamicsComponents),
-                     mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
+                     mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -175,10 +174,10 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 end
 
             // If there is a dynamics component for the current entity
             Vector3 displacement(0, 0, 0);
-            if (mDynamicsComponents.hasComponent(bodyEntity)) {
+            if (mRigidBodyComponents.hasComponent(bodyEntity)) {
 
                 // Get the linear velocity from the dynamics component
-                const Vector3& linearVelocity = mDynamicsComponents.getLinearVelocity(bodyEntity);
+                const Vector3& linearVelocity = mRigidBodyComponents.getLinearVelocity(bodyEntity);
 
                 // TODO : Use body linear velocity and compute displacement
                 displacement = timeStep * linearVelocity;
