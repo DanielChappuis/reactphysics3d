@@ -225,8 +225,8 @@ void DynamicsWorld::updateBodiesState() {
     for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         Matrix3x3 orientation = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).getOrientation().getMatrix();
-        const Matrix3x3& inverseInertiaLocalTensor = mRigidBodyComponents.getInertiaTensorLocalInverse(mRigidBodyComponents.mBodiesEntities[i]);
-        mRigidBodyComponents.setInverseInertiaTensorWorld(mRigidBodyComponents.mBodiesEntities[i], orientation * inverseInertiaLocalTensor * orientation.getTranspose());
+        const Matrix3x3& inverseInertiaLocalTensor = mRigidBodyComponents.mInverseInertiaTensorsLocal[i];
+        mRigidBodyComponents.mInverseInertiaTensorsWorld[i] = orientation * inverseInertiaLocalTensor * orientation.getTranspose();
     }
 
     // Update the proxy-shapes components
@@ -260,8 +260,8 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
         assert(mRigidBodyComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
         assert(mRigidBodyComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
 
-        const Vector3& linearVelocity = mRigidBodyComponents.getLinearVelocity(mRigidBodyComponents.mBodiesEntities[i]);
-        const Vector3& angularVelocity = mRigidBodyComponents.getAngularVelocity(mRigidBodyComponents.mBodiesEntities[i]);
+        const Vector3& linearVelocity = mRigidBodyComponents.mLinearVelocities[i];
+        const Vector3& angularVelocity = mRigidBodyComponents.mAngularVelocities[i];
 
         // Integrate the external force to get the new velocity of the body
         mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + mTimeStep *
@@ -272,6 +272,7 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
 
     // Apply gravity force
     for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+
         // If the gravity has to be applied to this rigid body
         if (mRigidBodyComponents.mIsGravityEnabled[i] && mIsGravityEnabled) {
 
@@ -669,7 +670,7 @@ void DynamicsWorld::createIslands() {
 
         // If the body is static, we go to the next body
         // TODO : Check if we still need this test if we loop over dynamicsComponents and static bodies are not part of them
-        if (mRigidBodyComponents.getBodyType(mRigidBodyComponents.mBodiesEntities[b]) == BodyType::STATIC) continue;
+        if (mRigidBodyComponents.mBodyTypes[b] == BodyType::STATIC) continue;
 
         // Reset the stack of bodies to visit
         bodyEntityIndicesToVisit.clear();
@@ -780,7 +781,7 @@ void DynamicsWorld::createIslands() {
         // can also be included in the other islands
         for (uint j=0; j < mRigidBodyComponents.getNbEnabledComponents(); j++) {
 
-            if (mRigidBodyComponents.getBodyType(mRigidBodyComponents.mBodiesEntities[j]) == BodyType::STATIC) {
+            if (mRigidBodyComponents.mBodyTypes[j] == BodyType::STATIC) {
                 mRigidBodyComponents.mIsAlreadyInIsland[j] = false;
             }
         }
