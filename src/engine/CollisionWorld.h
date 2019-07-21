@@ -37,7 +37,6 @@
 #include "components/RigidBodyComponents.h"
 #include "components/TransformComponents.h"
 #include "components/ProxyShapeComponents.h"
-#include "components/DynamicsComponents.h"
 #include "collision/CollisionCallback.h"
 #include "collision/OverlapCallback.h"
 
@@ -88,9 +87,6 @@ class CollisionWorld {
 
         /// Proxy-Shapes Components
         ProxyShapeComponents mProxyShapesComponents;
-
-        /// Dynamics components of the bodies (linear, angular velocities)
-        DynamicsComponents mDynamicsComponents;
 
         /// Reference to the collision detection
         CollisionDetection mCollisionDetection;

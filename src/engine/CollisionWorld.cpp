@@ -40,7 +40,6 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
                : mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
                  mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
                  mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
-                 mDynamicsComponents(mMemoryManager.getBaseAllocator()),
                  mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mRigidBodyComponents, mMemoryManager),
                  mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
@@ -216,11 +215,11 @@ void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     // Notify all the components
     mCollisionBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
-    mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
-    if (mDynamicsComponents.hasComponent(bodyEntity)) {
-        mDynamicsComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    if (mRigidBodyComponents.hasComponent(bodyEntity)) {
+        mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+        mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     }
 
     // For each proxy-shape of the body

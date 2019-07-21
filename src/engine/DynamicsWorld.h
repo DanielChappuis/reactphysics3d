@@ -32,7 +32,6 @@
 #include "configuration.h"
 #include "utils/Logger.h"
 #include "engine/ContactSolver.h"
-#include "components/DynamicsComponents.h"
 #include "engine/Islands.h"
 
 /// Namespace ReactPhysics3D
@@ -249,9 +248,9 @@ class DynamicsWorld : public CollisionWorld {
 inline void DynamicsWorld::resetBodiesForceAndTorque() {
 
     // For each body of the world
-    for (uint32 i=0; i < mDynamicsComponents.getNbComponents(); i++) {
-        mDynamicsComponents.mExternalForces[i].setToZero();
-        mDynamicsComponents.mExternalTorques[i].setToZero();
+    for (uint32 i=0; i < mRigidBodyComponents.getNbComponents(); i++) {
+        mRigidBodyComponents.mExternalForces[i].setToZero();
+        mRigidBodyComponents.mExternalTorques[i].setToZero();
     }
 }
 

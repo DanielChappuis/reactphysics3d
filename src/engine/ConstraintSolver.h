@@ -37,6 +37,7 @@ namespace reactphysics3d {
 class Joint;
 class Island;
 class Profiler;
+class RigidBodyComponents;
 class DynamicsComponents;
 
 // Structure ConstraintSolverData
@@ -51,15 +52,15 @@ struct ConstraintSolverData {
         /// Current time step of the simulation
         decimal timeStep;
 
-        /// Reference to the dynamics components
-        DynamicsComponents& dynamicsComponents;
+        /// Reference to the rigid body  components
+        RigidBodyComponents& rigidBodyComponents;
 
         /// True if warm starting of the solver is active
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData(DynamicsComponents& dynamicsComponents)
-            :dynamicsComponents(dynamicsComponents) {
+        ConstraintSolverData(RigidBodyComponents& rigidBodyComponents)
+            :rigidBodyComponents(rigidBodyComponents) {
 
         }
 
@@ -163,7 +164,7 @@ class ConstraintSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver(Islands& islands, DynamicsComponents& dynamicsComponents);
+        ConstraintSolver(Islands& islands, RigidBodyComponents& rigidBodyComponents);
 
         /// Destructor
         ~ConstraintSolver() = default;

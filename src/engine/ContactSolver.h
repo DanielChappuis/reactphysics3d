@@ -316,9 +316,6 @@ class ContactSolver {
         /// Reference to the dynamics components
         RigidBodyComponents& mRigidBodyComponents;
 
-        /// Reference to the dynamics components
-        DynamicsComponents& mDynamicsComponents;
-
         /// Reference to the proxy-shapes components
         // TODO : Do we really need to use this ?
         ProxyShapeComponents& mProxyShapeComponents;
@@ -364,8 +361,8 @@ class ContactSolver {
 
         /// Constructor
         ContactSolver(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
-                      RigidBodyComponents& rigidBodyComponents, DynamicsComponents &dynamicsComponents,
-                      ProxyShapeComponents& proxyShapeComponents, const WorldSettings& worldSettings);
+                      RigidBodyComponents& rigidBodyComponents, ProxyShapeComponents& proxyShapeComponents,
+                      const WorldSettings& worldSettings);
 
         /// Destructor
         ~ContactSolver() = default;

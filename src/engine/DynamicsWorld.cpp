@@ -50,9 +50,9 @@ using namespace std;
 DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
               : CollisionWorld(worldSettings, logger, profiler),
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
-                mContactSolver(mMemoryManager, mIslands, mCollisionBodyComponents, mRigidBodyComponents, mDynamicsComponents,
+                mContactSolver(mMemoryManager, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mProxyShapesComponents, mConfig),
-                mConstraintSolver(mIslands, mDynamicsComponents),
+                mConstraintSolver(mIslands, mRigidBodyComponents),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
@@ -169,24 +169,24 @@ void DynamicsWorld::integrateRigidBodiesPositions() {
     
     const decimal isSplitImpulseActive = mContactSolver.isSplitImpulseActive() ? decimal(1.0) : decimal(0.0);
 
-    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         // Get the constrained velocity
-        Vector3 newLinVelocity = mDynamicsComponents.mConstrainedLinearVelocities[i];
-        Vector3 newAngVelocity = mDynamicsComponents.mConstrainedAngularVelocities[i];
+        Vector3 newLinVelocity = mRigidBodyComponents.mConstrainedLinearVelocities[i];
+        Vector3 newAngVelocity = mRigidBodyComponents.mConstrainedAngularVelocities[i];
 
         // Add the split impulse velocity from Contact Solver (only used
         // to update the position)
-        newLinVelocity += isSplitImpulseActive * mDynamicsComponents.mSplitLinearVelocities[i];
-        newAngVelocity += isSplitImpulseActive * mDynamicsComponents.mSplitAngularVelocities[i];
+        newLinVelocity += isSplitImpulseActive * mRigidBodyComponents.mSplitLinearVelocities[i];
+        newAngVelocity += isSplitImpulseActive * mRigidBodyComponents.mSplitAngularVelocities[i];
 
         // Get current position and orientation of the body
-        const Vector3& currentPosition = mDynamicsComponents.mCentersOfMassWorld[i];
-        const Quaternion& currentOrientation = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).getOrientation();
+        const Vector3& currentPosition = mRigidBodyComponents.mCentersOfMassWorld[i];
+        const Quaternion& currentOrientation = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).getOrientation();
 
         // Update the new constrained position and orientation of the body
-        mDynamicsComponents.mConstrainedPositions[i] = currentPosition + newLinVelocity * mTimeStep;
-        mDynamicsComponents.mConstrainedOrientations[i] = currentOrientation + Quaternion(0, newAngVelocity) *
+        mRigidBodyComponents.mConstrainedPositions[i] = currentPosition + newLinVelocity * mTimeStep;
+        mRigidBodyComponents.mConstrainedOrientations[i] = currentOrientation + Quaternion(0, newAngVelocity) *
                                                           currentOrientation * decimal(0.5) * mTimeStep;
     }
 }
@@ -198,35 +198,35 @@ void DynamicsWorld::updateBodiesState() {
 
     // TODO : Make sure we compute this in a system
 
-    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         // Update the linear and angular velocity of the body
-        mRigidBodyComponents.setLinearVelocity(mDynamicsComponents.mBodies[i], mDynamicsComponents.mConstrainedLinearVelocities[i]);
-        mRigidBodyComponents.setAngularVelocity(mDynamicsComponents.mBodies[i], mDynamicsComponents.mConstrainedAngularVelocities[i]);
+        mRigidBodyComponents.setLinearVelocity(mRigidBodyComponents.mBodiesEntities[i], mRigidBodyComponents.mConstrainedLinearVelocities[i]);
+        mRigidBodyComponents.setAngularVelocity(mRigidBodyComponents.mBodiesEntities[i], mRigidBodyComponents.mConstrainedAngularVelocities[i]);
 
         // Update the position of the center of mass of the body
-        mDynamicsComponents.mCentersOfMassWorld[i] = mDynamicsComponents.mConstrainedPositions[i];
+        mRigidBodyComponents.mCentersOfMassWorld[i] = mRigidBodyComponents.mConstrainedPositions[i];
 
         // Update the orientation of the body
-        const Quaternion& constrainedOrientation = mDynamicsComponents.mConstrainedOrientations[i];
-        mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).setOrientation(constrainedOrientation.getUnit());
+        const Quaternion& constrainedOrientation = mRigidBodyComponents.mConstrainedOrientations[i];
+        mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).setOrientation(constrainedOrientation.getUnit());
     }
 
     // Update the transform of the body (using the new center of mass and new orientation)
-    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
-        Transform& transform = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]);
-        const Vector3& centerOfMassWorld = mDynamicsComponents.mCentersOfMassWorld[i];
-        const Vector3& centerOfMassLocal = mDynamicsComponents.mCentersOfMassLocal[i];
+        Transform& transform = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]);
+        const Vector3& centerOfMassWorld = mRigidBodyComponents.mCentersOfMassWorld[i];
+        const Vector3& centerOfMassLocal = mRigidBodyComponents.mCentersOfMassLocal[i];
         transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
     }
 
     // Update the world inverse inertia tensor of the body
-    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
-        Matrix3x3 orientation = mTransformComponents.getTransform(mDynamicsComponents.mBodies[i]).getOrientation().getMatrix();
-        const Matrix3x3& inverseInertiaLocalTensor = mDynamicsComponents.mInverseInertiaTensorsLocal[i];
-        mDynamicsComponents.mInverseInertiaTensorsWorld[i] = orientation * inverseInertiaLocalTensor * orientation.getTranspose();
+        Matrix3x3 orientation = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).getOrientation().getMatrix();
+        const Matrix3x3& inverseInertiaLocalTensor = mRigidBodyComponents.getInertiaTensorLocalInverse(mRigidBodyComponents.mBodiesEntities[i]);
+        mRigidBodyComponents.setInverseInertiaTensorWorld(mRigidBodyComponents.mBodiesEntities[i], orientation * inverseInertiaLocalTensor * orientation.getTranspose());
     }
 
     // Update the proxy-shapes components
@@ -236,9 +236,9 @@ void DynamicsWorld::updateBodiesState() {
 // Reset the split velocities of the bodies
 void DynamicsWorld::resetSplitVelocities() {
 
-    for(uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
-        mDynamicsComponents.mSplitLinearVelocities[i].setToZero();
-        mDynamicsComponents.mSplitAngularVelocities[i].setToZero();
+    for(uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+        mRigidBodyComponents.mSplitLinearVelocities[i].setToZero();
+        mRigidBodyComponents.mSplitAngularVelocities[i].setToZero();
     }
 }
 
@@ -255,29 +255,29 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
     resetSplitVelocities();
 
     // Integration component velocities using force/torque
-    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
-        assert(mDynamicsComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
-        assert(mDynamicsComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
+        assert(mRigidBodyComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
+        assert(mRigidBodyComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
 
-        const Vector3& linearVelocity = mRigidBodyComponents.getLinearVelocity(mDynamicsComponents.mBodies[i]);
-        const Vector3& angularVelocity = mRigidBodyComponents.getAngularVelocity(mDynamicsComponents.mBodies[i]);
+        const Vector3& linearVelocity = mRigidBodyComponents.getLinearVelocity(mRigidBodyComponents.mBodiesEntities[i]);
+        const Vector3& angularVelocity = mRigidBodyComponents.getAngularVelocity(mRigidBodyComponents.mBodiesEntities[i]);
 
         // Integrate the external force to get the new velocity of the body
-        mDynamicsComponents.mConstrainedLinearVelocities[i] = linearVelocity + mTimeStep *
-                                                              mDynamicsComponents.mInverseMasses[i] * mDynamicsComponents.mExternalForces[i];
-        mDynamicsComponents.mConstrainedAngularVelocities[i] = angularVelocity + mTimeStep *
-                                                 mDynamicsComponents.mInverseInertiaTensorsWorld[i] * mDynamicsComponents.mExternalTorques[i];
+        mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + mTimeStep *
+                                                              mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
+        mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + mTimeStep *
+                                                 mRigidBodyComponents.mInverseInertiaTensorsWorld[i] * mRigidBodyComponents.mExternalTorques[i];
     }
 
     // Apply gravity force
-    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
         // If the gravity has to be applied to this rigid body
-        if (mDynamicsComponents.mIsGravityEnabled[i] && mIsGravityEnabled) {
+        if (mRigidBodyComponents.mIsGravityEnabled[i] && mIsGravityEnabled) {
 
             // Integrate the gravity force
-            mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i] + mTimeStep *
-                                                                  mDynamicsComponents.mInverseMasses[i] * mDynamicsComponents.mInitMasses[i] * mGravity;
+            mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] + mTimeStep *
+                                                                  mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mInitMasses[i] * mGravity;
         }
     }
 
@@ -294,14 +294,14 @@ void DynamicsWorld::integrateRigidBodiesVelocities() {
     // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
     //                              => e^(-x) ~ 1 - x
     //                 => v2 = v1 * (1 - c * dt)
-    for (uint32 i=0; i < mDynamicsComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
-        const decimal linDampingFactor = mDynamicsComponents.mLinearDampings[i];
-        const decimal angDampingFactor = mDynamicsComponents.mAngularDampings[i];
+        const decimal linDampingFactor = mRigidBodyComponents.mLinearDampings[i];
+        const decimal angDampingFactor = mRigidBodyComponents.mAngularDampings[i];
         const decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
         const decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
-        mDynamicsComponents.mConstrainedLinearVelocities[i] = mDynamicsComponents.mConstrainedLinearVelocities[i] * linearDamping;
-        mDynamicsComponents.mConstrainedAngularVelocities[i] = mDynamicsComponents.mConstrainedAngularVelocities[i] * angularDamping;
+        mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] * linearDamping;
+        mRigidBodyComponents.mConstrainedAngularVelocities[i] = mRigidBodyComponents.mConstrainedAngularVelocities[i] * angularDamping;
     }
 }
 
@@ -380,18 +380,23 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
     Entity entity = mEntityManager.createEntity();
 
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
-    mDynamicsComponents.addComponent(entity, false, DynamicsComponents::DynamicsComponent(transform.getPosition()));
 
     // Create the rigid body
     RigidBody* rigidBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                     sizeof(RigidBody))) RigidBody(transform, *this, entity);
+                                     sizeof(RigidBody))) RigidBody(*this, entity);
     assert(rigidBody != nullptr);
 
     CollisionBodyComponents::CollisionBodyComponent bodyComponent(rigidBody);
     mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
 
-    RigidBodyComponents::RigidBodyComponent rigidBodyComponent(rigidBody, BodyType::DYNAMIC);
+    RigidBodyComponents::RigidBodyComponent rigidBodyComponent(rigidBody, BodyType::DYNAMIC, transform.getPosition());
     mRigidBodyComponents.addComponent(entity, false, rigidBodyComponent);
+
+    // Compute the inverse mass
+    mRigidBodyComponents.setMassInverse(entity, decimal(1.0) / mRigidBodyComponents.getInitMass(entity));
+
+    // Update the world inverse inertia tensor
+    rigidBody->updateInertiaTensorInverseWorld();
 
     // Add the rigid body to the physics world
     mBodies.add(rigidBody);
@@ -641,9 +646,9 @@ void DynamicsWorld::createIslands() {
     RP3D_PROFILE("DynamicsWorld::createIslands()", mProfiler);
 
     // Reset all the isAlreadyInIsland variables of bodies and joints
-    for (uint b=0; b < mDynamicsComponents.getNbComponents(); b++) {
+    for (uint b=0; b < mRigidBodyComponents.getNbComponents(); b++) {
 
-        mDynamicsComponents.mIsAlreadyInIsland[b] = false;
+        mRigidBodyComponents.mIsAlreadyInIsland[b] = false;
     }
     for (List<Joint*>::Iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
         (*it)->mIsAlreadyInIsland = false;
@@ -657,21 +662,21 @@ void DynamicsWorld::createIslands() {
     // For each dynamic component
     // TODO : Here we iterate on dynamic component where we can have static, kinematic and dynamic bodies. Maybe we should
     //        not use a dynamic component for a static body.
-    for (uint b=0; b < mDynamicsComponents.getNbEnabledComponents(); b++) {
+    for (uint b=0; b < mRigidBodyComponents.getNbEnabledComponents(); b++) {
 
         // If the body has already been added to an island, we go to the next body
-        if (mDynamicsComponents.mIsAlreadyInIsland[b]) continue;
+        if (mRigidBodyComponents.mIsAlreadyInIsland[b]) continue;
 
         // If the body is static, we go to the next body
         // TODO : Check if we still need this test if we loop over dynamicsComponents and static bodies are not part of them
-        if (mRigidBodyComponents.getBodyType(mDynamicsComponents.mBodies[b]) == BodyType::STATIC) continue;
+        if (mRigidBodyComponents.getBodyType(mRigidBodyComponents.mBodiesEntities[b]) == BodyType::STATIC) continue;
 
         // Reset the stack of bodies to visit
         bodyEntityIndicesToVisit.clear();
 
         // Add the body into the stack of bodies to visit
-        mDynamicsComponents.mIsAlreadyInIsland[b] = true;
-        bodyEntityIndicesToVisit.push(mDynamicsComponents.mBodies[b]);
+        mRigidBodyComponents.mIsAlreadyInIsland[b] = true;
+        bodyEntityIndicesToVisit.push(mRigidBodyComponents.mBodiesEntities[b]);
 
         // Create the new island
         uint32 islandIndex = mIslands.addIsland(nbTotalManifolds);
@@ -729,11 +734,11 @@ void DynamicsWorld::createIslands() {
                         const Entity otherBodyEntity = pair.body1Entity == bodyToVisitEntity ? pair.body2Entity : pair.body1Entity;
 
                         // Check if the other body has already been added to the island
-                        if (mDynamicsComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
+                        if (mRigidBodyComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
 
                         // Insert the other body into the stack of bodies to visit
                         bodyEntityIndicesToVisit.push(otherBodyEntity);
-                        mDynamicsComponents.setIsAlreadyInIsland(otherBodyEntity, true);
+                        mRigidBodyComponents.setIsAlreadyInIsland(otherBodyEntity, true);
                     }
                     else {
 
@@ -763,20 +768,20 @@ void DynamicsWorld::createIslands() {
                 const Entity otherBodyEntity = body1Entity == bodyToVisitEntity ? body2Entity : body1Entity;
 
                 // Check if the other body has already been added to the island
-                if (mDynamicsComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
+                if (mRigidBodyComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
 
                 // Insert the other body into the stack of bodies to visit
                 bodyEntityIndicesToVisit.push(otherBodyEntity);
-                mDynamicsComponents.setIsAlreadyInIsland(otherBodyEntity, true);
+                mRigidBodyComponents.setIsAlreadyInIsland(otherBodyEntity, true);
             }
         }
 
         // Reset the isAlreadyIsland variable of the static bodies so that they
         // can also be included in the other islands
-        for (uint j=0; j < mDynamicsComponents.getNbEnabledComponents(); j++) {
+        for (uint j=0; j < mRigidBodyComponents.getNbEnabledComponents(); j++) {
 
-            if (mRigidBodyComponents.getBodyType(mDynamicsComponents.mBodies[j]) == BodyType::STATIC) {
-                mDynamicsComponents.mIsAlreadyInIsland[j] = false;
+            if (mRigidBodyComponents.getBodyType(mRigidBodyComponents.mBodiesEntities[j]) == BodyType::STATIC) {
+                mRigidBodyComponents.mIsAlreadyInIsland[j] = false;
             }
         }
     }

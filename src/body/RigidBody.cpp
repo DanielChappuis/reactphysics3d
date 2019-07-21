@@ -39,15 +39,10 @@ using namespace reactphysics3d;
 * @param world The world where the body has been added
 * @param id The ID of the body
 */
-RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, Entity entity)
+RigidBody::RigidBody(CollisionWorld& world, Entity entity)
           : CollisionBody(world, entity),  mMaterial(world.mConfig), mJointsList(nullptr),
             mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
-    // Compute the inverse mass
-    mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
-
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
 }
 
 // Destructor
@@ -94,15 +89,15 @@ void RigidBody::setType(BodyType type) {
     if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
-        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(0));
-        mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
-        mWorld.mDynamicsComponents.setInverseInertiaTensorWorld(mEntity, Matrix3x3::zero());
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0));
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorWorld(mEntity, Matrix3x3::zero());
     }
     else {  // If it is a dynamic body
-        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
 
         if (mIsInertiaTensorSetByUser) {
-            mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
+            mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
         }
     }
 
@@ -117,8 +112,8 @@ void RigidBody::setType(BodyType type) {
     askForBroadPhaseCollisionCheck();
 
     // Reset the force and torque on the body
-    mWorld.mDynamicsComponents.setExternalForce(mEntity, Vector3::zero());
-    mWorld.mDynamicsComponents.setExternalTorque(mEntity, Vector3::zero());
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3::zero());
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set type=" +
@@ -127,7 +122,7 @@ void RigidBody::setType(BodyType type) {
 
 // Get the inverse local inertia tensor of the body (in body coordinates)
 const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
-    return mWorld.mDynamicsComponents.getInertiaTensorLocalInverse(mEntity);
+    return mWorld.mRigidBodyComponents.getInertiaTensorLocalInverse(mEntity);
 }
 
 // Return the inverse of the inertia tensor in world coordinates.
@@ -143,7 +138,7 @@ const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
 Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
 
     // Compute and return the inertia tensor in world coordinates
-    return mWorld.mDynamicsComponents.getInertiaTensorWorldInverse(mEntity);
+    return mWorld.mRigidBodyComponents.getInertiaTensorWorldInverse(mEntity);
 }
 
 // Method that return the mass of the body
@@ -151,7 +146,7 @@ Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
  * @return The mass (in kilograms) of the body
  */
 decimal RigidBody::getMass() const {
-    return mWorld.mDynamicsComponents.getInitMass(mEntity);
+    return mWorld.mRigidBodyComponents.getInitMass(mEntity);
 }
 
 // Apply an external force to the body at a given point (in world-space coordinates).
@@ -176,13 +171,13 @@ void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
     }
 
     // Add the force
-    const Vector3& externalForce = mWorld.mDynamicsComponents.getExternalForce(mEntity);
-    mWorld.mDynamicsComponents.setExternalForce(mEntity, externalForce + force);
+    const Vector3& externalForce = mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, externalForce + force);
 
     // Add the torque
-    const Vector3& externalTorque = mWorld.mDynamicsComponents.getExternalTorque(mEntity);
-    const Vector3& centerOfMassWorld = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
-    mWorld.mDynamicsComponents.setExternalTorque(mEntity, externalTorque + (point - centerOfMassWorld).cross(force));
+    const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + (point - centerOfMassWorld).cross(force));
 }
 
 // Set the local inertia tensor of the body (in local-space coordinates)
@@ -200,7 +195,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
-    mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
@@ -228,8 +223,8 @@ void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
     }
 
     // Add the force
-    const Vector3& externalForce = mWorld.mDynamicsComponents.getExternalForce(mEntity);
-    mWorld.mDynamicsComponents.setExternalForce(mEntity, externalForce + force);
+    const Vector3& externalForce = mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, externalForce + force);
 }
 
 // Return the linear velocity damping factor
@@ -237,7 +232,7 @@ void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
  * @return The linear damping factor of this body
  */
 decimal RigidBody::getLinearDamping() const {
-    return mWorld.mDynamicsComponents.getLinearDamping(mEntity);
+    return mWorld.mRigidBodyComponents.getLinearDamping(mEntity);
 }
 
 // Return the angular velocity damping factor
@@ -245,7 +240,7 @@ decimal RigidBody::getLinearDamping() const {
  * @return The angular damping factor of this body
  */
 decimal RigidBody::getAngularDamping() const {
-    return mWorld.mDynamicsComponents.getAngularDamping(mEntity);
+    return mWorld.mRigidBodyComponents.getAngularDamping(mEntity);
 }
 
 // Set the inverse local inertia tensor of the body (in local-space coordinates)
@@ -263,7 +258,7 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
-    mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
 
     // Update the world inverse inertia tensor
     updateInertiaTensorInverseWorld();
@@ -287,17 +282,17 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
     mIsCenterOfMassSetByUser = true;
 
-    const Vector3 oldCenterOfMass = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
-    mWorld.mDynamicsComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
+    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
 
     // Compute the center of mass in world-space coordinates
-    const Vector3& updatedCenterOfMassLocal = mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity);
-    mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * updatedCenterOfMassLocal);
+    const Vector3& updatedCenterOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * updatedCenterOfMassLocal);
 
     // Update the linear velocity of the center of mass
     Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
     const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
-    const Vector3& centerOfMassWorld = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
     linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
@@ -313,14 +308,14 @@ void RigidBody::setMass(decimal mass) {
 
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
-    mWorld.mDynamicsComponents.setInitMass(mEntity, mass);
+    mWorld.mRigidBodyComponents.setInitMass(mEntity, mass);
 
-    if (mWorld.mDynamicsComponents.getInitMass(mEntity) > decimal(0.0)) {
-        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
+    if (mWorld.mRigidBodyComponents.getInitMass(mEntity) > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
     }
     else {
-        mWorld.mDynamicsComponents.setInitMass(mEntity, decimal(1.0));
-        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0));
+        mWorld.mRigidBodyComponents.setInitMass(mEntity, decimal(1.0));
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0));
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
@@ -368,8 +363,8 @@ void RigidBody::updateInertiaTensorInverseWorld() {
     // TODO : Make sure we do this in a system
 
     Matrix3x3 orientation = mWorld.mTransformComponents.getTransform(mEntity).getOrientation().getMatrix();
-    const Matrix3x3& inverseInertiaLocalTensor = mWorld.mDynamicsComponents.getInertiaTensorLocalInverse(mEntity);
-    mWorld.mDynamicsComponents.setInverseInertiaTensorWorld(mEntity, orientation * inverseInertiaLocalTensor * orientation.getTranspose());
+    const Matrix3x3& inverseInertiaLocalTensor = mWorld.mRigidBodyComponents.getInertiaTensorLocalInverse(mEntity);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorWorld(mEntity, orientation * inverseInertiaLocalTensor * orientation.getTranspose());
 }
 
 // Add a collision shape to the body.
@@ -470,7 +465,7 @@ void RigidBody::removeCollisionShape(ProxyShape* proxyShape) {
  * @param isEnabled True if you want the gravity to be applied to this body
  */
 void RigidBody::enableGravity(bool isEnabled) {
-    mWorld.mDynamicsComponents.setIsGravityEnabled(mEntity, isEnabled);
+    mWorld.mRigidBodyComponents.setIsGravityEnabled(mEntity, isEnabled);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set isGravityEnabled=" +
@@ -484,7 +479,7 @@ void RigidBody::enableGravity(bool isEnabled) {
  */
 void RigidBody::setLinearDamping(decimal linearDamping) {
     assert(linearDamping >= decimal(0.0));
-    mWorld.mDynamicsComponents.setLinearDamping(mEntity, linearDamping);
+    mWorld.mRigidBodyComponents.setLinearDamping(mEntity, linearDamping);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set linearDamping=" + std::to_string(linearDamping));
@@ -497,7 +492,7 @@ void RigidBody::setLinearDamping(decimal linearDamping) {
  */
 void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
-    mWorld.mDynamicsComponents.setAngularDamping(mEntity, angularDamping);
+    mWorld.mRigidBodyComponents.setAngularDamping(mEntity, angularDamping);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set angularDamping=" + std::to_string(angularDamping));
@@ -510,8 +505,8 @@ void RigidBody::updateTransformWithCenterOfMass() {
 
     // Translate the body according to the translation of the center of mass position
     Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
-    const Vector3& centerOfMassWorld = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
-    const Vector3& centerOfMassLocal = mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    const Vector3& centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
     transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
 }
 
@@ -577,16 +572,16 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
  */
 void RigidBody::setTransform(const Transform& transform) {
 
-    const Vector3 oldCenterOfMass = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
 
     // Compute the new center of mass in world-space coordinates
-    const Vector3& centerOfMassLocal = mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity);
-    mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform * centerOfMassLocal);
+    const Vector3& centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform * centerOfMassLocal);
 
     // Update the linear velocity of the center of mass
     Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
     const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
-    const Vector3& centerOfMassWorld = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
     linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
@@ -606,11 +601,11 @@ void RigidBody::setTransform(const Transform& transform) {
 // the collision shapes attached to the body.
 void RigidBody::recomputeMassInformation() {
 
-    mWorld.mDynamicsComponents.setInitMass(mEntity, decimal(0.0));
-    mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(0.0));
-    if (!mIsInertiaTensorSetByUser) mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
-    if (!mIsInertiaTensorSetByUser) mWorld.mDynamicsComponents.setInverseInertiaTensorWorld(mEntity, Matrix3x3::zero());
-    if (!mIsCenterOfMassSetByUser) mWorld.mDynamicsComponents.setCenterOfMassLocal(mEntity, Vector3::zero());
+    mWorld.mRigidBodyComponents.setInitMass(mEntity, decimal(0.0));
+    mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+    if (!mIsInertiaTensorSetByUser) mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+    if (!mIsInertiaTensorSetByUser) mWorld.mRigidBodyComponents.setInverseInertiaTensorWorld(mEntity, Matrix3x3::zero());
+    if (!mIsCenterOfMassSetByUser) mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, Vector3::zero());
     Matrix3x3 inertiaTensorLocal;
     inertiaTensorLocal.setToZero();
 
@@ -619,7 +614,7 @@ void RigidBody::recomputeMassInformation() {
     // If it is a STATIC or a KINEMATIC body
     BodyType type = mWorld.mRigidBodyComponents.getBodyType(mEntity);
     if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
-        mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
+        mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
         return;
     }
 
@@ -629,30 +624,30 @@ void RigidBody::recomputeMassInformation() {
     const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
         ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
-        mWorld.mDynamicsComponents.setInitMass(mEntity, mWorld.mDynamicsComponents.getInitMass(mEntity) + proxyShape->getMass());
+        mWorld.mRigidBodyComponents.setInitMass(mEntity, mWorld.mRigidBodyComponents.getInitMass(mEntity) + proxyShape->getMass());
 
         if (!mIsCenterOfMassSetByUser) {
-            mWorld.mDynamicsComponents.setCenterOfMassLocal(mEntity, mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity) +
+            mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity) +
                                                             proxyShape->getLocalToBodyTransform().getPosition() * proxyShape->getMass());
         }
     }
 
-    if (mWorld.mDynamicsComponents.getInitMass(mEntity) > decimal(0.0)) {
-        mWorld.mDynamicsComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mDynamicsComponents.getInitMass(mEntity));
+    if (mWorld.mRigidBodyComponents.getInitMass(mEntity) > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
     }
     else {
-        mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
+        mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
         return;
     }
 
     // Compute the center of mass
-    const Vector3 oldCenterOfMass = mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity);
+    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
 
     if (!mIsCenterOfMassSetByUser) {
-        mWorld.mDynamicsComponents.setCenterOfMassLocal(mEntity, mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity) * mWorld.mDynamicsComponents.getMassInverse(mEntity));
+        mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity) * mWorld.mRigidBodyComponents.getMassInverse(mEntity));
     }
 
-    mWorld.mDynamicsComponents.setCenterOfMassWorld(mEntity, transform * mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity));
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform * mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity));
 
     if (!mIsInertiaTensorSetByUser) {
 
@@ -673,7 +668,7 @@ void RigidBody::recomputeMassInformation() {
 
             // Use the parallel axis theorem to convert the inertia tensor w.r.t the collision shape
             // center into a inertia tensor w.r.t to the body origin.
-            Vector3 offset = shapeTransform.getPosition() - mWorld.mDynamicsComponents.getCenterOfMassLocal(mEntity);
+            Vector3 offset = shapeTransform.getPosition() - mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
             decimal offsetSquare = offset.lengthSquare();
             Matrix3x3 offsetMatrix;
             offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
@@ -688,7 +683,7 @@ void RigidBody::recomputeMassInformation() {
         }
 
         // Compute the local inverse inertia tensor
-        mWorld.mDynamicsComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
     }
 
     // Update the world inverse inertia tensor
@@ -697,7 +692,7 @@ void RigidBody::recomputeMassInformation() {
     // Update the linear velocity of the center of mass
     Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
     Vector3 angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
-    linearVelocity += angularVelocity.cross(mWorld.mDynamicsComponents.getCenterOfMassWorld(mEntity) - oldCenterOfMass);
+    linearVelocity += angularVelocity.cross(mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity) - oldCenterOfMass);
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 }
 
@@ -722,7 +717,7 @@ Vector3 RigidBody::getAngularVelocity() const {
  * @return True if the gravity is applied to the body
  */
 bool RigidBody::isGravityEnabled() const {
-    return mWorld.mDynamicsComponents.getIsGravityEnabled(mEntity);
+    return mWorld.mRigidBodyComponents.getIsGravityEnabled(mEntity);
 }
 
 // Apply an external torque to the body.
@@ -744,8 +739,8 @@ void RigidBody::applyTorque(const Vector3& torque) {
     }
 
     // Add the torque
-    const Vector3& externalTorque = mWorld.mDynamicsComponents.getExternalTorque(mEntity);
-    mWorld.mDynamicsComponents.setExternalTorque(mEntity, externalTorque + torque);
+    const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + torque);
 }
 
 // Set the variable to know whether or not the body is sleeping
@@ -779,8 +774,8 @@ void RigidBody::setIsSleeping(bool isSleeping) {
 
         mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
         mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
-        mWorld.mDynamicsComponents.setExternalForce(mEntity, Vector3::zero());
-        mWorld.mDynamicsComponents.setExternalTorque(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3::zero());
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,

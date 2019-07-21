@@ -26,7 +26,6 @@
 // Libraries
 #include "BallAndSocketJoint.h"
 #include "engine/ConstraintSolver.h"
-#include "components/DynamicsComponents.h"
 #include "components/RigidBodyComponents.h"
 
 using namespace reactphysics3d;
@@ -47,8 +46,8 @@ BallAndSocketJoint::BallAndSocketJoint(uint id, const BallAndSocketJointInfo& jo
 void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
     // Get the bodies center of mass and orientations
-    const Vector3& x1 = constraintSolverData.dynamicsComponents.getCenterOfMassWorld(mBody1Entity);
-    const Vector3& x2 = constraintSolverData.dynamicsComponents.getCenterOfMassWorld(mBody2Entity);
+    const Vector3& x1 = constraintSolverData.rigidBodyComponents.getCenterOfMassWorld(mBody1Entity);
+    const Vector3& x2 = constraintSolverData.rigidBodyComponents.getCenterOfMassWorld(mBody2Entity);
     const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
     const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
 
@@ -65,8 +64,8 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
     Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mR2World);
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix)
-    decimal body1MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody1->getEntity());
-    decimal body2MassInverse = constraintSolverData.dynamicsComponents.getMassInverse(mBody2->getEntity());
+    decimal body1MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(mBody1->getEntity());
+    decimal body2MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(mBody2->getEntity());
     decimal inverseMassBodies =  body1MassInverse + body2MassInverse;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
@@ -98,42 +97,42 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
 // Warm start the constraint (apply the previous impulse at the beginning of the step)
 void BallAndSocketJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 
-    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
-    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.rigidBodyComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.rigidBodyComponents.getEntityIndex(mBody2Entity);
 
     // Get the velocities
-    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
-    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
-    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
-    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
+    Vector3& v1 = constraintSolverData.rigidBodyComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.rigidBodyComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.rigidBodyComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.rigidBodyComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Compute the impulse P=J^T * lambda for the body 1
     const Vector3 linearImpulseBody1 = -mImpulse;
     const Vector3 angularImpulseBody1 = mImpulse.cross(mR1World);
 
     // Apply the impulse to the body 1
-    v1 += constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity) * linearImpulseBody1;
+    v1 += constraintSolverData.rigidBodyComponents.getMassInverse(mBody1Entity) * linearImpulseBody1;
     w1 += mI1 * angularImpulseBody1;
 
     // Compute the impulse P=J^T * lambda for the body 2
     const Vector3 angularImpulseBody2 = -mImpulse.cross(mR2World);
 
     // Apply the impulse to the body to the body 2
-    v2 += constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity) * mImpulse;
+    v2 += constraintSolverData.rigidBodyComponents.getMassInverse(mBody2Entity) * mImpulse;
     w2 += mI2 * angularImpulseBody2;
 }
 
 // Solve the velocity constraint
 void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 
-    uint32 dynamicsComponentIndexBody1 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody1Entity);
-    uint32 dynamicsComponentIndexBody2 = constraintSolverData.dynamicsComponents.getEntityIndex(mBody2Entity);
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.rigidBodyComponents.getEntityIndex(mBody1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.rigidBodyComponents.getEntityIndex(mBody2Entity);
 
     // Get the velocities
-    Vector3& v1 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
-    Vector3& v2 = constraintSolverData.dynamicsComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
-    Vector3& w1 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
-    Vector3& w2 = constraintSolverData.dynamicsComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
+    Vector3& v1 = constraintSolverData.rigidBodyComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
+    Vector3& v2 = constraintSolverData.rigidBodyComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody2];
+    Vector3& w1 = constraintSolverData.rigidBodyComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
+    Vector3& w2 = constraintSolverData.rigidBodyComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Compute J*v
     const Vector3 Jv = v2 + w2.cross(mR2World) - v1 - w1.cross(mR1World);
@@ -147,14 +146,14 @@ void BallAndSocketJoint::solveVelocityConstraint(const ConstraintSolverData& con
     const Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
 
     // Apply the impulse to the body 1
-    v1 += constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity) * linearImpulseBody1;
+    v1 += constraintSolverData.rigidBodyComponents.getMassInverse(mBody1Entity) * linearImpulseBody1;
     w1 += mI1 * angularImpulseBody1;
 
     // Compute the impulse P=J^T * lambda for the body 2
     const Vector3 angularImpulseBody2 = -deltaLambda.cross(mR2World);
 
     // Apply the impulse to the body 2
-    v2 += constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity) * deltaLambda;
+    v2 += constraintSolverData.rigidBodyComponents.getMassInverse(mBody2Entity) * deltaLambda;
     w2 += mI2 * angularImpulseBody2;
 }
 
@@ -166,14 +165,14 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
     if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies center of mass and orientations
-    Vector3 x1 = constraintSolverData.dynamicsComponents.getConstrainedPosition(mBody1Entity);
-    Vector3 x2 = constraintSolverData.dynamicsComponents.getConstrainedPosition(mBody2Entity);
-    Quaternion q1 = constraintSolverData.dynamicsComponents.getConstrainedOrientation(mBody1Entity);
-    Quaternion q2 = constraintSolverData.dynamicsComponents.getConstrainedOrientation(mBody2Entity);
+    Vector3 x1 = constraintSolverData.rigidBodyComponents.getConstrainedPosition(mBody1Entity);
+    Vector3 x2 = constraintSolverData.rigidBodyComponents.getConstrainedPosition(mBody2Entity);
+    Quaternion q1 = constraintSolverData.rigidBodyComponents.getConstrainedOrientation(mBody1Entity);
+    Quaternion q2 = constraintSolverData.rigidBodyComponents.getConstrainedOrientation(mBody2Entity);
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    const decimal inverseMassBody1 = constraintSolverData.dynamicsComponents.getMassInverse(mBody1Entity);
-    const decimal inverseMassBody2 = constraintSolverData.dynamicsComponents.getMassInverse(mBody2Entity);
+    const decimal inverseMassBody1 = constraintSolverData.rigidBodyComponents.getMassInverse(mBody1Entity);
+    const decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(mBody2Entity);
 
     // Recompute the inverse inertia tensors
     mI1 = mBody1->getInertiaTensorInverseWorld();
@@ -232,9 +231,9 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
     q2 += Quaternion(0, w2) * q2 * decimal(0.5);
     q2.normalize();
 
-    constraintSolverData.dynamicsComponents.setConstrainedPosition(mBody1Entity, x1);
-    constraintSolverData.dynamicsComponents.setConstrainedPosition(mBody2Entity, x2);
-    constraintSolverData.dynamicsComponents.setConstrainedOrientation(mBody1Entity, q1);
-    constraintSolverData.dynamicsComponents.setConstrainedOrientation(mBody2Entity, q2);
+    constraintSolverData.rigidBodyComponents.setConstrainedPosition(mBody1Entity, x1);
+    constraintSolverData.rigidBodyComponents.setConstrainedPosition(mBody2Entity, x2);
+    constraintSolverData.rigidBodyComponents.setConstrainedOrientation(mBody1Entity, q1);
+    constraintSolverData.rigidBodyComponents.setConstrainedOrientation(mBody2Entity, q2);
 }
 
