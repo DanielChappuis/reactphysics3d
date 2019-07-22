@@ -53,8 +53,7 @@ class PoolAllocator;
  */
 class ContactManifold {
 
-    // TODO : Check if we can use public fields in this class (maybe this class is used by users directly)
-    private:
+    public:
 
         // -------------------- Constants -------------------- //
 
@@ -63,10 +62,8 @@ class ContactManifold {
 
         // -------------------- Attributes -------------------- //
 
-        // TODO : For each of the attributes, check if we need to keep it or not
-
         /// Index of the first contact point of the manifold in the list of contact points
-        uint mContactPointsIndex;
+        uint contactPointsIndex;
 
         /// Entity of the first body in contact
         Entity bodyEntity1;
@@ -81,66 +78,28 @@ class ContactManifold {
         Entity proxyShapeEntity2;
 
         /// Number of contacts in the cache
-        int8 mNbContactPoints;
+        int8 nbContactPoints;
 
         /// First friction vector of the contact manifold
-        Vector3 mFrictionVector1;
+        Vector3 frictionVector1;
 
         /// Second friction vector of the contact manifold
-        Vector3 mFrictionVector2;
+        Vector3 frictionVector2;
 
         /// First friction constraint accumulated impulse
-        decimal mFrictionImpulse1;
+        decimal frictionImpulse1;
 
         /// Second friction constraint accumulated impulse
-        decimal mFrictionImpulse2;
+        decimal frictionImpulse2;
 
         /// Twist friction constraint accumulated impulse
-        decimal mFrictionTwistImpulse;
+        decimal frictionTwistImpulse;
 
         /// Accumulated rolling resistance impulse
-        Vector3 mRollingResistanceImpulse;
+        Vector3 rollingResistanceImpulse;
 
         /// True if the contact manifold has already been added into an island
-        bool mIsAlreadyInIsland;
-
-        // -------------------- Methods -------------------- //
-
-        /// Return true if the contact manifold has already been added into an island
-        bool isAlreadyInIsland() const;
-
-        /// set the first friction vector at the center of the contact manifold
-        void setFrictionVector1(const Vector3& mFrictionVector1);
-
-        /// set the second friction vector at the center of the contact manifold
-        void setFrictionVector2(const Vector3& mFrictionVector2);
-
-        /// Set the first friction accumulated impulse
-        void setFrictionImpulse1(decimal frictionImpulse1);
-
-        /// Set the second friction accumulated impulse
-        void setFrictionImpulse2(decimal frictionImpulse2);
-
-        /// Set the friction twist accumulated impulse
-        void setFrictionTwistImpulse(decimal frictionTwistImpulse);
-
-        /// Set the accumulated rolling resistance impulse
-        void setRollingResistanceImpulse(const Vector3& rollingResistanceImpulse);
-
-        /// Return the first friction vector at the center of the contact manifold
-        const Vector3& getFrictionVector1() const;
-
-        /// Return the second friction vector at the center of the contact manifold
-        const Vector3& getFrictionVector2() const;
-
-        /// Return the first friction accumulated impulse
-        decimal getFrictionImpulse1() const;
-
-        /// Return the second friction accumulated impulse
-        decimal getFrictionImpulse2() const;
-
-        /// Return the friction twist accumulated impulse
-        decimal getFrictionTwistImpulse() const;
+        bool isAlreadyInIsland;
 
     public:
 
@@ -159,9 +118,6 @@ class ContactManifold {
         /// Assignment operator
         ContactManifold& operator=(const ContactManifold& contactManifold) = default;
 
-        /// Return the number of contact points in the manifold
-        int8 getNbContactPoints() const;
-
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
@@ -171,71 +127,6 @@ class ContactManifold {
         friend class ContactSolver;
         friend class CollisionDetection;
 };
-
-// Return the number of contact points in the manifold
-inline int8 ContactManifold::getNbContactPoints() const {
-    return mNbContactPoints;
-}
-
-// Return the first friction vector at the center of the contact manifold
-inline const Vector3& ContactManifold::getFrictionVector1() const {
-    return mFrictionVector1;
-}
-
-// set the first friction vector at the center of the contact manifold
-inline void ContactManifold::setFrictionVector1(const Vector3& frictionVector1) {
-    mFrictionVector1 = frictionVector1;
-}
-
-// Return the second friction vector at the center of the contact manifold
-inline const Vector3& ContactManifold::getFrictionVector2() const {
-    return mFrictionVector2;
-}
-
-// set the second friction vector at the center of the contact manifold
-inline void ContactManifold::setFrictionVector2(const Vector3& frictionVector2) {
-    mFrictionVector2 = frictionVector2;
-}
-
-// Return the first friction accumulated impulse
-inline decimal ContactManifold::getFrictionImpulse1() const {
-    return mFrictionImpulse1;
-}
-
-// Set the first friction accumulated impulse
-inline void ContactManifold::setFrictionImpulse1(decimal frictionImpulse1) {
-    mFrictionImpulse1 = frictionImpulse1;
-}
-
-// Return the second friction accumulated impulse
-inline decimal ContactManifold::getFrictionImpulse2() const {
-    return mFrictionImpulse2;
-}
-
-// Set the second friction accumulated impulse
-inline void ContactManifold::setFrictionImpulse2(decimal frictionImpulse2) {
-    mFrictionImpulse2 = frictionImpulse2;
-}
-
-// Return the friction twist accumulated impulse
-inline decimal ContactManifold::getFrictionTwistImpulse() const {
-    return mFrictionTwistImpulse;
-}
-
-// Set the friction twist accumulated impulse
-inline void ContactManifold::setFrictionTwistImpulse(decimal frictionTwistImpulse) {
-    mFrictionTwistImpulse = frictionTwistImpulse;
-}
-
-// Set the accumulated rolling resistance impulse
-inline void ContactManifold::setRollingResistanceImpulse(const Vector3& rollingResistanceImpulse) {
-    mRollingResistanceImpulse = rollingResistanceImpulse;
-}
-
-// Return true if the contact manifold has already been added into an island
-inline bool ContactManifold::isAlreadyInIsland() const {
-    return mIsAlreadyInIsland;
-}
 
 }
 

@@ -63,7 +63,7 @@ class Components {
         /// Current number of components
         uint32 mNbComponents;
 
-        // Size (in bytes) of a single component
+        /// Size (in bytes) of a single component
         size_t mComponentDataSize;
 
         /// Number of allocated components

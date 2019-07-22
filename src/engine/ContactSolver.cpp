@@ -116,7 +116,7 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
 
         ContactManifold& externalManifold = (*mAllContactManifolds)[m];
 
-        assert(externalManifold.getNbContactPoints() > 0);
+        assert(externalManifold.nbContactPoints > 0);
 
         // Get the two bodies of the contact
         RigidBody* body1 = static_cast<RigidBody*>(mBodyComponents.getBody(externalManifold.bodyEntity1));
@@ -144,7 +144,7 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
         mContactConstraints[mNbContactManifolds].massInverseBody1 = mRigidBodyComponents.getMassInverse(body1->getEntity());
         mContactConstraints[mNbContactManifolds].massInverseBody2 = mRigidBodyComponents.getMassInverse(body2->getEntity());
-        mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.getNbContactPoints();
+        mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.nbContactPoints;
         mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
         mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(body1, body2);
         mContactConstraints[mNbContactManifolds].externalContactManifold = &externalManifold;
@@ -159,9 +159,9 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
         const Vector3& w2 = mRigidBodyComponents.getAngularVelocity(externalManifold.bodyEntity2);
 
         // For each  contact point of the contact manifold
-        assert(externalManifold.getNbContactPoints() > 0);
-        uint contactPointsStartIndex = externalManifold.mContactPointsIndex;
-        uint nbContactPoints = externalManifold.mNbContactPoints;
+        assert(externalManifold.nbContactPoints > 0);
+        uint contactPointsStartIndex = externalManifold.contactPointsIndex;
+        uint nbContactPoints = externalManifold.nbContactPoints;
         for (uint c=contactPointsStartIndex; c < contactPointsStartIndex + nbContactPoints; c++) {
 
             ContactPoint& externalContact = (*mAllContactPoints)[c];
@@ -254,13 +254,13 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].r2Friction.x = mContactConstraints[mNbContactManifolds].frictionPointBody2.x - x2.x;
         mContactConstraints[mNbContactManifolds].r2Friction.y = mContactConstraints[mNbContactManifolds].frictionPointBody2.y - x2.y;
         mContactConstraints[mNbContactManifolds].r2Friction.z = mContactConstraints[mNbContactManifolds].frictionPointBody2.z - x2.z;
-        mContactConstraints[mNbContactManifolds].oldFrictionVector1 = externalManifold.getFrictionVector1();
-        mContactConstraints[mNbContactManifolds].oldFrictionVector2 = externalManifold.getFrictionVector2();
+        mContactConstraints[mNbContactManifolds].oldFrictionVector1 = externalManifold.frictionVector1;
+        mContactConstraints[mNbContactManifolds].oldFrictionVector2 = externalManifold.frictionVector2;
 
         // Initialize the accumulated impulses with the previous step accumulated impulses
-        mContactConstraints[mNbContactManifolds].friction1Impulse = externalManifold.getFrictionImpulse1();
-        mContactConstraints[mNbContactManifolds].friction2Impulse = externalManifold.getFrictionImpulse2();
-        mContactConstraints[mNbContactManifolds].frictionTwistImpulse = externalManifold.getFrictionTwistImpulse();
+        mContactConstraints[mNbContactManifolds].friction1Impulse = externalManifold.frictionImpulse1;
+        mContactConstraints[mNbContactManifolds].friction2Impulse = externalManifold.frictionImpulse2;
+        mContactConstraints[mNbContactManifolds].frictionTwistImpulse = externalManifold.frictionTwistImpulse;
 
         // Compute the inverse K matrix for the rolling resistance constraint
         bool isBody1DynamicType = body1->getType() == BodyType::DYNAMIC;
@@ -805,12 +805,12 @@ void ContactSolver::storeImpulses() {
             contactPointIndex++;
         }
 
-        mContactConstraints[c].externalContactManifold->setFrictionImpulse1(mContactConstraints[c].friction1Impulse);
-        mContactConstraints[c].externalContactManifold->setFrictionImpulse2(mContactConstraints[c].friction2Impulse);
-        mContactConstraints[c].externalContactManifold->setFrictionTwistImpulse(mContactConstraints[c].frictionTwistImpulse);
-        mContactConstraints[c].externalContactManifold->setRollingResistanceImpulse(mContactConstraints[c].rollingResistanceImpulse);
-        mContactConstraints[c].externalContactManifold->setFrictionVector1(mContactConstraints[c].frictionVector1);
-        mContactConstraints[c].externalContactManifold->setFrictionVector2(mContactConstraints[c].frictionVector2);
+        mContactConstraints[c].externalContactManifold->frictionImpulse1 = mContactConstraints[c].friction1Impulse;
+        mContactConstraints[c].externalContactManifold->frictionImpulse2 = mContactConstraints[c].friction2Impulse;
+        mContactConstraints[c].externalContactManifold->frictionTwistImpulse = mContactConstraints[c].frictionTwistImpulse;
+        mContactConstraints[c].externalContactManifold->rollingResistanceImpulse = mContactConstraints[c].rollingResistanceImpulse;
+        mContactConstraints[c].externalContactManifold->frictionVector1 = mContactConstraints[c].frictionVector1;
+        mContactConstraints[c].externalContactManifold->frictionVector2 = mContactConstraints[c].frictionVector2;
     }
 }
 

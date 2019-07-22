@@ -728,8 +728,8 @@ void CollisionDetection::initContactsWithPreviousOnes() {
 
                 assert(m < mCurrentContactManifolds->size());
                 ContactManifold& currentContactManifold = (*mCurrentContactManifolds)[m];
-                assert(currentContactManifold.mNbContactPoints > 0);
-                ContactPoint& currentContactPoint = (*mCurrentContactPoints)[currentContactManifold.mContactPointsIndex];
+                assert(currentContactManifold.nbContactPoints > 0);
+                ContactPoint& currentContactPoint = (*mCurrentContactPoints)[currentContactManifold.contactPointsIndex];
                 const Vector3& currentContactPointNormal = currentContactPoint.getNormal();
 
                 // Find a similar contact manifold among the contact manifolds from the previous frame (for warmstarting)
@@ -738,19 +738,19 @@ void CollisionDetection::initContactsWithPreviousOnes() {
                 for (uint p=previousContactManifoldIndex; p < previousContactManifoldIndex + previousNbContactManifolds; p++) {
 
                     ContactManifold& previousContactManifold = (*mPreviousContactManifolds)[p];
-                    assert(previousContactManifold.mNbContactPoints > 0);
-                    ContactPoint& previousContactPoint = (*mPreviousContactPoints)[previousContactManifold.mContactPointsIndex];
+                    assert(previousContactManifold.nbContactPoints > 0);
+                    ContactPoint& previousContactPoint = (*mPreviousContactPoints)[previousContactManifold.contactPointsIndex];
 
                     // If the previous contact manifold has a similar contact normal with the current manifold
                     if (previousContactPoint.getNormal().dot(currentContactPointNormal) >= mWorld->mConfig.cosAngleSimilarContactManifold) {
 
                         // Transfer data from the previous contact manifold to the current one
-                        currentContactManifold.mFrictionVector1 = previousContactManifold.mFrictionVector1;
-                        currentContactManifold.mFrictionVector2 = previousContactManifold.mFrictionVector2;
-                        currentContactManifold.mFrictionImpulse1 = previousContactManifold.mFrictionImpulse1;
-                        currentContactManifold.mFrictionImpulse2 = previousContactManifold.mFrictionImpulse2;
-                        currentContactManifold.mFrictionTwistImpulse = previousContactManifold.mFrictionTwistImpulse;
-                        currentContactManifold.mRollingResistanceImpulse = previousContactManifold.mRollingResistanceImpulse;
+                        currentContactManifold.frictionVector1 = previousContactManifold.frictionVector1;
+                        currentContactManifold.frictionVector2 = previousContactManifold.frictionVector2;
+                        currentContactManifold.frictionImpulse1 = previousContactManifold.frictionImpulse1;
+                        currentContactManifold.frictionImpulse2 = previousContactManifold.frictionImpulse2;
+                        currentContactManifold.frictionTwistImpulse = previousContactManifold.frictionTwistImpulse;
+                        currentContactManifold.rollingResistanceImpulse = previousContactManifold.rollingResistanceImpulse;
 
                         break;
                     }

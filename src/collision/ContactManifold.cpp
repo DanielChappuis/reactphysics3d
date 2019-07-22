@@ -33,13 +33,10 @@ using namespace reactphysics3d;
 // Constructor
 ContactManifold::ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity proxyShapeEntity1, Entity proxyShapeEntity2,
                                  uint contactPointsIndex, int8 nbContactPoints)
-                :mContactPointsIndex(0), bodyEntity1(bodyEntity1), bodyEntity2(bodyEntity2),
-                 proxyShapeEntity1(proxyShapeEntity1), proxyShapeEntity2(proxyShapeEntity2), mFrictionImpulse1(0), mFrictionImpulse2(0),
-                 mFrictionTwistImpulse(0), mIsAlreadyInIsland(false) {
+                :contactPointsIndex(contactPointsIndex), bodyEntity1(bodyEntity1), bodyEntity2(bodyEntity2),
+                 proxyShapeEntity1(proxyShapeEntity1), proxyShapeEntity2(proxyShapeEntity2), nbContactPoints(nbContactPoints), frictionImpulse1(0), frictionImpulse2(0),
+                 frictionTwistImpulse(0), isAlreadyInIsland(false) {
 
-
-    mContactPointsIndex = contactPointsIndex;
-    mNbContactPoints = nbContactPoints;
 }
 
 // Destructor
