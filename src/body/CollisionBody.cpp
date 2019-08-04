@@ -90,7 +90,7 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape, con
                                                                   AABB(localBoundsMin, localBoundsMax),
                                                                   transform, collisionShape, decimal(1), 0x0001, 0xFFFF);
     bool isActive = mWorld.mCollisionBodyComponents.getIsActive(mEntity);
-    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, isActive, proxyShapeComponent);
+    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, !isActive, proxyShapeComponent);
 
     mWorld.mCollisionBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
 

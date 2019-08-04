@@ -642,9 +642,8 @@ void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const List<int>& node
     }
 }
 
-/// Report all shapes overlapping with the AABB given in parameter.
-// TODO : Do not use this method anymore. Use
-void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, DynamicAABBTreeOverlapCallback& callback) const {
+// Report all shapes overlapping with the AABB given in parameter.
+void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int>& overlappingNodes) const {
 
     // Create a stack with the nodes to visit
     Stack<int> stack(mAllocator, 64);
@@ -669,7 +668,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, Dynam
             if (nodeToVisit->isLeaf()) {
 
                 // Notify the broad-phase about a new potential overlapping pair
-                callback.notifyOverlappingNode(nodeIDToVisit);
+                overlappingNodes.add(nodeIDToVisit);
             }
             else {  // If the node is not a leaf
 
@@ -682,7 +681,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, Dynam
 }
 
 // Ray casting method
-void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &callback) const {
+void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& callback) const {
 
     RP3D_PROFILE("DynamicAABBTree::raycast()", mProfiler);
 

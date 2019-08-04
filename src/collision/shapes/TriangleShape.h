@@ -180,6 +180,7 @@ class TriangleShape : public ConvexPolyhedronShape {
         friend class ConcaveMeshRaycastCallback;
         friend class TriangleOverlapCallback;
         friend class MiddlePhaseTriangleCallback;
+        friend class HeightFieldShape;
 };
 
 // Return the number of bytes used by the collision shape

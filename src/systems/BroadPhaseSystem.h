@@ -143,7 +143,7 @@ class BroadPhaseSystem {
         void updateProxyShapeInternal(int broadPhaseId, const AABB& aabb, const Vector3& displacement);
 
         /// Update the broad-phase state of some proxy-shapes components
-        void updateProxyShapesComponents(uint32 startIndex, uint32 endIndex);
+        void updateProxyShapesComponents(uint32 startIndex, uint32 nbItems);
 
     public :
 
@@ -181,9 +181,6 @@ class BroadPhaseSystem {
         /// Remove a collision shape from the array of shapes that have moved in the last simulation
         /// step and that need to be tested again for broad-phase overlapping.
         void removeMovedCollisionShape(int broadPhaseID);
-
-        /// Report all the shapes that are overlapping with a given AABB
-        void reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int>& overlappingNodes) const;
 
         /// Compute all the overlapping pairs of collision shapes
         void computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int, int>>& overlappingNodes);

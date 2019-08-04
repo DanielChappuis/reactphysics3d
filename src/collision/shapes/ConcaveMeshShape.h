@@ -155,7 +155,7 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
 
-        /// Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
+        /// Return the three vertices coordinates (in the list outTriangleVertices) of a triangle
         void getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const;
 
         /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
@@ -163,6 +163,11 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Compute the shape Id for a given triangle of the mesh
         uint computeTriangleShapeId(uint subPart, uint triangleIndex) const;
+
+        /// Compute all the triangles of the mesh that are overlapping with the AABB in parameter
+        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3> &triangleVertices,
+                                                 List<Vector3> &triangleVerticesNormals, List<uint>& shapeIds,
+                                                 MemoryAllocator& allocator) const override;
 
     public:
 
@@ -186,9 +191,6 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
-
-        /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const override;
 
         /// Return the string representation of the shape
         virtual std::string to_string() const override;

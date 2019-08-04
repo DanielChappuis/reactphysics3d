@@ -34,7 +34,6 @@
 #include "body/RigidBody.h"
 #include "configuration.h"
 #include "collision/CollisionCallback.h"
-#include "collision/MiddlePhaseTriangleCallback.h"
 #include "collision/OverlapCallback.h"
 #include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 #include "collision/ContactManifold.h"
@@ -289,26 +288,28 @@ void CollisionDetection::computeMiddlePhase(OverlappingPairMap& overlappingPairs
 void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
                                                            NarrowPhaseInput& narrowPhaseInput) {
 
+    RP3D_PROFILE("CollisionDetection::computeConvexVsConcaveMiddlePhase()", mProfiler);
+
     ProxyShape* shape1 = pair->getShape1();
     ProxyShape* shape2 = pair->getShape2();
 
     ProxyShape* convexProxyShape;
     ProxyShape* concaveProxyShape;
-    const ConvexShape* convexShape;
-    const ConcaveShape* concaveShape;
+    ConvexShape* convexShape;
+    ConcaveShape* concaveShape;
 
     // Collision shape 1 is convex, collision shape 2 is concave
     if (shape1->getCollisionShape()->isConvex()) {
         convexProxyShape = shape1;
-        convexShape = static_cast<const ConvexShape*>(shape1->getCollisionShape());
+        convexShape = static_cast<ConvexShape*>(shape1->getCollisionShape());
         concaveProxyShape = shape2;
-        concaveShape = static_cast<const ConcaveShape*>(shape2->getCollisionShape());
+        concaveShape = static_cast<ConcaveShape*>(shape2->getCollisionShape());
     }
     else {  // Collision shape 2 is convex, collision shape 1 is concave
         convexProxyShape = shape2;
-        convexShape = static_cast<const ConvexShape*>(shape2->getCollisionShape());
+        convexShape = static_cast<ConvexShape*>(shape2->getCollisionShape());
         concaveProxyShape = shape1;
-        concaveShape = static_cast<const ConcaveShape*>(shape1->getCollisionShape());
+        concaveShape = static_cast<ConcaveShape*>(shape1->getCollisionShape());
     }
 
     // Select the narrow phase algorithm to use according to the two collision shapes
@@ -317,25 +318,48 @@ void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair
 
     assert(algorithmType != NarrowPhaseAlgorithmType::None);
 
-    // Set the parameters of the callback object
-    MiddlePhaseTriangleCallback middlePhaseCallback(pair, concaveProxyShape, convexProxyShape,
-                                                    concaveShape, narrowPhaseInput, algorithmType, allocator);
-
-#ifdef IS_PROFILING_ACTIVE
-
-	// Set the profiler
-	middlePhaseCallback.setProfiler(mProfiler);
-
-#endif
-
     // Compute the convex shape AABB in the local-space of the convex shape
     const Transform convexToConcaveTransform = concaveProxyShape->getLocalToWorldTransform().getInverse() *
                                                convexProxyShape->getLocalToWorldTransform();
     AABB aabb;
     convexShape->computeAABB(aabb, convexToConcaveTransform);
 
-    // Call the convex vs triangle callback for each triangle of the concave shape
-    concaveShape->testAllTriangles(middlePhaseCallback, aabb);
+    // Compute the concave shape triangles that are overlapping with the convex mesh AABB
+    List<Vector3> triangleVertices(allocator);
+    List<Vector3> triangleVerticesNormals(allocator);
+    List<uint> shapeIds(allocator);
+    concaveShape->computeOverlappingTriangles(aabb, triangleVertices, triangleVerticesNormals, shapeIds, allocator);
+
+    assert(triangleVertices.size() == triangleVerticesNormals.size());
+    assert(shapeIds.size() == triangleVertices.size() / 3);
+    assert(triangleVertices.size() % 3 == 0);
+    assert(triangleVerticesNormals.size() % 3 == 0);
+
+    // For each overlapping triangle
+    for (uint i=0; i < shapeIds.size(); i++)
+    {
+        // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
+        // destructor of the corresponding NarrowPhaseInfo.
+        TriangleShape* triangleShape = new (allocator.allocate(sizeof(TriangleShape)))
+                                       TriangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], allocator);
+
+    #ifdef IS_PROFILING_ACTIVE
+
+        // Set the profiler to the triangle shape
+        triangleShape->setProfiler(mProfiler);
+
+    #endif
+
+        bool isShape1Convex = pair->getShape1()->getCollisionShape()->isConvex();
+        ProxyShape* shape1 = isShape1Convex ? convexProxyShape : concaveProxyShape;
+        ProxyShape* shape2 = isShape1Convex ? concaveProxyShape : convexProxyShape;
+
+        // Create a narrow phase info for the narrow-phase collision detection
+        narrowPhaseInput.addNarrowPhaseTest(pair, isShape1Convex ? convexShape : triangleShape,
+                                                isShape1Convex ? triangleShape : convexShape,
+                                                shape1->getLocalToWorldTransform(), shape2->getLocalToWorldTransform(),
+                                                algorithmType, allocator);
+    }
 }
 
 // Execute the narrow-phase collision detection algorithm on batches

@@ -117,7 +117,7 @@ void BroadPhaseSystem::updateProxyShape(Entity proxyShapeEntity) {
     uint32 index = mProxyShapesComponents.mMapEntityToComponentIndex[proxyShapeEntity];
 
     // Update the proxy-shape component
-    updateProxyShapesComponents(index, index + 1);
+    updateProxyShapesComponents(index, 1);
 }
 
 // Update the broad-phase state of all the enabled proxy-shapes
@@ -146,15 +146,17 @@ void BroadPhaseSystem::updateProxyShapeInternal(int broadPhaseId, const AABB& aa
 }
 
 // Update the broad-phase state of some proxy-shapes components
-void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 endIndex) {
+void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbItems) {
 
-    assert(startIndex <= endIndex);
+    assert(nbItems > 0);
     assert(startIndex < mProxyShapesComponents.getNbComponents());
-    assert(endIndex <= mProxyShapesComponents.getNbComponents());
+    assert(startIndex + nbItems <= mProxyShapesComponents.getNbComponents());
 
     // Make sure we do not update disabled components
     startIndex = std::min(startIndex, mProxyShapesComponents.getNbEnabledComponents());
-    endIndex = std::min(endIndex, mProxyShapesComponents.getNbEnabledComponents());
+    uint32 endIndex = std::min(startIndex + nbItems, mProxyShapesComponents.getNbEnabledComponents());
+    nbItems = endIndex - startIndex;
+    assert(nbItems >= 0);
 
     // Get the time step if we are in a dynamics world
     DynamicsWorld* dynamicsWorld = dynamic_cast<DynamicsWorld*>(mCollisionDetection.getWorld());
@@ -164,7 +166,7 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 end
     }
 
     // For each proxy-shape component to update
-    for (uint32 i = startIndex; i < endIndex; i++) {
+    for (uint32 i = startIndex; i < startIndex + nbItems; i++) {
 
         const int broadPhaseId = mProxyShapesComponents.mBroadPhaseIds[i];
         if (broadPhaseId != -1) {
@@ -191,14 +193,6 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 end
             updateProxyShapeInternal(broadPhaseId, aabb, displacement);
         }
     }
-}
-
-void BroadPhaseSystem::reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int>& overlappingNodes) const {
-
-    AABBOverlapCallback callback(overlappingNodes);
-
-    // Ask the dynamic AABB tree to report all collision shapes that overlap with this AABB
-    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(aabb, callback);
 }
 
 // Compute all the overlapping pairs of collision shapes

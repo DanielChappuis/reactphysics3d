@@ -84,8 +84,7 @@ void ConcaveMeshShape::initBVHTree() {
 }
 
 // Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex,
-                                           Vector3* outTriangleVertices) const {
+void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const {
 
     // Get the triangle vertex array of the current sub-part
     TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
@@ -116,14 +115,40 @@ void ConcaveMeshShape::getTriangleVerticesNormals(uint subPart, uint triangleInd
 }
 
 
-// Use a callback method on all triangles of the concave shape inside a given AABB
-void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const {
+// Compute all the triangles of the mesh that are overlapping with the AABB in parameter
+void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
+                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+                                                   MemoryAllocator& allocator) const {
 
-    ConvexTriangleAABBOverlapCallback overlapCallback(callback, *this, mDynamicAABBTree);
+    // Compute the nodes of the internal AABB tree that are overlapping with the AABB
+    List<int> overlappingNodes(allocator);
+    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(localAABB, overlappingNodes);
 
-    // Ask the Dynamic AABB Tree to report all the triangles that are overlapping
-    // with the AABB of the convex shape.
-    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(localAABB, overlapCallback);
+    // For each overlapping node
+    for (uint i=0; i < overlappingNodes.size(); i++) {
+
+        int nodeId = overlappingNodes[i];
+
+        // Get the node data (triangle index and mesh subpart index)
+        int32* data = mDynamicAABBTree.getNodeDataInt(nodeId);
+
+        // Get the triangle vertices for this node from the concave mesh shape
+        Vector3 trianglePoints[3];
+        getTriangleVertices(data[0], data[1], trianglePoints);
+        triangleVertices.add(trianglePoints[0]);
+        triangleVertices.add(trianglePoints[1]);
+        triangleVertices.add(trianglePoints[2]);
+
+        // Get the vertices normals of the triangle
+        Vector3 verticesNormals[3];
+        getTriangleVerticesNormals(data[0], data[1], verticesNormals);
+        triangleVerticesNormals.add(verticesNormals[0]);
+        triangleVerticesNormals.add(verticesNormals[1]);
+        triangleVerticesNormals.add(verticesNormals[2]);
+
+        // Compute the triangle shape ID
+        shapeIds.add(computeTriangleShapeId(data[0], data[1]));
+    }
 }
 
 // Raycast method with feedback information
