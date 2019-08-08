@@ -136,7 +136,7 @@ class ContactPoint {
         // Friendship
         friend class ContactManifold;
         friend class ContactManifoldSet;
-        friend class ContactSolver;
+        friend class ContactSolverSystem;
         friend class CollisionDetection;
 };
 

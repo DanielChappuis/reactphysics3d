@@ -28,10 +28,11 @@
 
 // Libraries
 #include "CollisionWorld.h"
-#include "ConstraintSolver.h"
+#include "systems/ConstraintSolverSystem.h"
 #include "configuration.h"
 #include "utils/Logger.h"
-#include "engine/ContactSolver.h"
+#include "systems/ContactSolverSystem.h"
+#include "systems/DynamicsSystem.h"
 #include "engine/Islands.h"
 
 /// Namespace ReactPhysics3D
@@ -57,11 +58,14 @@ class DynamicsWorld : public CollisionWorld {
         /// All the islands of bodies of the current frame
         Islands mIslands;
 
-        /// Contact solver
-        ContactSolver mContactSolver;
+        /// Contact solver system
+        ContactSolverSystem mContactSolverSystem;
 
-        /// Constraint solver
-        ConstraintSolver mConstraintSolver;
+        /// Constraint solver system
+        ConstraintSolverSystem mConstraintSolverSystem;
+
+        /// Dynamics system
+        DynamicsSystem mDynamicsSystem;
 
         /// Number of iterations for the velocity solver of the Sequential Impulses technique
         uint mNbVelocitySolverIterations;
@@ -80,9 +84,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Gravity vector of the world
         Vector3 mGravity;
-
-        /// Current frame time step (in seconds)
-        decimal mTimeStep;
 
         /// True if the gravity force is on
         bool mIsGravityEnabled;
@@ -105,20 +106,8 @@ class DynamicsWorld : public CollisionWorld {
 
         // -------------------- Methods -------------------- //
 
-        /// Integrate the positions and orientations of rigid bodies.
-        void integrateRigidBodiesPositions();
-
-        /// Reset the external force and torque applied to the bodies
-        void resetBodiesForceAndTorque();
-
-        /// Reset the split velocities of the bodies
-        void resetSplitVelocities();
-
-        /// Integrate the velocities of rigid bodies.
-        void integrateRigidBodiesVelocities();
-
         /// Solve the contacts and constraints
-        void solveContactsAndConstraints();
+        void solveContactsAndConstraints(decimal timeStep);
 
         /// Solve the position error correction of the constraints
         void solvePositionCorrection();
@@ -129,11 +118,8 @@ class DynamicsWorld : public CollisionWorld {
         /// Compute the islands using potential contacts and joints and create the actual contacts.
         void createIslands();
 
-        /// Update the postion/orientation of the bodies
-        void updateBodiesState();
-
         /// Put bodies to sleep if needed.
-        void updateSleepingBodies();
+        void updateSleepingBodies(decimal timeStep);
 
         /// Add the joint to the list of joints of the two bodies involved in the joint
         void addJointToBody(Joint* joint);
@@ -197,9 +183,6 @@ class DynamicsWorld : public CollisionWorld {
         /// Set the gravity vector of the world
         void setGravity(Vector3& gravity);
 
-        /// Return the current time step
-        decimal getTimeStep() const;
-
         /// Return if the gravity is on
         bool isGravityEnabled() const;
 
@@ -243,16 +226,6 @@ class DynamicsWorld : public CollisionWorld {
 
         friend class RigidBody;
 };
-
-// Reset the external force and torque applied to the bodies
-inline void DynamicsWorld::resetBodiesForceAndTorque() {
-
-    // For each body of the world
-    for (uint32 i=0; i < mRigidBodyComponents.getNbComponents(); i++) {
-        mRigidBodyComponents.mExternalForces[i].setToZero();
-        mRigidBodyComponents.mExternalTorques[i].setToZero();
-    }
-}
 
 // Get the number of iterations for the velocity constraint solver
 /**
@@ -299,10 +272,10 @@ inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
 inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
                               ContactsPositionCorrectionTechnique technique) {
     if (technique == ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS) {
-        mContactSolver.setIsSplitImpulseActive(false);
+        mContactSolverSystem.setIsSplitImpulseActive(false);
     }
     else {
-        mContactSolver.setIsSplitImpulseActive(true);
+        mContactSolverSystem.setIsSplitImpulseActive(true);
     }
 }
 
@@ -313,10 +286,10 @@ inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
 inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
                               JointsPositionCorrectionTechnique technique) {
     if (technique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-        mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
+        mConstraintSolverSystem.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
     }
     else {
-        mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
+        mConstraintSolverSystem.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
     }
 }
 
@@ -337,14 +310,6 @@ inline void DynamicsWorld::setGravity(Vector3& gravity) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: Set gravity vector to " + gravity.to_string());
-}
-
-// Return the current time step
-/**
- * @return The current time step (in seconds)
- */
-inline decimal DynamicsWorld::getTimeStep() const {
-    return mTimeStep;
 }
 
 // Return if the gravity is enaled

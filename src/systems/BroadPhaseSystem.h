@@ -97,7 +97,7 @@ class BroadPhaseRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
 };
 
-// Class BroadPhaseAlgorithm
+// Class BroadPhaseSystem
 /**
  * This class represents the broad-phase collision detection. The
  * goal of the broad-phase collision detection is to compute the pairs of proxy shapes
@@ -143,7 +143,7 @@ class BroadPhaseSystem {
         void updateProxyShapeInternal(int broadPhaseId, const AABB& aabb, const Vector3& displacement);
 
         /// Update the broad-phase state of some proxy-shapes components
-        void updateProxyShapesComponents(uint32 startIndex, uint32 nbItems);
+        void updateProxyShapesComponents(uint32 startIndex, uint32 nbItems, decimal timeStep);
 
     public :
 
@@ -169,10 +169,10 @@ class BroadPhaseSystem {
         void removeProxyCollisionShape(ProxyShape* proxyShape);
 
         /// Update the broad-phase state of a single proxy-shape
-        void updateProxyShape(Entity proxyShapeEntity);
+        void updateProxyShape(Entity proxyShapeEntity, decimal timeStep);
 
         /// Update the broad-phase state of all the enabled proxy-shapes
-        void updateProxyShapes();
+        void updateProxyShapes(decimal timeStep);
 
         /// Add a collision shape in the array of shapes that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.

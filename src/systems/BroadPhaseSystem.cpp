@@ -109,7 +109,7 @@ void BroadPhaseSystem::removeProxyCollisionShape(ProxyShape* proxyShape) {
 }
 
 // Update the broad-phase state of a single proxy-shape
-void BroadPhaseSystem::updateProxyShape(Entity proxyShapeEntity) {
+void BroadPhaseSystem::updateProxyShape(Entity proxyShapeEntity, decimal timeStep) {
 
     assert(mProxyShapesComponents.mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -117,14 +117,14 @@ void BroadPhaseSystem::updateProxyShape(Entity proxyShapeEntity) {
     uint32 index = mProxyShapesComponents.mMapEntityToComponentIndex[proxyShapeEntity];
 
     // Update the proxy-shape component
-    updateProxyShapesComponents(index, 1);
+    updateProxyShapesComponents(index, 1, timeStep);
 }
 
 // Update the broad-phase state of all the enabled proxy-shapes
-void BroadPhaseSystem::updateProxyShapes() {
+void BroadPhaseSystem::updateProxyShapes(decimal timeStep) {
 
     // Update all the enabled proxy-shape components
-    updateProxyShapesComponents(0, mProxyShapesComponents.getNbEnabledComponents());
+    updateProxyShapesComponents(0, mProxyShapesComponents.getNbEnabledComponents(), timeStep);
 }
 
 // Notify the broad-phase that a collision shape has moved and need to be updated
@@ -146,7 +146,7 @@ void BroadPhaseSystem::updateProxyShapeInternal(int broadPhaseId, const AABB& aa
 }
 
 // Update the broad-phase state of some proxy-shapes components
-void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbItems) {
+void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbItems, decimal timeStep) {
 
     assert(nbItems > 0);
     assert(startIndex < mProxyShapesComponents.getNbComponents());
@@ -157,13 +157,6 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbI
     uint32 endIndex = std::min(startIndex + nbItems, mProxyShapesComponents.getNbEnabledComponents());
     nbItems = endIndex - startIndex;
     assert(nbItems >= 0);
-
-    // Get the time step if we are in a dynamics world
-    DynamicsWorld* dynamicsWorld = dynamic_cast<DynamicsWorld*>(mCollisionDetection.getWorld());
-    decimal timeStep = decimal(0.0);
-    if (dynamicsWorld != nullptr) {
-        timeStep = dynamicsWorld->getTimeStep();
-    }
 
     // For each proxy-shape component to update
     for (uint32 i = startIndex; i < startIndex + nbItems; i++) {

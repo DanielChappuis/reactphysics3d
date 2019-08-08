@@ -333,7 +333,8 @@ class RigidBodyComponents : public Components {
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
-        friend class ContactSolver;
+        friend class ContactSolverSystem;
+        friend class DynamicsSystem;
         friend class BallAndSocketJoint;
         friend class FixedJoint;
         friend class HingeJoint;

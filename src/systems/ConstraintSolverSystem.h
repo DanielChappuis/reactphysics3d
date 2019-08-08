@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_CONSTRAINT_SOLVER_H
-#define REACTPHYSICS3D_CONSTRAINT_SOLVER_H
+#ifndef REACTPHYSICS3D_CONSTRAINT_SOLVER_SYSTEM_H
+#define REACTPHYSICS3D_CONSTRAINT_SOLVER_SYSTEM_H
 
 // Libraries
 #include "configuration.h"
@@ -66,7 +66,7 @@ struct ConstraintSolverData {
 
 };
 
-// Class ConstraintSolver
+// Class ConstraintSolverSystem
 /**
  * This class represents the constraint solver that is used to solve constraints between
  * the rigid bodies. The constraint solver is based on the "Sequential Impulse" technique
@@ -135,7 +135,7 @@ struct ConstraintSolverData {
  * friction but also another twist friction constraint to prevent spin of the body around the
  * contact manifold center.
  */
-class ConstraintSolver {
+class ConstraintSolverSystem {
 
     private :
 
@@ -164,10 +164,10 @@ class ConstraintSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolver(Islands& islands, RigidBodyComponents& rigidBodyComponents);
+        ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents);
 
         /// Destructor
-        ~ConstraintSolver() = default;
+        ~ConstraintSolverSystem() = default;
 
         /// Initialize the constraint solver for a given island
         void initializeForIsland(decimal dt, uint islandIndex);
@@ -196,7 +196,7 @@ class ConstraintSolver {
 #ifdef IS_PROFILING_ACTIVE
 
 // Set the profiler
-inline void ConstraintSolver::setProfiler(Profiler* profiler) {
+inline void ConstraintSolverSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 }
 

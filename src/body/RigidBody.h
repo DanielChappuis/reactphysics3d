@@ -218,7 +218,7 @@ class RigidBody : public CollisionBody {
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
-        friend class ContactSolver;
+        friend class ContactSolverSystem;
         friend class BallAndSocketJoint;
         friend class SliderJoint;
         friend class HingeJoint;

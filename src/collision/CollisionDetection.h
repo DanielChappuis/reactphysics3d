@@ -292,10 +292,10 @@ class CollisionDetection {
         void removeProxyCollisionShape(ProxyShape* proxyShape);
 
         /// Update a proxy collision shape (that has moved for instance)
-        void updateProxyShape(Entity proxyShapeEntity);
+        void updateProxyShape(Entity proxyShapeEntity, decimal timeStep);
 
         /// Update all the enabled proxy-shapes
-        void updateProxyShapes();
+        void updateProxyShapes(decimal timeStep);
 
         /// Add a pair of bodies that cannot collide with each other
         void addNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
@@ -411,15 +411,15 @@ inline MemoryManager& CollisionDetection::getMemoryManager() const {
 }
 
 // Update a proxy collision shape (that has moved for instance)
-inline void CollisionDetection::updateProxyShape(Entity proxyShapeEntity) {
+inline void CollisionDetection::updateProxyShape(Entity proxyShapeEntity, decimal timeStep) {
 
     // Update the proxy-shape component
-    mBroadPhaseSystem.updateProxyShape(proxyShapeEntity);
+    mBroadPhaseSystem.updateProxyShape(proxyShapeEntity, timeStep);
 }
 
 // Update all the enabled proxy-shapes
-inline void CollisionDetection::updateProxyShapes() {
-    mBroadPhaseSystem.updateProxyShapes();
+inline void CollisionDetection::updateProxyShapes(decimal timeStep) {
+    mBroadPhaseSystem.updateProxyShapes(timeStep);
 }
 
 #ifdef IS_PROFILING_ACTIVE

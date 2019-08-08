@@ -122,7 +122,7 @@ void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
         mBody->mWorld.mRigidBodyComponents.setIsSleeping(mBody->getEntity(), false);
     }
 
-    mBody->mWorld.mCollisionDetection.updateProxyShape(mEntity);
+    mBody->mWorld.mCollisionDetection.updateProxyShape(mEntity, 0);
 
     int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(mEntity);
 

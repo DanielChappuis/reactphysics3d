@@ -50,13 +50,14 @@ using namespace std;
 DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
               : CollisionWorld(worldSettings, logger, profiler),
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
-                mContactSolver(mMemoryManager, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
+                mContactSolverSystem(mMemoryManager, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mProxyShapesComponents, mConfig),
-                mConstraintSolver(mIslands, mRigidBodyComponents),
+                mConstraintSolverSystem(mIslands, mRigidBodyComponents),
+                mDynamicsSystem(mRigidBodyComponents, mTransformComponents, mIsGravityEnabled, mGravity),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
-                mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity), mTimeStep(decimal(1.0f / 60.0f)),
+                mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity),
                 mIsGravityEnabled(true),  mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
                 mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
                 mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0) {
@@ -64,8 +65,9 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
 #ifdef IS_PROFILING_ACTIVE
 
 	// Set the profiler
-    mConstraintSolver.setProfiler(mProfiler);
-    mContactSolver.setProfiler(mProfiler);
+    mConstraintSolverSystem.setProfiler(mProfiler);
+    mContactSolverSystem.setProfiler(mProfiler);
+    mDynamicsSystem.setProfiler(mProfiler);
 
 #endif
 
@@ -113,8 +115,6 @@ void DynamicsWorld::update(decimal timeStep) {
 
     RP3D_PROFILE("DynamicsWorld::update()", mProfiler);
 
-    mTimeStep = timeStep;
-
     // Notify the event listener about the beginning of an internal tick
     if (mEventListener != nullptr) mEventListener->beginInternalTick();
 
@@ -131,27 +131,30 @@ void DynamicsWorld::update(decimal timeStep) {
     mCollisionDetection.reportContacts();
 
     // Integrate the velocities
-    integrateRigidBodiesVelocities();
+    mDynamicsSystem.integrateRigidBodiesVelocities(timeStep);
 
     // Solve the contacts and constraints
-    solveContactsAndConstraints();
+    solveContactsAndConstraints(timeStep);
 
     // Integrate the position and orientation of each body
-    integrateRigidBodiesPositions();
+    mDynamicsSystem.integrateRigidBodiesPositions(timeStep, mContactSolverSystem.isSplitImpulseActive());
 
     // Solve the position correction for constraints
     solvePositionCorrection();
 
     // Update the state (positions and velocities) of the bodies
-    updateBodiesState();
+    mDynamicsSystem.updateBodiesState();
 
-    if (mIsSleepingEnabled) updateSleepingBodies();
+    // Update the proxy-shapes components
+    mCollisionDetection.updateProxyShapes(timeStep);
+
+    if (mIsSleepingEnabled) updateSleepingBodies(timeStep);
 
     // Notify the event listener about the end of an internal tick
     if (mEventListener != nullptr) mEventListener->endInternalTick();
 
     // Reset the external force and torque applied to the bodies
-    resetBodiesForceAndTorque();
+    mDynamicsSystem.resetBodiesForceAndTorque();
 
     // Reset the islands
     mIslands.clear();
@@ -160,161 +163,16 @@ void DynamicsWorld::update(decimal timeStep) {
     mMemoryManager.resetFrameAllocator();
 }
 
-// Integrate position and orientation of the rigid bodies.
-/// The positions and orientations of the bodies are integrated using
-/// the sympletic Euler time stepping scheme.
-void DynamicsWorld::integrateRigidBodiesPositions() {
-
-    RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesPositions()", mProfiler);
-    
-    const decimal isSplitImpulseActive = mContactSolver.isSplitImpulseActive() ? decimal(1.0) : decimal(0.0);
-
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
-        // Get the constrained velocity
-        Vector3 newLinVelocity = mRigidBodyComponents.mConstrainedLinearVelocities[i];
-        Vector3 newAngVelocity = mRigidBodyComponents.mConstrainedAngularVelocities[i];
-
-        // Add the split impulse velocity from Contact Solver (only used
-        // to update the position)
-        newLinVelocity += isSplitImpulseActive * mRigidBodyComponents.mSplitLinearVelocities[i];
-        newAngVelocity += isSplitImpulseActive * mRigidBodyComponents.mSplitAngularVelocities[i];
-
-        // Get current position and orientation of the body
-        const Vector3& currentPosition = mRigidBodyComponents.mCentersOfMassWorld[i];
-        const Quaternion& currentOrientation = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).getOrientation();
-
-        // Update the new constrained position and orientation of the body
-        mRigidBodyComponents.mConstrainedPositions[i] = currentPosition + newLinVelocity * mTimeStep;
-        mRigidBodyComponents.mConstrainedOrientations[i] = currentOrientation + Quaternion(0, newAngVelocity) *
-                                                          currentOrientation * decimal(0.5) * mTimeStep;
-    }
-}
-
-// Update the postion/orientation of the bodies
-void DynamicsWorld::updateBodiesState() {
-
-    RP3D_PROFILE("DynamicsWorld::updateBodiesState()", mProfiler);
-
-    // TODO : Make sure we compute this in a system
-
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
-        // Update the linear and angular velocity of the body
-        mRigidBodyComponents.setLinearVelocity(mRigidBodyComponents.mBodiesEntities[i], mRigidBodyComponents.mConstrainedLinearVelocities[i]);
-        mRigidBodyComponents.setAngularVelocity(mRigidBodyComponents.mBodiesEntities[i], mRigidBodyComponents.mConstrainedAngularVelocities[i]);
-
-        // Update the position of the center of mass of the body
-        mRigidBodyComponents.mCentersOfMassWorld[i] = mRigidBodyComponents.mConstrainedPositions[i];
-
-        // Update the orientation of the body
-        const Quaternion& constrainedOrientation = mRigidBodyComponents.mConstrainedOrientations[i];
-        mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).setOrientation(constrainedOrientation.getUnit());
-    }
-
-    // Update the transform of the body (using the new center of mass and new orientation)
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
-        Transform& transform = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]);
-        const Vector3& centerOfMassWorld = mRigidBodyComponents.mCentersOfMassWorld[i];
-        const Vector3& centerOfMassLocal = mRigidBodyComponents.mCentersOfMassLocal[i];
-        transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
-    }
-
-    // Update the world inverse inertia tensor of the body
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
-        Matrix3x3 orientation = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).getOrientation().getMatrix();
-        const Matrix3x3& inverseInertiaLocalTensor = mRigidBodyComponents.mInverseInertiaTensorsLocal[i];
-        mRigidBodyComponents.mInverseInertiaTensorsWorld[i] = orientation * inverseInertiaLocalTensor * orientation.getTranspose();
-    }
-
-    // Update the proxy-shapes components
-    mCollisionDetection.updateProxyShapes();
-}
-
-// Reset the split velocities of the bodies
-void DynamicsWorld::resetSplitVelocities() {
-
-    for(uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-        mRigidBodyComponents.mSplitLinearVelocities[i].setToZero();
-        mRigidBodyComponents.mSplitAngularVelocities[i].setToZero();
-    }
-}
-
-// Integrate the velocities of rigid bodies.
-/// This method only set the temporary velocities but does not update
-/// the actual velocitiy of the bodies. The velocities updated in this method
-/// might violate the constraints and will be corrected in the constraint and
-/// contact solver.
-void DynamicsWorld::integrateRigidBodiesVelocities() {
-
-    RP3D_PROFILE("DynamicsWorld::integrateRigidBodiesVelocities()", mProfiler);
-
-    // Reset the split velocities of the bodies
-    resetSplitVelocities();
-
-    // Integration component velocities using force/torque
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
-        assert(mRigidBodyComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
-        assert(mRigidBodyComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
-
-        const Vector3& linearVelocity = mRigidBodyComponents.mLinearVelocities[i];
-        const Vector3& angularVelocity = mRigidBodyComponents.mAngularVelocities[i];
-
-        // Integrate the external force to get the new velocity of the body
-        mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + mTimeStep *
-                                                              mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
-        mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + mTimeStep *
-                                                 mRigidBodyComponents.mInverseInertiaTensorsWorld[i] * mRigidBodyComponents.mExternalTorques[i];
-    }
-
-    // Apply gravity force
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
-        // If the gravity has to be applied to this rigid body
-        if (mRigidBodyComponents.mIsGravityEnabled[i] && mIsGravityEnabled) {
-
-            // Integrate the gravity force
-            mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] + mTimeStep *
-                                                                  mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mInitMasses[i] * mGravity;
-        }
-    }
-
-    // Apply the velocity damping
-    // Damping force : F_c = -c' * v (c=damping factor)
-    // Equation      : m * dv/dt = -c' * v
-    //                 => dv/dt = -c * v (with c=c'/m)
-    //                 => dv/dt + c * v = 0
-    // Solution      : v(t) = v0 * e^(-c * t)
-    //                 => v(t + dt) = v0 * e^(-c(t + dt))
-    //                              = v0 * e^(-ct) * e^(-c * dt)
-    //                              = v(t) * e^(-c * dt)
-    //                 => v2 = v1 * e^(-c * dt)
-    // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
-    //                              => e^(-x) ~ 1 - x
-    //                 => v2 = v1 * (1 - c * dt)
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
-        const decimal linDampingFactor = mRigidBodyComponents.mLinearDampings[i];
-        const decimal angDampingFactor = mRigidBodyComponents.mAngularDampings[i];
-        const decimal linearDamping = pow(decimal(1.0) - linDampingFactor, mTimeStep);
-        const decimal angularDamping = pow(decimal(1.0) - angDampingFactor, mTimeStep);
-        mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] * linearDamping;
-        mRigidBodyComponents.mConstrainedAngularVelocities[i] = mRigidBodyComponents.mConstrainedAngularVelocities[i] * angularDamping;
-    }
-}
 
 // Solve the contacts and constraints
-void DynamicsWorld::solveContactsAndConstraints() {
+void DynamicsWorld::solveContactsAndConstraints(decimal timeStep) {
 
     RP3D_PROFILE("DynamicsWorld::solveContactsAndConstraints()", mProfiler);
 
     // ---------- Solve velocity constraints for joints and contacts ---------- //
 
     // Initialize the contact solver
-    mContactSolver.init(mCollisionDetection.mCurrentContactManifolds, mCollisionDetection.mCurrentContactPoints, mTimeStep);
+    mContactSolverSystem.init(mCollisionDetection.mCurrentContactManifolds, mCollisionDetection.mCurrentContactPoints, timeStep);
 
     // For each island of the world
     for (uint islandIndex = 0; islandIndex < mIslands.getNbIslands(); islandIndex++) {
@@ -323,7 +181,7 @@ void DynamicsWorld::solveContactsAndConstraints() {
         if (mIslands.joints[islandIndex].size() > 0) {
 
             // Initialize the constraint solver
-            mConstraintSolver.initializeForIsland(mTimeStep, islandIndex);
+            mConstraintSolverSystem.initializeForIsland(timeStep, islandIndex);
         }
     }
 
@@ -335,14 +193,14 @@ void DynamicsWorld::solveContactsAndConstraints() {
             // Solve the constraints
             if (mIslands.joints[islandIndex].size() > 0) {
 
-                mConstraintSolver.solveVelocityConstraints(islandIndex);
+                mConstraintSolverSystem.solveVelocityConstraints(islandIndex);
             }
         }
 
-        mContactSolver.solve();
+        mContactSolverSystem.solve();
     }
 
-    mContactSolver.storeImpulses();
+    mContactSolverSystem.storeImpulses();
 }
 
 // Solve the position error correction of the constraints
@@ -364,7 +222,7 @@ void DynamicsWorld::solvePositionCorrection() {
             for (uint i=0; i<mNbPositionSolverIterations; i++) {
 
                 // Solve the position constraints
-                mConstraintSolver.solvePositionConstraints(islandIndex);
+                mConstraintSolverSystem.solvePositionConstraints(islandIndex);
             }
         }
     }
@@ -798,7 +656,7 @@ void DynamicsWorld::createIslands() {
 // Put bodies to sleep if needed.
 /// For each island, if all the bodies have been almost still for a long enough period of
 /// time, we put all the bodies of the island to sleep.
-void DynamicsWorld::updateSleepingBodies() {
+void DynamicsWorld::updateSleepingBodies(decimal timeStep) {
 
     RP3D_PROFILE("DynamicsWorld::updateSleepingBodies()", mProfiler);
 
@@ -831,7 +689,7 @@ void DynamicsWorld::updateSleepingBodies() {
 
                 // Increase the sleep time
                 decimal sleepTime = mRigidBodyComponents.getSleepTime(bodyEntity);
-                mRigidBodyComponents.setSleepTime(bodyEntity, sleepTime + mTimeStep);
+                mRigidBodyComponents.setSleepTime(bodyEntity, sleepTime + timeStep);
                 sleepTime = mRigidBodyComponents.getSleepTime(bodyEntity);
                 if (sleepTime < minSleepTime) {
                     minSleepTime = sleepTime;

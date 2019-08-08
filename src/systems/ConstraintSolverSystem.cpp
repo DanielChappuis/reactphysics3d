@@ -24,14 +24,14 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConstraintSolver.h"
+#include "systems/ConstraintSolverSystem.h"
 #include "utils/Profiler.h"
 #include "engine/Island.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolver::ConstraintSolver(Islands& islands, RigidBodyComponents& rigidBodyComponents)
+ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents)
                  : mIsWarmStartingActive(true), mIslands(islands), mConstraintSolverData(rigidBodyComponents) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -43,7 +43,7 @@ ConstraintSolver::ConstraintSolver(Islands& islands, RigidBodyComponents& rigidB
 }
 
 // Initialize the constraint solver for a given island
-void ConstraintSolver::initializeForIsland(decimal dt, uint islandIndex) {
+void ConstraintSolverSystem::initializeForIsland(decimal dt, uint islandIndex) {
 
     RP3D_PROFILE("ConstraintSolver::initializeForIsland()", mProfiler);
 
@@ -71,7 +71,7 @@ void ConstraintSolver::initializeForIsland(decimal dt, uint islandIndex) {
 }
 
 // Solve the velocity constraints
-void ConstraintSolver::solveVelocityConstraints(uint islandIndex) {
+void ConstraintSolverSystem::solveVelocityConstraints(uint islandIndex) {
 
     RP3D_PROFILE("ConstraintSolver::solveVelocityConstraints()", mProfiler);
 
@@ -86,7 +86,7 @@ void ConstraintSolver::solveVelocityConstraints(uint islandIndex) {
 }
 
 // Solve the position constraints
-void ConstraintSolver::solvePositionConstraints(uint islandIndex) {
+void ConstraintSolverSystem::solvePositionConstraints(uint islandIndex) {
 
     RP3D_PROFILE("ConstraintSolver::solvePositionConstraints()", mProfiler);
 

@@ -214,14 +214,14 @@ const Transform& CollisionBody::getTransform() const {
 }
 
 // Update the broad-phase state for this body (because it has moved for instance)
-void CollisionBody::updateBroadPhaseState() const {
+void CollisionBody::updateBroadPhaseState(decimal timeStep) const {
 
     // For all the proxy collision shapes of the body
     const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
 
         // Update the proxy
-        mWorld.mCollisionDetection.updateProxyShape(proxyShapesEntities[i]);
+        mWorld.mCollisionDetection.updateProxyShape(proxyShapesEntities[i], timeStep);
     }
 }
 
@@ -390,7 +390,7 @@ void CollisionBody::setTransform(const Transform& transform) {
     mWorld.mTransformComponents.setTransform(mEntity, transform);
 
     // Update the broad-phase state of the body
-    updateBroadPhaseState();
+    updateBroadPhaseState(0);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set transform=" + transform.to_string());

@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class ConstraintSolver;
+class ConstraintSolverSystem;
 
 // Structure SliderJointInfo
 /**

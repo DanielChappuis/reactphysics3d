@@ -213,7 +213,7 @@ class Joint {
 
         friend class DynamicsWorld;
         friend class Island;
-        friend class ConstraintSolver;
+        friend class ConstraintSolverSystem;
 };
 
 // Return the reference to the body 1

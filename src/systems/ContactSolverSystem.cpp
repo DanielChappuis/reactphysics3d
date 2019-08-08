@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "ContactSolver.h"
-#include "DynamicsWorld.h"
+#include "systems/ContactSolverSystem.h"
+#include "engine/DynamicsWorld.h"
 #include "body/RigidBody.h"
 #include "constraint/ContactPoint.h"
 #include "utils/Profiler.h"
@@ -38,12 +38,12 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constants initialization
-const decimal ContactSolver::BETA = decimal(0.2);
-const decimal ContactSolver::BETA_SPLIT_IMPULSE = decimal(0.2);
-const decimal ContactSolver::SLOP = decimal(0.01);
+const decimal ContactSolverSystem::BETA = decimal(0.2);
+const decimal ContactSolverSystem::BETA_SPLIT_IMPULSE = decimal(0.2);
+const decimal ContactSolverSystem::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
+ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
                              RigidBodyComponents& rigidBodyComponents, ProxyShapeComponents& proxyShapeComponents,
                              const WorldSettings& worldSettings)
               :mMemoryManager(memoryManager), mContactConstraints(nullptr), mContactPoints(nullptr),
@@ -59,7 +59,7 @@ ContactSolver::ContactSolver(MemoryManager& memoryManager, Islands& islands, Col
 }
 
 // Initialize the contact constraints
-void ContactSolver::init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep) {
+void ContactSolverSystem::init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep) {
 
     mAllContactManifolds = contactManifolds;
     mAllContactPoints = contactPoints;
@@ -102,7 +102,7 @@ void ContactSolver::init(List<ContactManifold>* contactManifolds, List<ContactPo
 }
 
 // Initialize the constraint solver for a given island
-void ContactSolver::initializeForIsland(uint islandIndex) {
+void ContactSolverSystem::initializeForIsland(uint islandIndex) {
 
     RP3D_PROFILE("ContactSolver::initializeForIsland()", mProfiler);
 
@@ -332,7 +332,7 @@ void ContactSolver::initializeForIsland(uint islandIndex) {
 /// For each constraint, we apply the previous impulse (from the previous step)
 /// at the beginning. With this technique, we will converge faster towards
 /// the solution of the linear system
-void ContactSolver::warmStart() {
+void ContactSolverSystem::warmStart() {
 
     RP3D_PROFILE("ContactSolver::warmStart()", mProfiler);
 
@@ -486,7 +486,7 @@ void ContactSolver::warmStart() {
 }
 
 // Solve the contacts
-void ContactSolver::solve() {
+void ContactSolverSystem::solve() {
 
     RP3D_PROFILE("ContactSolver::solve()", mProfiler);
 
@@ -764,7 +764,7 @@ void ContactSolver::solve() {
 }
 
 // Compute the collision restitution factor from the restitution factor of each body
-decimal ContactSolver::computeMixedRestitutionFactor(RigidBody* body1,
+decimal ContactSolverSystem::computeMixedRestitutionFactor(RigidBody* body1,
                                                             RigidBody* body2) const {
     decimal restitution1 = body1->getMaterial().getBounciness();
     decimal restitution2 = body2->getMaterial().getBounciness();
@@ -774,7 +774,7 @@ decimal ContactSolver::computeMixedRestitutionFactor(RigidBody* body1,
 }
 
 // Compute the mixed friction coefficient from the friction coefficient of each body
-decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
+decimal ContactSolverSystem::computeMixedFrictionCoefficient(RigidBody *body1,
                                                               RigidBody *body2) const {
     // Use the geometric mean to compute the mixed friction coefficient
     return std::sqrt(body1->getMaterial().getFrictionCoefficient() *
@@ -782,14 +782,14 @@ decimal ContactSolver::computeMixedFrictionCoefficient(RigidBody *body1,
 }
 
 // Compute th mixed rolling resistance factor between two bodies
-inline decimal ContactSolver::computeMixedRollingResistance(RigidBody* body1,
+inline decimal ContactSolverSystem::computeMixedRollingResistance(RigidBody* body1,
                                                             RigidBody* body2) const {
     return decimal(0.5f) * (body1->getMaterial().getRollingResistance() + body2->getMaterial().getRollingResistance());
 }
 
 // Store the computed impulses to use them to
 // warm start the solver at the next iteration
-void ContactSolver::storeImpulses() {
+void ContactSolverSystem::storeImpulses() {
 
     RP3D_PROFILE("ContactSolver::storeImpulses()", mProfiler);
 
@@ -816,7 +816,7 @@ void ContactSolver::storeImpulses() {
 
 // Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane
 // for a contact manifold. The two vectors have to be such that : t1 x t2 = contactNormal.
-void ContactSolver::computeFrictionVectors(const Vector3& deltaVelocity,
+void ContactSolverSystem::computeFrictionVectors(const Vector3& deltaVelocity,
                                            ContactManifoldSolver& contact) const {
 
     RP3D_PROFILE("ContactSolver::computeFrictionVectors()", mProfiler);

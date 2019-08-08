@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_CONTACT_SOLVER_H
-#define REACTPHYSICS3D_CONTACT_SOLVER_H
+#ifndef REACTPHYSICS3D_CONTACT_SOLVER_SYSTEM_H
+#define REACTPHYSICS3D_CONTACT_SOLVER_SYSTEM_H
 
 // Libraries
 #include "configuration.h"
@@ -48,9 +48,9 @@ class DynamicsComponents;
 class RigidBodyComponents;
 class ProxyShapeComponents;
 
-// Class Contact Solver
+// Class ContactSolverSystem
 /**
- * This class represents the contact solver that is used to solve rigid bodies contacts.
+ * This class represents the contact solver system that is used to solve rigid bodies contacts.
  * The constraint solver is based on the "Sequential Impulse" technique described by
  * Erin Catto in his GDC slides (http://code.google.com/p/box2d/downloads/list).
  *
@@ -117,7 +117,7 @@ class ProxyShapeComponents;
  * friction but also another twist friction constraint to prevent spin of the body around the
  * contact manifold center.
  */
-class ContactSolver {
+class ContactSolverSystem {
 
     private:
 
@@ -360,12 +360,12 @@ class ContactSolver {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolver(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
+        ContactSolverSystem(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
                       RigidBodyComponents& rigidBodyComponents, ProxyShapeComponents& proxyShapeComponents,
                       const WorldSettings& worldSettings);
 
         /// Destructor
-        ~ContactSolver() = default;
+        ~ContactSolverSystem() = default;
 
         /// Initialize the contact constraints
         void init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep);
@@ -395,19 +395,19 @@ class ContactSolver {
 };
 
 // Return true if the split impulses position correction technique is used for contacts
-inline bool ContactSolver::isSplitImpulseActive() const {
+inline bool ContactSolverSystem::isSplitImpulseActive() const {
     return mIsSplitImpulseActive;
 }
 
 // Activate or Deactivate the split impulses for contacts
-inline void ContactSolver::setIsSplitImpulseActive(bool isActive) {
+inline void ContactSolverSystem::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
 }
 
 #ifdef IS_PROFILING_ACTIVE
 
 // Set the profiler
-inline void ContactSolver::setProfiler(Profiler* profiler) {
+inline void ContactSolverSystem::setProfiler(Profiler* profiler) {
 
 	mProfiler = profiler;
 }
