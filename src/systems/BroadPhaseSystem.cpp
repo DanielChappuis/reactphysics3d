@@ -25,7 +25,7 @@
 
 // Libraries
 #include "BroadPhaseSystem.h"
-#include "collision/CollisionDetection.h"
+#include "systems/CollisionDetectionSystem.h"
 #include "utils/Profiler.h"
 #include "collision/RaycastInfo.h"
 #include "memory/MemoryManager.h"
@@ -35,7 +35,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-BroadPhaseSystem::BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
+BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
                                    TransformComponents& transformComponents, RigidBodyComponents &rigidBodyComponents)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
                      mProxyShapesComponents(proxyShapesComponents), mTransformsComponents(transformComponents),

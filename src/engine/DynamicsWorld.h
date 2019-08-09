@@ -39,7 +39,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class CollisionDetection;
+class CollisionDetectionSystem;
 class Island;
 class RigidBody;
 

@@ -32,7 +32,7 @@
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-class CollisionDetection;
+class CollisionDetectionSystem;
 class ContactManifoldInfo;
 class PoolAllocator;
 class OverlappingPair;

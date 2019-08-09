@@ -181,7 +181,7 @@ class CollisionBody {
 
         friend class CollisionWorld;
         friend class DynamicsWorld;
-        friend class CollisionDetection;
+        friend class CollisionDetectionSystem;
         friend class BroadPhaseAlgorithm;
         friend class ConvexMeshShape;
         friend class ProxyShape;

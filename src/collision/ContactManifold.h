@@ -125,7 +125,7 @@ class ContactManifold {
         friend class CollisionBody;
         friend class ContactManifoldSet;
         friend class ContactSolverSystem;
-        friend class CollisionDetection;
+        friend class CollisionDetectionSystem;
 };
 
 }

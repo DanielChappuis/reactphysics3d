@@ -133,7 +133,7 @@ class OverlapCallback {
 
                 // -------------------- Friendship -------------------- //
 
-                friend class CollisionDetection;
+                friend class CollisionDetectionSystem;
         };
 
         /// Destructor

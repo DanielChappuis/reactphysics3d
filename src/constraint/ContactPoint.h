@@ -137,7 +137,7 @@ class ContactPoint {
         friend class ContactManifold;
         friend class ContactManifoldSet;
         friend class ContactSolverSystem;
-        friend class CollisionDetection;
+        friend class CollisionDetectionSystem;
 };
 
 // Return the normal vector of the contact

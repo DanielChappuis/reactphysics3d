@@ -199,7 +199,7 @@ class ProxyShape {
         friend class RigidBody;
         friend class BroadPhaseAlgorithm;
         friend class DynamicAABBTree;
-        friend class CollisionDetection;
+        friend class CollisionDetectionSystem;
         friend class CollisionWorld;
         friend class DynamicsWorld;
         friend class GJKAlgorithm;

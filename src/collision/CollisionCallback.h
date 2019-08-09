@@ -211,7 +211,7 @@ class CollisionCallback {
 
                 // -------------------- Friendship -------------------- //
 
-                friend class CollisionDetection;
+                friend class CollisionDetectionSystem;
         };
 
         /// Destructor

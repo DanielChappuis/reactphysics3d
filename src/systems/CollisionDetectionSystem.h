@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_COLLISION_DETECTION_H
-#define REACTPHYSICS3D_COLLISION_DETECTION_H
+#ifndef REACTPHYSICS3D_COLLISION_DETECTION_SYSTEM_H
+#define REACTPHYSICS3D_COLLISION_DETECTION_SYSTEM_H
 
 // Libraries
 #include "body/CollisionBody.h"
@@ -56,14 +56,14 @@ class MemoryManager;
 class EventListener;
 class CollisionDispatch;
 
-// Class CollisionDetection
+// Class CollisionDetectionSystem
 /**
  * This class computes the collision detection algorithms. We first
  * perform a broad-phase algorithm to know which pairs of bodies can
  * collide and then we run a narrow-phase algorithm to compute the
  * collision contacts between bodies.
  */
-class CollisionDetection {
+class CollisionDetectionSystem {
 
     private :
 
@@ -269,18 +269,18 @@ class CollisionDetection {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetection(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents,
+        CollisionDetectionSystem(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents,
                            TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents,
                            MemoryManager& memoryManager);
 
         /// Destructor
-        ~CollisionDetection() = default;
+        ~CollisionDetectionSystem() = default;
 
         /// Deleted copy-constructor
-        CollisionDetection(const CollisionDetection& collisionDetection) = delete;
+        CollisionDetectionSystem(const CollisionDetectionSystem& collisionDetection) = delete;
 
         /// Deleted assignment operator
-        CollisionDetection& operator=(const CollisionDetection& collisionDetection) = delete;
+        CollisionDetectionSystem& operator=(const CollisionDetectionSystem& collisionDetection) = delete;
 
         /// Set the collision dispatch configuration
         CollisionDispatch& getCollisionDispatch();
@@ -360,12 +360,12 @@ class CollisionDetection {
 };
 
 // Return a reference to the collision dispatch configuration
-inline CollisionDispatch& CollisionDetection::getCollisionDispatch() {
+inline CollisionDispatch& CollisionDetectionSystem::getCollisionDispatch() {
     return mCollisionDispatch;
 }
 
 // Add a body to the collision detection
-inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
+inline void CollisionDetectionSystem::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
 
     // Add the body to the broad-phase
     mBroadPhaseSystem.addProxyCollisionShape(proxyShape, aabb);
@@ -379,13 +379,13 @@ inline void CollisionDetection::addProxyCollisionShape(ProxyShape* proxyShape, c
 }
 
 // Add a pair of bodies that cannot collide with each other
-inline void CollisionDetection::addNoCollisionPair(CollisionBody* body1,
+inline void CollisionDetectionSystem::addNoCollisionPair(CollisionBody* body1,
                                                    CollisionBody* body2) {
     mNoCollisionPairs.add(OverlappingPair::computeBodiesIndexPair(body1, body2));
 }
 
 // Remove a pair of bodies that cannot collide with each other
-inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
+inline void CollisionDetectionSystem::removeNoCollisionPair(CollisionBody* body1,
                                                       CollisionBody* body2) {
     mNoCollisionPairs.remove(OverlappingPair::computeBodiesIndexPair(body1, body2));
 }
@@ -393,7 +393,7 @@ inline void CollisionDetection::removeNoCollisionPair(CollisionBody* body1,
 // Ask for a collision shape to be tested again during broad-phase.
 /// We simply put the shape in the list of collision shape that have moved in the
 /// previous frame so that it is tested for collision again in the broad-phase.
-inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
+inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
 
     if (shape->getBroadPhaseId() != -1) {
         mBroadPhaseSystem.addMovedCollisionShape(shape->getBroadPhaseId());
@@ -401,31 +401,31 @@ inline void CollisionDetection::askForBroadPhaseCollisionCheck(ProxyShape* shape
 }
 
 // Return a pointer to the world
-inline CollisionWorld* CollisionDetection::getWorld() {
+inline CollisionWorld* CollisionDetectionSystem::getWorld() {
     return mWorld;
 }
 
 // Return a reference to the memory manager
-inline MemoryManager& CollisionDetection::getMemoryManager() const {
+inline MemoryManager& CollisionDetectionSystem::getMemoryManager() const {
     return mMemoryManager;
 }
 
 // Update a proxy collision shape (that has moved for instance)
-inline void CollisionDetection::updateProxyShape(Entity proxyShapeEntity, decimal timeStep) {
+inline void CollisionDetectionSystem::updateProxyShape(Entity proxyShapeEntity, decimal timeStep) {
 
     // Update the proxy-shape component
     mBroadPhaseSystem.updateProxyShape(proxyShapeEntity, timeStep);
 }
 
 // Update all the enabled proxy-shapes
-inline void CollisionDetection::updateProxyShapes(decimal timeStep) {
+inline void CollisionDetectionSystem::updateProxyShapes(decimal timeStep) {
     mBroadPhaseSystem.updateProxyShapes(timeStep);
 }
 
 #ifdef IS_PROFILING_ACTIVE
 
 // Set the profiler
-inline void CollisionDetection::setProfiler(Profiler* profiler) {
+inline void CollisionDetectionSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
     mBroadPhaseSystem.setProfiler(profiler);
     mCollisionDispatch.setProfiler(profiler);

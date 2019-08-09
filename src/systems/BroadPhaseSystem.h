@@ -39,7 +39,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class CollisionDetection;
+class CollisionDetectionSystem;
 class BroadPhaseSystem;
 class CollisionBody;
 class ProxyShape;
@@ -129,7 +129,7 @@ class BroadPhaseSystem {
         Set<int> mMovedShapes;
 
         /// Reference to the collision detection object
-        CollisionDetection& mCollisionDetection;
+        CollisionDetectionSystem& mCollisionDetection;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -150,7 +150,7 @@ class BroadPhaseSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BroadPhaseSystem(CollisionDetection& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
+        BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
                          TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents);
 
         /// Destructor

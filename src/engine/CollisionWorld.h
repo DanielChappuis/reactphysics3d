@@ -29,7 +29,7 @@
 // Libraries
 #include "mathematics/mathematics.h"
 #include "containers/List.h"
-#include "collision/CollisionDetection.h"
+#include "systems/CollisionDetectionSystem.h"
 #include "constraint/Joint.h"
 #include "memory/MemoryManager.h"
 #include "engine/EntityManager.h"
@@ -89,7 +89,7 @@ class CollisionWorld {
         ProxyShapeComponents mProxyShapesComponents;
 
         /// Reference to the collision detection
-        CollisionDetection mCollisionDetection;
+        CollisionDetectionSystem mCollisionDetection;
 
         /// All the bodies (rigid and soft) of the world
         List<CollisionBody*> mBodies;
@@ -195,7 +195,7 @@ class CollisionWorld {
 
         // -------------------- Friendship -------------------- //
 
-        friend class CollisionDetection;
+        friend class CollisionDetectionSystem;
         friend class CollisionBody;
         friend class RigidBody;
         friend class ProxyShape;
