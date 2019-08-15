@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_TRANSFORM_COMPONENTS_H
-#define REACTPHYSICS3D_TRANSFORM_COMPONENTS_H
+#ifndef REACTPHYSICS3D_JOINT_COMPONENTS_H
+#define REACTPHYSICS3D_JOINT_COMPONENTS_H
 
 // Libraries
 #include "mathematics/Transform.h"
@@ -39,23 +39,25 @@ namespace reactphysics3d {
 class MemoryAllocator;
 class EntityManager;
 
-// Class TransformComponents
+// Class JointComponents
 /**
- * This class represent the component of the ECS that contains the transforms of the
- * different entities. The position and orientation of the bodies are stored there.
- * The components of the sleeping entities (bodies) are always stored at the end of the array.
+ * This class represent the component of the ECS that contains generic information about
+ * all the joints.
  */
-class TransformComponents : public Components {
+class JointComponents : public Components {
 
     private:
 
         // -------------------- Attributes -------------------- //
 
-        /// Array of body entities of each component
-        Entity* mBodies;
+        /// Array of joint entities
+        Entity* mJointEntities;
 
-        /// Array of transform of each component
-        Transform* mTransforms;
+        /// Array of body entities of the first bodies of the joints
+        Entity* mBody1Entities;
+
+        /// Array of body entities of the first bodies of the joints
+        Entity* mBody2Entities;
 
         // -------------------- Methods -------------------- //
 
@@ -74,12 +76,14 @@ class TransformComponents : public Components {
     public:
 
         /// Structure for the data of a transform component
-        struct TransformComponent {
+        struct JointComponent {
 
-            const Transform& transform;
+            const Entity body1Entity;
+            const Entity body2Entity;
 
             /// Constructor
-            TransformComponent(const Transform& transform) : transform(transform) {
+            JointComponent(Entity body1Entity, Entity body2Entity)
+                : body1Entity(body1Entity), body2Entity(body2Entity)  {
 
             }
         };
@@ -87,35 +91,35 @@ class TransformComponents : public Components {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        TransformComponents(MemoryAllocator& allocator);
+        JointComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~TransformComponents() override = default;
+        virtual ~JointComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity bodyEntity, bool isSleeping, const TransformComponent& component);
+        void addComponent(Entity jointEntity, bool isSleeping, const JointComponent& component);
 
-        /// Return the transform of an entity
-        Transform& getTransform(Entity bodyEntity) const;
+        /// Return the entity of the first body of a joint
+        Entity getBody1Entity(Entity jointEntity) const;
 
-        /// Set the transform of an entity
-        void setTransform(Entity bodyEntity, const Transform& transform);
+        /// Return the entity of the second body of a joint
+        Entity getBody2Entity(Entity jointEntity) const;
 
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
 };
 
-// Return the transform of an entity
-inline Transform& TransformComponents::getTransform(Entity bodyEntity) const {
-    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-    return mTransforms[mMapEntityToComponentIndex[bodyEntity]];
+// Return the entity of the first body of a joint
+inline Entity JointComponents::getBody1Entity(Entity jointEntity) const {
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mBody1Entities[mMapEntityToComponentIndex[jointEntity]];
 }
 
-// Set the transform of an entity
-inline void TransformComponents::setTransform(Entity bodyEntity, const Transform& transform) {
-    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-    mTransforms[mMapEntityToComponentIndex[bodyEntity]] = transform;
+// Return the entity of the second body of a joint
+inline Entity JointComponents::getBody2Entity(Entity jointEntity) const {
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mBody2Entities[mMapEntityToComponentIndex[jointEntity]];
 }
 
 }

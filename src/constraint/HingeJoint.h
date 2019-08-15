@@ -287,7 +287,7 @@ class HingeJoint : public Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HingeJoint(uint id, const HingeJointInfo& jointInfo);
+        HingeJoint(Entity entity, const HingeJointInfo& jointInfo);
 
         /// Destructor
         virtual ~HingeJoint() override = default;

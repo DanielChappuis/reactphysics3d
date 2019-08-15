@@ -32,7 +32,8 @@ using namespace reactphysics3d;
 
 // Constructor
 ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents)
-                 : mIsWarmStartingActive(true), mIslands(islands), mConstraintSolverData(rigidBodyComponents) {
+                 : mIsWarmStartingActive(true), mIslands(islands), mConstraintSolverData(rigidBodyComponents),
+                   mSolveBallAndSocketJointSystem(rigidBodyComponents) {
 
 #ifdef IS_PROFILING_ACTIVE
 

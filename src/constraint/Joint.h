@@ -120,8 +120,8 @@ class Joint {
 
         // -------------------- Attributes -------------------- //
 
-        /// Id of the joint
-        uint mId;
+        /// Entity ID of the joint
+        Entity mEntity;
 
         /// Pointer to the first body of the joint
         // TODO : Use Entities instead
@@ -177,7 +177,7 @@ class Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Joint(uint id, const JointInfo& jointInfo);
+        Joint(Entity entity, const JointInfo& jointInfo);
 
         /// Destructor
         virtual ~Joint() = default;
@@ -194,17 +194,14 @@ class Joint {
         /// Return the reference to the body 2
         RigidBody* getBody2() const;
 
-        /// Return true if the constraint is active
-        bool isActive() const;
-
         /// Return the type of the constraint
         JointType getType() const;
 
         /// Return true if the collision between the two bodies of the joint is enabled
         bool isCollisionEnabled() const;
 
-        /// Return the id of the joint
-        uint getId() const;
+        /// Return the entity id of the joint
+        Entity getEntity() const;
 
         /// Return a string representation
         virtual std::string to_string() const=0;
@@ -232,14 +229,6 @@ inline RigidBody* Joint::getBody2() const {
     return mBody2;
 }
 
-// Return true if the joint is active
-/**
- * @return True if the joint is active
- */
-inline bool Joint::isActive() const {
-    return (mBody1->isActive() && mBody2->isActive());
-}
-
 // Return the type of the joint
 /**
  * @return The type of the joint
@@ -257,12 +246,12 @@ inline bool Joint::isCollisionEnabled() const {
     return mIsCollisionEnabled;
 }
 
-// Return the id of the joint
+// Return the entity id of the joint
 /**
- * @return The id of the joint
+ * @return The entity of the joint
  */
-inline uint Joint::getId() const {
-    return mId;
+inline Entity Joint::getEntity() const {
+    return mEntity;
 }
 
 // Return true if the joint has already been added into an island

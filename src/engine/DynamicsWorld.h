@@ -98,9 +98,6 @@ class DynamicsWorld : public CollisionWorld {
         /// becomes smaller than the sleep velocity.
         decimal mTimeBeforeSleep;
 
-        /// List of free ID for joints
-        List<luint> mFreeJointsIDs;
-
         /// Current joint id
         uint mCurrentJointId;
 
@@ -123,9 +120,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Add the joint to the list of joints of the two bodies involved in the joint
         void addJointToBody(Joint* joint);
-
-        /// Return the next available joint id
-        uint computeNextAvailableJointId();
 
     public :
 

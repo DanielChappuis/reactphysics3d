@@ -23,18 +23,63 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_SOLVE_BALL_SOCKET_JOINT_SYSTEM_H
+#define REACTPHYSICS3D_SOLVE_BALL_SOCKET_JOINT_SYSTEM_H
+
 // Libraries
-#include "Joint.h"
+#include "utils/Profiler.h"
+#include "components/RigidBodyComponents.h"
+#include "components/TransformComponents.h"
 
-using namespace reactphysics3d;
+namespace reactphysics3d {
 
-// Constructor
-Joint::Joint(Entity entity, const JointInfo& jointInfo)
-           :mEntity(entity), mBody1(jointInfo.body1), mBody2(jointInfo.body2), mBody1Entity(jointInfo.body1->getEntity()),
-            mBody2Entity(jointInfo.body2->getEntity()), mType(jointInfo.type),
-            mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
-            mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
+// Class SolveBallAndSocketJointSystem
+/**
+ * This class is responsible to solve the BallAndSocketJoint constraints
+ */
+class SolveBallAndSocketJointSystem {
 
-    assert(mBody1 != nullptr);
-    assert(mBody2 != nullptr);
+    private :
+
+        // -------------------- Attributes -------------------- //
+
+        /// Reference to the rigid body components
+        RigidBodyComponents& mRigidBodyComponents;
+
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Pointer to the profiler
+        Profiler* mProfiler;
+#endif
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        SolveBallAndSocketJointSystem(RigidBodyComponents& rigidBodyComponents);
+
+        /// Destructor
+        ~SolveBallAndSocketJointSystem() = default;
+
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Set the profiler
+        void setProfiler(Profiler* profiler);
+
+#endif
+
+};
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {
+    mProfiler = profiler;
 }
+
+#endif
+
+}
+
+#endif

@@ -37,6 +37,7 @@
 #include "components/RigidBodyComponents.h"
 #include "components/TransformComponents.h"
 #include "components/ProxyShapeComponents.h"
+#include "components/JointComponents.h"
 #include "collision/CollisionCallback.h"
 #include "collision/OverlapCallback.h"
 
@@ -88,6 +89,9 @@ class CollisionWorld {
         /// Proxy-Shapes Components
         ProxyShapeComponents mProxyShapesComponents;
 
+        /// Joint Components
+        JointComponents mJointsComponents;
+
         /// Reference to the collision detection
         CollisionDetectionSystem mCollisionDetection;
 
@@ -124,7 +128,10 @@ class CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Notify the world if a body is disabled (slepping or inactive) or not
-        void notifyBodyDisabled(Entity entity, bool isDisabled);
+        void setBodyDisabled(Entity entity, bool isDisabled);
+
+        /// Notify the world whether a joint is disabled or not
+        void setJointDisabled(Entity jointEntity, bool isDisabled);
 
     public :
 

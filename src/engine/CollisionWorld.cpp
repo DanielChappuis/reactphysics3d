@@ -40,6 +40,7 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
                : mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
                  mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
                  mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
+                 mJointsComponents(mMemoryManager.getBaseAllocator()),
                  mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mRigidBodyComponents, mMemoryManager),
                  mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
@@ -207,7 +208,7 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 }
 
 // Notify the world if a body is disabled (sleeping) or not
-void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
+void CollisionWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     if (isDisabled == mCollisionBodyComponents.getIsEntityDisabled(bodyEntity)) return;
 
@@ -228,6 +229,38 @@ void CollisionWorld::notifyBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
         mProxyShapesComponents.setIsEntityDisabled(proxyShapesEntities[i], isDisabled);
     }
+
+    // Disable the joints of the body if necessary
+    if (mRigidBodyComponents.hasComponent(bodyEntity)) {
+
+        RigidBody* body = mRigidBodyComponents.getRigidBody(bodyEntity);
+
+        // For each joint of the body
+        for(JointListElement* jointElem = body->getJointsList(); jointElem != nullptr; jointElem = jointElem->next) {
+
+            // If both bodies of the joint are disabled
+            if (mRigidBodyComponents.getIsEntityDisabled(jointElem->joint->getBody1()->getEntity()) &&
+                mRigidBodyComponents.getIsEntityDisabled(jointElem->joint->getBody2()->getEntity())) {
+
+                // We disable the joint
+                setJointDisabled(jointElem->joint->getEntity(), true);
+            }
+            else {
+
+                // Enable the joint
+                setJointDisabled(jointElem->joint->getEntity(), false);
+            }
+        }
+    }
+}
+
+// Notify the world whether a joint is disabled or not
+void CollisionWorld::setJointDisabled(Entity jointEntity, bool isDisabled) {
+
+    if (isDisabled == mJointsComponents.getIsEntityDisabled(jointEntity)) return;
+
+    // TODO : Make sure we notify all the components here ...
+    mJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
 }
 
 // Return true if two bodies overlap

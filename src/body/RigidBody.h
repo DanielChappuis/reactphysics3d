@@ -63,6 +63,7 @@ class RigidBody : public CollisionBody {
         Material mMaterial;
 
         /// First element of the linked list of joints involving this body
+        // TODO : Replace this by a list of the joints entities
         JointListElement* mJointsList;
 
         /// True if the center of mass is set by the user
@@ -168,9 +169,11 @@ class RigidBody : public CollisionBody {
         void setAngularDamping(decimal angularDamping);
 
         /// Return the first element of the linked list of joints involving this body
+        // TODO : Remove this
         const JointListElement* getJointsList() const;
 
         /// Return the first element of the linked list of joints involving this body
+        // TODO : Remove this
         JointListElement* getJointsList();
 
         /// Apply an external force to the body at its center of mass.

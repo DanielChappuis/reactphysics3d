@@ -24,17 +24,12 @@
 ********************************************************************************/
 
 // Libraries
-#include "Joint.h"
+#include "systems/SolveBallAndSocketJointSystem.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-Joint::Joint(Entity entity, const JointInfo& jointInfo)
-           :mEntity(entity), mBody1(jointInfo.body1), mBody2(jointInfo.body2), mBody1Entity(jointInfo.body1->getEntity()),
-            mBody2Entity(jointInfo.body2->getEntity()), mType(jointInfo.type),
-            mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
-            mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
+SolveBallAndSocketJointSystem::SolveBallAndSocketJointSystem(RigidBodyComponents& rigidBodyComponents)
+              :mRigidBodyComponents(rigidBodyComponents) {
 
-    assert(mBody1 != nullptr);
-    assert(mBody2 != nullptr);
 }

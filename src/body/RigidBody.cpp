@@ -768,7 +768,7 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     mWorld.mRigidBodyComponents.setIsSleeping(mEntity, isSleeping);
 
     // Notify all the components
-    mWorld.notifyBodyDisabled(mEntity, isSleeping);
+    mWorld.setBodyDisabled(mEntity, isSleeping);
 
     if (isSleeping) {
 

@@ -34,8 +34,8 @@ using namespace reactphysics3d;
 const decimal FixedJoint::BETA = decimal(0.2);
 
 // Constructor
-FixedJoint::FixedJoint(uint id, const FixedJointInfo& jointInfo)
-           : Joint(id, jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0, 0) {
+FixedJoint::FixedJoint(Entity entity, const FixedJointInfo& jointInfo)
+           : Joint(entity, jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0, 0) {
 
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mBody1->getTransform();

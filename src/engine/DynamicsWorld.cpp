@@ -59,8 +59,7 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
                 mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity),
                 mIsGravityEnabled(true),  mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
-                mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep),
-                mFreeJointsIDs(mMemoryManager.getPoolAllocator()), mCurrentJointId(0) {
+                mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep), mCurrentJointId(0) {
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -318,10 +317,15 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
  */
 Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 
+    // Create a new entity for the joint
+    Entity entity = mEntityManager.createEntity();
+
     Joint* newJoint = nullptr;
 
-    // Get the next available joint ID
-    uint jointId = computeNextAvailableJointId();
+    bool isJointDisabled = mRigidBodyComponents.getIsEntityDisabled(jointInfo.body1->getEntity()) &&
+                           mRigidBodyComponents.getIsEntityDisabled(jointInfo.body2->getEntity());
+    JointComponents::JointComponent jointComponent(jointInfo.body1->getEntity(), jointInfo.body2->getEntity());
+    mJointsComponents.addComponent(entity, isJointDisabled, jointComponent);
 
     // Allocate memory to create the new joint
     switch(jointInfo.type) {
@@ -333,7 +337,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
                                                             sizeof(BallAndSocketJoint));
             const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(
                                                                                         jointInfo);
-            newJoint = new (allocatedMemory) BallAndSocketJoint(jointId, info);
+            newJoint = new (allocatedMemory) BallAndSocketJoint(entity, info);
             break;
         }
 
@@ -343,7 +347,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(SliderJoint));
             const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) SliderJoint(jointId, info);
+            newJoint = new (allocatedMemory) SliderJoint(entity, info);
             break;
         }
 
@@ -353,7 +357,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(HingeJoint));
             const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) HingeJoint(jointId, info);
+            newJoint = new (allocatedMemory) HingeJoint(entity, info);
             break;
         }
 
@@ -363,7 +367,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(FixedJoint));
             const FixedJointInfo& info = static_cast<const FixedJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) FixedJoint(jointId, info);
+            newJoint = new (allocatedMemory) FixedJoint(entity, info);
             break;
         }
 
@@ -385,9 +389,9 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
     mJoints.add(newJoint);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
-             "Joint " + std::to_string(newJoint->getId()) + ": New joint created");
+             "Joint " + std::to_string(newJoint->getEntity().id) + ": New joint created");
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
-             "Joint " + std::to_string(newJoint->getId()) + ": " + newJoint->to_string());
+             "Joint " + std::to_string(newJoint->getEntity().id) + ": " + newJoint->to_string());
 
     // Add the joint into the joint list of the bodies involved in the joint
     addJointToBody(newJoint);
@@ -405,7 +409,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     assert(joint != nullptr);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
-             "Joint " + std::to_string(joint->getId()) + ": joint destroyed");
+             "Joint " + std::to_string(joint->getEntity().id) + ": joint destroyed");
 
     // If the collision between the two bodies of the constraint was disabled
     if (!joint->isCollisionEnabled()) {
@@ -427,14 +431,13 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
 
     size_t nbBytes = joint->getSizeInBytes();
 
-    // Add the joint ID to the list of free IDs
-    mFreeJointsIDs.add(joint->getId());
+    // Destroy the corresponding entity and its components
+    // TODO : Make sure we remove all its components here
+    mJointsComponents.removeComponent(joint->getEntity());
+    mEntityManager.destroyEntity(joint->getEntity());
 
     // Call the destructor of the joint
     joint->~Joint();
-
-    // Add the joint ID to the list of free IDs
-    mFreeJointsIDs.add(joint->getId());
 
     // Release the allocated memory
     mMemoryManager.release(MemoryManager::AllocationType::Pool, joint, nbBytes);
@@ -453,7 +456,7 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
     joint->mBody1->mJointsList = jointListElement1;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(joint->mBody1->getEntity().id) + ": Joint " + std::to_string(joint->getId()) +
+             "Body " + std::to_string(joint->mBody1->getEntity().id) + ": Joint " + std::to_string(joint->getEntity().id) +
              " added to body");
 
     // Add the joint at the beginning of the linked list of joints of the second body
@@ -464,25 +467,8 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
     joint->mBody2->mJointsList = jointListElement2;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(joint->mBody2->getEntity().id) + ": Joint " + std::to_string(joint->getId()) +
+             "Body " + std::to_string(joint->mBody2->getEntity().id) + ": Joint " + std::to_string(joint->getEntity().id) +
              " added to body");
-}
-
-// Return the next available joint Id
-uint DynamicsWorld::computeNextAvailableJointId() {
-
-    // Compute the joint ID
-    uint jointId;
-    if (mFreeJointsIDs.size() != 0) {
-        jointId = mFreeJointsIDs[mFreeJointsIDs.size() - 1];
-        mFreeJointsIDs.removeAt(mFreeJointsIDs.size() - 1);
-    }
-    else {
-        jointId = mCurrentJointId;
-        mCurrentJointId++;
-    }
-
-    return jointId;
 }
 
 // Compute the islands using potential contacts and joints

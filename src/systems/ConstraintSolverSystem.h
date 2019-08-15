@@ -30,6 +30,7 @@
 #include "configuration.h"
 #include "mathematics/mathematics.h"
 #include "engine/Islands.h"
+#include "systems/SolveBallAndSocketJointSystem.h"
 
 namespace reactphysics3d {
 
@@ -153,6 +154,9 @@ class ConstraintSolverSystem {
         /// Constraint solver data used to initialize and solve the constraints
         ConstraintSolverData mConstraintSolverData;
 
+        /// Solver for the BallAndSocketJoint constraints
+        SolveBallAndSocketJointSystem mSolveBallAndSocketJointSystem;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -198,6 +202,7 @@ class ConstraintSolverSystem {
 // Set the profiler
 inline void ConstraintSolverSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
+    mSolveBallAndSocketJointSystem.setProfiler(profiler);
 }
 
 #endif
