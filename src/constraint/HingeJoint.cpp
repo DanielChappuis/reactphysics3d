@@ -139,7 +139,7 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
     // Compute the bias "b" of the translation constraints
     mBTranslation.setToZero();
     decimal biasFactor = (BETA / constraintSolverData.timeStep);
-    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+    if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mBTranslation = biasFactor * (x2 + mR2World - x1 - mR1World);
     }
 
@@ -165,7 +165,7 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 
     // Compute the bias "b" of the rotation constraints
     mBRotation.setToZero();
-    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+    if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mBRotation = biasFactor * Vector2(mA1.dot(b2), mA1.dot(c2));
     }
 
@@ -192,13 +192,13 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 
             // Compute the bias "b" of the lower limit constraint
             mBLowerLimit = 0.0;
-            if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+            if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
                 mBLowerLimit = biasFactor * lowerLimitError;
             }
 
             // Compute the bias "b" of the upper limit constraint
             mBUpperLimit = 0.0;
-            if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+            if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
                 mBUpperLimit = biasFactor * upperLimitError;
             }
         }
@@ -426,7 +426,7 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
 
     // If the error position correction technique is not the non-linear-gauss-seidel, we do
     // do not execute this method
-    if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
+    if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies entities
     Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);

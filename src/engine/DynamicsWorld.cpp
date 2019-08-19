@@ -375,7 +375,8 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 
     bool isJointDisabled = mRigidBodyComponents.getIsEntityDisabled(jointInfo.body1->getEntity()) &&
                            mRigidBodyComponents.getIsEntityDisabled(jointInfo.body2->getEntity());
-    JointComponents::JointComponent jointComponent(jointInfo.body1->getEntity(), jointInfo.body2->getEntity(), newJoint);
+    JointComponents::JointComponent jointComponent(jointInfo.body1->getEntity(), jointInfo.body2->getEntity(), newJoint, jointInfo.type,
+                                                   jointInfo.positionCorrectionTechnique, jointInfo.isCollisionEnabled);
     mJointsComponents.addComponent(entity, isJointDisabled, jointComponent);
 
     // If the collision between the two bodies of the constraint is disabled

@@ -126,15 +126,6 @@ class Joint {
         /// Reference to the physics world
         DynamicsWorld& mWorld;
 
-        /// Type of the joint
-        const JointType mType;
-
-        /// Position correction technique used for the constraint (used for joints)
-        JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
-
-        /// True if the two bodies of the constraint are allowed to collide with each other
-        bool mIsCollisionEnabled;
-
         /// True if the joint has already been added into an island
         bool mIsAlreadyInIsland;
 
@@ -204,23 +195,6 @@ class Joint {
         friend class Island;
         friend class ConstraintSolverSystem;
 };
-
-// Return the type of the joint
-/**
- * @return The type of the joint
- */
-inline JointType Joint::getType() const {
-    return mType;
-}
-
-// Return true if the collision between the two bodies of the joint is enabled
-/**
- * @return True if the collision is enabled between the two bodies of the joint
- *              is enabled and false otherwise
- */
-inline bool Joint::isCollisionEnabled() const {
-    return mIsCollisionEnabled;
-}
 
 // Return the entity id of the joint
 /**

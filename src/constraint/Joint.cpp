@@ -31,9 +31,7 @@ using namespace reactphysics3d;
 
 // Constructor
 Joint::Joint(Entity entity, DynamicsWorld& world, const JointInfo& jointInfo)
-           :mEntity(entity), mWorld(world),  mType(jointInfo.type),
-            mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
-            mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
+           :mEntity(entity), mWorld(world), mIsAlreadyInIsland(false) {
 
 }
 
@@ -53,6 +51,24 @@ RigidBody* Joint::getBody1() const {
 RigidBody* Joint::getBody2() const {
     const Entity body2Entiy = mWorld.mJointsComponents.getBody2Entity(mEntity);
     return  mWorld.mRigidBodyComponents.getRigidBody(body2Entiy);
+}
+
+
+// Return the type of the joint
+/**
+ * @return The type of the joint
+ */
+JointType Joint::getType() const {
+    return mWorld.mJointsComponents.getType(mEntity);
+}
+
+// Return true if the collision between the two bodies of the joint is enabled
+/**
+ * @return True if the collision is enabled between the two bodies of the joint
+ *              is enabled and false otherwise
+ */
+bool Joint::isCollisionEnabled() const {
+    return mWorld.mJointsComponents.getIsCollisionEnabled(mEntity);
 }
 
 // Awake the two bodies of the joint

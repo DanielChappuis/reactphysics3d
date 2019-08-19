@@ -33,8 +33,8 @@ using namespace reactphysics3d;
 
 // Constructor
 JointComponents::JointComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Entity) +
-                                sizeof(Joint*)) {
+                    :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Entity) + sizeof(Joint*) +
+                                sizeof(JointType) + sizeof(JointsPositionCorrectionTechnique) + sizeof (bool)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -57,6 +57,9 @@ void JointComponents::allocate(uint32 nbComponentsToAllocate) {
     Entity* newBody1Entities = reinterpret_cast<Entity*>(newJointsEntities + nbComponentsToAllocate);
     Entity* newBody2Entities = reinterpret_cast<Entity*>(newBody1Entities + nbComponentsToAllocate);
     Joint** newJoints = reinterpret_cast<Joint**>(newBody2Entities + nbComponentsToAllocate);
+    JointType* newTypes = reinterpret_cast<JointType*>(newJoints + nbComponentsToAllocate);
+    JointsPositionCorrectionTechnique* newPositionCorrectionTechniques = reinterpret_cast<JointsPositionCorrectionTechnique*>(newTypes + nbComponentsToAllocate);
+    bool* newIsCollisionEnabled = reinterpret_cast<bool*>(newPositionCorrectionTechniques + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -66,6 +69,9 @@ void JointComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newBody1Entities, mBody1Entities, mNbComponents * sizeof(Entity));
         memcpy(newBody2Entities, mBody2Entities, mNbComponents * sizeof(Entity));
         memcpy(newJoints, mJoints, mNbComponents * sizeof(Joint*));
+        memcpy(newTypes, mTypes, mNbComponents * sizeof(JointType));
+        memcpy(newPositionCorrectionTechniques, mPositionCorrectionTechniques, mNbComponents * sizeof(JointsPositionCorrectionTechnique));
+        memcpy(newIsCollisionEnabled, mIsCollisionEnabled, mNbComponents * sizeof(bool));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -77,6 +83,9 @@ void JointComponents::allocate(uint32 nbComponentsToAllocate) {
     mBody1Entities = newBody1Entities;
     mBody2Entities = newBody2Entities;
     mJoints = newJoints;
+    mTypes = newTypes;
+    mPositionCorrectionTechniques = newPositionCorrectionTechniques;
+    mIsCollisionEnabled = newIsCollisionEnabled;
 }
 
 // Add a component
@@ -90,6 +99,9 @@ void JointComponents::addComponent(Entity jointEntity, bool isSleeping, const Jo
     new (mBody1Entities + index) Entity(component.body1Entity);
     new (mBody2Entities + index) Entity(component.body2Entity);
     mJoints[index] = component.joint;
+    new (mTypes + index) JointType(component.jointType);
+    new (mPositionCorrectionTechniques + index) JointsPositionCorrectionTechnique(component.positionCorrectionTechnique);
+    mIsCollisionEnabled[index] = component.isCollisionEnabled;
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity, index));
@@ -111,6 +123,9 @@ void JointComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
     new (mBody1Entities + destIndex) Entity(mBody1Entities[srcIndex]);
     new (mBody2Entities + destIndex) Entity(mBody2Entities[srcIndex]);
     mJoints[destIndex] = mJoints[srcIndex];
+    new (mTypes + destIndex) JointType(mTypes[srcIndex]);
+    new (mPositionCorrectionTechniques + destIndex) JointsPositionCorrectionTechnique(mPositionCorrectionTechniques[srcIndex]);
+    mIsCollisionEnabled[destIndex] = mIsCollisionEnabled[srcIndex];
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -131,6 +146,9 @@ void JointComponents::swapComponents(uint32 index1, uint32 index2) {
     Entity body1Entity1(mBody1Entities[index1]);
     Entity body2Entity1(mBody2Entities[index1]);
     Joint* joint1 = mJoints[index1];
+    JointType jointType1(mTypes[index1]);
+    JointsPositionCorrectionTechnique positionCorrectionTechnique1(mPositionCorrectionTechniques[index1]);
+    bool isCollisionEnabled1 = mIsCollisionEnabled[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -142,6 +160,9 @@ void JointComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mBody1Entities + index2) Entity(body1Entity1);
     new (mBody2Entities + index2) Entity(body2Entity1);
     mJoints[index2] = joint1;
+    new (mTypes + index2) JointType(jointType1);
+    new (mPositionCorrectionTechniques + index2) JointsPositionCorrectionTechnique(positionCorrectionTechnique1);
+    mIsCollisionEnabled[index2] = isCollisionEnabled1;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity1, index2));

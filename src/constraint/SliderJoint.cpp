@@ -161,7 +161,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     // Compute the bias "b" of the translation constraint
     mBTranslation.setToZero();
     decimal biasFactor = (BETA / constraintSolverData.timeStep);
-    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+    if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mBTranslation.x = u.dot(mN1);
         mBTranslation.y = u.dot(mN2);
         mBTranslation *= biasFactor;
@@ -178,7 +178,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
     // Compute the bias "b" of the rotation constraint
     mBRotation.setToZero();
-    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+    if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         const Quaternion qError = orientationBody2 * mInitOrientationDifferenceInv * orientationBody1.getInverse();
         mBRotation = biasFactor * decimal(2.0) * qError.getVectorV();
     }
@@ -195,13 +195,13 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
         // Compute the bias "b" of the lower limit constraint
         mBLowerLimit = 0.0;
-        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+        if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mBLowerLimit = biasFactor * lowerLimitError;
         }
 
         // Compute the bias "b" of the upper limit constraint
         mBUpperLimit = 0.0;
-        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+        if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mBUpperLimit = biasFactor * upperLimitError;
         }
     }
@@ -211,7 +211,7 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
         // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
         mInverseMassMatrixMotor = sumInverseMass;
-        mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0.0) ?
+        mInverseMassMatrixMotor = (mInverseMassMatrixMotor > decimal(0.0)) ?
                     decimal(1.0) / mInverseMassMatrixMotor : decimal(0.0);
     }
 
@@ -462,7 +462,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // If the error position correction technique is not the non-linear-gauss-seidel, we do
     // do not execute this method
-    if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
+    if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies entities
     const Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);

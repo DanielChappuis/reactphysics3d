@@ -95,7 +95,7 @@ void BallAndSocketJoint::initBeforeSolve(const ConstraintSolverData& constraintS
 
     // Compute the bias "b" of the constraint
     mBiasVector.setToZero();
-    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+    if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         decimal biasFactor = (BETA / constraintSolverData.timeStep);
         mBiasVector = biasFactor * (x2 + mR2World - x1 - mR1World);
     }
@@ -189,7 +189,7 @@ void BallAndSocketJoint::solvePositionConstraint(const ConstraintSolverData& con
 
     // If the error position correction technique is not the non-linear-gauss-seidel, we do
     // do not execute this method
-    if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
+    if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies center of mass and orientations
     Vector3 x1 = constraintSolverData.rigidBodyComponents.getConstrainedPosition(body1Entity);
