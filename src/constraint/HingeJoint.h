@@ -287,7 +287,7 @@ class HingeJoint : public Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HingeJoint(Entity entity, const HingeJointInfo& jointInfo);
+        HingeJoint(Entity entity, DynamicsWorld& world, const HingeJointInfo& jointInfo);
 
         /// Destructor
         virtual ~HingeJoint() override = default;

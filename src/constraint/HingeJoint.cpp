@@ -27,6 +27,7 @@
 #include "HingeJoint.h"
 #include "systems/ConstraintSolverSystem.h"
 #include "components/RigidBodyComponents.h"
+#include "engine/DynamicsWorld.h"
 
 using namespace reactphysics3d;
 
@@ -34,8 +35,8 @@ using namespace reactphysics3d;
 const decimal HingeJoint::BETA = decimal(0.2);
 
 // Constructor
-HingeJoint::HingeJoint(Entity entity, const HingeJointInfo& jointInfo)
-           : Joint(entity, jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0),
+HingeJoint::HingeJoint(Entity entity, DynamicsWorld &world, const HingeJointInfo& jointInfo)
+           : Joint(entity, world, jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0),
              mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
              mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
              mLowerLimit(jointInfo.minAngleLimit), mUpperLimit(jointInfo.maxAngleLimit),
@@ -46,8 +47,8 @@ HingeJoint::HingeJoint(Entity entity, const HingeJointInfo& jointInfo)
     assert(mUpperLimit >= decimal(0) && mUpperLimit <= decimal(2.0) * PI);
 
     // Compute the local-space anchor point for each body
-    Transform transform1 = mBody1->getTransform();
-    Transform transform2 = mBody2->getTransform();
+    Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
+    Transform& transform2 = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
     mLocalAnchorPointBody1 = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
     mLocalAnchorPointBody2 = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
 
@@ -67,15 +68,23 @@ HingeJoint::HingeJoint(Entity entity, const HingeJointInfo& jointInfo)
 // Initialize before solving the constraint
 void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
+    // Get the bodies entities
+    Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);
+    Entity body2Entity = mWorld.mJointsComponents.getBody2Entity(mEntity);
+
+    // TODO : Remove this and use compoents instead of pointers to bodies
+    RigidBody* body1 = static_cast<RigidBody*>(mWorld.mRigidBodyComponents.getRigidBody(body1Entity));
+    RigidBody* body2 = static_cast<RigidBody*>(mWorld.mRigidBodyComponents.getRigidBody(body2Entity));
+
     // Get the bodies positions and orientations
-    const Vector3& x1 = constraintSolverData.rigidBodyComponents.getCenterOfMassWorld(mBody1Entity);
-    const Vector3& x2 = constraintSolverData.rigidBodyComponents.getCenterOfMassWorld(mBody2Entity);
-    const Quaternion& orientationBody1 = mBody1->getTransform().getOrientation();
-    const Quaternion& orientationBody2 = mBody2->getTransform().getOrientation();
+    const Vector3& x1 = constraintSolverData.rigidBodyComponents.getCenterOfMassWorld(body1Entity);
+    const Vector3& x2 = constraintSolverData.rigidBodyComponents.getCenterOfMassWorld(body2Entity);
+    const Quaternion& orientationBody1 = mWorld.mTransformComponents.getTransform(body1Entity).getOrientation();
+    const Quaternion& orientationBody2 = mWorld.mTransformComponents.getTransform(body2Entity).getOrientation();
 
     // Get the inertia tensor of bodies
-    mI1 = mBody1->getInertiaTensorInverseWorld();
-    mI2 = mBody2->getInertiaTensorInverseWorld();
+    mI1 = body1->getInertiaTensorInverseWorld();
+    mI2 = body2->getInertiaTensorInverseWorld();
 
     // Compute the vector from body center to the anchor point in world-space
     mR1World = orientationBody1 * mLocalAnchorPointBody1;
@@ -113,8 +122,8 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
     Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mR2World);
 
     // Compute the inverse mass matrix K=JM^-1J^t for the 3 translation constraints (3x3 matrix)
-    decimal body1MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(mBody1->getEntity());
-    decimal body2MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(mBody2->getEntity());
+    decimal body1MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(body1->getEntity());
+    decimal body2MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(body2->getEntity());
     decimal inverseMassBodies = body1MassInverse + body2MassInverse;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
@@ -122,7 +131,8 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
                            skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
                            skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
     mInverseMassMatrixTranslation.setToZero();
-    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
+    if (mWorld.mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
+        mWorld.mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslation = massMatrix.getInverse();
     }
 
@@ -148,7 +158,8 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
                          mC2CrossA1.dot(I2C2CrossA1);
     const Matrix2x2 matrixKRotation(el11, el12, el21, el22);
     mInverseMassMatrixRotation.setToZero();
-    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
+    if (mWorld.mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
+        mWorld.mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
         mInverseMassMatrixRotation = matrixKRotation.getInverse();
     }
 
@@ -197,8 +208,12 @@ void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 // Warm start the constraint (apply the previous impulse at the beginning of the step)
 void HingeJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 
-    uint32 dynamicsComponentIndexBody1 = constraintSolverData.rigidBodyComponents.getEntityIndex(mBody1Entity);
-    uint32 dynamicsComponentIndexBody2 = constraintSolverData.rigidBodyComponents.getEntityIndex(mBody2Entity);
+    // Get the bodies entities
+    Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);
+    Entity body2Entity = mWorld.mJointsComponents.getBody2Entity(mEntity);
+
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.rigidBodyComponents.getEntityIndex(body1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.rigidBodyComponents.getEntityIndex(body2Entity);
 
     // Get the velocities
     Vector3& v1 = constraintSolverData.rigidBodyComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
@@ -207,8 +222,8 @@ void HingeJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
     Vector3& w2 = constraintSolverData.rigidBodyComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    const decimal inverseMassBody1 = constraintSolverData.rigidBodyComponents.getMassInverse(mBody1Entity);
-    const decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(mBody2Entity);
+    const decimal inverseMassBody1 = constraintSolverData.rigidBodyComponents.getMassInverse(body1Entity);
+    const decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
 
     // Compute the impulse P=J^T * lambda for the 2 rotation constraints
     Vector3 rotationImpulse = -mB2CrossA1 * mImpulseRotation.x - mC2CrossA1 * mImpulseRotation.y;
@@ -256,8 +271,12 @@ void HingeJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 // Solve the velocity constraint
 void HingeJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
 
-    uint32 dynamicsComponentIndexBody1 = constraintSolverData.rigidBodyComponents.getEntityIndex(mBody1Entity);
-    uint32 dynamicsComponentIndexBody2 = constraintSolverData.rigidBodyComponents.getEntityIndex(mBody2Entity);
+    // Get the bodies entities
+    Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);
+    Entity body2Entity = mWorld.mJointsComponents.getBody2Entity(mEntity);
+
+    uint32 dynamicsComponentIndexBody1 = constraintSolverData.rigidBodyComponents.getEntityIndex(body1Entity);
+    uint32 dynamicsComponentIndexBody2 = constraintSolverData.rigidBodyComponents.getEntityIndex(body2Entity);
 
     // Get the velocities
     Vector3& v1 = constraintSolverData.rigidBodyComponents.mConstrainedLinearVelocities[dynamicsComponentIndexBody1];
@@ -266,8 +285,8 @@ void HingeJoint::solveVelocityConstraint(const ConstraintSolverData& constraintS
     Vector3& w2 = constraintSolverData.rigidBodyComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = constraintSolverData.rigidBodyComponents.getMassInverse(mBody1Entity);
-    decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(mBody2Entity);
+    decimal inverseMassBody1 = constraintSolverData.rigidBodyComponents.getMassInverse(body1Entity);
+    decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
 
     // --------------- Translation Constraints --------------- //
 
@@ -409,19 +428,27 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // do not execute this method
     if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
+    // Get the bodies entities
+    Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);
+    Entity body2Entity = mWorld.mJointsComponents.getBody2Entity(mEntity);
+
+    // TODO : Remove this and use compoents instead of pointers to bodies
+    RigidBody* body1 = static_cast<RigidBody*>(mWorld.mRigidBodyComponents.getRigidBody(body1Entity));
+    RigidBody* body2 = static_cast<RigidBody*>(mWorld.mRigidBodyComponents.getRigidBody(body2Entity));
+
     // Get the bodies positions and orientations
-    Vector3 x1 = constraintSolverData.rigidBodyComponents.getConstrainedPosition(mBody1Entity);
-    Vector3 x2 = constraintSolverData.rigidBodyComponents.getConstrainedPosition(mBody2Entity);
-    Quaternion q1 = constraintSolverData.rigidBodyComponents.getConstrainedOrientation(mBody1Entity);
-    Quaternion q2 = constraintSolverData.rigidBodyComponents.getConstrainedOrientation(mBody2Entity);
+    Vector3 x1 = constraintSolverData.rigidBodyComponents.getConstrainedPosition(body1Entity);
+    Vector3 x2 = constraintSolverData.rigidBodyComponents.getConstrainedPosition(body2Entity);
+    Quaternion q1 = constraintSolverData.rigidBodyComponents.getConstrainedOrientation(body1Entity);
+    Quaternion q2 = constraintSolverData.rigidBodyComponents.getConstrainedOrientation(body2Entity);
 
     // Get the inverse mass and inverse inertia tensors of the bodies
-    decimal inverseMassBody1 = constraintSolverData.rigidBodyComponents.getMassInverse(mBody1Entity);
-    decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(mBody2Entity);
+    decimal inverseMassBody1 = constraintSolverData.rigidBodyComponents.getMassInverse(body1Entity);
+    decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
 
     // Recompute the inverse inertia tensors
-    mI1 = mBody1->getInertiaTensorInverseWorld();
-    mI2 = mBody2->getInertiaTensorInverseWorld();
+    mI1 = body1->getInertiaTensorInverseWorld();
+    mI2 = body2->getInertiaTensorInverseWorld();
 
     // Compute the vector from body center to the anchor point in world-space
     mR1World = q1 * mLocalAnchorPointBody1;
@@ -453,8 +480,8 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // --------------- Translation Constraints --------------- //
 
     // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
-    const decimal body1InverseMass = constraintSolverData.rigidBodyComponents.getMassInverse(mBody1Entity);
-    const decimal body2InverseMass = constraintSolverData.rigidBodyComponents.getMassInverse(mBody2Entity);
+    const decimal body1InverseMass = constraintSolverData.rigidBodyComponents.getMassInverse(body1Entity);
+    const decimal body2InverseMass = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
     decimal inverseMassBodies = body1InverseMass + body2InverseMass;
     Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
                                     0, inverseMassBodies, 0,
@@ -462,7 +489,8 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
                            skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
                            skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
     mInverseMassMatrixTranslation.setToZero();
-    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
+    if (mWorld.mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
+        mWorld.mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslation = massMatrix.getInverse();
     }
 
@@ -514,7 +542,8 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
                          mC2CrossA1.dot(I2C2CrossA1);
     const Matrix2x2 matrixKRotation(el11, el12, el21, el22);
     mInverseMassMatrixRotation.setToZero();
-    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
+    if (mWorld.mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
+        mWorld.mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
         mInverseMassMatrixRotation = matrixKRotation.getInverse();
     }
 
@@ -611,10 +640,10 @@ void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
         }
     }
 
-    constraintSolverData.rigidBodyComponents.setConstrainedPosition(mBody1Entity, x1);
-    constraintSolverData.rigidBodyComponents.setConstrainedPosition(mBody2Entity, x2);
-    constraintSolverData.rigidBodyComponents.setConstrainedOrientation(mBody1Entity, q1);
-    constraintSolverData.rigidBodyComponents.setConstrainedOrientation(mBody2Entity, q2);
+    constraintSolverData.rigidBodyComponents.setConstrainedPosition(body1Entity, x1);
+    constraintSolverData.rigidBodyComponents.setConstrainedPosition(body2Entity, x2);
+    constraintSolverData.rigidBodyComponents.setConstrainedOrientation(body1Entity, q1);
+    constraintSolverData.rigidBodyComponents.setConstrainedOrientation(body2Entity, q2);
 }
 
 
@@ -645,8 +674,7 @@ void HingeJoint::enableMotor(bool isMotorEnabled) {
     mImpulseMotor = 0.0;
 
     // Wake up the two bodies of the joint
-    mBody1->setIsSleeping(false);
-    mBody2->setIsSleeping(false);
+    awakeBodies();
 }
 
 // Set the minimum angle limit
@@ -655,7 +683,7 @@ void HingeJoint::enableMotor(bool isMotorEnabled) {
  */
 void HingeJoint::setMinAngleLimit(decimal lowerLimit) {
 
-    assert(mLowerLimit <= 0 && mLowerLimit >= -2.0 * PI);
+    assert(mLowerLimit <= decimal(0) && mLowerLimit >= decimal(-2.0 * PI));
 
     if (lowerLimit != mLowerLimit) {
 
@@ -672,7 +700,7 @@ void HingeJoint::setMinAngleLimit(decimal lowerLimit) {
  */
 void HingeJoint::setMaxAngleLimit(decimal upperLimit) {
 
-    assert(upperLimit >= 0 && upperLimit <= 2.0 * PI);
+    assert(upperLimit >= decimal(0) && upperLimit <= decimal(2.0 * PI));
 
     if (upperLimit != mUpperLimit) {
 
@@ -691,8 +719,7 @@ void HingeJoint::resetLimits() {
     mImpulseUpperLimit = 0.0;
 
     // Wake up the two bodies of the joint
-    mBody1->setIsSleeping(false);
-    mBody2->setIsSleeping(false);
+    awakeBodies();
 }
 
 // Set the motor speed
@@ -703,8 +730,7 @@ void HingeJoint::setMotorSpeed(decimal motorSpeed) {
         mMotorSpeed = motorSpeed;
 
         // Wake up the two bodies of the joint
-        mBody1->setIsSleeping(false);
-        mBody2->setIsSleeping(false);
+        awakeBodies();
     }
 }
 
@@ -716,12 +742,11 @@ void HingeJoint::setMaxMotorTorque(decimal maxMotorTorque) {
 
     if (maxMotorTorque != mMaxMotorTorque) {
 
-        assert(mMaxMotorTorque >= 0.0);
+        assert(mMaxMotorTorque >= decimal(0.0));
         mMaxMotorTorque = maxMotorTorque;
 
         // Wake up the two bodies of the joint
-        mBody1->setIsSleeping(false);
-        mBody2->setIsSleeping(false);
+        awakeBodies();
     }
 }
 
@@ -729,7 +754,7 @@ void HingeJoint::setMaxMotorTorque(decimal maxMotorTorque) {
 decimal HingeJoint::computeNormalizedAngle(decimal angle) const {
 
     // Convert it into the range [-2*pi; 2*pi]
-    angle = fmod(angle, PI_TIMES_2);
+    angle = std::fmod(angle, PI_TIMES_2);
 
     // Convert it into the range [-pi; pi]
     if (angle < -PI) {
@@ -752,13 +777,13 @@ decimal HingeJoint::computeCorrespondingAngleNearLimits(decimal inputAngle, deci
         return inputAngle;
     }
     else if (inputAngle > upperLimitAngle) {
-        decimal diffToUpperLimit = fabs(computeNormalizedAngle(inputAngle - upperLimitAngle));
-        decimal diffToLowerLimit = fabs(computeNormalizedAngle(inputAngle - lowerLimitAngle));
+        decimal diffToUpperLimit = std::fabs(computeNormalizedAngle(inputAngle - upperLimitAngle));
+        decimal diffToLowerLimit = std::fabs(computeNormalizedAngle(inputAngle - lowerLimitAngle));
         return (diffToUpperLimit > diffToLowerLimit) ? (inputAngle - PI_TIMES_2) : inputAngle;
     }
     else if (inputAngle < lowerLimitAngle) {
-        decimal diffToUpperLimit = fabs(computeNormalizedAngle(upperLimitAngle - inputAngle));
-        decimal diffToLowerLimit = fabs(computeNormalizedAngle(lowerLimitAngle - inputAngle));
+        decimal diffToUpperLimit = std::fabs(computeNormalizedAngle(upperLimitAngle - inputAngle));
+        decimal diffToLowerLimit = std::fabs(computeNormalizedAngle(lowerLimitAngle - inputAngle));
         return (diffToUpperLimit > diffToLowerLimit) ? inputAngle : (inputAngle + PI_TIMES_2);
     }
     else {

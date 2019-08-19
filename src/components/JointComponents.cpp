@@ -33,7 +33,8 @@ using namespace reactphysics3d;
 
 // Constructor
 JointComponents::JointComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Entity)) {
+                    :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Entity) +
+                                sizeof(Joint*)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -55,6 +56,7 @@ void JointComponents::allocate(uint32 nbComponentsToAllocate) {
     Entity* newJointsEntities = static_cast<Entity*>(newBuffer);
     Entity* newBody1Entities = reinterpret_cast<Entity*>(newJointsEntities + nbComponentsToAllocate);
     Entity* newBody2Entities = reinterpret_cast<Entity*>(newBody1Entities + nbComponentsToAllocate);
+    Joint** newJoints = reinterpret_cast<Joint**>(newBody2Entities + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -63,6 +65,7 @@ void JointComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newJointsEntities, mJointEntities, mNbComponents * sizeof(Entity));
         memcpy(newBody1Entities, mBody1Entities, mNbComponents * sizeof(Entity));
         memcpy(newBody2Entities, mBody2Entities, mNbComponents * sizeof(Entity));
+        memcpy(newJoints, mJoints, mNbComponents * sizeof(Joint*));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -73,6 +76,7 @@ void JointComponents::allocate(uint32 nbComponentsToAllocate) {
     mJointEntities = newJointsEntities;
     mBody1Entities = newBody1Entities;
     mBody2Entities = newBody2Entities;
+    mJoints = newJoints;
 }
 
 // Add a component
@@ -85,6 +89,7 @@ void JointComponents::addComponent(Entity jointEntity, bool isSleeping, const Jo
     new (mJointEntities + index) Entity(jointEntity);
     new (mBody1Entities + index) Entity(component.body1Entity);
     new (mBody2Entities + index) Entity(component.body2Entity);
+    mJoints[index] = component.joint;
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity, index));
@@ -105,6 +110,7 @@ void JointComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
     new (mJointEntities + destIndex) Entity(mJointEntities[srcIndex]);
     new (mBody1Entities + destIndex) Entity(mBody1Entities[srcIndex]);
     new (mBody2Entities + destIndex) Entity(mBody2Entities[srcIndex]);
+    mJoints[destIndex] = mJoints[srcIndex];
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -124,6 +130,7 @@ void JointComponents::swapComponents(uint32 index1, uint32 index2) {
     Entity jointEntity1(mJointEntities[index1]);
     Entity body1Entity1(mBody1Entities[index1]);
     Entity body2Entity1(mBody2Entities[index1]);
+    Joint* joint1 = mJoints[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -134,6 +141,7 @@ void JointComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mJointEntities + index2) Entity(jointEntity1);
     new (mBody1Entities + index2) Entity(body1Entity1);
     new (mBody2Entities + index2) Entity(body2Entity1);
+    mJoints[index2] = joint1;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity1, index2));
@@ -155,4 +163,5 @@ void JointComponents::destroyComponent(uint32 index) {
     mJointEntities[index].~Entity();
     mBody1Entities[index].~Entity();
     mBody2Entities[index].~Entity();
+    mJoints[index] = nullptr;
 }

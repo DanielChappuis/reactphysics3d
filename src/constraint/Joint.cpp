@@ -25,16 +25,47 @@
 
 // Libraries
 #include "Joint.h"
+#include "engine/DynamicsWorld.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-Joint::Joint(Entity entity, const JointInfo& jointInfo)
-           :mEntity(entity), mBody1(jointInfo.body1), mBody2(jointInfo.body2), mBody1Entity(jointInfo.body1->getEntity()),
-            mBody2Entity(jointInfo.body2->getEntity()), mType(jointInfo.type),
+Joint::Joint(Entity entity, DynamicsWorld& world, const JointInfo& jointInfo)
+           :mEntity(entity), mWorld(world),  mType(jointInfo.type),
             mPositionCorrectionTechnique(jointInfo.positionCorrectionTechnique),
             mIsCollisionEnabled(jointInfo.isCollisionEnabled), mIsAlreadyInIsland(false) {
 
-    assert(mBody1 != nullptr);
-    assert(mBody2 != nullptr);
+}
+
+// Return the reference to the body 1
+/**
+ * @return The first body involved in the joint
+ */
+RigidBody* Joint::getBody1() const {
+    const Entity body1Entiy = mWorld.mJointsComponents.getBody1Entity(mEntity);
+    return  mWorld.mRigidBodyComponents.getRigidBody(body1Entiy);
+}
+
+// Return the reference to the body 2
+/**
+ * @return The second body involved in the joint
+ */
+RigidBody* Joint::getBody2() const {
+    const Entity body2Entiy = mWorld.mJointsComponents.getBody2Entity(mEntity);
+    return  mWorld.mRigidBodyComponents.getRigidBody(body2Entiy);
+}
+
+// Awake the two bodies of the joint
+void Joint::awakeBodies() const {
+
+    // Get the bodies entities
+    Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);
+    Entity body2Entity = mWorld.mJointsComponents.getBody2Entity(mEntity);
+
+    RigidBody* body1 = static_cast<RigidBody*>(mWorld.mRigidBodyComponents.getRigidBody(body1Entity));
+    RigidBody* body2 = static_cast<RigidBody*>(mWorld.mRigidBodyComponents.getRigidBody(body2Entity));
+
+    // Wake up the two bodies of the joint
+    body1->setIsSleeping(false);
+    body2->setIsSleeping(false);
 }

@@ -123,19 +123,8 @@ class Joint {
         /// Entity ID of the joint
         Entity mEntity;
 
-        /// Pointer to the first body of the joint
-        // TODO : Use Entities instead
-        RigidBody* const mBody1;
-
-        /// Pointer to the second body of the joint
-        // TODO : Use Entities instead
-        RigidBody* const mBody2;
-
-        /// Entity of the first body of the joint
-        Entity mBody1Entity;
-
-        /// Entity of the second body of the joint
-        Entity mBody2Entity;
+        /// Reference to the physics world
+        DynamicsWorld& mWorld;
 
         /// Type of the joint
         const JointType mType;
@@ -172,12 +161,15 @@ class Joint {
         /// Solve the position constraint
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) = 0;
 
+        /// Awake the two bodies of the joint
+        void awakeBodies() const;
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Joint(Entity entity, const JointInfo& jointInfo);
+        Joint(Entity entity, DynamicsWorld& world, const JointInfo& jointInfo);
 
         /// Destructor
         virtual ~Joint() = default;
@@ -212,22 +204,6 @@ class Joint {
         friend class Island;
         friend class ConstraintSolverSystem;
 };
-
-// Return the reference to the body 1
-/**
- * @return The first body involved in the joint
- */
-inline RigidBody* Joint::getBody1() const {
-    return mBody1;
-}
-
-// Return the reference to the body 2
-/**
- * @return The second body involved in the joint
- */
-inline RigidBody* Joint::getBody2() const {
-    return mBody2;
-}
 
 // Return the type of the joint
 /**

@@ -38,6 +38,7 @@ namespace reactphysics3d {
 // Class declarations
 class MemoryAllocator;
 class EntityManager;
+class Joint;
 
 // Class JointComponents
 /**
@@ -58,6 +59,9 @@ class JointComponents : public Components {
 
         /// Array of body entities of the first bodies of the joints
         Entity* mBody2Entities;
+
+        /// Array with pointers to the joints
+        Joint** mJoints;
 
         // -------------------- Methods -------------------- //
 
@@ -80,10 +84,11 @@ class JointComponents : public Components {
 
             const Entity body1Entity;
             const Entity body2Entity;
+            Joint* joint;
 
             /// Constructor
-            JointComponent(Entity body1Entity, Entity body2Entity)
-                : body1Entity(body1Entity), body2Entity(body2Entity)  {
+            JointComponent(Entity body1Entity, Entity body2Entity, Joint* joint)
+                : body1Entity(body1Entity), body2Entity(body2Entity), joint(joint)  {
 
             }
         };
@@ -105,6 +110,9 @@ class JointComponents : public Components {
         /// Return the entity of the second body of a joint
         Entity getBody2Entity(Entity jointEntity) const;
 
+        /// Return a pointer to the joint
+        Joint* getJoint(Entity jointEntity) const;
+
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
@@ -120,6 +128,12 @@ inline Entity JointComponents::getBody1Entity(Entity jointEntity) const {
 inline Entity JointComponents::getBody2Entity(Entity jointEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBody2Entities[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Return a pointer to the joint
+inline Joint* JointComponents::getJoint(Entity jointEntity) const {
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mJoints[mMapEntityToComponentIndex[jointEntity]];
 }
 
 }

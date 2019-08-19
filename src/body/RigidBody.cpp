@@ -781,7 +781,6 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
          "Body " + std::to_string(mEntity.id) + ": Set isSleeping=" +
          (isSleeping ? "true" : "false"));
-
 }
 
 // Set whether or not the body is allowed to go to sleep

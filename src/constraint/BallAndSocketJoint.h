@@ -125,7 +125,7 @@ class BallAndSocketJoint : public Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BallAndSocketJoint(Entity entity, const BallAndSocketJointInfo& jointInfo);
+        BallAndSocketJoint(Entity entity, DynamicsWorld& world, const BallAndSocketJointInfo& jointInfo);
 
         /// Destructor
         virtual ~BallAndSocketJoint() override = default;

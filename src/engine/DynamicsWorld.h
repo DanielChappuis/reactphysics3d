@@ -219,6 +219,11 @@ class DynamicsWorld : public CollisionWorld {
         // -------------------- Friendship -------------------- //
 
         friend class RigidBody;
+        friend class Joint;
+        friend class BallAndSocketJoint;
+        friend class FixedJoint;
+        friend class HingeJoint;
+        friend class SliderJoint;
 };
 
 // Get the number of iterations for the velocity constraint solver

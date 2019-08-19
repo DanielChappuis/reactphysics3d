@@ -84,7 +84,7 @@ class RigidBody : public CollisionBody {
         void updateInertiaTensorInverseWorld();
 
         /// Set the variable to know whether or not the body is sleeping
-         void setIsSleeping(bool isSleeping);
+        void setIsSleeping(bool isSleeping);
 
     public :
 
@@ -222,6 +222,7 @@ class RigidBody : public CollisionBody {
 
         friend class DynamicsWorld;
         friend class ContactSolverSystem;
+        friend class Joint;
         friend class BallAndSocketJoint;
         friend class SliderJoint;
         friend class HingeJoint;

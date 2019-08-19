@@ -136,7 +136,7 @@ class FixedJoint : public Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        FixedJoint(Entity entity, const FixedJointInfo& jointInfo);
+        FixedJoint(Entity entity, DynamicsWorld& world, const FixedJointInfo& jointInfo);
 
         /// Destructor
         virtual ~FixedJoint() override = default;

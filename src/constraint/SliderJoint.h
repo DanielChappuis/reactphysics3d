@@ -289,7 +289,7 @@ class SliderJoint : public Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SliderJoint(Entity entity, const SliderJointInfo& jointInfo);
+        SliderJoint(Entity entity, DynamicsWorld& world, const SliderJointInfo& jointInfo);
 
         /// Destructor
         virtual ~SliderJoint() override = default;
