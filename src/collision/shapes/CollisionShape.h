@@ -123,9 +123,6 @@ class CollisionShape {
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
 
-        /// Return the scaling vector of the collision shape
-        Vector3 getLocalScaling() const;
-
         /// Return the id of the shape
         uint getId() const;
 

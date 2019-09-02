@@ -129,9 +129,6 @@ class Joint {
         /// True if the joint has already been added into an island
         bool mIsAlreadyInIsland;
 
-        /// Total number of joints
-        static uint mNbTotalNbJoints;
-
         // -------------------- Methods -------------------- //
 
         /// Return true if the joint has already been added into an island

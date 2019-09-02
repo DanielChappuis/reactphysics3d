@@ -322,17 +322,26 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 
     Joint* newJoint = nullptr;
 
+    const bool isJointDisabled = mRigidBodyComponents.getIsEntityDisabled(jointInfo.body1->getEntity()) &&
+                                 mRigidBodyComponents.getIsEntityDisabled(jointInfo.body2->getEntity());
+
     // Allocate memory to create the new joint
     switch(jointInfo.type) {
 
         // Ball-and-Socket joint
         case JointType::BALLSOCKETJOINT:
         {
+            // Create a BallAndSocketJoint component
+            BallAndSocketJointComponents::BallAndSocketJointComponent ballAndSocketJointComponent;
+            mBallAndSocketJointsComponents.addComponent(entity, isJointDisabled, ballAndSocketJointComponent);
+
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(BallAndSocketJoint));
-            const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(
-                                                                                        jointInfo);
-            newJoint = new (allocatedMemory) BallAndSocketJoint(entity, *this, info);
+            const BallAndSocketJointInfo& info = static_cast<const BallAndSocketJointInfo&>(jointInfo);
+            BallAndSocketJoint* joint = new (allocatedMemory) BallAndSocketJoint(entity, *this, info);
+
+            newJoint = joint;
+            mBallAndSocketJointsComponents.setJoint(entity, joint);
             break;
         }
 
@@ -373,8 +382,6 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         }
     }
 
-    bool isJointDisabled = mRigidBodyComponents.getIsEntityDisabled(jointInfo.body1->getEntity()) &&
-                           mRigidBodyComponents.getIsEntityDisabled(jointInfo.body2->getEntity());
     JointComponents::JointComponent jointComponent(jointInfo.body1->getEntity(), jointInfo.body2->getEntity(), newJoint, jointInfo.type,
                                                    jointInfo.positionCorrectionTechnique, jointInfo.isCollisionEnabled);
     mJointsComponents.addComponent(entity, isJointDisabled, jointComponent);

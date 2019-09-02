@@ -175,7 +175,7 @@ class ConcaveMeshShape : public ConcaveShape {
         ConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling = Vector3(1, 1, 1));
 
         /// Destructor
-        virtual ~ConcaveMeshShape() = default;
+        virtual ~ConcaveMeshShape() override = default;
 
         /// Deleted copy-constructor
         ConcaveMeshShape(const ConcaveMeshShape& shape) = delete;

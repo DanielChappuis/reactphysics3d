@@ -38,6 +38,7 @@
 #include "components/TransformComponents.h"
 #include "components/ProxyShapeComponents.h"
 #include "components/JointComponents.h"
+#include "components/BallAndSocketJointComponents.h"
 #include "collision/CollisionCallback.h"
 #include "collision/OverlapCallback.h"
 
@@ -91,6 +92,9 @@ class CollisionWorld {
 
         /// Joint Components
         JointComponents mJointsComponents;
+
+        /// Ball And Socket joints Components
+        BallAndSocketJointComponents mBallAndSocketJointsComponents;
 
         /// Reference to the collision detection
         CollisionDetectionSystem mCollisionDetection;

@@ -80,6 +80,7 @@ class DynamicsWorld : public CollisionWorld {
         List<RigidBody*> mRigidBodies;
 
         /// All the joints of the world
+        // TODO : We probably do not need this list anymore
         List<Joint*> mJoints;
 
         /// Gravity vector of the world
