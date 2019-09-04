@@ -41,6 +41,7 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
                  mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
                  mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
                  mJointsComponents(mMemoryManager.getBaseAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getBaseAllocator()),
+                 mFixedJointsComponents(mMemoryManager.getBaseAllocator()),
                  mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mRigidBodyComponents, mMemoryManager),
                  mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
@@ -261,6 +262,12 @@ void CollisionWorld::setJointDisabled(Entity jointEntity, bool isDisabled) {
 
     // TODO : Make sure we notify all the components here ...
     mJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    if (mBallAndSocketJointsComponents.hasComponent(jointEntity)) {
+        mBallAndSocketJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
+    if (mFixedJointsComponents.hasComponent(jointEntity)) {
+        mFixedJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
 }
 
 // Return true if two bodies overlap

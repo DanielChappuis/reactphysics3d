@@ -368,10 +368,19 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         // Fixed joint
         case JointType::FIXEDJOINT:
         {
+            // Create a BallAndSocketJoint component
+            FixedJointComponents::FixedJointComponent fixedJointComponent;
+            mFixedJointsComponents.addComponent(entity, isJointDisabled, fixedJointComponent);
+
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(FixedJoint));
             const FixedJointInfo& info = static_cast<const FixedJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) FixedJoint(entity, *this, info);
+            FixedJoint* joint = new (allocatedMemory) FixedJoint(entity, *this, info);
+
+            newJoint = joint;
+
+            mFixedJointsComponents.setJoint(entity, joint);
+
             break;
         }
 
@@ -467,6 +476,9 @@ void DynamicsWorld::addJointToBody(Joint* joint) {
                                                      sizeof(JointListElement));
     JointListElement* jointListElement1 = new (allocatedMemory1) JointListElement(joint,
                                                                      body1->mJointsList);
+    RigidBody* test1 = joint->getBody1();
+    RigidBody* test2 = joint->getBody2();
+
     body1->mJointsList = jointListElement1;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,

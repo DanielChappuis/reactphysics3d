@@ -39,6 +39,7 @@
 #include "components/ProxyShapeComponents.h"
 #include "components/JointComponents.h"
 #include "components/BallAndSocketJointComponents.h"
+#include "components/FixedJointComponents.h"
 #include "collision/CollisionCallback.h"
 #include "collision/OverlapCallback.h"
 
@@ -95,6 +96,9 @@ class CollisionWorld {
 
         /// Ball And Socket joints Components
         BallAndSocketJointComponents mBallAndSocketJointsComponents;
+
+        /// Fixed joints Components
+        FixedJointComponents mFixedJointsComponents;
 
         /// Reference to the collision detection
         CollisionDetectionSystem mCollisionDetection;
