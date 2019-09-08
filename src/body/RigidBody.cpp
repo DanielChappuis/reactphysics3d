@@ -169,6 +169,17 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
              "Body " + std::to_string(mID) + ": Set inverseInertiaTensorLocal=" + inverseInertiaTensorLocal.to_string());
 }
 
+/// If you set the center of mass with the method, it will not be computed
+/// automatically using collision shapes.
+/**
+ * @return The center of mass of the body in local-space
+ *                          coordinates
+ */
+Vector3 RigidBody::getCenterOfMassLocal() {
+
+    return mCenterOfMassLocal;
+}
+
 // Set the local center of mass of the body (in local-space coordinates)
 /// If you set the center of mass with the method, it will not be computed
 /// automatically using collision shapes.

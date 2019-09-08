@@ -181,6 +181,9 @@ class RigidBody : public CollisionBody {
         /// Return the inverse of the inertia tensor in world coordinates.
         Matrix3x3 getInertiaTensorInverseWorld() const;
 
+        /// Get the local center of mass of the body (in local-space coordinates)
+        Vector3 getCenterOfMassLocal();
+
         /// Set the local center of mass of the body (in local-space coordinates)
         void setCenterOfMassLocal(const Vector3& centerOfMassLocal);
 
