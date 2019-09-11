@@ -358,10 +358,20 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         // Hinge joint
         case JointType::HINGEJOINT:
         {
+            const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
+
+            // Create a HingeJoint component
+            HingeJointComponents::HingeJointComponent hingeJointComponent(info.isLimitEnabled, info.isMotorEnabled,
+                                                                          info.minAngleLimit, info.maxAngleLimit,
+                                                                          info.motorSpeed, info.maxMotorTorque);
+            mHingeJointsComponents.addComponent(entity, isJointDisabled, hingeJointComponent);
+
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(HingeJoint));
-            const HingeJointInfo& info = static_cast<const HingeJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) HingeJoint(entity, *this, info);
+            HingeJoint* joint = new (allocatedMemory) HingeJoint(entity, *this, info);
+
+            newJoint = joint;
+            mHingeJointsComponents.setJoint(entity, joint);
             break;
         }
 

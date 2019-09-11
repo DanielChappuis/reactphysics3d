@@ -41,7 +41,7 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
                  mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
                  mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
                  mJointsComponents(mMemoryManager.getBaseAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getBaseAllocator()),
-                 mFixedJointsComponents(mMemoryManager.getBaseAllocator()),
+                 mFixedJointsComponents(mMemoryManager.getBaseAllocator()), mHingeJointsComponents(mMemoryManager.getBaseAllocator()),
                  mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mRigidBodyComponents, mMemoryManager),
                  mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
@@ -267,6 +267,9 @@ void CollisionWorld::setJointDisabled(Entity jointEntity, bool isDisabled) {
     }
     if (mFixedJointsComponents.hasComponent(jointEntity)) {
         mFixedJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
+    if (mHingeJointsComponents.hasComponent(jointEntity)) {
+        mHingeJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
     }
 }
 
