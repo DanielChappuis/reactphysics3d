@@ -41,6 +41,7 @@
 #include "components/BallAndSocketJointComponents.h"
 #include "components/FixedJointComponents.h"
 #include "components/HingeJointComponents.h"
+#include "components/SliderJointComponents.h"
 #include "collision/CollisionCallback.h"
 #include "collision/OverlapCallback.h"
 
@@ -103,6 +104,9 @@ class CollisionWorld {
 
         /// Hinge joints Components
         HingeJointComponents mHingeJointsComponents;
+
+        /// Slider joints Components
+        SliderJointComponents mSliderJointsComponents;
 
         /// Reference to the collision detection
         CollisionDetectionSystem mCollisionDetection;

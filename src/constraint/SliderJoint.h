@@ -150,35 +150,20 @@ class SliderJoint : public Joint {
 
         // -------------------- Attributes -------------------- //
 
-        /// Anchor point of body 1 (in local-space coordinates of body 1)
-        Vector3 mLocalAnchorPointBody1;
+        /// Vector r1 in world-space coordinates
+        Vector3 mR1;
 
-        /// Anchor point of body 2 (in local-space coordinates of body 2)
-        Vector3 mLocalAnchorPointBody2;
+        /// Vector r2 in world-space coordinates
+        Vector3 mR2;
 
         /// Slider axis (in local-space coordinates of body 1)
         Vector3 mSliderAxisBody1;
-
-        /// Inertia tensor of body 1 (in world-space coordinates)
-        Matrix3x3 mI1;
-
-        /// Inertia tensor of body 2 (in world-space coordinates)
-        Matrix3x3 mI2;
-
-        /// Inverse of the initial orientation difference between the two bodies
-        Quaternion mInitOrientationDifferenceInv;
 
         /// First vector orthogonal to the slider axis local-space of body 1
         Vector3 mN1;
 
         /// Second vector orthogonal to the slider axis and mN1 in local-space of body 1
         Vector3 mN2;
-
-        /// Vector r1 in world-space coordinates
-        Vector3 mR1;
-
-        /// Vector r2 in world-space coordinates
-        Vector3 mR2;
 
         /// Cross product of r2 and n1
         Vector3 mR2CrossN1;
@@ -198,35 +183,17 @@ class SliderJoint : public Joint {
         /// Cross product of vector (r1 + u) and the slider axis
         Vector3 mR1PlusUCrossSliderAxis;
 
-        /// Bias of the 2 translation constraints
-        Vector2 mBTranslation;
-
-        /// Bias of the 3 rotation constraints
-        Vector3 mBRotation;
-
         /// Bias of the lower limit constraint
         decimal mBLowerLimit;
 
         /// Bias of the upper limit constraint
         decimal mBUpperLimit;
 
-        /// Inverse of mass matrix K=JM^-1J^t for the translation constraint (2x2 matrix)
-        Matrix2x2 mInverseMassMatrixTranslationConstraint;
-
-        /// Inverse of mass matrix K=JM^-1J^t for the rotation constraint (3x3 matrix)
-        Matrix3x3 mInverseMassMatrixRotationConstraint;
-
         /// Inverse of mass matrix K=JM^-1J^t for the upper and lower limit constraints (1x1 matrix)
         decimal mInverseMassMatrixLimit;
 
         /// Inverse of mass matrix K=JM^-1J^t for the motor
         decimal mInverseMassMatrixMotor;
-
-        /// Accumulated impulse for the 2 translation constraints
-        Vector2 mImpulseTranslation;
-
-        /// Accumulated impulse for the 3 rotation constraints
-        Vector3 mImpulseRotation;
 
         /// Accumulated impulse for the lower limit constraint
         decimal mImpulseLowerLimit;
@@ -406,17 +373,6 @@ inline decimal SliderJoint::getMotorForce(decimal timeStep) const {
 // Return the number of bytes used by the joint
 inline size_t SliderJoint::getSizeInBytes() const {
     return sizeof(SliderJoint);
-}
-
-// Return a string representation
-inline std::string SliderJoint::to_string() const {
-    return "SliderJoint{ lowerLimit=" + std::to_string(mLowerLimit) + ", upperLimit=" + std::to_string(mUpperLimit) +
-            "localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() + ", localAnchorPointBody2=" +
-            mLocalAnchorPointBody2.to_string() + ", sliderAxisBody1=" + mSliderAxisBody1.to_string() +
-            ", initOrientationDifferenceInv=" +
-            mInitOrientationDifferenceInv.to_string() + ", motorSpeed=" + std::to_string(mMotorSpeed) +
-            ", maxMotorForce=" + std::to_string(mMaxMotorForce) + ", isLimitEnabled=" +
-            (mIsLimitEnabled ? "true" : "false") + ", isMotorEnabled=" + (mIsMotorEnabled ? "true" : "false") + "}";
 }
 
 }

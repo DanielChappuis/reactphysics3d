@@ -410,7 +410,6 @@ inline decimal DynamicsWorld::getTimeBeforeSleep() const {
     return mTimeBeforeSleep;
 }
 
-
 // Set the time a body is required to stay still before sleeping
 /**
  * @param timeBeforeSleep Time a body is required to stay still before sleeping (in seconds)

@@ -36,8 +36,7 @@ const decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
 SliderJoint::SliderJoint(Entity entity, DynamicsWorld &world, const SliderJointInfo& jointInfo)
-            : Joint(entity, world, jointInfo), mImpulseTranslation(0, 0), mImpulseRotation(0, 0, 0),
-              mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
+            : Joint(entity, world, jointInfo),  mImpulseLowerLimit(0), mImpulseUpperLimit(0), mImpulseMotor(0),
               mIsLimitEnabled(jointInfo.isLimitEnabled), mIsMotorEnabled(jointInfo.isMotorEnabled),
               mLowerLimit(jointInfo.minTranslationLimit),
               mUpperLimit(jointInfo.maxTranslationLimit), mIsLowerLimitViolated(false),
@@ -51,8 +50,8 @@ SliderJoint::SliderJoint(Entity entity, DynamicsWorld &world, const SliderJointI
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
     const Transform& transform2 = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
-    mLocalAnchorPointBody1 = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
-    mLocalAnchorPointBody2 = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
+    mWorld.mSliderJointsComponents.setLocalAnchorPointBody1(mEntity, transform1.getInverse() * jointInfo.anchorPointWorldSpace);
+    mWorld.mSliderJointsComponents.setLocalAnchorPointBody2(mEntity, transform2.getInverse() * jointInfo.anchorPointWorldSpace);
 
 	// Store inverse of initial rotation from body 1 to body 2 in body 1 space:
 	//
@@ -66,7 +65,7 @@ SliderJoint::SliderJoint(Entity entity, DynamicsWorld &world, const SliderJointI
 	// q10 = initial orientation of body 1
 	// r0 = initial rotation rotation from body 1 to body 2
     // TODO : Do not compute the inverse here, it has already been computed above
-	mInitOrientationDifferenceInv = transform2.getOrientation().getInverse() * transform1.getOrientation();
+    mWorld.mSliderJointsComponents.setInitOrientationDifferenceInv(mEntity, transform2.getOrientation().getInverse() * transform1.getOrientation());
 
     // Compute the slider axis in local-space of body 1
     // TODO : Do not compute the inverse here, it has already been computed above
@@ -93,12 +92,12 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     const Quaternion& orientationBody2 = mWorld.mTransformComponents.getTransform(body2Entity).getOrientation();
 
     // Get the inertia tensor of bodies
-    mI1 = body1->getInertiaTensorInverseWorld();
-    mI2 = body2->getInertiaTensorInverseWorld();
+    mWorld.mSliderJointsComponents.setI1(mEntity, body1->getInertiaTensorInverseWorld());
+    mWorld.mSliderJointsComponents.setI2(mEntity, body2->getInertiaTensorInverseWorld());
 
     // Vector from body center to the anchor point
-    mR1 = orientationBody1 * mLocalAnchorPointBody1;
-    mR2 = orientationBody2 * mLocalAnchorPointBody2;
+    mR1 = orientationBody1 * mWorld.mSliderJointsComponents.getLocalAnchorPointBody1(mEntity);
+    mR2 = orientationBody2 * mWorld.mSliderJointsComponents.getLocalAnchorPointBody2(mEntity);
 
     // Compute the vector u (difference between anchor points)
     const Vector3 u = x2 + mR2 - x1 - mR1;
@@ -133,15 +132,18 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     mR1PlusUCrossN2 = (r1PlusU).cross(mN2);
     mR1PlusUCrossSliderAxis = (r1PlusU).cross(mSliderAxisWorld);
 
+    const Matrix3x3& i1 = mWorld.mSliderJointsComponents.getI1(mEntity);
+    const Matrix3x3& i2 = mWorld.mSliderJointsComponents.getI2(mEntity);
+
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
     // constraints (2x2 matrix)
     const decimal body1MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(body1Entity);
     const decimal body2MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
     const decimal sumInverseMass = body1MassInverse + body2MassInverse;
-    Vector3 I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
-    Vector3 I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
-    Vector3 I2R2CrossN1 = mI2 * mR2CrossN1;
-    Vector3 I2R2CrossN2 = mI2 * mR2CrossN2;
+    Vector3 I1R1PlusUCrossN1 = i1 * mR1PlusUCrossN1;
+    Vector3 I1R1PlusUCrossN2 = i1 * mR1PlusUCrossN2;
+    Vector3 I2R2CrossN1 = i2 * mR2CrossN1;
+    Vector3 I2R2CrossN2 = i2 * mR2CrossN2;
     const decimal el11 = sumInverseMass + mR1PlusUCrossN1.dot(I1R1PlusUCrossN1) +
                          mR2CrossN1.dot(I2R2CrossN1);
     const decimal el12 = mR1PlusUCrossN1.dot(I1R1PlusUCrossN2) +
@@ -151,36 +153,40 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     const decimal el22 = sumInverseMass + mR1PlusUCrossN2.dot(I1R1PlusUCrossN2) +
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
-    mInverseMassMatrixTranslationConstraint.setToZero();
+    Matrix2x2& inverseMassMatrixTranslation = mWorld.mSliderJointsComponents.getInverseMassMatrixTranslation(mEntity);
+    inverseMassMatrixTranslation.setToZero();
     if (mWorld.mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
         mWorld.mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
 
-        mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
+        mWorld.mSliderJointsComponents.setInverseMassMatrixTranslation(mEntity, matrixKTranslation.getInverse());
     }
 
     // Compute the bias "b" of the translation constraint
-    mBTranslation.setToZero();
+    Vector2& biasTranslation = mWorld.mSliderJointsComponents.getBiasTranslation(mEntity);
+    biasTranslation.setToZero();
     decimal biasFactor = (BETA / constraintSolverData.timeStep);
     if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-        mBTranslation.x = u.dot(mN1);
-        mBTranslation.y = u.dot(mN2);
-        mBTranslation *= biasFactor;
+        biasTranslation.x = u.dot(mN1);
+        biasTranslation.y = u.dot(mN2);
+        biasTranslation *= biasFactor;
+        mWorld.mSliderJointsComponents.setBiasTranslation(mEntity, biasTranslation);
     }
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
-    mInverseMassMatrixRotationConstraint = mI1 + mI2;
+    mWorld.mSliderJointsComponents.setInverseMassMatrixRotation(mEntity, i1 + i2);
     if (mWorld.mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
         mWorld.mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
 
-        mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
+        mWorld.mSliderJointsComponents.setInverseMassMatrixRotation(mEntity, mWorld.mSliderJointsComponents.getInverseMassMatrixRotation(mEntity).getInverse());
     }
 
     // Compute the bias "b" of the rotation constraint
-    mBRotation.setToZero();
+    Vector3& biasRotation = mWorld.mSliderJointsComponents.getBiasRotation(mEntity);
+    biasRotation.setToZero();
     if (mWorld.mJointsComponents.getPositionCorrectionTechnique(mEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-        const Quaternion qError = orientationBody2 * mInitOrientationDifferenceInv * orientationBody1.getInverse();
-        mBRotation = biasFactor * decimal(2.0) * qError.getVectorV();
+        const Quaternion qError = orientationBody2 * mWorld.mSliderJointsComponents.getInitOrientationDifferenceInv(mEntity) * orientationBody1.getInverse();
+        mWorld.mSliderJointsComponents.setBiasRotation(mEntity, biasFactor * decimal(2.0) * qError.getVectorV());
     }
 
     // If the limits are enabled
@@ -188,8 +194,8 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the limits (1x1 matrix)
         mInverseMassMatrixLimit = sumInverseMass +
-                                  mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis) +
-                                  mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
+                                  mR1PlusUCrossSliderAxis.dot(i1 * mR1PlusUCrossSliderAxis) +
+                                  mR2CrossSliderAxis.dot(i2 * mR2CrossSliderAxis);
         mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0.0) ?
                                   decimal(1.0) / mInverseMassMatrixLimit : decimal(0.0);
 
@@ -219,8 +225,10 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     if (!constraintSolverData.isWarmStartingActive) {
 
         // Reset all the accumulated impulses
-        mImpulseTranslation.setToZero();
-        mImpulseRotation.setToZero();
+        Vector2& impulseTranslation = mWorld.mSliderJointsComponents.getImpulseTranslation(mEntity);
+        Vector3& impulseRotation = mWorld.mSliderJointsComponents.getImpulseRotation(mEntity);
+        impulseTranslation.setToZero();
+        impulseRotation.setToZero();
         mImpulseLowerLimit = 0.0;
         mImpulseUpperLimit = 0.0;
         mImpulseMotor = 0.0;
@@ -254,13 +262,16 @@ void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
     // Compute the impulse P=J^T * lambda for the motor constraint of body 1
     Vector3 impulseMotor = mImpulseMotor * mSliderAxisWorld;
 
+    const Vector2& impulseTranslation = mWorld.mSliderJointsComponents.getImpulseTranslation(mEntity);
+    const Vector3& impulseRotation = mWorld.mSliderJointsComponents.getImpulseRotation(mEntity);
+
     // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
-    Vector3 linearImpulseBody1 = -mN1 * mImpulseTranslation.x - mN2 * mImpulseTranslation.y;
-    Vector3 angularImpulseBody1 = -mR1PlusUCrossN1 * mImpulseTranslation.x -
-            mR1PlusUCrossN2 * mImpulseTranslation.y;
+    Vector3 linearImpulseBody1 = -mN1 * impulseTranslation.x - mN2 * impulseTranslation.y;
+    Vector3 angularImpulseBody1 = -mR1PlusUCrossN1 * impulseTranslation.x -
+            mR1PlusUCrossN2 * impulseTranslation.y;
 
     // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
-    angularImpulseBody1 += -mImpulseRotation;
+    angularImpulseBody1 += -impulseRotation;
 
     // Compute the impulse P=J^T * lambda for the lower and upper limits constraints of body 1
     linearImpulseBody1 += linearImpulseLimits;
@@ -271,15 +282,15 @@ void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 
     // Apply the impulse to the body 1
     v1 += inverseMassBody1 * linearImpulseBody1;
-    w1 += mI1 * angularImpulseBody1;
+    w1 += mWorld.mSliderJointsComponents.getI1(mEntity) * angularImpulseBody1;
 
     // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
-    Vector3 linearImpulseBody2 = mN1 * mImpulseTranslation.x + mN2 * mImpulseTranslation.y;
-    Vector3 angularImpulseBody2 = mR2CrossN1 * mImpulseTranslation.x +
-            mR2CrossN2 * mImpulseTranslation.y;
+    Vector3 linearImpulseBody2 = mN1 * impulseTranslation.x + mN2 * impulseTranslation.y;
+    Vector3 angularImpulseBody2 = mR2CrossN1 * impulseTranslation.x +
+            mR2CrossN2 * impulseTranslation.y;
 
     // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
-    angularImpulseBody2 += mImpulseRotation;
+    angularImpulseBody2 += impulseRotation;
 
     // Compute the impulse P=J^T * lambda for the lower and upper limits constraints of body 2
     linearImpulseBody2 += -linearImpulseLimits;
@@ -290,7 +301,7 @@ void SliderJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
 
     // Apply the impulse to the body 2
     v2 += inverseMassBody2 * linearImpulseBody2;
-    w2 += mI2 * angularImpulseBody2;
+    w2 += mWorld.mSliderJointsComponents.getI2(mEntity) * angularImpulseBody2;
 }
 
 // Solve the velocity constraint
@@ -309,6 +320,9 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
     Vector3& w1 = constraintSolverData.rigidBodyComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody1];
     Vector3& w2 = constraintSolverData.rigidBodyComponents.mConstrainedAngularVelocities[dynamicsComponentIndexBody2];
 
+    const Matrix3x3& i1 = mWorld.mSliderJointsComponents.getI1(mEntity);
+    const Matrix3x3& i2 = mWorld.mSliderJointsComponents.getI2(mEntity);
+
     // Get the inverse mass and inverse inertia tensors of the bodies
     decimal inverseMassBody1 = constraintSolverData.rigidBodyComponents.getMassInverse(body1Entity);
     decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
@@ -323,8 +337,8 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
     const Vector2 JvTranslation(el1, el2);
 
     // Compute the Lagrange multiplier lambda for the 2 translation constraints
-    Vector2 deltaLambda = mInverseMassMatrixTranslationConstraint * (-JvTranslation -mBTranslation);
-    mImpulseTranslation += deltaLambda;
+    Vector2 deltaLambda = mWorld.mSliderJointsComponents.getInverseMassMatrixTranslation(mEntity) * (-JvTranslation - mWorld.mSliderJointsComponents.getBiasTranslation(mEntity));
+    mWorld.mSliderJointsComponents.setImpulseTranslation(mEntity, deltaLambda + mWorld.mSliderJointsComponents.getImpulseTranslation(mEntity));
 
     // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
     const Vector3 linearImpulseBody1 = -mN1 * deltaLambda.x - mN2 * deltaLambda.y;
@@ -333,7 +347,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
 
     // Apply the impulse to the body 1
     v1 += inverseMassBody1 * linearImpulseBody1;
-    w1 += mI1 * angularImpulseBody1;
+    w1 += i1 * angularImpulseBody1;
 
     // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
     const Vector3 linearImpulseBody2 = mN1 * deltaLambda.x + mN2 * deltaLambda.y;
@@ -341,7 +355,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
 
     // Apply the impulse to the body 2
     v2 += inverseMassBody2 * linearImpulseBody2;
-    w2 += mI2 * angularImpulseBody2;
+    w2 += i2 * angularImpulseBody2;
 
     // --------------- Rotation Constraints --------------- //
 
@@ -349,20 +363,21 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
     const Vector3 JvRotation = w2 - w1;
 
     // Compute the Lagrange multiplier lambda for the 3 rotation constraints
-    Vector3 deltaLambda2 = mInverseMassMatrixRotationConstraint * (-JvRotation - mBRotation);
-    mImpulseRotation += deltaLambda2;
+    Vector3 deltaLambda2 = mWorld.mSliderJointsComponents.getInverseMassMatrixRotation(mEntity) *
+                           (-JvRotation - mWorld.mSliderJointsComponents.getBiasRotation(mEntity));
+    mWorld.mSliderJointsComponents.setImpulseRotation(mEntity, deltaLambda2 + mWorld.mSliderJointsComponents.getImpulseRotation(mEntity));
 
     // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
     angularImpulseBody1 = -deltaLambda2;
 
     // Apply the impulse to the body to body 1
-    w1 += mI1 * angularImpulseBody1;
+    w1 += i1 * angularImpulseBody1;
 
     // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
     angularImpulseBody2 = deltaLambda2;
 
     // Apply the impulse to the body 2
-    w2 += mI2 * angularImpulseBody2;
+    w2 += i2 * angularImpulseBody2;
 
     // --------------- Limits Constraints --------------- //
 
@@ -387,7 +402,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
 
             // Apply the impulse to the body 1
             v1 += inverseMassBody1 * linearImpulseBody1;
-            w1 += mI1 * angularImpulseBody1;
+            w1 += i1 * angularImpulseBody1;
 
             // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
             const Vector3 linearImpulseBody2 = deltaLambdaLower * mSliderAxisWorld;
@@ -395,7 +410,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
 
             // Apply the impulse to the body 2
             v2 += inverseMassBody2 * linearImpulseBody2;
-            w2 += mI2 * angularImpulseBody2;
+            w2 += i2 * angularImpulseBody2;
         }
 
         // If the upper limit is violated
@@ -417,7 +432,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
 
             // Apply the impulse to the body 1
             v1 += inverseMassBody1 * linearImpulseBody1;
-            w1 += mI1 * angularImpulseBody1;
+            w1 += i1 * angularImpulseBody1;
 
             // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
             const Vector3 linearImpulseBody2 = -deltaLambdaUpper * mSliderAxisWorld;
@@ -425,7 +440,7 @@ void SliderJoint::solveVelocityConstraint(const ConstraintSolverData& constraint
 
             // Apply the impulse to the body 2
             v2 += inverseMassBody2 * linearImpulseBody2;
-            w2 += mI2 * angularImpulseBody2;
+            w2 += i2 * angularImpulseBody2;
         }
     }
 
@@ -483,12 +498,12 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     const decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
 
     // Recompute the inertia tensor of bodies
-    mI1 = body1->getInertiaTensorInverseWorld();
-    mI2 = body2->getInertiaTensorInverseWorld();
+    mWorld.mSliderJointsComponents.setI1(mEntity, body1->getInertiaTensorInverseWorld());
+    mWorld.mSliderJointsComponents.setI2(mEntity, body2->getInertiaTensorInverseWorld());
 
     // Vector from body center to the anchor point
-    mR1 = q1 * mLocalAnchorPointBody1;
-    mR2 = q2 * mLocalAnchorPointBody2;
+    mR1 = q1 * mWorld.mSliderJointsComponents.getLocalAnchorPointBody1(mEntity);
+    mR2 = q2 * mWorld.mSliderJointsComponents.getLocalAnchorPointBody2(mEntity);
 
     // Compute the vector u (difference between anchor points)
     const Vector3 u = x2 + mR2 - x1 - mR1;
@@ -517,15 +532,18 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // --------------- Translation Constraints --------------- //
 
+    const Matrix3x3& i1 = mWorld.mSliderJointsComponents.getI1(mEntity);
+    const Matrix3x3& i2 = mWorld.mSliderJointsComponents.getI2(mEntity);
+
     // Recompute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
     // constraints (2x2 matrix)
     const decimal body1MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(body1Entity);
     const decimal body2MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
     decimal sumInverseMass = body1MassInverse + body2MassInverse;
-    Vector3 I1R1PlusUCrossN1 = mI1 * mR1PlusUCrossN1;
-    Vector3 I1R1PlusUCrossN2 = mI1 * mR1PlusUCrossN2;
-    Vector3 I2R2CrossN1 = mI2 * mR2CrossN1;
-    Vector3 I2R2CrossN2 = mI2 * mR2CrossN2;
+    Vector3 I1R1PlusUCrossN1 = i1 * mR1PlusUCrossN1;
+    Vector3 I1R1PlusUCrossN2 = i1 * mR1PlusUCrossN2;
+    Vector3 I2R2CrossN1 = i2 * mR2CrossN1;
+    Vector3 I2R2CrossN2 = i2 * mR2CrossN2;
     const decimal el11 = sumInverseMass + mR1PlusUCrossN1.dot(I1R1PlusUCrossN1) +
                          mR2CrossN1.dot(I2R2CrossN1);
     const decimal el12 = mR1PlusUCrossN1.dot(I1R1PlusUCrossN2) +
@@ -535,18 +553,19 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     const decimal el22 = sumInverseMass + mR1PlusUCrossN2.dot(I1R1PlusUCrossN2) +
                          mR2CrossN2.dot(I2R2CrossN2);
     Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
-    mInverseMassMatrixTranslationConstraint.setToZero();
+    Matrix2x2& inverseMassMatrixTranslation = mWorld.mSliderJointsComponents.getInverseMassMatrixTranslation(mEntity);
+    inverseMassMatrixTranslation.setToZero();
     if (mWorld.mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
         mWorld.mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
 
-        mInverseMassMatrixTranslationConstraint = matrixKTranslation.getInverse();
+        mWorld.mSliderJointsComponents.setInverseMassMatrixTranslation(mEntity, matrixKTranslation.getInverse());
     }
 
     // Compute the position error for the 2 translation constraints
     const Vector2 translationError(u.dot(mN1), u.dot(mN2));
 
     // Compute the Lagrange multiplier lambda for the 2 translation constraints
-    Vector2 lambdaTranslation = mInverseMassMatrixTranslationConstraint * (-translationError);
+    Vector2 lambdaTranslation = inverseMassMatrixTranslation * (-translationError);
 
     // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
     const Vector3 linearImpulseBody1 = -mN1 * lambdaTranslation.x - mN2 * lambdaTranslation.y;
@@ -555,7 +574,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // Apply the impulse to the body 1
     const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-    Vector3 w1 = mI1 * angularImpulseBody1;
+    Vector3 w1 = i1 * angularImpulseBody1;
 
     // Update the body position/orientation of body 1
     x1 += v1;
@@ -569,7 +588,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // Apply the impulse to the body 2
     const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-    Vector3 w2 = mI2 * angularImpulseBody2;
+    Vector3 w2 = i2 * angularImpulseBody2;
 
     // Update the body position/orientation of body 2
     x2 += v2;
@@ -580,11 +599,11 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
-    mInverseMassMatrixRotationConstraint = mI1 + mI2;
+    mWorld.mSliderJointsComponents.setInverseMassMatrixRotation(mEntity, i1 + i2);
     if (mWorld.mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
         mWorld.mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
 
-        mInverseMassMatrixRotationConstraint = mInverseMassMatrixRotationConstraint.getInverse();
+        mWorld.mSliderJointsComponents.setInverseMassMatrixRotation(mEntity, mWorld.mSliderJointsComponents.getInverseMassMatrixRotation(mEntity).getInverse());
     }
 
 	// Calculate difference in rotation
@@ -602,7 +621,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 	// q1 = current rotation of body 1
 	// q2 = current rotation of body 2
 	// qError = error that needs to be reduced to zero
-	Quaternion qError = q2 * mInitOrientationDifferenceInv * q1.getInverse();
+    Quaternion qError = q2 * mWorld.mSliderJointsComponents.getInitOrientationDifferenceInv(mEntity) * q1.getInverse();
 
 	// A quaternion can be seen as:
 	//
@@ -616,13 +635,13 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     const Vector3 errorRotation = decimal(2.0) * qError.getVectorV();
 
     // Compute the Lagrange multiplier lambda for the 3 rotation constraints
-    Vector3 lambdaRotation = mInverseMassMatrixRotationConstraint * (-errorRotation);
+    Vector3 lambdaRotation = mWorld.mSliderJointsComponents.getInverseMassMatrixRotation(mEntity) * (-errorRotation);
 
     // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
     angularImpulseBody1 = -lambdaRotation;
 
     // Apply the impulse to the body 1
-    w1 = mI1 * angularImpulseBody1;
+    w1 = i1 * angularImpulseBody1;
 
     // Update the body position/orientation of body 1
     q1 += Quaternion(0, w1) * q1 * decimal(0.5);
@@ -632,7 +651,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     angularImpulseBody2 = lambdaRotation;
 
     // Apply the impulse to the body 2
-    w2 = mI2 * angularImpulseBody2;
+    w2 = i2 * angularImpulseBody2;
 
     // Update the body position/orientation of body 2
     q2 += Quaternion(0, w2) * q2 * decimal(0.5);
@@ -648,8 +667,8 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
             const decimal body1MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(body1Entity);
             const decimal body2MassInverse = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
             mInverseMassMatrixLimit = body1MassInverse + body2MassInverse +
-                                    mR1PlusUCrossSliderAxis.dot(mI1 * mR1PlusUCrossSliderAxis) +
-                                    mR2CrossSliderAxis.dot(mI2 * mR2CrossSliderAxis);
+                                    mR1PlusUCrossSliderAxis.dot(i1 * mR1PlusUCrossSliderAxis) +
+                                    mR2CrossSliderAxis.dot(i2 * mR2CrossSliderAxis);
             mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0.0) ?
                                       decimal(1.0) / mInverseMassMatrixLimit : decimal(0.0);
         }
@@ -666,7 +685,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
             // Apply the impulse to the body 1
             const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-            const Vector3 w1 = mI1 * angularImpulseBody1;
+            const Vector3 w1 = i1 * angularImpulseBody1;
 
             // Update the body position/orientation of body 1
             x1 += v1;
@@ -679,7 +698,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
             // Apply the impulse to the body 2
             const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-            const Vector3 w2 = mI2 * angularImpulseBody2;
+            const Vector3 w2 = i2 * angularImpulseBody2;
 
             // Update the body position/orientation of body 2
             x2 += v2;
@@ -699,7 +718,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
             // Apply the impulse to the body 1
             const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-            const Vector3 w1 = mI1 * angularImpulseBody1;
+            const Vector3 w1 = i1 * angularImpulseBody1;
 
             // Update the body position/orientation of body 1
             x1 += v1;
@@ -712,7 +731,7 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
 
             // Apply the impulse to the body 2
             const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-            const Vector3 w2 = mI2 * angularImpulseBody2;
+            const Vector3 w2 = i2 * angularImpulseBody2;
 
             // Update the body position/orientation of body 2
             x2 += v2;
@@ -779,8 +798,8 @@ decimal SliderJoint::getTranslation() const {
     const Quaternion& q2 = transform2.getOrientation();
 
     // Compute the two anchor points in world-space coordinates
-    const Vector3 anchorBody1 = x1 + q1 * mLocalAnchorPointBody1;
-    const Vector3 anchorBody2 = x2 + q2 * mLocalAnchorPointBody2;
+    const Vector3 anchorBody1 = x1 + q1 * mWorld.mSliderJointsComponents.getLocalAnchorPointBody1(mEntity);
+    const Vector3 anchorBody2 = x2 + q2 * mWorld.mSliderJointsComponents.getLocalAnchorPointBody2(mEntity);
 
     // Compute the vector u (difference between anchor points)
     const Vector3 u = anchorBody2 - anchorBody1;
@@ -867,4 +886,15 @@ void SliderJoint::setMaxMotorForce(decimal maxMotorForce) {
         // Wake up the two bodies of the joint
         awakeBodies();
     }
+}
+
+// Return a string representation
+std::string SliderJoint::to_string() const {
+    return "SliderJoint{ lowerLimit=" + std::to_string(mLowerLimit) + ", upperLimit=" + std::to_string(mUpperLimit) +
+            "localAnchorPointBody1=" + mWorld.mSliderJointsComponents.getLocalAnchorPointBody1(mEntity).to_string() + ", localAnchorPointBody2=" +
+            mWorld.mSliderJointsComponents.getLocalAnchorPointBody2(mEntity).to_string() + ", sliderAxisBody1=" + mSliderAxisBody1.to_string() +
+            ", initOrientationDifferenceInv=" +
+            mWorld.mSliderJointsComponents.getInitOrientationDifferenceInv(mEntity).to_string() + ", motorSpeed=" + std::to_string(mMotorSpeed) +
+            ", maxMotorForce=" + std::to_string(mMaxMotorForce) + ", isLimitEnabled=" +
+            (mIsLimitEnabled ? "true" : "false") + ", isMotorEnabled=" + (mIsMotorEnabled ? "true" : "false") + "}";
 }

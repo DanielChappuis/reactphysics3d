@@ -348,10 +348,18 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         // Slider joint
         case JointType::SLIDERJOINT:
         {
+            // Create a SliderJoint component
+            SliderJointComponents::SliderJointComponent sliderJointComponent;
+            mSliderJointsComponents.addComponent(entity, isJointDisabled, sliderJointComponent);
+
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                                             sizeof(SliderJoint));
             const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
-            newJoint = new (allocatedMemory) SliderJoint(entity, *this, info);
+            SliderJoint* joint = new (allocatedMemory) SliderJoint(entity, *this, info);
+
+            newJoint = joint;
+            mSliderJointsComponents.setJoint(entity, joint);
+
             break;
         }
 
@@ -461,10 +469,25 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
 
     size_t nbBytes = joint->getSizeInBytes();
 
+    Entity jointEntity = joint->getEntity();
+
     // Destroy the corresponding entity and its components
     // TODO : Make sure we remove all its components here
-    mJointsComponents.removeComponent(joint->getEntity());
-    mEntityManager.destroyEntity(joint->getEntity());
+    mJointsComponents.removeComponent(jointEntity);
+    mEntityManager.destroyEntity(jointEntity);
+
+    if (mBallAndSocketJointsComponents.hasComponent(jointEntity)) {
+        mBallAndSocketJointsComponents.removeComponent(jointEntity);
+    }
+    if (mFixedJointsComponents.hasComponent(jointEntity)) {
+        mFixedJointsComponents.removeComponent(jointEntity);
+    }
+    if (mHingeJointsComponents.hasComponent(jointEntity)) {
+        mHingeJointsComponents.removeComponent(jointEntity);
+    }
+    if (mSliderJointsComponents.hasComponent(jointEntity)) {
+        mSliderJointsComponents.removeComponent(jointEntity);
+    }
 
     // Call the destructor of the joint
     joint->~Joint();
