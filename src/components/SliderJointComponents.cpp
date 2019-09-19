@@ -35,15 +35,17 @@ using namespace reactphysics3d;
 // Constructor
 SliderJointComponents::SliderJointComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(SliderJoint*) + sizeof(Vector3) +
-                                sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
+                                sizeof(Vector3) +
                                 sizeof(Matrix3x3) + sizeof(Matrix3x3) + sizeof(Vector2) +
                                 sizeof(Vector3) + sizeof(Matrix2x2) + sizeof(Matrix3x3) +
-                                sizeof(Vector2) + sizeof(Vector3) + sizeof(Quaternion)/* +
+                                sizeof(Vector2) + sizeof(Vector3) + sizeof(Quaternion) +
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
-                                sizeof(Vector3) + sizeof(decimal) + sizeof(decimal) + sizeof(decimal) +
+                                sizeof(Vector3) + sizeof(Vector3) + sizeof(decimal) + sizeof(decimal) + sizeof(decimal) +
                                 sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(decimal) +
+                                sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(decimal)  +
                                 sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(decimal) +
-                                sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(decimal)*/) {
+                                sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
+                                sizeof(Vector3) + sizeof(Vector3)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -75,17 +77,17 @@ void SliderJointComponents::allocate(uint32 nbComponentsToAllocate) {
     Vector2* newBiasTranslation = reinterpret_cast<Vector2*>(newInverseMassMatrixRotation + nbComponentsToAllocate);
     Vector3* newBiasRotation = reinterpret_cast<Vector3*>(newBiasTranslation + nbComponentsToAllocate);
     Quaternion* newInitOrientationDifferenceInv = reinterpret_cast<Quaternion*>(newBiasRotation + nbComponentsToAllocate);
-    /*
-    Vector3* newHingeLocalAxisBody1 = reinterpret_cast<Vector3*>(newInitOrientationDifferenceInv + nbComponentsToAllocate);
-    Vector3* newHingeLocalAxisBody2 = reinterpret_cast<Vector3*>(newHingeLocalAxisBody1 + nbComponentsToAllocate);
-    Vector3* newA1 = reinterpret_cast<Vector3*>(newHingeLocalAxisBody2 + nbComponentsToAllocate);
-    Vector3* newB2CrossA1 = reinterpret_cast<Vector3*>(newA1 + nbComponentsToAllocate);
-    Vector3* newC2CrossA1 = reinterpret_cast<Vector3*>(newB2CrossA1 + nbComponentsToAllocate);
-    decimal* newImpulseLowerLimit = reinterpret_cast<decimal*>(newC2CrossA1 + nbComponentsToAllocate);
+    Vector3* newSliderAxisBody1 = reinterpret_cast<Vector3*>(newInitOrientationDifferenceInv + nbComponentsToAllocate);
+    Vector3* newSliderAxisWorld = reinterpret_cast<Vector3*>(newSliderAxisBody1 + nbComponentsToAllocate);
+    Vector3* newR1 = reinterpret_cast<Vector3*>(newSliderAxisWorld + nbComponentsToAllocate);
+    Vector3* newR2 = reinterpret_cast<Vector3*>(newR1 + nbComponentsToAllocate);
+    Vector3* newN1 = reinterpret_cast<Vector3*>(newR2 + nbComponentsToAllocate);
+    Vector3* newN2 = reinterpret_cast<Vector3*>(newN1 + nbComponentsToAllocate);
+    decimal* newImpulseLowerLimit = reinterpret_cast<decimal*>(newN2 + nbComponentsToAllocate);
     decimal* newImpulseUpperLimit = reinterpret_cast<decimal*>(newImpulseLowerLimit + nbComponentsToAllocate);
     decimal* newImpulseMotor = reinterpret_cast<decimal*>(newImpulseUpperLimit + nbComponentsToAllocate);
-    decimal* newInverseMassMatrixLimitMotor = reinterpret_cast<decimal*>(newImpulseMotor + nbComponentsToAllocate);
-    decimal* newInverseMassMatrixMotor = reinterpret_cast<decimal*>(newInverseMassMatrixLimitMotor + nbComponentsToAllocate);
+    decimal* newInverseMassMatrixLimit = reinterpret_cast<decimal*>(newImpulseMotor + nbComponentsToAllocate);
+    decimal* newInverseMassMatrixMotor = reinterpret_cast<decimal*>(newInverseMassMatrixLimit + nbComponentsToAllocate);
     decimal* newBLowerLimit = reinterpret_cast<decimal*>(newInverseMassMatrixMotor + nbComponentsToAllocate);
     decimal* newBUpperLimit = reinterpret_cast<decimal*>(newBLowerLimit + nbComponentsToAllocate);
     bool* newIsLimitEnabled = reinterpret_cast<bool*>(newBUpperLimit + nbComponentsToAllocate);
@@ -95,8 +97,13 @@ void SliderJointComponents::allocate(uint32 nbComponentsToAllocate) {
     bool* newIsLowerLimitViolated = reinterpret_cast<bool*>(newUpperLimit + nbComponentsToAllocate);
     bool* newIsUpperLimitViolated = reinterpret_cast<bool*>(newIsLowerLimitViolated + nbComponentsToAllocate);
     decimal* newMotorSpeed = reinterpret_cast<decimal*>(newIsUpperLimitViolated + nbComponentsToAllocate);
-    decimal* newMaxMotorTorque = reinterpret_cast<decimal*>(newMotorSpeed + nbComponentsToAllocate);
-    */
+    decimal* newMaxMotorForce = reinterpret_cast<decimal*>(newMotorSpeed + nbComponentsToAllocate);
+    Vector3* newR2CrossN1 = reinterpret_cast<Vector3*>(newMaxMotorForce + nbComponentsToAllocate);
+    Vector3* newR2CrossN2 = reinterpret_cast<Vector3*>(newR2CrossN1 + nbComponentsToAllocate);
+    Vector3* newR2CrossSliderAxis = reinterpret_cast<Vector3*>(newR2CrossN2 + nbComponentsToAllocate);
+    Vector3* newR1PlusUCrossN1 = reinterpret_cast<Vector3*>(newR2CrossSliderAxis + nbComponentsToAllocate);
+    Vector3* newR1PlusUCrossN2 = reinterpret_cast<Vector3*>(newR1PlusUCrossN1 + nbComponentsToAllocate);
+    Vector3* newR1PlusUCrossSliderAxis = reinterpret_cast<Vector3*>(newR1PlusUCrossN2 + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -115,16 +122,16 @@ void SliderJointComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newBiasTranslation, mBiasTranslation, mNbComponents * sizeof(Vector2));
         memcpy(newBiasRotation, mBiasRotation, mNbComponents * sizeof(Vector3));
         memcpy(newInitOrientationDifferenceInv, mInitOrientationDifferenceInv, mNbComponents * sizeof(Quaternion));
-        /*
-        memcpy(newHingeLocalAxisBody1, mHingeLocalAxisBody1, mNbComponents * sizeof(Vector3));
-        memcpy(newHingeLocalAxisBody2, mHingeLocalAxisBody2, mNbComponents * sizeof(Vector3));
-        memcpy(newA1, mA1, mNbComponents * sizeof(Vector3));
-        memcpy(newB2CrossA1, mB2CrossA1, mNbComponents * sizeof(Vector3));
-        memcpy(newC2CrossA1, mC2CrossA1, mNbComponents * sizeof(Vector3));
+        memcpy(newSliderAxisBody1, mSliderAxisBody1, mNbComponents * sizeof(Vector3));
+        memcpy(newSliderAxisWorld, mSliderAxisWorld, mNbComponents * sizeof(Vector3));
+        memcpy(newR1, mR1, mNbComponents * sizeof(Vector3));
+        memcpy(newR2, mR2, mNbComponents * sizeof(Vector3));
+        memcpy(newN1, mN1, mNbComponents * sizeof(Vector3));
+        memcpy(newN2, mN2, mNbComponents * sizeof(Vector3));
         memcpy(newImpulseLowerLimit, mImpulseLowerLimit, mNbComponents * sizeof(decimal));
         memcpy(newImpulseUpperLimit, mImpulseUpperLimit, mNbComponents * sizeof(decimal));
         memcpy(newImpulseMotor, mImpulseMotor, mNbComponents * sizeof(decimal));
-        memcpy(newInverseMassMatrixLimitMotor, mInverseMassMatrixLimitMotor, mNbComponents * sizeof(decimal));
+        memcpy(newInverseMassMatrixLimit, mInverseMassMatrixLimit, mNbComponents * sizeof(decimal));
         memcpy(newInverseMassMatrixMotor, mInverseMassMatrixMotor, mNbComponents * sizeof(decimal));
         memcpy(newBLowerLimit, mBLowerLimit, mNbComponents * sizeof(decimal));
         memcpy(newBUpperLimit, mBUpperLimit, mNbComponents * sizeof(decimal));
@@ -135,8 +142,13 @@ void SliderJointComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newIsLowerLimitViolated, mIsLowerLimitViolated, mNbComponents * sizeof(bool));
         memcpy(newIsUpperLimitViolated, mIsUpperLimitViolated, mNbComponents * sizeof(bool));
         memcpy(newMotorSpeed, mMotorSpeed, mNbComponents * sizeof(decimal));
-        memcpy(newMaxMotorTorque, mMaxMotorTorque, mNbComponents * sizeof(decimal));
-        */
+        memcpy(newMaxMotorForce, mMaxMotorForce, mNbComponents * sizeof(decimal));
+        memcpy(newR2CrossN1, mR2CrossN1, mNbComponents * sizeof(decimal));
+        memcpy(newR2CrossN2, mR2CrossN2, mNbComponents * sizeof(decimal));
+        memcpy(newR2CrossSliderAxis, mR2CrossSliderAxis, mNbComponents * sizeof(decimal));
+        memcpy(newR1PlusUCrossN1, mR1PlusUCrossN1, mNbComponents * sizeof(decimal));
+        memcpy(newR1PlusUCrossN2, mR1PlusUCrossN2, mNbComponents * sizeof(decimal));
+        memcpy(newR1PlusUCrossSliderAxis, mR1PlusUCrossSliderAxis, mNbComponents * sizeof(decimal));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -157,16 +169,16 @@ void SliderJointComponents::allocate(uint32 nbComponentsToAllocate) {
     mBiasTranslation = newBiasTranslation;
     mBiasRotation = newBiasRotation;
     mInitOrientationDifferenceInv = newInitOrientationDifferenceInv;
-    /*
-    mHingeLocalAxisBody1 = newHingeLocalAxisBody1;
-    mHingeLocalAxisBody2 = newHingeLocalAxisBody2;
-    mA1 = newA1;
-    mB2CrossA1 = newB2CrossA1;
-    mC2CrossA1 = newC2CrossA1;
+    mSliderAxisBody1 = newSliderAxisBody1;
+    mSliderAxisWorld = newSliderAxisWorld;
+    mR1 = newR1;
+    mR2 = newR2;
+    mN1 = newN1;
+    mN2 = newN2;
     mImpulseLowerLimit = newImpulseLowerLimit;
     mImpulseUpperLimit = newImpulseUpperLimit;
     mImpulseMotor = newImpulseMotor;
-    mInverseMassMatrixLimitMotor = newInverseMassMatrixLimitMotor;
+    mInverseMassMatrixLimit = newInverseMassMatrixLimit;
     mInverseMassMatrixMotor = newInverseMassMatrixMotor;
     mBLowerLimit = newBLowerLimit;
     mBUpperLimit = newBUpperLimit;
@@ -177,8 +189,13 @@ void SliderJointComponents::allocate(uint32 nbComponentsToAllocate) {
     mIsLowerLimitViolated = newIsLowerLimitViolated;
     mIsUpperLimitViolated = newIsUpperLimitViolated;
     mMotorSpeed = newMotorSpeed;
-    mMaxMotorTorque = newMaxMotorTorque;
-    */
+    mMaxMotorForce = newMaxMotorForce;
+    mR2CrossN1 = newR2CrossN1;
+    mR2CrossN2 = newR2CrossN2;
+    mR2CrossSliderAxis = newR2CrossSliderAxis;
+    mR1PlusUCrossN1 = newR1PlusUCrossN1;
+    mR1PlusUCrossN2 = newR1PlusUCrossN2;
+    mR1PlusUCrossSliderAxis = newR1PlusUCrossSliderAxis;
 }
 
 // Add a component
@@ -201,15 +218,16 @@ void SliderJointComponents::addComponent(Entity jointEntity, bool isSleeping, co
     new (mBiasTranslation + index) Vector2(0, 0);
     new (mBiasRotation + index) Vector3(0, 0, 0);
     new (mInitOrientationDifferenceInv + index) Quaternion(0, 0, 0, 0);
-    /*
-    new (mHingeLocalAxisBody1 + index) Vector3(0, 0, 0);
-    new (mHingeLocalAxisBody2 + index) Vector3(0, 0, 0);
-    new (mA1 + index) Vector3(0, 0, 0);
-    new (mB2CrossA1 + index) Vector3(0, 0, 0);
-    new (mC2CrossA1 + index) Vector3(0, 0, 0);
+    new (mSliderAxisBody1 + index) Vector3(0, 0, 0);
+    new (mSliderAxisWorld + index) Vector3(0, 0, 0);
+    new (mR1 + index) Vector3(0, 0, 0);
+    new (mR2 + index) Vector3(0, 0, 0);
+    new (mN1 + index) Vector3(0, 0, 0);
+    new (mN2 + index) Vector3(0, 0, 0);
     mImpulseLowerLimit[index] = decimal(0.0);
     mImpulseUpperLimit[index] = decimal(0.0);
-    mInverseMassMatrixLimitMotor[index] = decimal(0.0);
+    mImpulseMotor[index] = decimal(0.0);
+    mInverseMassMatrixLimit[index] = decimal(0.0);
     mInverseMassMatrixMotor[index] = decimal(0.0);
     mBLowerLimit[index] = decimal(0.0);
     mBUpperLimit[index] = decimal(0.0);
@@ -220,8 +238,13 @@ void SliderJointComponents::addComponent(Entity jointEntity, bool isSleeping, co
     mIsLowerLimitViolated[index] = false;
     mIsUpperLimitViolated[index] = false;
     mMotorSpeed[index] = component.motorSpeed;
-    mMaxMotorTorque[index] = component.maxMotorTorque;
-    */
+    mMaxMotorForce[index] = component.maxMotorForce;
+    new (mR2CrossN1 + index) Vector3(0, 0, 0);
+    new (mR2CrossN2 + index) Vector3(0, 0, 0);
+    new (mR2CrossSliderAxis + index) Vector3(0, 0, 0);
+    new (mR1PlusUCrossN1 + index) Vector3(0, 0, 0);
+    new (mR1PlusUCrossN2 + index) Vector3(0, 0, 0);
+    new (mR1PlusUCrossSliderAxis + index) Vector3(0, 0, 0);
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity, index));
@@ -252,16 +275,16 @@ void SliderJointComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInd
     new (mBiasTranslation + destIndex) Vector2(mBiasTranslation[srcIndex]);
     new (mBiasRotation + destIndex) Vector3(mBiasRotation[srcIndex]);
     new (mInitOrientationDifferenceInv + destIndex) Quaternion(mInitOrientationDifferenceInv[srcIndex]);
-    /*
-    new (mHingeLocalAxisBody1 + destIndex) Vector3(mHingeLocalAxisBody1[srcIndex]);
-    new (mHingeLocalAxisBody2 + destIndex) Vector3(mHingeLocalAxisBody2[srcIndex]);
-    new (mA1 + destIndex) Vector3(mA1[srcIndex]);
-    new (mB2CrossA1 + destIndex) Vector3(mB2CrossA1[srcIndex]);
-    new (mC2CrossA1 + destIndex) Vector3(mC2CrossA1[srcIndex]);
+    new (mSliderAxisBody1 + destIndex) Vector3(mSliderAxisBody1[srcIndex]);
+    new (mSliderAxisWorld + destIndex) Vector3(mSliderAxisWorld[srcIndex]);
+    new (mR1 + destIndex) Vector3(mR1[srcIndex]);
+    new (mR2 + destIndex) Vector3(mR2[srcIndex]);
+    new (mN1 + destIndex) Vector3(mN1[srcIndex]);
+    new (mN2 + destIndex) Vector3(mN2[srcIndex]);
     mImpulseLowerLimit[destIndex] = mImpulseLowerLimit[srcIndex];
     mImpulseUpperLimit[destIndex] = mImpulseUpperLimit[srcIndex];
     mImpulseMotor[destIndex] = mImpulseMotor[srcIndex];
-    mInverseMassMatrixLimitMotor[destIndex] = mInverseMassMatrixLimitMotor[srcIndex];
+    mInverseMassMatrixLimit[destIndex] = mInverseMassMatrixLimit[srcIndex];
     mInverseMassMatrixMotor[destIndex] = mInverseMassMatrixMotor[srcIndex];
     mBLowerLimit[destIndex] = mBLowerLimit[srcIndex];
     mBUpperLimit[destIndex] = mBUpperLimit[srcIndex];
@@ -272,8 +295,13 @@ void SliderJointComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInd
     mIsLowerLimitViolated[destIndex] = mIsLowerLimitViolated[srcIndex];
     mIsUpperLimitViolated[destIndex] = mIsUpperLimitViolated[srcIndex];
     mMotorSpeed[destIndex] = mMotorSpeed[srcIndex];
-    mMaxMotorTorque[destIndex] = mMaxMotorTorque[srcIndex];
-    */
+    mMaxMotorForce[destIndex] = mMaxMotorForce[srcIndex];
+    new (mR2CrossN1 + destIndex) Vector3(mR2CrossN1[srcIndex]);
+    new (mR2CrossN2 + destIndex) Vector3(mR2CrossN2[srcIndex]);
+    new (mR2CrossSliderAxis + destIndex) Vector3(mR2CrossSliderAxis[srcIndex]);
+    new (mR1PlusUCrossN1 + destIndex) Vector3(mR1PlusUCrossN1[srcIndex]);
+    new (mR1PlusUCrossN2 + destIndex) Vector3(mR1PlusUCrossN2[srcIndex]);
+    new (mR1PlusUCrossSliderAxis + destIndex) Vector3(mR1PlusUCrossSliderAxis[srcIndex]);
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -303,16 +331,16 @@ void SliderJointComponents::swapComponents(uint32 index1, uint32 index2) {
     Vector2 biasTranslation1(mBiasTranslation[index1]);
     Vector3 biasRotation1(mBiasRotation[index1]);
     Quaternion initOrientationDifferenceInv1(mInitOrientationDifferenceInv[index1]);
-    /*
-    Vector3 hingeLocalAxisBody1(mHingeLocalAxisBody1[index1]);
-    Vector3 hingeLocalAxisBody2(mHingeLocalAxisBody2[index1]);
-    Vector3 a1(mA1[index1]);
-    Vector3 b2CrossA1(mB2CrossA1[index1]);
-    Vector3 c2CrossA1(mC2CrossA1[index1]);
+    Vector3 sliderAxisBody1(mSliderAxisBody1[index1]);
+    Vector3 sliderAxisWorld(mSliderAxisWorld[index1]);
+    Vector3 r1(mR1[index1]);
+    Vector3 r2(mR2[index1]);
+    Vector3 n1(mN1[index1]);
+    Vector3 n2(mN2[index1]);
     decimal impulseLowerLimit(mImpulseLowerLimit[index1]);
     decimal impulseUpperLimit(mImpulseUpperLimit[index1]);
     decimal impulseMotor(mImpulseMotor[index1]);
-    decimal inverseMassMatrixLimitMotor(mInverseMassMatrixLimitMotor[index1]);
+    decimal inverseMassMatrixLimit(mInverseMassMatrixLimit[index1]);
     decimal inverseMassMatrixMotor(mInverseMassMatrixMotor[index1]);
     decimal bLowerLimit(mBLowerLimit[index1]);
     decimal bUpperLimit(mUpperLimit[index1]);
@@ -323,8 +351,13 @@ void SliderJointComponents::swapComponents(uint32 index1, uint32 index2) {
     bool isLowerLimitViolated(mIsLowerLimitViolated[index1]);
     bool isUpperLimitViolated(mIsUpperLimitViolated[index1]);
     decimal motorSpeed(mMotorSpeed[index1]);
-    decimal maxMotorTorque(mMaxMotorTorque[index1]);
-    */
+    decimal maxMotorForce(mMaxMotorForce[index1]);
+    Vector3 r2CrossN1(mR2CrossN1[index1]);
+    Vector3 r2CrossN2(mR2CrossN2[index1]);
+    Vector3 r2CrossSliderAxis(mR2CrossSliderAxis[index1]);
+    Vector3 r1PlusUCrossN1(mR1PlusUCrossN1[index1]);
+    Vector3 r1PlusUCrossN2(mR1PlusUCrossN2[index1]);
+    Vector3 r1PlusUCrossSliderAxis(mR1PlusUCrossSliderAxis[index1]);
 
     // Destroy component 1
     destroyComponent(index1);
@@ -345,16 +378,16 @@ void SliderJointComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mBiasTranslation + index2) Vector2(biasTranslation1);
     new (mBiasRotation + index2) Vector3(biasRotation1);
     new (mInitOrientationDifferenceInv + index2) Quaternion(initOrientationDifferenceInv1);
-    /*
-    new (mHingeLocalAxisBody1 + index2) Vector3(hingeLocalAxisBody1);
-    new (mHingeLocalAxisBody2 + index2) Vector3(hingeLocalAxisBody2);
-    new (mA1 + index2) Vector3(a1);
-    new (mB2CrossA1 + index2) Vector3(b2CrossA1);
-    new (mC2CrossA1 + index2) Vector3(c2CrossA1);
+    new (mSliderAxisBody1 + index2) Vector3(sliderAxisBody1);
+    new (mSliderAxisWorld + index2) Vector3(sliderAxisWorld);
+    new (mR1 + index2) Vector3(r1);
+    new (mR2 + index2) Vector3(r2);
+    new (mN1 + index2) Vector3(n1);
+    new (mN2 + index2) Vector3(n2);
     mImpulseLowerLimit[index2] = impulseLowerLimit;
     mImpulseUpperLimit[index2] = impulseUpperLimit;
     mImpulseMotor[index2] = impulseMotor;
-    mInverseMassMatrixLimitMotor[index2] = inverseMassMatrixLimitMotor;
+    mInverseMassMatrixLimit[index2] = inverseMassMatrixLimit;
     mInverseMassMatrixMotor[index2] = inverseMassMatrixMotor;
     mBLowerLimit[index2] = bLowerLimit;
     mBUpperLimit[index2] = bUpperLimit;
@@ -365,8 +398,13 @@ void SliderJointComponents::swapComponents(uint32 index1, uint32 index2) {
     mIsLowerLimitViolated[index2] = isLowerLimitViolated;
     mIsUpperLimitViolated[index2] = isUpperLimitViolated;
     mMotorSpeed[index2] = motorSpeed;
-    mMaxMotorTorque[index2] = maxMotorTorque;
-    */
+    mMaxMotorForce[index2] = maxMotorForce;
+    new (mR2CrossN1 + index2) Vector3(r2CrossN1);
+    new (mR2CrossN2 + index2) Vector3(r2CrossN2);
+    new (mR2CrossSliderAxis + index2) Vector3(r2CrossSliderAxis);
+    new (mR1PlusUCrossN1 + index2) Vector3(r1PlusUCrossN1);
+    new (mR1PlusUCrossN2 + index2) Vector3(r1PlusUCrossN2);
+    new (mR1PlusUCrossSliderAxis + index2) Vector3(r1PlusUCrossSliderAxis);
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity1, index2));
@@ -398,11 +436,16 @@ void SliderJointComponents::destroyComponent(uint32 index) {
     mBiasTranslation[index].~Vector2();
     mBiasRotation[index].~Vector3();
     mInitOrientationDifferenceInv[index].~Quaternion();
-    /*
-    mHingeLocalAxisBody1[index].~Vector3();
-    mHingeLocalAxisBody2[index].~Vector3();
-    mA1[index].~Vector3();
-    mB2CrossA1[index].~Vector3();
-    mC2CrossA1[index].~Vector3();
-    */
+    mSliderAxisBody1[index].~Vector3();
+    mSliderAxisWorld[index].~Vector3();
+    mR1[index].~Vector3();
+    mR2[index].~Vector3();
+    mN1[index].~Vector3();
+    mN2[index].~Vector3();
+    mR2CrossN1[index].~Vector3();
+    mR2CrossN2[index].~Vector3();
+    mR2CrossSliderAxis[index].~Vector3();
+    mR1PlusUCrossN1[index].~Vector3();
+    mR1PlusUCrossN2[index].~Vector3();
+    mR1PlusUCrossSliderAxis[index].~Vector3();
 }

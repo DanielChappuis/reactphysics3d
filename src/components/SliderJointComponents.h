@@ -92,21 +92,23 @@ class SliderJointComponents : public Components {
         /// Inverse of the initial orientation difference between the two bodies
         Quaternion* mInitOrientationDifferenceInv;
 
-        /*
-        /// Hinge rotation axis (in local-space coordinates of body 1)
-        Vector3* mHingeLocalAxisBody1;
+        /// Slider axis (in local-space coordinates of body 1)
+        Vector3* mSliderAxisBody1;
 
-        /// Hinge rotation axis (in local-space coordiantes of body 2)
-        Vector3* mHingeLocalAxisBody2;
+        /// Slider axis in world-space coordinates
+        Vector3* mSliderAxisWorld;
 
-        /// Hinge rotation axis (in world-space coordinates) computed from body 1
-        Vector3* mA1;
+        /// Vector r1 in world-space coordinates
+        Vector3* mR1;
 
-        /// Cross product of vector b2 and a1
-        Vector3* mB2CrossA1;
+        /// Vector r2 in world-space coordinates
+        Vector3* mR2;
 
-        /// Cross product of vector c2 and a1;
-        Vector3* mC2CrossA1;
+        /// First vector orthogonal to the slider axis local-space of body 1
+        Vector3* mN1;
+
+        /// Second vector orthogonal to the slider axis and mN1 in local-space of body 1
+        Vector3* mN2;
 
         /// Accumulated impulse for the lower limit constraint
         decimal* mImpulseLowerLimit;
@@ -117,8 +119,8 @@ class SliderJointComponents : public Components {
         /// Accumulated impulse for the motor constraint;
         decimal* mImpulseMotor;
 
-        /// Inverse of mass matrix K=JM^-1J^t for the limits and motor constraints (1x1 matrix)
-        decimal* mInverseMassMatrixLimitMotor;
+        /// Inverse of mass matrix K=JM^-1J^t for the upper and lower limit constraints (1x1 matrix)
+        decimal* mInverseMassMatrixLimit;
 
         /// Inverse of mass matrix K=JM^-1J^t for the motor
         decimal* mInverseMassMatrixMotor;
@@ -150,10 +152,26 @@ class SliderJointComponents : public Components {
         /// Motor speed (in rad/s)
         decimal* mMotorSpeed;
 
-        /// Maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-        decimal* mMaxMotorTorque;
+        /// Maximum motor force (in Newtons) that can be applied to reach to desired motor speed
+        decimal* mMaxMotorForce;
 
-        */
+        /// Cross product of r2 and n1
+        Vector3* mR2CrossN1;
+
+        /// Cross product of r2 and n2
+        Vector3* mR2CrossN2;
+
+        /// Cross product of r2 and the slider axis
+        Vector3* mR2CrossSliderAxis;
+
+        /// Cross product of vector (r1 + u) and n1
+        Vector3* mR1PlusUCrossN1;
+
+        /// Cross product of vector (r1 + u) and n2
+        Vector3* mR1PlusUCrossN2;
+
+        /// Cross product of vector (r1 + u) and the slider axis
+        Vector3* mR1PlusUCrossSliderAxis;
 
         // -------------------- Methods -------------------- //
 
@@ -179,18 +197,13 @@ class SliderJointComponents : public Components {
              decimal lowerLimit;
              decimal upperLimit;
              decimal motorSpeed;
-             decimal maxMotorTorque;
-
-            // TODO : Delete this
-            SliderJointComponent() {
-
-            }
+             decimal maxMotorForce;
 
             /// Constructor
             SliderJointComponent(bool isLimitEnabled, bool isMotorEnabled, decimal lowerLimit, decimal upperLimit,
-                                decimal motorSpeed, decimal maxMotorTorque)
-                : isLimitEnabled(isLimitEnabled), isMotorEnabled(isMotorEnabled), lowerLimit(lowerLimit), upperLimit(upperLimit),
-                  motorSpeed(motorSpeed), maxMotorTorque(maxMotorTorque) {
+                                 decimal motorSpeed, decimal maxMotorForce)
+                :isLimitEnabled(isLimitEnabled), isMotorEnabled(isMotorEnabled), lowerLimit(lowerLimit), upperLimit(upperLimit),
+                 motorSpeed(motorSpeed), maxMotorForce(maxMotorForce) {
 
             }
         };
@@ -278,36 +291,41 @@ class SliderJointComponents : public Components {
         /// Set the rotation impulse
         void setInitOrientationDifferenceInv(Entity jointEntity, const Quaternion& initOrientationDifferenceInv);
 
-        /*
-        /// Return the hinge rotation axis (in local-space coordinates of body 1)
-        Vector3& getHingeLocalAxisBody1(Entity jointEntity);
+        /// Return the slider axis (in local-space coordinates of body 1)
+        Vector3& getSliderAxisBody1(Entity jointEntity);
 
-        /// Set the hinge rotation axis (in local-space coordinates of body 1)
-        void setHingeLocalAxisBody1(Entity jointEntity, const Vector3& hingeLocalAxisBody1);
+        /// Set the slider axis (in local-space coordinates of body 1)
+        void setSliderAxisBody1(Entity jointEntity, const Vector3& sliderAxisBody1);
 
-        /// Return the hinge rotation axis (in local-space coordiantes of body 2)
-        Vector3& getHingeLocalAxisBody2(Entity jointEntity);
+        /// Retunr the slider axis in world-space coordinates
+        Vector3& getSliderAxisWorld(Entity jointEntity);
 
-        /// Set the hinge rotation axis (in local-space coordiantes of body 2)
-        void setHingeLocalAxisBody2(Entity jointEntity, const Vector3& hingeLocalAxisBody2);
+        /// Set the slider axis in world-space coordinates
+        void setSliderAxisWorld(Entity jointEntity, const Vector3& sliderAxisWorld);
 
-        /// Return the hinge rotation axis (in world-space coordinates) computed from body 1
-        Vector3& getA1(Entity jointEntity);
+        /// Return the vector r1 in world-space coordinates
+        Vector3& getR1(Entity jointEntity);
 
-        /// Set the hinge rotation axis (in world-space coordinates) computed from body 1
-        void setA1(Entity jointEntity, const Vector3& a1);
+        /// Set the vector r1 in world-space coordinates
+        void setR1(Entity jointEntity, const Vector3& r1);
 
-        /// Return the cross product of vector b2 and a1
-        Vector3& getB2CrossA1(Entity jointEntity);
+        /// Return the vector r2 in world-space coordinates
+        Vector3& getR2(Entity jointEntity);
 
-        /// Set the cross product of vector b2 and a1
-        void setB2CrossA1(Entity jointEntity, const Vector3& b2CrossA1);
+        /// Set the vector r2 in world-space coordinates
+        void setR2(Entity jointEntity, const Vector3& r2);
 
-        /// Return the cross product of vector c2 and a1;
-        Vector3& getC2CrossA1(Entity jointEntity);
+        /// Return the first vector orthogonal to the slider axis local-space of body 1
+        Vector3& getN1(Entity jointEntity);
 
-        /// Set the cross product of vector c2 and a1;
-        void setC2CrossA1(Entity jointEntity, const Vector3& c2CrossA1);
+        /// Set the first vector orthogonal to the slider axis local-space of body 1
+        void setN1(Entity jointEntity, const Vector3& n1);
+
+        /// Return the second vector orthogonal to the slider axis and mN1 in local-space of body 1
+        Vector3& getN2(Entity jointEntity);
+
+        /// Set the second vector orthogonal to the slider axis and mN1 in local-space of body 1
+        void setN2(Entity jointEntity, const Vector3& n2);
 
         /// Return the accumulated impulse for the lower limit constraint
         decimal getImpulseLowerLimit(Entity jointEntity) const;
@@ -327,11 +345,11 @@ class SliderJointComponents : public Components {
         /// Set the accumulated impulse for the motor constraint;
         void setImpulseMotor(Entity jointEntity, decimal impulseMotor);
 
-        /// Return the inverse of mass matrix K=JM^-1J^t for the limits and motor constraints (1x1 matrix)
-        decimal getInverseMassMatrixLimitMotor(Entity jointEntity) const;
+        /// Return the inverse of mass matrix K=JM^-1J^t for the limits (1x1 matrix)
+        decimal getInverseMassMatrixLimit(Entity jointEntity) const;
 
-        /// Set the inverse of mass matrix K=JM^-1J^t for the limits and motor constraints (1x1 matrix)
-        void setInverseMassMatrixLimitMotor(Entity jointEntity, decimal inverseMassMatrixLimitMotor);
+        /// Set the inverse of mass matrix K=JM^-1J^t for the limits (1x1 matrix)
+        void setInverseMassMatrixLimit(Entity jointEntity, decimal inverseMassMatrixLimitMotor);
 
         /// Return the inverse of mass matrix K=JM^-1J^t for the motor
         decimal getInverseMassMatrixMotor(Entity jointEntity);
@@ -393,12 +411,47 @@ class SliderJointComponents : public Components {
         /// Set the motor speed (in rad/s)
         void setMotorSpeed(Entity jointEntity, decimal motorSpeed);
 
-        /// Return the maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-        decimal getMaxMotorTorque(Entity jointEntity) const;
+        /// Return the maximum motor force (in Newtons) that can be applied to reach to desired motor speed
+        decimal getMaxMotorForce(Entity jointEntity) const;
 
-        /// Set the maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-        void setMaxMotorTorque(Entity jointEntity, decimal maxMotorTorque);
-        */
+        /// Set the maximum motor force (in Newtons) that can be applied to reach to desired motor speed
+        void setMaxMotorForce(Entity jointEntity, decimal maxMotorForce);
+
+        /// Return the cross product of r2 and n1
+        Vector3& getR2CrossN1(Entity jointEntity);
+
+        /// Set the cross product of r2 and n1
+        void setR2CrossN1(Entity jointEntity, const Vector3& r2CrossN1);
+
+        /// Return the cross product of r2 and n2
+        Vector3& getR2CrossN2(Entity jointEntity);
+
+        /// Set the cross product of r2 and n2
+        void setR2CrossN2(Entity jointEntity, const Vector3& r2CrossN2);
+
+        /// Return the cross product of r2 and the slider axis
+        Vector3& getR2CrossSliderAxis(Entity jointEntity);
+
+        /// Set the cross product of r2 and the slider axis
+        void setR2CrossSliderAxis(Entity jointEntity, const Vector3& r2CrossSliderAxis);
+
+        /// Return the cross product of vector (r1 + u) and n1
+        Vector3& getR1PlusUCrossN1(Entity jointEntity);
+
+        /// Set the cross product of vector (r1 + u) and n1
+        void setR1PlusUCrossN1(Entity jointEntity, const Vector3& r1PlusUCrossN1);
+
+        /// Return the cross product of vector (r1 + u) and n2
+        Vector3& getR1PlusUCrossN2(Entity jointEntity);
+
+        /// Set the cross product of vector (r1 + u) and n2
+        void setR1PlusUCrossN2(Entity jointEntity, const Vector3& r1PlusUCrossN2);
+
+        /// Return the cross product of vector (r1 + u) and the slider axis
+        Vector3& getR1PlusUCrossSliderAxis(Entity jointEntity);
+
+        /// Set the cross product of vector (r1 + u) and the slider axis
+        void setR1PlusUCrossSliderAxis(Entity jointEntity, const Vector3& r1PlusUCrossSliderAxis);
 
         // -------------------- Friendship -------------------- //
 
@@ -573,87 +626,99 @@ inline void SliderJointComponents::setInitOrientationDifferenceInv(Entity jointE
     mInitOrientationDifferenceInv[mMapEntityToComponentIndex[jointEntity]] = initOrientationDifferenceInv;
 }
 
-/*
-// Return the hinge rotation axis (in local-space coordinates of body 1)
-inline Vector3& HingeJointComponents::getHingeLocalAxisBody1(Entity jointEntity) {
+// Return the slider axis (in local-space coordinates of body 1)
+inline Vector3& SliderJointComponents::getSliderAxisBody1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    return mHingeLocalAxisBody1[mMapEntityToComponentIndex[jointEntity]];
+    return mSliderAxisBody1[mMapEntityToComponentIndex[jointEntity]];
 }
 
-// Set the hinge rotation axis (in local-space coordinates of body 1)
-inline void HingeJointComponents::setHingeLocalAxisBody1(Entity jointEntity, const Vector3& hingeLocalAxisBody1) {
+// Set the slider axis (in local-space coordinates of body 1)
+inline void SliderJointComponents::setSliderAxisBody1(Entity jointEntity, const Vector3& sliderAxisBody1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mHingeLocalAxisBody1[mMapEntityToComponentIndex[jointEntity]] = hingeLocalAxisBody1;
+    mSliderAxisBody1[mMapEntityToComponentIndex[jointEntity]] = sliderAxisBody1;
 }
 
-// Return the hinge rotation axis (in local-space coordiantes of body 2)
-inline Vector3& HingeJointComponents::getHingeLocalAxisBody2(Entity jointEntity) {
+// Retunr the slider axis in world-space coordinates
+inline Vector3& SliderJointComponents::getSliderAxisWorld(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    return mHingeLocalAxisBody2[mMapEntityToComponentIndex[jointEntity]];
+    return mSliderAxisWorld[mMapEntityToComponentIndex[jointEntity]];
 }
 
-// Set the hinge rotation axis (in local-space coordiantes of body 2)
-inline void HingeJointComponents::setHingeLocalAxisBody2(Entity jointEntity, const Vector3& hingeLocalAxisBody2) {
+// Set the slider axis in world-space coordinates
+inline void SliderJointComponents::setSliderAxisWorld(Entity jointEntity, const Vector3& sliderAxisWorld) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mHingeLocalAxisBody2[mMapEntityToComponentIndex[jointEntity]] = hingeLocalAxisBody2;
+    mSliderAxisWorld[mMapEntityToComponentIndex[jointEntity]] = sliderAxisWorld;
 }
 
-
-// Return the hinge rotation axis (in world-space coordinates) computed from body 1
-inline Vector3& HingeJointComponents::getA1(Entity jointEntity) {
+// Return the vector r1 in world-space coordinates
+inline Vector3& SliderJointComponents::getR1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    return mA1[mMapEntityToComponentIndex[jointEntity]];
+    return mR1[mMapEntityToComponentIndex[jointEntity]];
 }
 
-// Set the hinge rotation axis (in world-space coordinates) computed from body 1
-inline void HingeJointComponents::setA1(Entity jointEntity, const Vector3& a1) {
+// Set the vector r1 in world-space coordinates
+inline void SliderJointComponents::setR1(Entity jointEntity, const Vector3& r1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mA1[mMapEntityToComponentIndex[jointEntity]] = a1;
+    mR1[mMapEntityToComponentIndex[jointEntity]] = r1;
 }
 
-// Return the cross product of vector b2 and a1
-inline Vector3& HingeJointComponents::getB2CrossA1(Entity jointEntity) {
+// Return the vector r2 in world-space coordinates
+inline Vector3& SliderJointComponents::getR2(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    return mB2CrossA1[mMapEntityToComponentIndex[jointEntity]];
+    return mR2[mMapEntityToComponentIndex[jointEntity]];
 }
 
-// Set the cross product of vector b2 and a1
-inline void HingeJointComponents::setB2CrossA1(Entity jointEntity, const Vector3& b2CrossA1) {
+// Set the vector r2 in world-space coordinates
+inline void SliderJointComponents::setR2(Entity jointEntity, const Vector3& r2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mB2CrossA1[mMapEntityToComponentIndex[jointEntity]] = b2CrossA1;
+    mR2[mMapEntityToComponentIndex[jointEntity]] = r2;
 }
 
-// Return the cross product of vector c2 and a1;
-inline Vector3& HingeJointComponents::getC2CrossA1(Entity jointEntity) {
+// Return the first vector orthogonal to the slider axis local-space of body 1
+inline Vector3& SliderJointComponents::getN1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    return mC2CrossA1[mMapEntityToComponentIndex[jointEntity]];
+    return mN1[mMapEntityToComponentIndex[jointEntity]];
 }
 
-// Set the cross product of vector c2 and a1;
-inline void HingeJointComponents::setC2CrossA1(Entity jointEntity, const Vector3& c2CrossA1) {
+// Set the first vector orthogonal to the slider axis local-space of body 1
+inline void SliderJointComponents::setN1(Entity jointEntity, const Vector3& n1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mC2CrossA1[mMapEntityToComponentIndex[jointEntity]] = c2CrossA1;
+    mN1[mMapEntityToComponentIndex[jointEntity]] = n1;
+}
+
+// Return the second vector orthogonal to the slider axis and mN1 in local-space of body 1
+inline Vector3& SliderJointComponents::getN2(Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mN2[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the second vector orthogonal to the slider axis and mN1 in local-space of body 1
+inline void SliderJointComponents::setN2(Entity jointEntity, const Vector3& n2) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mN2[mMapEntityToComponentIndex[jointEntity]] = n2;
 }
 
 // Return the accumulated impulse for the lower limit constraint
-inline decimal HingeJointComponents::getImpulseLowerLimit(Entity jointEntity) const {
+inline decimal SliderJointComponents::getImpulseLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the lower limit constraint
-inline void HingeJointComponents::setImpulseLowerLimit(Entity jointEntity, decimal impulseLowerLimit) {
+inline void SliderJointComponents::setImpulseLowerLimit(Entity jointEntity, decimal impulseLowerLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseLowerLimit[mMapEntityToComponentIndex[jointEntity]] = impulseLowerLimit;
@@ -661,14 +726,14 @@ inline void HingeJointComponents::setImpulseLowerLimit(Entity jointEntity, decim
 
 
 // Return the accumulated impulse for the upper limit constraint
-inline decimal HingeJointComponents::getImpulseUpperLimit(Entity jointEntity) const {
+inline decimal SliderJointComponents::getImpulseUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the upper limit constraint
-inline void HingeJointComponents::setImpulseUpperLimit(Entity jointEntity, decimal impulseUpperLimit) const {
+inline void SliderJointComponents::setImpulseUpperLimit(Entity jointEntity, decimal impulseUpperLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseUpperLimit[mMapEntityToComponentIndex[jointEntity]] = impulseUpperLimit;
@@ -676,187 +741,270 @@ inline void HingeJointComponents::setImpulseUpperLimit(Entity jointEntity, decim
 
 
 // Return the accumulated impulse for the motor constraint;
-inline decimal HingeJointComponents::getImpulseMotor(Entity jointEntity) const {
+inline decimal SliderJointComponents::getImpulseMotor(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseMotor[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the motor constraint;
-inline void HingeJointComponents::setImpulseMotor(Entity jointEntity, decimal impulseMotor) {
+inline void SliderJointComponents::setImpulseMotor(Entity jointEntity, decimal impulseMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseMotor[mMapEntityToComponentIndex[jointEntity]] = impulseMotor;
 }
 
-// Return the inverse of mass matrix K=JM^-1J^t for the limits and motor constraints (1x1 matrix)
-inline decimal HingeJointComponents::getInverseMassMatrixLimitMotor(Entity jointEntity) const {
+// Return the inverse of mass matrix K=JM^-1J^t for the limits (1x1 matrix)
+inline decimal SliderJointComponents::getInverseMassMatrixLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    return mInverseMassMatrixLimitMotor[mMapEntityToComponentIndex[jointEntity]];
+    return mInverseMassMatrixLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
-// Set the inverse of mass matrix K=JM^-1J^t for the limits and motor constraints (1x1 matrix)
-inline void HingeJointComponents::setInverseMassMatrixLimitMotor(Entity jointEntity, decimal inverseMassMatrixLimitMotor) {
+// Set the inverse of mass matrix K=JM^-1J^t for the limits (1x1 matrix)
+inline void SliderJointComponents::setInverseMassMatrixLimit(Entity jointEntity, decimal inverseMassMatrixLimitMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mInverseMassMatrixLimitMotor[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrixLimitMotor;
+    mInverseMassMatrixLimit[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrixLimitMotor;
 }
 
 // Return the inverse of mass matrix K=JM^-1J^t for the motor
-inline decimal HingeJointComponents::getInverseMassMatrixMotor(Entity jointEntity) {
+inline decimal SliderJointComponents::getInverseMassMatrixMotor(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixMotor[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Return the inverse of mass matrix K=JM^-1J^t for the motor
-inline void HingeJointComponents::setInverseMassMatrixMotor(Entity jointEntity, decimal inverseMassMatrixMotor) {
+inline void SliderJointComponents::setInverseMassMatrixMotor(Entity jointEntity, decimal inverseMassMatrixMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixMotor[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrixMotor;
 }
 
 // Return the bias of the lower limit constraint
-inline decimal HingeJointComponents::getBLowerLimit(Entity jointEntity) const {
+inline decimal SliderJointComponents::getBLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the bias of the lower limit constraint
-inline void HingeJointComponents::setBLowerLimit(Entity jointEntity, decimal bLowerLimit) const {
+inline void SliderJointComponents::setBLowerLimit(Entity jointEntity, decimal bLowerLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBLowerLimit[mMapEntityToComponentIndex[jointEntity]] = bLowerLimit;
 }
 
 // Return the bias of the upper limit constraint
-inline decimal HingeJointComponents::getBUpperLimit(Entity jointEntity) const {
+inline decimal SliderJointComponents::getBUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the bias of the upper limit constraint
-inline void HingeJointComponents::setBUpperLimit(Entity jointEntity, decimal bUpperLimit) {
+inline void SliderJointComponents::setBUpperLimit(Entity jointEntity, decimal bUpperLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBUpperLimit[mMapEntityToComponentIndex[jointEntity]] = bUpperLimit;
 }
 
 // Return true if the joint limits are enabled
-inline bool HingeJointComponents::getIsLimitEnabled(Entity jointEntity) const {
+inline bool SliderJointComponents::getIsLimitEnabled(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsLimitEnabled[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the joint limits are enabled
-inline void HingeJointComponents::setIsLimitEnabled(Entity jointEntity, bool isLimitEnabled) {
+inline void SliderJointComponents::setIsLimitEnabled(Entity jointEntity, bool isLimitEnabled) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsLimitEnabled[mMapEntityToComponentIndex[jointEntity]] = isLimitEnabled;
 }
 
 // Return true if the motor of the joint in enabled
-inline bool HingeJointComponents::getIsMotorEnabled(Entity jointEntity) const {
+inline bool SliderJointComponents::getIsMotorEnabled(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsMotorEnabled[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the motor of the joint in enabled
-inline void HingeJointComponents::setIsMotorEnabled(Entity jointEntity, bool isMotorEnabled) const {
+inline void SliderJointComponents::setIsMotorEnabled(Entity jointEntity, bool isMotorEnabled) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsMotorEnabled[mMapEntityToComponentIndex[jointEntity]] = isMotorEnabled;
 }
 
 // Return the Lower limit (minimum allowed rotation angle in radian)
-inline decimal HingeJointComponents::getLowerLimit(Entity jointEntity) const {
+inline decimal SliderJointComponents::getLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the Lower limit (minimum allowed rotation angle in radian)
-inline void HingeJointComponents::setLowerLimit(Entity jointEntity, decimal lowerLimit) const {
+inline void SliderJointComponents::setLowerLimit(Entity jointEntity, decimal lowerLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLowerLimit[mMapEntityToComponentIndex[jointEntity]] = lowerLimit;
 }
 
 // Return the upper limit (maximum translation distance)
-inline decimal HingeJointComponents::getUpperLimit(Entity jointEntity) const {
+inline decimal SliderJointComponents::getUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the upper limit (maximum translation distance)
-inline void HingeJointComponents::setUpperLimit(Entity jointEntity, decimal upperLimit) {
+inline void SliderJointComponents::setUpperLimit(Entity jointEntity, decimal upperLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mUpperLimit[mMapEntityToComponentIndex[jointEntity]] = upperLimit;
 }
 
 // Return true if the lower limit is violated
-inline bool HingeJointComponents::getIsLowerLimitViolated(Entity jointEntity) const {
+inline bool SliderJointComponents::getIsLowerLimitViolated(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsLowerLimitViolated[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the lower limit is violated
-inline void HingeJointComponents::setIsLowerLimitViolated(Entity jointEntity, bool isLowerLimitViolated) {
+inline void SliderJointComponents::setIsLowerLimitViolated(Entity jointEntity, bool isLowerLimitViolated) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsLowerLimitViolated[mMapEntityToComponentIndex[jointEntity]] = isLowerLimitViolated;
 }
 
 // Return true if the upper limit is violated
-inline bool HingeJointComponents::getIsUpperLimitViolated(Entity jointEntity) const {
+inline bool SliderJointComponents::getIsUpperLimitViolated(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsUpperLimitViolated[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the upper limit is violated
-inline void HingeJointComponents::setIsUpperLimitViolated(Entity jointEntity, bool isUpperLimitViolated) const {
+inline void SliderJointComponents::setIsUpperLimitViolated(Entity jointEntity, bool isUpperLimitViolated) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsUpperLimitViolated[mMapEntityToComponentIndex[jointEntity]] = isUpperLimitViolated;
 }
 
 // Return the motor speed (in rad/s)
-inline decimal HingeJointComponents::getMotorSpeed(Entity jointEntity) const {
+inline decimal SliderJointComponents::getMotorSpeed(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mMotorSpeed[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the motor speed (in rad/s)
-inline void HingeJointComponents::setMotorSpeed(Entity jointEntity, decimal motorSpeed) {
+inline void SliderJointComponents::setMotorSpeed(Entity jointEntity, decimal motorSpeed) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mMotorSpeed[mMapEntityToComponentIndex[jointEntity]] = motorSpeed;
 }
 
 // Return the maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-inline decimal HingeJointComponents::getMaxMotorTorque(Entity jointEntity) const {
+inline decimal SliderJointComponents::getMaxMotorForce(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    return mMaxMotorTorque[mMapEntityToComponentIndex[jointEntity]];
+    return mMaxMotorForce[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-inline void HingeJointComponents::setMaxMotorTorque(Entity jointEntity, decimal maxMotorTorque) {
+inline void SliderJointComponents::setMaxMotorForce(Entity jointEntity, decimal maxMotorForce) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mMaxMotorTorque[mMapEntityToComponentIndex[jointEntity]] = maxMotorTorque;
+    mMaxMotorForce[mMapEntityToComponentIndex[jointEntity]] = maxMotorForce;
 }
-*/
+
+// Return the cross product of r2 and n1
+inline Vector3& SliderJointComponents::getR2CrossN1(Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mR2CrossN1[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cross product of r2 and n1
+inline void SliderJointComponents::setR2CrossN1(Entity jointEntity, const Vector3& r2CrossN1) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mR2CrossN1[mMapEntityToComponentIndex[jointEntity]] = r2CrossN1;
+}
+
+// Return the cross product of r2 and n2
+inline Vector3& SliderJointComponents::getR2CrossN2(Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mR2CrossN2[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cross product of r2 and n2
+inline void SliderJointComponents::setR2CrossN2(Entity jointEntity, const Vector3& r2CrossN2) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mR2CrossN2[mMapEntityToComponentIndex[jointEntity]] = r2CrossN2;
+}
+
+// Return the cross product of r2 and the slider axis
+inline Vector3& SliderJointComponents::getR2CrossSliderAxis(Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mR2CrossSliderAxis[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cross product of r2 and the slider axis
+inline void SliderJointComponents::setR2CrossSliderAxis(Entity jointEntity, const Vector3& r2CrossSliderAxis) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mR2CrossSliderAxis[mMapEntityToComponentIndex[jointEntity]] = r2CrossSliderAxis;
+}
+
+// Return the cross product of vector (r1 + u) and n1
+inline Vector3& SliderJointComponents::getR1PlusUCrossN1(Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mR1PlusUCrossN1[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cross product of vector (r1 + u) and n1
+inline void SliderJointComponents::setR1PlusUCrossN1(Entity jointEntity, const Vector3& r1PlusUCrossN1) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mR1PlusUCrossN1[mMapEntityToComponentIndex[jointEntity]] = r1PlusUCrossN1;
+}
+
+// Return the cross product of vector (r1 + u) and n2
+inline Vector3& SliderJointComponents::getR1PlusUCrossN2(Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mR1PlusUCrossN2[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cross product of vector (r1 + u) and n2
+inline void SliderJointComponents::setR1PlusUCrossN2(Entity jointEntity, const Vector3& r1PlusUCrossN2) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mR1PlusUCrossN2[mMapEntityToComponentIndex[jointEntity]] = r1PlusUCrossN2;
+}
+
+// Return the cross product of vector (r1 + u) and the slider axis
+inline Vector3& SliderJointComponents::getR1PlusUCrossSliderAxis(Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mR1PlusUCrossSliderAxis[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cross product of vector (r1 + u) and the slider axis
+inline void SliderJointComponents::setR1PlusUCrossSliderAxis(Entity jointEntity, const Vector3& r1PlusUCrossSliderAxis) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mR1PlusUCrossSliderAxis[mMapEntityToComponentIndex[jointEntity]] = r1PlusUCrossSliderAxis;
+}
 
 }
 

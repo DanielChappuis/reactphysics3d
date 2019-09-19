@@ -348,13 +348,15 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         // Slider joint
         case JointType::SLIDERJOINT:
         {
+            const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
+
             // Create a SliderJoint component
-            SliderJointComponents::SliderJointComponent sliderJointComponent;
+            SliderJointComponents::SliderJointComponent sliderJointComponent(info.isLimitEnabled, info.isMotorEnabled,
+                                                                             info.minTranslationLimit, info.maxTranslationLimit,
+                                                                             info.motorSpeed, info.maxMotorForce);
             mSliderJointsComponents.addComponent(entity, isJointDisabled, sliderJointComponent);
 
-            void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                                            sizeof(SliderJoint));
-            const SliderJointInfo& info = static_cast<const SliderJointInfo&>(jointInfo);
+            void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(SliderJoint));
             SliderJoint* joint = new (allocatedMemory) SliderJoint(entity, *this, info);
 
             newJoint = joint;

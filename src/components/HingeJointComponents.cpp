@@ -210,6 +210,7 @@ void HingeJointComponents::addComponent(Entity jointEntity, bool isSleeping, con
     new (mC2CrossA1 + index) Vector3(0, 0, 0);
     mImpulseLowerLimit[index] = decimal(0.0);
     mImpulseUpperLimit[index] = decimal(0.0);
+    mImpulseMotor[index] = decimal(0.0);
     mInverseMassMatrixLimitMotor[index] = decimal(0.0);
     mInverseMassMatrixMotor[index] = decimal(0.0);
     mBLowerLimit[index] = decimal(0.0);
