@@ -73,6 +73,9 @@ class JointComponents : public Components {
         /// Array of boolean values to know if the two bodies of the constraint are allowed to collide with each other
         bool* mIsCollisionEnabled;
 
+        /// True if the joint has already been added into an island during islands creation
+        bool* mIsAlreadyInIsland;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -143,6 +146,12 @@ class JointComponents : public Components {
         /// Set whether the collision is enabled between the two bodies of a joint
         void setIsCollisionEnabled(Entity jointEntity, bool isCollisionEnabled);
 
+        /// Return true if the joint has already been added into an island during island creation
+        bool getIsAlreadyInIsland(Entity jointEntity) const;
+
+        /// Set to true if the joint has already been added into an island during island creation
+        void setIsAlreadyInIsland(Entity jointEntity, bool isAlreadyInIsland);
+
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
@@ -194,6 +203,18 @@ inline bool JointComponents::getIsCollisionEnabled(Entity jointEntity) const {
 inline void JointComponents::setIsCollisionEnabled(Entity jointEntity, bool isCollisionEnabled) {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsCollisionEnabled[mMapEntityToComponentIndex[jointEntity]] = isCollisionEnabled;
+}
+
+// Return true if the joint has already been added into an island during island creation
+inline bool JointComponents::getIsAlreadyInIsland(Entity jointEntity) const {
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mIsAlreadyInIsland[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set to true if the joint has already been added into an island during island creation
+inline void JointComponents::setIsAlreadyInIsland(Entity jointEntity, bool isAlreadyInIsland) {
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mIsAlreadyInIsland[mMapEntityToComponentIndex[jointEntity]] = isAlreadyInIsland;
 }
 
 }

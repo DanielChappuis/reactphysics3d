@@ -222,7 +222,6 @@ void CollisionWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     if (mRigidBodyComponents.hasComponent(bodyEntity)) {
         mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
-        mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     }
 
     // For each proxy-shape of the body
@@ -235,22 +234,24 @@ void CollisionWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
     // Disable the joints of the body if necessary
     if (mRigidBodyComponents.hasComponent(bodyEntity)) {
 
-        RigidBody* body = mRigidBodyComponents.getRigidBody(bodyEntity);
-
         // For each joint of the body
-        for(JointListElement* jointElem = body->getJointsList(); jointElem != nullptr; jointElem = jointElem->next) {
+        const List<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
+        for(uint32 i=0; i < joints.size(); i++) {
+
+            Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
+            Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
 
             // If both bodies of the joint are disabled
-            if (mRigidBodyComponents.getIsEntityDisabled(jointElem->joint->getBody1()->getEntity()) &&
-                mRigidBodyComponents.getIsEntityDisabled(jointElem->joint->getBody2()->getEntity())) {
+            if (mRigidBodyComponents.getIsEntityDisabled(body1Entity) &&
+                mRigidBodyComponents.getIsEntityDisabled(body2Entity)) {
 
                 // We disable the joint
-                setJointDisabled(jointElem->joint->getEntity(), true);
+                setJointDisabled(joints[i], true);
             }
             else {
 
                 // Enable the joint
-                setJointDisabled(jointElem->joint->getEntity(), false);
+                setJointDisabled(joints[i], false);
             }
         }
     }

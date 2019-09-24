@@ -36,7 +36,7 @@ const decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
 SliderJoint::SliderJoint(Entity entity, DynamicsWorld &world, const SliderJointInfo& jointInfo)
-            : Joint(entity, world, jointInfo) {
+            : Joint(entity, world) {
 
     assert(mWorld.mSliderJointsComponents.getUpperLimit(mEntity) >= decimal(0.0));
     assert(mWorld.mSliderJointsComponents.getLowerLimit(mEntity) <= decimal(0.0));

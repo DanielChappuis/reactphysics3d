@@ -36,7 +36,7 @@ const decimal BallAndSocketJoint::BETA = decimal(0.2);
 
 // Constructor
 BallAndSocketJoint::BallAndSocketJoint(Entity entity, DynamicsWorld& world, const BallAndSocketJointInfo& jointInfo)
-                   : Joint(entity, world, jointInfo) {
+                   : Joint(entity, world) {
 
     // Get the transforms of the two bodies
     Transform& body1Transform = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());

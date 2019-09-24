@@ -36,7 +36,7 @@ const decimal FixedJoint::BETA = decimal(0.2);
 
 // Constructor
 FixedJoint::FixedJoint(Entity entity, DynamicsWorld &world, const FixedJointInfo& jointInfo)
-           : Joint(entity, world, jointInfo) {
+           : Joint(entity, world) {
 
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());

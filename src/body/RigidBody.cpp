@@ -40,14 +40,9 @@ using namespace reactphysics3d;
 * @param id The ID of the body
 */
 RigidBody::RigidBody(CollisionWorld& world, Entity entity)
-          : CollisionBody(world, entity),  mMaterial(world.mConfig), mJointsList(nullptr),
+          : CollisionBody(world, entity),  mMaterial(world.mConfig),
             mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
-}
-
-// Destructor
-RigidBody::~RigidBody() {
-    assert(mJointsList == nullptr);
 }
 
 // Return the type of the body
@@ -320,36 +315,6 @@ void RigidBody::setMass(decimal mass) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(mass));
-}
-
-// Remove a joint from the joints list
-void RigidBody::removeJointFromJointsList(MemoryManager& memoryManager, const Joint* joint) {
-
-    assert(joint != nullptr);
-    assert(mJointsList != nullptr);
-
-    // Remove the joint from the linked list of the joints of the first body
-    if (mJointsList->joint == joint) {   // If the first element is the one to remove
-        JointListElement* elementToRemove = mJointsList;
-        mJointsList = elementToRemove->next;
-        elementToRemove->~JointListElement();
-        memoryManager.release(MemoryManager::AllocationType::Pool,
-                              elementToRemove, sizeof(JointListElement));
-    }
-    else {  // If the element to remove is not the first one in the list
-        JointListElement* currentElement = mJointsList;
-        while (currentElement->next != nullptr) {
-            if (currentElement->next->joint == joint) {
-                JointListElement* elementToRemove = currentElement->next;
-                currentElement->next = elementToRemove->next;
-                elementToRemove->~JointListElement();
-                memoryManager.release(MemoryManager::AllocationType::Pool,
-                                      elementToRemove, sizeof(JointListElement));
-                break;
-            }
-            currentElement = currentElement->next;
-        }
-    }
 }
 
 // Update the world inverse inertia tensor of the body

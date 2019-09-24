@@ -107,7 +107,7 @@ class CollisionBodyComponents : public Components {
         /// Add a proxy-shape to a body component
         void addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity);
 
-        /// Set the transform of an entity
+        /// Remove a proxy-shape from a body component
         void removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity);
 
         /// Return a pointer to a body
@@ -137,7 +137,7 @@ inline void CollisionBodyComponents::addProxyShapeToBody(Entity bodyEntity, Enti
     mProxyShapes[mMapEntityToComponentIndex[bodyEntity]].add(proxyShapeEntity);
 }
 
-// Set the transform of an entity
+// Remove a proxy-shape from a body component
 inline void CollisionBodyComponents::removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));

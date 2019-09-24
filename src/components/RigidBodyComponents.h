@@ -142,6 +142,9 @@ class RigidBodyComponents : public Components {
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
+        /// For each body, the list of joints entities the body is part of
+        List<Entity>* mJoints;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -329,6 +332,15 @@ class RigidBodyComponents : public Components {
 
         /// Set the value to know if the entity is already in an island
         void setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
+
+        /// Return the list of joints of a body
+        const List<Entity>& getJoints(Entity bodyEntity) const;
+
+        /// Add a joint to a body component
+        void addJointToBody(Entity bodyEntity, Entity jointEntity);
+
+        /// Remove a joint from a body component
+        void removeJointFromBody(Entity bodyEntity, Entity jointEntity);
 
         // -------------------- Friendship -------------------- //
 
@@ -729,8 +741,28 @@ inline void RigidBodyComponents::setIsGravityEnabled(Entity bodyEntity, bool isG
 inline void RigidBodyComponents::setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
    mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]] = isAlreadyInIsland;
+}
+
+// Return the list of joints of a body
+inline const List<Entity>& RigidBodyComponents::getJoints(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+   return mJoints[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Add a joint to a body component
+inline void RigidBodyComponents::addJointToBody(Entity bodyEntity, Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+    mJoints[mMapEntityToComponentIndex[bodyEntity]].add(jointEntity);
+}
+
+// Remove a joint from a body component
+inline void RigidBodyComponents::removeJointFromBody(Entity bodyEntity, Entity jointEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+    mJoints[mMapEntityToComponentIndex[bodyEntity]].remove(jointEntity);
 }
 
 }

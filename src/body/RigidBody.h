@@ -62,10 +62,6 @@ class RigidBody : public CollisionBody {
         /// Material properties of the rigid body
         Material mMaterial;
 
-        /// First element of the linked list of joints involving this body
-        // TODO : Replace this by a list of the joints entities
-        JointListElement* mJointsList;
-
         /// True if the center of mass is set by the user
         bool mIsCenterOfMassSetByUser;
 
@@ -73,9 +69,6 @@ class RigidBody : public CollisionBody {
         bool mIsInertiaTensorSetByUser;
 
         // -------------------- Methods -------------------- //
-
-        /// Remove a joint from the joints list
-        void removeJointFromJointsList(reactphysics3d::MemoryManager& memoryManager, const Joint* joint);
 
         /// Update the transform of the body after a change of the center of mass
         void updateTransformWithCenterOfMass();
@@ -94,7 +87,7 @@ class RigidBody : public CollisionBody {
         RigidBody(CollisionWorld& world, Entity entity);
 
         /// Destructor
-        virtual ~RigidBody() override;
+        virtual ~RigidBody() override = default;
 
         /// Deleted copy-constructor
         RigidBody(const RigidBody& body) = delete;
@@ -235,22 +228,6 @@ class RigidBody : public CollisionBody {
  */
 inline Material& RigidBody::getMaterial() {
     return mMaterial;
-}
-
-// Return the first element of the linked list of joints involving this body
-/**
- * @return The first element of the linked-list of all the joints involving this body
- */
-inline const JointListElement* RigidBody::getJointsList() const {
-    return mJointsList;
-}
-
-// Return the first element of the linked list of joints involving this body
-/**
- * @return The first element of the linked-list of all the joints involving this body
- */
-inline JointListElement* RigidBody::getJointsList() {
-    return mJointsList;
 }
 
 }

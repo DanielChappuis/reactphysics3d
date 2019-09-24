@@ -41,31 +41,6 @@ enum class JointType {BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
 struct ConstraintSolverData;
 class Joint;
 
-// Structure JointListElement
-/**
- * This structure represents a single element of a linked list of joints
- */
-struct JointListElement {
-
-    public:
-
-        // -------------------- Attributes -------------------- //
-
-        /// Pointer to the actual joint
-        Joint* joint;
-
-        /// Next element of the list
-        JointListElement* next;
-
-        // -------------------- Methods -------------------- //
-
-        /// Constructor
-        JointListElement(Joint* initJoint, JointListElement* initNext)
-                        :joint(initJoint), next(initNext){
-
-        }
-};
-
 // Structure JointInfo
 /**
  * This structure is used to gather the information needed to create a joint.
@@ -126,13 +101,7 @@ class Joint {
         /// Reference to the physics world
         DynamicsWorld& mWorld;
 
-        /// True if the joint has already been added into an island
-        bool mIsAlreadyInIsland;
-
         // -------------------- Methods -------------------- //
-
-        /// Return true if the joint has already been added into an island
-        bool isAlreadyInIsland() const;
 
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const = 0;
@@ -157,7 +126,7 @@ class Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Joint(Entity entity, DynamicsWorld& world, const JointInfo& jointInfo);
+        Joint(Entity entity, DynamicsWorld& world);
 
         /// Destructor
         virtual ~Joint() = default;
@@ -199,11 +168,6 @@ class Joint {
  */
 inline Entity Joint::getEntity() const {
     return mEntity;
-}
-
-// Return true if the joint has already been added into an island
-inline bool Joint::isAlreadyInIsland() const {
-    return mIsAlreadyInIsland;
 }
 
 }

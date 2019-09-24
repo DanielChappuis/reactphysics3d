@@ -289,8 +289,9 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     JointListElement* element;
-    for (element = rigidBody->mJointsList; element != nullptr; element = element->next) {
-        destroyJoint(element->joint);
+    const List<Entity>& joints = mRigidBodyComponents.getJoints(rigidBody->getEntity());
+    for (uint32 i=0; i < joints.size(); i++) {
+        destroyJoint(mJointsComponents.getJoint(joints[i]));
     }
 
     // Destroy the corresponding entity and its components
@@ -431,7 +432,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
              "Joint " + std::to_string(newJoint->getEntity().id) + ": " + newJoint->to_string());
 
     // Add the joint into the joint list of the bodies involved in the joint
-    addJointToBody(newJoint);
+    addJointToBodies(jointInfo.body1->getEntity(), jointInfo.body2->getEntity(), entity);
 
     // Return the pointer to the created joint
     return newJoint;
@@ -466,8 +467,8 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     mJoints.remove(joint);
 
     // Remove the joint from the joint list of the bodies involved in the joint
-    body1->removeJointFromJointsList(mMemoryManager, joint);
-    body2->removeJointFromJointsList(mMemoryManager, joint);
+    mRigidBodyComponents.removeJointFromBody(body1->getEntity(), joint->getEntity());
+    mRigidBodyComponents.removeJointFromBody(body2->getEntity(), joint->getEntity());
 
     size_t nbBytes = joint->getSizeInBytes();
 
@@ -499,37 +500,17 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
 }
 
 // Add the joint to the list of joints of the two bodies involved in the joint
-void DynamicsWorld::addJointToBody(Joint* joint) {
+void DynamicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
 
-    assert(joint != nullptr);
-
-    RigidBody* body1 = joint->getBody1();
-    RigidBody* body2 = joint->getBody2();
-
-    // Add the joint at the beginning of the linked list of joints of the first body
-    void* allocatedMemory1 = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                                     sizeof(JointListElement));
-    JointListElement* jointListElement1 = new (allocatedMemory1) JointListElement(joint,
-                                                                     body1->mJointsList);
-    RigidBody* test1 = joint->getBody1();
-    RigidBody* test2 = joint->getBody2();
-
-    body1->mJointsList = jointListElement1;
+    mRigidBodyComponents.addJointToBody(body1, joint);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(body1->getEntity().id) + ": Joint " + std::to_string(joint->getEntity().id) +
-             " added to body");
+             "Body " + std::to_string(body1.id) + ": Joint " + std::to_string(joint.id) + " added to body");
 
-    // Add the joint at the beginning of the linked list of joints of the second body
-    void* allocatedMemory2 = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                                     sizeof(JointListElement));
-    JointListElement* jointListElement2 = new (allocatedMemory2) JointListElement(joint,
-                                                                     body2->mJointsList);
-    body2->mJointsList = jointListElement2;
+    mRigidBodyComponents.addJointToBody(body2, joint);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(body2->getEntity().id) + ": Joint " + std::to_string(joint->getEntity().id) +
-             " added to body");
+             "Body " + std::to_string(body2.id) + ": Joint " + std::to_string(joint.id) + " added to body");
 }
 
 // Compute the islands using potential contacts and joints
@@ -557,7 +538,7 @@ void DynamicsWorld::createIslands() {
         mRigidBodyComponents.mIsAlreadyInIsland[b] = false;
     }
     for (List<Joint*>::Iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
-        (*it)->mIsAlreadyInIsland = false;
+        mJointsComponents.setIsAlreadyInIsland((*it)->getEntity(), false);
     }
 
     // Create a stack for the bodies to visit during the Depth First Search
@@ -656,21 +637,20 @@ void DynamicsWorld::createIslands() {
             }
 
             // For each joint in which the current body is involved
-            JointListElement* jointElement;
-            for (jointElement = rigidBodyToVisit->mJointsList; jointElement != nullptr;
-                 jointElement = jointElement->next) {
+            const List<Entity>& joints = mRigidBodyComponents.getJoints(rigidBodyToVisit->getEntity());
+            for (uint32 i=0; i < joints.size(); i++) {
 
-                Joint* joint = jointElement->joint;
+                Joint* joint = mJointsComponents.getJoint(joints[i]);
 
                 // Check if the current joint has already been added into an island
-                if (joint->isAlreadyInIsland()) continue;
+                if (mJointsComponents.getIsAlreadyInIsland(joints[i])) continue;
 
                 // Add the joint into the island
                 mIslands.joints[islandIndex].add(joint);
-                joint->mIsAlreadyInIsland = true;
+                mJointsComponents.setIsAlreadyInIsland(joints[i], true);
 
-                const Entity body1Entity = joint->getBody1()->getEntity();
-                const Entity body2Entity = joint->getBody2()->getEntity();
+                const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
+                const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
                 const Entity otherBodyEntity = body1Entity == bodyToVisitEntity ? body2Entity : body1Entity;
 
                 // Check if the other body has already been added to the island

@@ -30,8 +30,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-Joint::Joint(Entity entity, DynamicsWorld& world, const JointInfo& jointInfo)
-           :mEntity(entity), mWorld(world), mIsAlreadyInIsland(false) {
+Joint::Joint(Entity entity, DynamicsWorld& world) :mEntity(entity), mWorld(world) {
 
 }
 

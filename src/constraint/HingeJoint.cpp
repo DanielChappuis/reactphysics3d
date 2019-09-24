@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 const decimal HingeJoint::BETA = decimal(0.2);
 
 // Constructor
-HingeJoint::HingeJoint(Entity entity, DynamicsWorld &world, const HingeJointInfo& jointInfo) : Joint(entity, world, jointInfo) {
+HingeJoint::HingeJoint(Entity entity, DynamicsWorld &world, const HingeJointInfo& jointInfo) : Joint(entity, world) {
 
     const decimal lowerLimit = mWorld.mHingeJointsComponents.getLowerLimit(mEntity);
     const decimal upperLimit = mWorld.mHingeJointsComponents.getUpperLimit(mEntity);

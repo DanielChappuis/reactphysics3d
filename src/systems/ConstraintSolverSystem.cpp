@@ -46,7 +46,7 @@ ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyCompon
 // Initialize the constraint solver for a given island
 void ConstraintSolverSystem::initializeForIsland(decimal dt, uint islandIndex) {
 
-    RP3D_PROFILE("ConstraintSolver::initializeForIsland()", mProfiler);
+    RP3D_PROFILE("ConstraintSolverSystem::initializeForIsland()", mProfiler);
 
     assert(mIslands.bodyEntities[islandIndex].size() > 0);
     assert(mIslands.joints[islandIndex].size() > 0);
@@ -74,7 +74,7 @@ void ConstraintSolverSystem::initializeForIsland(decimal dt, uint islandIndex) {
 // Solve the velocity constraints
 void ConstraintSolverSystem::solveVelocityConstraints(uint islandIndex) {
 
-    RP3D_PROFILE("ConstraintSolver::solveVelocityConstraints()", mProfiler);
+    RP3D_PROFILE("ConstraintSolverSystem::solveVelocityConstraints()", mProfiler);
 
     assert(mIslands.joints[islandIndex].size() > 0);
 
@@ -89,7 +89,7 @@ void ConstraintSolverSystem::solveVelocityConstraints(uint islandIndex) {
 // Solve the position constraints
 void ConstraintSolverSystem::solvePositionConstraints(uint islandIndex) {
 
-    RP3D_PROFILE("ConstraintSolver::solvePositionConstraints()", mProfiler);
+    RP3D_PROFILE("ConstraintSolverSystem::solvePositionConstraints()", mProfiler);
 
     assert(mIslands.joints[islandIndex].size() > 0);
 

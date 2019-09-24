@@ -120,7 +120,7 @@ class DynamicsWorld : public CollisionWorld {
         void updateSleepingBodies(decimal timeStep);
 
         /// Add the joint to the list of joints of the two bodies involved in the joint
-        void addJointToBody(Joint* joint);
+        void addJointToBodies(Entity body1, Entity body2, Entity joint);
 
     public :
 

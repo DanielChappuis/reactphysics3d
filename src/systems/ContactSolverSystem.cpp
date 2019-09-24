@@ -488,7 +488,7 @@ void ContactSolverSystem::warmStart() {
 // Solve the contacts
 void ContactSolverSystem::solve() {
 
-    RP3D_PROFILE("ContactSolver::solve()", mProfiler);
+    RP3D_PROFILE("ContactSolverSystem::solve()", mProfiler);
 
     decimal deltaLambda;
     decimal lambdaTemp;
