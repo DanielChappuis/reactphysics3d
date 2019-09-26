@@ -91,7 +91,7 @@ class TriangleVertexArray {
         VertexDataType mVertexDataType;
 
         /// Data type of the vertex normals in the array
-        NormalDataType mVertexNormaldDataType;
+        NormalDataType mVertexNormalsDataType;
 
         /// Data type of the indices in the array
         IndexDataType mIndexDataType;
@@ -191,7 +191,7 @@ inline TriangleVertexArray::VertexDataType TriangleVertexArray::getVertexDataTyp
  * @return The data type of the normals in the array
  */
 inline TriangleVertexArray::NormalDataType TriangleVertexArray::getVertexNormalDataType() const {
-    return mVertexNormaldDataType;
+    return mVertexNormalsDataType;
 }
 
 // Return the index data type
