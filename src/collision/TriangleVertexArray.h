@@ -111,7 +111,8 @@ class TriangleVertexArray {
         /// Constructor without vertices normals
         TriangleVertexArray(uint nbVertices, const void* verticesStart, uint verticesStride,
                             uint nbTriangles, const void* indexesStart, uint indexesStride,
-                            VertexDataType vertexDataType, IndexDataType indexDataType);
+                            VertexDataType vertexDataType, IndexDataType indexDataType,
+                            bool generateNormals = true);
 
         /// Constructor with vertices normals
         TriangleVertexArray(uint nbVertices, const void* verticesStart, uint verticesStride,

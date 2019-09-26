@@ -50,7 +50,8 @@ using namespace reactphysics3d;
  */
 TriangleVertexArray::TriangleVertexArray(uint nbVertices, const void* verticesStart, uint verticesStride,
                                          uint nbTriangles, const void* indexesStart, uint indexesStride,
-                                         VertexDataType vertexDataType, IndexDataType indexDataType) {
+                                         VertexDataType vertexDataType, IndexDataType indexDataType,
+                                         bool generateNormals) {
     mNbVertices = nbVertices;
     mVerticesStart = static_cast<const uchar*>(verticesStart);
     mVerticesStride = verticesStride;
@@ -65,7 +66,9 @@ TriangleVertexArray::TriangleVertexArray(uint nbVertices, const void* verticesSt
     mAreVerticesNormalsProvidedByUser = false;
 
     // Compute the vertices normals because they are not provided by the user
-    computeVerticesNormals();
+    if (generateNormals) {
+        computeVerticesNormals();
+    }
 }
 
 // Constructor with vertices normals
@@ -264,6 +267,10 @@ void TriangleVertexArray::getTriangleVerticesNormals(uint triangleIndex, Vector3
 
     assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
 
+    if (!mVerticesNormalsStart) {
+        return;
+    }
+
     // Get the three vertex index of the three vertices of the triangle
     uint verticesIndices[3];
     getTriangleVerticesIndices(triangleIndex, verticesIndices);
@@ -331,6 +338,10 @@ void TriangleVertexArray::getVertex(uint vertexIndex, Vector3* outVertex) {
 void TriangleVertexArray::getNormal(uint vertexIndex, Vector3* outNormal) {
 
     assert(vertexIndex < mNbVertices);
+
+    if (!mVerticesNormalsStart) {
+        return;
+    }
 
     const uchar* vertexNormalPointerChar = mVerticesNormalsStart + vertexIndex * mVerticesNormalsStride;
     const void* vertexNormalPointer = static_cast<const void*>(vertexNormalPointerChar);
