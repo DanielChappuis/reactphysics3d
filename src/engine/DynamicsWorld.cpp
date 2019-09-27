@@ -52,13 +52,12 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
                 mContactSolverSystem(mMemoryManager, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mProxyShapesComponents, mConfig),
-                mConstraintSolverSystem(mIslands, mRigidBodyComponents),
+                mConstraintSolverSystem(mIslands, mRigidBodyComponents, mJointsComponents),
                 mDynamicsSystem(mRigidBodyComponents, mTransformComponents, mIsGravityEnabled, mGravity),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
-                mJoints(mMemoryManager.getPoolAllocator()), mGravity(gravity),
-                mIsGravityEnabled(true),  mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
+                mGravity(gravity), mIsGravityEnabled(true), mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
                 mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep), mCurrentJointId(0) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -79,8 +78,8 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
 DynamicsWorld::~DynamicsWorld() {
 
     // Destroy all the joints that have not been removed
-    for (int i=mJoints.size() - 1; i >= 0; i--) {
-        destroyJoint(mJoints[i]);
+    for (uint32 i=0; i < mJointsComponents.getNbComponents(); i++) {
+        destroyJoint(mJointsComponents.mJoints[i]);
     }
 
     // Destroy all the rigid bodies that have not been removed
@@ -88,7 +87,7 @@ DynamicsWorld::~DynamicsWorld() {
         destroyRigidBody(mRigidBodies[i]);
     }
 
-    assert(mJoints.size() == 0);
+    assert(mJointsComponents.getNbComponents() == 0);
     assert(mRigidBodies.size() == 0);
 
 #ifdef IS_PROFILING_ACTIVE
@@ -128,6 +127,9 @@ void DynamicsWorld::update(decimal timeStep) {
 
     // Report the contacts to the user
     mCollisionDetection.reportContacts();
+
+    // Disable the joints for pair of sleeping bodies
+    disableJointsOfSleepingBodies();
 
     // Integrate the velocities
     mDynamicsSystem.integrateRigidBodiesVelocities(timeStep);
@@ -173,28 +175,13 @@ void DynamicsWorld::solveContactsAndConstraints(decimal timeStep) {
     // Initialize the contact solver
     mContactSolverSystem.init(mCollisionDetection.mCurrentContactManifolds, mCollisionDetection.mCurrentContactPoints, timeStep);
 
-    // For each island of the world
-    for (uint islandIndex = 0; islandIndex < mIslands.getNbIslands(); islandIndex++) {
-
-        // If there are constraints to solve
-        if (mIslands.joints[islandIndex].size() > 0) {
-
-            // Initialize the constraint solver
-            mConstraintSolverSystem.initializeForIsland(timeStep, islandIndex);
-        }
-    }
+    // Initialize the constraint solver
+    mConstraintSolverSystem.initialize(timeStep);
 
     // For each iteration of the velocity solver
     for (uint i=0; i<mNbVelocitySolverIterations; i++) {
 
-        for (uint islandIndex = 0; islandIndex < mIslands.getNbIslands(); islandIndex++) {
-
-            // Solve the constraints
-            if (mIslands.joints[islandIndex].size() > 0) {
-
-                mConstraintSolverSystem.solveVelocityConstraints(islandIndex);
-            }
-        }
+        mConstraintSolverSystem.solveVelocityConstraints();
 
         mContactSolverSystem.solve();
     }
@@ -207,22 +194,30 @@ void DynamicsWorld::solvePositionCorrection() {
 
     RP3D_PROFILE("DynamicsWorld::solvePositionCorrection()", mProfiler);
 
-    // Do not continue if there is no constraints
-    if (mJoints.size() == 0) return;
+    // ---------- Solve the position error correction for the constraints ---------- //
 
-    // For each island of the world
-    for (uint islandIndex = 0; islandIndex < mIslands.getNbIslands(); islandIndex++) {
+    // For each iteration of the position (error correction) solver
+    for (uint i=0; i<mNbPositionSolverIterations; i++) {
 
-        // ---------- Solve the position error correction for the constraints ---------- //
+        // Solve the position constraints
+        mConstraintSolverSystem.solvePositionConstraints();
+    }
+}
 
-        if (mIslands.joints[islandIndex].size() > 0) {
+// Disable the joints for pair of sleeping bodies
+void DynamicsWorld::disableJointsOfSleepingBodies() {
 
-            // For each iteration of the position (error correction) solver
-            for (uint i=0; i<mNbPositionSolverIterations; i++) {
+    // For each joint
+    for (uint32 i=0; i < mJointsComponents.getNbEnabledComponents(); i++) {
 
-                // Solve the position constraints
-                mConstraintSolverSystem.solvePositionConstraints(islandIndex);
-            }
+        Entity body1 = mJointsComponents.mBody1Entities[i];
+        Entity body2 = mJointsComponents.mBody2Entities[i];
+
+        // If both bodies of the joint are disabled
+        if (mCollisionBodyComponents.getIsEntityDisabled(body1) && mCollisionBodyComponents.getIsEntityDisabled(body2)) {
+
+            // Disable the joint
+            setJointDisabled(mJointsComponents.mJointEntities[i], true);
         }
     }
 }
@@ -423,9 +418,6 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
         mCollisionDetection.addNoCollisionPair(jointInfo.body1, jointInfo.body2);
     }
 
-    // Add the joint into the world
-    mJoints.add(newJoint);
-
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
              "Joint " + std::to_string(newJoint->getEntity().id) + ": New joint created");
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
@@ -462,9 +454,6 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     // Wake up the two bodies of the joint
     body1->setIsSleeping(false);
     body2->setIsSleeping(false);
-
-    // Remove the joint from the world
-    mJoints.remove(joint);
 
     // Remove the joint from the joint list of the bodies involved in the joint
     mRigidBodyComponents.removeJointFromBody(body1->getEntity(), joint->getEntity());
@@ -537,8 +526,8 @@ void DynamicsWorld::createIslands() {
 
         mRigidBodyComponents.mIsAlreadyInIsland[b] = false;
     }
-    for (List<Joint*>::Iterator it = mJoints.begin(); it != mJoints.end(); ++it) {
-        mJointsComponents.setIsAlreadyInIsland((*it)->getEntity(), false);
+    for (uint32 i=0; i < mJointsComponents.getNbComponents(); i++) {
+        mJointsComponents.mIsAlreadyInIsland[i] = false;
     }
 
     // Create a stack for the bodies to visit during the Depth First Search
@@ -640,13 +629,10 @@ void DynamicsWorld::createIslands() {
             const List<Entity>& joints = mRigidBodyComponents.getJoints(rigidBodyToVisit->getEntity());
             for (uint32 i=0; i < joints.size(); i++) {
 
-                Joint* joint = mJointsComponents.getJoint(joints[i]);
-
                 // Check if the current joint has already been added into an island
                 if (mJointsComponents.getIsAlreadyInIsland(joints[i])) continue;
 
                 // Add the joint into the island
-                mIslands.joints[islandIndex].add(joint);
                 mJointsComponents.setIsAlreadyInIsland(joints[i], true);
 
                 const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);

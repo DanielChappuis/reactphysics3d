@@ -12,6 +12,8 @@
 ### Removed
 
  - DynamicsWorld::getContactsList(). You need to use the EventListener class to retrieve contacts now.
+ - The DynamicsWorld::getNbJoints() method has been removed.
+ - The DynamicsWorld::getNbRigidBodies() method has been removed.
 
 ## Release Candidate
 

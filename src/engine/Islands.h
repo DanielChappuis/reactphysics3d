@@ -65,16 +65,12 @@ struct Islands {
         /// For each island, list of all the entities of the bodies in the island
         List<List<Entity>> bodyEntities;
 
-        // TODO : Use joints entities here and not pointers
-        /// For each island, list of the joints that are part of the island
-        List<List<Joint*>> joints;
-
         // -------------------- Methods -------------------- //
 
         /// Constructor
         Islands(MemoryAllocator& allocator)
-            :memoryAllocator(allocator), contactManifoldsIndices(allocator), nbContactManifolds(allocator), bodyEntities(allocator),
-             joints(allocator) {
+            :memoryAllocator(allocator), contactManifoldsIndices(allocator), nbContactManifolds(allocator),
+             bodyEntities(allocator) {
 
         }
 
@@ -100,7 +96,6 @@ struct Islands {
             contactManifoldsIndices.add(contactManifoldStartIndex);
             nbContactManifolds.add(0);
             bodyEntities.add(List<Entity>(memoryAllocator));
-            joints.add(List<Joint*>(memoryAllocator));
 
             return islandIndex;
         }
@@ -111,7 +106,6 @@ struct Islands {
             contactManifoldsIndices.clear(true);
             nbContactManifolds.clear(true);
             bodyEntities.clear(true);
-            joints.clear(true);
         }
 };
 

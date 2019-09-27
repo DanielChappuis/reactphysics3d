@@ -39,6 +39,7 @@ class Joint;
 class Island;
 class Profiler;
 class RigidBodyComponents;
+class JointComponents;
 class DynamicsComponents;
 
 // Structure ConstraintSolverData
@@ -53,15 +54,18 @@ struct ConstraintSolverData {
         /// Current time step of the simulation
         decimal timeStep;
 
-        /// Reference to the rigid body  components
+        /// Reference to the rigid body components
         RigidBodyComponents& rigidBodyComponents;
+
+        /// Reference to the joint components
+        JointComponents& jointComponents;
 
         /// True if warm starting of the solver is active
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData(RigidBodyComponents& rigidBodyComponents)
-            :rigidBodyComponents(rigidBodyComponents) {
+        ConstraintSolverData(RigidBodyComponents& rigidBodyComponents, JointComponents& jointComponents)
+            :rigidBodyComponents(rigidBodyComponents), jointComponents(jointComponents) {
 
         }
 
@@ -168,19 +172,20 @@ class ConstraintSolverSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents);
+        ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents,
+                               JointComponents& jointComponents);
 
         /// Destructor
         ~ConstraintSolverSystem() = default;
 
-        /// Initialize the constraint solver for a given island
-        void initializeForIsland(decimal dt, uint islandIndex);
+        /// Initialize the constraint solver
+        void initialize(decimal dt);
 
         /// Solve the constraints
-        void solveVelocityConstraints(uint islandIndex);
+        void solveVelocityConstraints();
 
         /// Solve the position constraints
-        void solvePositionConstraints(uint islandIndex);
+        void solvePositionConstraints();
 
         /// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
         bool getIsNonLinearGaussSeidelPositionCorrectionActive() const;

@@ -155,6 +155,8 @@ class JointComponents : public Components {
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
+        friend class ConstraintSolverSystem;
+        friend class DynamicsWorld;
 };
 
 // Return the entity of the first body of a joint

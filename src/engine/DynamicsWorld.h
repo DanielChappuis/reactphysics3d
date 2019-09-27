@@ -79,10 +79,6 @@ class DynamicsWorld : public CollisionWorld {
         /// All the rigid bodies of the physics world
         List<RigidBody*> mRigidBodies;
 
-        /// All the joints of the world
-        // TODO : We probably do not need this list anymore
-        List<Joint*> mJoints;
-
         /// Gravity vector of the world
         Vector3 mGravity;
 
@@ -163,6 +159,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform);
 
+        /// Disable the joints for pair of sleeping bodies
+        void disableJointsOfSleepingBodies();
+
         /// Destroy a rigid body and all the joints which it belongs
         void destroyRigidBody(RigidBody* rigidBody);
 
@@ -183,12 +182,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Enable/Disable the gravity
         void setIsGratityEnabled(bool isGravityEnabled);
-
-        /// Return the number of rigid bodies in the world
-        uint getNbRigidBodies() const;
-
-        /// Return the number of joints in the world
-        uint getNbJoints() const;
 
         /// Return true if the sleeping technique is enabled
         bool isSleepingEnabled() const;
@@ -330,22 +323,6 @@ inline void DynamicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")));
-}
-
-// Return the number of rigid bodies in the world
-/**
- * @return Number of rigid bodies in the world
- */
-inline uint DynamicsWorld::getNbRigidBodies() const {
-    return mRigidBodies.size();
-}
-
-/// Return the number of joints in the world
-/**
- * @return Number of joints in the world
- */
-inline uint DynamicsWorld::getNbJoints() const {
-    return mJoints.size();
 }
 
 // Return true if the sleeping technique is enabled

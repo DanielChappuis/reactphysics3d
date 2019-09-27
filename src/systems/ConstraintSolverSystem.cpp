@@ -25,14 +25,17 @@
 
 // Libraries
 #include "systems/ConstraintSolverSystem.h"
+#include "components/JointComponents.h"
 #include "utils/Profiler.h"
 #include "engine/Island.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents)
-                 : mIsWarmStartingActive(true), mIslands(islands), mConstraintSolverData(rigidBodyComponents),
+ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents,
+                                               JointComponents& jointComponents)
+                 : mIsWarmStartingActive(true), mIslands(islands),
+                   mConstraintSolverData(rigidBodyComponents, jointComponents),
                    mSolveBallAndSocketJointSystem(rigidBodyComponents) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -43,13 +46,10 @@ ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyCompon
 
 }
 
-// Initialize the constraint solver for a given island
-void ConstraintSolverSystem::initializeForIsland(decimal dt, uint islandIndex) {
+// Initialize the constraint solver
+void ConstraintSolverSystem::initialize(decimal dt) {
 
-    RP3D_PROFILE("ConstraintSolverSystem::initializeForIsland()", mProfiler);
-
-    assert(mIslands.bodyEntities[islandIndex].size() > 0);
-    assert(mIslands.joints[islandIndex].size() > 0);
+    RP3D_PROFILE("ConstraintSolverSystem::initialize()", mProfiler);
 
     // Set the current time step
     mTimeStep = dt;
@@ -58,45 +58,46 @@ void ConstraintSolverSystem::initializeForIsland(decimal dt, uint islandIndex) {
     mConstraintSolverData.timeStep = mTimeStep;
     mConstraintSolverData.isWarmStartingActive = mIsWarmStartingActive;
 
-    // For each joint of the island
-    for (uint i=0; i<mIslands.joints[islandIndex].size(); i++) {
+    // For each joint
+    for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
+
+        const Entity body1 = mConstraintSolverData.jointComponents.mBody1Entities[i];
+        const Entity body2 = mConstraintSolverData.jointComponents.mBody2Entities[i];
+        assert(!mConstraintSolverData.rigidBodyComponents.getIsEntityDisabled(body1));
+        assert(!mConstraintSolverData.rigidBodyComponents.getIsEntityDisabled(body2));
 
         // Initialize the constraint before solving it
-        mIslands.joints[islandIndex][i]->initBeforeSolve(mConstraintSolverData);
+        mConstraintSolverData.jointComponents.mJoints[i]->initBeforeSolve(mConstraintSolverData);
 
         // Warm-start the constraint if warm-starting is enabled
         if (mIsWarmStartingActive) {
-            mIslands.joints[islandIndex][i]->warmstart(mConstraintSolverData);
+            mConstraintSolverData.jointComponents.mJoints[i]->warmstart(mConstraintSolverData);
         }
     }
 }
 
 // Solve the velocity constraints
-void ConstraintSolverSystem::solveVelocityConstraints(uint islandIndex) {
+void ConstraintSolverSystem::solveVelocityConstraints() {
 
     RP3D_PROFILE("ConstraintSolverSystem::solveVelocityConstraints()", mProfiler);
 
-    assert(mIslands.joints[islandIndex].size() > 0);
-
-    // For each joint of the island
-    for (uint i=0; i<mIslands.joints[islandIndex].size(); i++) {
+    // For each joint
+    for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
 
         // Solve the constraint
-        mIslands.joints[islandIndex][i]->solveVelocityConstraint(mConstraintSolverData);
+        mConstraintSolverData.jointComponents.mJoints[i]->solveVelocityConstraint(mConstraintSolverData);
     }
 }
 
 // Solve the position constraints
-void ConstraintSolverSystem::solvePositionConstraints(uint islandIndex) {
+void ConstraintSolverSystem::solvePositionConstraints() {
 
     RP3D_PROFILE("ConstraintSolverSystem::solvePositionConstraints()", mProfiler);
 
-    assert(mIslands.joints[islandIndex].size() > 0);
-
-    // For each joint of the island
-    for (uint i=0; i<mIslands.joints[islandIndex].size(); i++) {
+    // For each joint
+    for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
 
         // Solve the constraint
-        mIslands.joints[islandIndex][i]->solvePositionConstraint(mConstraintSolverData);
+        mConstraintSolverData.jointComponents.mJoints[i]->solvePositionConstraint(mConstraintSolverData);
     }
 }
