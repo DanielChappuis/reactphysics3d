@@ -346,6 +346,7 @@ class RigidBodyComponents : public Components {
 
         friend class DynamicsWorld;
         friend class ContactSolverSystem;
+        friend class SolveBallAndSocketJointSystem;
         friend class DynamicsSystem;
         friend class BallAndSocketJoint;
         friend class FixedJoint;

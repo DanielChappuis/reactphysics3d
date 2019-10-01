@@ -26,6 +26,7 @@
 // Libraries
 #include "systems/ConstraintSolverSystem.h"
 #include "components/JointComponents.h"
+#include "components/BallAndSocketJointComponents.h"
 #include "utils/Profiler.h"
 #include "engine/Island.h"
 
@@ -33,10 +34,13 @@ using namespace reactphysics3d;
 
 // Constructor
 ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents,
-                                               JointComponents& jointComponents)
+                                               TransformComponents& transformComponents,
+                                               JointComponents& jointComponents,
+                                               BallAndSocketJointComponents& ballAndSocketJointComponents)
                  : mIsWarmStartingActive(true), mIslands(islands),
                    mConstraintSolverData(rigidBodyComponents, jointComponents),
-                   mSolveBallAndSocketJointSystem(rigidBodyComponents) {
+                   mSolveBallAndSocketJointSystem(rigidBodyComponents, transformComponents, jointComponents, ballAndSocketJointComponents),
+                   mJointComponents(jointComponents), mBallAndSocketJointComponents(ballAndSocketJointComponents){
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -58,8 +62,23 @@ void ConstraintSolverSystem::initialize(decimal dt) {
     mConstraintSolverData.timeStep = mTimeStep;
     mConstraintSolverData.isWarmStartingActive = mIsWarmStartingActive;
 
+    mSolveBallAndSocketJointSystem.setTimeStep(dt);
+    mSolveBallAndSocketJointSystem.setIsWarmStartingActive(mIsWarmStartingActive);
+
+    mSolveBallAndSocketJointSystem.initBeforeSolve();
+
+    if (mIsWarmStartingActive) {
+        mSolveBallAndSocketJointSystem.warmstart();
+    }
+
     // For each joint
     for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
+
+        // TODO : DELETE THIS
+        Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
+        if (mBallAndSocketJointComponents.hasComponent(jointEntity)) {
+           continue;
+        }
 
         const Entity body1 = mConstraintSolverData.jointComponents.mBody1Entities[i];
         const Entity body2 = mConstraintSolverData.jointComponents.mBody2Entities[i];
@@ -67,7 +86,7 @@ void ConstraintSolverSystem::initialize(decimal dt) {
         assert(!mConstraintSolverData.rigidBodyComponents.getIsEntityDisabled(body2));
 
         // Initialize the constraint before solving it
-        mConstraintSolverData.jointComponents.mJoints[i]->initBeforeSolve(mConstraintSolverData);
+        mJointComponents.mJoints[i]->initBeforeSolve(mConstraintSolverData);
 
         // Warm-start the constraint if warm-starting is enabled
         if (mIsWarmStartingActive) {
@@ -81,8 +100,16 @@ void ConstraintSolverSystem::solveVelocityConstraints() {
 
     RP3D_PROFILE("ConstraintSolverSystem::solveVelocityConstraints()", mProfiler);
 
+    mSolveBallAndSocketJointSystem.solveVelocityConstraint();
+
     // For each joint
     for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
+
+        // TODO : DELETE THIS
+        Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
+        if (mBallAndSocketJointComponents.hasComponent(jointEntity)) {
+           continue;
+        }
 
         // Solve the constraint
         mConstraintSolverData.jointComponents.mJoints[i]->solveVelocityConstraint(mConstraintSolverData);
@@ -94,8 +121,16 @@ void ConstraintSolverSystem::solvePositionConstraints() {
 
     RP3D_PROFILE("ConstraintSolverSystem::solvePositionConstraints()", mProfiler);
 
+    mSolveBallAndSocketJointSystem.solvePositionConstraint();
+
     // For each joint
     for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
+
+        // TODO : DELETE THIS
+        Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
+        if (mBallAndSocketJointComponents.hasComponent(jointEntity)) {
+           continue;
+        }
 
         // Solve the constraint
         mConstraintSolverData.jointComponents.mJoints[i]->solvePositionConstraint(mConstraintSolverData);

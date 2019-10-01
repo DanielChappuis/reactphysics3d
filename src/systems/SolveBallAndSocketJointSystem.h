@@ -29,6 +29,8 @@
 // Libraries
 #include "utils/Profiler.h"
 #include "components/RigidBodyComponents.h"
+#include "components/JointComponents.h"
+#include "components/BallAndSocketJointComponents.h"
 #include "components/TransformComponents.h"
 
 namespace reactphysics3d {
@@ -41,10 +43,30 @@ class SolveBallAndSocketJointSystem {
 
     private :
 
+        // -------------------- Constants -------------------- //
+
+        // Beta value for the bias factor of position correction
+        static const decimal BETA;
+
         // -------------------- Attributes -------------------- //
 
         /// Reference to the rigid body components
         RigidBodyComponents& mRigidBodyComponents;
+
+        /// Reference to transform components
+        TransformComponents& mTransformComponents;
+
+        /// Reference to the joint components
+        JointComponents& mJointComponents;
+
+        /// Reference to the ball-and-socket joint components
+        BallAndSocketJointComponents& mBallAndSocketJointComponents;
+
+        /// Current time step of the simulation
+        decimal mTimeStep;
+
+        /// True if warm starting of the solver is active
+        bool mIsWarmStartingActive;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -57,10 +79,31 @@ class SolveBallAndSocketJointSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SolveBallAndSocketJointSystem(RigidBodyComponents& rigidBodyComponents);
+        SolveBallAndSocketJointSystem(RigidBodyComponents& rigidBodyComponents,
+                                      TransformComponents& transformComponents,
+                                      JointComponents& jointComponents,
+                                      BallAndSocketJointComponents& ballAndSocketJointComponents);
 
         /// Destructor
         ~SolveBallAndSocketJointSystem() = default;
+
+        /// Initialize before solving the constraint
+        void initBeforeSolve();
+
+        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+         void warmstart();
+
+        /// Solve the velocity constraint
+        void solveVelocityConstraint();
+
+        /// Solve the position constraint (for position error correction)
+        void solvePositionConstraint();
+
+        /// Set the time step
+        void setTimeStep(decimal timeStep);
+
+        /// Set to true to enable warm starting
+        void setIsWarmStartingActive(bool isWarmStartingActive);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -76,6 +119,17 @@ class SolveBallAndSocketJointSystem {
 // Set the profiler
 inline void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
+}
+
+// Set the time step
+inline void SolveBallAndSocketJointSystem::setTimeStep(decimal timeStep) {
+    assert(timeStep > decimal(0.0));
+    mTimeStep = timeStep;
+}
+
+// Set to true to enable warm starting
+inline void SolveBallAndSocketJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
+    mIsWarmStartingActive = isWarmStartingActive;
 }
 
 #endif

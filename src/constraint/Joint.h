@@ -107,15 +107,19 @@ class Joint {
         virtual size_t getSizeInBytes() const = 0;
 
         /// Initialize before solving the joint
+        // TODO : REMOVE THIS
         virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) = 0;
 
         /// Warm start the joint (apply the previous impulse at the beginning of the step)
+        // TODO : REMOVE THIS
         virtual void warmstart(const ConstraintSolverData& constraintSolverData) = 0;
 
         /// Solve the velocity constraint
+        // TODO : REMOVE THIS
         virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) = 0;
 
         /// Solve the position constraint
+        // TODO : REMOVE THIS
         virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) = 0;
 
         /// Awake the two bodies of the joint

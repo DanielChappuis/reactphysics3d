@@ -82,17 +82,6 @@ class BallAndSocketJoint : public Joint {
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const override;
 
-        /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
 
     public :
 
@@ -112,6 +101,31 @@ class BallAndSocketJoint : public Joint {
 
         /// Deleted assignment operator
         BallAndSocketJoint& operator=(const BallAndSocketJoint& constraint) = delete;
+
+        /// Initialize before solving the constraint
+        // TODO : Delete this
+        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override {
+
+        }
+
+        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
+        // TODO : Delete this
+        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override {
+
+        }
+
+        /// Solve the velocity constraint
+        // TODO : Delete this
+        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override {
+
+        }
+
+        /// Solve the position constraint (for position error correction)
+        // TODO : Delete this
+        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override {
+
+        }
+
 };
 
 // Return the number of bytes used by the joint

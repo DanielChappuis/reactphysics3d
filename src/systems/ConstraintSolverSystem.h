@@ -54,18 +54,18 @@ struct ConstraintSolverData {
         /// Current time step of the simulation
         decimal timeStep;
 
+        /// True if warm starting of the solver is active
+        bool isWarmStartingActive;
+
         /// Reference to the rigid body components
         RigidBodyComponents& rigidBodyComponents;
 
         /// Reference to the joint components
         JointComponents& jointComponents;
 
-        /// True if warm starting of the solver is active
-        bool isWarmStartingActive;
-
         /// Constructor
         ConstraintSolverData(RigidBodyComponents& rigidBodyComponents, JointComponents& jointComponents)
-            :rigidBodyComponents(rigidBodyComponents), jointComponents(jointComponents) {
+                   :rigidBodyComponents(rigidBodyComponents), jointComponents(jointComponents) {
 
         }
 
@@ -161,6 +161,12 @@ class ConstraintSolverSystem {
         /// Solver for the BallAndSocketJoint constraints
         SolveBallAndSocketJointSystem mSolveBallAndSocketJointSystem;
 
+        // TODO : Delete this
+        JointComponents& mJointComponents;
+
+        // TODO : Delete this
+        BallAndSocketJointComponents& mBallAndSocketJointComponents;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -173,7 +179,9 @@ class ConstraintSolverSystem {
 
         /// Constructor
         ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents,
-                               JointComponents& jointComponents);
+                               TransformComponents& transformComponents,
+                               JointComponents& jointComponents,
+                               BallAndSocketJointComponents& ballAndSocketJointComponents);
 
         /// Destructor
         ~ConstraintSolverSystem() = default;
