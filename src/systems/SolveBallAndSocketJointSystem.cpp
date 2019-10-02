@@ -119,6 +119,8 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         }
     }
 
+    const decimal biasFactor = (BETA / mTimeStep);
+
     // For each joint
     for (uint32 i=0; i < mBallAndSocketJointComponents.getNbEnabledComponents(); i++) {
 
@@ -137,7 +139,6 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         // Compute the bias "b" of the constraint
         mBallAndSocketJointComponents.mBiasVector[i].setToZero();
         if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-            decimal biasFactor = (BETA / mTimeStep);
             mBallAndSocketJointComponents.mBiasVector[i] = biasFactor * (x2 + r2World - x1 - r1World);
         }
     }

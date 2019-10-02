@@ -53,7 +53,7 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldS
                 mContactSolverSystem(mMemoryManager, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mProxyShapesComponents, mConfig),
                 mConstraintSolverSystem(mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
-                                        mBallAndSocketJointsComponents),
+                                        mBallAndSocketJointsComponents, mFixedJointsComponents),
                 mDynamicsSystem(mRigidBodyComponents, mTransformComponents, mIsGravityEnabled, mGravity),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 

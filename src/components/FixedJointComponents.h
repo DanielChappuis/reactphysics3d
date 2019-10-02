@@ -140,16 +140,16 @@ class FixedJointComponents : public Components {
         void setJoint(Entity jointEntity, FixedJoint* joint) const;
 
         /// Return the local anchor point of body 1 for a given joint
-        const Vector3& getLocalAnchoirPointBody1(Entity jointEntity) const;
+        const Vector3& getLocalAnchorPointBody1(Entity jointEntity) const;
 
         /// Set the local anchor point of body 1 for a given joint
-        void setLocalAnchoirPointBody1(Entity jointEntity, const Vector3& localAnchoirPointBody1);
+        void setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchorPointBody1);
 
         /// Return the local anchor point of body 2 for a given joint
-        const Vector3& getLocalAnchoirPointBody2(Entity jointEntity) const;
+        const Vector3& getLocalAnchorPointBody2(Entity jointEntity) const;
 
         /// Set the local anchor point of body 2 for a given joint
-        void setLocalAnchoirPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2);
+        void setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2);
 
         /// Return the vector from center of body 1 to anchor point in world-space
         const Vector3& getR1World(Entity jointEntity) const;
@@ -220,6 +220,7 @@ class FixedJointComponents : public Components {
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
+        friend class SolveFixedJointSystem;
 };
 
 // Return a pointer to a given joint
@@ -237,31 +238,31 @@ inline void FixedJointComponents::setJoint(Entity jointEntity, FixedJoint* joint
 }
 
 // Return the local anchor point of body 1 for a given joint
-inline const Vector3& FixedJointComponents::getLocalAnchoirPointBody1(Entity jointEntity) const {
+inline const Vector3& FixedJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 1 for a given joint
-inline void FixedJointComponents::setLocalAnchoirPointBody1(Entity jointEntity, const Vector3& localAnchoirPointBody1) {
+inline void FixedJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchorPointBody1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]] = localAnchoirPointBody1;
+    mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]] = localAnchorPointBody1;
 }
 
 // Return the local anchor point of body 2 for a given joint
-inline const Vector3& FixedJointComponents::getLocalAnchoirPointBody2(Entity jointEntity) const {
+inline const Vector3& FixedJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 2 for a given joint
-inline void FixedJointComponents::setLocalAnchoirPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2) {
+inline void FixedJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchorPointBody2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
-    mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]] = localAnchoirPointBody2;
+    mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]] = localAnchorPointBody2;
 }
 
 // Return the vector from center of body 1 to anchor point in world-space

@@ -36,11 +36,14 @@ using namespace reactphysics3d;
 ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents,
                                                TransformComponents& transformComponents,
                                                JointComponents& jointComponents,
-                                               BallAndSocketJointComponents& ballAndSocketJointComponents)
+                                               BallAndSocketJointComponents& ballAndSocketJointComponents,
+                                               FixedJointComponents& fixedJointComponents)
                  : mIsWarmStartingActive(true), mIslands(islands),
                    mConstraintSolverData(rigidBodyComponents, jointComponents),
                    mSolveBallAndSocketJointSystem(rigidBodyComponents, transformComponents, jointComponents, ballAndSocketJointComponents),
-                   mJointComponents(jointComponents), mBallAndSocketJointComponents(ballAndSocketJointComponents){
+                   mSolveFixedJointSystem(rigidBodyComponents, transformComponents, jointComponents, fixedJointComponents),
+                   mJointComponents(jointComponents), mBallAndSocketJointComponents(ballAndSocketJointComponents),
+                   mFixedJointComponents(fixedJointComponents) {
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -64,11 +67,15 @@ void ConstraintSolverSystem::initialize(decimal dt) {
 
     mSolveBallAndSocketJointSystem.setTimeStep(dt);
     mSolveBallAndSocketJointSystem.setIsWarmStartingActive(mIsWarmStartingActive);
+    mSolveFixedJointSystem.setTimeStep(dt);
+    mSolveFixedJointSystem.setIsWarmStartingActive(mIsWarmStartingActive);
 
     mSolveBallAndSocketJointSystem.initBeforeSolve();
+    mSolveFixedJointSystem.initBeforeSolve();
 
     if (mIsWarmStartingActive) {
         mSolveBallAndSocketJointSystem.warmstart();
+        mSolveFixedJointSystem.warmstart();
     }
 
     // For each joint
@@ -76,7 +83,8 @@ void ConstraintSolverSystem::initialize(decimal dt) {
 
         // TODO : DELETE THIS
         Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
-        if (mBallAndSocketJointComponents.hasComponent(jointEntity)) {
+        if (mBallAndSocketJointComponents.hasComponent(jointEntity) ||
+            mFixedJointComponents.hasComponent(jointEntity)) {
            continue;
         }
 
@@ -101,13 +109,15 @@ void ConstraintSolverSystem::solveVelocityConstraints() {
     RP3D_PROFILE("ConstraintSolverSystem::solveVelocityConstraints()", mProfiler);
 
     mSolveBallAndSocketJointSystem.solveVelocityConstraint();
+    mSolveFixedJointSystem.solveVelocityConstraint();
 
     // For each joint
     for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
 
         // TODO : DELETE THIS
         Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
-        if (mBallAndSocketJointComponents.hasComponent(jointEntity)) {
+        if (mBallAndSocketJointComponents.hasComponent(jointEntity) ||
+            mFixedJointComponents.hasComponent(jointEntity)) {
            continue;
         }
 
@@ -122,13 +132,15 @@ void ConstraintSolverSystem::solvePositionConstraints() {
     RP3D_PROFILE("ConstraintSolverSystem::solvePositionConstraints()", mProfiler);
 
     mSolveBallAndSocketJointSystem.solvePositionConstraint();
+    mSolveFixedJointSystem.solvePositionConstraint();
 
     // For each joint
     for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
 
         // TODO : DELETE THIS
         Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
-        if (mBallAndSocketJointComponents.hasComponent(jointEntity)) {
+        if (mBallAndSocketJointComponents.hasComponent(jointEntity) ||
+            mFixedJointComponents.hasComponent(jointEntity)) {
            continue;
         }
 
