@@ -23,26 +23,25 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SOLVE_BALL_SOCKET_JOINT_SYSTEM_H
-#define REACTPHYSICS3D_SOLVE_BALL_SOCKET_JOINT_SYSTEM_H
+#ifndef REACTPHYSICS3D_SOLVE_HINGE_JOINT_SYSTEM_H
+#define REACTPHYSICS3D_SOLVE_HINGE_JOINT_SYSTEM_H
 
 // Libraries
 #include "utils/Profiler.h"
 #include "components/RigidBodyComponents.h"
 #include "components/JointComponents.h"
-#include "components/BallAndSocketJointComponents.h"
+#include "components/HingeJointComponents.h"
 #include "components/TransformComponents.h"
 
 namespace reactphysics3d {
 
-// Forward declarations
 class DynamicsWorld;
 
-// Class SolveBallAndSocketJointSystem
+// Class SolveHingeJointSystem
 /**
  * This class is responsible to solve the BallAndSocketJoint constraints
  */
-class SolveBallAndSocketJointSystem {
+class SolveHingeJointSystem {
 
     private :
 
@@ -65,8 +64,8 @@ class SolveBallAndSocketJointSystem {
         /// Reference to the joint components
         JointComponents& mJointComponents;
 
-        /// Reference to the ball-and-socket joint components
-        BallAndSocketJointComponents& mBallAndSocketJointComponents;
+        /// Reference to the hinge joint components
+        HingeJointComponents& mHingeJointComponents;
 
         /// Current time step of the simulation
         decimal mTimeStep;
@@ -80,18 +79,34 @@ class SolveBallAndSocketJointSystem {
         Profiler* mProfiler;
 #endif
 
+        // -------------------- Methods -------------------- //
+
+        /// Given an angle in radian, this method returns the corresponding
+        /// angle in the range [-pi; pi]
+        decimal computeNormalizedAngle(decimal angle) const;
+
+        /// Given an "inputAngle" in the range [-pi, pi], this method returns an
+        /// angle (modulo 2*pi) in the range [-2*pi; 2*pi] that is closest to one of the
+        /// two angle limits in arguments.
+        decimal computeCorrespondingAngleNearLimits(decimal inputAngle, decimal lowerLimitAngle,
+                                                    decimal upperLimitAngle) const;
+
+        /// Compute the current angle around the hinge axis
+        decimal computeCurrentHingeAngle(Entity jointEntity, const Quaternion& orientationBody1,
+                                         const Quaternion& orientationBody2);
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SolveBallAndSocketJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
-                                      TransformComponents& transformComponents,
-                                      JointComponents& jointComponents,
-                                      BallAndSocketJointComponents& ballAndSocketJointComponents);
+        SolveHingeJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
+                              TransformComponents& transformComponents,
+                              JointComponents& jointComponents,
+                              HingeJointComponents& hingeJointComponents);
 
         /// Destructor
-        ~SolveBallAndSocketJointSystem() = default;
+        ~SolveHingeJointSystem() = default;
 
         /// Initialize before solving the constraint
         void initBeforeSolve();
@@ -123,18 +138,18 @@ class SolveBallAndSocketJointSystem {
 #ifdef IS_PROFILING_ACTIVE
 
 // Set the profiler
-inline void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {
+inline void SolveHingeJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 
 // Set the time step
-inline void SolveBallAndSocketJointSystem::setTimeStep(decimal timeStep) {
+inline void SolveHingeJointSystem::setTimeStep(decimal timeStep) {
     assert(timeStep > decimal(0.0));
     mTimeStep = timeStep;
 }
 
 // Set to true to enable warm starting
-inline void SolveBallAndSocketJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
+inline void SolveHingeJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
     mIsWarmStartingActive = isWarmStartingActive;
 }
 

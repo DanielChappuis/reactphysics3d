@@ -88,8 +88,8 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     const Quaternion& orientationBody2 = mWorld.mTransformComponents.getTransform(body2Entity).getOrientation();
 
     // Get the inertia tensor of bodies
-    mWorld.mSliderJointsComponents.setI1(mEntity, body1->getInertiaTensorInverseWorld());
-    mWorld.mSliderJointsComponents.setI2(mEntity, body2->getInertiaTensorInverseWorld());
+    mWorld.mSliderJointsComponents.setI1(mEntity, RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity));
+    mWorld.mSliderJointsComponents.setI2(mEntity, RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity));
 
     // Vector from body center to the anchor point
     mWorld.mSliderJointsComponents.setR1(mEntity, orientationBody1 * mWorld.mSliderJointsComponents.getLocalAnchorPointBody1(mEntity));
@@ -529,8 +529,8 @@ void SliderJoint::solvePositionConstraint(const ConstraintSolverData& constraint
     const decimal inverseMassBody2 = constraintSolverData.rigidBodyComponents.getMassInverse(body2Entity);
 
     // Recompute the inertia tensor of bodies
-    mWorld.mSliderJointsComponents.setI1(mEntity, body1->getInertiaTensorInverseWorld());
-    mWorld.mSliderJointsComponents.setI2(mEntity, body2->getInertiaTensorInverseWorld());
+    mWorld.mSliderJointsComponents.setI1(mEntity, RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity));
+    mWorld.mSliderJointsComponents.setI2(mEntity, RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity));
 
     // Vector from body center to the anchor point
     mWorld.mSliderJointsComponents.setR1(mEntity, q1 * mWorld.mSliderJointsComponents.getLocalAnchorPointBody1(mEntity));

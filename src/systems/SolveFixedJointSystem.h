@@ -35,6 +35,8 @@
 
 namespace reactphysics3d {
 
+class DynamicsWorld;
+
 // Class SolveFixedJointSystem
 /**
  * This class is responsible to solve the FixedJoint constraints
@@ -49,6 +51,9 @@ class SolveFixedJointSystem {
         static const decimal BETA;
 
         // -------------------- Attributes -------------------- //
+
+        /// Physics world
+        DynamicsWorld& mWorld;
 
         /// Reference to the rigid body components
         RigidBodyComponents& mRigidBodyComponents;
@@ -79,7 +84,7 @@ class SolveFixedJointSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SolveFixedJointSystem(RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents,
+        SolveFixedJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents,
                               JointComponents& jointComponents, FixedJointComponents& fixedJointComponents);
 
         /// Destructor

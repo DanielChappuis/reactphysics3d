@@ -43,10 +43,10 @@ const decimal ContactSolverSystem::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolverSystem::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
+ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, DynamicsWorld& world, Islands& islands, CollisionBodyComponents& bodyComponents,
                              RigidBodyComponents& rigidBodyComponents, ProxyShapeComponents& proxyShapeComponents,
                              const WorldSettings& worldSettings)
-              :mMemoryManager(memoryManager), mContactConstraints(nullptr), mContactPoints(nullptr),
+              :mMemoryManager(memoryManager), mWorld(world), mContactConstraints(nullptr), mContactPoints(nullptr),
                mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr),
                mBodyComponents(bodyComponents), mRigidBodyComponents(rigidBodyComponents),
                mProxyShapeComponents(proxyShapeComponents), mIsSplitImpulseActive(true),
@@ -140,8 +140,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         new (mContactConstraints + mNbContactManifolds) ContactManifoldSolver();
         mContactConstraints[mNbContactManifolds].dynamicsComponentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1->getEntity());
         mContactConstraints[mNbContactManifolds].dynamicsComponentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2->getEntity());
-        mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 = body1->getInertiaTensorInverseWorld();
-        mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = body2->getInertiaTensorInverseWorld();
+        mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 = RigidBody::getInertiaTensorInverseWorld(mWorld, externalManifold.bodyEntity1);
+        mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = RigidBody::getInertiaTensorInverseWorld(mWorld, externalManifold.bodyEntity2);
         mContactConstraints[mNbContactManifolds].massInverseBody1 = mRigidBodyComponents.getMassInverse(body1->getEntity());
         mContactConstraints[mNbContactManifolds].massInverseBody2 = mRigidBodyComponents.getMassInverse(body2->getEntity());
         mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.nbContactPoints;

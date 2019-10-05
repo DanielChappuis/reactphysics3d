@@ -25,6 +25,7 @@
 
 // Libraries
 #include "systems/SolveBallAndSocketJointSystem.h"
+#include "engine/DynamicsWorld.h"
 #include "body/RigidBody.h"
 
 using namespace reactphysics3d;
@@ -33,11 +34,11 @@ using namespace reactphysics3d;
 const decimal SolveBallAndSocketJointSystem::BETA = decimal(0.2);
 
 // Constructor
-SolveBallAndSocketJointSystem::SolveBallAndSocketJointSystem(RigidBodyComponents& rigidBodyComponents,
+SolveBallAndSocketJointSystem::SolveBallAndSocketJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
                                                              TransformComponents& transformComponents,
                                                              JointComponents& jointComponents,
                                                              BallAndSocketJointComponents& ballAndSocketJointComponents)
-              :mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents),
+              :mWorld(world), mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents),
                mJointComponents(jointComponents), mBallAndSocketJointComponents(ballAndSocketJointComponents),
                mTimeStep(0), mIsWarmStartingActive(true) {
 
@@ -55,13 +56,9 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
-        // TODO : Remove this and use compoents instead of pointers to bodies
-        const RigidBody* body1 = static_cast<RigidBody*>(mRigidBodyComponents.getRigidBody(body1Entity));
-        const RigidBody* body2 = static_cast<RigidBody*>(mRigidBodyComponents.getRigidBody(body2Entity));
-
         // Get the inertia tensor of bodies
-        mBallAndSocketJointComponents.mI1[i] = body1->getInertiaTensorInverseWorld();
-        mBallAndSocketJointComponents.mI2[i] = body2->getInertiaTensorInverseWorld();
+        mBallAndSocketJointComponents.mI1[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity);
+        mBallAndSocketJointComponents.mI2[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity);
     }
 
     // For each joint
@@ -260,13 +257,9 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
-        // TODO : Remove this and use compoents instead of pointers to bodies
-        const RigidBody* body1 = static_cast<RigidBody*>(mRigidBodyComponents.getRigidBody(body1Entity));
-        const RigidBody* body2 = static_cast<RigidBody*>(mRigidBodyComponents.getRigidBody(body2Entity));
-
         // Recompute the inverse inertia tensors
-        mBallAndSocketJointComponents.mI1[i] = body1->getInertiaTensorInverseWorld();
-        mBallAndSocketJointComponents.mI2[i] = body2->getInertiaTensorInverseWorld();
+        mBallAndSocketJointComponents.mI1[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity);
+        mBallAndSocketJointComponents.mI2[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity);
     }
 
     // For each joint component

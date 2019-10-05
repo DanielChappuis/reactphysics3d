@@ -109,9 +109,6 @@ class RigidBodyComponents : public Components {
         /// Array with the inverse of the inertia tensor of each component
         Matrix3x3* mInverseInertiaTensorsLocal;
 
-        /// Array with the inverse of the world inertia tensor of each component
-        Matrix3x3* mInverseInertiaTensorsWorld;
-
         /// Array with the constrained linear velocity of each component
         Vector3* mConstrainedLinearVelocities;
 
@@ -246,9 +243,6 @@ class RigidBodyComponents : public Components {
         /// Return the inverse local inertia tensor of an entity
         const Matrix3x3& getInertiaTensorLocalInverse(Entity bodyEntity);
 
-        /// Return the inverse world inertia tensor of an entity
-        const Matrix3x3& getInertiaTensorWorldInverse(Entity bodyEntity);
-
         /// Set the external force of an entity
         void setExternalForce(Entity bodyEntity, const Vector3& externalForce);
 
@@ -270,9 +264,6 @@ class RigidBodyComponents : public Components {
         /// Set the inverse local inertia tensor of an entity
         void setInverseInertiaTensorLocal(Entity bodyEntity, const Matrix3x3& inertiaTensorLocalInverse);
 
-        /// Set the inverse world inertia tensor of an entity
-        void setInverseInertiaTensorWorld(Entity bodyEntity, const Matrix3x3& inertiaTensorWorldInverse);
-
         /// Return the constrained linear velocity of an entity
         const Vector3& getConstrainedLinearVelocity(Entity bodyEntity) const;
 
@@ -286,10 +277,10 @@ class RigidBodyComponents : public Components {
         const Vector3& getSplitAngularVelocity(Entity bodyEntity) const;
 
         /// Return the constrained position of an entity
-        const Vector3& getConstrainedPosition(Entity bodyEntity);
+        Vector3& getConstrainedPosition(Entity bodyEntity);
 
         /// Return the constrained orientation of an entity
-        const Quaternion& getConstrainedOrientation(Entity bodyEntity);
+        Quaternion& getConstrainedOrientation(Entity bodyEntity);
 
         /// Return the local center of mass of an entity
         const Vector3& getCenterOfMassLocal(Entity bodyEntity);
@@ -348,6 +339,7 @@ class RigidBodyComponents : public Components {
         friend class ContactSolverSystem;
         friend class SolveBallAndSocketJointSystem;
         friend class SolveFixedJointSystem;
+        friend class SolveHingeJointSystem;
         friend class DynamicsSystem;
         friend class BallAndSocketJoint;
         friend class FixedJoint;
@@ -515,14 +507,6 @@ inline const Matrix3x3& RigidBodyComponents::getInertiaTensorLocalInverse(Entity
    return mInverseInertiaTensorsLocal[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Return the inverse world inertia tensor of an entity
-inline const Matrix3x3& RigidBodyComponents::getInertiaTensorWorldInverse(Entity bodyEntity) {
-
-   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   return mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]];
-}
-
 // Set the external force of an entity
 inline void RigidBodyComponents::setExternalForce(Entity bodyEntity, const Vector3& externalForce) {
 
@@ -579,14 +563,6 @@ inline void RigidBodyComponents::setInverseInertiaTensorLocal(Entity bodyEntity,
    mInverseInertiaTensorsLocal[mMapEntityToComponentIndex[bodyEntity]] = inertiaTensorLocalInverse;
 }
 
-// Set the inverse world inertia tensor of an entity
-inline void RigidBodyComponents::setInverseInertiaTensorWorld(Entity bodyEntity, const Matrix3x3& inertiaTensorWorldInverse) {
-
-   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-
-   mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]] = inertiaTensorWorldInverse;
-}
-
 // Return the constrained linear velocity of an entity
 inline const Vector3& RigidBodyComponents::getConstrainedLinearVelocity(Entity bodyEntity) const {
 
@@ -620,7 +596,7 @@ inline const Vector3& RigidBodyComponents::getSplitAngularVelocity(Entity bodyEn
 }
 
 // Return the constrained position of an entity
-inline const Vector3& RigidBodyComponents::getConstrainedPosition(Entity bodyEntity) {
+inline Vector3& RigidBodyComponents::getConstrainedPosition(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -628,7 +604,7 @@ inline const Vector3& RigidBodyComponents::getConstrainedPosition(Entity bodyEnt
 }
 
 // Return the constrained orientation of an entity
-inline const Quaternion& RigidBodyComponents::getConstrainedOrientation(Entity bodyEntity) {
+inline Quaternion& RigidBodyComponents::getConstrainedOrientation(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 

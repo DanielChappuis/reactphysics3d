@@ -33,17 +33,19 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolverSystem::ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents,
+ConstraintSolverSystem::ConstraintSolverSystem(DynamicsWorld& world, Islands& islands, RigidBodyComponents& rigidBodyComponents,
                                                TransformComponents& transformComponents,
                                                JointComponents& jointComponents,
                                                BallAndSocketJointComponents& ballAndSocketJointComponents,
-                                               FixedJointComponents& fixedJointComponents)
+                                               FixedJointComponents& fixedJointComponents,
+                                               HingeJointComponents& hingeJointComponents)
                  : mIsWarmStartingActive(true), mIslands(islands),
                    mConstraintSolverData(rigidBodyComponents, jointComponents),
-                   mSolveBallAndSocketJointSystem(rigidBodyComponents, transformComponents, jointComponents, ballAndSocketJointComponents),
-                   mSolveFixedJointSystem(rigidBodyComponents, transformComponents, jointComponents, fixedJointComponents),
+                   mSolveBallAndSocketJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, ballAndSocketJointComponents),
+                   mSolveFixedJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, fixedJointComponents),
+                   mSolveHingeJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, hingeJointComponents),
                    mJointComponents(jointComponents), mBallAndSocketJointComponents(ballAndSocketJointComponents),
-                   mFixedJointComponents(fixedJointComponents) {
+                   mFixedJointComponents(fixedJointComponents), mHingeJointComponents(hingeJointComponents) {
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -69,13 +71,17 @@ void ConstraintSolverSystem::initialize(decimal dt) {
     mSolveBallAndSocketJointSystem.setIsWarmStartingActive(mIsWarmStartingActive);
     mSolveFixedJointSystem.setTimeStep(dt);
     mSolveFixedJointSystem.setIsWarmStartingActive(mIsWarmStartingActive);
+    mSolveHingeJointSystem.setTimeStep(dt);
+    mSolveHingeJointSystem.setIsWarmStartingActive(mIsWarmStartingActive);
 
     mSolveBallAndSocketJointSystem.initBeforeSolve();
     mSolveFixedJointSystem.initBeforeSolve();
+    mSolveHingeJointSystem.initBeforeSolve();
 
     if (mIsWarmStartingActive) {
         mSolveBallAndSocketJointSystem.warmstart();
         mSolveFixedJointSystem.warmstart();
+        mSolveHingeJointSystem.warmstart();
     }
 
     // For each joint
@@ -84,7 +90,8 @@ void ConstraintSolverSystem::initialize(decimal dt) {
         // TODO : DELETE THIS
         Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
         if (mBallAndSocketJointComponents.hasComponent(jointEntity) ||
-            mFixedJointComponents.hasComponent(jointEntity)) {
+            mFixedJointComponents.hasComponent(jointEntity) ||
+            mHingeJointComponents.hasComponent(jointEntity)) {
            continue;
         }
 
@@ -110,6 +117,7 @@ void ConstraintSolverSystem::solveVelocityConstraints() {
 
     mSolveBallAndSocketJointSystem.solveVelocityConstraint();
     mSolveFixedJointSystem.solveVelocityConstraint();
+    mSolveHingeJointSystem.solveVelocityConstraint();
 
     // For each joint
     for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
@@ -117,7 +125,8 @@ void ConstraintSolverSystem::solveVelocityConstraints() {
         // TODO : DELETE THIS
         Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
         if (mBallAndSocketJointComponents.hasComponent(jointEntity) ||
-            mFixedJointComponents.hasComponent(jointEntity)) {
+            mFixedJointComponents.hasComponent(jointEntity) ||
+            mHingeJointComponents.hasComponent(jointEntity)) {
            continue;
         }
 
@@ -133,6 +142,7 @@ void ConstraintSolverSystem::solvePositionConstraints() {
 
     mSolveBallAndSocketJointSystem.solvePositionConstraint();
     mSolveFixedJointSystem.solvePositionConstraint();
+    mSolveHingeJointSystem.solvePositionConstraint();
 
     // For each joint
     for (uint i=0; i<mConstraintSolverData.jointComponents.getNbEnabledComponents(); i++) {
@@ -140,7 +150,8 @@ void ConstraintSolverSystem::solvePositionConstraints() {
         // TODO : DELETE THIS
         Entity jointEntity = mConstraintSolverData.jointComponents.mJointEntities[i];
         if (mBallAndSocketJointComponents.hasComponent(jointEntity) ||
-            mFixedJointComponents.hasComponent(jointEntity)) {
+            mFixedJointComponents.hasComponent(jointEntity) ||
+            mHingeJointComponents.hasComponent(jointEntity)) {
            continue;
         }
 

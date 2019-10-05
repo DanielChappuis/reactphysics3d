@@ -25,12 +25,14 @@
 
 // Libraries
 #include "systems/DynamicsSystem.h"
+#include "body/RigidBody.h"
+#include "engine/DynamicsWorld.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-DynamicsSystem::DynamicsSystem(RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents, bool& isGravityEnabled, Vector3& gravity)
-              :mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents), mIsGravityEnabled(isGravityEnabled),
+DynamicsSystem::DynamicsSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents, bool& isGravityEnabled, Vector3& gravity)
+              :mWorld(world), mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents), mIsGravityEnabled(isGravityEnabled),
                mGravity(gravity) {
 
 }
@@ -95,14 +97,6 @@ void DynamicsSystem::updateBodiesState() {
         const Vector3& centerOfMassLocal = mRigidBodyComponents.mCentersOfMassLocal[i];
         transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
     }
-
-    // Update the world inverse inertia tensor of the body
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
-
-        Matrix3x3 orientation = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).getOrientation().getMatrix();
-        const Matrix3x3& inverseInertiaLocalTensor = mRigidBodyComponents.mInverseInertiaTensorsLocal[i];
-        mRigidBodyComponents.mInverseInertiaTensorsWorld[i] = orientation * inverseInertiaLocalTensor * orientation.getTranspose();
-    }
 }
 
 // Integrate the velocities of rigid bodies.
@@ -130,7 +124,7 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
         mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + timeStep *
                                                               mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
         mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep *
-                                                 mRigidBodyComponents.mInverseInertiaTensorsWorld[i] * mRigidBodyComponents.mExternalTorques[i];
+                                                 RigidBody::getInertiaTensorInverseWorld(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
     }
 
     // Apply gravity force

@@ -73,11 +73,11 @@ class RigidBody : public CollisionBody {
         /// Update the transform of the body after a change of the center of mass
         void updateTransformWithCenterOfMass();
 
-        /// Update the world inverse inertia tensor of the body
-        void updateInertiaTensorInverseWorld();
-
         /// Set the variable to know whether or not the body is sleeping
         void setIsSleeping(bool isSleeping);
+
+        /// Return the inverse of the inertia tensor in world coordinates.
+        static const Matrix3x3 getInertiaTensorInverseWorld(CollisionWorld& world, Entity bodyEntity);
 
     public :
 
@@ -123,7 +123,7 @@ class RigidBody : public CollisionBody {
         const Matrix3x3& getInverseInertiaTensorLocal() const;
 
         /// Return the inverse of the inertia tensor in world coordinates.
-        Matrix3x3 getInertiaTensorInverseWorld() const;
+        const Matrix3x3 getInertiaTensorInverseWorld() const;
 
         /// Set the local center of mass of the body (in local-space coordinates)
         void setCenterOfMassLocal(const Vector3& centerOfMassLocal);
@@ -215,11 +215,15 @@ class RigidBody : public CollisionBody {
 
         friend class DynamicsWorld;
         friend class ContactSolverSystem;
+        friend class DynamicsSystem;
         friend class Joint;
         friend class BallAndSocketJoint;
         friend class SliderJoint;
         friend class HingeJoint;
         friend class FixedJoint;
+        friend class SolveBallAndSocketJointSystem;
+        friend class SolveFixedJointSystem;
+        friend class SolveHingeJointSystem;
 };
 
 // Return a reference to the material properties of the rigid body

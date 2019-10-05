@@ -32,6 +32,7 @@
 #include "engine/Islands.h"
 #include "systems/SolveBallAndSocketJointSystem.h"
 #include "systems/SolveFixedJointSystem.h"
+#include "systems/SolveHingeJointSystem.h"
 
 namespace reactphysics3d {
 
@@ -165,6 +166,9 @@ class ConstraintSolverSystem {
         /// Solver for the FixedJoint constraints
         SolveFixedJointSystem mSolveFixedJointSystem;
 
+        /// Solver for the HingeJoint constraints
+        SolveHingeJointSystem mSolveHingeJointSystem;
+
         // TODO : Delete this
         JointComponents& mJointComponents;
 
@@ -173,6 +177,9 @@ class ConstraintSolverSystem {
 
         // TODO : Delete this
         FixedJointComponents& mFixedJointComponents;
+
+        // TODO : Delete this
+        HingeJointComponents& mHingeJointComponents;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -185,11 +192,11 @@ class ConstraintSolverSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolverSystem(Islands& islands, RigidBodyComponents& rigidBodyComponents,
+        ConstraintSolverSystem(DynamicsWorld& world, Islands& islands, RigidBodyComponents& rigidBodyComponents,
                                TransformComponents& transformComponents,
                                JointComponents& jointComponents,
                                BallAndSocketJointComponents& ballAndSocketJointComponents,
-                               FixedJointComponents& fixedJointComponents);
+                               FixedJointComponents& fixedJointComponents, HingeJointComponents &hingeJointComponents);
 
         /// Destructor
         ~ConstraintSolverSystem() = default;

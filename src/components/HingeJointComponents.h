@@ -411,6 +411,7 @@ class HingeJointComponents : public Components {
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
+        friend class SolveHingeJointSystem;
 };
 
 // Return a pointer to a given joint

@@ -40,7 +40,7 @@ RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(decimal) + sizeof(decimal) +
                                 sizeof(decimal) + sizeof(decimal) + sizeof(Matrix3x3) +
-                                sizeof(Matrix3x3) + sizeof(Vector3) + sizeof(Vector3) +
+                                sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(bool) + sizeof(bool) + sizeof(List<Entity>)) {
@@ -77,8 +77,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     decimal* newInitMasses = reinterpret_cast<decimal*>(newAngularDampings + nbComponentsToAllocate);
     decimal* newInverseMasses = reinterpret_cast<decimal*>(newInitMasses + nbComponentsToAllocate);
     Matrix3x3* newInertiaTensorLocalInverses = reinterpret_cast<Matrix3x3*>(newInverseMasses + nbComponentsToAllocate);
-    Matrix3x3* newInertiaTensorWorldInverses = reinterpret_cast<Matrix3x3*>(newInertiaTensorLocalInverses + nbComponentsToAllocate);
-    Vector3* newConstrainedLinearVelocities = reinterpret_cast<Vector3*>(newInertiaTensorWorldInverses + nbComponentsToAllocate);
+    Vector3* newConstrainedLinearVelocities = reinterpret_cast<Vector3*>(newInertiaTensorLocalInverses + nbComponentsToAllocate);
     Vector3* newConstrainedAngularVelocities = reinterpret_cast<Vector3*>(newConstrainedLinearVelocities + nbComponentsToAllocate);
     Vector3* newSplitLinearVelocities = reinterpret_cast<Vector3*>(newConstrainedAngularVelocities + nbComponentsToAllocate);
     Vector3* newSplitAngularVelocities = reinterpret_cast<Vector3*>(newSplitLinearVelocities + nbComponentsToAllocate);
@@ -109,7 +108,6 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newInitMasses, mInitMasses, mNbComponents * sizeof(decimal));
         memcpy(newInverseMasses, mInverseMasses, mNbComponents * sizeof(decimal));
         memcpy(newInertiaTensorLocalInverses, mInverseInertiaTensorsLocal, mNbComponents * sizeof(Matrix3x3));
-        memcpy(newInertiaTensorWorldInverses, mInverseInertiaTensorsWorld, mNbComponents * sizeof(Matrix3x3));
         memcpy(newConstrainedLinearVelocities, mConstrainedLinearVelocities, mNbComponents * sizeof(Vector3));
         memcpy(newConstrainedAngularVelocities, mConstrainedAngularVelocities, mNbComponents * sizeof(Vector3));
         memcpy(newSplitLinearVelocities, mSplitLinearVelocities, mNbComponents * sizeof(Vector3));
@@ -143,7 +141,6 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     mInitMasses = newInitMasses;
     mInverseMasses = newInverseMasses;
     mInverseInertiaTensorsLocal = newInertiaTensorLocalInverses;
-    mInverseInertiaTensorsWorld = newInertiaTensorWorldInverses;
     mConstrainedLinearVelocities = newConstrainedLinearVelocities;
     mConstrainedAngularVelocities = newConstrainedAngularVelocities;
     mSplitLinearVelocities = newSplitLinearVelocities;
@@ -179,7 +176,6 @@ void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     mInitMasses[index] = decimal(1.0);
     mInverseMasses[index] = decimal(1.0);
     new (mInverseInertiaTensorsLocal + index) Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-    new (mInverseInertiaTensorsWorld + index) Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
     new (mConstrainedLinearVelocities + index) Vector3(0, 0, 0);
     new (mConstrainedAngularVelocities + index) Vector3(0, 0, 0);
     new (mSplitLinearVelocities + index) Vector3(0, 0, 0);
@@ -223,7 +219,6 @@ void RigidBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex
     mInitMasses[destIndex] = mInitMasses[srcIndex];
     mInverseMasses[destIndex] = mInverseMasses[srcIndex];
     new (mInverseInertiaTensorsLocal + destIndex) Matrix3x3(mInverseInertiaTensorsLocal[srcIndex]);
-    new (mInverseInertiaTensorsWorld + destIndex) Matrix3x3(mInverseInertiaTensorsWorld[srcIndex]);
     new (mConstrainedLinearVelocities + destIndex) Vector3(mConstrainedLinearVelocities[srcIndex]);
     new (mConstrainedAngularVelocities + destIndex) Vector3(mConstrainedAngularVelocities[srcIndex]);
     new (mSplitLinearVelocities + destIndex) Vector3(mSplitLinearVelocities[srcIndex]);
@@ -266,7 +261,6 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     decimal initMass1 = mInitMasses[index1];
     decimal inverseMass1 = mInverseMasses[index1];
     Matrix3x3 inertiaTensorLocalInverse1 = mInverseInertiaTensorsLocal[index1];
-    Matrix3x3 inertiaTensorWorldInverse1 = mInverseInertiaTensorsWorld[index1];
     Vector3 constrainedLinearVelocity1(mConstrainedLinearVelocities[index1]);
     Vector3 constrainedAngularVelocity1(mConstrainedAngularVelocities[index1]);
     Vector3 splitLinearVelocity1(mSplitLinearVelocities[index1]);
@@ -300,7 +294,6 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     mInitMasses[index2] = initMass1;
     mInverseMasses[index2] = inverseMass1;
     mInverseInertiaTensorsLocal[index2] = inertiaTensorLocalInverse1;
-    mInverseInertiaTensorsWorld[index2] = inertiaTensorWorldInverse1;
     new (mConstrainedLinearVelocities + index2) Vector3(constrainedLinearVelocity1);
     new (mConstrainedAngularVelocities + index2) Vector3(constrainedAngularVelocity1);
     new (mSplitLinearVelocities + index2) Vector3(splitLinearVelocity1);
@@ -337,7 +330,6 @@ void RigidBodyComponents::destroyComponent(uint32 index) {
     mExternalForces[index].~Vector3();
     mExternalTorques[index].~Vector3();
     mInverseInertiaTensorsLocal[index].~Matrix3x3();
-    mInverseInertiaTensorsWorld[index].~Matrix3x3();
     mConstrainedLinearVelocities[index].~Vector3();
     mConstrainedAngularVelocities[index].~Vector3();
     mSplitLinearVelocities[index].~Vector3();

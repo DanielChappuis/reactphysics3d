@@ -50,11 +50,11 @@ using namespace std;
 DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
               : CollisionWorld(worldSettings, logger, profiler),
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
-                mContactSolverSystem(mMemoryManager, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
+                mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mProxyShapesComponents, mConfig),
-                mConstraintSolverSystem(mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
-                                        mBallAndSocketJointsComponents, mFixedJointsComponents),
-                mDynamicsSystem(mRigidBodyComponents, mTransformComponents, mIsGravityEnabled, mGravity),
+                mConstraintSolverSystem(*this, mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
+                                        mBallAndSocketJointsComponents, mFixedJointsComponents, mHingeJointsComponents),
+                mDynamicsSystem(*this, mRigidBodyComponents, mTransformComponents, mIsGravityEnabled, mGravity),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
@@ -248,9 +248,6 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 
     // Compute the inverse mass
     mRigidBodyComponents.setMassInverse(entity, decimal(1.0) / mRigidBodyComponents.getInitMass(entity));
-
-    // Update the world inverse inertia tensor
-    rigidBody->updateInertiaTensorInverseWorld();
 
     // Add the rigid body to the physics world
     mBodies.add(rigidBody);

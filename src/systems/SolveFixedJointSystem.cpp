@@ -25,6 +25,7 @@
 
 // Libraries
 #include "systems/SolveFixedJointSystem.h"
+#include "engine/DynamicsWorld.h"
 #include "body/RigidBody.h"
 
 using namespace reactphysics3d;
@@ -33,11 +34,11 @@ using namespace reactphysics3d;
 const decimal SolveFixedJointSystem::BETA = decimal(0.2);
 
 // Constructor
-SolveFixedJointSystem::SolveFixedJointSystem(RigidBodyComponents& rigidBodyComponents,
+SolveFixedJointSystem::SolveFixedJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
                                              TransformComponents& transformComponents,
                                              JointComponents& jointComponents,
                                              FixedJointComponents& fixedJointComponents)
-              :mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents),
+              :mWorld(world), mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents),
                mJointComponents(jointComponents), mFixedJointComponents(fixedJointComponents),
                mTimeStep(0), mIsWarmStartingActive(true) {
 
@@ -55,13 +56,9 @@ void SolveFixedJointSystem::initBeforeSolve() {
         const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
-        // TODO : Remove this and use compoents instead of pointers to bodies
-        RigidBody* body1 = static_cast<RigidBody*>(mRigidBodyComponents.getRigidBody(body1Entity));
-        RigidBody* body2 = static_cast<RigidBody*>(mRigidBodyComponents.getRigidBody(body2Entity));
-
         // Get the inertia tensor of bodies
-        mFixedJointComponents.mI1[i] = body1->getInertiaTensorInverseWorld();
-        mFixedJointComponents.mI2[i] = body2->getInertiaTensorInverseWorld();
+        mFixedJointComponents.mI1[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity);
+        mFixedJointComponents.mI2[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity);
     }
 
     // For each joint
@@ -91,8 +88,8 @@ void SolveFixedJointSystem::initBeforeSolve() {
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
         // Compute the corresponding skew-symmetric matrices
-        Matrix3x3 skewSymmetricMatrixU1= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mFixedJointComponents.mR1World[i]);
-        Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mFixedJointComponents.mR2World[i]);
+        Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mFixedJointComponents.mR1World[i]);
+        Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mFixedJointComponents.mR2World[i]);
 
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
@@ -346,13 +343,9 @@ void SolveFixedJointSystem::solvePositionConstraint() {
         const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
-        // TODO : Remove this and use compoents instead of pointers to bodies
-        const RigidBody* body1 = static_cast<RigidBody*>(mRigidBodyComponents.getRigidBody(body1Entity));
-        const RigidBody* body2 = static_cast<RigidBody*>(mRigidBodyComponents.getRigidBody(body2Entity));
-
         // Recompute the inverse inertia tensors
-        mFixedJointComponents.mI1[i] = body1->getInertiaTensorInverseWorld();
-        mFixedJointComponents.mI2[i] = body2->getInertiaTensorInverseWorld();
+        mFixedJointComponents.mI1[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity);
+        mFixedJointComponents.mI2[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity);
     }
 
     // For each joint
@@ -439,10 +432,10 @@ void SolveFixedJointSystem::solvePositionConstraint() {
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
-        Vector3 x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
-        Vector3 x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
-        Quaternion q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
-        Quaternion q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
+        Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
+        Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
+        Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
+        Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
 
         // Compute position error for the 3 translation constraints
         const Vector3 errorTranslation = x2 + r2World - x1 - r1World;
@@ -536,10 +529,5 @@ void SolveFixedJointSystem::solvePositionConstraint() {
         // Update the body position/orientation of body 2
         q2 += Quaternion(0, w2) * q2 * decimal(0.5);
         q2.normalize();
-
-        mRigidBodyComponents.mConstrainedPositions[componentIndexBody1] = x1;
-        mRigidBodyComponents.mConstrainedPositions[componentIndexBody2] = x2;
-        mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1] = q1;
-        mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2] = q2;
     }
 }

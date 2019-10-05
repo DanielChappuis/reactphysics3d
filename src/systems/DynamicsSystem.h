@@ -33,6 +33,8 @@
 
 namespace reactphysics3d {
 
+class DynamicsWorld;
+
 // Class DynamicsSystem
 /**
  * This class is responsible to compute and update the dynamics of the bodies that are simulated
@@ -43,6 +45,9 @@ class DynamicsSystem {
     private :
 
         // -------------------- Attributes -------------------- //
+
+        /// Physics world
+        DynamicsWorld& mWorld;
 
         /// Reference to the rigid body components
         RigidBodyComponents& mRigidBodyComponents;
@@ -67,7 +72,7 @@ class DynamicsSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsSystem(RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents,
+        DynamicsSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents,
                        bool& isGravityEnabled, Vector3& gravity);
 
         /// Destructor

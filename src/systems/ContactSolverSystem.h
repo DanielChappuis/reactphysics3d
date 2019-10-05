@@ -284,6 +284,9 @@ class ContactSolverSystem {
         /// Memory manager
         MemoryManager& mMemoryManager;
 
+        /// Physics world
+        DynamicsWorld& mWorld;
+
         /// Current time step
         decimal mTimeStep;
 
@@ -360,7 +363,7 @@ class ContactSolverSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolverSystem(MemoryManager& memoryManager, Islands& islands, CollisionBodyComponents& bodyComponents,
+        ContactSolverSystem(MemoryManager& memoryManager, DynamicsWorld& world, Islands& islands, CollisionBodyComponents& bodyComponents,
                       RigidBodyComponents& rigidBodyComponents, ProxyShapeComponents& proxyShapeComponents,
                       const WorldSettings& worldSettings);
 
