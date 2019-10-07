@@ -56,26 +56,6 @@ FixedJoint::FixedJoint(Entity entity, DynamicsWorld &world, const FixedJointInfo
     mWorld.mFixedJointsComponents.setInitOrientationDifferenceInv(mEntity, transform2.getOrientation().getInverse() * transform1.getOrientation());
 }
 
-// Initialize before solving the constraint
-void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Warm start the constraint (apply the previous impulse at the beginning of the step)
-void FixedJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Solve the velocity constraint
-void FixedJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Solve the position constraint (for position error correction)
-void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintSolverData) {
-
-}
-
 // Return a string representation
 std::string FixedJoint::to_string() const {
     return "FixedJoint{ localAnchorPointBody1=" + mWorld.mFixedJointsComponents.getLocalAnchorPointBody1(mEntity).to_string() +

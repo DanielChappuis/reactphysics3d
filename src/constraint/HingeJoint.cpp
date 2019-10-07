@@ -61,27 +61,6 @@ HingeJoint::HingeJoint(Entity entity, DynamicsWorld &world, const HingeJointInfo
     mWorld.mHingeJointsComponents.setInitOrientationDifferenceInv(mEntity, initOrientationDifferenceInv);
 }
 
-// Initialize before solving the constraint
-void HingeJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Warm start the constraint (apply the previous impulse at the beginning of the step)
-void HingeJoint::warmstart(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Solve the velocity constraint
-void HingeJoint::solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-// Solve the position constraint (for position error correction)
-void HingeJoint::solvePositionConstraint(const ConstraintSolverData& constraintSolverData) {
-
-}
-
-
 // Enable/Disable the limits of the joint
 /**
  * @param isLimitEnabled True if you want to enable the limits of the joint and

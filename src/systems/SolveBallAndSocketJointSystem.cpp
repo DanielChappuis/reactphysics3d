@@ -56,6 +56,9 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
+        assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity));
+        assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
+
         // Get the inertia tensor of bodies
         mBallAndSocketJointComponents.mI1[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity);
         mBallAndSocketJointComponents.mI2[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity);

@@ -73,22 +73,6 @@ class FixedJoint : public Joint {
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const override;
 
-        /// Initialize before solving the constraint
-        // TODO : DELETE THIS
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        // TODO : DELETE THIS
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the velocity constraint
-        // TODO : DELETE THIS
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the position constraint (for position error correction)
-        // TODO : DELETE THIS
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
-
     public :
 
         // -------------------- Methods -------------------- //

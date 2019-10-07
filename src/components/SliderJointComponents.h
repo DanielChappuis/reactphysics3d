@@ -456,6 +456,7 @@ class SliderJointComponents : public Components {
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
+        friend class SolveSliderJointSystem;
 };
 
 // Return a pointer to a given joint

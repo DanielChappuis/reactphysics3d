@@ -224,6 +224,7 @@ class RigidBody : public CollisionBody {
         friend class SolveBallAndSocketJointSystem;
         friend class SolveFixedJointSystem;
         friend class SolveHingeJointSystem;
+        friend class SolveSliderJointSystem;
 };
 
 // Return a reference to the material properties of the rigid body

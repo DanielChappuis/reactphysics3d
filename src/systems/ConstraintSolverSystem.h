@@ -33,6 +33,7 @@
 #include "systems/SolveBallAndSocketJointSystem.h"
 #include "systems/SolveFixedJointSystem.h"
 #include "systems/SolveHingeJointSystem.h"
+#include "systems/SolveSliderJointSystem.h"
 
 namespace reactphysics3d {
 
@@ -169,6 +170,9 @@ class ConstraintSolverSystem {
         /// Solver for the HingeJoint constraints
         SolveHingeJointSystem mSolveHingeJointSystem;
 
+        /// Solver for the SliderJoint constraints
+        SolveSliderJointSystem mSolveSliderJointSystem;
+
         // TODO : Delete this
         JointComponents& mJointComponents;
 
@@ -196,7 +200,8 @@ class ConstraintSolverSystem {
                                TransformComponents& transformComponents,
                                JointComponents& jointComponents,
                                BallAndSocketJointComponents& ballAndSocketJointComponents,
-                               FixedJointComponents& fixedJointComponents, HingeJointComponents &hingeJointComponents);
+                               FixedJointComponents& fixedJointComponents, HingeJointComponents &hingeJointComponents,
+                               SliderJointComponents& sliderJointComponents);
 
         /// Destructor
         ~ConstraintSolverSystem() = default;
@@ -232,6 +237,8 @@ inline void ConstraintSolverSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
     mSolveBallAndSocketJointSystem.setProfiler(profiler);
     mSolveFixedJointSystem.setProfiler(profiler);
+    mSolveHingeJointSystem.setProfiler(profiler);
+    mSolveSliderJointSystem.setProfiler(profiler);
 }
 
 #endif

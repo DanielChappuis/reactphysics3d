@@ -56,6 +56,9 @@ void SolveFixedJointSystem::initBeforeSolve() {
         const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
+        assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity));
+        assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
+
         // Get the inertia tensor of bodies
         mFixedJointComponents.mI1[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity);
         mFixedJointComponents.mI2[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity);
