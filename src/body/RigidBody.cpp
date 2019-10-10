@@ -260,8 +260,6 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
  */
 void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
-    // TODO : Check if we need to update the postion of the body here at the end (transform of the body)
-
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     mIsCenterOfMassSetByUser = true;
@@ -270,8 +268,7 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
     mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
 
     // Compute the center of mass in world-space coordinates
-    const Vector3& updatedCenterOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
-    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * updatedCenterOfMassLocal);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * centerOfMassLocal);
 
     // Update the linear velocity of the center of mass
     Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
@@ -340,7 +337,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
 
-    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
+    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, mass, 0x0001, 0xFFFF);
     bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
@@ -438,18 +435,6 @@ void RigidBody::setAngularDamping(decimal angularDamping) {
              "Body " + std::to_string(mEntity.id) + ": Set angularDamping=" + std::to_string(angularDamping));
 }
 
-/// Update the transform of the body after a change of the center of mass
-void RigidBody::updateTransformWithCenterOfMass() {
-
-    // TODO : Make sure we compute this in a system
-
-    // Translate the body according to the translation of the center of mass position
-    Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
-    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
-    const Vector3& centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
-    transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
-}
-
 // Set a new material for this rigid body
 /**
  * @param material The material you want to set to the body
@@ -487,8 +472,6 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 * @param angularVelocity The angular velocity vector of the body
 */
 void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
-
-    // TODO : Make sure this method is not called from the internal physics engine
 
     // If it is a static body, we do nothing
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;

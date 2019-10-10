@@ -140,7 +140,7 @@ class BroadPhaseSystem {
         // -------------------- Methods -------------------- //
 
         /// Notify the Dynamic AABB tree that a proxy-shape needs to be updated
-        void updateProxyShapeInternal(int broadPhaseId, const AABB& aabb, const Vector3& displacement);
+        void updateProxyShapeInternal(int32 broadPhaseId, const AABB& aabb, const Vector3& displacement);
 
         /// Update the broad-phase state of some proxy-shapes components
         void updateProxyShapesComponents(uint32 startIndex, uint32 nbItems, decimal timeStep);

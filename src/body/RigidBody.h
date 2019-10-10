@@ -70,9 +70,6 @@ class RigidBody : public CollisionBody {
 
         // -------------------- Methods -------------------- //
 
-        /// Update the transform of the body after a change of the center of mass
-        void updateTransformWithCenterOfMass();
-
         /// Set the variable to know whether or not the body is sleeping
         void setIsSleeping(bool isSleeping);
 
@@ -160,14 +157,6 @@ class RigidBody : public CollisionBody {
 
         /// Set the angular damping factor
         void setAngularDamping(decimal angularDamping);
-
-        /// Return the first element of the linked list of joints involving this body
-        // TODO : Remove this
-        const JointListElement* getJointsList() const;
-
-        /// Return the first element of the linked list of joints involving this body
-        // TODO : Remove this
-        JointListElement* getJointsList();
 
         /// Apply an external force to the body at its center of mass.
         void applyForceToCenterOfMass(const Vector3& force);

@@ -214,8 +214,6 @@ void CollisionWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     if (isDisabled == mCollisionBodyComponents.getIsEntityDisabled(bodyEntity)) return;
 
-    // TODO : Make sure we notify all the components here ...
-
     // Notify all the components
     mCollisionBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
@@ -238,8 +236,8 @@ void CollisionWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
         const List<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
         for(uint32 i=0; i < joints.size(); i++) {
 
-            Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
-            Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
+            const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
+            const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
 
             // If both bodies of the joint are disabled
             if (mRigidBodyComponents.getIsEntityDisabled(body1Entity) &&
@@ -262,7 +260,6 @@ void CollisionWorld::setJointDisabled(Entity jointEntity, bool isDisabled) {
 
     if (isDisabled == mJointsComponents.getIsEntityDisabled(jointEntity)) return;
 
-    // TODO : Make sure we notify all the components here ...
     mJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
     if (mBallAndSocketJointsComponents.hasComponent(jointEntity)) {
         mBallAndSocketJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);

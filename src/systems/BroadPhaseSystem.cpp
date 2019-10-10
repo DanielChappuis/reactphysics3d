@@ -128,7 +128,7 @@ void BroadPhaseSystem::updateProxyShapes(decimal timeStep) {
 }
 
 // Notify the broad-phase that a collision shape has moved and need to be updated
-void BroadPhaseSystem::updateProxyShapeInternal(int broadPhaseId, const AABB& aabb, const Vector3& displacement) {
+void BroadPhaseSystem::updateProxyShapeInternal(int32 broadPhaseId, const AABB& aabb, const Vector3& displacement) {
 
     assert(broadPhaseId >= 0);
 
@@ -161,7 +161,7 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbI
     // For each proxy-shape component to update
     for (uint32 i = startIndex; i < startIndex + nbItems; i++) {
 
-        const int broadPhaseId = mProxyShapesComponents.mBroadPhaseIds[i];
+        const int32 broadPhaseId = mProxyShapesComponents.mBroadPhaseIds[i];
         if (broadPhaseId != -1) {
 
             const Entity& bodyEntity = mProxyShapesComponents.mBodiesEntities[i];

@@ -73,8 +73,6 @@ void DynamicsSystem::updateBodiesState() {
 
     RP3D_PROFILE("DynamicsSystem::updateBodiesState()", mProfiler);
 
-    // TODO : Make sure we compute this in a system
-
     for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         // Update the linear and angular velocity of the body

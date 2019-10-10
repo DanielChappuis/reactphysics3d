@@ -68,7 +68,6 @@ void ContactSolverSystem::init(List<ContactManifold>* contactManifolds, List<Con
 
     mTimeStep = timeStep;
 
-    // TODO : Try not to count manifolds and contact points here
     uint nbContactManifolds = mAllContactManifolds->size();
     uint nbContactPoints = mAllContactPoints->size();
 
@@ -80,7 +79,6 @@ void ContactSolverSystem::init(List<ContactManifold>* contactManifolds, List<Con
 
     if (nbContactManifolds == 0 || nbContactPoints == 0) return;
 
-    // TODO : Count exactly the number of constraints to allocate here
     mContactPoints = static_cast<ContactPointSolver*>(mMemoryManager.allocate(MemoryManager::AllocationType::Frame,
                                                                               sizeof(ContactPointSolver) * nbContactPoints));
     assert(mContactPoints != nullptr);

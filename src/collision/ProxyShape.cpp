@@ -113,8 +113,6 @@ void ProxyShape::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
 // Set the local to parent body transform
 void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
-    // TODO : Make sure this method is never called by the internal physics engine
-
     mBody->mWorld.mProxyShapesComponents.setLocalToBodyTransform(mEntity, transform);
 
     RigidBody* rigidBody = static_cast<RigidBody*>(mBody);

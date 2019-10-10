@@ -173,18 +173,6 @@ class ConstraintSolverSystem {
         /// Solver for the SliderJoint constraints
         SolveSliderJointSystem mSolveSliderJointSystem;
 
-        // TODO : Delete this
-        JointComponents& mJointComponents;
-
-        // TODO : Delete this
-        BallAndSocketJointComponents& mBallAndSocketJointComponents;
-
-        // TODO : Delete this
-        FixedJointComponents& mFixedJointComponents;
-
-        // TODO : Delete this
-        HingeJointComponents& mHingeJointComponents;
-
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler

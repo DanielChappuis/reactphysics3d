@@ -54,20 +54,6 @@ class EventListener : public CollisionCallback {
          * @param collisionInfo Information about the contacts
          */
         virtual void onContact(const CollisionCallback::CallbackData& callbackData) override {}
-
-        // TODO : Remove this method (no internal steps anymore)
-        /// Called at the beginning of an internal tick of the simulation step.
-        /// Each time the DynamicsWorld::update() method is called, the physics
-        /// engine will do several internal simulation steps. This method is
-        /// called at the beginning of each internal simulation step.
-        virtual void beginInternalTick() {}
-
-        // TODO : Remove this method (no internal steps anymore)
-        /// Called at the end of an internal tick of the simulation step.
-        /// Each time the DynamicsWorld::update() metho is called, the physics
-        /// engine will do several internal simulation steps. This method is
-        /// called at the end of each internal simulation step.
-        virtual void endInternalTick() {}
 };
 
 }

@@ -66,7 +66,7 @@ class ProxyShapeComponents : public Components {
 
         /// Ids of the proxy-shapes for the broad-phase algorithm
         // TODO : Try to change type to uint32
-        int* mBroadPhaseIds;
+        int32* mBroadPhaseIds;
 
         /// Transform from local-space of the proxy-shape to the body-space of its body
         Transform* mLocalToBodyTransforms;
@@ -111,7 +111,6 @@ class ProxyShapeComponents : public Components {
 
             Entity bodyEntity;
             ProxyShape* proxyShape;
-            int broadPhaseId;
             AABB localBounds;
             Transform localToBodyTransform;
             CollisionShape* collisionShape;
@@ -120,10 +119,10 @@ class ProxyShapeComponents : public Components {
             unsigned short collideWithMaskBits;
 
             /// Constructor
-            ProxyShapeComponent(Entity bodyEntity, ProxyShape* proxyShape, int broadPhaseId, AABB localBounds, Transform localToBodyTransform,
+            ProxyShapeComponent(Entity bodyEntity, ProxyShape* proxyShape, AABB localBounds, Transform localToBodyTransform,
                                 CollisionShape* collisionShape, decimal mass, unsigned short collisionCategoryBits,
                                 unsigned short collideWithMaskBits)
-                 :bodyEntity(bodyEntity), proxyShape(proxyShape), broadPhaseId(broadPhaseId), localBounds(localBounds), localToBodyTransform(localToBodyTransform),
+                 :bodyEntity(bodyEntity), proxyShape(proxyShape), localBounds(localBounds), localToBodyTransform(localToBodyTransform),
                   collisionShape(collisionShape), mass(mass), collisionCategoryBits(collisionCategoryBits), collideWithMaskBits(collideWithMaskBits) {
 
             }
@@ -159,10 +158,10 @@ class ProxyShapeComponents : public Components {
         CollisionShape* getCollisionShape(Entity proxyShapeEntity) const;
 
         /// Return the broad-phase id of a given proxy shape
-        int getBroadPhaseId(Entity proxyShapeEntity) const;
+        int32 getBroadPhaseId(Entity proxyShapeEntity) const;
 
         /// Set the broad-phase id of a given proxy shape
-        void setBroadPhaseId(Entity proxyShapeEntity, int broadPhaseId);
+        void setBroadPhaseId(Entity proxyShapeEntity, int32 broadPhaseId);
 
         /// Return the collision category bits of a given proxy-shape
         unsigned short getCollisionCategoryBits(Entity proxyShapeEntity) const;
@@ -230,7 +229,7 @@ inline CollisionShape* ProxyShapeComponents::getCollisionShape(Entity proxyShape
 }
 
 // Return the broad-phase id of a given proxy shape
-inline int ProxyShapeComponents::getBroadPhaseId(Entity proxyShapeEntity) const {
+inline int32 ProxyShapeComponents::getBroadPhaseId(Entity proxyShapeEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
@@ -238,7 +237,7 @@ inline int ProxyShapeComponents::getBroadPhaseId(Entity proxyShapeEntity) const 
 }
 
 // Set the broad-phase id of a given proxy shape
-inline void ProxyShapeComponents::setBroadPhaseId(Entity proxyShapeEntity, int broadPhaseId) {
+inline void ProxyShapeComponents::setBroadPhaseId(Entity proxyShapeEntity, int32 broadPhaseId) {
 
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 

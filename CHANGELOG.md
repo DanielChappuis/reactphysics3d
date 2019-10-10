@@ -14,6 +14,9 @@
  - DynamicsWorld::getContactsList(). You need to use the EventListener class to retrieve contacts now.
  - The DynamicsWorld::getNbJoints() method has been removed.
  - The DynamicsWorld::getNbRigidBodies() method has been removed.
+ - The EventListener::beginInternalTick() method has been removed (because internal ticks do not exist anymore).
+ - The EventListener::endInternalTick() method has been removed (because internal ticks do not exist anymore).
+ - The RigidBody::getJointsList() method has been removed.
 
 ## Release Candidate
 

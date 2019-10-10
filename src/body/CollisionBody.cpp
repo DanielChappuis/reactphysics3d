@@ -86,7 +86,7 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape, con
     Vector3 localBoundsMax;
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
-    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape, -1,
+    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape,
                                                                   AABB(localBoundsMin, localBoundsMax),
                                                                   transform, collisionShape, decimal(1), 0x0001, 0xFFFF);
     bool isActive = mWorld.mCollisionBodyComponents.getIsActive(mEntity);
@@ -207,8 +207,6 @@ void CollisionBody::removeAllCollisionShapes() {
  *         of the body into world-space
  */
 const Transform& CollisionBody::getTransform() const {
-
-    // TODO : Make sure we do not call this method from the internal physics engine
 
     return mWorld.mTransformComponents.getTransform(mEntity);
 }
@@ -354,8 +352,6 @@ AABB CollisionBody::getAABB() const {
     const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
     if (proxyShapesEntities.size() == 0) return bodyAABB;
 
-    // TODO : Make sure we compute this in a system
-
     const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
 
     ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[0]);
@@ -383,8 +379,6 @@ AABB CollisionBody::getAABB() const {
  *                  of the body into world-space
  */
 void CollisionBody::setTransform(const Transform& transform) {
-
-    // TODO : Make sure this method is never called from the internal physics engine
 
     // Update the transform of the body
     mWorld.mTransformComponents.setTransform(mEntity, transform);

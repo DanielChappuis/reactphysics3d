@@ -59,7 +59,7 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
     Entity* newProxyShapesEntities = static_cast<Entity*>(newBuffer);
     Entity* newBodiesEntities = reinterpret_cast<Entity*>(newProxyShapesEntities + nbComponentsToAllocate);
     ProxyShape** newProxyShapes = reinterpret_cast<ProxyShape**>(newBodiesEntities + nbComponentsToAllocate);
-    int* newBroadPhaseIds = reinterpret_cast<int*>(newProxyShapes + nbComponentsToAllocate);
+    int32* newBroadPhaseIds = reinterpret_cast<int32*>(newProxyShapes + nbComponentsToAllocate);
     Transform* newLocalToBodyTransforms = reinterpret_cast<Transform*>(newBroadPhaseIds + nbComponentsToAllocate);
     CollisionShape** newCollisionShapes = reinterpret_cast<CollisionShape**>(newLocalToBodyTransforms + nbComponentsToAllocate);
     decimal* newMasses = reinterpret_cast<decimal*>(newCollisionShapes + nbComponentsToAllocate);
@@ -73,7 +73,7 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newProxyShapesEntities, mProxyShapesEntities, mNbComponents * sizeof(Entity));
         memcpy(newBodiesEntities, mBodiesEntities, mNbComponents * sizeof(Entity));
         memcpy(newProxyShapes, mProxyShapes, mNbComponents * sizeof(ProxyShape*));
-        memcpy(newBroadPhaseIds, mBroadPhaseIds, mNbComponents * sizeof(int));
+        memcpy(newBroadPhaseIds, mBroadPhaseIds, mNbComponents * sizeof(int32));
         memcpy(newLocalToBodyTransforms, mLocalToBodyTransforms, mNbComponents * sizeof(Transform));
         memcpy(newCollisionShapes, mCollisionShapes, mNbComponents * sizeof(CollisionShape*));
         memcpy(newMasses, mMasses, mNbComponents * sizeof(decimal));
@@ -109,7 +109,7 @@ void ProxyShapeComponents::addComponent(Entity proxyShapeEntity, bool isSleeping
     new (mProxyShapesEntities + index) Entity(proxyShapeEntity);
     new (mBodiesEntities + index) Entity(component.bodyEntity);
     mProxyShapes[index] = component.proxyShape;
-    new (mBroadPhaseIds + index) int(component.broadPhaseId);
+    new (mBroadPhaseIds + index) int32(-1);
     new (mLocalToBodyTransforms + index) Transform(component.localToBodyTransform);
     mCollisionShapes[index] = component.collisionShape;
     new (mMasses + index) decimal(component.mass);
@@ -134,7 +134,7 @@ void ProxyShapeComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInde
     new (mProxyShapesEntities + destIndex) Entity(mProxyShapesEntities[srcIndex]);
     new (mBodiesEntities + destIndex) Entity(mBodiesEntities[srcIndex]);
     mProxyShapes[destIndex] = mProxyShapes[srcIndex];
-    new (mBroadPhaseIds + destIndex) int(mBroadPhaseIds[srcIndex]);
+    new (mBroadPhaseIds + destIndex) int32(mBroadPhaseIds[srcIndex]);
     new (mLocalToBodyTransforms + destIndex) Transform(mLocalToBodyTransforms[srcIndex]);
     mCollisionShapes[destIndex] = mCollisionShapes[srcIndex];
     new (mMasses + destIndex) decimal(mMasses[srcIndex]);
@@ -159,7 +159,7 @@ void ProxyShapeComponents::swapComponents(uint32 index1, uint32 index2) {
     Entity proxyShapeEntity1(mProxyShapesEntities[index1]);
     Entity bodyEntity1(mBodiesEntities[index1]);
     ProxyShape* proxyShape1 = mProxyShapes[index1];
-    int broadPhaseId1 = mBroadPhaseIds[index1];
+    int32 broadPhaseId1 = mBroadPhaseIds[index1];
     Transform localToBodyTransform1 = mLocalToBodyTransforms[index1];
     CollisionShape* collisionShape1 = mCollisionShapes[index1];
     decimal mass1 = mMasses[index1];
@@ -175,7 +175,7 @@ void ProxyShapeComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mProxyShapesEntities + index2) Entity(proxyShapeEntity1);
     new (mBodiesEntities + index2) Entity(bodyEntity1);
     mProxyShapes[index2] = proxyShape1;
-    new (mBroadPhaseIds + index2) int(broadPhaseId1);
+    new (mBroadPhaseIds + index2) int32(broadPhaseId1);
     new (mLocalToBodyTransforms + index2) Transform(localToBodyTransform1);
     mCollisionShapes[index2] = collisionShape1;
     new (mMasses + index2) decimal(mass1);

@@ -115,9 +115,6 @@ void DynamicsWorld::update(decimal timeStep) {
 
     RP3D_PROFILE("DynamicsWorld::update()", mProfiler);
 
-    // Notify the event listener about the beginning of an internal tick
-    if (mEventListener != nullptr) mEventListener->beginInternalTick();
-
     // Compute the collision detection
     mCollisionDetection.computeCollisionDetection();
 
@@ -152,9 +149,6 @@ void DynamicsWorld::update(decimal timeStep) {
     mCollisionDetection.updateProxyShapes(timeStep);
 
     if (mIsSleepingEnabled) updateSleepingBodies(timeStep);
-
-    // Notify the event listener about the end of an internal tick
-    if (mEventListener != nullptr) mEventListener->endInternalTick();
 
     // Reset the external force and torque applied to the bodies
     mDynamicsSystem.resetBodiesForceAndTorque();
@@ -463,10 +457,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     Entity jointEntity = joint->getEntity();
 
     // Destroy the corresponding entity and its components
-    // TODO : Make sure we remove all its components here
     mJointsComponents.removeComponent(jointEntity);
-    mEntityManager.destroyEntity(jointEntity);
-
     if (mBallAndSocketJointsComponents.hasComponent(jointEntity)) {
         mBallAndSocketJointsComponents.removeComponent(jointEntity);
     }
@@ -479,6 +470,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     if (mSliderJointsComponents.hasComponent(jointEntity)) {
         mSliderJointsComponents.removeComponent(jointEntity);
     }
+    mEntityManager.destroyEntity(jointEntity);
 
     // Call the destructor of the joint
     joint->~Joint();

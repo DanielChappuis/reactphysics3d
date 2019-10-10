@@ -45,9 +45,7 @@ ConstraintSolverSystem::ConstraintSolverSystem(DynamicsWorld& world, Islands& is
                    mSolveBallAndSocketJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, ballAndSocketJointComponents),
                    mSolveFixedJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, fixedJointComponents),
                    mSolveHingeJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, hingeJointComponents),
-                   mSolveSliderJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, sliderJointComponents),
-                   mJointComponents(jointComponents), mBallAndSocketJointComponents(ballAndSocketJointComponents),
-                   mFixedJointComponents(fixedJointComponents), mHingeJointComponents(hingeJointComponents) {
+                   mSolveSliderJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, sliderJointComponents) {
 
 #ifdef IS_PROFILING_ACTIVE
 
