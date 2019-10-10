@@ -505,8 +505,6 @@ void DynamicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
 /// it). Then, we create an island with this group of connected bodies.
 void DynamicsWorld::createIslands() {
 
-    // TODO : Check if we handle kinematic bodies correctly in islands creation
-
     // list of contact pairs involving a non-rigid body
     List<uint> nonRigidBodiesContactPairs(mMemoryManager.getSingleFrameAllocator());
 
@@ -527,15 +525,12 @@ void DynamicsWorld::createIslands() {
     uint nbTotalManifolds = 0;
 
     // For each dynamic component
-    // TODO : Here we iterate on dynamic component where we can have static, kinematic and dynamic bodies. Maybe we should
-    //        not use a dynamic component for a static body.
     for (uint b=0; b < mRigidBodyComponents.getNbEnabledComponents(); b++) {
 
         // If the body has already been added to an island, we go to the next body
         if (mRigidBodyComponents.mIsAlreadyInIsland[b]) continue;
 
         // If the body is static, we go to the next body
-        // TODO : Check if we still need this test if we loop over dynamicsComponents and static bodies are not part of them
         if (mRigidBodyComponents.mBodyTypes[b] == BodyType::STATIC) continue;
 
         // Reset the stack of bodies to visit
@@ -563,8 +558,7 @@ void DynamicsWorld::createIslands() {
             // Awake the body if it is sleeping
             rigidBodyToVisit->setIsSleeping(false);
 
-            // If the current body is static, we do not want to perform the DFS
-            // search across that body
+            // If the current body is static, we do not want to perform the DFS search across that body
             if (rigidBodyToVisit->getType() == BodyType::STATIC) continue;
 
             // If the body is involved in contacts with other bodies
@@ -581,13 +575,8 @@ void DynamicsWorld::createIslands() {
                     // Check if the current contact pair has already been added into an island
                     if (pair.isAlreadyInIsland) continue;
 
-                    // Get the other body of the contact manifold
-                    // TODO : Maybe avoid those casts here
-                    RigidBody* body1 = dynamic_cast<RigidBody*>(mCollisionBodyComponents.getBody(pair.body1Entity));
-                    RigidBody* body2 = dynamic_cast<RigidBody*>(mCollisionBodyComponents.getBody(pair.body2Entity));
-
                     // If the colliding body is a RigidBody (and not a CollisionBody instead)
-                    if (body1 != nullptr && body2 != nullptr) {
+                    if (mRigidBodyComponents.hasComponent(pair.body1Entity) && mRigidBodyComponents.hasComponent(pair.body2Entity)) {
 
                         nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
 
@@ -709,9 +698,8 @@ void DynamicsWorld::updateSleepingBodies(decimal timeStep) {
             // Put all the bodies of the island to sleep
             for (uint b=0; b < mIslands.bodyEntities[i].size(); b++) {
 
-                // TODO : We should use a RigidBody* type here (remove the cast)
                 const Entity bodyEntity = mIslands.bodyEntities[i][b];
-                RigidBody* body = static_cast<RigidBody*>(mCollisionBodyComponents.getBody(bodyEntity));
+                RigidBody* body = mRigidBodyComponents.getRigidBody(bodyEntity);
                 body->setIsSleeping(true);
             }
         }
