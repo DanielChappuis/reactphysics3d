@@ -64,7 +64,6 @@ CollisionDetectionSystem::CollisionDetectionSystem(CollisionWorld* world, ProxyS
                      mContactPairs2(mMemoryManager.getPoolAllocator()), mPreviousContactPairs(&mContactPairs1), mCurrentContactPairs(&mContactPairs2),
                      mMapPairIdToContactPairIndex1(mMemoryManager.getPoolAllocator()), mMapPairIdToContactPairIndex2(mMemoryManager.getPoolAllocator()),
                      mPreviousMapPairIdToContactPairIndex(&mMapPairIdToContactPairIndex1), mCurrentMapPairIdToContactPairIndex(&mMapPairIdToContactPairIndex2),
-                     mContactPairsIndicesOrderingForContacts(memoryManager.getSingleFrameAllocator()),
                      mContactManifolds1(mMemoryManager.getPoolAllocator()), mContactManifolds2(mMemoryManager.getPoolAllocator()),
                      mPreviousContactManifolds(&mContactManifolds1), mCurrentContactManifolds(&mContactManifolds2),
                      mContactPoints1(mMemoryManager.getPoolAllocator()),
@@ -464,7 +463,8 @@ void CollisionDetectionSystem::computeNarrowPhase() {
     assert(mCurrentContactManifolds->size() == 0);
     assert(mCurrentContactPoints->size() == 0);
 
-    mContactPairsIndicesOrderingForContacts.reserve(mCurrentContactPairs->size());
+    // Create the actual narrow-phase contacts
+    createContacts();
 
     mNarrowPhaseInput.clear();
 }
@@ -605,17 +605,15 @@ void CollisionDetectionSystem::swapPreviousAndCurrentContacts() {
 // Create the actual contact manifolds and contacts points
 void CollisionDetectionSystem::createContacts() {
 
-    RP3D_PROFILE("CollisionDetection::createContacts()", mProfiler);
-
-    assert(mCurrentContactPairs->size() == mContactPairsIndicesOrderingForContacts.size());
+    RP3D_PROFILE("CollisionDetectionSystem::createContacts()", mProfiler);
 
     mCurrentContactManifolds->reserve(mCurrentContactPairs->size());
     mCurrentContactPoints->reserve(mCurrentContactManifolds->size());
 
     // For each contact pair
-    for (uint p=0; p < mContactPairsIndicesOrderingForContacts.size(); p++) {
+    for (uint p=0; p < (*mCurrentContactPairs).size(); p++) {
 
-        ContactPair& contactPair = (*mCurrentContactPairs)[mContactPairsIndicesOrderingForContacts[p]];
+        ContactPair& contactPair = (*mCurrentContactPairs)[p];
         assert(contactPair.potentialContactManifoldsIndices.size() > 0);
 
         contactPair.contactManifoldsIndex = mCurrentContactManifolds->size();
@@ -666,7 +664,6 @@ void CollisionDetectionSystem::createContacts() {
     // Reset the potential contacts
     mPotentialContactPoints.clear(true);
     mPotentialContactManifolds.clear(true);
-    mContactPairsIndicesOrderingForContacts.clear(true);
 }
 
 // Create the actual contact manifolds and contacts points for testCollision() methods

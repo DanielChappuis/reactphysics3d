@@ -135,12 +135,6 @@ class CollisionDetectionSystem {
         /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
         Map<OverlappingPair::OverlappingPairId, uint>* mCurrentMapPairIdToContactPairIndex;
 
-        /// List of the indices of the contact pairs (in mCurrentContacPairs array) with contact pairs of
-        /// same islands packed together linearly and contact pairs that are not part of islands at the end.
-        /// This is used when we create contact manifolds and contact points so that there are also packed
-        /// together linearly if they are part of the same island.
-        List<uint> mContactPairsIndicesOrderingForContacts;
-
         /// First list with the contact manifolds
         List<ContactManifold> mContactManifolds1;
 

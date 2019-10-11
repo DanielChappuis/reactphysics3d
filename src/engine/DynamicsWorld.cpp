@@ -121,9 +121,6 @@ void DynamicsWorld::update(decimal timeStep) {
     // Create the islands
     createIslands();
 
-    // Create the actual narrow-phase contacts
-    mCollisionDetection.createContacts();
-
     // Report the contacts to the user
     mCollisionDetection.reportContacts();
 
@@ -580,9 +577,6 @@ void DynamicsWorld::createIslands() {
 
                         nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
 
-                        // Add the pair into the list of pair to process to create contacts
-                        mCollisionDetection.mContactPairsIndicesOrderingForContacts.add(pair.contactPairIndex);
-
                         // Add the contact manifold into the island
                         mIslands.nbContactManifolds[islandIndex] += pair.potentialContactManifoldsIndices.size();
                         pair.isAlreadyInIsland = true;
@@ -637,11 +631,6 @@ void DynamicsWorld::createIslands() {
             }
         }
     }
-
-    // Add the contact pairs that are not part of islands at the end of the array of pairs for contacts creations
-    mCollisionDetection.mContactPairsIndicesOrderingForContacts.addRange(nonRigidBodiesContactPairs);
-
-    assert(mCollisionDetection.mCurrentContactPairs->size() == mCollisionDetection.mContactPairsIndicesOrderingForContacts.size());
 
     mCollisionDetection.mMapBodyToContactPairs.clear(true);
 }

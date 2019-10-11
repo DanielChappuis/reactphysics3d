@@ -492,6 +492,8 @@ void ContactSolverSystem::solve() {
     decimal lambdaTemp;
     uint contactPointIndex = 0;
 
+    const decimal beta = mIsSplitImpulseActive ? BETA_SPLIT_IMPULSE : BETA;
+
     // For each contact manifold
     for (uint c=0; c<mNbContactManifolds; c++) {
 
@@ -520,7 +522,6 @@ void ContactSolverSystem::solve() {
             decimal Jv = deltaVDotN;
 
             // Compute the bias "b" of the constraint
-            decimal beta = mIsSplitImpulseActive ? BETA_SPLIT_IMPULSE : BETA;
             decimal biasPenetrationDepth = 0.0;
             if (mContactPoints[contactPointIndex].penetrationDepth > SLOP) biasPenetrationDepth = -(beta/mTimeStep) *
                     max(0.0f, float(mContactPoints[contactPointIndex].penetrationDepth - SLOP));
