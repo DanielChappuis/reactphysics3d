@@ -39,8 +39,8 @@ BallAndSocketJoint::BallAndSocketJoint(Entity entity, DynamicsWorld& world, cons
                    : Joint(entity, world) {
 
     // Get the transforms of the two bodies
-    Transform& body1Transform = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
-    Transform& body2Transform = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
+    const Transform& body1Transform = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
+    const Transform& body2Transform = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
 
     // Compute the local-space anchor point for each body
     mWorld.mBallAndSocketJointsComponents.setLocalAnchorPointBody1(entity, body1Transform.getInverse() * jointInfo.anchorPointWorldSpace);

@@ -37,7 +37,7 @@ using namespace reactphysics3d;
 ProxyShapeComponents::ProxyShapeComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(ProxyShape*) + sizeof(int) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(decimal) + sizeof(unsigned short) +
-                sizeof(unsigned short)) {
+                sizeof(unsigned short) + sizeof(Transform)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -65,6 +65,7 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
     decimal* newMasses = reinterpret_cast<decimal*>(newCollisionShapes + nbComponentsToAllocate);
     unsigned short* newCollisionCategoryBits = reinterpret_cast<unsigned short*>(newMasses + nbComponentsToAllocate);
     unsigned short* newCollideWithMaskBits = reinterpret_cast<unsigned short*>(newCollisionCategoryBits + nbComponentsToAllocate);
+    Transform* newLocalToWorldTransforms = reinterpret_cast<Transform*>(newCollideWithMaskBits + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -79,6 +80,7 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newMasses, mMasses, mNbComponents * sizeof(decimal));
         memcpy(newCollisionCategoryBits, mCollisionCategoryBits, mNbComponents * sizeof(unsigned short));
         memcpy(newCollideWithMaskBits, mCollideWithMaskBits, mNbComponents * sizeof(unsigned short));
+        memcpy(newLocalToWorldTransforms, mLocalToWorldTransforms, mNbComponents * sizeof(Transform));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -95,6 +97,7 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
     mMasses = newMasses;
     mCollisionCategoryBits = newCollisionCategoryBits;
     mCollideWithMaskBits = newCollideWithMaskBits;
+    mLocalToWorldTransforms = newLocalToWorldTransforms;
 
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
@@ -115,6 +118,7 @@ void ProxyShapeComponents::addComponent(Entity proxyShapeEntity, bool isSleeping
     new (mMasses + index) decimal(component.mass);
     new (mCollisionCategoryBits + index) unsigned short(component.collisionCategoryBits);
     new (mCollideWithMaskBits + index) unsigned short(component.collideWithMaskBits);
+    new (mLocalToWorldTransforms + index) Transform(component.localToWorldTransform);
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(proxyShapeEntity, index));
@@ -140,6 +144,7 @@ void ProxyShapeComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInde
     new (mMasses + destIndex) decimal(mMasses[srcIndex]);
     new (mCollisionCategoryBits + destIndex) unsigned short(mCollisionCategoryBits[srcIndex]);
     new (mCollideWithMaskBits + destIndex) unsigned short(mCollideWithMaskBits[srcIndex]);
+    new (mLocalToWorldTransforms + destIndex) Transform(mLocalToWorldTransforms[srcIndex]);
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -165,6 +170,7 @@ void ProxyShapeComponents::swapComponents(uint32 index1, uint32 index2) {
     decimal mass1 = mMasses[index1];
     unsigned short collisionCategoryBits1 = mCollisionCategoryBits[index1];
     unsigned short collideWithMaskBits1 = mCollideWithMaskBits[index1];
+    Transform localToWorldTransform1 = mLocalToWorldTransforms[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -181,6 +187,7 @@ void ProxyShapeComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mMasses + index2) decimal(mass1);
     new (mCollisionCategoryBits + index2) unsigned short(collisionCategoryBits1);
     new (mCollideWithMaskBits + index2) unsigned short(collideWithMaskBits1);
+    new (mLocalToWorldTransforms + index2) Transform(localToWorldTransform1);
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(proxyShapeEntity1, index2));
@@ -204,4 +211,5 @@ void ProxyShapeComponents::destroyComponent(uint32 index) {
     mProxyShapes[index] = nullptr;
     mLocalToBodyTransforms[index].~Transform();
     mCollisionShapes[index] = nullptr;
+    mLocalToWorldTransforms[index].~Transform();
 }

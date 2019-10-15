@@ -31,9 +31,10 @@
 using namespace reactphysics3d;
 
 // Constructor
-DynamicsSystem::DynamicsSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents, bool& isGravityEnabled, Vector3& gravity)
-              :mWorld(world), mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents), mIsGravityEnabled(isGravityEnabled),
-               mGravity(gravity) {
+DynamicsSystem::DynamicsSystem(DynamicsWorld& world, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
+                               TransformComponents& transformComponents, ProxyShapeComponents& proxyShapeComponents, bool& isGravityEnabled, Vector3& gravity)
+              :mWorld(world), mCollisionBodyComponents(collisionBodyComponents), mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents), mProxyShapeComponents(proxyShapeComponents),
+               mIsGravityEnabled(isGravityEnabled), mGravity(gravity) {
 
 }
 
@@ -64,7 +65,7 @@ void DynamicsSystem::integrateRigidBodiesPositions(decimal timeStep, bool isSpli
         // Update the new constrained position and orientation of the body
         mRigidBodyComponents.mConstrainedPositions[i] = currentPosition + newLinVelocity * timeStep;
         mRigidBodyComponents.mConstrainedOrientations[i] = currentOrientation + Quaternion(0, newAngVelocity) *
-                                                          currentOrientation * decimal(0.5) * timeStep;
+                                                           currentOrientation * decimal(0.5) * timeStep;
     }
 }
 
@@ -94,6 +95,20 @@ void DynamicsSystem::updateBodiesState() {
         const Vector3& centerOfMassWorld = mRigidBodyComponents.mCentersOfMassWorld[i];
         const Vector3& centerOfMassLocal = mRigidBodyComponents.mCentersOfMassLocal[i];
         transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
+    }
+
+    // Update the local-to-world transform of the proxy-shapes
+    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+
+        // For all the proxy collision shapes of the body
+        const List<Entity>& proxyShapesEntities = mCollisionBodyComponents.getProxyShapes(mRigidBodyComponents.mBodiesEntities[i]);
+        for (uint j=0; j < proxyShapesEntities.size(); j++) {
+
+            // Update the local-to-world transform of the proxy-shape
+            mProxyShapeComponents.setLocalToWorldTransform(proxyShapesEntities[j],
+                                                            mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]) *
+                                                            mProxyShapeComponents.getLocalToBodyTransform(proxyShapesEntities[j]));
+        }
     }
 }
 

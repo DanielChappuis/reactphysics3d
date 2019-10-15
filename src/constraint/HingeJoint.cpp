@@ -40,8 +40,8 @@ HingeJoint::HingeJoint(Entity entity, DynamicsWorld &world, const HingeJointInfo
     assert(upperLimit >= decimal(0) && upperLimit <= decimal(2.0) * PI);
 
     // Compute the local-space anchor point for each body
-    Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
-    Transform& transform2 = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
+    const Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
+    const Transform& transform2 = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
     mWorld.mHingeJointsComponents.setLocalAnchorPointBody1(mEntity, transform1.getInverse() * jointInfo.anchorPointWorldSpace);
     mWorld.mHingeJointsComponents.setLocalAnchorPointBody2(mEntity, transform2.getInverse() * jointInfo.anchorPointWorldSpace);
 

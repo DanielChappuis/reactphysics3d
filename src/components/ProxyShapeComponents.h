@@ -65,7 +65,6 @@ class ProxyShapeComponents : public Components {
         ProxyShape** mProxyShapes;
 
         /// Ids of the proxy-shapes for the broad-phase algorithm
-        // TODO : Try to change type to uint32
         int32* mBroadPhaseIds;
 
         /// Transform from local-space of the proxy-shape to the body-space of its body
@@ -90,6 +89,9 @@ class ProxyShapeComponents : public Components {
         /// proxy shape will collide with every collision categories by default.
         unsigned short* mCollideWithMaskBits;
 
+        /// Array with the local-to-world transforms of the proxy-shapes
+        Transform* mLocalToWorldTransforms;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -112,18 +114,20 @@ class ProxyShapeComponents : public Components {
             Entity bodyEntity;
             ProxyShape* proxyShape;
             AABB localBounds;
-            Transform localToBodyTransform;
+            const Transform& localToBodyTransform;
             CollisionShape* collisionShape;
             decimal mass;
             unsigned short collisionCategoryBits;
             unsigned short collideWithMaskBits;
+            const Transform& localToWorldTransform;
 
             /// Constructor
-            ProxyShapeComponent(Entity bodyEntity, ProxyShape* proxyShape, AABB localBounds, Transform localToBodyTransform,
+            ProxyShapeComponent(Entity bodyEntity, ProxyShape* proxyShape, AABB localBounds, const Transform& localToBodyTransform,
                                 CollisionShape* collisionShape, decimal mass, unsigned short collisionCategoryBits,
-                                unsigned short collideWithMaskBits)
+                                unsigned short collideWithMaskBits, const Transform& localToWorldTransform)
                  :bodyEntity(bodyEntity), proxyShape(proxyShape), localBounds(localBounds), localToBodyTransform(localToBodyTransform),
-                  collisionShape(collisionShape), mass(mass), collisionCategoryBits(collisionCategoryBits), collideWithMaskBits(collideWithMaskBits) {
+                  collisionShape(collisionShape), mass(mass), collisionCategoryBits(collisionCategoryBits), collideWithMaskBits(collideWithMaskBits),
+                  localToWorldTransform(localToWorldTransform) {
 
             }
         };
@@ -174,6 +178,12 @@ class ProxyShapeComponents : public Components {
 
         /// Set the "collide with" mask bits of a given proxy-shape
         void setCollideWithMaskBits(Entity proxyShapeEntity, unsigned short collideWithMaskBits);
+
+        /// Return the local-to-world transform of a proxy-shape
+        const Transform& getLocalToWorldTransform(Entity proxyShapeEntity) const;
+
+        /// Set the local-to-world transform of a proxy-shape
+        void setLocalToWorldTransform(Entity proxyShapeEntity, const Transform& transform);
 
         // -------------------- Friendship -------------------- //
 
@@ -274,6 +284,22 @@ inline void ProxyShapeComponents::setCollideWithMaskBits(Entity proxyShapeEntity
     assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
     mCollideWithMaskBits[mMapEntityToComponentIndex[proxyShapeEntity]] = collideWithMaskBits;
+}
+
+// Return the local-to-world transform of a proxy-shape
+inline const Transform& ProxyShapeComponents::getLocalToWorldTransform(Entity proxyShapeEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+
+   return mLocalToWorldTransforms[mMapEntityToComponentIndex[proxyShapeEntity]];
+}
+
+// Set the local-to-world transform of a proxy-shape
+inline void ProxyShapeComponents::setLocalToWorldTransform(Entity proxyShapeEntity, const Transform& transform) {
+
+   assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+
+   mLocalToWorldTransforms[mMapEntityToComponentIndex[proxyShapeEntity]] = transform;
 }
 
 }

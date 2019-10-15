@@ -124,11 +124,6 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity1));
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity2));
 
-        // Get the two contact shapes
-        // TODO : Do we really need to get the proxy-shape here
-        const ProxyShape* shape1 = mProxyShapeComponents.getProxyShape(externalManifold.proxyShapeEntity1);
-        const ProxyShape* shape2 = mProxyShapeComponents.getProxyShape(externalManifold.proxyShapeEntity2);
-
         // Get the position of the two bodies
         const Vector3& x1 = mRigidBodyComponents.getCenterOfMassWorld(externalManifold.bodyEntity1);
         const Vector3& x2 = mRigidBodyComponents.getCenterOfMassWorld(externalManifold.bodyEntity2);
@@ -165,8 +160,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
             ContactPoint& externalContact = (*mAllContactPoints)[c];
 
             // Get the contact point on the two bodies
-            Vector3 p1 = shape1->getLocalToWorldTransform() * externalContact.getLocalPointOnShape1();
-            Vector3 p2 = shape2->getLocalToWorldTransform() * externalContact.getLocalPointOnShape2();
+            Vector3 p1 = mProxyShapeComponents.getLocalToWorldTransform(externalManifold.proxyShapeEntity1) * externalContact.getLocalPointOnShape1();
+            Vector3 p2 = mProxyShapeComponents.getLocalToWorldTransform(externalManifold.proxyShapeEntity2) * externalContact.getLocalPointOnShape2();
 
             new (mContactPoints + mNbContactPoints) ContactPointSolver();
             mContactPoints[mNbContactPoints].externalContact = &externalContact;

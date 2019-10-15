@@ -28,8 +28,10 @@
 
 // Libraries
 #include "utils/Profiler.h"
+#include "components/CollisionBodyComponents.h"
 #include "components/RigidBodyComponents.h"
 #include "components/TransformComponents.h"
+#include "components/ProxyShapeComponents.h"
 
 namespace reactphysics3d {
 
@@ -49,11 +51,17 @@ class DynamicsSystem {
         /// Physics world
         DynamicsWorld& mWorld;
 
+        /// Reference to the collision body components
+        CollisionBodyComponents& mCollisionBodyComponents;
+
         /// Reference to the rigid body components
         RigidBodyComponents& mRigidBodyComponents;
 
         /// Reference to the transform components
         TransformComponents& mTransformComponents;
+
+        /// Reference to the proxy-shapes components
+        ProxyShapeComponents& mProxyShapeComponents;
 
         /// Reference to the variable to know if gravity is enabled in the world
         bool& mIsGravityEnabled;
@@ -72,8 +80,9 @@ class DynamicsSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents,
-                       bool& isGravityEnabled, Vector3& gravity);
+        DynamicsSystem(DynamicsWorld& world, CollisionBodyComponents& collisionBodyComponents,
+                       RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents,
+                       ProxyShapeComponents& proxyShapeComponents, bool& isGravityEnabled, Vector3& gravity);
 
         /// Destructor
         ~DynamicsSystem() = default;

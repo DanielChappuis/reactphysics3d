@@ -202,7 +202,7 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int, int>>
 // Compute the middle-phase collision detection
 void CollisionDetectionSystem::computeMiddlePhase(OverlappingPairMap& overlappingPairs, NarrowPhaseInput& narrowPhaseInput) {
 
-    RP3D_PROFILE("CollisionDetection::computeMiddlePhase()", mProfiler);
+    RP3D_PROFILE("CollisionDetectionSystem::computeMiddlePhase()", mProfiler);
 
     // Reserve memory for the narrow-phase input using cached capacity from previous frame
     narrowPhaseInput.reserveMemory();
@@ -262,8 +262,9 @@ void CollisionDetectionSystem::computeMiddlePhase(OverlappingPairMap& overlappin
                 // No middle-phase is necessary, simply create a narrow phase info
                 // for the narrow-phase collision detection
                 narrowPhaseInput.addNarrowPhaseTest(pair, shape1->getCollisionShape(), shape2->getCollisionShape(),
-                                                         shape1->getLocalToWorldTransform(), shape2->getLocalToWorldTransform(),
-                                                         algorithmType, mMemoryManager.getSingleFrameAllocator());
+                                                          mProxyShapesComponents.getLocalToWorldTransform(proxyShape1Entity),
+                                                          mProxyShapesComponents.getLocalToWorldTransform(proxyShape2Entity),
+                                                          algorithmType, mMemoryManager.getSingleFrameAllocator());
 
             }
             // Concave vs Convex algorithm
@@ -318,8 +319,8 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
     assert(algorithmType != NarrowPhaseAlgorithmType::None);
 
     // Compute the convex shape AABB in the local-space of the convex shape
-    const Transform convexToConcaveTransform = concaveProxyShape->getLocalToWorldTransform().getInverse() *
-                                               convexProxyShape->getLocalToWorldTransform();
+    const Transform convexToConcaveTransform = mProxyShapesComponents.getLocalToWorldTransform(concaveProxyShape->getEntity()).getInverse() *
+                                               mProxyShapesComponents.getLocalToWorldTransform(convexProxyShape->getEntity());
     AABB aabb;
     convexShape->computeAABB(aabb, convexToConcaveTransform);
 
@@ -356,7 +357,8 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
         // Create a narrow phase info for the narrow-phase collision detection
         narrowPhaseInput.addNarrowPhaseTest(pair, isShape1Convex ? convexShape : triangleShape,
                                                 isShape1Convex ? triangleShape : convexShape,
-                                                shape1->getLocalToWorldTransform(), shape2->getLocalToWorldTransform(),
+                                                mProxyShapesComponents.getLocalToWorldTransform(shape1->getEntity()),
+                                                mProxyShapesComponents.getLocalToWorldTransform(shape2->getEntity()),
                                                 algorithmType, allocator);
     }
 }

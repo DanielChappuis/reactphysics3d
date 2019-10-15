@@ -115,14 +115,16 @@ void ProxyShape::setLocalToBodyTransform(const Transform& transform) {
 
     mBody->mWorld.mProxyShapesComponents.setLocalToBodyTransform(mEntity, transform);
 
+    // Update the local-to-world transform
+    const Transform& bodyTransform = mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity());
+    mBody->mWorld.mProxyShapesComponents.setLocalToWorldTransform(mEntity, bodyTransform * transform);
+
     RigidBody* rigidBody = static_cast<RigidBody*>(mBody);
     if (rigidBody != nullptr) {
         mBody->mWorld.mRigidBodyComponents.setIsSleeping(mBody->getEntity(), false);
     }
 
     mBody->mWorld.mCollisionDetection.updateProxyShape(mEntity, 0);
-
-    int broadPhaseId = mBody->mWorld.mProxyShapesComponents.getBroadPhaseId(mEntity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(broadPhaseId) + ": Set localToBodyTransform=" +
@@ -183,7 +185,7 @@ bool ProxyShape::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     if (!mBody->isActive()) return false;
 
     // Convert the ray into the local-space of the collision shape
-    const Transform localToWorldTransform = getLocalToWorldTransform();
+    const Transform localToWorldTransform = mBody->mWorld.mProxyShapesComponents.getLocalToWorldTransform(mEntity);
     const Transform worldToLocalTransform = localToWorldTransform.getInverse();
     Ray rayLocal(worldToLocalTransform * ray.point1,
                  worldToLocalTransform * ray.point2,
@@ -222,8 +224,7 @@ unsigned short ProxyShape::getCollideWithMaskBits() const {
  *         shape to the world-space
  */
 const Transform ProxyShape::getLocalToWorldTransform() const {
-    return mBody->mWorld.mTransformComponents.getTransform(mBody->getEntity()) *
-           mBody->mWorld.mProxyShapesComponents.getLocalToBodyTransform(mEntity);
+    return mBody->mWorld.mProxyShapesComponents.getLocalToWorldTransform(mEntity);
 }
 
 #ifdef IS_PROFILING_ACTIVE

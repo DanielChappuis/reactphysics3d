@@ -336,10 +336,10 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     Vector3 localBoundsMax;
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
-
+    const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
     ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape,
                                                                    AABB(localBoundsMin, localBoundsMax),
-                                                                   transform, collisionShape, mass, 0x0001, 0xFFFF);
+                                                                   transform, collisionShape, mass, 0x0001, 0xFFFF, localToWorldTransform);
     bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
     mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, isSleeping, proxyShapeComponent);
 
@@ -509,9 +509,6 @@ void RigidBody::setTransform(const Transform& transform) {
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
     CollisionBody::setTransform(transform);
-
-    // Update the transform of the body
-    mWorld.mTransformComponents.setTransform(mEntity, transform);
 
     // Awake the body if it is sleeping
     setIsSleeping(false);

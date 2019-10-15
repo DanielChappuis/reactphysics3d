@@ -86,9 +86,10 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape, con
     Vector3 localBoundsMax;
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
+    const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
     ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape,
                                                                   AABB(localBoundsMin, localBoundsMax),
-                                                                  transform, collisionShape, decimal(1), 0x0001, 0xFFFF);
+                                                                  transform, collisionShape, decimal(1), 0x0001, 0xFFFF, localToWorldTransform);
     bool isActive = mWorld.mCollisionBodyComponents.getIsActive(mEntity);
     mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, !isActive, proxyShapeComponent);
 
@@ -217,6 +218,11 @@ void CollisionBody::updateBroadPhaseState(decimal timeStep) const {
     // For all the proxy collision shapes of the body
     const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
     for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+        // Update the local-to-world transform of the proxy-shape
+        mWorld.mProxyShapesComponents.setLocalToWorldTransform(proxyShapesEntities[i],
+                                                               mWorld.mTransformComponents.getTransform(mEntity) *
+                                                               mWorld.mProxyShapesComponents.getLocalToBodyTransform(proxyShapesEntities[i]));
 
         // Update the proxy
         mWorld.mCollisionDetection.updateProxyShape(proxyShapesEntities[i], timeStep);
