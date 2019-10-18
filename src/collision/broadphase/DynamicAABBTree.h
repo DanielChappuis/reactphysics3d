@@ -130,8 +130,7 @@ class DynamicAABBTreeRaycastCallback {
 // Class DynamicAABBTree
 /**
  * This class implements a dynamic AABB tree that is used for broad-phase
- * collision detection. This data structure is inspired by Nathanael Presson's
- * dynamic tree implementation in BulletPhysics. The following implementation is
+ * collision detection. The following implementation is
  * based on the one from Erin Catto in Box2D as described in the book
  * "Introduction to Game Physics with Box2D" by Ian Parberry.
  */

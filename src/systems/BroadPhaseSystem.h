@@ -189,7 +189,7 @@ class BroadPhaseSystem {
         ProxyShape* getProxyShapeForBroadPhaseId(int broadPhaseId) const;
 
         /// Return true if the two broad-phase collision shapes are overlapping
-        bool testOverlappingShapes(const ProxyShape* shape1, const ProxyShape* shape2) const;
+        bool testOverlappingShapes(Entity proxyShape1Entity, Entity proxyShape2Entity) const;
 
         /// Return the fat AABB of a given broad-phase shape
         const AABB& getFatAABB(int broadPhaseId) const;

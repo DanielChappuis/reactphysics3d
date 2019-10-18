@@ -292,10 +292,10 @@ class CollisionDetectionSystem {
         void updateProxyShapes(decimal timeStep);
 
         /// Add a pair of bodies that cannot collide with each other
-        void addNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
+        void addNoCollisionPair(Entity body1Entity, Entity body2Entity);
 
         /// Remove a pair of bodies that cannot collide with each other
-        void removeNoCollisionPair(CollisionBody* body1, CollisionBody* body2);
+        void removeNoCollisionPair(Entity body1Entity, Entity body2Entity);
 
         /// Ask for a collision shape to be tested again during broad-phase.
         void askForBroadPhaseCollisionCheck(ProxyShape* shape);
@@ -373,15 +373,13 @@ inline void CollisionDetectionSystem::addProxyCollisionShape(ProxyShape* proxySh
 }
 
 // Add a pair of bodies that cannot collide with each other
-inline void CollisionDetectionSystem::addNoCollisionPair(CollisionBody* body1,
-                                                   CollisionBody* body2) {
-    mNoCollisionPairs.add(OverlappingPair::computeBodiesIndexPair(body1, body2));
+inline void CollisionDetectionSystem::addNoCollisionPair(Entity body1Entity, Entity body2Entity) {
+    mNoCollisionPairs.add(OverlappingPair::computeBodiesIndexPair(body1Entity, body2Entity));
 }
 
 // Remove a pair of bodies that cannot collide with each other
-inline void CollisionDetectionSystem::removeNoCollisionPair(CollisionBody* body1,
-                                                      CollisionBody* body2) {
-    mNoCollisionPairs.remove(OverlappingPair::computeBodiesIndexPair(body1, body2));
+inline void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, Entity body2Entity) {
+    mNoCollisionPairs.remove(OverlappingPair::computeBodiesIndexPair(body1Entity, body2Entity));
 }
 
 // Ask for a collision shape to be tested again during broad-phase.

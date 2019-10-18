@@ -51,14 +51,16 @@ BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection,
 }
 
 // Return true if the two broad-phase collision shapes are overlapping
-// TODO : Use proxy-shape entities in parameters
-bool BroadPhaseSystem::testOverlappingShapes(const ProxyShape* shape1, const ProxyShape* shape2) const {
+bool BroadPhaseSystem::testOverlappingShapes(Entity proxyShape1Entity, Entity proxyShape2Entity) const {
 
-    if (shape1->getBroadPhaseId() == -1 || shape2->getBroadPhaseId() == -1) return false;
+    const int32 shape1BroadPhaseId = mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity);
+    const int32 shape2BroadPhaseId = mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity);
+
+    if (shape1BroadPhaseId == -1 || shape2BroadPhaseId == -1) return false;
 
     // Get the two AABBs of the collision shapes
-    const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1->getBroadPhaseId());
-    const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2->getBroadPhaseId());
+    const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1BroadPhaseId);
+    const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2BroadPhaseId);
 
     // Check if the two AABBs are overlapping
     return aabb1.testCollision(aabb2);

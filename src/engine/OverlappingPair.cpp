@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                                  MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator,
                                  const WorldSettings& worldSettings)
-                : mPairID(computeID(shape1->getBroadPhaseId(), shape2->getBroadPhaseId())), mProxyShape1(shape1), mProxyShape2(shape2),
+                : mPairID(computeID(shape1->getBroadPhaseId(), shape2->getBroadPhaseId())), mProxyShape1(shape1->getEntity()), mProxyShape2(shape2->getEntity()),
                   mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
                   mLastFrameCollisionInfos(mPersistentAllocator), mWorldSettings(worldSettings) {
     
@@ -99,16 +99,12 @@ void OverlappingPair::clearObsoleteLastFrameCollisionInfos() {
 
             it = mLastFrameCollisionInfos.remove(it);
         }
-        else {
+        else {  // If the collision info is not obsolete
+
+            // Do not delete it but mark it as obsolete
+            it->second->isObsolete = true;
+
             ++it;
         }
-    }
-}
-
-// Make all the last frame collision infos obsolete
-void OverlappingPair::makeLastFrameCollisionInfosObsolete() {
-
-    for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ++it) {
-        it->second->isObsolete = true;
     }
 }

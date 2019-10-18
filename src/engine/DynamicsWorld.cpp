@@ -405,7 +405,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
     if (!jointInfo.isCollisionEnabled) {
 
         // Add the pair of bodies in the set of body pairs that cannot collide with each other
-        mCollisionDetection.addNoCollisionPair(jointInfo.body1, jointInfo.body2);
+        mCollisionDetection.addNoCollisionPair(jointInfo.body1->getEntity(), jointInfo.body2->getEntity());
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
@@ -435,7 +435,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
     if (!joint->isCollisionEnabled()) {
 
         // Remove the pair of bodies from the set of body pairs that cannot collide with each other
-        mCollisionDetection.removeNoCollisionPair(joint->getBody1(), joint->getBody2());
+        mCollisionDetection.removeNoCollisionPair(joint->getBody1()->getEntity(), joint->getBody2()->getEntity());
     }
 
     RigidBody* body1 = joint->getBody1();

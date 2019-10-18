@@ -536,7 +536,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     // Compute the contact points between two faces of two convex polyhedra.
                     if(computePolyhedronVsPolyhedronFaceContactPoints(isMinPenetrationFaceNormalPolyhedron1, polyhedron1, polyhedron2,
                                               polyhedron1ToPolyhedron2, polyhedron2ToPolyhedron1, minFaceIndex,
-                                              narrowPhaseInfoBatch, batchIndex, minPenetrationDepth)) {
+                                              narrowPhaseInfoBatch, batchIndex)) {
 
                         lastFrameCollisionInfo->satIsAxisFacePolyhedron1 = isMinPenetrationFaceNormalPolyhedron1;
                         lastFrameCollisionInfo->satIsAxisFacePolyhedron2 = !isMinPenetrationFaceNormalPolyhedron1;
@@ -576,7 +576,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     // Compute the contact points between two faces of two convex polyhedra.
                     if(computePolyhedronVsPolyhedronFaceContactPoints(isMinPenetrationFaceNormalPolyhedron1, polyhedron1, polyhedron2,
                                               polyhedron1ToPolyhedron2, polyhedron2ToPolyhedron1, minFaceIndex,
-                                              narrowPhaseInfoBatch, batchIndex, minPenetrationDepth)) {
+                                              narrowPhaseInfoBatch, batchIndex)) {
 
                         lastFrameCollisionInfo->satIsAxisFacePolyhedron1 = isMinPenetrationFaceNormalPolyhedron1;
                         lastFrameCollisionInfo->satIsAxisFacePolyhedron2 = !isMinPenetrationFaceNormalPolyhedron1;
@@ -804,7 +804,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 // Compute the contact points between two faces of two convex polyhedra.
                 bool contactsFound = computePolyhedronVsPolyhedronFaceContactPoints(isMinPenetrationFaceNormalPolyhedron1, polyhedron1,
                                                                                     polyhedron2, polyhedron1ToPolyhedron2, polyhedron2ToPolyhedron1,
-                                                                                    minFaceIndex, narrowPhaseInfoBatch, batchIndex, minPenetrationDepth);
+                                                                                    minFaceIndex, narrowPhaseInfoBatch, batchIndex);
 
                 // There should be clipping points here. If it is not the case, it might be
                 // because of a numerical issue
@@ -877,8 +877,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
 bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPenetrationFaceNormalPolyhedron1,
                                                                   const ConvexPolyhedronShape* polyhedron1, const ConvexPolyhedronShape* polyhedron2,
                                                                   const Transform& polyhedron1ToPolyhedron2, const Transform& polyhedron2ToPolyhedron1,
-                                                                  uint minFaceIndex, NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex,
-                                                                  decimal minPenetrationDepth) const {
+                                                                  uint minFaceIndex, NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) const {
 
     RP3D_PROFILE("SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints", mProfiler);
 
@@ -886,8 +885,6 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     const ConvexPolyhedronShape* incidentPolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2 : polyhedron1;
     const Transform& referenceToIncidentTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1ToPolyhedron2 : polyhedron2ToPolyhedron1;
     const Transform& incidentToReferenceTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2ToPolyhedron1 : polyhedron1ToPolyhedron2;
-
-    assert(minPenetrationDepth > decimal(0.0));
 
     const Vector3 axisReferenceSpace = referencePolyhedron->getFaceNormal(minFaceIndex);
     const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;

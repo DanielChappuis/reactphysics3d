@@ -132,7 +132,7 @@ class SATAlgorithm {
         bool computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPenetrationFaceNormalPolyhedron1, const ConvexPolyhedronShape* polyhedron1,
                                                             const ConvexPolyhedronShape* polyhedron2, const Transform& polyhedron1ToPolyhedron2,
                                                             const Transform& polyhedron2ToPolyhedron1, uint minFaceIndex,
-                                                            NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex, decimal minPenetrationDepth) const;
+                                                            NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) const;
 
 
     public :

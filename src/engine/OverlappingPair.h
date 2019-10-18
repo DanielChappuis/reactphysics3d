@@ -109,9 +109,11 @@ class OverlappingPair {
         /// Pair ID
         OverlappingPairId mPairID;
 
-        // TODO : Replace this by entities
-        ProxyShape* mProxyShape1;
-        ProxyShape* mProxyShape2;
+        /// Entity of the first proxy-shape of the overlapping pair
+        Entity mProxyShape1;
+
+        /// Entity of the second proxy-shape of the overlapping pair
+        Entity mProxyShape2;
 
         /// Persistent memory allocator
         MemoryAllocator& mPersistentAllocator;
@@ -149,20 +151,17 @@ class OverlappingPair {
         /// Return the Id of the pair
         OverlappingPairId getId() const;
 
-        /// Return the pointer to first proxy collision shape
-        ProxyShape* getShape1() const;
+        /// Return the entity of the first proxy-shape
+        Entity getProxyShape1() const;
 
-        /// Return the pointer to second body
-        ProxyShape* getShape2() const;
+        /// Return the entity of the second proxy-shape
+        Entity getProxyShape2() const;
 
         /// Return the last frame collision info
         LastFrameCollisionInfo* getLastFrameCollisionInfo(ShapeIdPair& shapeIds);
 
         /// Return a reference to the temporary memory allocator
         MemoryAllocator& getTemporaryAllocator();
-
-        /// Return true if one of the shapes of the pair is a concave shape
-        bool hasConcaveShape() const;
 
         /// Add a new last frame collision info if it does not exist for the given shapes already
         LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2);
@@ -173,14 +172,11 @@ class OverlappingPair {
         /// Delete all the obsolete last frame collision info
         void clearObsoleteLastFrameCollisionInfos();
 
-        /// Make all the last frame collision infos obsolete
-        void makeLastFrameCollisionInfosObsolete();
-
         /// Return the pair of bodies index
         static OverlappingPairId computeID(int shape1BroadPhaseId, int shape2BroadPhaseId);
 
         /// Return the pair of bodies index of the pair
-        static bodypair computeBodiesIndexPair(CollisionBody* body1, CollisionBody* body2);
+        static bodypair computeBodiesIndexPair(Entity body1Entity, Entity body2Entity);
 
         // -------------------- Friendship -------------------- //
 
@@ -192,13 +188,13 @@ inline OverlappingPair::OverlappingPairId OverlappingPair::getId() const {
     return mPairID;
 }
 
-// Return the pointer to first body
-inline ProxyShape* OverlappingPair::getShape1() const {
+// Return the entity of the first proxy-shape
+inline Entity OverlappingPair::getProxyShape1() const {
     return mProxyShape1;
 }
 
-// Return the pointer to second body
-inline ProxyShape* OverlappingPair::getShape2() const {
+// Return the entity of the second proxy-shape
+inline Entity OverlappingPair::getProxyShape2() const {
     return mProxyShape2;
 }                
 
@@ -225,13 +221,12 @@ inline OverlappingPair::OverlappingPairId OverlappingPair::computeID(int shape1B
 }
 
 // Return the pair of bodies index
-inline bodypair OverlappingPair::computeBodiesIndexPair(CollisionBody* body1,
-                                                             CollisionBody* body2) {
+inline bodypair OverlappingPair::computeBodiesIndexPair(Entity body1Entity, Entity body2Entity) {
 
     // Construct the pair of body index
-    bodypair indexPair = body1->getEntity().id < body2->getEntity().id ?
-                                 bodypair(body1->getEntity(), body2->getEntity()) :
-                                 bodypair(body2->getEntity(), body1->getEntity());
+    bodypair indexPair = body1Entity.id < body2Entity.id ?
+                                 bodypair(body1Entity, body2Entity) :
+                                 bodypair(body2Entity, body1Entity);
     assert(indexPair.first != indexPair.second);
     return indexPair;
 }
@@ -239,12 +234,6 @@ inline bodypair OverlappingPair::computeBodiesIndexPair(CollisionBody* body1,
 // Return a reference to the temporary memory allocator
 inline MemoryAllocator& OverlappingPair::getTemporaryAllocator() {
     return mTempMemoryAllocator;
-}
-
-// Return true if one of the shapes of the pair is a concave shape
-inline bool OverlappingPair::hasConcaveShape() const {
-    return !getShape1()->getCollisionShape()->isConvex() ||
-           !getShape2()->getCollisionShape()->isConvex();
 }
 
 // Return the last frame collision info for a given pair of shape ids
