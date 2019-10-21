@@ -69,10 +69,20 @@ class ConvexMesh : public PhysicsObject {
         /// Vertex Array Object for the vertex data
         openglframework::VertexArrayObject mVAO;
 
+		/// Array with the vertices of the convex mesh
+		/// (only the vertices used for the physics shape, not duplicate vertices used for rendering)
+		std::vector<openglframework::Vector3> mConvexMeshVertices;
+
+		/// Array with the vertex indices of the convex mesh (used for the physics shape)
+		std::vector<int> mConvexMeshIndices;
+
         // -------------------- Methods -------------------- //
 
-        // Create the Vertex Buffer Objects used to render with OpenGL.
+        /// Create the Vertex Buffer Objects used to render with OpenGL.
         void createVBOAndVAO();
+
+		/// Return the index of a given vertex in the mesh
+		int findVertexIndex(const std::vector<openglframework::Vector3>& vertices, const openglframework::Vector3& vertex);
 
     public :
 

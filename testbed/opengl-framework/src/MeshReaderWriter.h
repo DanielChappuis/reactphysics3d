@@ -93,4 +93,15 @@ class VertexMergingDataComparison {
 
 }
 
+namespace std {
+	template<>
+	struct hash<std::tuple<int, int, int>>
+	{
+		size_t operator()(const std::tuple<int, int, int>& key) const
+		{
+			return std::get<0>(key) ^ std::get<1>(key) ^ std::get<2>(key);
+		}
+	};
+}
+
 #endif

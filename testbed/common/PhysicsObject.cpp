@@ -40,8 +40,12 @@ PhysicsObject::PhysicsObject(const std::string& meshPath) : PhysicsObject() {
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshPath, *this);
 
-    // Calculate the normals of the mesh
-    calculateNormals();
+	// If the mesh file do not have normals
+	if (mNormals.empty()) {
+
+		// Calculate the normals of the mesh
+		calculateNormals();
+	}
 }
 
 // Compute the new transform matrix

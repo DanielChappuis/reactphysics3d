@@ -33,15 +33,10 @@
 using namespace openglframework;
 
 int SceneDemo::shadowMapTextureLevel = 0;
-openglframework::Color SceneDemo::mGreyColorDemo = Color(0.70f, 0.70f, 0.7f, 1.0f);
-openglframework::Color SceneDemo::mYellowColorDemo = Color(0.9f, 0.88f, 0.145f, 1.0f);
-openglframework::Color SceneDemo::mBlueColorDemo = Color(0, 0.66f, 0.95f, 1.0f);
-openglframework::Color SceneDemo::mOrangeColorDemo = Color(0.9f, 0.35f, 0, 1.0f);
-openglframework::Color SceneDemo::mPinkColorDemo = Color(0.83f, 0.48f, 0.64f, 1.0f);
-openglframework::Color SceneDemo::mRedColorDemo = Color(0.95f, 0, 0, 1.0f);
-int SceneDemo::mNbDemoColors = 4;
-openglframework::Color SceneDemo::mDemoColors[] = {SceneDemo::mYellowColorDemo, SceneDemo::mBlueColorDemo,
-                                                   SceneDemo::mOrangeColorDemo, SceneDemo::mPinkColorDemo};
+openglframework::Color SceneDemo::mObjectColorDemo = Color(0.76f, 0.67f, 0.47f, 1.0f);
+openglframework::Color SceneDemo::mFloorColorDemo = Color(0.47f, 0.48f, 0.49f, 1.0f);
+openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.25f, 0.25f, 1.0f);
+openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.59f, 0.88f, 1.0f);
 
 // Constructor
 SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, float sceneRadius, bool isShadowMappingEnabled)
@@ -55,17 +50,34 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, float sc
 
     shadowMapTextureLevel++;
 
-    // Move the light0
-    mLight0.translateWorld(Vector3(-2, 35, 40));
+    // Move the lights
+	float lightsRadius = 30.0f;
+	float lightsHeight = 20.0f;
+    mLight0.translateWorld(Vector3(0 * lightsRadius, lightsHeight, 1 * lightsRadius));
+    mLight1.translateWorld(Vector3(0.95f * lightsRadius, lightsHeight, -0.3f * lightsRadius));
+    mLight2.translateWorld(Vector3(-0.58f * lightsRadius, lightsHeight, -0.81f * lightsRadius));
 
-    // Camera at light0 postion for the shadow map
-    mShadowMapLightCamera.translateWorld(mLight0.getOrigin());
-    mShadowMapLightCamera.rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
-    mShadowMapLightCamera.rotateWorld(Vector3(0, 1, 0), PI / 8.0f);
+	// Set the lights colors
+	mLight0.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
+	mLight1.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
+	mLight2.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
 
-    mShadowMapLightCamera.setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
-    mShadowMapLightCamera.setFieldOfView(80.0f);
-    mShadowMapLightCamera.setSceneRadius(100);
+	mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
+	mShadowMapLightCameras[0].rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
+
+	mShadowMapLightCameras[1].translateWorld(mLight1.getOrigin());
+	mShadowMapLightCameras[1].rotateLocal(Vector3(0, 1, 0), -5.0f * PI/3.7f);
+	mShadowMapLightCameras[1].rotateLocal(Vector3(1, 0, 0), -PI/4.0f);
+
+	mShadowMapLightCameras[2].translateWorld(mLight2.getOrigin());
+	mShadowMapLightCameras[2].rotateLocal(Vector3(0, 1, 0), 5 * PI/4.0f);
+	mShadowMapLightCameras[2].rotateLocal(Vector3(1, 0 , 0), -PI/4.0f);
+
+	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+		mShadowMapLightCameras[i].setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+		mShadowMapLightCameras[i].setFieldOfView(100.0f);
+		mShadowMapLightCameras[i].setSceneRadius(100);
+	}
 
     mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
                                       0.0, 0.5, 0.0, 0.5,
@@ -88,8 +100,12 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, float sc
 // Destructor
 SceneDemo::~SceneDemo() {
 	
-    mShadowMapTexture.destroy();
-    mFBOShadowMap.destroy();
+	
+	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+		mShadowMapTexture[i].destroy();
+		mFBOShadowMap[i].destroy();
+	}
+
     mVBOQuad.destroy();
 
 	mDepthShader.destroy();
@@ -134,15 +150,18 @@ void SceneDemo::updatePhysics() {
 // Render the scene (in multiple passes for shadow mapping)
 void SceneDemo::render() {
 
-    const Color& diffCol = mLight0.getDiffuseColor();
-
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    // ---------- Render the scene to generate the shadow map (first pass) ----------- //
+	Matrix4 shadowMapProjMatrix[NB_SHADOW_MAPS];
+	openglframework::Matrix4 worldToLightCameraMatrix[NB_SHADOW_MAPS];
+	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
 
-    const Matrix4 shadowMapProjMatrix = mShadowMapLightCamera.getProjectionMatrix();
-    const openglframework::Matrix4 worldToLightCameraMatrix = mShadowMapLightCamera.getTransformMatrix().getInverse();
+		shadowMapProjMatrix[i] = mShadowMapLightCameras[i].getProjectionMatrix();
+		worldToLightCameraMatrix[i] = mShadowMapLightCameras[i].getTransformMatrix().getInverse();
+	}
+
+    // ---------- Render the scene to generate the shadow map (first pass) ----------- //
 
     // If Shadow Mapping is enabled
     if (mIsShadowMappingEnabled) {
@@ -150,30 +169,34 @@ void SceneDemo::render() {
         // Culling switching, rendering only backface, this is done to avoid self-shadowing
         glCullFace(GL_BACK);
 
-        mFBOShadowMap.bind();
+		// For each shadow map
+		for (int i = 0; i < NB_SHADOW_MAPS; i++) {
 
-        // Bind the shader
-        mDepthShader.bind();
+			mFBOShadowMap[i].bind();
 
-        // Set the variables of the shader
-        mDepthShader.setMatrix4x4Uniform("projectionMatrix", shadowMapProjMatrix);
+			// Bind the shader
+			mDepthShader.bind();
 
-        // Set the viewport to render into the shadow map texture
-        glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+			// Set the variables of the shader
+			mDepthShader.setMatrix4x4Uniform("projectionMatrix", shadowMapProjMatrix[i]);
 
-        // Clear previous frame values
-        glClear(GL_DEPTH_BUFFER_BIT);
+			// Set the viewport to render into the shadow map texture
+			glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
 
-        // Disable color rendering, we only want to write to the Z-Buffer
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+			// Clear previous frame values
+			glClear(GL_DEPTH_BUFFER_BIT);
 
-        // Render the objects of the scene
-        renderSinglePass(mDepthShader, worldToLightCameraMatrix);
+			// Disable color rendering, we only want to write to the Z-Buffer
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-        // Unbind the shader
-        mDepthShader.unbind();
+			// Render the objects of the scene
+			renderSinglePass(mDepthShader, worldToLightCameraMatrix[i]);
 
-        mFBOShadowMap.unbind();
+			// Unbind the shader
+			mDepthShader.unbind();
+
+			mFBOShadowMap[i].unbind();
+		}
 
         glDisable(GL_POLYGON_OFFSET_FILL);
     }
@@ -187,17 +210,34 @@ void SceneDemo::render() {
 
     mPhongShader.bind();
 
-    if (mIsShadowMappingEnabled) mShadowMapTexture.bind();
-    const GLuint textureUnit = 0;
+	// Is shadow mapping is enabled
+	GLint textureUnits[NB_SHADOW_MAPS];
+	if (mIsShadowMappingEnabled) {
+
+		for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+			mShadowMapTexture[i].bind();
+		}
+		for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+			textureUnits[i] = mShadowMapTexture[i].getUnit();
+		}
+	}
 
     // Set the variables of the phong shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setMatrix4x4Uniform("shadowMapProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix);
-    mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix);
+    mPhongShader.setMatrix4x4Uniform("shadowMapLight0ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[0]);
+    mPhongShader.setMatrix4x4Uniform("shadowMapLight1ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[1]);
+    mPhongShader.setMatrix4x4Uniform("shadowMapLight2ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[2]);
+    mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix[0]);
+    mPhongShader.setMatrix4x4Uniform("worldToLight1CameraMatrix", worldToLightCameraMatrix[1]);
+    mPhongShader.setMatrix4x4Uniform("worldToLight2CameraMatrix", worldToLightCameraMatrix[2]);
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.4f, 0.4f, 0.4f));
-    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
-    mPhongShader.setIntUniform("shadowMapSampler", textureUnit);
+    mPhongShader.setVector3Uniform("light1PosCameraSpace", worldToCameraMatrix * mLight1.getOrigin());
+    mPhongShader.setVector3Uniform("light2PosCameraSpace", worldToCameraMatrix * mLight2.getOrigin());
+    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
+    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(mLight0.getDiffuseColor().r, mLight0.getDiffuseColor().g, mLight0.getDiffuseColor().b));
+    mPhongShader.setVector3Uniform("light1DiffuseColor", Vector3(mLight1.getDiffuseColor().r, mLight1.getDiffuseColor().g, mLight1.getDiffuseColor().b));
+    mPhongShader.setVector3Uniform("light2DiffuseColor", Vector3(mLight2.getDiffuseColor().r, mLight2.getDiffuseColor().g, mLight2.getDiffuseColor().b));
+    mPhongShader.setIntArrayUniform("shadowMapSampler", textureUnits, NB_SHADOW_MAPS);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
     mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 	mPhongShader.unbind();
@@ -229,7 +269,14 @@ void SceneDemo::render() {
         renderAABBs(worldToCameraMatrix);
     }
 
-    if (mIsShadowMappingEnabled) mShadowMapTexture.unbind();
+	// Is shadow mapping is enabled
+	if (mIsShadowMappingEnabled) {
+
+		for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+			mShadowMapTexture[i].unbind();
+		}
+	}
+
     mPhongShader.unbind();
 
    //drawTextureQuad();
@@ -261,20 +308,33 @@ void SceneDemo::renderSinglePass(openglframework::Shader& shader, const openglfr
 // Create the Shadow map FBO and texture
 void SceneDemo::createShadowMapFBOAndTexture() {
 
-    // Create the texture for the depth values
-    mShadowMapTexture.create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT,
-                             GL_UNSIGNED_BYTE, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, NULL);
+	// For each shadow map
+	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
 
-    // Create the FBO for the shadow map
-    mFBOShadowMap.create(0, 0, false);
-    mFBOShadowMap.bind();
+		// Create the texture for the depth values
+		mShadowMapTexture[i].create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT,
+			GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, NULL);
 
-    // Tell OpenGL that we won't bind a color texture with the currently binded FBO
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
+		mShadowMapTexture[i].setUnit(i);
 
-    mFBOShadowMap.attachTexture(GL_DEPTH_ATTACHMENT, mShadowMapTexture.getID());
-    mFBOShadowMap.unbind();
+		// Make sure that texture lookups outside the texture coords range will not
+		// treated as beeing in shadow
+		glBindTexture(GL_TEXTURE_2D, mShadowMapTexture[i].getID());
+		GLfloat border[] = { 1.0f, 0.0f, 0.0f, 0.0f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		// Create the FBO for the shadow map
+		mFBOShadowMap[i].create(0, 0, false);
+		mFBOShadowMap[i].bind();
+
+		// Tell OpenGL that we won't bind a color texture with the currently binded FBO
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+
+		mFBOShadowMap[i].attachTexture(GL_DEPTH_ATTACHMENT, mShadowMapTexture[i].getID());
+		mFBOShadowMap[i].unbind();
+	}
 
     mIsShadowMappingInitialized = true;
 }
@@ -310,11 +370,13 @@ void SceneDemo::drawTextureQuad() {
     // Clear previous frame values
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    const GLuint textureUnit = 0;
+
+	const int SHADOW_MAP_TEXTURE_TO_DRAW = 0;
+    const GLuint textureUnit = SHADOW_MAP_TEXTURE_TO_DRAW;
 
     mVAOQuad.bind();
     mQuadShader.bind();
-    mShadowMapTexture.bind();
+    mShadowMapTexture[SHADOW_MAP_TEXTURE_TO_DRAW].bind();
     mQuadShader.setIntUniform("textureSampler", textureUnit);
     mVBOQuad.bind();
 
@@ -336,7 +398,7 @@ void SceneDemo::drawTextureQuad() {
     glDisableVertexAttribArray(vertexPositionLoc);
 
     mVBOQuad.unbind();
-    mShadowMapTexture.unbind();
+    mShadowMapTexture[SHADOW_MAP_TEXTURE_TO_DRAW].unbind();
     mQuadShader.unbind();
     mVAOQuad.unbind();
 }

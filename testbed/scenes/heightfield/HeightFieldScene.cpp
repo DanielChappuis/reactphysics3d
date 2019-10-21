@@ -57,8 +57,8 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
         Dumbbell* dumbbell = new Dumbbell(getDynamicsWorld(), meshFolderPath);
 
 		// Set the box color
-		dumbbell->setColor(mDemoColors[i % mNbDemoColors]);
-		dumbbell->setSleepingColor(mRedColorDemo);
+		dumbbell->setColor(mObjectColorDemo);
+		dumbbell->setSleepingColor(mSleepingColorDemo);
 
 		// Change the material properties of the rigid body
 		rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
@@ -76,8 +76,8 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
         Box* box = new Box(BOX_SIZE, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
 
 		// Set the box color
-		box->setColor(mDemoColors[i % mNbDemoColors]);
-		box->setSleepingColor(mRedColorDemo);
+		box->setColor(mObjectColorDemo);
+		box->setSleepingColor(mSleepingColorDemo);
 
 		// Change the material properties of the rigid body
 		rp3d::Material& material = box->getRigidBody()->getMaterial();
@@ -98,8 +98,8 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
         sphere->getRigidBody()->getMaterial().setRollingResistance(0.08f);
 
 		// Set the box color
-		sphere->setColor(mDemoColors[i % mNbDemoColors]);
-		sphere->setSleepingColor(mRedColorDemo);
+		sphere->setColor(mObjectColorDemo);
+		sphere->setSleepingColor(mSleepingColorDemo);
 
 		// Change the material properties of the rigid body
 		rp3d::Material& material = sphere->getRigidBody()->getMaterial();
@@ -120,8 +120,8 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
         capsule->getRigidBody()->getMaterial().setRollingResistance(0.08f);
 
 		// Set the box color
-		capsule->setColor(mDemoColors[i % mNbDemoColors]);
-		capsule->setSleepingColor(mRedColorDemo);
+		capsule->setColor(mObjectColorDemo);
+		capsule->setSleepingColor(mSleepingColorDemo);
 
 		// Change the material properties of the rigid body
 		rp3d::Material& material = capsule->getRigidBody()->getMaterial();
@@ -139,8 +139,8 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
         ConvexMesh* mesh = new ConvexMesh(MESH_MASS, getDynamicsWorld(), meshFolderPath + "convexmesh.obj");
 
 		// Set the box color
-		mesh->setColor(mDemoColors[i % mNbDemoColors]);
-		mesh->setSleepingColor(mRedColorDemo);
+		mesh->setColor(mObjectColorDemo);
+		mesh->setSleepingColor(mSleepingColorDemo);
 
 		// Change the material properties of the rigid body
 		rp3d::Material& material = mesh->getRigidBody()->getMaterial();
@@ -165,8 +165,8 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
 	mPhysicsObjects.push_back(mHeightField);
 
     // Set the color
-    mHeightField->setColor(mGreyColorDemo);
-    mHeightField->setSleepingColor(mGreyColorDemo);
+    mHeightField->setColor(mFloorColorDemo);
+    mHeightField->setSleepingColor(mFloorColorDemo);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mHeightField->getRigidBody()->getMaterial();

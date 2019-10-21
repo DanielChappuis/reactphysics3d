@@ -58,8 +58,8 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
             Box* cube = new Box(BOX_SIZE, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
 
             // Set the box color
-            cube->setColor(mDemoColors[i % mNbDemoColors]);
-            cube->setSleepingColor(mRedColorDemo);
+            cube->setColor(mObjectColorDemo);
+            cube->setSleepingColor(mSleepingColorDemo);
 
             // Change the material properties of the rigid body
             rp3d::Material& material = cube->getRigidBody()->getMaterial();
@@ -75,8 +75,8 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
 
     // Create the floor
     mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, getDynamicsWorld(), mMeshFolderPath);
-    mFloor->setColor(mGreyColorDemo);
-    mFloor->setSleepingColor(mGreyColorDemo);
+    mFloor->setColor(mFloorColorDemo);
+    mFloor->setSleepingColor(mFloorColorDemo);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);

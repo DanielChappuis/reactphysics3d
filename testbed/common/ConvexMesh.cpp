@@ -25,6 +25,7 @@
 
 // Libraries
 #include "ConvexMesh.h"
+#include <unordered_set>
 
 // Constructor
 ConvexMesh::ConvexMesh(rp3d::CollisionWorld* world, const std::string& meshPath)
@@ -39,6 +40,19 @@ ConvexMesh::ConvexMesh(rp3d::CollisionWorld* world, const std::string& meshPath)
     mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
     rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
     for (int f=0; f < getNbFaces(0); f++) {
+
+		for (int v = 0; v < 3; v++) {
+			
+			const openglframework::Vector3 vertex = mVertices[mIndices[0][f*3 + v]];
+			int vIndex = findVertexIndex(mConvexMeshVertices, vertex);
+			if (vIndex == -1) {
+				vIndex = mConvexMeshVertices.size();
+				mConvexMeshVertices.push_back(vertex);
+			}
+
+			mConvexMeshIndices.push_back(vIndex);
+		}
+
         face->indexBase = f * 3;
         face->nbVertices = 3;
         face++;
@@ -46,8 +60,8 @@ ConvexMesh::ConvexMesh(rp3d::CollisionWorld* world, const std::string& meshPath)
 
     // Create the polygon vertex array
     mPolygonVertexArray =
-            new rp3d::PolygonVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                         &(mIndices[0][0]), sizeof(int),
+            new rp3d::PolygonVertexArray(mConvexMeshVertices.size(), &(mConvexMeshVertices[0]), sizeof(openglframework::Vector3),
+                                         &(mConvexMeshIndices[0]), sizeof(int),
                                          getNbFaces(0), mPolygonFaces,
                                          rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
@@ -86,6 +100,19 @@ ConvexMesh::ConvexMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std
     mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
     rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
     for (int f=0; f < getNbFaces(0); f++) {
+
+		for (int v = 0; v < 3; v++) {
+			
+			const openglframework::Vector3 vertex = mVertices[mIndices[0][f*3 + v]];
+			int vIndex = findVertexIndex(mConvexMeshVertices, vertex);
+			if (vIndex == -1) {
+				vIndex = mConvexMeshVertices.size();
+				mConvexMeshVertices.push_back(vertex);
+			}
+
+			mConvexMeshIndices.push_back(vIndex);
+		}
+
         face->indexBase = f * 3;
         face->nbVertices = 3;
         face++;
@@ -93,8 +120,8 @@ ConvexMesh::ConvexMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std
 
     // Create the polygon vertex array
     mPolygonVertexArray =
-            new rp3d::PolygonVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                         &(mIndices[0][0]), sizeof(int),
+            new rp3d::PolygonVertexArray(mConvexMeshVertices.size(), &(mConvexMeshVertices[0]), sizeof(openglframework::Vector3),
+                                         &(mConvexMeshIndices[0]), sizeof(int),
                                          getNbFaces(0), mPolygonFaces,
                                          rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
@@ -254,3 +281,16 @@ void ConvexMesh::createVBOAndVAO() {
     // Unbind the VAO
     mVAO.unbind();
 }
+
+// Return the index of a given vertex in the mesh
+int ConvexMesh::findVertexIndex(const std::vector<openglframework::Vector3>& vertices, const openglframework::Vector3& vertex) {
+
+	for (int i = 0; i < vertices.size(); i++) {
+		if (vertices[i] == vertex) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+

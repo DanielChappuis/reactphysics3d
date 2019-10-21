@@ -56,8 +56,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     mDumbbell = new Dumbbell(mPhysicsWorld, mMeshFolderPath);
 
     // Set the box color
-    mDumbbell->setColor(mGreyColorDemo);
-    mDumbbell->setSleepingColor(mRedColorDemo);
+    mDumbbell->setColor(mObjectColorDemo);
+    mDumbbell->setSleepingColor(mSleepingColorDemo);
 	mPhysicsObjects.push_back(mDumbbell);
 
     // ---------- Box ---------- //
@@ -67,8 +67,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     mBox->getCollisionBody()->setIsActive(false);
 
     // Set the box color
-    mBox->setColor(mGreyColorDemo);
-    mBox->setSleepingColor(mRedColorDemo);
+    mBox->setColor(mObjectColorDemo);
+    mBox->setSleepingColor(mSleepingColorDemo);
 	mPhysicsObjects.push_back(mBox);
 
     // ---------- Sphere ---------- //
@@ -77,8 +77,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     mSphere = new Sphere(SPHERE_RADIUS, mPhysicsWorld, mMeshFolderPath);
 
     // Set the color
-    mSphere->setColor(mGreyColorDemo);
-    mSphere->setSleepingColor(mRedColorDemo);
+    mSphere->setColor(mObjectColorDemo);
+    mSphere->setSleepingColor(mSleepingColorDemo);
 	mPhysicsObjects.push_back(mSphere);
 
     // ---------- Capsule ---------- //
@@ -88,8 +88,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     mCapsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsWorld, mMeshFolderPath);
 
     // Set the color
-    mCapsule->setColor(mGreyColorDemo);
-    mCapsule->setSleepingColor(mRedColorDemo);
+    mCapsule->setColor(mObjectColorDemo);
+    mCapsule->setSleepingColor(mSleepingColorDemo);
 	mPhysicsObjects.push_back(mCapsule);
 
     // ---------- Convex Mesh ---------- //
@@ -98,8 +98,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     mConvexMesh = new ConvexMesh(mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
 
     // Set the color
-    mConvexMesh->setColor(mGreyColorDemo);
-    mConvexMesh->setSleepingColor(mRedColorDemo);
+    mConvexMesh->setColor(mObjectColorDemo);
+    mConvexMesh->setSleepingColor(mSleepingColorDemo);
 	mPhysicsObjects.push_back(mConvexMesh);
 
     // ---------- Concave Mesh ---------- //
@@ -108,8 +108,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     mConcaveMesh = new ConcaveMesh(mPhysicsWorld, mMeshFolderPath + "city.obj");
 
     // Set the color
-    mConcaveMesh->setColor(mGreyColorDemo);
-    mConcaveMesh->setSleepingColor(mRedColorDemo);
+    mConcaveMesh->setColor(mObjectColorDemo);
+    mConcaveMesh->setSleepingColor(mSleepingColorDemo);
 	mPhysicsObjects.push_back(mConcaveMesh);
 
     // ---------- Heightfield ---------- //
@@ -118,8 +118,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     mHeightField = new HeightField(mPhysicsWorld);
 
     // Set the color
-    mHeightField->setColor(mGreyColorDemo);
-    mHeightField->setSleepingColor(mRedColorDemo);
+    mHeightField->setColor(mObjectColorDemo);
+    mHeightField->setSleepingColor(mObjectColorDemo);
 	mPhysicsObjects.push_back(mHeightField);
 
     // Create the lines that will be used for raycasting

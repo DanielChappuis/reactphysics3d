@@ -43,19 +43,29 @@ class SceneDemo : public Scene {
 
     protected:
 
+        // -------------------- Constants -------------------- //
+
+		static constexpr int NB_SHADOW_MAPS = 3;
+
         // -------------------- Attributes -------------------- //
 
         /// Light 0
         openglframework::Light mLight0;
 
+        /// Light 1
+        openglframework::Light mLight1;
+
+        /// Light 2
+        openglframework::Light mLight2;
+
         /// True if the shadows FBO, textures have been created
         bool mIsShadowMappingInitialized;
 
-        /// FBO for the shadow map
-        openglframework::FrameBufferObject mFBOShadowMap;
+        /// Array of FBO for the shadow maps
+        openglframework::FrameBufferObject mFBOShadowMap[NB_SHADOW_MAPS];
 
         /// Shadow map texture
-        openglframework::Texture2D mShadowMapTexture;
+		openglframework::Texture2D mShadowMapTexture[NB_SHADOW_MAPS];
 
         static int shadowMapTextureLevel;
 
@@ -65,8 +75,8 @@ class SceneDemo : public Scene {
         /// Shadow map bias matrix
         openglframework::Matrix4 mShadowMapBiasMatrix;
 
-        /// Camera at light0 position for the shadow map
-        openglframework::Camera mShadowMapLightCamera;
+        /// Cameras at lights position for the shadow maps
+        openglframework::Camera mShadowMapLightCameras[NB_SHADOW_MAPS];
 
         /// Depth shader to render the shadow map
         openglframework::Shader mDepthShader;
@@ -85,14 +95,10 @@ class SceneDemo : public Scene {
 
         openglframework::VertexBufferObject mVBOQuad;
 
-        static openglframework::Color mGreyColorDemo;
-        static openglframework::Color mYellowColorDemo;
-        static openglframework::Color mBlueColorDemo;
-        static openglframework::Color mOrangeColorDemo;
-        static openglframework::Color mPinkColorDemo;
-        static openglframework::Color mRedColorDemo;
-        static openglframework::Color mDemoColors[];
-        static int mNbDemoColors;
+        static openglframework::Color mObjectColorDemo;
+        static openglframework::Color mFloorColorDemo;
+        static openglframework::Color mSleepingColorDemo;
+        static openglframework::Color mSelectedObjectColorDemo;
 
         std::string mMeshFolderPath;
 
