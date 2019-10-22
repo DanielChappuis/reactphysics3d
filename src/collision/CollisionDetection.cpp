@@ -204,6 +204,8 @@ void CollisionDetection::computeMiddlePhase() {
 void CollisionDetection::computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
                                                            NarrowPhaseInfo** firstNarrowPhaseInfo) {
 
+    RP3D_PROFILE("CollisionDetection::computeConvexVsConcaveMiddlePhase()", mProfiler);
+
     ProxyShape* shape1 = pair->getShape1();
     ProxyShape* shape2 = pair->getShape2();
 
@@ -311,6 +313,8 @@ void CollisionDetection::computeNarrowPhase() {
 /// This method is called by the broad-phase collision detection algorithm
 void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, ProxyShape* shape2) {
 
+    RP3D_PROFILE("CollisionDetection::broadPhaseNotifyOverlappingPair()", mProfiler);
+
     assert(shape1->getBroadPhaseId() != -1);
     assert(shape2->getBroadPhaseId() != -1);
     assert(shape1->getBroadPhaseId() != shape2->getBroadPhaseId());
@@ -331,6 +335,7 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
                                               mMemoryManager.getSingleFrameAllocator(), mWorld->mConfig);
     assert(newPair != nullptr);
 
+    newPair->setProfiler(mProfiler);
     mOverlappingPairs.add(Pair<Pair<uint, uint>, OverlappingPair*>(pairID, newPair));
 
     // Wake up the two bodies

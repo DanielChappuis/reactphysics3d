@@ -128,6 +128,13 @@ class OverlappingPair {
         /// World settings
         const WorldSettings& mWorldSettings;
 
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Pointer to the profiler
+        Profiler* mProfiler;
+
+#endif
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -207,6 +214,13 @@ class OverlappingPair {
 
         /// Return the pair of bodies index of the pair
         static bodyindexpair computeBodiesIndexPair(CollisionBody* body1, CollisionBody* body2);
+
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Set the profiler
+        void setProfiler(Profiler* profiler);
+
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -308,6 +322,15 @@ inline void OverlappingPair::reduceContactManifolds() {
 inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const {
     return mLastFrameCollisionInfos[ShapeIdPair(shapeId1, shapeId2)];
 }
+
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void OverlappingPair::setProfiler(Profiler* profiler) {
+    mProfiler = profiler;
+}
+
+#endif
 
 }
 

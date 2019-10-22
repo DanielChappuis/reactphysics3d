@@ -52,6 +52,8 @@ BroadPhaseAlgorithm::BroadPhaseAlgorithm(CollisionDetection& collisionDetection)
 bool BroadPhaseAlgorithm::testOverlappingShapes(const ProxyShape* shape1,
                                                        const ProxyShape* shape2) const {
 
+    RP3D_PROFILE("BroadPhaseAlgorithm::testOverlappingShapes()", mProfiler);
+
     if (shape1->getBroadPhaseId() == -1 || shape2->getBroadPhaseId() == -1) return false;
 
     // Get the two AABBs of the collision shapes
@@ -139,6 +141,8 @@ void BroadPhaseAlgorithm::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 // Compute all the overlapping pairs of collision shapes
 void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) {
 
+    RP3D_PROFILE("BroadPhaseAlgorithm::computeOverlappingPairs()", mProfiler);
+
     // TODO : Try to see if we can allocate potential pairs in single frame allocator
 
     // Reset the potential overlapping pairs
@@ -217,6 +221,8 @@ void BroadPhaseAlgorithm::computeOverlappingPairs(MemoryManager& memoryManager) 
 
 // Notify the broad-phase about a potential overlapping pair in the dynamic AABB tree
 void BroadPhaseAlgorithm::addOverlappingNodes(int referenceNodeId, const LinkedList<int>& overlappingNodes) {
+
+    RP3D_PROFILE("BroadPhaseAlgorithm::addOverlappingNodes()", mProfiler);
 
     // For each overlapping node in the linked list
     LinkedList<int>::ListElement* elem = overlappingNodes.getListHead();

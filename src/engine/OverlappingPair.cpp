@@ -41,7 +41,13 @@ OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                   mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
                   mLastFrameCollisionInfos(mPersistentAllocator), mWorldSettings(worldSettings) {
     
-}         
+#ifdef IS_PROFILING_ACTIVE
+
+    mProfiler = nullptr;
+
+#endif
+
+}
 
 // Destructor
 OverlappingPair::~OverlappingPair() {
