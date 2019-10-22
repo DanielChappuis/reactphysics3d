@@ -53,10 +53,12 @@ BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection,
 // Return true if the two broad-phase collision shapes are overlapping
 bool BroadPhaseSystem::testOverlappingShapes(Entity proxyShape1Entity, Entity proxyShape2Entity) const {
 
+    RP3D_PROFILE("CollisionDetectionSystem::testOverlappingShapes()", mProfiler);
+
     const int32 shape1BroadPhaseId = mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity);
     const int32 shape2BroadPhaseId = mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity);
 
-    if (shape1BroadPhaseId == -1 || shape2BroadPhaseId == -1) return false;
+    assert(shape1BroadPhaseId != -1 && shape2BroadPhaseId != -1);
 
     // Get the two AABBs of the collision shapes
     const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1BroadPhaseId);
@@ -125,6 +127,8 @@ void BroadPhaseSystem::updateProxyShape(Entity proxyShapeEntity, decimal timeSte
 // Update the broad-phase state of all the enabled proxy-shapes
 void BroadPhaseSystem::updateProxyShapes(decimal timeStep) {
 
+    RP3D_PROFILE("BroadPhaseSystem::updateProxyShapes()", mProfiler);
+
     // Update all the enabled proxy-shape components
     updateProxyShapesComponents(0, mProxyShapesComponents.getNbEnabledComponents(), timeStep);
 }
@@ -176,7 +180,6 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbI
                 // Get the linear velocity from the dynamics component
                 const Vector3& linearVelocity = mRigidBodyComponents.getLinearVelocity(bodyEntity);
 
-                // TODO : Use body linear velocity and compute displacement
                 displacement = timeStep * linearVelocity;
             }
 
@@ -192,6 +195,8 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbI
 
 // Compute all the overlapping pairs of collision shapes
 void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int, int>>& overlappingNodes) {
+
+    RP3D_PROFILE("CollisionDetectionSystem::computeOverlappingPairs()", mProfiler);
 
     // Get the list of the proxy-shapes that have moved or have been created in the last frame
     List<int> shapesToTest = mMovedShapes.toList(memoryManager.getPoolAllocator());

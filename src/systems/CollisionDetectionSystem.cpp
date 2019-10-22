@@ -99,6 +99,8 @@ void CollisionDetectionSystem::computeBroadPhase() {
 
     RP3D_PROFILE("CollisionDetectionSystem::computeBroadPhase()", mProfiler);
 
+    resetNeedToTestOverlap();
+
     // Ask the broad-phase to compute all the shapes overlapping the shapes that
     // have moved or have been added in the last frame. This call can only add new
     // overlapping pairs in the collision detection.
@@ -112,16 +114,31 @@ void CollisionDetectionSystem::computeBroadPhase() {
     removeNonOverlappingPairs();
 }
 
+// Set the needToTestOverlap value of each overlapping pair to true
+void CollisionDetectionSystem::resetNeedToTestOverlap() {
+
+    RP3D_PROFILE("CollisionDetectionSystem::resetNeedToTestOverlap()", mProfiler);
+
+    // For each possible collision pair of bodies
+    for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ++it) {
+       it->second->setNeedToTestOverlap(true);
+    }
+}
+
 // Remove pairs that are not overlapping anymore
 void CollisionDetectionSystem::removeNonOverlappingPairs() {
+
+    RP3D_PROFILE("CollisionDetectionSystem::removeNonOverlappingPairs()", mProfiler);
 
     // For each possible collision pair of bodies
     for (auto it = mOverlappingPairs.begin(); it != mOverlappingPairs.end(); ) {
 
         OverlappingPair* pair = it->second;
 
-        // Check if the two shapes are still overlapping. Otherwise, we destroy the overlapping pair
-        if (!mBroadPhaseSystem.testOverlappingShapes(pair->getProxyShape1(), pair->getProxyShape2())) {
+        // Check if we need to test overlap. If so, test if the two shapes are still overlapping.
+        // Otherwise, we destroy the overlapping pair
+        if (pair->needToTestOverlap() &&
+            !mBroadPhaseSystem.testOverlappingShapes(pair->getProxyShape1(), pair->getProxyShape2())) {
 
             // Destroy the overlapping pair
             pair->~OverlappingPair();
@@ -138,6 +155,8 @@ void CollisionDetectionSystem::removeNonOverlappingPairs() {
 
 // Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
 void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int, int>>& overlappingNodes) {
+
+    RP3D_PROFILE("CollisionDetectionSystem::updateOverlappingPairs()", mProfiler);
 
     // For each overlapping pair of nodes
     for (uint i=0; i < overlappingNodes.size(); i++) {
@@ -165,7 +184,8 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int, int>>
                 Pair<uint, uint> pairID = OverlappingPair::computeID(nodePair.first, nodePair.second);
 
                 // Check if the overlapping pair already exists
-                if (!mOverlappingPairs.containsKey(pairID)) {
+                auto itPair = mOverlappingPairs.find(pairID);
+                if (itPair == mOverlappingPairs.end()) {
 
                     unsigned short shape1CollideWithMaskBits = mProxyShapesComponents.getCollideWithMaskBits(proxyShape1Entity);
                     unsigned short shape2CollideWithMaskBits = mProxyShapesComponents.getCollideWithMaskBits(proxyShape2Entity);
@@ -189,7 +209,17 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int, int>>
 
                         // Add the new overlapping pair
                         mOverlappingPairs.add(Pair<Pair<uint, uint>, OverlappingPair*>(pairID, newPair));
+
+#ifdef IS_PROFILING_ACTIVE
+                        newPair->setProfiler(mProfiler);
+#endif
+
                     }
+                }
+                else {
+
+                    // We do not need to test the pair for overlap because it has just been reported that they still overlap
+                    itPair->second->setNeedToTestOverlap(false);
                 }
             }
         }
@@ -219,58 +249,53 @@ void CollisionDetectionSystem::computeMiddlePhase(OverlappingPairMap& overlappin
         assert(mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity) != -1);
         assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity));
 
-        // Check if the collision filtering allows collision between the two shapes
-        if ((mProxyShapesComponents.getCollideWithMaskBits(proxyShape1Entity) & mProxyShapesComponents.getCollisionCategoryBits(proxyShape2Entity)) != 0 &&
-            (mProxyShapesComponents.getCollisionCategoryBits(proxyShape1Entity) & mProxyShapesComponents.getCollideWithMaskBits(proxyShape2Entity)) != 0) {
+        const Entity body1Entity = mProxyShapesComponents.getBody(proxyShape1Entity);
+        const Entity body2Entity = mProxyShapesComponents.getBody(proxyShape2Entity);
 
-            const Entity body1Entity = mProxyShapesComponents.getBody(proxyShape1Entity);
-            const Entity body2Entity = mProxyShapesComponents.getBody(proxyShape2Entity);
+        const bool isStaticRigidBody1 = mWorld->mRigidBodyComponents.hasComponent(body1Entity) &&
+                                        mWorld->mRigidBodyComponents.getBodyType(body1Entity) == BodyType::STATIC;
+        const bool isStaticRigidBody2 = mWorld->mRigidBodyComponents.hasComponent(body2Entity) &&
+                                        mWorld->mRigidBodyComponents.getBodyType(body2Entity) == BodyType::STATIC;
 
-            const bool isStaticRigidBody1 = mWorld->mRigidBodyComponents.hasComponent(body1Entity) &&
-                                            mWorld->mRigidBodyComponents.getBodyType(body1Entity) == BodyType::STATIC;
-            const bool isStaticRigidBody2 = mWorld->mRigidBodyComponents.hasComponent(body2Entity) &&
-                                            mWorld->mRigidBodyComponents.getBodyType(body2Entity) == BodyType::STATIC;
+        // Check that at least one body is enabled (active and awake) and not static
+        bool isBody1Active = !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) && !isStaticRigidBody1;
+        bool isBody2Active = !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity) && !isStaticRigidBody2;
+        if (!isBody1Active && !isBody2Active) continue;
 
-            // Check that at least one body is enabled (active and awake) and not static
-            bool isBody1Active = !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) && !isStaticRigidBody1;
-            bool isBody2Active = !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity) && !isStaticRigidBody2;
-            if (!isBody1Active && !isBody2Active) continue;
+        // Check if the bodies are in the set of bodies that cannot collide between each other
+        bodypair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1Entity, body2Entity);
+        if (mNoCollisionPairs.contains(bodiesIndex) > 0) continue;
 
-            // Check if the bodies are in the set of bodies that cannot collide between each other
-            bodypair bodiesIndex = OverlappingPair::computeBodiesIndexPair(body1Entity, body2Entity);
-            if (mNoCollisionPairs.contains(bodiesIndex) > 0) continue;
+        CollisionShape* collisionShape1 = mProxyShapesComponents.getCollisionShape(proxyShape1Entity);
+        CollisionShape* collisionShape2 = mProxyShapesComponents.getCollisionShape(proxyShape2Entity);
 
-            CollisionShape* collisionShape1 = mProxyShapesComponents.getCollisionShape(proxyShape1Entity);
-            CollisionShape* collisionShape2 = mProxyShapesComponents.getCollisionShape(proxyShape2Entity);
+        const bool isShape1Convex = collisionShape1->isConvex();
+        const bool isShape2Convex = collisionShape2->isConvex();
 
-            const bool isShape1Convex = collisionShape1->isConvex();
-            const bool isShape2Convex = collisionShape2->isConvex();
+        // If both shapes are convex
+        if (isShape1Convex && isShape2Convex) {
 
-            // If both shapes are convex
-            if (isShape1Convex && isShape2Convex) {
+            // Select the narrow phase algorithm to use according to the two collision shapes
+            NarrowPhaseAlgorithmType algorithmType = mCollisionDispatch.selectNarrowPhaseAlgorithm(collisionShape1->getType(),
+                                                                                                   collisionShape2->getType());
 
-                // Select the narrow phase algorithm to use according to the two collision shapes
-                NarrowPhaseAlgorithmType algorithmType = mCollisionDispatch.selectNarrowPhaseAlgorithm(collisionShape1->getType(),
-                                                                                                       collisionShape2->getType());
+            // No middle-phase is necessary, simply create a narrow phase info
+            // for the narrow-phase collision detection
+            narrowPhaseInput.addNarrowPhaseTest(pair, collisionShape1, collisionShape2,
+                                                      mProxyShapesComponents.getLocalToWorldTransform(proxyShape1Entity),
+                                                      mProxyShapesComponents.getLocalToWorldTransform(proxyShape2Entity),
+                                                      algorithmType, mMemoryManager.getSingleFrameAllocator());
 
-                // No middle-phase is necessary, simply create a narrow phase info
-                // for the narrow-phase collision detection
-                narrowPhaseInput.addNarrowPhaseTest(pair, collisionShape1, collisionShape2,
-                                                          mProxyShapesComponents.getLocalToWorldTransform(proxyShape1Entity),
-                                                          mProxyShapesComponents.getLocalToWorldTransform(proxyShape2Entity),
-                                                          algorithmType, mMemoryManager.getSingleFrameAllocator());
+        }
+        // Concave vs Convex algorithm
+        else if ((!isShape1Convex && isShape2Convex) || (!isShape2Convex && isShape1Convex)) {
 
-            }
-            // Concave vs Convex algorithm
-            else if ((!isShape1Convex && isShape2Convex) || (!isShape2Convex && isShape1Convex)) {
-
-                computeConvexVsConcaveMiddlePhase(pair, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
-            }
-            // Concave vs Concave shape
-            else {
-                // Not handled
-                continue;
-            }
+            computeConvexVsConcaveMiddlePhase(pair, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
+        }
+        // Concave vs Concave shape
+        else {
+            // Not handled
+            continue;
         }
     }
 }

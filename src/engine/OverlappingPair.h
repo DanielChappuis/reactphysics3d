@@ -31,6 +31,7 @@
 #include "containers/Map.h"
 #include "containers/Pair.h"
 #include "containers/containers_common.h"
+#include "utils/Profiler.h"
 #include <cstddef>
 
 /// ReactPhysics3D namespace
@@ -131,6 +132,16 @@ class OverlappingPair {
         /// World settings
         const WorldSettings& mWorldSettings;
 
+        /// True if we need to test if the overlapping pair of shapes still overlap
+        bool mNeedToTestOverlap;
+
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Pointer to the profiler
+        Profiler* mProfiler;
+
+#endif
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -163,6 +174,12 @@ class OverlappingPair {
         /// Return a reference to the temporary memory allocator
         MemoryAllocator& getTemporaryAllocator();
 
+        /// Return true if we need to test if the overlapping pair of shapes still overlap
+        bool needToTestOverlap() const;
+
+        /// Set to true if we need to test if the overlapping pair of shapes still overlap
+        void setNeedToTestOverlap(bool needToTestOverlap);
+
         /// Add a new last frame collision info if it does not exist for the given shapes already
         LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2);
 
@@ -177,6 +194,13 @@ class OverlappingPair {
 
         /// Return the pair of bodies index of the pair
         static bodypair computeBodiesIndexPair(Entity body1Entity, Entity body2Entity);
+
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Set the profiler
+        void setProfiler(Profiler* profiler);
+
+#endif
 
         // -------------------- Friendship -------------------- //
 
@@ -236,11 +260,29 @@ inline MemoryAllocator& OverlappingPair::getTemporaryAllocator() {
     return mTempMemoryAllocator;
 }
 
+// Return true if we need to test if the overlapping pair of shapes still overlap
+inline bool OverlappingPair::needToTestOverlap() const {
+   return mNeedToTestOverlap;
+}
+
+// Set to true if we need to test if the overlapping pair of shapes still overlap
+inline void OverlappingPair::setNeedToTestOverlap(bool needToTestOverlap)  {
+   mNeedToTestOverlap = needToTestOverlap;
+}
+
 // Return the last frame collision info for a given pair of shape ids
 inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const {
     return mLastFrameCollisionInfos[ShapeIdPair(shapeId1, shapeId2)];
 }
 
+#ifdef IS_PROFILING_ACTIVE
+
+// Set the profiler
+inline void OverlappingPair::setProfiler(Profiler* profiler) {
+    mProfiler = profiler;
+}
+
+#endif
 }
 
 #endif

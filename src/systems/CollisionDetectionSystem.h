@@ -195,6 +195,9 @@ class CollisionDetectionSystem {
         /// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
         void updateOverlappingPairs(const List<Pair<int, int>>& overlappingNodes);
 
+        /// Set the needToTestOverlap value of each overlapping pair to true
+        void resetNeedToTestOverlap();
+
         /// Remove pairs that are not overlapping anymore
         void removeNonOverlappingPairs();
 

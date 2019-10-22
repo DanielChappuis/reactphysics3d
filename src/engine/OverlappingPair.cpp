@@ -37,12 +37,14 @@ OverlappingPair::OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,
                                  const WorldSettings& worldSettings)
                 : mPairID(computeID(shape1->getBroadPhaseId(), shape2->getBroadPhaseId())), mProxyShape1(shape1->getEntity()), mProxyShape2(shape2->getEntity()),
                   mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
-                  mLastFrameCollisionInfos(mPersistentAllocator), mWorldSettings(worldSettings) {
+                  mLastFrameCollisionInfos(mPersistentAllocator), mWorldSettings(worldSettings), mNeedToTestOverlap(false) {
     
 }         
 
 // Destructor
 OverlappingPair::~OverlappingPair() {
+
+    RP3D_PROFILE("OverlappingPair::~OverlappingPair()", mProfiler);
 
     // Remove all the remaining last frame collision info
     for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ++it) {
@@ -57,6 +59,8 @@ OverlappingPair::~OverlappingPair() {
 
 // Add a new last frame collision info if it does not exist for the given shapes already
 LastFrameCollisionInfo* OverlappingPair::addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2) {
+
+    RP3D_PROFILE("OverlappingPair::addLastFrameInfoIfNecessary()", mProfiler);
 
     // Try to get the corresponding last frame collision info
     const ShapeIdPair shapeIdPair(shapeId1, shapeId2);
@@ -83,9 +87,10 @@ LastFrameCollisionInfo* OverlappingPair::addLastFrameInfoIfNecessary(uint shapeI
     }
 }
 
-
 // Delete all the obsolete last frame collision info
 void OverlappingPair::clearObsoleteLastFrameCollisionInfos() {
+
+    RP3D_PROFILE("OverlappingPair::clearObsoleteLastFrameCollisionInfos()", mProfiler);
 
     // For each collision info
     for (auto it = mLastFrameCollisionInfos.begin(); it != mLastFrameCollisionInfos.end(); ) {
