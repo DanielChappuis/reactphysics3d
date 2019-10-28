@@ -335,7 +335,10 @@ void CollisionDetection::broadPhaseNotifyOverlappingPair(ProxyShape* shape1, Pro
                                               mMemoryManager.getSingleFrameAllocator(), mWorld->mConfig);
     assert(newPair != nullptr);
 
+#ifdef IS_PROFILING_ACTIVE
     newPair->setProfiler(mProfiler);
+#endif
+
     mOverlappingPairs.add(Pair<Pair<uint, uint>, OverlappingPair*>(pairID, newPair));
 
     // Wake up the two bodies
