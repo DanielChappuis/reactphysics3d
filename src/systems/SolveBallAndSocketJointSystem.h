@@ -127,6 +127,8 @@ inline void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 
+#endif
+
 // Set the time step
 inline void SolveBallAndSocketJointSystem::setTimeStep(decimal timeStep) {
     assert(timeStep > decimal(0.0));
@@ -138,7 +140,6 @@ inline void SolveBallAndSocketJointSystem::setIsWarmStartingActive(bool isWarmSt
     mIsWarmStartingActive = isWarmStartingActive;
 }
 
-#endif
 
 }
 

@@ -124,6 +124,8 @@ inline void SolveFixedJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 
+#endif
+
 // Set the time step
 inline void SolveFixedJointSystem::setTimeStep(decimal timeStep) {
     assert(timeStep > decimal(0.0));
@@ -135,7 +137,6 @@ inline void SolveFixedJointSystem::setIsWarmStartingActive(bool isWarmStartingAc
     mIsWarmStartingActive = isWarmStartingActive;
 }
 
-#endif
 
 }
 

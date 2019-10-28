@@ -142,6 +142,8 @@ inline void SolveHingeJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 
+#endif
+
 // Set the time step
 inline void SolveHingeJointSystem::setTimeStep(decimal timeStep) {
     assert(timeStep > decimal(0.0));
@@ -153,7 +155,6 @@ inline void SolveHingeJointSystem::setIsWarmStartingActive(bool isWarmStartingAc
     mIsWarmStartingActive = isWarmStartingActive;
 }
 
-#endif
 
 }
 

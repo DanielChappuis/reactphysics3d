@@ -128,6 +128,8 @@ inline void SolveSliderJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 
+#endif
+
 // Set the time step
 inline void SolveSliderJointSystem::setTimeStep(decimal timeStep) {
     assert(timeStep > decimal(0.0));
@@ -138,8 +140,6 @@ inline void SolveSliderJointSystem::setTimeStep(decimal timeStep) {
 inline void SolveSliderJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
     mIsWarmStartingActive = isWarmStartingActive;
 }
-
-#endif
 
 }
 
