@@ -95,6 +95,8 @@ void HeightFieldShape::computeOverlappingTriangles(const AABB& localAABB, List<V
                                                    List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
                                                    MemoryAllocator& allocator) const {
 
+    RP3D_PROFILE("HeightFieldShape::computeOverlappingTriangles()", mProfiler);
+
    // Compute the non-scaled AABB
    Vector3 inverseScaling(decimal(1.0) / mScaling.x, decimal(1.0) / mScaling.y, decimal(1.0) / mScaling.z);
    AABB aabb(localAABB.getMin() * inverseScaling, localAABB.getMax() * inverseScaling);

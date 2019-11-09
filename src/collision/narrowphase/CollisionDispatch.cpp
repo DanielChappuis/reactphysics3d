@@ -200,6 +200,8 @@ void CollisionDispatch::fillInCollisionMatrix() {
 NarrowPhaseAlgorithmType CollisionDispatch::selectNarrowPhaseAlgorithm(const CollisionShapeType& shape1Type,
                                                                        const CollisionShapeType& shape2Type) const {
 
+    RP3D_PROFILE("CollisionDispatch::selectNarrowPhaseAlgorithm()", mProfiler);
+
     uint shape1Index = static_cast<unsigned int>(shape1Type);
     uint shape2Index = static_cast<unsigned int>(shape2Type);
 

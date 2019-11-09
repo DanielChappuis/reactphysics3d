@@ -29,7 +29,7 @@
 // Libraries
 #include "mathematics/mathematics.h"
 #include "configuration.h"
-#include "engine/OverlappingPair.h"
+#include "engine/OverlappingPairs.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -45,7 +45,7 @@ struct ContactPair {
         // -------------------- Attributes -------------------- //
 
         /// Overlapping pair Id
-        OverlappingPair::OverlappingPairId pairId;
+        uint64 pairId;
 
         /// Indices of the potential contact manifolds
         List<uint> potentialContactManifoldsIndices;
@@ -83,7 +83,7 @@ struct ContactPair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPair(OverlappingPair::OverlappingPairId pairId, Entity body1Entity, Entity body2Entity, Entity proxyShape1Entity,
+        ContactPair(uint64 pairId, Entity body1Entity, Entity body2Entity, Entity proxyShape1Entity,
                     Entity proxyShape2Entity, uint contactPairIndex, MemoryAllocator& allocator)
             : pairId(pairId), potentialContactManifoldsIndices(allocator), body1Entity(body1Entity), body2Entity(body2Entity),
               proxyShape1Entity(proxyShape1Entity), proxyShape2Entity(proxyShape2Entity),

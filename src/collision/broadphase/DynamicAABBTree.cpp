@@ -645,6 +645,8 @@ void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const List<int32>& no
 // Report all shapes overlapping with the AABB given in parameter.
 void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int32>& overlappingNodes) const {
 
+    RP3D_PROFILE("DynamicAABBTree::reportAllShapesOverlappingWithAABB()", mProfiler);
+
     // Create a stack with the nodes to visit
     Stack<int32> stack(mAllocator, 64);
     stack.push(mRootNodeID);

@@ -29,7 +29,7 @@
 // Libraries
 #include "mathematics/mathematics.h"
 #include "configuration.h"
-#include "engine/OverlappingPair.h"
+#include "engine/OverlappingPairs.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -49,12 +49,12 @@ struct ContactManifoldInfo {
         List<uint> potentialContactPointsIndices;
 
         /// Overlapping pair id
-        OverlappingPair::OverlappingPairId pairId;
+        uint64 pairId;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifoldInfo(OverlappingPair::OverlappingPairId pairId, MemoryAllocator& allocator)
+        ContactManifoldInfo(uint64 pairId, MemoryAllocator& allocator)
                : potentialContactPointsIndices(allocator), pairId(pairId) {
 
         }

@@ -49,13 +49,13 @@ struct SphereVsSphereNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
         List<decimal> sphere2Radiuses;
 
         /// Constructor
-        SphereVsSphereNarrowPhaseInfoBatch(MemoryAllocator& allocator);
+        SphereVsSphereNarrowPhaseInfoBatch(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs);
 
         /// Destructor
         virtual ~SphereVsSphereNarrowPhaseInfoBatch() override = default;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        virtual void addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
+        virtual void addNarrowPhaseInfo(uint64 pairId, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1,
                                         CollisionShape* shape2, const Transform& shape1Transform,
                                         const Transform& shape2Transform);
 

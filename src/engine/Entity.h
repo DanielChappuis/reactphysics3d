@@ -136,7 +136,7 @@ namespace std {
 
     size_t operator()(const reactphysics3d::Entity& entity) const {
 
-        return entity.id;
+        return std::hash<reactphysics3d::uint32>{}(entity.id);
     }
   };
 }

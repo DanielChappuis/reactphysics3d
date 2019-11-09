@@ -26,7 +26,7 @@
 // Libraries
 #include "GJKAlgorithm.h"
 #include "constraint/ContactPoint.h"
-#include "engine/OverlappingPair.h"
+#include "engine/OverlappingPairs.h"
 #include "collision/shapes/TriangleShape.h"
 #include "configuration.h"
 #include "utils/Profiler.h"

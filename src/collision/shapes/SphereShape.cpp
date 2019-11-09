@@ -49,6 +49,8 @@ SphereShape::SphereShape(decimal radius)
  */
 void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
+    RP3D_PROFILE("SphereShape::computeAABB()", mProfiler);
+
     // Get the local extents in x,y and z direction
     Vector3 extents(mMargin, mMargin, mMargin);
 

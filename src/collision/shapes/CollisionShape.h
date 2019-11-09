@@ -29,6 +29,7 @@
 // Libraries
 #include <cassert>
 #include "configuration.h"
+#include "utils/Profiler.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

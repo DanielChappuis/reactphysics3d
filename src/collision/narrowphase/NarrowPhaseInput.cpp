@@ -30,36 +30,37 @@
 using namespace reactphysics3d;
 
 /// Constructor
-NarrowPhaseInput::NarrowPhaseInput(MemoryAllocator& allocator)
-    :mSphereVsSphereBatch(allocator), mSphereVsCapsuleBatch(allocator), mCapsuleVsCapsuleBatch(allocator),
-     mSphereVsConvexPolyhedronBatch(allocator), mCapsuleVsConvexPolyhedronBatch(allocator),
-     mConvexPolyhedronVsConvexPolyhedronBatch(allocator) {
+NarrowPhaseInput::NarrowPhaseInput(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs)
+    :mSphereVsSphereBatch(allocator, overlappingPairs), mSphereVsCapsuleBatch(allocator, overlappingPairs),
+     mCapsuleVsCapsuleBatch(allocator, overlappingPairs), mSphereVsConvexPolyhedronBatch(allocator, overlappingPairs),
+     mCapsuleVsConvexPolyhedronBatch(allocator, overlappingPairs),
+     mConvexPolyhedronVsConvexPolyhedronBatch(allocator, overlappingPairs) {
 
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-void NarrowPhaseInput::addNarrowPhaseTest(OverlappingPair* pair, CollisionShape* shape1, CollisionShape* shape2,
+void NarrowPhaseInput::addNarrowPhaseTest(uint64 pairId, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1, CollisionShape* shape2,
                                           const Transform& shape1Transform, const Transform& shape2Transform,
                                           NarrowPhaseAlgorithmType narrowPhaseAlgorithmType, MemoryAllocator& shapeAllocator) {
 
     switch (narrowPhaseAlgorithmType) {
         case NarrowPhaseAlgorithmType::SphereVsSphere:
-            mSphereVsSphereBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform);
+            mSphereVsSphereBatch.addNarrowPhaseInfo(pairId, proxyShape1, proxyShape2, shape1, shape2, shape1Transform, shape2Transform);
             break;
         case NarrowPhaseAlgorithmType::SphereVsCapsule:
-            mSphereVsCapsuleBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform);
+            mSphereVsCapsuleBatch.addNarrowPhaseInfo(pairId, proxyShape1, proxyShape2, shape1, shape2, shape1Transform, shape2Transform);
             break;
         case NarrowPhaseAlgorithmType::CapsuleVsCapsule:
-            mCapsuleVsCapsuleBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform);
+            mCapsuleVsCapsuleBatch.addNarrowPhaseInfo(pairId, proxyShape1, proxyShape2, shape1, shape2, shape1Transform, shape2Transform);
             break;
         case NarrowPhaseAlgorithmType::SphereVsConvexPolyhedron:
-            mSphereVsConvexPolyhedronBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);
+            mSphereVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, proxyShape1, proxyShape2, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::CapsuleVsConvexPolyhedron:
-            mCapsuleVsConvexPolyhedronBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);
+            mCapsuleVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, proxyShape1, proxyShape2, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::ConvexPolyhedronVsConvexPolyhedron:
-            mConvexPolyhedronVsConvexPolyhedronBatch.addNarrowPhaseInfo(pair, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);
+            mConvexPolyhedronVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, proxyShape1, proxyShape2, shape1, shape2, shape1Transform, shape2Transform, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::None:
             // Must never happen

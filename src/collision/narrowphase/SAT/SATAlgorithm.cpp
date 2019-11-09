@@ -29,7 +29,7 @@
 #include "collision/PolyhedronMesh.h"
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/SphereShape.h"
-#include "engine/OverlappingPair.h"
+#include "engine/OverlappingPairs.h"
 #include "collision/narrowphase/NarrowPhaseInfoBatch.h"
 #include "collision/shapes/TriangleShape.h"
 #include "configuration.h"

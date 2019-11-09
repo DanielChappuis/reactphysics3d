@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_NARROW_PHASE_INFO_BATCH_H
 
 // Libraries
-#include "engine/OverlappingPair.h"
+#include "engine/OverlappingPairs.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -52,13 +52,22 @@ struct NarrowPhaseInfoBatch {
         /// Memory allocator
         MemoryAllocator& mMemoryAllocator;
 
+        /// Reference to all the broad-phase overlapping pairs
+        OverlappingPairs& mOverlappingPairs;
+
         /// Cached capacity
         uint mCachedCapacity = 0;
 
     public:
 
-        /// List of Broadphase overlapping pairs
-        List<OverlappingPair*> overlappingPairs;
+        /// List of Broadphase overlapping pairs ids
+        List<uint64> overlappingPairIds;
+
+        /// List of pointers to the first proxy-shapes to test collision with
+        List<Entity> proxyShapeEntities1;
+
+        /// List of pointers to the second proxy-shapes to test collision with
+        List<Entity> proxyShapeEntities2;
 
         /// List of pointers to the first collision shapes to test collision with
         List<CollisionShape*> collisionShapes1;
@@ -85,7 +94,7 @@ struct NarrowPhaseInfoBatch {
         List<LastFrameCollisionInfo*> lastFrameCollisionInfos;
 
         /// Constructor
-        NarrowPhaseInfoBatch(MemoryAllocator& allocator);
+        NarrowPhaseInfoBatch(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs);
 
         /// Destructor
         virtual ~NarrowPhaseInfoBatch();
@@ -94,9 +103,9 @@ struct NarrowPhaseInfoBatch {
         uint getNbObjects() const;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        void addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1,
-                        CollisionShape* shape2, const Transform& shape1Transform,
-                        const Transform& shape2Transform, MemoryAllocator& shapeAllocator);
+        void addNarrowPhaseInfo(uint64 pairId, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1,
+                                CollisionShape* shape2, const Transform& shape1Transform,
+                                const Transform& shape2Transform, MemoryAllocator& shapeAllocator);
 
         /// Add a new contact point
         virtual void addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth,
@@ -114,7 +123,7 @@ struct NarrowPhaseInfoBatch {
 
 /// Return the number of objects in the batch
 inline uint NarrowPhaseInfoBatch::getNbObjects() const {
-    return overlappingPairs.size();
+    return overlappingPairIds.size();
 }
 
 }

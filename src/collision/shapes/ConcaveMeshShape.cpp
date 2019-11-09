@@ -120,6 +120,8 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<V
                                                    List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
                                                    MemoryAllocator& allocator) const {
 
+    RP3D_PROFILE("ConcaveMeshShape::computeOverlappingTriangles()", mProfiler);
+
     // Compute the nodes of the internal AABB tree that are overlapping with the AABB
     List<int> overlappingNodes(allocator);
     mDynamicAABBTree.reportAllShapesOverlappingWithAABB(localAABB, overlappingNodes);
@@ -180,6 +182,8 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
 
 // Compute the shape Id for a given triangle of the mesh
 uint ConcaveMeshShape::computeTriangleShapeId(uint subPart, uint triangleIndex) const {
+
+    RP3D_PROFILE("ConcaveMeshShape::computeTriangleShapeId()", mProfiler);
 
     uint shapeId = 0;
 

@@ -183,6 +183,9 @@ void CollisionBody::removeCollisionShape(ProxyShape* proxyShape) {
     // Remove the proxy-shape component
     mWorld.mProxyShapesComponents.removeComponent(proxyShape->getEntity());
 
+    // Destroy the entity
+    mWorld.mEntityManager.destroyEntity(proxyShape->getEntity());
+
     // Call the constructor of the proxy-shape
     proxyShape->~ProxyShape();
 

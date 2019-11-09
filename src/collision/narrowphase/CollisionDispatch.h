@@ -106,6 +106,13 @@ class CollisionDispatch {
         /// use between two types of collision shapes.
         NarrowPhaseAlgorithmType selectAlgorithm(int type1, int type2);
 
+#ifdef IS_PROFILING_ACTIVE
+
+    /// Pointer to the profiler
+    Profiler* mProfiler;
+
+#endif
+
     public:
 
         /// Constructor
@@ -201,6 +208,7 @@ inline ConvexPolyhedronVsConvexPolyhedronAlgorithm* CollisionDispatch::getConvex
 // Set the profiler
 inline void CollisionDispatch::setProfiler(Profiler* profiler) {
 
+    mProfiler = profiler;
     mSphereVsSphereAlgorithm->setProfiler(profiler);
     mCapsuleVsCapsuleAlgorithm->setProfiler(profiler);
     mSphereVsCapsuleAlgorithm->setProfiler(profiler);

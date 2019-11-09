@@ -129,6 +129,12 @@ decimal computePointToPlaneDistance(const Vector3& point, const Vector3& planeNo
 /// Return true if the given number is prime
 bool isPrimeNumber(int number);
 
+/// Return an unique integer from two integer numbers (pairing function)
+/// Here we assume that the two parameter numbers are sorted such that
+/// number1 = max(number1, number2)
+/// http://szudzik.com/ElegantPairing.pdf
+uint64 pairNumbers(uint32 number1, uint32 number2);
+
 }
 
 

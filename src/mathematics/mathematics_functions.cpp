@@ -404,4 +404,12 @@ bool reactphysics3d::isPrimeNumber(int number) {
     return number == 2;
 }
 
+// Return an unique integer from two integer numbers (pairing function)
+/// Here we assume that the two parameter numbers are sorted such that
+/// number1 = max(number1, number2)
+/// http://szudzik.com/ElegantPairing.pdf
+uint64 reactphysics3d::pairNumbers(uint32 number1, uint32 number2) {
+    assert(number1 == std::max(number1, number2));
+    return number1 * number1 + number1 + number2;
+}
 

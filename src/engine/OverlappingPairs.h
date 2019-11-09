@@ -32,6 +32,7 @@
 #include "containers/Pair.h"
 #include "containers/containers_common.h"
 #include "utils/Profiler.h"
+#include "components/ProxyShapeComponents.h"
 #include <cstddef>
 
 /// ReactPhysics3D namespace
@@ -88,33 +89,45 @@ struct LastFrameCollisionInfo {
     }
 };
 
-// Class OverlappingPair
+// Class OverlappingPairs
 /**
- * This class represents a pair of two proxy collision shapes that are overlapping
- * during the broad-phase collision detection. It is created when
+ * This class contains pairs of two proxy collision shapes that are overlapping
+ * during the broad-phase collision detection. A pair is created when
  * the two proxy collision shapes start to overlap and is destroyed when they do not
- * overlap anymore. This class contains a contact manifold that
+ * overlap anymore. Each contains a contact manifold that
  * store all the contact points between the two bodies.
  */
-class OverlappingPair {
+class OverlappingPairs {
 
     public:
 
-        using OverlappingPairId = Pair<uint, uint>;
+        // TODO : Try to use a pairing function like pairNumbers() here
         using ShapeIdPair = Pair<uint, uint>;
 
     private:
 
+        /// Structure PairLocation
+        struct PairLocation {
+
+            /// True if the pair is a convex vs convex overlap
+            bool isConvexVsConvex;
+
+            /// Index of the overlapping pair in the internal arrays
+            uint32 pairIndex;
+
+            /// Constructor
+            PairLocation() :isConvexVsConvex(true), pairIndex(0) {
+
+            }
+
+            /// Constructor
+            PairLocation(bool isConvexVsConvex, uint32 index)
+                :isConvexVsConvex(isConvexVsConvex), pairIndex(index) {
+
+            }
+        };
+
         // -------------------- Attributes -------------------- //
-
-        /// Pair ID
-        OverlappingPairId mPairID;
-
-        /// Entity of the first proxy-shape of the overlapping pair
-        Entity mProxyShape1;
-
-        /// Entity of the second proxy-shape of the overlapping pair
-        Entity mProxyShape2;
 
         /// Persistent memory allocator
         MemoryAllocator& mPersistentAllocator;
@@ -122,18 +135,51 @@ class OverlappingPair {
         /// Memory allocator used to allocated memory for the ContactManifoldInfo and ContactPointInfo
         MemoryAllocator& mTempMemoryAllocator;
 
+        /// Map a pair id to its local location
+        Map<uint64, PairLocation> mMapPairIdToPairIndex;
+
+        /// Ids of the convex vs convex pairs
+        // TODO : Check if we need this array
+        List<uint64> mConvexPairIds;
+
+        /// List of Entity of the first proxy-shape of the convex vs convex pairs
+        List<Entity> mConvexProxyShapes1;
+
+        /// List of Entity of the second proxy-shape of the convex vs convex pairs
+        List<Entity> mConvexProxyShapes2;
+
+        /// Ids of the convex vs concave pairs
+        // TODO : Check if we need this array
+        List<uint64> mConcavePairIds;
+
+        /// List of Entity of the first proxy-shape of the convex vs concave pairs
+        List<Entity> mConcaveProxyShapes1;
+
+        /// List of Entity of the second proxy-shape of the convex vs concave pairs
+        List<Entity> mConcaveProxyShapes2;
+
         /// Temporal coherence collision data for each overlapping collision shapes of this pair.
         /// Temporal coherence data store collision information about the last frame.
         /// If two convex shapes overlap, we have a single collision data but if one shape is concave,
         /// we might have collision data for several overlapping triangles. The key in the map is the
         /// shape Ids of the two collision shapes.
-        Map<ShapeIdPair, LastFrameCollisionInfo*> mLastFrameCollisionInfos;
+        List<Map<ShapeIdPair, LastFrameCollisionInfo*>> mConvexLastFrameCollisionInfos;
 
-        /// World settings
-        const WorldSettings& mWorldSettings;
+        /// Temporal coherence collision data for each overlapping collision shapes of this pair.
+        /// Temporal coherence data store collision information about the last frame.
+        /// If two convex shapes overlap, we have a single collision data but if one shape is concave,
+        /// we might have collision data for several overlapping triangles. The key in the map is the
+        /// shape Ids of the two collision shapes.
+        List<Map<ShapeIdPair, LastFrameCollisionInfo*>> mConcaveLastFrameCollisionInfos;
 
-        /// True if we need to test if the overlapping pair of shapes still overlap
-        bool mNeedToTestOverlap;
+        /// True if we need to test if the convex vs convex overlapping pairs of shapes still overlap
+        List<bool> mConvexNeedToTestOverlap;
+
+        /// True if we need to test if the convex vs convex overlapping pairs of shapes still overlap
+        List<bool> mConcaveNeedToTestOverlap;
+
+        /// Reference to the proxy-shapes components
+        ProxyShapeComponents& mProxyShapeComponents;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -147,50 +193,44 @@ class OverlappingPair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        OverlappingPair(ProxyShape* shape1, ProxyShape* shape2,  MemoryAllocator& persistentMemoryAllocator,
-                        MemoryAllocator& temporaryMemoryAllocator, const WorldSettings& worldSettings);
+        OverlappingPairs(MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator,
+                         ProxyShapeComponents& proxyShapeComponents);
 
         /// Destructor
-        ~OverlappingPair();
+        ~OverlappingPairs();
 
         /// Deleted copy-constructor
-        OverlappingPair(const OverlappingPair& pair) = delete;
+        OverlappingPairs(const OverlappingPairs& pair) = delete;
 
         /// Deleted assignment operator
-        OverlappingPair& operator=(const OverlappingPair& pair) = delete;
+        OverlappingPairs& operator=(const OverlappingPairs& pair) = delete;
 
-        /// Return the Id of the pair
-        OverlappingPairId getId() const;
+        /// Add an overlapping pair
+        uint64 addPair(ProxyShape* shape1, ProxyShape* shape2);
+
+        /// Remove an overlapping pair
+        uint64 removePair(uint64 pairId);
+
+        /// Try to find a pair with a given id, return true if the pair is found and the corresponding PairLocation
+        bool findPair(uint64 pairId, PairLocation& pairLocation);
 
         /// Return the entity of the first proxy-shape
-        Entity getProxyShape1() const;
+        Entity getProxyShape1(uint64 pairId) const;
 
         /// Return the entity of the second proxy-shape
-        Entity getProxyShape2() const;
+        Entity getProxyShape2(uint64 pairId) const;
 
         /// Return the last frame collision info
-        LastFrameCollisionInfo* getLastFrameCollisionInfo(ShapeIdPair& shapeIds);
+        LastFrameCollisionInfo* getLastFrameCollisionInfo(uint64, ShapeIdPair& shapeIds);
 
         /// Return a reference to the temporary memory allocator
         MemoryAllocator& getTemporaryAllocator();
 
-        /// Return true if we need to test if the overlapping pair of shapes still overlap
-        bool needToTestOverlap() const;
-
-        /// Set to true if we need to test if the overlapping pair of shapes still overlap
-        void setNeedToTestOverlap(bool needToTestOverlap);
-
         /// Add a new last frame collision info if it does not exist for the given shapes already
-        LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint shapeId1, uint shapeId2);
-
-        /// Return the last frame collision info for a given pair of shape ids
-        LastFrameCollisionInfo* getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const;
+        LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint64 pairId, uint shapeId1, uint shapeId2);
 
         /// Delete all the obsolete last frame collision info
         void clearObsoleteLastFrameCollisionInfos();
-
-        /// Return the pair of bodies index
-        static OverlappingPairId computeID(int shape1BroadPhaseId, int shape2BroadPhaseId);
 
         /// Return the pair of bodies index of the pair
         static bodypair computeBodiesIndexPair(Entity body1Entity, Entity body2Entity);
@@ -205,27 +245,35 @@ class OverlappingPair {
         // -------------------- Friendship -------------------- //
 
         friend class DynamicsWorld;
+        friend class CollisionDetectionSystem;
 };
 
-// Return the Id of the pair
-inline OverlappingPair::OverlappingPairId OverlappingPair::getId() const {
-    return mPairID;
-}
-
 // Return the entity of the first proxy-shape
-inline Entity OverlappingPair::getProxyShape1() const {
-    return mProxyShape1;
+inline Entity OverlappingPairs::getProxyShape1(uint64 pairId) const {
+    assert(mMapPairIdToPairIndex.containsKey(pairId));
+    const PairLocation& pairLocation = mMapPairIdToPairIndex[pairId];
+    const List<Entity> proxyShapes1 = pairLocation.isConvexVsConvex ? mConvexProxyShapes1 : mConcaveProxyShapes1;
+    return proxyShapes1[pairLocation.pairIndex];
 }
 
 // Return the entity of the second proxy-shape
-inline Entity OverlappingPair::getProxyShape2() const {
-    return mProxyShape2;
-}                
+inline Entity OverlappingPairs::getProxyShape2(uint64 pairId) const {
+    assert(mMapPairIdToPairIndex.containsKey(pairId));
+    const PairLocation& pairLocation = mMapPairIdToPairIndex[pairId];
+    const List<Entity> proxyShapes2 = pairLocation.isConvexVsConvex ? mConvexProxyShapes2 : mConcaveProxyShapes2;
+    return proxyShapes2[pairLocation.pairIndex];
+}
 
 // Return the last frame collision info for a given shape id or nullptr if none is found
-inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(ShapeIdPair& shapeIds) {
-    Map<ShapeIdPair, LastFrameCollisionInfo*>::Iterator it = mLastFrameCollisionInfos.find(shapeIds);
-    if (it != mLastFrameCollisionInfos.end()) {
+inline LastFrameCollisionInfo* OverlappingPairs::getLastFrameCollisionInfo(uint64 pairId, ShapeIdPair& shapeIds) {
+
+    assert(mMapPairIdToPairIndex.containsKey(pairId));
+    const PairLocation& pairLocation = mMapPairIdToPairIndex[pairId];
+    const List<Map<ShapeIdPair, LastFrameCollisionInfo*>>& lastFrameCollisionInfos = pairLocation.isConvexVsConvex ?
+                                                            mConvexLastFrameCollisionInfos : mConcaveLastFrameCollisionInfos;
+
+    Map<ShapeIdPair, LastFrameCollisionInfo*>::Iterator it = lastFrameCollisionInfos[pairLocation.pairIndex].find(shapeIds);
+    if (it != lastFrameCollisionInfos[pairLocation.pairIndex].end()) {
         return it->second;
     }
 
@@ -233,19 +281,7 @@ inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(ShapeI
 }
 
 // Return the pair of bodies index
-inline OverlappingPair::OverlappingPairId OverlappingPair::computeID(int shape1BroadPhaseId, int shape2BroadPhaseId) {
-    assert(shape1BroadPhaseId >= 0 && shape2BroadPhaseId >= 0);
-
-    // Construct the pair of body index
-    OverlappingPairId pairID = shape1BroadPhaseId < shape2BroadPhaseId ?
-                             OverlappingPairId(shape1BroadPhaseId, shape2BroadPhaseId) :
-                             OverlappingPairId(shape2BroadPhaseId, shape1BroadPhaseId);
-    assert(pairID.first != pairID.second);
-    return pairID;
-}
-
-// Return the pair of bodies index
-inline bodypair OverlappingPair::computeBodiesIndexPair(Entity body1Entity, Entity body2Entity) {
+inline bodypair OverlappingPairs::computeBodiesIndexPair(Entity body1Entity, Entity body2Entity) {
 
     // Construct the pair of body index
     bodypair indexPair = body1Entity.id < body2Entity.id ?
@@ -256,29 +292,14 @@ inline bodypair OverlappingPair::computeBodiesIndexPair(Entity body1Entity, Enti
 }
 
 // Return a reference to the temporary memory allocator
-inline MemoryAllocator& OverlappingPair::getTemporaryAllocator() {
+inline MemoryAllocator& OverlappingPairs::getTemporaryAllocator() {
     return mTempMemoryAllocator;
-}
-
-// Return true if we need to test if the overlapping pair of shapes still overlap
-inline bool OverlappingPair::needToTestOverlap() const {
-   return mNeedToTestOverlap;
-}
-
-// Set to true if we need to test if the overlapping pair of shapes still overlap
-inline void OverlappingPair::setNeedToTestOverlap(bool needToTestOverlap)  {
-   mNeedToTestOverlap = needToTestOverlap;
-}
-
-// Return the last frame collision info for a given pair of shape ids
-inline LastFrameCollisionInfo* OverlappingPair::getLastFrameCollisionInfo(uint shapeId1, uint shapeId2) const {
-    return mLastFrameCollisionInfos[ShapeIdPair(shapeId1, shapeId2)];
 }
 
 #ifdef IS_PROFILING_ACTIVE
 
 // Set the profiler
-inline void OverlappingPair::setProfiler(Profiler* profiler) {
+inline void OverlappingPairs::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 

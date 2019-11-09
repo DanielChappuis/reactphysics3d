@@ -27,14 +27,15 @@
 #include "NarrowPhaseInfoBatch.h"
 #include "collision/ContactPointInfo.h"
 #include "collision/shapes/TriangleShape.h"
-#include "engine/OverlappingPair.h"
+#include "engine/OverlappingPairs.h"
 #include <iostream>
 
 using namespace reactphysics3d;
 
 // Constructor
-NarrowPhaseInfoBatch::NarrowPhaseInfoBatch(MemoryAllocator& allocator)
-      : mMemoryAllocator(allocator), overlappingPairs(allocator), collisionShapes1(allocator), collisionShapes2(allocator),
+NarrowPhaseInfoBatch::NarrowPhaseInfoBatch(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs)
+      : mMemoryAllocator(allocator), mOverlappingPairs(overlappingPairs), overlappingPairIds(allocator),
+        proxyShapeEntities1(allocator), proxyShapeEntities2(allocator), collisionShapes1(allocator), collisionShapes2(allocator),
         shape1ToWorldTransforms(allocator), shape2ToWorldTransforms(allocator),
         isColliding(allocator), contactPoints(allocator), collisionShapeAllocators(allocator),
         lastFrameCollisionInfos(allocator) {
@@ -47,11 +48,13 @@ NarrowPhaseInfoBatch::~NarrowPhaseInfoBatch() {
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-void NarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1, CollisionShape* shape2,
+void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1, CollisionShape* shape2,
                                               const Transform& shape1Transform, const Transform& shape2Transform,
                                               MemoryAllocator& shapeAllocator) {
 
-    overlappingPairs.add(pair);
+    overlappingPairIds.add(pairId);
+    proxyShapeEntities1.add(proxyShape1);
+    proxyShapeEntities2.add(proxyShape2);
     collisionShapes1.add(shape1);
     collisionShapes2.add(shape2);
     shape1ToWorldTransforms.add(shape1Transform);
@@ -61,7 +64,7 @@ void NarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pair, CollisionSh
     isColliding.add(false);
 
     // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
-    LastFrameCollisionInfo* lastFrameInfo = pair->addLastFrameInfoIfNecessary(shape1->getId(), shape2->getId());
+    LastFrameCollisionInfo* lastFrameInfo = mOverlappingPairs.addLastFrameInfoIfNecessary(pairId, shape1->getId(), shape2->getId());
     lastFrameCollisionInfos.add(lastFrameInfo);
 }
 
@@ -72,7 +75,7 @@ void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNor
     assert(penDepth > decimal(0.0));
 
     // Get the memory allocator
-    MemoryAllocator& allocator = overlappingPairs[index]->getTemporaryAllocator();
+    MemoryAllocator& allocator = mOverlappingPairs.getTemporaryAllocator();
 
     // Create the contact point info
     ContactPointInfo* contactPointInfo = new (allocator.allocate(sizeof(ContactPointInfo)))
@@ -86,7 +89,7 @@ void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNor
 void NarrowPhaseInfoBatch::resetContactPoints(uint index) {
 
     // Get the memory allocator
-    MemoryAllocator& allocator = overlappingPairs[index]->getTemporaryAllocator();
+    MemoryAllocator& allocator = mOverlappingPairs.getTemporaryAllocator();
 
     // For each remaining contact point info
     for (uint i=0; i < contactPoints[index].size(); i++) {
@@ -106,7 +109,9 @@ void NarrowPhaseInfoBatch::resetContactPoints(uint index) {
 // Initialize the containers using cached capacity
 void NarrowPhaseInfoBatch::reserveMemory() {
 
-    overlappingPairs.reserve(mCachedCapacity);
+    overlappingPairIds.reserve(mCachedCapacity);
+    proxyShapeEntities1.reserve(mCachedCapacity);
+    proxyShapeEntities2.reserve(mCachedCapacity);
     collisionShapes1.reserve(mCachedCapacity);
     collisionShapes2.reserve(mCachedCapacity);
     shape1ToWorldTransforms.reserve(mCachedCapacity);
@@ -120,7 +125,7 @@ void NarrowPhaseInfoBatch::reserveMemory() {
 // Clear all the objects in the batch
 void NarrowPhaseInfoBatch::clear() {
 
-    for (uint i=0; i < overlappingPairs.size(); i++) {
+    for (uint i=0; i < overlappingPairIds.size(); i++) {
 
         assert(contactPoints[i].size() == 0);
 
@@ -141,9 +146,11 @@ void NarrowPhaseInfoBatch::clear() {
     // allocated in the next frame at a possibly different location in memory (remember that the
     // location of the allocated memory of a single frame allocator might change between two frames)
 
-    mCachedCapacity = overlappingPairs.size();
+    mCachedCapacity = overlappingPairIds.size();
 
-    overlappingPairs.clear(true);
+    overlappingPairIds.clear(true);
+    proxyShapeEntities1.clear(true);
+    proxyShapeEntities2.clear(true);
     collisionShapes1.clear(true);
     collisionShapes2.clear(true);
     shape1ToWorldTransforms.clear(true);

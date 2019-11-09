@@ -31,14 +31,15 @@
 using namespace reactphysics3d;
 
 // Constructor
-SphereVsCapsuleNarrowPhaseInfoBatch::SphereVsCapsuleNarrowPhaseInfoBatch(MemoryAllocator& allocator)
-      : NarrowPhaseInfoBatch(allocator), isSpheresShape1(allocator), sphereRadiuses(allocator), capsuleRadiuses(allocator),
+SphereVsCapsuleNarrowPhaseInfoBatch::SphereVsCapsuleNarrowPhaseInfoBatch(MemoryAllocator& allocator,
+                                                                         OverlappingPairs& overlappingPairs)
+      : NarrowPhaseInfoBatch(allocator, overlappingPairs), isSpheresShape1(allocator), sphereRadiuses(allocator), capsuleRadiuses(allocator),
         capsuleHeights(allocator) {
 
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-void SphereVsCapsuleNarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pair, CollisionShape* shape1, CollisionShape* shape2,
+void SphereVsCapsuleNarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1, CollisionShape* shape2,
                                                             const Transform& shape1Transform, const Transform& shape2Transform) {
 
     bool isSphereShape1 = shape1->getType() == CollisionShapeType::SPHERE;
@@ -55,19 +56,23 @@ void SphereVsCapsuleNarrowPhaseInfoBatch::addNarrowPhaseInfo(OverlappingPair* pa
     capsuleHeights.add(capsuleShape->getHeight());
     shape1ToWorldTransforms.add(shape1Transform);
     shape2ToWorldTransforms.add(shape2Transform);
-    overlappingPairs.add(pair);
+    overlappingPairIds.add(pairId);
+    proxyShapeEntities1.add(proxyShape1);
+    proxyShapeEntities2.add(proxyShape2);
     contactPoints.add(List<ContactPointInfo*>(mMemoryAllocator));
     isColliding.add(false);
 
     // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
-    LastFrameCollisionInfo* lastFrameInfo = pair->addLastFrameInfoIfNecessary(shape1->getId(), shape2->getId());
+    LastFrameCollisionInfo* lastFrameInfo = mOverlappingPairs.addLastFrameInfoIfNecessary(pairId, shape1->getId(), shape2->getId());
     lastFrameCollisionInfos.add(lastFrameInfo);
 }
 
 // Initialize the containers using cached capacity
 void SphereVsCapsuleNarrowPhaseInfoBatch::reserveMemory() {
 
-    overlappingPairs.reserve(mCachedCapacity);
+    overlappingPairIds.reserve(mCachedCapacity);
+    proxyShapeEntities1.reserve(mCachedCapacity);
+    proxyShapeEntities2.reserve(mCachedCapacity);
     shape1ToWorldTransforms.reserve(mCachedCapacity);
     shape2ToWorldTransforms.reserve(mCachedCapacity);
     lastFrameCollisionInfos.reserve(mCachedCapacity);
@@ -88,9 +93,11 @@ void SphereVsCapsuleNarrowPhaseInfoBatch::clear() {
     // allocated in the next frame at a possibly different location in memory (remember that the
     // location of the allocated memory of a single frame allocator might change between two frames)
 
-    mCachedCapacity = overlappingPairs.size();
+    mCachedCapacity = overlappingPairIds.size();
 
-    overlappingPairs.clear(true);
+    overlappingPairIds.clear(true);
+    proxyShapeEntities1.clear(true);
+    proxyShapeEntities2.clear(true);
     shape1ToWorldTransforms.clear(true);
     shape2ToWorldTransforms.clear(true);
     lastFrameCollisionInfos.clear(true);

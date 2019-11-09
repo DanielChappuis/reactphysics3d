@@ -35,7 +35,8 @@
 #include "collision/ContactManifoldInfo.h"
 #include "collision/ContactManifold.h"
 #include "collision/ContactPair.h"
-#include "engine/OverlappingPair.h"
+#include "engine/OverlappingPairs.h"
+#include "engine/OverlappingPairs.h"
 #include "collision/narrowphase/NarrowPhaseInput.h"
 #include "collision/narrowphase/CollisionDispatch.h"
 #include "containers/Map.h"
@@ -89,7 +90,7 @@ class CollisionDetectionSystem {
         CollisionWorld* mWorld;
 
         /// Broad-phase overlapping pairs
-        OverlappingPairMap mOverlappingPairs;
+        OverlappingPairs mOverlappingPairs;
 
         /// Broad-phase system
         BroadPhaseSystem mBroadPhaseSystem;
@@ -122,18 +123,18 @@ class CollisionDetectionSystem {
         List<ContactPair>* mCurrentContactPairs;
 
         /// First map of overlapping pair id to the index of the corresponding pair contact
-        Map<OverlappingPair::OverlappingPairId, uint> mMapPairIdToContactPairIndex1;
+        Map<uint64, uint> mMapPairIdToContactPairIndex1;
 
         /// Second map of overlapping pair id to the index of the corresponding pair contact
-        Map<OverlappingPair::OverlappingPairId, uint> mMapPairIdToContactPairIndex2;
+        Map<uint64, uint> mMapPairIdToContactPairIndex2;
 
         /// Pointer to the map of overlappingPairId to the index of contact pair of the previous frame
         /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
-        Map<OverlappingPair::OverlappingPairId, uint>* mPreviousMapPairIdToContactPairIndex;
+        Map<uint64, uint>* mPreviousMapPairIdToContactPairIndex;
 
         /// Pointer to the map of overlappingPairId to the index of contact pair of the current frame
         /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
-        Map<OverlappingPair::OverlappingPairId, uint>* mCurrentMapPairIdToContactPairIndex;
+        Map<uint64, uint>* mCurrentMapPairIdToContactPairIndex;
 
         /// First list with the contact manifolds
         List<ContactManifold> mContactManifolds1;
@@ -164,8 +165,8 @@ class CollisionDetectionSystem {
 
 #ifdef IS_PROFILING_ACTIVE
 
-		/// Pointer to the profiler
-		Profiler* mProfiler;
+    /// Pointer to the profiler
+    Profiler* mProfiler;
 
 #endif
 
@@ -175,7 +176,10 @@ class CollisionDetectionSystem {
         void computeBroadPhase();
 
         /// Compute the middle-phase collision detection
-        void computeMiddlePhase(OverlappingPairMap& overlappingPairs, NarrowPhaseInput& narrowPhaseInput);
+        void computeMiddlePhase(OverlappingPairs& overlappingPairs, NarrowPhaseInput& narrowPhaseInput);
+
+        // Compute the middle-phase collision detection
+        void computeMiddlePhaseCollisionSnapshot(List<uint64>& convexPairs, List<uint64>& concavePairs, NarrowPhaseInput& narrowPhaseInput);
 
         /// Compute the narrow-phase collision detection
         void computeNarrowPhase();
@@ -205,7 +209,7 @@ class CollisionDetectionSystem {
         bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool reportContacts, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& allocator);
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
-        void computeConvexVsConcaveMiddlePhase(OverlappingPair* pair, MemoryAllocator& allocator,
+        void computeConvexVsConcaveMiddlePhase(uint64 pairId, Entity proxyShape1, Entity proxyShape2, MemoryAllocator& allocator,
                                                NarrowPhaseInput& narrowPhaseInput);
 
         /// Swap the previous and current contacts lists
@@ -214,13 +218,13 @@ class CollisionDetectionSystem {
         /// Convert the potential contact into actual contacts
         void processPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                       bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
-                                      Map<OverlappingPair::OverlappingPairId, uint>* mapPairIdToContactPairIndex,
+                                      Map<uint64, uint>* mapPairIdToContactPairIndex,
                                       List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs,
                                       Map<Entity, List<uint>>& mapBodyToContactPairs);
 
         /// Process the potential contacts after narrow-phase collision detection
         void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
-                                         Map<OverlappingPair::OverlappingPairId, uint>* mapPairIdToContactPairIndex,
+                                         Map<uint64, uint>* mapPairIdToContactPairIndex,
                                          List<ContactManifoldInfo> &potentialContactManifolds, List<ContactPair>* contactPairs,
                                          Map<Entity, List<uint>>& mapBodyToContactPairs);
 
@@ -256,10 +260,10 @@ class CollisionDetectionSystem {
         void processSmoothMeshContacts(OverlappingPair* pair);
 
         /// Filter the overlapping pairs to keep only the pairs where a given body is involved
-        void filterOverlappingPairs(Entity bodyEntity, OverlappingPairMap& outFilteredPairs) const;
+        void filterOverlappingPairs(Entity bodyEntity, List<uint64>& convexPairs, List<uint64>& concavePairs) const;
 
         /// Filter the overlapping pairs to keep only the pairs where two given bodies are involved
-        void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, OverlappingPairMap& outFilteredPairs) const;
+        void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, List<uint64>& convexPairs, List<uint64>& concavePairs) const;
 
     public :
 
@@ -377,12 +381,12 @@ inline void CollisionDetectionSystem::addProxyCollisionShape(ProxyShape* proxySh
 
 // Add a pair of bodies that cannot collide with each other
 inline void CollisionDetectionSystem::addNoCollisionPair(Entity body1Entity, Entity body2Entity) {
-    mNoCollisionPairs.add(OverlappingPair::computeBodiesIndexPair(body1Entity, body2Entity));
+    mNoCollisionPairs.add(OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity));
 }
 
 // Remove a pair of bodies that cannot collide with each other
 inline void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, Entity body2Entity) {
-    mNoCollisionPairs.remove(OverlappingPair::computeBodiesIndexPair(body1Entity, body2Entity));
+    mNoCollisionPairs.remove(OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity));
 }
 
 // Ask for a collision shape to be tested again during broad-phase.
@@ -424,6 +428,7 @@ inline void CollisionDetectionSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
     mBroadPhaseSystem.setProfiler(profiler);
     mCollisionDispatch.setProfiler(profiler);
+    mOverlappingPairs.setProfiler(profiler);
 }
 
 #endif
