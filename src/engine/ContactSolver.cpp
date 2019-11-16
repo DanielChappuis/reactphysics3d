@@ -509,63 +509,68 @@ void ContactSolver::solve() {
 
         for (short int i=0; i<contactConstrait.nbContacts; i++) {
 
+            ContactPointSolver& contractPoint( mContactPoints[contactPointIndex] );
+            const Vector3& contractPointNormal( contractPoint.normal );
+            const Vector3& contractPointR1( contractPoint.r1 );
+            const Vector3& contractPointR2( q );
+
             // --------- Penetration --------- //
 
             // Compute J*v
-            //Vector3 deltaV = v2 + w2.cross(mContactPoints[contactPointIndex].r2) - v1 - w1.cross(mContactPoints[contactPointIndex].r1);
-            Vector3 deltaV(v2.x + w2.y * mContactPoints[contactPointIndex].r2.z - w2.z * mContactPoints[contactPointIndex].r2.y - v1.x -
-                           w1.y * mContactPoints[contactPointIndex].r1.z + w1.z * mContactPoints[contactPointIndex].r1.y,
-                           v2.y + w2.z * mContactPoints[contactPointIndex].r2.x - w2.x * mContactPoints[contactPointIndex].r2.z - v1.y -
-                           w1.z * mContactPoints[contactPointIndex].r1.x + w1.x * mContactPoints[contactPointIndex].r1.z,
-                           v2.z + w2.x * mContactPoints[contactPointIndex].r2.y - w2.y * mContactPoints[contactPointIndex].r2.x - v1.z -
-                           w1.x * mContactPoints[contactPointIndex].r1.y + w1.y * mContactPoints[contactPointIndex].r1.x);
-            decimal deltaVDotN = deltaV.x * mContactPoints[contactPointIndex].normal.x + deltaV.y * mContactPoints[contactPointIndex].normal.y +
-                                 deltaV.z * mContactPoints[contactPointIndex].normal.z;
+            //Vector3 deltaV = v2 + w2.cross(contractPointR2) - v1 - w1.cross(contractPointR1);
+            Vector3 deltaV(v2.x + w2.y * contractPointR2.z - w2.z * contractPointR2.y - v1.x -
+                           w1.y * contractPointR1.z + w1.z * contractPointR1.y,
+                           v2.y + w2.z * contractPointR2.x - w2.x * contractPointR2.z - v1.y -
+                           w1.z * contractPointR1.x + w1.x * contractPointR1.z,
+                           v2.z + w2.x * contractPointR2.y - w2.y * contractPointR2.x - v1.z -
+                           w1.x * contractPointR1.y + w1.y * contractPointR1.x);
+            decimal deltaVDotN = deltaV.x * contractPointNormal.x + deltaV.y * contractPointNormal.y +
+                                 deltaV.z * contractPointNormal.z;
             decimal Jv = deltaVDotN;
 
             // Compute the bias "b" of the constraint
             decimal beta = mIsSplitImpulseActive ? BETA_SPLIT_IMPULSE : BETA;
             decimal biasPenetrationDepth = 0.0;
-            if (mContactPoints[contactPointIndex].penetrationDepth > SLOP) biasPenetrationDepth = -(beta/mTimeStep) *
-                    max(0.0f, float(mContactPoints[contactPointIndex].penetrationDepth - SLOP));
-            decimal b = biasPenetrationDepth + mContactPoints[contactPointIndex].restitutionBias;
+            if (contractPoint.penetrationDepth > SLOP) biasPenetrationDepth = -(beta/mTimeStep) *
+                    max(0.0f, float(contractPoint.penetrationDepth - SLOP));
+            decimal b = biasPenetrationDepth + contractPoint.restitutionBias;
 
             // Compute the Lagrange multiplier lambda
             if (mIsSplitImpulseActive) {
-                deltaLambda = - (Jv + mContactPoints[contactPointIndex].restitutionBias) *
-                        mContactPoints[contactPointIndex].inversePenetrationMass;
+                deltaLambda = - (Jv + contractPoint.restitutionBias) *
+                        contractPoint.inversePenetrationMass;
             }
             else {
-                deltaLambda = - (Jv + b) * mContactPoints[contactPointIndex].inversePenetrationMass;
+                deltaLambda = - (Jv + b) * contractPoint.inversePenetrationMass;
             }
-            lambdaTemp = mContactPoints[contactPointIndex].penetrationImpulse;
-            mContactPoints[contactPointIndex].penetrationImpulse = std::max(mContactPoints[contactPointIndex].penetrationImpulse +
+            lambdaTemp = contractPoint.penetrationImpulse;
+            contractPoint.penetrationImpulse = std::max(contractPoint.penetrationImpulse +
                                                        deltaLambda, decimal(0.0));
-            deltaLambda = mContactPoints[contactPointIndex].penetrationImpulse - lambdaTemp;
+            deltaLambda = contractPoint.penetrationImpulse - lambdaTemp;
 
-            Vector3 linearImpulse(mContactPoints[contactPointIndex].normal.x * deltaLambda,
-                                  mContactPoints[contactPointIndex].normal.y * deltaLambda,
-                                  mContactPoints[contactPointIndex].normal.z * deltaLambda);
+            Vector3 linearImpulse(contractPointNormal.x * deltaLambda,
+                                  contractPointNormal.y * deltaLambda,
+                                  contractPointNormal.z * deltaLambda);
 
             // Update the velocities of the body 1 by applying the impulse P
             mLinearVelocities[contactConstraintIndexBody1].x -= contactConstrait.massInverseBody1 * linearImpulse.x;
             mLinearVelocities[contactConstraintIndexBody1].y -= contactConstrait.massInverseBody1 * linearImpulse.y;
             mLinearVelocities[contactConstraintIndexBody1].z -= contactConstrait.massInverseBody1 * linearImpulse.z;
 
-            mAngularVelocities[contactConstraintIndexBody1].x -= mContactPoints[contactPointIndex].i1TimesR1CrossN.x * deltaLambda;
-            mAngularVelocities[contactConstraintIndexBody1].y -= mContactPoints[contactPointIndex].i1TimesR1CrossN.y * deltaLambda;
-            mAngularVelocities[contactConstraintIndexBody1].z -= mContactPoints[contactPointIndex].i1TimesR1CrossN.z * deltaLambda;
+            mAngularVelocities[contactConstraintIndexBody1].x -= contractPoint.i1TimesR1CrossN.x * deltaLambda;
+            mAngularVelocities[contactConstraintIndexBody1].y -= contractPoint.i1TimesR1CrossN.y * deltaLambda;
+            mAngularVelocities[contactConstraintIndexBody1].z -= contractPoint.i1TimesR1CrossN.z * deltaLambda;
 
             // Update the velocities of the body 2 by applying the impulse P
             mLinearVelocities[contactConstraintIndexBody2].x += contactConstrait.massInverseBody2 * linearImpulse.x;
             mLinearVelocities[contactConstraintIndexBody2].y += contactConstrait.massInverseBody2 * linearImpulse.y;
             mLinearVelocities[contactConstraintIndexBody2].z += contactConstrait.massInverseBody2 * linearImpulse.z;
 
-            mAngularVelocities[contactConstraintIndexBody2].x += mContactPoints[contactPointIndex].i2TimesR2CrossN.x * deltaLambda;
-            mAngularVelocities[contactConstraintIndexBody2].y += mContactPoints[contactPointIndex].i2TimesR2CrossN.y * deltaLambda;
-            mAngularVelocities[contactConstraintIndexBody2].z += mContactPoints[contactPointIndex].i2TimesR2CrossN.z * deltaLambda;
+            mAngularVelocities[contactConstraintIndexBody2].x += contractPoint.i2TimesR2CrossN.x * deltaLambda;
+            mAngularVelocities[contactConstraintIndexBody2].y += contractPoint.i2TimesR2CrossN.y * deltaLambda;
+            mAngularVelocities[contactConstraintIndexBody2].z += contractPoint.i2TimesR2CrossN.z * deltaLambda;
 
-            sumPenetrationImpulse += mContactPoints[contactPointIndex].penetrationImpulse;
+            sumPenetrationImpulse += contractPoint.penetrationImpulse;
 
             // If the split impulse position correction is active
             if (mIsSplitImpulseActive) {
@@ -576,45 +581,45 @@ void ContactSolver::solve() {
                 const Vector3& v2Split = mSplitLinearVelocities[contactConstraintIndexBody2];
                 const Vector3& w2Split = mSplitAngularVelocities[contactConstraintIndexBody2];
 
-                //Vector3 deltaVSplit = v2Split + w2Split.cross(mContactPoints[contactPointIndex].r2) - v1Split - w1Split.cross(mContactPoints[contactPointIndex].r1);
-                Vector3 deltaVSplit(v2Split.x + w2Split.y * mContactPoints[contactPointIndex].r2.z - w2Split.z * mContactPoints[contactPointIndex].r2.y - v1Split.x -
-                                    w1Split.y * mContactPoints[contactPointIndex].r1.z + w1Split.z * mContactPoints[contactPointIndex].r1.y,
-                                    v2Split.y + w2Split.z * mContactPoints[contactPointIndex].r2.x - w2Split.x * mContactPoints[contactPointIndex].r2.z - v1Split.y -
-                                    w1Split.z * mContactPoints[contactPointIndex].r1.x + w1Split.x * mContactPoints[contactPointIndex].r1.z,
-                                    v2Split.z + w2Split.x * mContactPoints[contactPointIndex].r2.y - w2Split.y * mContactPoints[contactPointIndex].r2.x - v1Split.z -
-                                    w1Split.x * mContactPoints[contactPointIndex].r1.y + w1Split.y * mContactPoints[contactPointIndex].r1.x);
-                decimal JvSplit = deltaVSplit.x * mContactPoints[contactPointIndex].normal.x +
-                                  deltaVSplit.y * mContactPoints[contactPointIndex].normal.y +
-                                  deltaVSplit.z * mContactPoints[contactPointIndex].normal.z;
+                //Vector3 deltaVSplit = v2Split + w2Split.cross(contractPointR2) - v1Split - w1Split.cross(contractPointR1);
+                Vector3 deltaVSplit(v2Split.x + w2Split.y * contractPointR2.z - w2Split.z * contractPointR2.y - v1Split.x -
+                                    w1Split.y * contractPointR1.z + w1Split.z * contractPointR1.y,
+                                    v2Split.y + w2Split.z * contractPointR2.x - w2Split.x * contractPointR2.z - v1Split.y -
+                                    w1Split.z * contractPointR1.x + w1Split.x * contractPointR1.z,
+                                    v2Split.z + w2Split.x * contractPointR2.y - w2Split.y * contractPointR2.x - v1Split.z -
+                                    w1Split.x * contractPointR1.y + w1Split.y * contractPointR1.x);
+                decimal JvSplit = deltaVSplit.x * contractPointNormal.x +
+                                  deltaVSplit.y * contractPointNormal.y +
+                                  deltaVSplit.z * contractPointNormal.z;
                 decimal deltaLambdaSplit = - (JvSplit + biasPenetrationDepth) *
-                        mContactPoints[contactPointIndex].inversePenetrationMass;
-                decimal lambdaTempSplit = mContactPoints[contactPointIndex].penetrationSplitImpulse;
-                mContactPoints[contactPointIndex].penetrationSplitImpulse = std::max(
-                            mContactPoints[contactPointIndex].penetrationSplitImpulse +
+                        contractPoint.inversePenetrationMass;
+                decimal lambdaTempSplit = contractPoint.penetrationSplitImpulse;
+                contractPoint.penetrationSplitImpulse = std::max(
+                            contractPoint.penetrationSplitImpulse +
                             deltaLambdaSplit, decimal(0.0));
-                deltaLambdaSplit = mContactPoints[contactPointIndex].penetrationSplitImpulse - lambdaTempSplit;
+                deltaLambdaSplit = contractPoint.penetrationSplitImpulse - lambdaTempSplit;
 
-                Vector3 linearImpulse(mContactPoints[contactPointIndex].normal.x * deltaLambdaSplit,
-                                      mContactPoints[contactPointIndex].normal.y * deltaLambdaSplit,
-                                      mContactPoints[contactPointIndex].normal.z * deltaLambdaSplit);
+                Vector3 linearImpulse(contractPointNormal.x * deltaLambdaSplit,
+                                      contractPointNormal.y * deltaLambdaSplit,
+                                      contractPointNormal.z * deltaLambdaSplit);
 
                 // Update the velocities of the body 1 by applying the impulse P
                 mSplitLinearVelocities[contactConstraintIndexBody1].x -= contactConstrait.massInverseBody1 * linearImpulse.x;
                 mSplitLinearVelocities[contactConstraintIndexBody1].y -= contactConstrait.massInverseBody1 * linearImpulse.y;
                 mSplitLinearVelocities[contactConstraintIndexBody1].z -= contactConstrait.massInverseBody1 * linearImpulse.z;
 
-                mSplitAngularVelocities[contactConstraintIndexBody1].x -= mContactPoints[contactPointIndex].i1TimesR1CrossN.x * deltaLambdaSplit;
-                mSplitAngularVelocities[contactConstraintIndexBody1].y -= mContactPoints[contactPointIndex].i1TimesR1CrossN.y * deltaLambdaSplit;
-                mSplitAngularVelocities[contactConstraintIndexBody1].z -= mContactPoints[contactPointIndex].i1TimesR1CrossN.z * deltaLambdaSplit;
+                mSplitAngularVelocities[contactConstraintIndexBody1].x -= contractPoint.i1TimesR1CrossN.x * deltaLambdaSplit;
+                mSplitAngularVelocities[contactConstraintIndexBody1].y -= contractPoint.i1TimesR1CrossN.y * deltaLambdaSplit;
+                mSplitAngularVelocities[contactConstraintIndexBody1].z -= contractPoint.i1TimesR1CrossN.z * deltaLambdaSplit;
 
                 // Update the velocities of the body 1 by applying the impulse P
                 mSplitLinearVelocities[contactConstraintIndexBody2].x += contactConstrait.massInverseBody2 * linearImpulse.x;
                 mSplitLinearVelocities[contactConstraintIndexBody2].y += contactConstrait.massInverseBody2 * linearImpulse.y;
                 mSplitLinearVelocities[contactConstraintIndexBody2].z += contactConstrait.massInverseBody2 * linearImpulse.z;
 
-                mSplitAngularVelocities[contactConstraintIndexBody2].x += mContactPoints[contactPointIndex].i2TimesR2CrossN.x * deltaLambdaSplit;
-                mSplitAngularVelocities[contactConstraintIndexBody2].y += mContactPoints[contactPointIndex].i2TimesR2CrossN.y * deltaLambdaSplit;
-                mSplitAngularVelocities[contactConstraintIndexBody2].z += mContactPoints[contactPointIndex].i2TimesR2CrossN.z * deltaLambdaSplit;
+                mSplitAngularVelocities[contactConstraintIndexBody2].x += contractPoint.i2TimesR2CrossN.x * deltaLambdaSplit;
+                mSplitAngularVelocities[contactConstraintIndexBody2].y += contractPoint.i2TimesR2CrossN.y * deltaLambdaSplit;
+                mSplitAngularVelocities[contactConstraintIndexBody2].z += contractPoint.i2TimesR2CrossN.z * deltaLambdaSplit;
             }
 
             contactPointIndex++;
