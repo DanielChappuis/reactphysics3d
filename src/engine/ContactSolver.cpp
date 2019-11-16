@@ -512,7 +512,7 @@ void ContactSolver::solve() {
             ContactPointSolver& contractPoint( mContactPoints[contactPointIndex] );
             const Vector3& contractPointNormal( contractPoint.normal );
             const Vector3& contractPointR1( contractPoint.r1 );
-            const Vector3& contractPointR2( q );
+            const Vector3& contractPointR2( contractPoint.r2 );
 
             // --------- Penetration --------- //
 
