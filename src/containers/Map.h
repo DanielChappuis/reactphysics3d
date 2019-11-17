@@ -123,6 +123,7 @@ class Map {
 
             // Compute the next larger prime size
             mCapacity = getPrimeSize(capacity);
+            assert(mCapacity >= 0);
 
             // Allocate memory for the buckets
             mBuckets = static_cast<int*>(mAllocator.allocate(mCapacity * sizeof(int)));
@@ -142,6 +143,8 @@ class Map {
             mNbUsedEntries = 0;
             mNbFreeEntries = 0;
             mFreeIndex = -1;
+
+            assert(size() >= 0);
         }
 
         /// Expand the capacity of the map
@@ -200,6 +203,8 @@ class Map {
             mCapacity = newCapacity;
             mBuckets = newBuckets;
             mEntries = newEntries;
+
+            assert(mCapacity >= 0);
         }
 
         /// Return the index of the entry with a given key or -1 if there is no entry with this key
@@ -371,6 +376,8 @@ class Map {
           :mNbUsedEntries(map.mNbUsedEntries), mNbFreeEntries(map.mNbFreeEntries), mCapacity(map.mCapacity),
            mBuckets(nullptr), mEntries(nullptr), mAllocator(map.mAllocator), mFreeIndex(map.mFreeIndex) {
 
+            assert(capacity() >= 0);
+
             if (mCapacity > 0) {
 
                 // Allocate memory for the buckets
@@ -380,7 +387,7 @@ class Map {
                 mEntries = static_cast<Entry*>(mAllocator.allocate(mCapacity * sizeof(Entry)));
 
                 // Copy the buckets
-                std::uninitialized_copy(map.mBuckets, map.mBuckets + mCapacity, mBuckets); 
+                std::uninitialized_copy(map.mBuckets, map.mBuckets + mCapacity, mBuckets);
 
                 // Copy the entries
                 for (int i=0; i < mCapacity; i++) {
@@ -392,7 +399,11 @@ class Map {
                        new (mEntries[i].keyValue) Pair<K,V>(*(map.mEntries[i].keyValue));
                     }
                 }
+
             }
+
+            assert(size() >= 0);
+            assert((*this) == map);
         }
 
         /// Destructor
@@ -483,6 +494,7 @@ class Map {
                 mNbUsedEntries++;
             }
 
+            assert(size() >= 0);
             assert(mEntries[entryIndex].keyValue == nullptr);
             mEntries[entryIndex].hashCode = hashCode;
             mEntries[entryIndex].next = mBuckets[bucket];
@@ -551,6 +563,8 @@ class Map {
                 }
             }
 
+            assert(size() >= 0);
+
             // Return the end iterator
             return end();
         }
@@ -575,6 +589,8 @@ class Map {
                 mFreeIndex = -1;
                 mNbUsedEntries = 0;
                 mNbFreeEntries = 0;
+
+                assert(size() >= 0);
             }
 
             // If elements have been allocated
@@ -599,6 +615,7 @@ class Map {
 
         /// Return the number of elements in the map
         int size() const {
+            assert(mNbUsedEntries - mNbFreeEntries >= 0);
             return mNbUsedEntries - mNbFreeEntries;
         }
 
@@ -649,6 +666,7 @@ class Map {
             }
 
             if (entry == -1) {
+                assert(false);
                 throw std::runtime_error("No item with given key has been found in the map");
             }
 
@@ -716,6 +734,7 @@ class Map {
 
                     // Compute the next larger prime size
                     mCapacity = getPrimeSize(map.mCapacity);
+                    assert(mCapacity >= 0);
 
                     // Allocate memory for the buckets
                     mBuckets = static_cast<int*>(mAllocator.allocate(mCapacity * sizeof(int)));
@@ -742,6 +761,8 @@ class Map {
                     mFreeIndex = map.mFreeIndex;
                 }
             }
+
+            assert(size() >= 0);
 
             return *this;
         }

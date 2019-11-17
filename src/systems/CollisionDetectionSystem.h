@@ -89,14 +89,14 @@ class CollisionDetectionSystem {
         /// Pointer to the physics world
         CollisionWorld* mWorld;
 
+        /// Set of pair of bodies that cannot collide between each other
+        Set<bodypair> mNoCollisionPairs;
+
         /// Broad-phase overlapping pairs
         OverlappingPairs mOverlappingPairs;
 
         /// Broad-phase system
         BroadPhaseSystem mBroadPhaseSystem;
-
-        /// Set of pair of bodies that cannot collide between each other
-        Set<bodypair> mNoCollisionPairs;
 
         /// Map a broad-phase id with the corresponding entity of the proxy-shape
         Map<int, Entity> mMapBroadPhaseIdToProxyShapeEntity;
@@ -197,10 +197,7 @@ class CollisionDetectionSystem {
         void computeSnapshotContactPairs(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, List<Pair<Entity, Entity>>& overlapPairs) const;
 
         /// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
-        void updateOverlappingPairs(const List<Pair<int, int>>& overlappingNodes);
-
-        /// Set the needToTestOverlap value of each overlapping pair to true
-        void resetNeedToTestOverlap();
+        void updateOverlappingPairs(const List<Pair<int32, int32> >& overlappingNodes);
 
         /// Remove pairs that are not overlapping anymore
         void removeNonOverlappingPairs();
@@ -271,7 +268,7 @@ class CollisionDetectionSystem {
 
         /// Constructor
         CollisionDetectionSystem(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents,
-                           TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents,
+                           TransformComponents& transformComponents, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
                            MemoryManager& memoryManager);
 
         /// Destructor
@@ -290,7 +287,7 @@ class CollisionDetectionSystem {
         void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
 
         /// Remove a proxy collision shape from the collision detection
-        void removeProxyCollisionShape(ProxyShape* proxyShape);
+        void removeProxyCollisionShape(ProxyShape *proxyShape);
 
         /// Update a proxy collision shape (that has moved for instance)
         void updateProxyShape(Entity proxyShapeEntity, decimal timeStep);
@@ -306,6 +303,9 @@ class CollisionDetectionSystem {
 
         /// Ask for a collision shape to be tested again during broad-phase.
         void askForBroadPhaseCollisionCheck(ProxyShape* shape);
+
+        /// Notify that the overlapping pairs where a given proxy-shape is involved need to be tested for overlap
+        void notifyOverlappingPairsToTestOverlap(ProxyShape* proxyShape);
 
         /// Report contacts
         void reportContacts();
@@ -395,7 +395,7 @@ inline void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, 
 inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
 
     if (shape->getBroadPhaseId() != -1) {
-        mBroadPhaseSystem.addMovedCollisionShape(shape->getBroadPhaseId());
+        mBroadPhaseSystem.addMovedCollisionShape(shape->getBroadPhaseId(), shape);
     }
 }
 

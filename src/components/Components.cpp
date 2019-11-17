@@ -72,8 +72,6 @@ uint32 Components::prepareAddComponent(bool isSleeping) {
 
         // Add the component at the end of the array
         index = mNbComponents;
-
-        mDisabledStartIndex = index;
     }
     // If the component to add is not part of a disabled entity
     else {

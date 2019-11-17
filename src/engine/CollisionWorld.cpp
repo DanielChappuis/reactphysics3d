@@ -43,7 +43,7 @@ CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logge
                  mJointsComponents(mMemoryManager.getBaseAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getBaseAllocator()),
                  mFixedJointsComponents(mMemoryManager.getBaseAllocator()), mHingeJointsComponents(mMemoryManager.getBaseAllocator()),
                  mSliderJointsComponents(mMemoryManager.getBaseAllocator()),
-                 mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mRigidBodyComponents, mMemoryManager),
+                 mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents, mMemoryManager),
                  mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {

@@ -54,7 +54,7 @@ PoolAllocator::PoolAllocator() {
     // If the mMapSizeToHeapIndex has not been initialized yet
     if (!isMapSizeToHeadIndexInitialized) {
 
-        // Initialize the array that contains the sizes the memory units that will
+        // Initialize the array that contains the sizes of the memory units that will
         // be allocated in each different heap
         for (uint i=0; i < NB_HEAPS; i++) {
             mUnitSizes[i] = (i+1) * 8;
@@ -99,6 +99,8 @@ PoolAllocator::~PoolAllocator() {
 // Allocate memory of a given size (in bytes) and return a pointer to the
 // allocated memory.
 void* PoolAllocator::allocate(size_t size) {
+
+    assert(size > 0);
 
     // We cannot allocate zero bytes
     if (size == 0) return nullptr;
@@ -172,6 +174,8 @@ void* PoolAllocator::allocate(size_t size) {
 
 // Release previously allocated memory.
 void PoolAllocator::release(void* pointer, size_t size) {
+
+    assert(size > 0);
 
     // Cannot release a 0-byte allocated memory
     if (size == 0) return;

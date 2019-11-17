@@ -52,9 +52,6 @@ class Components {
         /// Number of components to allocated at the beginning
         const uint32 INIT_NB_ALLOCATED_COMPONENTS = 10;
 
-        /// Number of valid entities to hit before stopping garbage collection
-        const uint32 GARBAGE_COLLECTION_MAX_VALID_ENTITIES = 5;
-
         // -------------------- Attributes -------------------- //
 
         /// Memory allocator

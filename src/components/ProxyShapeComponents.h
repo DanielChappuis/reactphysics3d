@@ -92,6 +92,9 @@ class ProxyShapeComponents : public Components {
         /// Array with the local-to-world transforms of the proxy-shapes
         Transform* mLocalToWorldTransforms;
 
+        /// Array with the list of involved overlapping pairs for each proxy-shape
+        List<uint64>* mOverlappingPairs;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -184,6 +187,9 @@ class ProxyShapeComponents : public Components {
 
         /// Set the local-to-world transform of a proxy-shape
         void setLocalToWorldTransform(Entity proxyShapeEntity, const Transform& transform);
+
+        /// Return a reference to the list of overlapping pairs for a given proxy-shape
+        List<uint64>& getOverlappingPairs(Entity proxyShapeEntity);
 
         // -------------------- Friendship -------------------- //
 
@@ -300,6 +306,14 @@ inline void ProxyShapeComponents::setLocalToWorldTransform(Entity proxyShapeEnti
    assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
 
    mLocalToWorldTransforms[mMapEntityToComponentIndex[proxyShapeEntity]] = transform;
+}
+
+// Return a reference to the list of overlapping pairs for a given proxy-shape
+inline List<uint64>& ProxyShapeComponents::getOverlappingPairs(Entity proxyShapeEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+
+    return mOverlappingPairs[mMapEntityToComponentIndex[proxyShapeEntity]];
 }
 
 }

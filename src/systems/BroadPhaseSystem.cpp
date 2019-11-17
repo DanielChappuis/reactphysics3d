@@ -51,12 +51,9 @@ BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection,
 }
 
 // Return true if the two broad-phase collision shapes are overlapping
-bool BroadPhaseSystem::testOverlappingShapes(Entity proxyShape1Entity, Entity proxyShape2Entity) const {
+bool BroadPhaseSystem::testOverlappingShapes(int32 shape1BroadPhaseId, int32 shape2BroadPhaseId) const {
 
     RP3D_PROFILE("CollisionDetectionSystem::testOverlappingShapes()", mProfiler);
-
-    const int32 shape1BroadPhaseId = mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity);
-    const int32 shape2BroadPhaseId = mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity);
 
     assert(shape1BroadPhaseId != -1 && shape2BroadPhaseId != -1);
 
@@ -92,7 +89,7 @@ void BroadPhaseSystem::addProxyCollisionShape(ProxyShape* proxyShape, const AABB
 
     // Add the collision shape into the array of bodies that have moved (or have been created)
     // during the last simulation step
-    addMovedCollisionShape(proxyShape->getBroadPhaseId());
+    addMovedCollisionShape(proxyShape->getBroadPhaseId(), proxyShape);
 }
 
 // Remove a proxy collision shape from the broad-phase collision detection
@@ -130,11 +127,13 @@ void BroadPhaseSystem::updateProxyShapes(decimal timeStep) {
     RP3D_PROFILE("BroadPhaseSystem::updateProxyShapes()", mProfiler);
 
     // Update all the enabled proxy-shape components
-    updateProxyShapesComponents(0, mProxyShapesComponents.getNbEnabledComponents(), timeStep);
+    if (mProxyShapesComponents.getNbEnabledComponents() > 0) {
+        updateProxyShapesComponents(0, mProxyShapesComponents.getNbEnabledComponents(), timeStep);
+    }
 }
 
 // Notify the broad-phase that a collision shape has moved and need to be updated
-void BroadPhaseSystem::updateProxyShapeInternal(int32 broadPhaseId, const AABB& aabb, const Vector3& displacement) {
+void BroadPhaseSystem::updateProxyShapeInternal(int32 broadPhaseId, ProxyShape* proxyShape, const AABB& aabb, const Vector3& displacement) {
 
     assert(broadPhaseId >= 0);
 
@@ -147,7 +146,7 @@ void BroadPhaseSystem::updateProxyShapeInternal(int32 broadPhaseId, const AABB& 
 
         // Add the collision shape into the array of shapes that have moved (or have been created)
         // during the last simulation step
-        addMovedCollisionShape(broadPhaseId);
+        addMovedCollisionShape(broadPhaseId, proxyShape);
     }
 }
 
@@ -167,6 +166,7 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbI
     // For each proxy-shape component to update
     for (uint32 i = startIndex; i < startIndex + nbItems; i++) {
 
+        // TODO : Can we remove this test
         const int32 broadPhaseId = mProxyShapesComponents.mBroadPhaseIds[i];
         if (broadPhaseId != -1) {
 
@@ -188,13 +188,27 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbI
             mProxyShapesComponents.mCollisionShapes[i]->computeAABB(aabb, transform * mProxyShapesComponents.mLocalToBodyTransforms[i]);
 
             // Update the broad-phase state for the proxy collision shape
-            updateProxyShapeInternal(broadPhaseId, aabb, displacement);
+            updateProxyShapeInternal(broadPhaseId, mProxyShapesComponents.mProxyShapes[i], aabb, displacement);
         }
     }
 }
 
+
+// Add a collision shape in the array of shapes that have moved in the last simulation step
+// and that need to be tested again for broad-phase overlapping.
+void BroadPhaseSystem::addMovedCollisionShape(int broadPhaseID, ProxyShape* proxyShape) {
+
+    assert(broadPhaseID != -1);
+
+    // Store the broad-phase ID into the array of shapes that have moved
+    mMovedShapes.add(broadPhaseID);
+
+    // Notify that the overlapping pairs where this shape is involved need to be tested for overlap
+    mCollisionDetection.notifyOverlappingPairsToTestOverlap(proxyShape);
+}
+
 // Compute all the overlapping pairs of collision shapes
-void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int, int>>& overlappingNodes) {
+void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int32, int32>>& overlappingNodes) {
 
     RP3D_PROFILE("CollisionDetectionSystem::computeOverlappingPairs()", mProfiler);
 

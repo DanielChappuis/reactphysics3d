@@ -273,7 +273,6 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     rigidBody->removeAllCollisionShapes();
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
-    JointListElement* element;
     const List<Entity>& joints = mRigidBodyComponents.getJoints(rigidBody->getEntity());
     for (uint32 i=0; i < joints.size(); i++) {
         destroyJoint(mJointsComponents.getJoint(joints[i]));
