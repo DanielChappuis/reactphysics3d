@@ -28,20 +28,22 @@
 #include "OverlappingPairs.h"
 #include "containers/containers_common.h"
 #include "collision/ContactPointInfo.h"
+#include "collision/narrowphase/NarrowPhaseAlgorithm.h"
+#include "collision/narrowphase/CollisionDispatch.h"
 
 using namespace reactphysics3d;
 
 // Constructor
 OverlappingPairs::OverlappingPairs(MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator, ProxyShapeComponents& proxyShapeComponents,
-                                   CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents, Set<bodypair> &noCollisionPairs)
+                                   CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents, Set<bodypair> &noCollisionPairs, CollisionDispatch &collisionDispatch)
                 : mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
                   mNbPairs(0), mConcavePairsStartIndex(0), mPairDataSize(sizeof(uint64) + sizeof(int32) + sizeof(int32) + sizeof(Entity) +
                                                                          sizeof(Entity) + sizeof(Map<ShapeIdPair, LastFrameCollisionInfo*>) +
-                                                                         sizeof(bool) + sizeof(bool)),
+                                                                         sizeof(bool) + sizeof(bool) + sizeof(NarrowPhaseAlgorithmType)),
                   mNbAllocatedPairs(0), mBuffer(nullptr),
                   mMapPairIdToPairIndex(persistentMemoryAllocator),
                   mProxyShapeComponents(proxyShapeComponents), mCollisionBodyComponents(collisionBodyComponents),
-                  mRigidBodyComponents(rigidBodyComponents), mNoCollisionPairs(noCollisionPairs) {
+                  mRigidBodyComponents(rigidBodyComponents), mNoCollisionPairs(noCollisionPairs), mCollisionDispatch(collisionDispatch) {
     
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_PAIRS);
@@ -206,6 +208,7 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
     Map<ShapeIdPair, LastFrameCollisionInfo*>* newLastFrameCollisionInfos = reinterpret_cast<Map<ShapeIdPair, LastFrameCollisionInfo*>*>(newProxyShapes2 + nbPairsToAllocate);
     bool* newNeedToTestOverlap = reinterpret_cast<bool*>(newLastFrameCollisionInfos + nbPairsToAllocate);
     bool* newIsActive = reinterpret_cast<bool*>(newNeedToTestOverlap + nbPairsToAllocate);
+    NarrowPhaseAlgorithmType* newNarrowPhaseAlgorithmType = reinterpret_cast<NarrowPhaseAlgorithmType*>(newIsActive + nbPairsToAllocate);
 
     // If there was already pairs before
     if (mNbPairs > 0) {
@@ -219,6 +222,7 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
         memcpy(newLastFrameCollisionInfos, mLastFrameCollisionInfos, mNbPairs * sizeof(Map<ShapeIdPair, LastFrameCollisionInfo*>));
         memcpy(newNeedToTestOverlap, mNeedToTestOverlap, mNbPairs * sizeof(bool));
         memcpy(newIsActive, mIsActive, mNbPairs * sizeof(bool));
+        memcpy(newNarrowPhaseAlgorithmType, mNarrowPhaseAlgorithmType, mNbPairs * sizeof(NarrowPhaseAlgorithmType));
 
         // Deallocate previous memory
         mPersistentAllocator.release(mBuffer, mNbAllocatedPairs * mPairDataSize);
@@ -233,6 +237,7 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
     mLastFrameCollisionInfos = newLastFrameCollisionInfos;
     mNeedToTestOverlap = newNeedToTestOverlap;
     mIsActive = newIsActive;
+    mNarrowPhaseAlgorithmType = newNarrowPhaseAlgorithmType;
 
     mNbAllocatedPairs = nbPairsToAllocate;
 }
@@ -256,6 +261,9 @@ uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2, bool is
 
     assert(!mMapPairIdToPairIndex.containsKey(pairId));
 
+    // Select the narrow phase algorithm to use according to the two collision shapes
+    NarrowPhaseAlgorithmType algorithmType = mCollisionDispatch.selectNarrowPhaseAlgorithm(collisionShape1->getType(),
+                                                                                           collisionShape2->getType());
     // Insert the new component data
     new (mPairIds + index) uint64(pairId);
     new (mPairBroadPhaseId1 + index) int32(shape1->getBroadPhaseId());
@@ -265,6 +273,8 @@ uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2, bool is
     new (mLastFrameCollisionInfos + index) Map<ShapeIdPair, LastFrameCollisionInfo*>(mPersistentAllocator);
     new (mNeedToTestOverlap + index) bool(false);
     new (mIsActive + index) bool(isActive);
+    new (mNarrowPhaseAlgorithmType + index) NarrowPhaseAlgorithmType(algorithmType);
+
 
     // Map the entity with the new component lookup index
     mMapPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, index));
@@ -298,6 +308,7 @@ void OverlappingPairs::movePairToIndex(uint64 srcIndex, uint64 destIndex) {
     new (mLastFrameCollisionInfos + destIndex) Map<ShapeIdPair, LastFrameCollisionInfo*>(mLastFrameCollisionInfos[srcIndex]);
     mNeedToTestOverlap[destIndex] = mNeedToTestOverlap[srcIndex];
     mIsActive[destIndex] = mIsActive[srcIndex];
+    new (mNarrowPhaseAlgorithmType + destIndex) NarrowPhaseAlgorithmType(mNarrowPhaseAlgorithmType[srcIndex]);
 
     // Destroy the source pair
     destroyPair(srcIndex);
@@ -322,6 +333,7 @@ void OverlappingPairs::swapPairs(uint64 index1, uint64 index2) {
     Map<ShapeIdPair, LastFrameCollisionInfo*> lastFrameCollisionInfo(mLastFrameCollisionInfos[index1]);
     bool needTestOverlap = mNeedToTestOverlap[index1];
     bool isActive = mIsActive[index1];
+    NarrowPhaseAlgorithmType narrowPhaseAlgorithmType = mNarrowPhaseAlgorithmType[index1];
 
     // Destroy pair 1
     destroyPair(index1);
@@ -337,6 +349,7 @@ void OverlappingPairs::swapPairs(uint64 index1, uint64 index2) {
     new (mLastFrameCollisionInfos + index2) Map<ShapeIdPair, LastFrameCollisionInfo*>(lastFrameCollisionInfo);
     mNeedToTestOverlap[index2] = needTestOverlap;
     mIsActive[index2] = isActive;
+    new (mNarrowPhaseAlgorithmType + index2) NarrowPhaseAlgorithmType(narrowPhaseAlgorithmType);
 
     // Update the pairID to pair index mapping
     mMapPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, index2));
@@ -358,6 +371,7 @@ void OverlappingPairs::destroyPair(uint64 index) {
     mProxyShapes1[index].~Entity();
     mProxyShapes2[index].~Entity();
     mLastFrameCollisionInfos[index].~Map<ShapeIdPair, LastFrameCollisionInfo*>();
+    mNarrowPhaseAlgorithmType[index].~NarrowPhaseAlgorithmType();
 }
 
 // Add a new last frame collision info if it does not exist for the given shapes already

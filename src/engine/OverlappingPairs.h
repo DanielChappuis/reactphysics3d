@@ -43,7 +43,9 @@ namespace reactphysics3d {
 
 // Declarations
 struct NarrowPhaseInfoBatch;
+enum class NarrowPhaseAlgorithmType;
 class CollisionShape;
+class CollisionDispatch;
 
 // Structure LastFrameCollisionInfo
 /**
@@ -171,6 +173,9 @@ class OverlappingPairs {
         /// True if the overlapping pair is active (at least one body of the pair is active and not static)
         bool* mIsActive;
 
+        /// Array with the pointer to the narrow-phase algorithm for each overlapping pair
+        NarrowPhaseAlgorithmType* mNarrowPhaseAlgorithmType;
+
         /// Reference to the proxy-shapes components
         ProxyShapeComponents& mProxyShapeComponents;
 
@@ -182,6 +187,9 @@ class OverlappingPairs {
 
         /// Reference to the set of bodies that cannot collide with each others
         Set<bodypair>& mNoCollisionPairs;
+
+        /// Reference to the collision dispatch
+        CollisionDispatch& mCollisionDispatch;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -214,7 +222,8 @@ class OverlappingPairs {
         /// Constructor
         OverlappingPairs(MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator,
                          ProxyShapeComponents& proxyShapeComponents, CollisionBodyComponents& collisionBodyComponents,
-                         RigidBodyComponents& rigidBodyComponents, Set<bodypair>& noCollisionPairs);
+                         RigidBodyComponents& rigidBodyComponents, Set<bodypair>& noCollisionPairs,
+                         CollisionDispatch& collisionDispatch);
 
         /// Destructor
         ~OverlappingPairs();

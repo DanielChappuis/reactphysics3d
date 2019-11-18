@@ -57,7 +57,7 @@ CollisionDetectionSystem::CollisionDetectionSystem(CollisionWorld* world, ProxyS
                      mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()),
                      mOverlappingPairs(mMemoryManager.getPoolAllocator(), mMemoryManager.getSingleFrameAllocator(), mProxyShapesComponents,
-                                       collisionBodyComponents, rigidBodyComponents, mNoCollisionPairs),
+                                       collisionBodyComponents, rigidBodyComponents, mNoCollisionPairs, mCollisionDispatch),
                      mBroadPhaseSystem(*this, mProxyShapesComponents, transformComponents, rigidBodyComponents),
                      mMapBroadPhaseIdToProxyShapeEntity(memoryManager.getPoolAllocator()),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator(), mOverlappingPairs), mPotentialContactPoints(mMemoryManager.getSingleFrameAllocator()),
@@ -220,12 +220,15 @@ void CollisionDetectionSystem::computeMiddlePhase(OverlappingPairs& overlappingP
         const Entity proxyShape1Entity = overlappingPairs.mProxyShapes1[i];
         const Entity proxyShape2Entity = overlappingPairs.mProxyShapes2[i];
 
-        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != -1);
-        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity) != -1);
-        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity));
+        const uint proxyShape1Index = mProxyShapesComponents.getEntityIndex(proxyShape1Entity);
+        const uint proxyShape2Index = mProxyShapesComponents.getEntityIndex(proxyShape2Entity);
 
-        const Entity body1Entity = mProxyShapesComponents.getBody(proxyShape1Entity);
-        const Entity body2Entity = mProxyShapesComponents.getBody(proxyShape2Entity);
+        assert(mProxyShapesComponents.mBroadPhaseId[proxyShape1Index] != -1);
+        assert(mProxyShapesComponents.mBroadPhaseId[proxyShape2Index] != -1);
+        assert(mProxyShapesComponents.mBroadPhaseId[proxyShape1Index] != mProxyShapesComponents.mBroadPhaseId[proxyShape2Index]);
+
+        const Entity body1Entity = mProxyShapesComponents.mBodiesEntities[proxyShape1Index];
+        const Entity body2Entity = mProxyShapesComponents.mBodiesEntities[proxyShape2Index];
 
         const bool isStaticRigidBody1 = mWorld->mRigidBodyComponents.hasComponent(body1Entity) &&
                                         mWorld->mRigidBodyComponents.getBodyType(body1Entity) == BodyType::STATIC;
@@ -243,18 +246,16 @@ void CollisionDetectionSystem::computeMiddlePhase(OverlappingPairs& overlappingP
         bodypair bodiesIndex = OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity);
         if (mNoCollisionPairs.contains(bodiesIndex) > 0) continue;
 
-        CollisionShape* collisionShape1 = mProxyShapesComponents.getCollisionShape(proxyShape1Entity);
-        CollisionShape* collisionShape2 = mProxyShapesComponents.getCollisionShape(proxyShape2Entity);
+        CollisionShape* collisionShape1 = mProxyShapesComponents.mCollisionShapes[proxyShape1Index];
+        CollisionShape* collisionShape2 = mProxyShapesComponents.mCollisionShapes[proxyShape2Index];
 
-        // Select the narrow phase algorithm to use according to the two collision shapes
-        NarrowPhaseAlgorithmType algorithmType = mCollisionDispatch.selectNarrowPhaseAlgorithm(collisionShape1->getType(),
-                                                                                               collisionShape2->getType());
+        NarrowPhaseAlgorithmType algorithmType = overlappingPairs.mNarrowPhaseAlgorithmType[i];
 
         // No middle-phase is necessary, simply create a narrow phase info
         // for the narrow-phase collision detection
         narrowPhaseInput.addNarrowPhaseTest(overlappingPairs.mPairIds[i], proxyShape1Entity, proxyShape2Entity, collisionShape1, collisionShape2,
-                                                  mProxyShapesComponents.getLocalToWorldTransform(proxyShape1Entity),
-                                                  mProxyShapesComponents.getLocalToWorldTransform(proxyShape2Entity),
+                                                  mProxyShapesComponents.mLocalToWorldTransforms[proxyShape1Index],
+                                                  mProxyShapesComponents.mLocalToWorldTransforms[proxyShape2Index],
                                                   algorithmType, mMemoryManager.getSingleFrameAllocator());
 
     }
@@ -266,12 +267,15 @@ void CollisionDetectionSystem::computeMiddlePhase(OverlappingPairs& overlappingP
         const Entity proxyShape1Entity = overlappingPairs.mProxyShapes1[i];
         const Entity proxyShape2Entity = overlappingPairs.mProxyShapes2[i];
 
-        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != -1);
-        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity) != -1);
-        assert(mProxyShapesComponents.getBroadPhaseId(proxyShape1Entity) != mProxyShapesComponents.getBroadPhaseId(proxyShape2Entity));
+        const uint proxyShape1Index = mProxyShapesComponents.getEntityIndex(proxyShape1Entity);
+        const uint proxyShape2Index = mProxyShapesComponents.getEntityIndex(proxyShape2Entity);
 
-        const Entity body1Entity = mProxyShapesComponents.getBody(proxyShape1Entity);
-        const Entity body2Entity = mProxyShapesComponents.getBody(proxyShape2Entity);
+        assert(mProxyShapesComponents.mBroadPhaseId[proxyShape1Index] != -1);
+        assert(mProxyShapesComponents.mBroadPhaseId[proxyShape2Index] != -1);
+        assert(mProxyShapesComponents.mBroadPhaseId[proxyShape1Index] != mProxyShapesComponents.mBroadPhaseId[proxyShape2Index]);
+
+        const Entity body1Entity = mProxyShapesComponents.mBodiesEntities[proxyShape1Index];
+        const Entity body2Entity = mProxyShapesComponents.mBodiesEntities[proxyShape2Index];
 
         const bool isStaticRigidBody1 = mWorld->mRigidBodyComponents.hasComponent(body1Entity) &&
                                         mWorld->mRigidBodyComponents.getBodyType(body1Entity) == BodyType::STATIC;
@@ -342,9 +346,7 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>&
         CollisionShape* collisionShape1 = mProxyShapesComponents.getCollisionShape(proxyShape1Entity);
         CollisionShape* collisionShape2 = mProxyShapesComponents.getCollisionShape(proxyShape2Entity);
 
-        // Select the narrow phase algorithm to use according to the two collision shapes
-        NarrowPhaseAlgorithmType algorithmType = mCollisionDispatch.selectNarrowPhaseAlgorithm(collisionShape1->getType(),
-                                                                                               collisionShape2->getType());
+        NarrowPhaseAlgorithmType algorithmType = mOverlappingPairs.mNarrowPhaseAlgorithmType[pairIndex];
 
         // No middle-phase is necessary, simply create a narrow phase info
         // for the narrow-phase collision detection
