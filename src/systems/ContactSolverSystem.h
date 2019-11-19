@@ -176,10 +176,10 @@ class ContactSolverSystem {
             ContactManifold* externalContactManifold;
 
             /// Index of body 1 in the dynamics components arrays
-            uint32 rigidBodyComponentIndexBody1;
+            uint32 dynamicsComponentIndexBody1;
 
             /// Index of body 2 in the dynamics components arrays
-            uint32 rigidBodyComponentIndexBody2;
+            uint32 dynamicsComponentIndexBody2;
 
             /// Inverse of the mass of body 1
             decimal massInverseBody1;
