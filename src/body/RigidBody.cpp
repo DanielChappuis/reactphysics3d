@@ -98,6 +98,9 @@ void RigidBody::setType(BodyType type) {
     // Awake the body
     setIsSleeping(false);
 
+    // Update the active status of currently overlapping pairs
+    updateOverlappingPairs();
+
     // Ask the broad-phase to test again the collision shapes of the body for collision
     // detection (as if the body has moved)
     askForBroadPhaseCollisionCheck();
@@ -683,6 +686,9 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     // Notify all the components
     mWorld.setBodyDisabled(mEntity, isSleeping);
 
+    // Update the currently overlapping pairs
+    updateOverlappingPairs();
+
     if (isSleeping) {
 
         mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
@@ -694,6 +700,23 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
          "Body " + std::to_string(mEntity.id) + ": Set isSleeping=" +
          (isSleeping ? "true" : "false"));
+}
+
+// Update whether the current overlapping pairs where this body is involed are active or not
+void RigidBody::updateOverlappingPairs() {
+
+    // For each proxy-shape of the body
+    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+        // Get the currently overlapping pairs for this proxy-shape
+        List<uint64> overlappingPairs = mWorld.mProxyShapesComponents.getOverlappingPairs(proxyShapesEntities[i]);
+
+        for (uint j=0; j < overlappingPairs.size(); j++) {
+
+            mWorld.mCollisionDetection.mOverlappingPairs.updateOverlappingPairIsActive(overlappingPairs[j]);
+        }
+    }
 }
 
 /// Return the inverse of the inertia tensor in world coordinates.

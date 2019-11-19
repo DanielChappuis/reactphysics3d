@@ -48,7 +48,7 @@ NarrowPhaseInfoBatch::~NarrowPhaseInfoBatch() {
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1, CollisionShape* shape2,
+void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1, CollisionShape* shape2,
                                               const Transform& shape1Transform, const Transform& shape2Transform,
                                               MemoryAllocator& shapeAllocator) {
 
@@ -64,7 +64,7 @@ void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, Entity proxyShape1,
     isColliding.add(false);
 
     // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
-    LastFrameCollisionInfo* lastFrameInfo = mOverlappingPairs.addLastFrameInfoIfNecessary(pairId, shape1->getId(), shape2->getId());
+    LastFrameCollisionInfo* lastFrameInfo = mOverlappingPairs.addLastFrameInfoIfNecessary(pairIndex, shape1->getId(), shape2->getId());
     lastFrameCollisionInfos.add(lastFrameInfo);
 }
 

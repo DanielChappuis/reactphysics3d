@@ -73,6 +73,9 @@ class RigidBody : public CollisionBody {
         /// Set the variable to know whether or not the body is sleeping
         void setIsSleeping(bool isSleeping);
 
+        /// Update whether the current overlapping pairs where this body is involed are active or not
+        void updateOverlappingPairs();
+
         /// Return the inverse of the inertia tensor in world coordinates.
         static const Matrix3x3 getInertiaTensorInverseWorld(CollisionWorld& world, Entity bodyEntity);
 

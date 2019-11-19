@@ -206,7 +206,7 @@ class CollisionDetectionSystem {
         bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool reportContacts, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& allocator);
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
-        void computeConvexVsConcaveMiddlePhase(uint64 pairId, Entity proxyShape1, Entity proxyShape2, MemoryAllocator& allocator,
+        void computeConvexVsConcaveMiddlePhase(uint64 pairIndex, MemoryAllocator& allocator,
                                                NarrowPhaseInput& narrowPhaseInput);
 
         /// Swap the previous and current contacts lists
@@ -358,6 +358,7 @@ class CollisionDetectionSystem {
 
         friend class DynamicsWorld;
         friend class ConvexMeshShape;
+        friend class RigidBody;
 };
 
 // Return a reference to the collision dispatch configuration

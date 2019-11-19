@@ -104,11 +104,6 @@ struct LastFrameCollisionInfo {
  */
 class OverlappingPairs {
 
-    public:
-
-        // TODO : Try to use a pairing function like pairNumbers() here
-        using ShapeIdPair = Pair<uint, uint>;
-
     private:
 
         // -------------------- Constants -------------------- //
@@ -165,7 +160,7 @@ class OverlappingPairs {
         /// If two convex shapes overlap, we have a single collision data but if one shape is concave,
         /// we might have collision data for several overlapping triangles. The key in the map is the
         /// shape Ids of the two collision shapes.
-        Map<ShapeIdPair, LastFrameCollisionInfo*>* mLastFrameCollisionInfos;
+        Map<uint64, LastFrameCollisionInfo*>* mLastFrameCollisionInfos;
 
         /// True if we need to test if the convex vs convex overlapping pairs of shapes still overlap
         bool* mNeedToTestOverlap;
@@ -175,6 +170,9 @@ class OverlappingPairs {
 
         /// Array with the pointer to the narrow-phase algorithm for each overlapping pair
         NarrowPhaseAlgorithmType* mNarrowPhaseAlgorithmType;
+
+        /// True if the first shape of the pair is convex
+        bool* mIsShape1Convex;
 
         /// Reference to the proxy-shapes components
         ProxyShapeComponents& mProxyShapeComponents;
@@ -235,7 +233,7 @@ class OverlappingPairs {
         OverlappingPairs& operator=(const OverlappingPairs& pair) = delete;
 
         /// Add an overlapping pair
-        uint64 addPair(ProxyShape* shape1, ProxyShape* shape2, bool isActive);
+        uint64 addPair(ProxyShape* shape1, ProxyShape* shape2);
 
         /// Remove a component at a given index
         void removePair(uint64 pairId);
@@ -261,23 +259,26 @@ class OverlappingPairs {
         /// Notify if a given pair is active or not
         void setIsPairActive(uint64 pairId, bool isActive);
 
+        /// Return the index of a given overlapping pair in the internal array
+        uint64 getPairIndex(uint64 pairId) const;
+
         /// Return the last frame collision info
-        LastFrameCollisionInfo* getLastFrameCollisionInfo(uint64, ShapeIdPair& shapeIds);
+        LastFrameCollisionInfo* getLastFrameCollisionInfo(uint64, uint64 shapesId);
 
         /// Return a reference to the temporary memory allocator
         MemoryAllocator& getTemporaryAllocator();
 
         /// Add a new last frame collision info if it does not exist for the given shapes already
-        LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint64 pairId, uint shapeId1, uint shapeId2);
+        LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint64 pairIndex, uint32 shapeId1, uint32 shapeId2);
+
+        /// Update whether a given overlapping pair is active or not
+        void updateOverlappingPairIsActive(uint64 pairId);
 
         /// Delete all the obsolete last frame collision info
         void clearObsoleteLastFrameCollisionInfos();
 
         /// Return the pair of bodies index of the pair
         static bodypair computeBodiesIndexPair(Entity body1Entity, Entity body2Entity);
-
-        /// Return true if the overlapping pair between two shapes is active
-        bool computeIsPairActive(ProxyShape* shape1, ProxyShape* shape2);
 
         /// Set if we need to test a given pair for overlap
         void setNeedToTestOverlap(uint64 pairId, bool needToTestOverlap);
@@ -317,14 +318,20 @@ inline void OverlappingPairs::setIsPairActive(uint64 pairId, bool isActive) {
     mIsActive[mMapPairIdToPairIndex[pairId]] = isActive;
 }
 
+// Return the index of a given overlapping pair in the internal array
+inline uint64 OverlappingPairs::getPairIndex(uint64 pairId) const {
+    assert(mMapPairIdToPairIndex.containsKey(pairId));
+    return mMapPairIdToPairIndex[pairId];
+}
+
 // Return the last frame collision info for a given shape id or nullptr if none is found
-inline LastFrameCollisionInfo* OverlappingPairs::getLastFrameCollisionInfo(uint64 pairId, ShapeIdPair& shapeIds) {
+inline LastFrameCollisionInfo* OverlappingPairs::getLastFrameCollisionInfo(uint64 pairId, uint64 shapesId) {
 
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     const uint64 index = mMapPairIdToPairIndex[pairId];
     assert(index < mNbPairs);
 
-    Map<ShapeIdPair, LastFrameCollisionInfo*>::Iterator it = mLastFrameCollisionInfos[index].find(shapeIds);
+    Map<uint64, LastFrameCollisionInfo*>::Iterator it = mLastFrameCollisionInfos[index].find(shapesId);
     if (it != mLastFrameCollisionInfos[index].end()) {
         return it->second;
     }

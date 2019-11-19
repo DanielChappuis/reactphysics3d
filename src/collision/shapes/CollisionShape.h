@@ -73,7 +73,7 @@ class CollisionShape {
 		CollisionShapeName mName;
 
         /// Unique identifier of the shape inside an overlapping pair
-        uint mId;
+        uint32 mId;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -125,7 +125,7 @@ class CollisionShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
 
         /// Return the id of the shape
-        uint getId() const;
+        uint32 getId() const;
 
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
@@ -166,7 +166,7 @@ inline CollisionShapeType CollisionShape::getType() const {
 }
 
 // Return the id of the shape
-inline uint CollisionShape::getId() const {
+inline uint32 CollisionShape::getId() const {
    return mId;
 }
 

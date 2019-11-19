@@ -103,7 +103,7 @@ struct NarrowPhaseInfoBatch {
         uint getNbObjects() const;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        void addNarrowPhaseInfo(uint64 pairId, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1,
+        void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1,
                                 CollisionShape* shape2, const Transform& shape1Transform,
                                 const Transform& shape2Transform, MemoryAllocator& shapeAllocator);
 

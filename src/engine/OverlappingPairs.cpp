@@ -38,8 +38,9 @@ OverlappingPairs::OverlappingPairs(MemoryAllocator& persistentMemoryAllocator, M
                                    CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents, Set<bodypair> &noCollisionPairs, CollisionDispatch &collisionDispatch)
                 : mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
                   mNbPairs(0), mConcavePairsStartIndex(0), mPairDataSize(sizeof(uint64) + sizeof(int32) + sizeof(int32) + sizeof(Entity) +
-                                                                         sizeof(Entity) + sizeof(Map<ShapeIdPair, LastFrameCollisionInfo*>) +
-                                                                         sizeof(bool) + sizeof(bool) + sizeof(NarrowPhaseAlgorithmType)),
+                                                                         sizeof(Entity) + sizeof(Map<uint64, LastFrameCollisionInfo*>) +
+                                                                         sizeof(bool) + sizeof(bool) + sizeof(NarrowPhaseAlgorithmType) +
+                                                                         sizeof(bool)),
                   mNbAllocatedPairs(0), mBuffer(nullptr),
                   mMapPairIdToPairIndex(persistentMemoryAllocator),
                   mProxyShapeComponents(proxyShapeComponents), mCollisionBodyComponents(collisionBodyComponents),
@@ -205,10 +206,11 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
     int32* newPairBroadPhaseId2 = reinterpret_cast<int32*>(newPairBroadPhaseId1 + nbPairsToAllocate);
     Entity* newProxyShapes1 = reinterpret_cast<Entity*>(newPairBroadPhaseId2 + nbPairsToAllocate);
     Entity* newProxyShapes2 = reinterpret_cast<Entity*>(newProxyShapes1 + nbPairsToAllocate);
-    Map<ShapeIdPair, LastFrameCollisionInfo*>* newLastFrameCollisionInfos = reinterpret_cast<Map<ShapeIdPair, LastFrameCollisionInfo*>*>(newProxyShapes2 + nbPairsToAllocate);
+    Map<uint64, LastFrameCollisionInfo*>* newLastFrameCollisionInfos = reinterpret_cast<Map<uint64, LastFrameCollisionInfo*>*>(newProxyShapes2 + nbPairsToAllocate);
     bool* newNeedToTestOverlap = reinterpret_cast<bool*>(newLastFrameCollisionInfos + nbPairsToAllocate);
     bool* newIsActive = reinterpret_cast<bool*>(newNeedToTestOverlap + nbPairsToAllocate);
     NarrowPhaseAlgorithmType* newNarrowPhaseAlgorithmType = reinterpret_cast<NarrowPhaseAlgorithmType*>(newIsActive + nbPairsToAllocate);
+    bool* newIsShape1Convex = reinterpret_cast<bool*>(newNarrowPhaseAlgorithmType + nbPairsToAllocate);
 
     // If there was already pairs before
     if (mNbPairs > 0) {
@@ -219,10 +221,11 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
         memcpy(newPairBroadPhaseId2, mPairBroadPhaseId2, mNbPairs * sizeof(int32));
         memcpy(newProxyShapes1, mProxyShapes1, mNbPairs * sizeof(Entity));
         memcpy(newProxyShapes2, mProxyShapes2, mNbPairs * sizeof(Entity));
-        memcpy(newLastFrameCollisionInfos, mLastFrameCollisionInfos, mNbPairs * sizeof(Map<ShapeIdPair, LastFrameCollisionInfo*>));
+        memcpy(newLastFrameCollisionInfos, mLastFrameCollisionInfos, mNbPairs * sizeof(Map<uint64, LastFrameCollisionInfo*>));
         memcpy(newNeedToTestOverlap, mNeedToTestOverlap, mNbPairs * sizeof(bool));
         memcpy(newIsActive, mIsActive, mNbPairs * sizeof(bool));
         memcpy(newNarrowPhaseAlgorithmType, mNarrowPhaseAlgorithmType, mNbPairs * sizeof(NarrowPhaseAlgorithmType));
+        memcpy(newIsShape1Convex, mIsShape1Convex, mNbPairs * sizeof(bool));
 
         // Deallocate previous memory
         mPersistentAllocator.release(mBuffer, mNbAllocatedPairs * mPairDataSize);
@@ -238,43 +241,57 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
     mNeedToTestOverlap = newNeedToTestOverlap;
     mIsActive = newIsActive;
     mNarrowPhaseAlgorithmType = newNarrowPhaseAlgorithmType;
+    mIsShape1Convex = newIsShape1Convex;
 
     mNbAllocatedPairs = nbPairsToAllocate;
 }
 
 // Add an overlapping pair
-uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2, bool isActive) {
+uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2) {
 
     RP3D_PROFILE("OverlappingPairs::addPair()", mProfiler);
 
     const CollisionShape* collisionShape1 = mProxyShapeComponents.getCollisionShape(shape1->getEntity());
     const CollisionShape* collisionShape2 = mProxyShapeComponents.getCollisionShape(shape2->getEntity());
 
-    // Prepare to add new pair (allocate memory if necessary and compute insertion index)
-    uint64 index = prepareAddPair(collisionShape1->isConvex() && collisionShape2->isConvex());
+    const bool isShape1Convex = collisionShape1->isConvex();
+    const bool isShape2Convex = collisionShape2->isConvex();
+    const bool isConvexVsConvex = isShape1Convex && isShape2Convex;
 
-    const uint32 shape1Id = static_cast<uint32>(shape1->getBroadPhaseId());
-    const uint32 shape2Id = static_cast<uint32>(shape2->getBroadPhaseId());
+    // Prepare to add new pair (allocate memory if necessary and compute insertion index)
+    uint64 index = prepareAddPair(isConvexVsConvex);
+
+    const uint32 broadPhase1Id = static_cast<uint32>(shape1->getBroadPhaseId());
+    const uint32 broadPhase2Id = static_cast<uint32>(shape2->getBroadPhaseId());
 
     // Compute a unique id for the overlapping pair
-    const uint64 pairId = pairNumbers(std::max(shape1Id, shape2Id), std::min(shape1Id, shape2Id));
+    const uint64 pairId = pairNumbers(std::max(broadPhase1Id, broadPhase2Id), std::min(broadPhase1Id, broadPhase2Id));
 
     assert(!mMapPairIdToPairIndex.containsKey(pairId));
 
     // Select the narrow phase algorithm to use according to the two collision shapes
-    NarrowPhaseAlgorithmType algorithmType = mCollisionDispatch.selectNarrowPhaseAlgorithm(collisionShape1->getType(),
-                                                                                           collisionShape2->getType());
+    NarrowPhaseAlgorithmType algorithmType;
+    if (isConvexVsConvex) {
+
+        algorithmType = mCollisionDispatch.selectNarrowPhaseAlgorithm(collisionShape1->getType(), collisionShape2->getType());
+    }
+    else {
+
+        algorithmType = mCollisionDispatch.selectNarrowPhaseAlgorithm(isShape1Convex ? collisionShape1->getType() : collisionShape2->getType(),
+                                                                      CollisionShapeType::CONVEX_POLYHEDRON);
+    }
+
     // Insert the new component data
     new (mPairIds + index) uint64(pairId);
     new (mPairBroadPhaseId1 + index) int32(shape1->getBroadPhaseId());
     new (mPairBroadPhaseId2 + index) int32(shape2->getBroadPhaseId());
     new (mProxyShapes1 + index) Entity(shape1->getEntity());
     new (mProxyShapes2 + index) Entity(shape2->getEntity());
-    new (mLastFrameCollisionInfos + index) Map<ShapeIdPair, LastFrameCollisionInfo*>(mPersistentAllocator);
+    new (mLastFrameCollisionInfos + index) Map<uint64, LastFrameCollisionInfo*>(mPersistentAllocator);
     new (mNeedToTestOverlap + index) bool(false);
-    new (mIsActive + index) bool(isActive);
+    new (mIsActive + index) bool(true);
     new (mNarrowPhaseAlgorithmType + index) NarrowPhaseAlgorithmType(algorithmType);
-
+    new (mIsShape1Convex + index) bool(isShape1Convex);
 
     // Map the entity with the new component lookup index
     mMapPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, index));
@@ -289,6 +306,8 @@ uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2, bool is
 
     assert(mConcavePairsStartIndex <= mNbPairs);
     assert(mNbPairs == static_cast<uint64>(mMapPairIdToPairIndex.size()));
+
+    updateOverlappingPairIsActive(pairId);
 
     return pairId;
 }
@@ -305,10 +324,11 @@ void OverlappingPairs::movePairToIndex(uint64 srcIndex, uint64 destIndex) {
     mPairBroadPhaseId2[destIndex] = mPairBroadPhaseId2[srcIndex];
     new (mProxyShapes1 + destIndex) Entity(mProxyShapes1[srcIndex]);
     new (mProxyShapes2 + destIndex) Entity(mProxyShapes2[srcIndex]);
-    new (mLastFrameCollisionInfos + destIndex) Map<ShapeIdPair, LastFrameCollisionInfo*>(mLastFrameCollisionInfos[srcIndex]);
+    new (mLastFrameCollisionInfos + destIndex) Map<uint64, LastFrameCollisionInfo*>(mLastFrameCollisionInfos[srcIndex]);
     mNeedToTestOverlap[destIndex] = mNeedToTestOverlap[srcIndex];
     mIsActive[destIndex] = mIsActive[srcIndex];
     new (mNarrowPhaseAlgorithmType + destIndex) NarrowPhaseAlgorithmType(mNarrowPhaseAlgorithmType[srcIndex]);
+    mIsShape1Convex[destIndex] = mIsShape1Convex[srcIndex];
 
     // Destroy the source pair
     destroyPair(srcIndex);
@@ -330,10 +350,11 @@ void OverlappingPairs::swapPairs(uint64 index1, uint64 index2) {
     int32 pairBroadPhaseId2 = mPairBroadPhaseId2[index1];
     Entity proxyShape1 = mProxyShapes1[index1];
     Entity proxyShape2 = mProxyShapes2[index1];
-    Map<ShapeIdPair, LastFrameCollisionInfo*> lastFrameCollisionInfo(mLastFrameCollisionInfos[index1]);
+    Map<uint64, LastFrameCollisionInfo*> lastFrameCollisionInfo(mLastFrameCollisionInfos[index1]);
     bool needTestOverlap = mNeedToTestOverlap[index1];
     bool isActive = mIsActive[index1];
     NarrowPhaseAlgorithmType narrowPhaseAlgorithmType = mNarrowPhaseAlgorithmType[index1];
+    bool isShape1Convex = mIsShape1Convex[index1];
 
     // Destroy pair 1
     destroyPair(index1);
@@ -346,10 +367,11 @@ void OverlappingPairs::swapPairs(uint64 index1, uint64 index2) {
     mPairBroadPhaseId2[index2] = pairBroadPhaseId2;
     new (mProxyShapes1 + index2) Entity(proxyShape1);
     new (mProxyShapes2 + index2) Entity(proxyShape2);
-    new (mLastFrameCollisionInfos + index2) Map<ShapeIdPair, LastFrameCollisionInfo*>(lastFrameCollisionInfo);
+    new (mLastFrameCollisionInfos + index2) Map<uint64, LastFrameCollisionInfo*>(lastFrameCollisionInfo);
     mNeedToTestOverlap[index2] = needTestOverlap;
     mIsActive[index2] = isActive;
     new (mNarrowPhaseAlgorithmType + index2) NarrowPhaseAlgorithmType(narrowPhaseAlgorithmType);
+    mIsShape1Convex[index2] = isShape1Convex;
 
     // Update the pairID to pair index mapping
     mMapPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, index2));
@@ -370,33 +392,60 @@ void OverlappingPairs::destroyPair(uint64 index) {
 
     mProxyShapes1[index].~Entity();
     mProxyShapes2[index].~Entity();
-    mLastFrameCollisionInfos[index].~Map<ShapeIdPair, LastFrameCollisionInfo*>();
+    mLastFrameCollisionInfos[index].~Map<uint64, LastFrameCollisionInfo*>();
     mNarrowPhaseAlgorithmType[index].~NarrowPhaseAlgorithmType();
 }
 
-// Add a new last frame collision info if it does not exist for the given shapes already
-LastFrameCollisionInfo* OverlappingPairs::addLastFrameInfoIfNecessary(uint64 pairId, uint shapeId1, uint shapeId2) {
-
-    RP3D_PROFILE("OverlappingPairs::addLastFrameInfoIfNecessary()", mProfiler);
+// Update whether a given overlapping pair is active or not
+void OverlappingPairs::updateOverlappingPairIsActive(uint64 pairId) {
 
     assert(mMapPairIdToPairIndex.containsKey(pairId));
 
-    const uint64 index = mMapPairIdToPairIndex[pairId];
-    assert(index < mNbPairs);
+    const uint64 pairIndex = mMapPairIdToPairIndex[pairId];
+
+    const Entity proxyShape1 = mProxyShapes1[pairIndex];
+    const Entity proxyShape2 = mProxyShapes2[pairIndex];
+
+    const Entity body1 = mProxyShapeComponents.getBody(proxyShape1);
+    const Entity body2 = mProxyShapeComponents.getBody(proxyShape2);
+
+    const bool isBody1Enabled = !mCollisionBodyComponents.getIsEntityDisabled(body1);
+    const bool isBody2Enabled = !mCollisionBodyComponents.getIsEntityDisabled(body2);
+    const bool isBody1Static = mRigidBodyComponents.hasComponent(body1) &&
+                               mRigidBodyComponents.getBodyType(body1) == BodyType::STATIC;
+    const bool isBody2Static = mRigidBodyComponents.hasComponent(body2) &&
+                               mRigidBodyComponents.getBodyType(body2) == BodyType::STATIC;
+
+    const bool isBody1Active = isBody1Enabled && !isBody1Static;
+    const bool isBody2Active = isBody2Enabled && !isBody2Static;
+
+    // Check if the bodies are in the set of bodies that cannot collide between each other
+    bodypair bodiesIndex = OverlappingPairs::computeBodiesIndexPair(body1, body2);
+    bool bodiesCanCollide = !mNoCollisionPairs.contains(bodiesIndex);
+
+    mIsActive[pairIndex] = bodiesCanCollide && (isBody1Active || isBody2Active);
+}
+
+// Add a new last frame collision info if it does not exist for the given shapes already
+LastFrameCollisionInfo* OverlappingPairs::addLastFrameInfoIfNecessary(uint64 pairIndex, uint32 shapeId1, uint32 shapeId2) {
+
+    RP3D_PROFILE("OverlappingPairs::addLastFrameInfoIfNecessary()", mProfiler);
+
+    assert(pairIndex < mNbPairs);
 
     // Try to get the corresponding last frame collision info
-    const ShapeIdPair shapeIdPair(shapeId1, shapeId2);
+    const uint64 shapesId = pairNumbers(std::max(shapeId1, shapeId2), std::min(shapeId1, shapeId2));
 
     // If there is no collision info for those two shapes already
-    auto it = mLastFrameCollisionInfos[index].find(shapeIdPair);
-    if (it == mLastFrameCollisionInfos[index].end()) {
+    auto it = mLastFrameCollisionInfos[pairIndex].find(shapesId);
+    if (it == mLastFrameCollisionInfos[pairIndex].end()) {
 
         // Create a new collision info
         LastFrameCollisionInfo* collisionInfo = new (mPersistentAllocator.allocate(sizeof(LastFrameCollisionInfo)))
                                                 LastFrameCollisionInfo();
 
         // Add it into the map of collision infos
-        mLastFrameCollisionInfos[index].add(Pair<ShapeIdPair, LastFrameCollisionInfo*>(shapeIdPair, collisionInfo));
+        mLastFrameCollisionInfos[pairIndex].add(Pair<uint64, LastFrameCollisionInfo*>(shapesId, collisionInfo));
 
         return collisionInfo;
     }
@@ -438,29 +487,4 @@ void OverlappingPairs::clearObsoleteLastFrameCollisionInfos() {
             }
         }
     }
-}
-
-// Return true if the overlapping pair between two shapes is active
-bool OverlappingPairs::computeIsPairActive(ProxyShape* shape1, ProxyShape* shape2) {
-
-    const Entity body1Entity = mProxyShapeComponents.getBody(shape1->getEntity());
-    const Entity body2Entity = mProxyShapeComponents.getBody(shape2->getEntity());
-
-    const bool isStaticRigidBody1 = mRigidBodyComponents.hasComponent(body1Entity) &&
-                                    mRigidBodyComponents.getBodyType(body1Entity) == BodyType::STATIC;
-    const bool isStaticRigidBody2 = mRigidBodyComponents.hasComponent(body2Entity) &&
-                                    mRigidBodyComponents.getBodyType(body2Entity) == BodyType::STATIC;
-
-    // Check that at least one body is enabled (active and awake) and not static
-    // TODO : Do not test this every frame
-    bool isBody1Active = !mCollisionBodyComponents.getIsEntityDisabled(body1Entity) && !isStaticRigidBody1;
-    bool isBody2Active = !mCollisionBodyComponents.getIsEntityDisabled(body2Entity) && !isStaticRigidBody2;
-    if (!isBody1Active && !isBody2Active) return false;
-
-    // Check if the bodies are in the set of bodies that cannot collide between each other
-    // TODO : Do not check this every frame but remove and do not create overlapping pairs of bodies in this situation
-    bodypair bodiesIndex = OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity);
-    if (mNoCollisionPairs.contains(bodiesIndex) > 0) return false;
-
-    return true;
 }
