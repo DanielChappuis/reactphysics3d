@@ -195,6 +195,7 @@ class ProxyShapeComponents : public Components {
 
         friend class BroadPhaseSystem;
         friend class CollisionDetectionSystem;
+        friend class DynamicsSystem;
 };
 
 // Return the body entity of a given proxy-shape

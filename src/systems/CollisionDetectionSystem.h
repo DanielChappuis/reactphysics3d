@@ -176,7 +176,7 @@ class CollisionDetectionSystem {
         void computeBroadPhase();
 
         /// Compute the middle-phase collision detection
-        void computeMiddlePhase(OverlappingPairs& overlappingPairs, NarrowPhaseInput& narrowPhaseInput);
+        void computeMiddlePhase(NarrowPhaseInput& narrowPhaseInput);
 
         // Compute the middle-phase collision detection
         void computeMiddlePhaseCollisionSnapshot(List<uint64>& convexPairs, List<uint64>& concavePairs, NarrowPhaseInput& narrowPhaseInput);

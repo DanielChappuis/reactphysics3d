@@ -77,8 +77,8 @@ void DynamicsSystem::updateBodiesState() {
     for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         // Update the linear and angular velocity of the body
-        mRigidBodyComponents.setLinearVelocity(mRigidBodyComponents.mBodiesEntities[i], mRigidBodyComponents.mConstrainedLinearVelocities[i]);
-        mRigidBodyComponents.setAngularVelocity(mRigidBodyComponents.mBodiesEntities[i], mRigidBodyComponents.mConstrainedAngularVelocities[i]);
+        mRigidBodyComponents.mLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i];
+        mRigidBodyComponents.mAngularVelocities[i] = mRigidBodyComponents.mConstrainedAngularVelocities[i];
 
         // Update the position of the center of mass of the body
         mRigidBodyComponents.mCentersOfMassWorld[i] = mRigidBodyComponents.mConstrainedPositions[i];
@@ -98,17 +98,11 @@ void DynamicsSystem::updateBodiesState() {
     }
 
     // Update the local-to-world transform of the proxy-shapes
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < mProxyShapeComponents.getNbEnabledComponents(); i++) {
 
-        // For all the proxy collision shapes of the body
-        const List<Entity>& proxyShapesEntities = mCollisionBodyComponents.getProxyShapes(mRigidBodyComponents.mBodiesEntities[i]);
-        for (uint j=0; j < proxyShapesEntities.size(); j++) {
-
-            // Update the local-to-world transform of the proxy-shape
-            mProxyShapeComponents.setLocalToWorldTransform(proxyShapesEntities[j],
-                                                            mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]) *
-                                                            mProxyShapeComponents.getLocalToBodyTransform(proxyShapesEntities[j]));
-        }
+        // Update the local-to-world transform of the proxy-shape
+        mProxyShapeComponents.mLocalToWorldTransforms[i] = mTransformComponents.getTransform(mProxyShapeComponents.mBodiesEntities[i]) *
+                                                           mProxyShapeComponents.mLocalToBodyTransforms[i];
     }
 }
 
@@ -141,14 +135,17 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
     }
 
     // Apply gravity force
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    if (mIsGravityEnabled) {
 
-        // If the gravity has to be applied to this rigid body
-        if (mRigidBodyComponents.mIsGravityEnabled[i] && mIsGravityEnabled) {
+        for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
-            // Integrate the gravity force
-            mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] + timeStep *
-                                                                  mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mInitMasses[i] * mGravity;
+            // If the gravity has to be applied to this rigid body
+            if (mRigidBodyComponents.mIsGravityEnabled[i]) {
+
+                // Integrate the gravity force
+                mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] + timeStep *
+                                                                       mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mInitMasses[i] * mGravity;
+            }
         }
     }
 

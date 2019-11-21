@@ -35,6 +35,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling)
+                // TODO : Do not use the default base allocator here
                  : ConcaveShape(CollisionShapeName::TRIANGLE_MESH), mDynamicAABBTree(MemoryManager::getBaseAllocator()),
                    mScaling(scaling) {
     mTriangleMesh = triangleMesh;
