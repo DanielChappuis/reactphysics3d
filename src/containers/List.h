@@ -294,6 +294,17 @@ class List {
             mSize++;
         }
 
+        /// Add a given numbers of elements at the end of the list but do not init them
+        void addWithoutInit(uint nbElements) {
+
+            // If we need to allocate more memory
+            if (mSize == mCapacity) {
+                reserve(mCapacity == 0 ? nbElements : (mCapacity + nbElements) * 2);
+            }
+
+            mSize += nbElements;
+        }
+
         /// Try to find a given item of the list and return an iterator
         /// pointing to that element if it exists in the list. Otherwise,
         /// this method returns the end() iterator

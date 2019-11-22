@@ -433,8 +433,15 @@ LastFrameCollisionInfo* OverlappingPairs::addLastFrameInfoIfNecessary(uint64 pai
 
     assert(pairIndex < mNbPairs);
 
+    uint32 maxShapeId = shapeId1;
+    uint32 minShapeId = shapeId2;
+    if (shapeId1 < shapeId2) {
+       maxShapeId = shapeId2;
+       minShapeId = shapeId1;
+    }
+
     // Try to get the corresponding last frame collision info
-    const uint64 shapesId = pairNumbers(std::max(shapeId1, shapeId2), std::min(shapeId1, shapeId2));
+    const uint64 shapesId = pairNumbers(maxShapeId, minShapeId);
 
     // If there is no collision info for those two shapes already
     auto it = mLastFrameCollisionInfos[pairIndex].find(shapesId);

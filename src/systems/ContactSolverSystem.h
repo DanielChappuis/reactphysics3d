@@ -320,7 +320,6 @@ class ContactSolverSystem {
         RigidBodyComponents& mRigidBodyComponents;
 
         /// Reference to the proxy-shapes components
-        // TODO : Do we really need to use this ?
         ProxyShapeComponents& mProxyShapeComponents;
 
         /// True if the split impulse position correction is active

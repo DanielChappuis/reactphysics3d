@@ -222,7 +222,6 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         assert(mProxyShapesComponents.getBroadPhaseId(mOverlappingPairs.mProxyShapes1[i]) != mProxyShapesComponents.getBroadPhaseId(mOverlappingPairs.mProxyShapes2[i]));
 
         // Check that at least one body is enabled (active and awake) and not static
-        // TODO : Do not test this every frame
         if (mOverlappingPairs.mIsActive[i]) {
 
             const Entity proxyShape1Entity = mOverlappingPairs.mProxyShapes1[i];

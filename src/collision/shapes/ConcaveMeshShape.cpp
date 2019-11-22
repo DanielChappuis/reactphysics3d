@@ -127,8 +127,14 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<V
     List<int> overlappingNodes(allocator);
     mDynamicAABBTree.reportAllShapesOverlappingWithAABB(localAABB, overlappingNodes);
 
+    const uint nbOverlappingNodes = overlappingNodes.size();
+
+    // Add space in the list of triangles vertices/normals for the new triangles
+    triangleVertices.addWithoutInit(nbOverlappingNodes * 3);
+    triangleVerticesNormals.addWithoutInit(nbOverlappingNodes * 3);
+
     // For each overlapping node
-    for (uint i=0; i < overlappingNodes.size(); i++) {
+    for (uint i=0; i < nbOverlappingNodes; i++) {
 
         int nodeId = overlappingNodes[i];
 
@@ -136,18 +142,10 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<V
         int32* data = mDynamicAABBTree.getNodeDataInt(nodeId);
 
         // Get the triangle vertices for this node from the concave mesh shape
-        Vector3 trianglePoints[3];
-        getTriangleVertices(data[0], data[1], trianglePoints);
-        triangleVertices.add(trianglePoints[0]);
-        triangleVertices.add(trianglePoints[1]);
-        triangleVertices.add(trianglePoints[2]);
+        getTriangleVertices(data[0], data[1], &(triangleVertices[i * 3]));
 
         // Get the vertices normals of the triangle
-        Vector3 verticesNormals[3];
-        getTriangleVerticesNormals(data[0], data[1], verticesNormals);
-        triangleVerticesNormals.add(verticesNormals[0]);
-        triangleVerticesNormals.add(verticesNormals[1]);
-        triangleVerticesNormals.add(verticesNormals[2]);
+        getTriangleVerticesNormals(data[0], data[1], &(triangleVerticesNormals[i * 3]));
 
         // Compute the triangle shape ID
         shapeIds.add(computeTriangleShapeId(data[0], data[1]));
