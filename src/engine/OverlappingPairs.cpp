@@ -251,8 +251,14 @@ uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2) {
 
     RP3D_PROFILE("OverlappingPairs::addPair()", mProfiler);
 
-    const CollisionShape* collisionShape1 = mProxyShapeComponents.getCollisionShape(shape1->getEntity());
-    const CollisionShape* collisionShape2 = mProxyShapeComponents.getCollisionShape(shape2->getEntity());
+    const Entity proxyShape1 = shape1->getEntity();
+    const Entity proxyShape2 = shape2->getEntity();
+
+    const uint proxyShape1Index = mProxyShapeComponents.getEntityIndex(proxyShape1);
+    const uint proxyShape2Index = mProxyShapeComponents.getEntityIndex(proxyShape2);
+
+    const CollisionShape* collisionShape1 = mProxyShapeComponents.mCollisionShapes[proxyShape1Index];
+    const CollisionShape* collisionShape2 = mProxyShapeComponents.mCollisionShapes[proxyShape2Index];
 
     const bool isShape1Convex = collisionShape1->isConvex();
     const bool isShape2Convex = collisionShape2->isConvex();
@@ -297,10 +303,10 @@ uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2) {
     mMapPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, index));
 
     // Add the involved overlapping pair to the two proxy-shapes
-    assert(mProxyShapeComponents.getOverlappingPairs(shape1->getEntity()).find(pairId) == mProxyShapeComponents.getOverlappingPairs(shape1->getEntity()).end());
-    assert(mProxyShapeComponents.getOverlappingPairs(shape2->getEntity()).find(pairId) == mProxyShapeComponents.getOverlappingPairs(shape2->getEntity()).end());
-    mProxyShapeComponents.getOverlappingPairs(shape1->getEntity()).add(pairId);
-    mProxyShapeComponents.getOverlappingPairs(shape2->getEntity()).add(pairId);
+    assert(mProxyShapeComponents.mOverlappingPairs[proxyShape1Index].find(pairId) == mProxyShapeComponents.mOverlappingPairs[proxyShape1Index].end());
+    assert(mProxyShapeComponents.mOverlappingPairs[proxyShape2Index].find(pairId) == mProxyShapeComponents.mOverlappingPairs[proxyShape2Index].end());
+    mProxyShapeComponents.mOverlappingPairs[proxyShape1Index].add(pairId);
+    mProxyShapeComponents.mOverlappingPairs[proxyShape2Index].add(pairId);
 
     mNbPairs++;
 

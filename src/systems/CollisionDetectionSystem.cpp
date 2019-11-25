@@ -158,9 +158,12 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int32, int
             const Entity proxyShape1Entity = mMapBroadPhaseIdToProxyShapeEntity[nodePair.first];
             const Entity proxyShape2Entity = mMapBroadPhaseIdToProxyShapeEntity[nodePair.second];
 
+            const uint proxyShape1Index = mProxyShapesComponents.getEntityIndex(proxyShape1Entity);
+            const uint proxyShape2Index = mProxyShapesComponents.getEntityIndex(proxyShape2Entity);
+
             // Get the two bodies
-            const Entity body1Entity = mProxyShapesComponents.getBody(proxyShape1Entity);
-            const Entity body2Entity = mProxyShapesComponents.getBody(proxyShape2Entity);
+            const Entity body1Entity = mProxyShapesComponents.mBodiesEntities[proxyShape1Index];
+            const Entity body2Entity = mProxyShapesComponents.mBodiesEntities[proxyShape2Index];
 
             // If the two proxy collision shapes are from the same body, skip it
             if (body1Entity != body2Entity) {
@@ -172,18 +175,18 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int32, int
                 auto it = mOverlappingPairs.mMapPairIdToPairIndex.find(pairId);
                 if (it == mOverlappingPairs.mMapPairIdToPairIndex.end()) {
 
-                    unsigned short shape1CollideWithMaskBits = mProxyShapesComponents.getCollideWithMaskBits(proxyShape1Entity);
-                    unsigned short shape2CollideWithMaskBits = mProxyShapesComponents.getCollideWithMaskBits(proxyShape2Entity);
+                    const unsigned short shape1CollideWithMaskBits = mProxyShapesComponents.mCollideWithMaskBits[proxyShape1Index];
+                    const unsigned short shape2CollideWithMaskBits = mProxyShapesComponents.mCollideWithMaskBits[proxyShape2Index];
 
-                    unsigned short shape1CollisionCategoryBits = mProxyShapesComponents.getCollisionCategoryBits(proxyShape1Entity);
-                    unsigned short shape2CollisionCategoryBits = mProxyShapesComponents.getCollisionCategoryBits(proxyShape2Entity);
+                    const unsigned short shape1CollisionCategoryBits = mProxyShapesComponents.mCollisionCategoryBits[proxyShape1Index];
+                    const unsigned short shape2CollisionCategoryBits = mProxyShapesComponents.mCollisionCategoryBits[proxyShape2Index];
 
                     // Check if the collision filtering allows collision between the two shapes
                     if ((shape1CollideWithMaskBits & shape2CollisionCategoryBits) != 0 &&
                         (shape1CollisionCategoryBits & shape2CollideWithMaskBits) != 0) {
 
-                        ProxyShape* shape1 = mProxyShapesComponents.getProxyShape(proxyShape1Entity);
-                        ProxyShape* shape2 = mProxyShapesComponents.getProxyShape(proxyShape2Entity);
+                        ProxyShape* shape1 = mProxyShapesComponents.mProxyShapes[proxyShape1Index];
+                        ProxyShape* shape2 = mProxyShapesComponents.mProxyShapes[proxyShape2Index];
 
                         // Check that at least one collision shape is convex
                         if (shape1->getCollisionShape()->isConvex() || shape2->getCollisionShape()->isConvex()) {
@@ -1459,7 +1462,12 @@ void CollisionDetectionSystem::filterOverlappingPairs(Entity bodyEntity, List<ui
         if (mProxyShapesComponents.getBody(mOverlappingPairs.mProxyShapes1[i]) == bodyEntity ||
             mProxyShapesComponents.getBody(mOverlappingPairs.mProxyShapes2[i]) == bodyEntity) {
 
-            convexPairs.add(mOverlappingPairs.mPairIds[i]);
+            if (i < mOverlappingPairs.getNbConvexVsConvexPairs()) {
+                convexPairs.add(mOverlappingPairs.mPairIds[i]);
+            }
+            else {
+                concavePairs.add(mOverlappingPairs.mPairIds[i]);
+            }
         }
     }
 }
@@ -1472,10 +1480,18 @@ void CollisionDetectionSystem::filterOverlappingPairs(Entity body1Entity, Entity
     // For each possible collision pair of bodies
     for (uint i=0; i < mOverlappingPairs.getNbPairs(); i++) {
 
-        if ((mProxyShapesComponents.getBody(mOverlappingPairs.mProxyShapes1[i]) == body1Entity && mProxyShapesComponents.getBody(mOverlappingPairs.mProxyShapes1[i]) == body2Entity) ||
-            (mProxyShapesComponents.getBody(mOverlappingPairs.mProxyShapes2[i]) == body2Entity && mProxyShapesComponents.getBody(mOverlappingPairs.mProxyShapes2[i]) == body1Entity)) {
+        const Entity proxyShape1Body = mProxyShapesComponents.getBody(mOverlappingPairs.mProxyShapes1[i]);
+        const Entity proxyShape2Body = mProxyShapesComponents.getBody(mOverlappingPairs.mProxyShapes2[i]);
 
-            convexPairs.add(mOverlappingPairs.mPairIds[i]);
+        if ((proxyShape1Body == body1Entity && proxyShape2Body == body2Entity) ||
+            (proxyShape1Body == body2Entity && proxyShape2Body == body1Entity)) {
+
+            if (i < mOverlappingPairs.getNbConvexVsConvexPairs()) {
+                convexPairs.add(mOverlappingPairs.mPairIds[i]);
+            }
+            else {
+                concavePairs.add(mOverlappingPairs.mPairIds[i]);
+            }
         }
     }
 }

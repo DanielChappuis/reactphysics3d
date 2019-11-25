@@ -353,27 +353,6 @@ class List {
           return Iterator(mBuffer, index, mSize);
         }
 
-        /// Remove an element from the list at a given index (the deleted item will be replaced by the last one of the list)
-        void removeAtAndReplaceWithLast(uint index) {
-
-          assert(index >= 0 && index < mSize);
-
-          // Call the destructor on the item to remove
-          (static_cast<T*>(mBuffer)[index]).~T();
-
-          // If the item to remove is not the last one
-          if (index < mSize - 1) {
-
-              // Copy the last item of the array to the location of the deleted item
-              new (static_cast<char*>(mBuffer) + index * sizeof(T)) T(static_cast<T*>(mBuffer)[mSize - 1]);
-
-              // Call the destructor of the last item of the array
-              (static_cast<T*>(mBuffer)[mSize - 1]).~T();
-          }
-
-          mSize--;
-        }
-
         /// Append another list at the end of the current one
         void addRange(const List<T>& list) {
 
