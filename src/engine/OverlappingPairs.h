@@ -140,7 +140,6 @@ class OverlappingPairs {
         Map<uint64, uint64> mMapPairIdToPairIndex;
 
         /// Ids of the convex vs convex pairs
-        // TODO : Check if we need this array
         uint64* mPairIds;
 
         /// Array with the broad-phase Ids of the first shape
