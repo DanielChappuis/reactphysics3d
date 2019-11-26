@@ -190,22 +190,6 @@ class TestList : public Test {
             it = list3.remove(5);
             rp3d_test((*it) == 6);
 
-            list3.clear();
-            list3.add(1);
-            list3.add(2);
-            list3.add(3);
-            list3.add(4);
-            list3.removeAtAndReplaceWithLast(3);
-            rp3d_test(list3.size() == 3);
-            rp3d_test(list3[2] == 3);
-            list3.removeAtAndReplaceWithLast(1);
-            rp3d_test(list3.size() == 2);
-            rp3d_test(list3[0] == 2);
-            rp3d_test(list3[1] == 3);
-            list3.removeAtAndReplaceWithLast(0);
-            rp3d_test(list3.size() == 1);
-            rp3d_test(list3[0] == 3);
-
             // ----- Test addRange() ----- //
 
             List<int> list4(mAllocator);
