@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "DefaultPoolAllocator.h"
+#include "PoolAllocator.h"
 #include "MemoryManager.h"
 #include <cstdlib>
 #include <cassert>
@@ -32,12 +32,12 @@
 using namespace reactphysics3d;
 
 // Initialization of static variables
-bool DefaultPoolAllocator::isMapSizeToHeadIndexInitialized = false;
-size_t DefaultPoolAllocator::mUnitSizes[NB_HEAPS];
-int DefaultPoolAllocator::mMapSizeToHeapIndex[MAX_UNIT_SIZE + 1];
+bool PoolAllocator::isMapSizeToHeadIndexInitialized = false;
+size_t PoolAllocator::mUnitSizes[NB_HEAPS];
+int PoolAllocator::mMapSizeToHeapIndex[MAX_UNIT_SIZE + 1];
 
 // Constructor
-DefaultPoolAllocator::DefaultPoolAllocator() {
+PoolAllocator::PoolAllocator() {
 
     // Allocate some memory to manage the blocks
     mNbAllocatedMemoryBlocks = 64;
@@ -79,7 +79,7 @@ DefaultPoolAllocator::DefaultPoolAllocator() {
 }
 
 // Destructor
-DefaultPoolAllocator::~DefaultPoolAllocator() {
+PoolAllocator::~PoolAllocator() {
 
     // Release the memory allocated for each block
     for (uint i=0; i<mNbCurrentMemoryBlocks; i++) {
@@ -98,7 +98,7 @@ DefaultPoolAllocator::~DefaultPoolAllocator() {
 
 // Allocate memory of a given size (in bytes) and return a pointer to the
 // allocated memory.
-void* DefaultPoolAllocator::allocate(size_t size) {
+void* PoolAllocator::allocate(size_t size) {
 
     assert(size > 0);
 
@@ -173,7 +173,7 @@ void* DefaultPoolAllocator::allocate(size_t size) {
 }
 
 // Release previously allocated memory.
-void DefaultPoolAllocator::release(void* pointer, size_t size) {
+void PoolAllocator::release(void* pointer, size_t size) {
 
     assert(size > 0);
 

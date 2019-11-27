@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,9 +28,8 @@
 
 // Libraries
 #include "memory/DefaultAllocator.h"
-#include "memory/DefaultPoolAllocator.h"
-#include "memory/MemoryAllocator.h"
-#include "memory/DefaultSingleFrameAllocator.h"
+#include "memory/PoolAllocator.h"
+#include "memory/SingleFrameAllocator.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -46,24 +45,18 @@ class MemoryAllocator;
 class MemoryManager {
 
     private:
-		
+
        /// Default malloc/free memory allocator
        static DefaultAllocator mDefaultAllocator;
-	   
-       /// Default single frame memory allocator
-       DefaultSingleFrameAllocator mDefaultSingleFrameAllocator;
-
-       /// Default pool memory allocator
-       DefaultPoolAllocator mDefaultPoolAllocator;
 
        /// Pointer to the base memory allocator to use
        static MemoryAllocator* mBaseAllocator;
 
-       /// Single frame stack allocator
-       SingleFrameAllocator* mSingleFrameAllocator;
-
        /// Memory pool allocator
-       MemoryAllocator* mPoolAllocator;
+       PoolAllocator mPoolAllocator;
+
+       /// Single frame stack allocator
+       SingleFrameAllocator mSingleFrameAllocator;
 
     public:
 
@@ -75,7 +68,7 @@ class MemoryManager {
        };
 
        /// Constructor
-       MemoryManager();
+       MemoryManager() = default;
 
        /// Destructor
        ~MemoryManager() = default;
@@ -87,22 +80,16 @@ class MemoryManager {
         void release(AllocationType allocationType, void* pointer, size_t size);
 
         /// Return the pool allocator
-        MemoryAllocator& getPoolAllocator();
+        PoolAllocator& getPoolAllocator();
 
         /// Return the single frame stack allocator
         SingleFrameAllocator& getSingleFrameAllocator();
 
         /// Return the base memory allocator
         static MemoryAllocator& getBaseAllocator();
-		
+
         /// Set the base memory allocator
         static void setBaseAllocator(MemoryAllocator* memoryAllocator);
-
-        /// Set the single frame memory allocator
-        void setSingleFrameAllocator(SingleFrameAllocator* singleFrameAllocator);
-
-        /// Set the pool memory allocator
-        void setPoolAllocator(MemoryAllocator* poolAllocator);
 
         /// Reset the single frame allocator
         void resetFrameAllocator();
@@ -113,8 +100,8 @@ inline void* MemoryManager::allocate(AllocationType allocationType, size_t size)
 
     switch (allocationType) {
        case AllocationType::Base: return mBaseAllocator->allocate(size);
-       case AllocationType::Pool: return mPoolAllocator->allocate(size);
-       case AllocationType::Frame: return mSingleFrameAllocator->allocate(size);
+       case AllocationType::Pool: return mPoolAllocator.allocate(size);
+       case AllocationType::Frame: return mSingleFrameAllocator.allocate(size);
     }
 
     return nullptr;
@@ -125,19 +112,19 @@ inline void MemoryManager::release(AllocationType allocationType, void* pointer,
 
     switch (allocationType) {
        case AllocationType::Base: mBaseAllocator->release(pointer, size); break;
-       case AllocationType::Pool: mPoolAllocator->release(pointer, size); break;
-       case AllocationType::Frame: mSingleFrameAllocator->release(pointer, size); break;
+       case AllocationType::Pool: mPoolAllocator.release(pointer, size); break;
+       case AllocationType::Frame: mSingleFrameAllocator.release(pointer, size); break;
     }
 }
 
 // Return the pool allocator
-inline MemoryAllocator& MemoryManager::getPoolAllocator() {
-   return *mPoolAllocator;
+inline PoolAllocator& MemoryManager::getPoolAllocator() {
+   return mPoolAllocator;
 }
 
 // Return the single frame stack allocator
 inline SingleFrameAllocator& MemoryManager::getSingleFrameAllocator() {
-   return *mSingleFrameAllocator;
+   return mSingleFrameAllocator;
 }
 
 // Return the base memory allocator
@@ -150,19 +137,9 @@ inline void MemoryManager::setBaseAllocator(MemoryAllocator* baseAllocator) {
     mBaseAllocator = baseAllocator;
 }
 
-// Set the base memory allocator
-inline void MemoryManager::setSingleFrameAllocator(SingleFrameAllocator* singleFrameAllocator) {
-    mSingleFrameAllocator = singleFrameAllocator;
-}
-
-// Set the pool memory allocator
-inline void MemoryManager::setPoolAllocator(MemoryAllocator* poolAllocator) {
-    mPoolAllocator = poolAllocator;
-}
-
 // Reset the single frame allocator
 inline void MemoryManager::resetFrameAllocator() {
-   mSingleFrameAllocator->reset();
+   mSingleFrameAllocator.reset();
 }
 
 }

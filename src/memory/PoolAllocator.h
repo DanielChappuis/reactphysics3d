@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -33,14 +33,14 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Class DefaultPoolAllocator
+// Class PoolAllocator
 /**
  * This class is used to efficiently allocate memory on the heap.
  * It allows us to allocate small blocks of memory (smaller or equal to 1024 bytes)
  * efficiently. This implementation is inspired by the small block allocator
  * described here : http://www.codeproject.com/useritems/Small_Block_Allocator.asp
  */
-class DefaultPoolAllocator : public MemoryAllocator {
+class PoolAllocator : public MemoryAllocator {
 
     private :
 
@@ -126,13 +126,13 @@ class DefaultPoolAllocator : public MemoryAllocator {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DefaultPoolAllocator();
+        PoolAllocator();
 
         /// Destructor
-        virtual ~DefaultPoolAllocator() override;
+        virtual ~PoolAllocator() override;
 
         /// Assignment operator
-        DefaultPoolAllocator& operator=(DefaultPoolAllocator& allocator) = default;
+        PoolAllocator& operator=(PoolAllocator& allocator) = default;
 
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
