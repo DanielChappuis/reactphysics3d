@@ -37,8 +37,6 @@ namespace reactphysics3d {
 // Declarations
 class CollisionBody;
 
-struct NarrowPhaseInfo;
-
 // Class ContactPoint
 /**
  * This class represents a collision contact point between two
@@ -95,18 +93,6 @@ class ContactPoint {
         /// Set the mIsRestingContact variable
         void setIsRestingContact(bool isRestingContact);
 
-        /// Set to true to make the contact point obsolete
-        void setIsObsolete(bool isObselete);
-
-        /// Set the next contact point in the linked list
-        void setNext(ContactPoint* next);
-
-        /// Set the previous contact point in the linked list
-        void setPrevious(ContactPoint* previous);
-
-        /// Return true if the contact point is obsolete
-        bool getIsObsolete() const;
-
     public :
 
         // -------------------- Methods -------------------- //
@@ -114,17 +100,20 @@ class ContactPoint {
         /// Constructor
         ContactPoint(const ContactPointInfo* contactInfo, const WorldSettings& worldSettings);
 
+        /// Constructor
+        ContactPoint(const ContactPointInfo& contactInfo, const WorldSettings& worldSettings);
+
         /// Destructor
         ~ContactPoint() = default;
 
-        /// Deleted copy-constructor
-        ContactPoint(const ContactPoint& contact) = delete;
+        /// Copy-constructor
+        ContactPoint(const ContactPoint& contact) = default;
 
-        /// Deleted assignment operator
-        ContactPoint& operator=(const ContactPoint& contact) = delete;
+        /// Assignment operator
+        ContactPoint& operator=(const ContactPoint& contact) = default;
 
         /// Return the normal vector of the contact
-        Vector3 getNormal() const;
+        const Vector3& getNormal() const;
 
         /// Return the contact point on the first proxy shape in the local-space of the proxy shape
         const Vector3& getLocalPointOnShape1() const;
@@ -138,12 +127,6 @@ class ContactPoint {
         /// Return true if the contact is a resting contact
         bool getIsRestingContact() const;
 
-        /// Return the previous contact point in the linked list
-        inline ContactPoint* getPrevious() const;
-
-        /// Return the next contact point in the linked list
-        ContactPoint* getNext() const;
-
         /// Return the penetration depth
         decimal getPenetrationDepth() const;
 
@@ -153,14 +136,15 @@ class ContactPoint {
         // Friendship
         friend class ContactManifold;
         friend class ContactManifoldSet;
-        friend class ContactSolver;
+        friend class ContactSolverSystem;
+        friend class CollisionDetectionSystem;
 };
 
 // Return the normal vector of the contact
 /**
  * @return The contact normal
  */
-inline Vector3 ContactPoint::getNormal() const {
+inline const Vector3& ContactPoint::getNormal() const {
     return mNormal;
 }
 
@@ -216,54 +200,6 @@ inline bool ContactPoint::getIsRestingContact() const {
  */
 inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
-}
-
-// Return true if the contact point is obsolete
-/**
- * @return True if the contact is obsolete
- */
-inline bool ContactPoint::getIsObsolete() const {
-    return mIsObsolete;
-}
-
-// Set to true to make the contact point obsolete
-/**
- * @param isObsolete True if the contact is obsolete
- */
-inline void ContactPoint::setIsObsolete(bool isObsolete) {
-    mIsObsolete = isObsolete;
-}
-
-// Return the next contact point in the linked list
-/**
- * @return A pointer to the next contact point in the linked-list of points
- */
-inline ContactPoint* ContactPoint::getNext() const {
-   return mNext;
-}
-
-// Set the next contact point in the linked list
-/**
- * @param next Pointer to the next contact point in the linked-list of points
- */
-inline void ContactPoint::setNext(ContactPoint* next) {
-    mNext = next;
-}
-
-// Return the previous contact point in the linked list
-/**
- * @return A pointer to the previous contact point in the linked-list of points
- */
-inline ContactPoint* ContactPoint::getPrevious() const {
-   return mPrevious;
-}
-
-// Set the previous contact point in the linked list
-/**
- * @param previous Pointer to the previous contact point in the linked-list of points
- */
-inline void ContactPoint::setPrevious(ContactPoint* previous) {
-    mPrevious = previous;
 }
 
 // Return the penetration depth of the contact

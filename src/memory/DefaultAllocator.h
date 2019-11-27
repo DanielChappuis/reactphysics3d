@@ -53,6 +53,9 @@ class DefaultAllocator : public MemoryAllocator {
         /// allocated memory.
         virtual void* allocate(size_t size) override {
 
+            // TODO : Make sure to reduce the calls to default allocator is not called within a frame. For instance by a call
+            //        to a pool allocator with size too large
+
             return malloc(size);
         }
 

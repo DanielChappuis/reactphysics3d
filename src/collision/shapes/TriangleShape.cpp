@@ -221,6 +221,8 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
  */
 void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
+    RP3D_PROFILE("TriangleShape::computeAABB()", mProfiler);
+
     const Vector3 worldPoint1 = transform * mPoints[0];
     const Vector3 worldPoint2 = transform * mPoints[1];
     const Vector3 worldPoint3 = transform * mPoints[2];

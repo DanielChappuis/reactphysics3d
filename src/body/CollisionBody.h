@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cassert>
-#include "Body.h"
+#include "engine/Entity.h"
 #include "collision/shapes/AABB.h"
 #include "mathematics/Transform.h"
 #include "configuration.h"
@@ -44,46 +44,30 @@ class CollisionShape;
 struct RaycastInfo;
 class DefaultPoolAllocator;
 class Profiler;
-
-/// Enumeration for the type of a body
-/// STATIC : A static body has infinite mass, zero velocity but the position can be
-///          changed manually. A static body does not collide with other static or kinematic bodies.
-/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
-///             position is computed by the physics engine. A kinematic body does not collide with
-///             other static or kinematic bodies.
-/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
-///           position is determined by the physics engine. A dynamic body can collide with other
-///           dynamic, static or kinematic bodies.
-enum class BodyType {STATIC, KINEMATIC, DYNAMIC};
+class Logger;
 
 // Class CollisionBody
 /**
  * This class represents a body that is able to collide with others
- * bodies. This class inherits from the Body class.
+ * bodies.
  */
-class CollisionBody : public Body {
+class CollisionBody {
 
     protected :
 
         // -------------------- Attributes -------------------- //
 
-        /// Type of body (static, kinematic or dynamic)
-        BodyType mType;
-
-        /// Position and orientation of the body
-        Transform mTransform;
-
-        /// First element of the linked list of proxy collision shapes of this body
-        ProxyShape* mProxyCollisionShapes;
-
-        /// Number of collision shapes
-        uint mNbCollisionShapes;
-
-        /// First element of the linked list of contact manifolds involving this body
-        ContactManifoldListElement* mContactManifoldsList;
+        /// Identifier of the entity in the ECS
+        Entity mEntity;
 
         /// Reference to the world the body belongs to
         CollisionWorld& mWorld;
+
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Logger
+        Logger* mLogger;
+#endif
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -94,34 +78,25 @@ class CollisionBody : public Body {
 
         // -------------------- Methods -------------------- //
 
-        /// Reset the contact manifold lists
-        void resetContactManifoldsList();
-
         /// Remove all the collision shapes
         void removeAllCollisionShapes();
 
         /// Update the broad-phase state for this body (because it has moved for instance)
-        virtual void updateBroadPhaseState() const;
-
-        /// Update the broad-phase state of a proxy collision shape of the body
-        void updateProxyShapeInBroadPhase(ProxyShape* proxyShape, bool forceReinsert = false) const;
+        void updateBroadPhaseState(decimal timeStep) const;
 
         /// Ask the broad-phase to test again the collision shapes of the body for collision
         /// (as if the body has moved).
         void askForBroadPhaseCollisionCheck() const;
-
-        /// Reset the mIsAlreadyInIsland variable of the body and contact manifolds
-        int resetIsAlreadyInIslandAndCountManifolds();
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionBody(const Transform& transform, CollisionWorld& world, bodyindex id);
+        CollisionBody(CollisionWorld& world, Entity entity);
 
         /// Destructor
-        virtual ~CollisionBody() override;
+        virtual ~CollisionBody();
 
         /// Deleted copy-constructor
         CollisionBody(const CollisionBody& body) = delete;
@@ -129,14 +104,20 @@ class CollisionBody : public Body {
         /// Deleted assignment operator
         CollisionBody& operator=(const CollisionBody& body) = delete;
 
-        /// Return the type of the body
-        BodyType getType() const;
+        /// Return the corresponding entity of the body
+        Entity getEntity() const;
 
-        /// Set the type of the body
-        void setType(BodyType type);
+        /// Return true if the body is active
+        bool isActive() const;
+
+        /// Return a pointer to the user data attached to this body
+        void* getUserData() const;
+
+        /// Attach user data to this body
+        void setUserData(void* userData);
 
         /// Set whether or not the body is active
-        virtual void setIsActive(bool isActive) override;
+        virtual void setIsActive(bool isActive);
 
         /// Return the current position and orientation
         const Transform& getTransform() const;
@@ -145,14 +126,10 @@ class CollisionBody : public Body {
         virtual void setTransform(const Transform& transform);
 
         /// Add a collision shape to the body.
-        virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,
-                                              const Transform& transform);
+        virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape, const Transform& transform);
 
         /// Remove a collision shape from the body
-        virtual void removeCollisionShape(const ProxyShape* proxyShape);
-
-        /// Return the first element of the linked list of contact manifolds involving this body
-        const ContactManifoldListElement* getContactManifoldsList() const;
+        virtual void removeCollisionShape(ProxyShape *proxyShape);
 
         /// Return true if a point is inside the collision body
         bool testPointInside(const Vector3& worldPoint) const;
@@ -166,11 +143,14 @@ class CollisionBody : public Body {
         /// Compute and return the AABB of the body by merging all proxy shapes AABBs
         AABB getAABB() const;
 
-        /// Return the linked list of proxy shapes of that body
-        ProxyShape* getProxyShapesList();
+        /// Return a const pointer to a given proxy-shape of the body
+        const ProxyShape* getProxyShape(uint proxyShapeIndex) const;
 
-        /// Return the linked list of proxy shapes of that body
-        const ProxyShape* getProxyShapesList() const;
+        /// Return a pointer to a given proxy-shape of the body
+        ProxyShape* getProxyShape(uint proxyShapeIndex);
+
+        /// Return the number of proxy-shapes associated with this body
+        uint getNbProxyShapes() const;
 
         /// Return the world-space coordinates of a point given the local-space coordinates of the body
         Vector3 getWorldPoint(const Vector3& localPoint) const;
@@ -184,6 +164,12 @@ class CollisionBody : public Body {
         /// Return the body local-space coordinates of a vector given in the world-space coordinates
         Vector3 getLocalVector(const Vector3& worldVector) const;
 
+#ifdef IS_LOGGING_ACTIVE
+
+        /// Set the logger
+        void setLogger(Logger* logger);
+#endif
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Set the profiler
@@ -195,91 +181,11 @@ class CollisionBody : public Body {
 
         friend class CollisionWorld;
         friend class DynamicsWorld;
-        friend class CollisionDetection;
+        friend class CollisionDetectionSystem;
         friend class BroadPhaseAlgorithm;
         friend class ConvexMeshShape;
         friend class ProxyShape;
 };
-
-// Return the type of the body
-/**
- * @return the type of the body (STATIC, KINEMATIC, DYNAMIC)
- */
-inline BodyType CollisionBody::getType() const {
-    return mType;
-}
-
-// Return the current position and orientation
-/**
- * @return The current transformation of the body that transforms the local-space
- *         of the body into world-space
- */
-inline const Transform& CollisionBody::getTransform() const {
-    return mTransform;
-}
-
-// Return the first element of the linked list of contact manifolds involving this body
-/**
- * @return A pointer to the first element of the linked-list with the contact
- *         manifolds of this body
- */
-inline const ContactManifoldListElement* CollisionBody::getContactManifoldsList() const {
-    return mContactManifoldsList;
-}
-
-// Return the linked list of proxy shapes of that body
-/**
-* @return The pointer of the first proxy shape of the linked-list of all the
-*         proxy shapes of the body
-*/
-inline ProxyShape* CollisionBody::getProxyShapesList() {
-    return mProxyCollisionShapes;
-}
-
-// Return the linked list of proxy shapes of that body
-/**
-* @return The pointer of the first proxy shape of the linked-list of all the
-*         proxy shapes of the body
-*/
-inline const ProxyShape* CollisionBody::getProxyShapesList() const {
-    return mProxyCollisionShapes;
-}
-
-// Return the world-space coordinates of a point given the local-space coordinates of the body
-/**
-* @param localPoint A point in the local-space coordinates of the body
-* @return The point in world-space coordinates
-*/
-inline Vector3 CollisionBody::getWorldPoint(const Vector3& localPoint) const {
-    return mTransform * localPoint;
-}
-
-// Return the world-space vector of a vector given in local-space coordinates of the body
-/**
-* @param localVector A vector in the local-space coordinates of the body
-* @return The vector in world-space coordinates
-*/
-inline Vector3 CollisionBody::getWorldVector(const Vector3& localVector) const {
-    return mTransform.getOrientation() * localVector;
-}
-
-// Return the body local-space coordinates of a point given in the world-space coordinates
-/**
-* @param worldPoint A point in world-space coordinates
-* @return The point in the local-space coordinates of the body
-*/
-inline Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
-    return mTransform.getInverse() * worldPoint;
-}
-
-// Return the body local-space coordinates of a vector given in the world-space coordinates
-/**
-* @param worldVector A vector in world-space coordinates
-* @return The vector in the local-space coordinates of the body
-*/
-inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
-    return mTransform.getOrientation().getInverse() * worldVector;
-}
 
 /// Test if the collision body overlaps with a given AABB
 /**
@@ -289,6 +195,23 @@ inline Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
 inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getAABB());
 }
+
+// Return the corresponding entity of the body
+/**
+ * @return The entity of the body
+ */
+inline Entity CollisionBody::getEntity() const {
+    return mEntity;
+}
+
+#ifdef IS_LOGGING_ACTIVE
+
+// Set the logger
+inline void CollisionBody::setLogger(Logger* logger) {
+    mLogger = logger;
+}
+
+#endif
 
 #ifdef IS_PROFILING_ACTIVE
 

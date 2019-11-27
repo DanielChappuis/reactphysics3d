@@ -185,3 +185,25 @@ void Scene::rotate(int xMouse, int yMouse) {
         }
     }
 }
+
+// Called when some contacts occur
+void Scene::onContact(const rp3d::CollisionCallback::CallbackData& callbackData) {
+
+    // For each contact pair
+    for (uint p=0; p < callbackData.getNbContactPairs(); p++) {
+
+        rp3d::CollisionCallback::ContactPair contactPair = callbackData.getContactPair(p);
+
+        // For each contact point of the contact pair
+        for (uint c=0; c < contactPair.getNbContactPoints(); c++) {
+
+            rp3d::CollisionCallback::ContactPoint contactPoint = contactPair.getContactPoint(c);
+
+            rp3d::Vector3 point = contactPair.getProxyShape1()->getLocalToWorldTransform() * contactPoint.getLocalPointOnShape1();
+            rp3d::Vector3 normalWorld = contactPoint.getWorldNormal();
+            openglframework::Vector3 normal = openglframework::Vector3(normalWorld.x, normalWorld.y, normalWorld.z);
+            SceneContactPoint contact(openglframework::Vector3(point.x, point.y, point.z), normal, openglframework::Color::red());
+            mContactPoints.push_back(contact);
+        }
+    }
+}

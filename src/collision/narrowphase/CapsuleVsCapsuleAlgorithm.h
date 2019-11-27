@@ -28,12 +28,13 @@
 
 // Libraries
 #include "NarrowPhaseAlgorithm.h"
+#include "configuration.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 // Declarations
-class Body;
+struct CapsuleVsCapsuleNarrowPhaseInfoBatch;
 class ContactPoint;
 
 // Class CapsuleVsCapsuleAlgorithm
@@ -65,7 +66,8 @@ class CapsuleVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 		CapsuleVsCapsuleAlgorithm& operator=(const CapsuleVsCapsuleAlgorithm& algorithm) = delete;
 
         /// Compute the narrow-phase collision detection between two capsules
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts, MemoryAllocator& memoryAllocator) override;
+        bool testCollision(CapsuleVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
+                           uint batchNbItems, bool reportContacts, MemoryAllocator& memoryAllocator);
 };
 
 }

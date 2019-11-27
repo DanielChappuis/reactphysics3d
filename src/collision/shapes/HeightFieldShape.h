@@ -36,57 +36,6 @@ class HeightFieldShape;
 class Profiler;
 class TriangleShape;
 
-// Class TriangleOverlapCallback
-/**
- * This class is used for testing AABB and triangle overlap for raycasting
- */
-class TriangleOverlapCallback : public TriangleCallback {
-
-    protected:
-
-        const Ray& mRay;
-        ProxyShape* mProxyShape;
-        RaycastInfo& mRaycastInfo;
-        bool mIsHit;
-        decimal mSmallestHitFraction;
-        const HeightFieldShape& mHeightFieldShape;
-        MemoryAllocator& mAllocator;
-		
-#ifdef IS_PROFILING_ACTIVE
-
-		/// Pointer to the profiler
-		Profiler* mProfiler;
-
-#endif
-
-    public:
-
-        // Constructor
-        TriangleOverlapCallback(const Ray& ray, ProxyShape* proxyShape, RaycastInfo& raycastInfo,
-                                const HeightFieldShape& heightFieldShape, MemoryAllocator& allocator)
-                               : mRay(ray), mProxyShape(proxyShape), mRaycastInfo(raycastInfo),
-                                 mHeightFieldShape (heightFieldShape), mAllocator(allocator) {
-            mIsHit = false;
-            mSmallestHitFraction = mRay.maxFraction;
-        }
-
-        bool getIsHit() const {return mIsHit;}
-
-        /// Raycast test between a ray and a triangle of the heightfield
-        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) override;
-
-#ifdef IS_PROFILING_ACTIVE
-
-		/// Set the profiler
-		void setProfiler(Profiler* profiler) {
-			mProfiler = profiler;
-		}
-
-#endif
-
-};
-
-
 // Class HeightFieldShape
 /**
  * This class represents a static height field that can be used to represent
@@ -212,7 +161,9 @@ class HeightFieldShape : public ConcaveShape {
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const override;
+        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
+                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+                                                   MemoryAllocator& allocator) const override;
 
         /// Return the string representation of the shape
         virtual std::string to_string() const override;

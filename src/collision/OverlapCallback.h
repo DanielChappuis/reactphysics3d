@@ -26,31 +26,140 @@
 #ifndef REACTPHYSICS3D_OVERLAP_CALLBACK_H
 #define REACTPHYSICS3D_OVERLAP_CALLBACK_H
 
+// Libraries
+#include "containers/List.h"
+
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Declarations
 class CollisionBody;
+class CollisionWorld;
+class ProxyShape;
+struct Entity;
 
 // Class OverlapCallback
 /**
- * This class can be used to register a callback for collision overlap queries.
- * You should implement your own class inherited from this one and implement
- * the notifyOverlap() method. This method will called each time a contact
- * point is reported.
+ * This class can be used to register a callback for collision overlap queries between bodies.
+ * You should implement your own class inherited from this one and implement the onOverlap() method.
  */
 class OverlapCallback {
 
     public:
+
+        // Class OverlapPair
+        /**
+         * This class represents the contact between two proxy-shapes of the physics world.
+         */
+        class OverlapPair {
+
+            private:
+
+                // -------------------- Attributes -------------------- //
+
+                /// Pair of overlapping body entities
+                Pair<Entity, Entity>& mOverlapPair;
+
+                /// Reference to the physics world
+                CollisionWorld& mWorld;
+
+                // -------------------- Methods -------------------- //
+
+                /// Constructor
+                OverlapPair(Pair<Entity, Entity>& overlapPair, CollisionWorld& world);
+
+            public:
+
+                // -------------------- Methods -------------------- //
+
+                /// Copy constructor
+                OverlapPair(const OverlapPair& contactPair) = default;
+
+                /// Assignment operator
+                OverlapPair& operator=(const OverlapPair& contactPair) = default;
+
+                /// Destructor
+                ~OverlapPair() = default;
+
+                /// Return a pointer to the first body in contact
+                CollisionBody* getBody1() const;
+
+                /// Return a pointer to the second body in contact
+                CollisionBody* getBody2() const;
+
+                // -------------------- Friendship -------------------- //
+
+                friend class OverlapCallback;
+        };
+
+        // Class CallbackData
+        /**
+         * This class contains data about overlap between bodies
+         */
+        class CallbackData {
+
+            private:
+
+                // -------------------- Attributes -------------------- //
+
+                List<Pair<Entity, Entity>>& mOverlapBodies;
+
+                /// Reference to the physics world
+                CollisionWorld& mWorld;
+
+                // -------------------- Methods -------------------- //
+
+                /// Constructor
+                CallbackData(List<Pair<Entity, Entity>>& overlapProxyShapes, CollisionWorld& world);
+
+                /// Deleted copy constructor
+                CallbackData(const CallbackData& callbackData) = delete;
+
+                /// Deleted assignment operator
+                CallbackData& operator=(const CallbackData& callbackData) = delete;
+
+                /// Destructor
+                ~CallbackData() = default;
+
+            public:
+
+                // -------------------- Methods -------------------- //
+
+                /// Return the number of overlapping pairs of bodies
+                uint getNbOverlappingPairs() const;
+
+                /// Return a given overlapping pair of bodies
+                OverlapPair getOverlappingPair(uint index) const;
+
+                // -------------------- Friendship -------------------- //
+
+                friend class CollisionDetectionSystem;
+        };
 
         /// Destructor
         virtual ~OverlapCallback() {
 
         }
 
-        /// This method will be called for each reported overlapping bodies
-        virtual void notifyOverlap(CollisionBody* collisionBody)=0;
+        /// This method will be called to report bodies that overlap
+        virtual void onOverlap(CallbackData& callbackData)=0;
 };
+
+// Return the number of overlapping pairs of bodies
+inline uint OverlapCallback::CallbackData::getNbOverlappingPairs() const {
+    return mOverlapBodies.size();
+}
+
+// Return a given overlapping pair of bodies
+/// Note that the returned OverlapPair object is only valid during the call of the CollisionCallback::onOverlap()
+/// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the OverlapPair
+/// object itself because it won't be valid after the CollisionCallback::onOverlap() call.
+inline OverlapCallback::OverlapPair OverlapCallback::CallbackData::getOverlappingPair(uint index) const {
+
+    assert(index < getNbOverlappingPairs());
+
+    return OverlapPair(mOverlapBodies[index], mWorld);
+}
 
 }
 

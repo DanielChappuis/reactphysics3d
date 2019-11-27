@@ -39,22 +39,15 @@ using namespace reactphysics3d;
 * @param world The world where the body has been added
 * @param id The ID of the body
 */
-RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id)
-          : CollisionBody(transform, world, id), mArrayIndex(0), mInitMass(decimal(1.0)),
-            mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
-            mIsGravityEnabled(true), mMaterial(world.mConfig), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
-            mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
+RigidBody::RigidBody(CollisionWorld& world, Entity entity)
+          : CollisionBody(world, entity),  mMaterial(world.mConfig),
+            mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
-    // Compute the inverse mass
-    mMassInverse = decimal(1.0) / mInitMass;
-
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
 }
 
-// Destructor
-RigidBody::~RigidBody() {
-    assert(mJointsList == nullptr);
+// Return the type of the body
+BodyType RigidBody::getType() const {
+    return mWorld.mRigidBodyComponents.getBodyType(mEntity);
 }
 
 // Set the type of the body
@@ -72,53 +65,112 @@ RigidBody::~RigidBody() {
  */
 void RigidBody::setType(BodyType type) {
 
-    if (mType == type) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == type) return;
 
-    CollisionBody::setType(type);
+    mWorld.mRigidBodyComponents.setBodyType(mEntity, type);
 
     // Recompute the total mass, center of mass and inertia tensor
     recomputeMassInformation();
 
     // If it is a static body
-    if (mType == BodyType::STATIC) {
+    if (type == BodyType::STATIC) {
 
         // Reset the velocity to zero
-        mLinearVelocity.setToZero();
-        mAngularVelocity.setToZero();
+        mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
     }
 
     // If it is a static or a kinematic body
-    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
+    if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
-        mMassInverse = decimal(0.0);
-        mInertiaTensorLocalInverse.setToZero();
-        mInertiaTensorInverseWorld.setToZero();
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0));
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
     }
     else {  // If it is a dynamic body
-        mMassInverse = decimal(1.0) / mInitMass;
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
 
         if (mIsInertiaTensorSetByUser) {
-            mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
+            mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
         }
     }
-
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
 
     // Awake the body
     setIsSleeping(false);
 
-    // Remove all the contacts with this body
-    resetContactManifoldsList();
+    // Update the active status of currently overlapping pairs
+    updateOverlappingPairs();
 
     // Ask the broad-phase to test again the collision shapes of the body for collision
     // detection (as if the body has moved)
     askForBroadPhaseCollisionCheck();
 
     // Reset the force and torque on the body
-    mExternalForce.setToZero();
-    mExternalTorque.setToZero();
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3::zero());
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set type=" +
+             (type == BodyType::STATIC ? "Static" : (type == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
+}
+
+// Get the inverse local inertia tensor of the body (in body coordinates)
+const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
+    return mWorld.mRigidBodyComponents.getInertiaTensorLocalInverse(mEntity);
+}
+
+// Return the inverse of the inertia tensor in world coordinates.
+/// The inertia tensor I_w in world coordinates is computed with the
+/// local inverse inertia tensor I_b^-1 in body coordinates
+/// by I_w = R * I_b^-1 * R^T
+/// where R is the rotation matrix (and R^T its transpose) of the
+/// current orientation quaternion of the body
+/**
+ * @return The 3x3 inverse inertia tensor matrix of the body in world-space
+ *         coordinates
+ */
+const Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
+
+    return getInertiaTensorInverseWorld(mWorld, mEntity);
+}
+
+// Method that return the mass of the body
+/**
+ * @return The mass (in kilograms) of the body
+ */
+decimal RigidBody::getMass() const {
+    return mWorld.mRigidBodyComponents.getInitMass(mEntity);
+}
+
+// Apply an external force to the body at a given point (in world-space coordinates).
+/// If the point is not at the center of mass of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The force to apply on the body
+ * @param point The point where the force is applied (in world-space coordinates)
+ */
+void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    const Vector3& externalForce = mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, externalForce + force);
+
+    // Add the torque
+    const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + (point - centerOfMassWorld).cross(force));
 }
 
 // Set the local inertia tensor of the body (in local-space coordinates)
@@ -133,16 +185,52 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
     mUserInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
     mIsInertiaTensorSetByUser = true;
 
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
-    mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
-
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+}
+
+// Apply an external force to the body at its center of mass.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The external force to apply on the center of mass of the body
+ */
+void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    const Vector3& externalForce = mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, externalForce + force);
+}
+
+// Return the linear velocity damping factor
+/**
+ * @return The linear damping factor of this body
+ */
+decimal RigidBody::getLinearDamping() const {
+    return mWorld.mRigidBodyComponents.getLinearDamping(mEntity);
+}
+
+// Return the angular velocity damping factor
+/**
+ * @return The angular damping factor of this body
+ */
+decimal RigidBody::getAngularDamping() const {
+    return mWorld.mRigidBodyComponents.getAngularDamping(mEntity);
 }
 
 // Set the inverse local inertia tensor of the body (in local-space coordinates)
@@ -157,16 +245,13 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
     mUserInertiaTensorLocalInverse = inverseInertiaTensorLocal;
     mIsInertiaTensorSetByUser = true;
 
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     // Compute the inverse local inertia tensor
-    mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
-
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set inverseInertiaTensorLocal=" + inverseInertiaTensorLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set inverseInertiaTensorLocal=" + inverseInertiaTensorLocal.to_string());
 }
 
 // Set the local center of mass of the body (in local-space coordinates)
@@ -178,21 +263,25 @@ void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTens
  */
 void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
 
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
     mIsCenterOfMassSetByUser = true;
 
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
-    mCenterOfMassLocal = centerOfMassLocal;
+    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
 
     // Compute the center of mass in world-space coordinates
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * centerOfMassLocal);
 
     // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
 }
 
 // Set the mass of the rigid body
@@ -201,51 +290,22 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
  */
 void RigidBody::setMass(decimal mass) {
 
-    if (mType != BodyType::DYNAMIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
-    mInitMass = mass;
+    mWorld.mRigidBodyComponents.setInitMass(mEntity, mass);
 
-    if (mInitMass > decimal(0.0)) {
-        mMassInverse = decimal(1.0) / mInitMass;
+    if (mWorld.mRigidBodyComponents.getInitMass(mEntity) > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
     }
     else {
-        mInitMass = decimal(1.0);
-        mMassInverse = decimal(1.0);
+        mWorld.mRigidBodyComponents.setInitMass(mEntity, decimal(1.0));
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0));
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set mass=" + std::to_string(mass));
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(mass));
 }
 
-// Remove a joint from the joints list
-void RigidBody::removeJointFromJointsList(MemoryManager& memoryManager, const Joint* joint) {
-
-    assert(joint != nullptr);
-    assert(mJointsList != nullptr);
-
-    // Remove the joint from the linked list of the joints of the first body
-    if (mJointsList->joint == joint) {   // If the first element is the one to remove
-        JointListElement* elementToRemove = mJointsList;
-        mJointsList = elementToRemove->next;
-        elementToRemove->~JointListElement();
-        memoryManager.release(MemoryManager::AllocationType::Pool,
-                              elementToRemove, sizeof(JointListElement));
-    }
-    else {  // If the element to remove is not the first one in the list
-        JointListElement* currentElement = mJointsList;
-        while (currentElement->next != nullptr) {
-            if (currentElement->next->joint == joint) {
-                JointListElement* elementToRemove = currentElement->next;
-                currentElement->next = elementToRemove->next;
-                elementToRemove->~JointListElement();
-                memoryManager.release(MemoryManager::AllocationType::Pool,
-                                      elementToRemove, sizeof(JointListElement));
-                break;
-            }
-            currentElement = currentElement->next;
-        }
-    }
-}
 
 // Add a collision shape to the body.
 /// When you add a collision shape to the body, an internal copy of this
@@ -267,10 +327,26 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
                                          const Transform& transform,
                                          decimal mass) {
 
+    // Create a new entity for the proxy-shape
+    Entity proxyShapeEntity = mWorld.mEntityManager.createEntity();
+
     // Create a new proxy collision shape to attach the collision shape to the body
     ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                      sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, mass, mWorld.mMemoryManager);
+                                      sizeof(ProxyShape))) ProxyShape(proxyShapeEntity, this, mWorld.mMemoryManager);
+
+    // Add the proxy-shape component to the entity of the body
+    Vector3 localBoundsMin;
+    Vector3 localBoundsMax;
+    // TODO : Maybe this method can directly returns an AABB
+    collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
+    const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
+    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape,
+                                                                   AABB(localBoundsMin, localBoundsMax),
+                                                                   transform, collisionShape, mass, 0x0001, 0xFFFF, localToWorldTransform);
+    bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
+    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, isSleeping, proxyShapeComponent);
+
+    mWorld.mCollisionBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -286,30 +362,19 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
 
 #endif
 
-    // Add it to the list of proxy collision shapes of the body
-    if (mProxyCollisionShapes == nullptr) {
-        mProxyCollisionShapes = proxyShape;
-    }
-    else {
-        proxyShape->mNext = mProxyCollisionShapes;
-        mProxyCollisionShapes = proxyShape;
-    }
-
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
-    collisionShape->computeAABB(aabb, mTransform * transform);
+    collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
-
-    mNbCollisionShapes++;
 
     // Recompute the center of mass, total mass and inertia tensor of the body with the new
     // collision shape
     recomputeMassInformation();
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
+             "Body " + std::to_string(mEntity.id) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
              "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
@@ -326,7 +391,7 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
 /**
  * @param proxyShape The pointer of the proxy shape you want to remove
  */
-void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
+void RigidBody::removeCollisionShape(ProxyShape* proxyShape) {
 
     // Remove the collision shape
     CollisionBody::removeCollisionShape(proxyShape);
@@ -340,11 +405,11 @@ void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
  * @param isEnabled True if you want the gravity to be applied to this body
  */
 void RigidBody::enableGravity(bool isEnabled) {
-    mIsGravityEnabled = isEnabled;
+    mWorld.mRigidBodyComponents.setIsGravityEnabled(mEntity, isEnabled);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isGravityEnabled=" +
-             (mIsGravityEnabled ? "true" : "false"));
+             "Body " + std::to_string(mEntity.id) + ": Set isGravityEnabled=" +
+             (isEnabled ? "true" : "false"));
 }
 
 // Set the linear damping factor. This is the ratio of the linear velocity
@@ -354,10 +419,10 @@ void RigidBody::enableGravity(bool isEnabled) {
  */
 void RigidBody::setLinearDamping(decimal linearDamping) {
     assert(linearDamping >= decimal(0.0));
-    mLinearDamping = linearDamping;
+    mWorld.mRigidBodyComponents.setLinearDamping(mEntity, linearDamping);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set linearDamping=" + std::to_string(mLinearDamping));
+             "Body " + std::to_string(mEntity.id) + ": Set linearDamping=" + std::to_string(linearDamping));
 }
 
 // Set the angular damping factor. This is the ratio of the angular velocity
@@ -367,10 +432,10 @@ void RigidBody::setLinearDamping(decimal linearDamping) {
  */
 void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
-    mAngularDamping = angularDamping;
+    mWorld.mRigidBodyComponents.setAngularDamping(mEntity, angularDamping);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set angularDamping=" + std::to_string(mAngularDamping));
+             "Body " + std::to_string(mEntity.id) + ": Set angularDamping=" + std::to_string(angularDamping));
 }
 
 // Set a new material for this rigid body
@@ -381,7 +446,7 @@ void RigidBody::setMaterial(const Material& material) {
     mMaterial = material;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set Material" + mMaterial.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string());
 }
 
 // Set the linear velocity of the rigid body.
@@ -391,18 +456,18 @@ void RigidBody::setMaterial(const Material& material) {
 void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == BodyType::STATIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
 
     // Update the linear velocity of the current body state
-    mLinearVelocity = linearVelocity;
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
     // If the linear velocity is not zero, awake the body
-    if (mLinearVelocity.lengthSquare() > decimal(0.0)) {
+    if (linearVelocity.lengthSquare() > decimal(0.0)) {
         setIsSleeping(false);
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set linearVelocity=" + mLinearVelocity.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set linearVelocity=" + linearVelocity.to_string());
 }
 
 // Set the angular velocity.
@@ -412,18 +477,18 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == BodyType::STATIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
 
     // Set the angular velocity
-    mAngularVelocity = angularVelocity;
+    mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, angularVelocity);
 
     // If the velocity is not zero, awake the body
-    if (mAngularVelocity.lengthSquare() > decimal(0.0)) {
+    if (angularVelocity.lengthSquare() > decimal(0.0)) {
         setIsSleeping(false);
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set angularVelocity=" + mAngularVelocity.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set angularVelocity=" + angularVelocity.to_string());
 }
 
 // Set the current position and orientation
@@ -433,90 +498,96 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
  */
 void RigidBody::setTransform(const Transform& transform) {
 
-    // Update the transform of the body
-    mTransform = transform;
-
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
+    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
 
     // Compute the new center of mass in world-space coordinates
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+    const Vector3& centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform * centerOfMassLocal);
 
     // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
+    CollisionBody::setTransform(transform);
 
-    // Update the broad-phase state of the body
-    updateBroadPhaseState();
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
+    // Awake the body if it is sleeping
+    setIsSleeping(false);
 }
 
 // Recompute the center of mass, total mass and inertia tensor of the body using all
 // the collision shapes attached to the body.
 void RigidBody::recomputeMassInformation() {
 
-    mInitMass = decimal(0.0);
-    mMassInverse = decimal(0.0);
-    if (!mIsInertiaTensorSetByUser) mInertiaTensorLocalInverse.setToZero();
-    if (!mIsInertiaTensorSetByUser) mInertiaTensorInverseWorld.setToZero();
-    if (!mIsCenterOfMassSetByUser) mCenterOfMassLocal.setToZero();
+    mWorld.mRigidBodyComponents.setInitMass(mEntity, decimal(0.0));
+    mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+    if (!mIsInertiaTensorSetByUser) mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+    if (!mIsCenterOfMassSetByUser) mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, Vector3::zero());
     Matrix3x3 inertiaTensorLocal;
     inertiaTensorLocal.setToZero();
 
+    const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
+
     // If it is a STATIC or a KINEMATIC body
-    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
-        mCenterOfMassWorld = mTransform.getPosition();
+    BodyType type = mWorld.mRigidBodyComponents.getBodyType(mEntity);
+    if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
+        mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
         return;
     }
 
-    assert(mType == BodyType::DYNAMIC);
+    assert(mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
-        mInitMass += shape->getMass();
+    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+        mWorld.mRigidBodyComponents.setInitMass(mEntity, mWorld.mRigidBodyComponents.getInitMass(mEntity) + proxyShape->getMass());
 
         if (!mIsCenterOfMassSetByUser) {
-            mCenterOfMassLocal += shape->getLocalToBodyTransform().getPosition() * shape->getMass();
+            mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity) +
+                                                            proxyShape->getLocalToBodyTransform().getPosition() * proxyShape->getMass());
         }
     }
 
-    if (mInitMass > decimal(0.0)) {
-        mMassInverse = decimal(1.0) / mInitMass;
+    if (mWorld.mRigidBodyComponents.getInitMass(mEntity) > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
     }
     else {
-        mCenterOfMassWorld = mTransform.getPosition();
+        mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
         return;
     }
 
     // Compute the center of mass
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
+    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
 
     if (!mIsCenterOfMassSetByUser) {
-        mCenterOfMassLocal *= mMassInverse;
+        mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity) * mWorld.mRigidBodyComponents.getMassInverse(mEntity));
     }
 
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform * mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity));
 
     if (!mIsInertiaTensorSetByUser) {
 
         // Compute the inertia tensor using all the collision shapes
-        for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
+        const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
+        for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+            ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
 
             // Get the inertia tensor of the collision shape in its local-space
             Matrix3x3 inertiaTensor;
-            shape->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, shape->getMass());
+            proxyShape->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, proxyShape->getMass());
 
             // Convert the collision shape inertia tensor into the local-space of the body
-            const Transform& shapeTransform = shape->getLocalToBodyTransform();
+            const Transform& shapeTransform = proxyShape->getLocalToBodyTransform();
             Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
             inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
 
             // Use the parallel axis theorem to convert the inertia tensor w.r.t the collision shape
             // center into a inertia tensor w.r.t to the body origin.
-            Vector3 offset = shapeTransform.getPosition() - mCenterOfMassLocal;
+            Vector3 offset = shapeTransform.getPosition() - mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
             decimal offsetSquare = offset.lengthSquare();
             Matrix3x3 offsetMatrix;
             offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
@@ -525,44 +596,180 @@ void RigidBody::recomputeMassInformation() {
             offsetMatrix[0] += offset * (-offset.x);
             offsetMatrix[1] += offset * (-offset.y);
             offsetMatrix[2] += offset * (-offset.z);
-            offsetMatrix *= shape->getMass();
+            offsetMatrix *= proxyShape->getMass();
 
             inertiaTensorLocal += inertiaTensor + offsetMatrix;
         }
 
         // Compute the local inverse inertia tensor
-        mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
     }
-
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
 
     // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
+    Vector3 angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    linearVelocity += angularVelocity.cross(mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity) - oldCenterOfMass);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 }
 
-// Update the broad-phase state for this body (because it has moved for instance)
-void RigidBody::updateBroadPhaseState() const {
+// Return the linear velocity
+/**
+ * @return The linear velocity vector of the body
+ */
+Vector3 RigidBody::getLinearVelocity() const {
+    return mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
+}
 
-    RP3D_PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
+// Return the angular velocity of the body
+/**
+ * @return The angular velocity vector of the body
+ */
+Vector3 RigidBody::getAngularVelocity() const {
+    return mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+}
 
-    DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
-    const Vector3 displacement = world.mTimeStep * mLinearVelocity;
+// Return true if the gravity needs to be applied to this rigid body
+/**
+ * @return True if the gravity is applied to the body
+ */
+bool RigidBody::isGravityEnabled() const {
+    return mWorld.mRigidBodyComponents.getIsGravityEnabled(mEntity);
+}
 
-    // For all the proxy collision shapes of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
+// Apply an external torque to the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied torques and that this sum will be
+/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param torque The external torque to apply on the body
+ */
+void RigidBody::applyTorque(const Vector3& torque) {
 
-        // If the proxy-shape shape is still part of the broad-phase
-        if (shape->getBroadPhaseId() != -1) {
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
-            // Recompute the world-space AABB of the collision shape
-            AABB aabb;
-            shape->getCollisionShape()->computeAABB(aabb, mTransform * shape->getLocalToBodyTransform());
+    // Awake the body if it was sleeping
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
+        setIsSleeping(false);
+    }
 
-            // Update the broad-phase state for the proxy collision shape
-            mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb, displacement);
+    // Add the torque
+    const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + torque);
+}
+
+// Set the variable to know whether or not the body is sleeping
+void RigidBody::setIsSleeping(bool isSleeping) {
+
+    bool isBodySleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
+
+    if (isBodySleeping == isSleeping) return;
+
+    // If the body is not active, do nothing (it is sleeping)
+    if (!mWorld.mCollisionBodyComponents.getIsActive(mEntity)) {
+        assert(isBodySleeping);
+        return;
+    }
+
+    if (isSleeping) {
+        mWorld.mRigidBodyComponents.setSleepTime(mEntity, decimal(0.0));
+    }
+    else {
+        if (isBodySleeping) {
+            mWorld.mRigidBodyComponents.setSleepTime(mEntity, decimal(0.0));
         }
     }
+
+    mWorld.mRigidBodyComponents.setIsSleeping(mEntity, isSleeping);
+
+    // Notify all the components
+    mWorld.setBodyDisabled(mEntity, isSleeping);
+
+    // Update the currently overlapping pairs
+    updateOverlappingPairs();
+
+    if (isSleeping) {
+
+        mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3::zero());
+    }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+         "Body " + std::to_string(mEntity.id) + ": Set isSleeping=" +
+         (isSleeping ? "true" : "false"));
+}
+
+// Update whether the current overlapping pairs where this body is involed are active or not
+void RigidBody::updateOverlappingPairs() {
+
+    // For each proxy-shape of the body
+    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+        // Get the currently overlapping pairs for this proxy-shape
+        List<uint64> overlappingPairs = mWorld.mProxyShapesComponents.getOverlappingPairs(proxyShapesEntities[i]);
+
+        for (uint j=0; j < overlappingPairs.size(); j++) {
+
+            mWorld.mCollisionDetection.mOverlappingPairs.updateOverlappingPairIsActive(overlappingPairs[j]);
+        }
+    }
+}
+
+/// Return the inverse of the inertia tensor in world coordinates.
+const Matrix3x3 RigidBody::getInertiaTensorInverseWorld(CollisionWorld& world, Entity bodyEntity) {
+
+    Matrix3x3 orientation = world.mTransformComponents.getTransform(bodyEntity).getOrientation().getMatrix();
+    const Matrix3x3& inverseInertiaLocalTensor = world.mRigidBodyComponents.getInertiaTensorLocalInverse(bodyEntity);
+    return orientation * inverseInertiaLocalTensor * orientation.getTranspose();
+}
+
+// Set whether or not the body is allowed to go to sleep
+/**
+ * @param isAllowedToSleep True if the body is allowed to sleep
+ */
+void RigidBody::setIsAllowedToSleep(bool isAllowedToSleep) {
+
+    mWorld.mRigidBodyComponents.setIsAllowedToSleep(mEntity, isAllowedToSleep);
+
+    if (!isAllowedToSleep) setIsSleeping(false);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set isAllowedToSleep=" +
+             (isAllowedToSleep ? "true" : "false"));
+}
+
+// Return whether or not the body is allowed to sleep
+/**
+ * @return True if the body is allowed to sleep and false otherwise
+ */
+bool RigidBody::isAllowedToSleep() const {
+    return mWorld.mRigidBodyComponents.getIsAllowedToSleep(mEntity);
+}
+
+// Return whether or not the body is sleeping
+/**
+ * @return True if the body is currently sleeping and false otherwise
+ */
+bool RigidBody::isSleeping() const {
+    return mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
+}
+
+// Set whether or not the body is active
+/**
+ * @param isActive True if you want to activate the body
+ */
+void RigidBody::setIsActive(bool isActive) {
+
+    // If the state does not change
+    if (mWorld.mCollisionBodyComponents.getIsActive(mEntity) == isActive) return;
+
+    setIsSleeping(!isActive);
+
+    CollisionBody::setIsActive(isActive);
 }
 
 #ifdef IS_PROFILING_ACTIVE
@@ -573,12 +780,12 @@ void RigidBody::setProfiler(Profiler* profiler) {
 	CollisionBody::setProfiler(profiler);
 
 	// Set the profiler for each proxy shape
-	ProxyShape* proxyShape = getProxyShapesList();
-	while (proxyShape != nullptr) {
+    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
 
 		proxyShape->setProfiler(profiler);
-
-		proxyShape = proxyShape->getNext();
 	}
 }
 

@@ -34,7 +34,6 @@ namespace reactphysics3d {
 
 // Declarations
 class ContactPoint;
-class Body;
 
 // Class CapsuleVsConvexPolyhedronAlgorithm
 /**
@@ -70,7 +69,9 @@ class CapsuleVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
         CapsuleVsConvexPolyhedronAlgorithm& operator=(const CapsuleVsConvexPolyhedronAlgorithm& algorithm) = delete;
 
         /// Compute the narrow-phase collision detection between a capsule and a polyhedron
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts, MemoryAllocator& memoryAllocator) override;
+        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
+                           uint batchNbItems, bool reportContacts, bool clipWithPreviousAxisIfStillColliding,
+                           MemoryAllocator& memoryAllocator);
 };
 
 }

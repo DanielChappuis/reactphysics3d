@@ -1,0 +1,252 @@
+/********************************************************************************
+* ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
+* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+*********************************************************************************
+*                                                                               *
+* This software is provided 'as-is', without any express or implied warranty.   *
+* In no event will the authors be held liable for any damages arising from the  *
+* use of this software.                                                         *
+*                                                                               *
+* Permission is granted to anyone to use this software for any purpose,         *
+* including commercial applications, and to alter it and redistribute it        *
+* freely, subject to the following restrictions:                                *
+*                                                                               *
+* 1. The origin of this software must not be misrepresented; you must not claim *
+*    that you wrote the original software. If you use this software in a        *
+*    product, an acknowledgment in the product documentation would be           *
+*    appreciated but is not required.                                           *
+*                                                                               *
+* 2. Altered source versions must be plainly marked as such, and must not be    *
+*    misrepresented as being the original software.                             *
+*                                                                               *
+* 3. This notice may not be removed or altered from any source distribution.    *
+*                                                                               *
+********************************************************************************/
+
+// Libraries
+#include "BroadPhaseSystem.h"
+#include "systems/CollisionDetectionSystem.h"
+#include "utils/Profiler.h"
+#include "collision/RaycastInfo.h"
+#include "memory/MemoryManager.h"
+#include "engine/DynamicsWorld.h"
+
+// We want to use the ReactPhysics3D namespace
+using namespace reactphysics3d;
+
+// Constructor
+BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
+                                   TransformComponents& transformComponents, RigidBodyComponents &rigidBodyComponents)
+                    :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
+                     mProxyShapesComponents(proxyShapesComponents), mTransformsComponents(transformComponents),
+                     mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
+                     mCollisionDetection(collisionDetection) {
+
+#ifdef IS_PROFILING_ACTIVE
+
+	mProfiler = nullptr;
+
+#endif
+
+}
+
+// Return true if the two broad-phase collision shapes are overlapping
+bool BroadPhaseSystem::testOverlappingShapes(int32 shape1BroadPhaseId, int32 shape2BroadPhaseId) const {
+
+    RP3D_PROFILE("BroadPhaseSystem::testOverlappingShapes()", mProfiler);
+
+    assert(shape1BroadPhaseId != -1 && shape2BroadPhaseId != -1);
+
+    // Get the two AABBs of the collision shapes
+    const AABB& aabb1 = mDynamicAABBTree.getFatAABB(shape1BroadPhaseId);
+    const AABB& aabb2 = mDynamicAABBTree.getFatAABB(shape2BroadPhaseId);
+
+    // Check if the two AABBs are overlapping
+    return aabb1.testCollision(aabb2);
+}
+
+// Ray casting method
+void BroadPhaseSystem::raycast(const Ray& ray, RaycastTest& raycastTest,
+                                         unsigned short raycastWithCategoryMaskBits) const {
+
+    RP3D_PROFILE("BroadPhaseSystem::raycast()", mProfiler);
+
+    BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
+
+    mDynamicAABBTree.raycast(ray, broadPhaseRaycastCallback);
+}
+
+// Add a proxy collision shape into the broad-phase collision detection
+void BroadPhaseSystem::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
+
+    assert(proxyShape->getBroadPhaseId() == -1);
+
+    // Add the collision shape into the dynamic AABB tree and get its broad-phase ID
+    int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
+
+    // Set the broad-phase ID of the proxy shape
+    mProxyShapesComponents.setBroadPhaseId(proxyShape->getEntity(), nodeId);
+
+    // Add the collision shape into the array of bodies that have moved (or have been created)
+    // during the last simulation step
+    addMovedCollisionShape(proxyShape->getBroadPhaseId(), proxyShape);
+}
+
+// Remove a proxy collision shape from the broad-phase collision detection
+void BroadPhaseSystem::removeProxyCollisionShape(ProxyShape* proxyShape) {
+
+    assert(proxyShape->getBroadPhaseId() != -1);
+
+    int broadPhaseID = proxyShape->getBroadPhaseId();
+
+    mProxyShapesComponents.setBroadPhaseId(proxyShape->getEntity(), -1);
+
+    // Remove the collision shape from the dynamic AABB tree
+    mDynamicAABBTree.removeObject(broadPhaseID);
+
+    // Remove the collision shape into the array of shapes that have moved (or have been created)
+    // during the last simulation step
+    removeMovedCollisionShape(broadPhaseID);
+}
+
+// Update the broad-phase state of a single proxy-shape
+void BroadPhaseSystem::updateProxyShape(Entity proxyShapeEntity, decimal timeStep) {
+
+    assert(mProxyShapesComponents.mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+
+    // Get the index of the proxy-shape component in the array
+    uint32 index = mProxyShapesComponents.mMapEntityToComponentIndex[proxyShapeEntity];
+
+    // Update the proxy-shape component
+    updateProxyShapesComponents(index, 1, timeStep);
+}
+
+// Update the broad-phase state of all the enabled proxy-shapes
+void BroadPhaseSystem::updateProxyShapes(decimal timeStep) {
+
+    RP3D_PROFILE("BroadPhaseSystem::updateProxyShapes()", mProfiler);
+
+    // Update all the enabled proxy-shape components
+    if (mProxyShapesComponents.getNbEnabledComponents() > 0) {
+        updateProxyShapesComponents(0, mProxyShapesComponents.getNbEnabledComponents(), timeStep);
+    }
+}
+
+// Notify the broad-phase that a collision shape has moved and need to be updated
+void BroadPhaseSystem::updateProxyShapeInternal(int32 broadPhaseId, ProxyShape* proxyShape, const AABB& aabb, const Vector3& displacement) {
+
+    assert(broadPhaseId >= 0);
+
+    // Update the dynamic AABB tree according to the movement of the collision shape
+    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseId, aabb, displacement);
+
+    // If the collision shape has moved out of its fat AABB (and therefore has been reinserted
+    // into the tree).
+    if (hasBeenReInserted) {
+
+        // Add the collision shape into the array of shapes that have moved (or have been created)
+        // during the last simulation step
+        addMovedCollisionShape(broadPhaseId, proxyShape);
+    }
+}
+
+// Update the broad-phase state of some proxy-shapes components
+void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbItems, decimal timeStep) {
+
+    RP3D_PROFILE("BroadPhaseSystem::updateProxyShapesComponents()", mProfiler);
+
+    assert(nbItems > 0);
+    assert(startIndex < mProxyShapesComponents.getNbComponents());
+    assert(startIndex + nbItems <= mProxyShapesComponents.getNbComponents());
+
+    // Make sure we do not update disabled components
+    startIndex = std::min(startIndex, mProxyShapesComponents.getNbEnabledComponents());
+    uint32 endIndex = std::min(startIndex + nbItems, mProxyShapesComponents.getNbEnabledComponents());
+    nbItems = endIndex - startIndex;
+    assert(nbItems >= 0);
+
+    // For each proxy-shape component to update
+    for (uint32 i = startIndex; i < startIndex + nbItems; i++) {
+
+        // TODO : Can we remove this test
+        const int32 broadPhaseId = mProxyShapesComponents.mBroadPhaseIds[i];
+        if (broadPhaseId != -1) {
+
+            const Entity& bodyEntity = mProxyShapesComponents.mBodiesEntities[i];
+            const Transform& transform = mTransformsComponents.getTransform(bodyEntity);
+
+            // If there is a dynamics component for the current entity
+            Vector3 displacement(0, 0, 0);
+            if (mRigidBodyComponents.hasComponent(bodyEntity)) {
+
+                // Get the linear velocity from the dynamics component
+                const Vector3& linearVelocity = mRigidBodyComponents.getLinearVelocity(bodyEntity);
+
+                displacement = timeStep * linearVelocity;
+            }
+
+            // Recompute the world-space AABB of the collision shape
+            AABB aabb;
+            mProxyShapesComponents.mCollisionShapes[i]->computeAABB(aabb, transform * mProxyShapesComponents.mLocalToBodyTransforms[i]);
+
+            // Update the broad-phase state for the proxy collision shape
+            updateProxyShapeInternal(broadPhaseId, mProxyShapesComponents.mProxyShapes[i], aabb, displacement);
+        }
+    }
+}
+
+
+// Add a collision shape in the array of shapes that have moved in the last simulation step
+// and that need to be tested again for broad-phase overlapping.
+void BroadPhaseSystem::addMovedCollisionShape(int broadPhaseID, ProxyShape* proxyShape) {
+
+    assert(broadPhaseID != -1);
+
+    // Store the broad-phase ID into the array of shapes that have moved
+    mMovedShapes.add(broadPhaseID);
+
+    // Notify that the overlapping pairs where this shape is involved need to be tested for overlap
+    mCollisionDetection.notifyOverlappingPairsToTestOverlap(proxyShape);
+}
+
+// Compute all the overlapping pairs of collision shapes
+void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int32, int32>>& overlappingNodes) {
+
+    RP3D_PROFILE("BroadPhaseSystem::computeOverlappingPairs()", mProfiler);
+
+    // Get the list of the proxy-shapes that have moved or have been created in the last frame
+    List<int> shapesToTest = mMovedShapes.toList(memoryManager.getPoolAllocator());
+
+    // Ask the dynamic AABB tree to report all collision shapes that overlap with the shapes to test
+    mDynamicAABBTree.reportAllShapesOverlappingWithShapes(shapesToTest, 0, shapesToTest.size(), overlappingNodes);
+
+    // Reset the array of collision shapes that have move (or have been created) during the
+    // last simulation step
+    mMovedShapes.clear();
+}
+
+// Called when a overlapping node has been found during the call to
+// DynamicAABBTree:reportAllShapesOverlappingWithAABB()
+void AABBOverlapCallback::notifyOverlappingNode(int nodeId) {
+    mOverlappingNodes.add(nodeId);
+}
+
+// Called for a broad-phase shape that has to be tested for raycast
+decimal BroadPhaseRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const Ray& ray) {
+
+    decimal hitFraction = decimal(-1.0);
+
+    // Get the proxy shape from the node
+    ProxyShape* proxyShape = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(nodeId));
+
+    // Check if the raycast filtering mask allows raycast against this shape
+    if ((mRaycastWithCategoryMaskBits & proxyShape->getCollisionCategoryBits()) != 0) {
+
+        // Ask the collision detection to perform a ray cast test against
+        // the proxy shape of this node because the ray is overlapping
+        // with the shape in the broad-phase
+        hitFraction = mRaycastTest.raycastAgainstShape(proxyShape, ray);
+    }
+
+    return hitFraction;
+}

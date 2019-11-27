@@ -76,56 +76,19 @@ class BallAndSocketJoint : public Joint {
 
         // -------------------- Attributes -------------------- //
 
-        /// Anchor point of body 1 (in local-space coordinates of body 1)
-        Vector3 mLocalAnchorPointBody1;
-
-        /// Anchor point of body 2 (in local-space coordinates of body 2)
-        Vector3 mLocalAnchorPointBody2;
-
-        /// Vector from center of body 2 to anchor point in world-space
-        Vector3 mR1World;
-
-        /// Vector from center of body 2 to anchor point in world-space
-        Vector3 mR2World;
-
-        /// Inertia tensor of body 1 (in world-space coordinates)
-        Matrix3x3 mI1;
-
-        /// Inertia tensor of body 2 (in world-space coordinates)
-        Matrix3x3 mI2;
-
-        /// Bias vector for the constraint
-        Vector3 mBiasVector;
-
-        /// Inverse mass matrix K=JM^-1J^-t of the constraint
-        Matrix3x3 mInverseMassMatrix;
-
-        /// Accumulated impulse
-        Vector3 mImpulse;
 
         // -------------------- Methods -------------------- //
 
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const override;
 
-        /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BallAndSocketJoint(uint id, const BallAndSocketJointInfo& jointInfo);
+        BallAndSocketJoint(Entity entity, DynamicsWorld& world, const BallAndSocketJointInfo& jointInfo);
 
         /// Destructor
         virtual ~BallAndSocketJoint() override = default;
@@ -143,12 +106,6 @@ class BallAndSocketJoint : public Joint {
 // Return the number of bytes used by the joint
 inline size_t BallAndSocketJoint::getSizeInBytes() const {
     return sizeof(BallAndSocketJoint);
-}
-
-// Return a string representation
-inline std::string BallAndSocketJoint::to_string() const {
-    return "BallAndSocketJoint{ localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() +
-            ", localAnchorPointBody2=" + mLocalAnchorPointBody2.to_string() + "}";
 }
 
 }

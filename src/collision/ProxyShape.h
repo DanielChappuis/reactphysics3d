@@ -54,23 +54,26 @@ class ProxyShape {
         /// Reference to the memory manager
         MemoryManager& mMemoryManager;
 
+        /// Identifier of the entity in the ECS
+        Entity mEntity;
+
         /// Pointer to the parent body
         CollisionBody* mBody;
 
         /// Internal collision shape
-        CollisionShape* mCollisionShape;
+        //CollisionShape* mCollisionShape;
 
         /// Local-space to parent body-space transform (does not change over time)
-        Transform mLocalToBodyTransform;
+        //Transform mLocalToBodyTransform;
 
         /// Mass (in kilogramms) of the corresponding collision shape
-        decimal mMass;
+        //decimal mMass;
 
         /// Pointer to the next proxy shape of the body (linked list)
-        ProxyShape* mNext;
+        //ProxyShape* mNext;
 
         /// Broad-phase ID (node ID in the dynamic AABB tree)
-        int mBroadPhaseID;
+        //int mBroadPhaseID;
 
         /// Pointer to user data
         void* mUserData;
@@ -81,12 +84,12 @@ class ProxyShape {
         /// together with the mCollideWithMaskBits variable so that given
         /// categories of shapes collide with each other and do not collide with
         /// other categories.
-        unsigned short mCollisionCategoryBits;
+        //unsigned short mCollisionCategoryBits;
 
         /// Bits mask used to state which collision categories this shape can
         /// collide with. This value is 0xFFFF by default. It means that this
         /// proxy shape will collide with every collision categories by default.
-        unsigned short mCollideWithMaskBits;
+        //unsigned short mCollideWithMaskBits;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -111,8 +114,7 @@ class ProxyShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyShape(CollisionBody* body, CollisionShape* shape,
-                   const Transform& transform, decimal mass, MemoryManager& memoryManager);
+        ProxyShape(Entity entity, CollisionBody* body, MemoryManager& memoryManager);
 
         /// Destructor
         virtual ~ProxyShape();
@@ -122,6 +124,9 @@ class ProxyShape {
 
         /// Deleted assignment operator
         ProxyShape& operator=(const ProxyShape& proxyShape) = delete;
+
+        /// Return the corresponding entity of the proxy-shape
+        Entity getEntity() const;
 
         /// Return the collision shape
         const CollisionShape* getCollisionShape() const;
@@ -171,12 +176,6 @@ class ProxyShape {
         /// Set the collision category bits
         void setCollisionCategoryBits(unsigned short collisionCategoryBits);
 
-        /// Return the next proxy shape in the linked list of proxy shapes
-        ProxyShape* getNext();
-
-        /// Return the next proxy shape in the linked list of proxy shapes
-        const ProxyShape* getNext() const;
-
         /// Return the broad-phase id
         int getBroadPhaseId() const;
 
@@ -200,7 +199,7 @@ class ProxyShape {
         friend class RigidBody;
         friend class BroadPhaseAlgorithm;
         friend class DynamicAABBTree;
-        friend class CollisionDetection;
+        friend class CollisionDetectionSystem;
         friend class CollisionWorld;
         friend class DynamicsWorld;
         friend class GJKAlgorithm;
@@ -210,20 +209,12 @@ class ProxyShape {
 
 };
 
-// Return the collision shape
+// Return the corresponding entity of the proxy-shape
 /**
- * @return Pointer to the internal collision shape
+ * @return The entity of the proxy-shape
  */
-inline const CollisionShape* ProxyShape::getCollisionShape() const {
-    return mCollisionShape;
-}
-
-// Return the collision shape
-/**
-* @return Pointer to the internal collision shape
-*/
-inline CollisionShape* ProxyShape::getCollisionShape() {
-	return mCollisionShape;
+inline Entity ProxyShape::getEntity() const {
+    return mEntity;
 }
 
 // Return the parent body
@@ -232,14 +223,6 @@ inline CollisionShape* ProxyShape::getCollisionShape() {
  */
 inline CollisionBody* ProxyShape::getBody() const {
     return mBody;
-}
-
-// Return the mass of the collision shape
-/**
- * @return Mass of the collision shape (in kilograms)
- */
-inline decimal ProxyShape::getMass() const {
-    return mMass;
 }
 
 // Return a pointer to the user data attached to this body
@@ -258,71 +241,6 @@ inline void ProxyShape::setUserData(void* userData) {
     mUserData = userData;
 }
 
-// Return the local to parent body transform
-/**
- * @return The transformation that transforms the local-space of the collision shape
- *         to the local-space of the parent body
- */
-inline const Transform& ProxyShape::getLocalToBodyTransform() const {
-    return mLocalToBodyTransform;
-}
-
-// Return the local to world transform
-/**
- * @return The transformation that transforms the local-space of the collision
- *         shape to the world-space
- */
-inline const Transform ProxyShape::getLocalToWorldTransform() const {
-    return mBody->mTransform * mLocalToBodyTransform;
-}
-
-// Return the AABB of the proxy shape in world-space
-/**
- * @return The AABB of the proxy shape in world-space
- */
-inline const AABB ProxyShape::getWorldAABB() const {
-    AABB aabb;
-    mCollisionShape->computeAABB(aabb, getLocalToWorldTransform());
-    return aabb;
-}
-
-// Return the next proxy shape in the linked list of proxy shapes
-/**
- * @return Pointer to the next proxy shape in the linked list of proxy shapes
- */
-inline ProxyShape* ProxyShape::getNext() {
-    return mNext;
-}
-
-// Return the next proxy shape in the linked list of proxy shapes
-/**
- * @return Pointer to the next proxy shape in the linked list of proxy shapes
- */
-inline const ProxyShape* ProxyShape::getNext() const {
-    return mNext;
-}
-
-// Return the collision category bits
-/**
- * @return The collision category bits mask of the proxy shape
- */
-inline unsigned short ProxyShape::getCollisionCategoryBits() const {
-    return mCollisionCategoryBits;
-}
-
-// Return the collision bits mask
-/**
- * @return The bits mask that specifies with which collision category this shape will collide
- */
-inline unsigned short ProxyShape::getCollideWithMaskBits() const {
-    return mCollideWithMaskBits;
-}
-
-// Return the broad-phase id
-inline int ProxyShape::getBroadPhaseId() const {
-    return mBroadPhaseID;
-}
-
 /// Test if the proxy shape overlaps with a given AABB
 /**
 * @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
@@ -331,18 +249,6 @@ inline int ProxyShape::getBroadPhaseId() const {
 inline bool ProxyShape::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getWorldAABB());
 }
-
-#ifdef IS_PROFILING_ACTIVE
-
-// Set the profiler
-inline void ProxyShape::setProfiler(Profiler* profiler) {
-
-	mProfiler = profiler;
-
-	mCollisionShape->setProfiler(profiler);
-}
-
-#endif
 
 #ifdef IS_LOGGING_ACTIVE
 

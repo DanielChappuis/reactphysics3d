@@ -68,75 +68,17 @@ class FixedJoint : public Joint {
 
     private :
 
-        // -------------------- Constants -------------------- //
-
-        // Beta value for the bias factor of position correction
-        static const decimal BETA;
-
-        // -------------------- Attributes -------------------- //
-
-        /// Anchor point of body 1 (in local-space coordinates of body 1)
-        Vector3 mLocalAnchorPointBody1;
-
-        /// Anchor point of body 2 (in local-space coordinates of body 2)
-        Vector3 mLocalAnchorPointBody2;
-
-        /// Vector from center of body 2 to anchor point in world-space
-        Vector3 mR1World;
-
-        /// Vector from center of body 2 to anchor point in world-space
-        Vector3 mR2World;
-
-        /// Inertia tensor of body 1 (in world-space coordinates)
-        Matrix3x3 mI1;
-
-        /// Inertia tensor of body 2 (in world-space coordinates)
-        Matrix3x3 mI2;
-
-        /// Accumulated impulse for the 3 translation constraints
-        Vector3 mImpulseTranslation;
-
-        /// Accumulate impulse for the 3 rotation constraints
-        Vector3 mImpulseRotation;
-
-        /// Inverse mass matrix K=JM^-1J^-t of the 3 translation constraints (3x3 matrix)
-        Matrix3x3 mInverseMassMatrixTranslation;
-
-        /// Inverse mass matrix K=JM^-1J^-t of the 3 rotation constraints (3x3 matrix)
-        Matrix3x3 mInverseMassMatrixRotation;
-
-        /// Bias vector for the 3 translation constraints
-        Vector3 mBiasTranslation;
-
-        /// Bias vector for the 3 rotation constraints
-        Vector3 mBiasRotation;
-
-        /// Inverse of the initial orientation difference between the two bodies
-        Quaternion mInitOrientationDifferenceInv;
-
         // -------------------- Methods -------------------- //
 
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const override;
-
-        /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        FixedJoint(uint id, const FixedJointInfo& jointInfo);
+        FixedJoint(Entity entity, DynamicsWorld& world, const FixedJointInfo& jointInfo);
 
         /// Destructor
         virtual ~FixedJoint() override = default;
@@ -154,14 +96,6 @@ class FixedJoint : public Joint {
 // Return the number of bytes used by the joint
 inline size_t FixedJoint::getSizeInBytes() const {
     return sizeof(FixedJoint);
-}
-
-// Return a string representation
-inline std::string FixedJoint::to_string() const {
-    return "FixedJoint{ localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() +
-                        ", localAnchorPointBody2=" + mLocalAnchorPointBody2.to_string() +
-                        ", initOrientationDifferenceInv=" + mInitOrientationDifferenceInv.to_string() +
-                        "}";
 }
 
 }

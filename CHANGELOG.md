@@ -1,5 +1,23 @@
 # Changelog
 
+## Develop
+
+### Changed
+
+ - The CollisionWorld::testCollision() methods do not have the 'categoryMaskBits' parameter anymore.
+ - The CollisionWorld::testOverlap() methods do not have the 'categoryMaskBits' parameter anymore.
+ - Many methods in the EventListener class have changed. Check the user manual for more information.
+ - The way to retrieve contacts from a CollisionCallbackInfo object has changed. Check the user manual for more information.
+
+### Removed
+
+ - DynamicsWorld::getContactsList(). You need to use the EventListener class to retrieve contacts now.
+ - The DynamicsWorld::getNbJoints() method has been removed.
+ - The DynamicsWorld::getNbRigidBodies() method has been removed.
+ - The EventListener::beginInternalTick() method has been removed (because internal ticks do not exist anymore).
+ - The EventListener::endInternalTick() method has been removed (because internal ticks do not exist anymore).
+ - The RigidBody::getJointsList() method has been removed.
+
 ## Version 0.7.1 (July 01, 2019)
 
 ### Added
@@ -26,6 +44,16 @@
  - Bug [#85](https://github.com/DanielChappuis/reactphysics3d/issues/85) has been fixed.
  - Bug [#79](https://github.com/DanielChappuis/reactphysics3d/issues/79) has been fixed.
  - Bug: the free() method was called in PoolAllocator instead of release() method of base allocator.
+
+### Removed
+
+ - The CollisionWorld::setCollisionDispatch() method has been removed. In order to use a custom collision
+   algorithm, you must not get the collision dispatch object with the
+   CollisionWorld::getCollisionDispatch() method and set a collision algorithm to this object.
+ - The methods CollisionBody::getProxyShapesList() has been remove. You can now use the
+   CollisionBody::getNbProxyShapes() method to know the number of proxy-shapes of a body and the
+   CollisionBody::getProxyShape(uint proxyShapeIndex) method to get a given proxy-shape of the body.
+ - The CollisionWorld::testAABBOverlap() methods have been removed.
 
 ## Version 0.7.0 (May 1, 2018)
 

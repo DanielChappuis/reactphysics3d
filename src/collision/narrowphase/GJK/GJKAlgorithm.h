@@ -28,16 +28,18 @@
 
 // Libraries
 #include "decimal.h"
+#include "configuration.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Declarations
 class ContactManifoldInfo;
-struct NarrowPhaseInfo;
+struct NarrowPhaseInfoBatch;
 class ConvexShape;
 class Profiler;
 class VoronoiSimplex;
+template<typename T> class List;
 
 // Constants
 constexpr decimal REL_ERROR = decimal(1.0e-3);
@@ -95,7 +97,8 @@ class GJKAlgorithm {
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volumes collide.
-        GJKResult testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts);
+        void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
+                           uint batchNbItems, List<GJKResult>& gjkResults, bool reportContacts);
 
 #ifdef IS_PROFILING_ACTIVE
 

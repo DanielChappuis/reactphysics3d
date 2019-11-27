@@ -39,7 +39,7 @@ namespace reactphysics3d {
 // Class List
 /**
  * This class represents a simple generic list with custom memory allocator.
-  */
+ */
 template<typename T>
 class List {
 
@@ -243,10 +243,7 @@ class List {
             if (mCapacity > 0) {
 
                 // Clear the list
-                clear();
-
-                // Release the memory allocated on the heap
-                mAllocator.release(mBuffer, mCapacity * sizeof(T));
+                clear(true);
             }
         }
 
@@ -297,6 +294,17 @@ class List {
             mSize++;
         }
 
+        /// Add a given numbers of elements at the end of the list but do not init them
+        void addWithoutInit(uint nbElements) {
+
+            // If we need to allocate more memory
+            if (mSize == mCapacity) {
+                reserve(mCapacity == 0 ? nbElements : (mCapacity + nbElements) * 2);
+            }
+
+            mSize += nbElements;
+        }
+
         /// Try to find a given item of the list and return an iterator
         /// pointing to that element if it exists in the list. Otherwise,
         /// this method returns the end() iterator
@@ -323,8 +331,7 @@ class List {
            return removeAt(it.mCurrentIndex);
         }
 
-        /// Remove an element from the list at a given index and return an
-        /// iterator pointing to the element after the removed one (or end() if none)
+        /// Remove an element from the list at a given index (all the following items will be moved)
         Iterator removeAt(uint index) {
 
           assert(index >= 0 && index < mSize);
@@ -365,7 +372,7 @@ class List {
         }
 
         /// Clear the list
-        void clear() {
+        void clear(bool releaseMemory = false) {
 
             // Call the destructor of each element
             for (uint i=0; i < mSize; i++) {
@@ -373,6 +380,16 @@ class List {
             }
 
             mSize = 0;
+
+            // If we need to release all the allocated memory
+            if (releaseMemory && mCapacity > 0) {
+
+                // Release the memory allocated on the heap
+                mAllocator.release(mBuffer, mCapacity * sizeof(T));
+
+                mBuffer = nullptr;
+                mCapacity = 0;
+            }
         }
 
         /// Return the number of elements in the list

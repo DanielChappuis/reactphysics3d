@@ -39,7 +39,7 @@ namespace reactphysics3d {
  * new event listener class to the physics world using the DynamicsWorld::setEventListener()
  * method.
  */
-class EventListener {
+class EventListener : public CollisionCallback {
 
     public :
 
@@ -47,25 +47,13 @@ class EventListener {
         EventListener() = default;
 
         /// Destructor
-        virtual ~EventListener() = default;
+        virtual ~EventListener() override = default;
 
-        /// Called when a new contact point is found between two bodies
+        /// Called when some contacts occur
         /**
-         * @param contact Information about the contact
+         * @param collisionInfo Information about the contacts
          */
-        virtual void newContact(const CollisionCallback::CollisionCallbackInfo& collisionInfo) {}
-
-        /// Called at the beginning of an internal tick of the simulation step.
-        /// Each time the DynamicsWorld::update() method is called, the physics
-        /// engine will do several internal simulation steps. This method is
-        /// called at the beginning of each internal simulation step.
-        virtual void beginInternalTick() {}
-
-        /// Called at the end of an internal tick of the simulation step.
-        /// Each time the DynamicsWorld::update() metho is called, the physics
-        /// engine will do several internal simulation steps. This method is
-        /// called at the end of each internal simulation step.
-        virtual void endInternalTick() {}
+        virtual void onContact(const CollisionCallback::CallbackData& callbackData) override {}
 };
 
 }

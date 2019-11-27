@@ -49,7 +49,9 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    dynamicsWorld->setEventListener(this);
+    mPhysicsWorld = dynamicsWorld;
 
 	for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
 
@@ -204,6 +206,8 @@ HeightFieldScene::~HeightFieldScene() {
 
 // Reset the scene
 void HeightFieldScene::reset() {
+
+    SceneDemo::reset();
 
     const float radius = 3.0f;
 

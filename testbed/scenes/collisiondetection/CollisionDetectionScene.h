@@ -63,30 +63,22 @@ class ContactManager : public rp3d::CollisionCallback {
 
     private:
 
-        /// All the visual contact points
-        std::vector<ContactPoint> mContactPoints;
-
         /// Contact point mesh folder path
         std::string mMeshFolderPath;
 
+        /// Reference to the list of all the visual contact points
+        std::vector<SceneContactPoint>& mContactPoints;
+
    public:
 
-        ContactManager(openglframework::Shader& shader, const std::string& meshFolderPath)
-            : mMeshFolderPath(meshFolderPath) {
+        ContactManager(openglframework::Shader& shader, const std::string& meshFolderPath,
+                       std::vector<SceneContactPoint>& contactPoints)
+            : mMeshFolderPath(meshFolderPath), mContactPoints(contactPoints) {
 
         }
 
-        /// This method will be called for each reported contact point
-        virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override;
-
-        void resetPoints() {
-
-            mContactPoints.clear();
-        }
-
-        std::vector<ContactPoint> getContactPoints() const {
-            return mContactPoints;
-        }
+        /// This method is called when some contacts occur
+        virtual void onContact(const CallbackData& callbackData) override;
 };
 
 // Class CollisionDetectionScene
@@ -151,9 +143,6 @@ class CollisionDetectionScene : public SceneDemo {
 
         /// Display/Hide the contact points
         virtual void setIsContactPointsDisplayed(bool display) override;
-
-        /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() override;
 };
 
 // Display or not the surface normals at hit points
@@ -169,11 +158,6 @@ inline void CollisionDetectionScene::setIsShadowMappingEnabled(bool isShadowMapp
 // Display/Hide the contact points
 inline void CollisionDetectionScene::setIsContactPointsDisplayed(bool display) {
     SceneDemo::setIsContactPointsDisplayed(true);
-}
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> CollisionDetectionScene::getContactPoints() {
-    return mContactManager.getContactPoints();
 }
 
 }

@@ -27,16 +27,16 @@
 #define REACTPHYSICS3D_NARROW_PHASE_ALGORITHM_H
 
 // Libraries
+#include "configuration.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
-class CollisionDetection;
-class Body;
+class CollisionDetectionSystem;
 class ContactManifoldInfo;
 class DefaultPoolAllocator;
 class OverlappingPair;
-struct NarrowPhaseInfo;
+struct NarrowPhaseInfoBatch;
 struct ContactPointInfo;
 class Profiler;
 class MemoryAllocator;
@@ -79,6 +79,7 @@ class NarrowPhaseAlgorithm {
 
     public :
 
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -92,10 +93,6 @@ class NarrowPhaseAlgorithm {
 
         /// Deleted assignment operator
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
-
-        /// Compute a contact info if the two bounding volumes collide
-        virtual bool testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
-                                   MemoryAllocator& memoryAllocator)=0;
 
 #ifdef IS_PROFILING_ACTIVE
 

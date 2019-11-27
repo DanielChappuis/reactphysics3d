@@ -45,6 +45,21 @@ ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, const WorldSetti
     mIsObsolete = false;
 }
 
+// Constructor
+ContactPoint::ContactPoint(const ContactPointInfo& contactInfo, const WorldSettings& worldSettings)
+             : mNormal(contactInfo.normal),
+               mPenetrationDepth(contactInfo.penetrationDepth),
+               mLocalPointOnShape1(contactInfo.localPoint1),
+               mLocalPointOnShape2(contactInfo.localPoint2),
+               mIsRestingContact(false), mPenetrationImpulse(0), mIsObsolete(false),
+               mWorldSettings(worldSettings) {
+
+    assert(mPenetrationDepth > decimal(0.0));
+    assert(mNormal.lengthSquare() > decimal(0.8));
+
+    mIsObsolete = false;
+}
+
 // Update the contact point with a new one that is similar (very close)
 /// The idea is to keep the cache impulse (for warm starting the contact solver)
 void ContactPoint::update(const ContactPointInfo* contactInfo) {

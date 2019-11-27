@@ -37,9 +37,15 @@ uint CollisionWorld::mNbWorlds = 0;
 
 // Constructor
 CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
-               : mConfig(worldSettings), mCollisionDetection(this, mMemoryManager), mBodies(mMemoryManager.getPoolAllocator()), mCurrentBodyId(0),
-                 mFreeBodiesIds(mMemoryManager.getPoolAllocator()), mEventListener(nullptr), mName(worldSettings.worldName),
-                 mIsProfilerCreatedByUser(profiler != nullptr),
+               : mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
+                 mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
+                 mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
+                 mJointsComponents(mMemoryManager.getBaseAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getBaseAllocator()),
+                 mFixedJointsComponents(mMemoryManager.getBaseAllocator()), mHingeJointsComponents(mMemoryManager.getBaseAllocator()),
+                 mSliderJointsComponents(mMemoryManager.getBaseAllocator()),
+                 mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents, mMemoryManager),
+                 mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
+                 mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {
 
     // Automatically generate a name for the world
@@ -129,6 +135,9 @@ CollisionWorld::~CollisionWorld() {
 #endif
 
     assert(mBodies.size() == 0);
+    assert(mCollisionBodyComponents.getNbComponents() == 0);
+    assert(mTransformComponents.getNbComponents() == 0);
+    assert(mProxyShapesComponents.getNbComponents() == 0);
 }
 
 // Create a collision body and add it to the world
@@ -138,18 +147,21 @@ CollisionWorld::~CollisionWorld() {
  */
 CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 
-    // Get the next available body ID
-    bodyindex bodyID = computeNextAvailableBodyId();
+    // Create a new entity for the body
+    Entity entity = mEntityManager.createEntity();
 
-    // Largest index cannot be used (it is used for invalid index)
-    assert(bodyID < std::numeric_limits<reactphysics3d::bodyindex>::max());
+    mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
 
     // Create the collision body
     CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                         sizeof(CollisionBody)))
-                                        CollisionBody(transform, *this, bodyID);
+                                        CollisionBody(*this, entity);
 
     assert(collisionBody != nullptr);
+
+    // Add the components
+    CollisionBodyComponents::CollisionBodyComponent bodyComponent(collisionBody);
+    mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
 
     // Add the collision body to the world
     mBodies.add(collisionBody);
@@ -165,7 +177,7 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 #endif
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(bodyID) + ": New collision body created");
+             "Body " + std::to_string(entity.id) + ": New collision body created");
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -178,16 +190,14 @@ CollisionBody* CollisionWorld::createCollisionBody(const Transform& transform) {
 void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(collisionBody->getId()) + ": collision body destroyed");
+             "Body " + std::to_string(collisionBody->getEntity().id) + ": collision body destroyed");
 
     // Remove all the collision shapes of the body
     collisionBody->removeAllCollisionShapes();
 
-    // Add the body ID to the list of free IDs
-    mFreeBodiesIds.add(collisionBody->getId());
-
-    // Reset the contact manifold list of the body
-    collisionBody->resetContactManifoldsList();
+    mCollisionBodyComponents.removeComponent(collisionBody->getEntity());
+    mTransformComponents.removeComponent(collisionBody->getEntity());
+    mEntityManager.destroyEntity(collisionBody->getEntity());
 
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();
@@ -199,65 +209,76 @@ void CollisionWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
 }
 
-// Return the next available body ID
-bodyindex CollisionWorld::computeNextAvailableBodyId() {
+// Notify the world if a body is disabled (sleeping) or not
+void CollisionWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
-    // Compute the body ID
-    bodyindex bodyID;
-    if (mFreeBodiesIds.size() != 0) {
-        bodyID = mFreeBodiesIds[mFreeBodiesIds.size() - 1];
-        mFreeBodiesIds.removeAt(mFreeBodiesIds.size() - 1);
-    }
-    else {
-        bodyID = mCurrentBodyId;
-        mCurrentBodyId++;
+    if (isDisabled == mCollisionBodyComponents.getIsEntityDisabled(bodyEntity)) return;
+
+    // Notify all the components
+    mCollisionBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+
+    if (mRigidBodyComponents.hasComponent(bodyEntity)) {
+        mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     }
 
-    return bodyID;
+    // For each proxy-shape of the body
+    const List<Entity>& proxyShapesEntities = mCollisionBodyComponents.getProxyShapes(bodyEntity);
+    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+
+        mProxyShapesComponents.setIsEntityDisabled(proxyShapesEntities[i], isDisabled);
+    }
+
+    // Disable the joints of the body if necessary
+    if (mRigidBodyComponents.hasComponent(bodyEntity)) {
+
+        // For each joint of the body
+        const List<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
+        for(uint32 i=0; i < joints.size(); i++) {
+
+            const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
+            const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
+
+            // If both bodies of the joint are disabled
+            if (mRigidBodyComponents.getIsEntityDisabled(body1Entity) &&
+                mRigidBodyComponents.getIsEntityDisabled(body2Entity)) {
+
+                // We disable the joint
+                setJointDisabled(joints[i], true);
+            }
+            else {
+
+                // Enable the joint
+                setJointDisabled(joints[i], false);
+            }
+        }
+    }
 }
 
-// Reset all the contact manifolds linked list of each body
-void CollisionWorld::resetContactManifoldListsOfBodies() {
+// Notify the world whether a joint is disabled or not
+void CollisionWorld::setJointDisabled(Entity jointEntity, bool isDisabled) {
 
-    // For each rigid body of the world
-    for (List<CollisionBody*>::Iterator it = mBodies.begin(); it != mBodies.end(); ++it) {
+    if (isDisabled == mJointsComponents.getIsEntityDisabled(jointEntity)) return;
 
-        // Reset the contact manifold list of the body
-        (*it)->resetContactManifoldsList();
+    mJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    if (mBallAndSocketJointsComponents.hasComponent(jointEntity)) {
+        mBallAndSocketJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
     }
-}
-
-// Test if the AABBs of two bodies overlap
-/**
- * @param body1 Pointer to the first body to test
- * @param body2 Pointer to the second body to test
- * @return True if the AABBs of the two bodies overlap and false otherwise
- */
-bool CollisionWorld::testAABBOverlap(const CollisionBody* body1,
-                                     const CollisionBody* body2) const {
-
-    // If one of the body is not active, we return no overlap
-    if (!body1->isActive() || !body2->isActive()) return false;
-
-    // Compute the AABBs of both bodies
-    AABB body1AABB = body1->getAABB();
-    AABB body2AABB = body2->getAABB();
-
-    // Return true if the two AABBs overlap
-    return body1AABB.testCollision(body2AABB);
-}
-
-// Report all the bodies which have an AABB that overlaps with the AABB in parameter
-/**
- * @param aabb AABB used to test for overlap
- * @param overlapCallback Pointer to the callback class to report overlap
- * @param categoryMaskBits bits mask used to filter the bodies to test overlap with
- */
-void CollisionWorld::testAABBOverlap(const AABB& aabb, OverlapCallback* overlapCallback, unsigned short categoryMaskBits) {
-    mCollisionDetection.testAABBOverlap(aabb, overlapCallback, categoryMaskBits);
+    if (mFixedJointsComponents.hasComponent(jointEntity)) {
+        mFixedJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
+    if (mHingeJointsComponents.hasComponent(jointEntity)) {
+        mHingeJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
+    if (mSliderJointsComponents.hasComponent(jointEntity)) {
+        mSliderJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
 }
 
 // Return true if two bodies overlap
+/// Use this method if you are not interested in contacts but if you simply want to know
+/// if the two bodies overlap. If you want to get the contacts, you need to use the
+/// testCollision() method instead.
 /**
  * @param body1 Pointer to the first body
  * @param body2 Pointer to a second body

@@ -35,6 +35,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling)
+                // TODO : Do not use the default base allocator here
                  : ConcaveShape(CollisionShapeName::TRIANGLE_MESH), mDynamicAABBTree(MemoryManager::getBaseAllocator()),
                    mScaling(scaling) {
     mTriangleMesh = triangleMesh;
@@ -84,8 +85,7 @@ void ConcaveMeshShape::initBVHTree() {
 }
 
 // Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex,
-                                           Vector3* outTriangleVertices) const {
+void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const {
 
     // Get the triangle vertex array of the current sub-part
     TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
@@ -138,14 +138,40 @@ uint ConcaveMeshShape::getNbTriangles(uint subPart) const
 	return mTriangleMesh->getSubpart(subPart)->getNbTriangles();
 }
 
-// Use a callback method on all triangles of the concave shape inside a given AABB
-void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const {
+// Compute all the triangles of the mesh that are overlapping with the AABB in parameter
+void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
+                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+                                                   MemoryAllocator& allocator) const {
 
-    ConvexTriangleAABBOverlapCallback overlapCallback(callback, *this, mDynamicAABBTree);
+    RP3D_PROFILE("ConcaveMeshShape::computeOverlappingTriangles()", mProfiler);
 
-    // Ask the Dynamic AABB Tree to report all the triangles that are overlapping
-    // with the AABB of the convex shape.
-    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(localAABB, overlapCallback);
+    // Compute the nodes of the internal AABB tree that are overlapping with the AABB
+    List<int> overlappingNodes(allocator);
+    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(localAABB, overlappingNodes);
+
+    const uint nbOverlappingNodes = overlappingNodes.size();
+
+    // Add space in the list of triangles vertices/normals for the new triangles
+    triangleVertices.addWithoutInit(nbOverlappingNodes * 3);
+    triangleVerticesNormals.addWithoutInit(nbOverlappingNodes * 3);
+
+    // For each overlapping node
+    for (uint i=0; i < nbOverlappingNodes; i++) {
+
+        int nodeId = overlappingNodes[i];
+
+        // Get the node data (triangle index and mesh subpart index)
+        int32* data = mDynamicAABBTree.getNodeDataInt(nodeId);
+
+        // Get the triangle vertices for this node from the concave mesh shape
+        getTriangleVertices(data[0], data[1], &(triangleVertices[i * 3]));
+
+        // Get the vertices normals of the triangle
+        getTriangleVerticesNormals(data[0], data[1], &(triangleVerticesNormals[i * 3]));
+
+        // Compute the triangle shape ID
+        shapeIds.add(computeTriangleShapeId(data[0], data[1]));
+    }
 }
 
 // Raycast method with feedback information
@@ -177,6 +203,8 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
 
 // Compute the shape Id for a given triangle of the mesh
 uint ConcaveMeshShape::computeTriangleShapeId(uint subPart, uint triangleIndex) const {
+
+    RP3D_PROFILE("ConcaveMeshShape::computeTriangleShapeId()", mProfiler);
 
     uint shapeId = 0;
 

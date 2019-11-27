@@ -53,8 +53,6 @@ using uint = unsigned int;
 using uchar = unsigned char;
 using ushort = unsigned short;
 using luint = long unsigned int;
-using bodyindex = luint;
-using bodyindexpair = Pair<bodyindex, bodyindex>;
 
 using int8 = std::int8_t;
 using uint8 = std::uint8_t;
@@ -62,6 +60,12 @@ using int16 = std::int16_t;
 using uint16 = std::uint16_t;
 using int32 = std::int32_t;
 using uint32 = std::uint32_t;
+using int64 = std::int64_t;
+using uint64 = std::uint64_t;
+
+// TODO : Delete this
+struct Entity;
+using bodypair = Pair<Entity, Entity>;
 
 // ------------------- Enumerations ------------------- //
 
@@ -127,7 +131,7 @@ struct WorldSettings {
     decimal defaultBounciness = decimal(0.5);
 
     /// Velocity threshold for contact velocity restitution
-    decimal restitutionVelocityThreshold = decimal(1.0);
+    decimal restitutionVelocityThreshold = decimal(0.5);
 
     /// Default rolling resistance
     decimal defaultRollingRestistance = decimal(0.0);
@@ -152,13 +156,8 @@ struct WorldSettings {
     /// might enter sleeping mode
     decimal defaultSleepAngularVelocity = decimal(3.0) * (PI / decimal(180.0));
 
-    /// Maximum number of contact manifolds in an overlapping pair that involves two
-    /// convex collision shapes.
-    int nbMaxContactManifoldsConvexShape = 1;
-
-    /// Maximum number of contact manifolds in an overlapping pair that involves at
-    /// least one concave collision shape.
-    int nbMaxContactManifoldsConcaveShape = 3;
+    /// Maximum number of contact manifolds in an overlapping pair
+    uint nbMaxContactManifolds = 3;
 
     /// This is used to test if two contact manifold are similar (same contact normal) in order to
     /// merge them. If the cosine of the angle between the normals of the two manifold are larger
@@ -182,8 +181,7 @@ struct WorldSettings {
         ss << "defaultTimeBeforeSleep=" << defaultTimeBeforeSleep << std::endl;
         ss << "defaultSleepLinearVelocity=" << defaultSleepLinearVelocity << std::endl;
         ss << "defaultSleepAngularVelocity=" << defaultSleepAngularVelocity << std::endl;
-        ss << "nbMaxContactManifoldsConvexShape=" << nbMaxContactManifoldsConvexShape << std::endl;
-        ss << "nbMaxContactManifoldsConcaveShape=" << nbMaxContactManifoldsConcaveShape << std::endl;
+        ss << "nbMaxContactManifolds=" << nbMaxContactManifolds << std::endl;
         ss << "cosAngleSimilarContactManifold=" << cosAngleSimilarContactManifold << std::endl;
 
         return ss.str();

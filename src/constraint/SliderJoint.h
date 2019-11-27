@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class ConstraintSolver;
+class ConstraintSolverSystem;
 
 // Structure SliderJointInfo
 /**
@@ -150,120 +150,6 @@ class SliderJoint : public Joint {
 
         // -------------------- Attributes -------------------- //
 
-        /// Anchor point of body 1 (in local-space coordinates of body 1)
-        Vector3 mLocalAnchorPointBody1;
-
-        /// Anchor point of body 2 (in local-space coordinates of body 2)
-        Vector3 mLocalAnchorPointBody2;
-
-        /// Slider axis (in local-space coordinates of body 1)
-        Vector3 mSliderAxisBody1;
-
-        /// Inertia tensor of body 1 (in world-space coordinates)
-        Matrix3x3 mI1;
-
-        /// Inertia tensor of body 2 (in world-space coordinates)
-        Matrix3x3 mI2;
-
-        /// Inverse of the initial orientation difference between the two bodies
-        Quaternion mInitOrientationDifferenceInv;
-
-        /// First vector orthogonal to the slider axis local-space of body 1
-        Vector3 mN1;
-
-        /// Second vector orthogonal to the slider axis and mN1 in local-space of body 1
-        Vector3 mN2;
-
-        /// Vector r1 in world-space coordinates
-        Vector3 mR1;
-
-        /// Vector r2 in world-space coordinates
-        Vector3 mR2;
-
-        /// Cross product of r2 and n1
-        Vector3 mR2CrossN1;
-
-        /// Cross product of r2 and n2
-        Vector3 mR2CrossN2;
-
-        /// Cross product of r2 and the slider axis
-        Vector3 mR2CrossSliderAxis;
-
-        /// Cross product of vector (r1 + u) and n1
-        Vector3 mR1PlusUCrossN1;
-
-        /// Cross product of vector (r1 + u) and n2
-        Vector3 mR1PlusUCrossN2;
-
-        /// Cross product of vector (r1 + u) and the slider axis
-        Vector3 mR1PlusUCrossSliderAxis;
-
-        /// Bias of the 2 translation constraints
-        Vector2 mBTranslation;
-
-        /// Bias of the 3 rotation constraints
-        Vector3 mBRotation;
-
-        /// Bias of the lower limit constraint
-        decimal mBLowerLimit;
-
-        /// Bias of the upper limit constraint
-        decimal mBUpperLimit;
-
-        /// Inverse of mass matrix K=JM^-1J^t for the translation constraint (2x2 matrix)
-        Matrix2x2 mInverseMassMatrixTranslationConstraint;
-
-        /// Inverse of mass matrix K=JM^-1J^t for the rotation constraint (3x3 matrix)
-        Matrix3x3 mInverseMassMatrixRotationConstraint;
-
-        /// Inverse of mass matrix K=JM^-1J^t for the upper and lower limit constraints (1x1 matrix)
-        decimal mInverseMassMatrixLimit;
-
-        /// Inverse of mass matrix K=JM^-1J^t for the motor
-        decimal mInverseMassMatrixMotor;
-
-        /// Accumulated impulse for the 2 translation constraints
-        Vector2 mImpulseTranslation;
-
-        /// Accumulated impulse for the 3 rotation constraints
-        Vector3 mImpulseRotation;
-
-        /// Accumulated impulse for the lower limit constraint
-        decimal mImpulseLowerLimit;
-
-        /// Accumulated impulse for the upper limit constraint
-        decimal mImpulseUpperLimit;
-
-        /// Accumulated impulse for the motor
-        decimal mImpulseMotor;
-
-        /// True if the slider limits are enabled
-        bool mIsLimitEnabled;
-
-        /// True if the motor of the joint in enabled
-        bool mIsMotorEnabled;
-
-        /// Slider axis in world-space coordinates
-        Vector3 mSliderAxisWorld;
-
-        /// Lower limit (minimum translation distance)
-        decimal mLowerLimit;
-
-        /// Upper limit (maximum translation distance)
-        decimal mUpperLimit;
-
-        /// True if the lower limit is violated
-        bool mIsLowerLimitViolated;
-
-        /// True if the upper limit is violated
-        bool mIsUpperLimitViolated;
-
-        /// Motor speed (in m/s)
-        decimal mMotorSpeed;
-
-        /// Maximum motor force (in Newtons) that can be applied to reach to desired motor speed
-        decimal mMaxMotorForce;
-
         // -------------------- Methods -------------------- //
 
         /// Reset the limits
@@ -272,24 +158,12 @@ class SliderJoint : public Joint {
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const override;
 
-        /// Initialize before solving the constraint
-        virtual void initBeforeSolve(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Warm start the constraint (apply the previous impulse at the beginning of the step)
-        virtual void warmstart(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the velocity constraint
-        virtual void solveVelocityConstraint(const ConstraintSolverData& constraintSolverData) override;
-
-        /// Solve the position constraint (for position error correction)
-        virtual void solvePositionConstraint(const ConstraintSolverData& constraintSolverData) override;
-
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SliderJoint(uint id, const SliderJointInfo& jointInfo);
+        SliderJoint(Entity entity, DynamicsWorld& world, const SliderJointInfo& jointInfo);
 
         /// Destructor
         virtual ~SliderJoint() override = default;
@@ -346,77 +220,9 @@ class SliderJoint : public Joint {
         virtual std::string to_string() const override;
 };
 
-// Return true if the limits or the joint are enabled
-/**
- * @return True if the joint limits are enabled
- */
-inline bool SliderJoint::isLimitEnabled() const {
-    return mIsLimitEnabled;
-}
-
-// Return true if the motor of the joint is enabled
-/**
- * @return True if the joint motor is enabled
- */
-inline bool SliderJoint::isMotorEnabled() const {
-    return mIsMotorEnabled;
-}
-
-// Return the minimum translation limit
-/**
- * @return The minimum translation limit of the joint (in meters)
- */
-inline decimal SliderJoint::getMinTranslationLimit() const {
-    return mLowerLimit;
-}
-
-// Return the maximum translation limit
-/**
- * @return The maximum translation limit of the joint (in meters)
- */
-inline decimal SliderJoint::getMaxTranslationLimit() const {
-    return mUpperLimit;
-}
-
-// Return the motor speed
-/**
- * @return The current motor speed of the joint (in meters per second)
- */
-inline decimal SliderJoint::getMotorSpeed() const {
-    return mMotorSpeed;
-}
-
-// Return the maximum motor force
-/**
- * @return The maximum force of the joint motor (in Newton x meters)
- */
-inline decimal SliderJoint::getMaxMotorForce() const {
-    return mMaxMotorForce;
-}
-
-// Return the intensity of the current force applied for the joint motor
-/**
- * @param timeStep Time step (in seconds)
- * @return The current force of the joint motor (in Newton x meters)
- */
-inline decimal SliderJoint::getMotorForce(decimal timeStep) const {
-    return mImpulseMotor / timeStep;
-}
-
 // Return the number of bytes used by the joint
 inline size_t SliderJoint::getSizeInBytes() const {
     return sizeof(SliderJoint);
-}
-
-// Return a string representation
-inline std::string SliderJoint::to_string() const {
-    return "SliderJoint{ lowerLimit=" + std::to_string(mLowerLimit) + ", upperLimit=" + std::to_string(mUpperLimit) +
-            "localAnchorPointBody1=" + mLocalAnchorPointBody1.to_string() + ", localAnchorPointBody2=" +
-            mLocalAnchorPointBody2.to_string() + ", sliderAxisBody1=" + mSliderAxisBody1.to_string() +
-            ", initOrientationDifferenceInv=" +
-            mInitOrientationDifferenceInv.to_string() + ", motorSpeed=" + std::to_string(mMotorSpeed) +
-            ", maxMotorForce=" + std::to_string(mMaxMotorForce) + ", isLimitEnabled=" +
-            (mIsLimitEnabled ? "true" : "false") + ", isMotorEnabled=" + (mIsMotorEnabled ? "true" : "false") + "}";
 }
 
 }

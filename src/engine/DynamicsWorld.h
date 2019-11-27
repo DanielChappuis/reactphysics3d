@@ -28,16 +28,18 @@
 
 // Libraries
 #include "CollisionWorld.h"
-#include "ConstraintSolver.h"
+#include "systems/ConstraintSolverSystem.h"
 #include "configuration.h"
 #include "utils/Logger.h"
-#include "engine/ContactSolver.h"
+#include "systems/ContactSolverSystem.h"
+#include "systems/DynamicsSystem.h"
+#include "engine/Islands.h"
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
 
 // Declarations
-class CollisionDetection;
+class CollisionDetectionSystem;
 class Island;
 class RigidBody;
 
@@ -53,11 +55,17 @@ class DynamicsWorld : public CollisionWorld {
 
         // -------------------- Attributes -------------------- //
 
-        /// Contact solver
-        ContactSolver mContactSolver;
+        /// All the islands of bodies of the current frame
+        Islands mIslands;
 
-        /// Constraint solver
-        ConstraintSolver mConstraintSolver;
+        /// Contact solver system
+        ContactSolverSystem mContactSolverSystem;
+
+        /// Constraint solver system
+        ConstraintSolverSystem mConstraintSolverSystem;
+
+        /// Dynamics system
+        DynamicsSystem mDynamicsSystem;
 
         /// Number of iterations for the velocity solver of the Sequential Impulses technique
         uint mNbVelocitySolverIterations;
@@ -71,43 +79,11 @@ class DynamicsWorld : public CollisionWorld {
         /// All the rigid bodies of the physics world
         List<RigidBody*> mRigidBodies;
 
-        /// All the joints of the world
-        List<Joint*> mJoints;
-
         /// Gravity vector of the world
         Vector3 mGravity;
 
-        /// Current frame time step (in seconds)
-        decimal mTimeStep;
-
         /// True if the gravity force is on
         bool mIsGravityEnabled;
-
-        /// Array of constrained linear velocities (state of the linear velocities
-        /// after solving the constraints)
-        Vector3* mConstrainedLinearVelocities;
-
-        /// Array of constrained angular velocities (state of the angular velocities
-        /// after solving the constraints)
-        Vector3* mConstrainedAngularVelocities;
-
-        /// Split linear velocities for the position contact solver (split impulse)
-        Vector3* mSplitLinearVelocities;
-
-        /// Split angular velocities for the position contact solver (split impulse)
-        Vector3* mSplitAngularVelocities;
-
-        /// Array of constrained rigid bodies position (for position error correction)
-        Vector3* mConstrainedPositions;
-
-        /// Array of constrained rigid bodies orientation (for position error correction)
-        Quaternion* mConstrainedOrientations;
-
-        /// Number of islands in the world
-        uint mNbIslands;
-
-        /// Array with all the islands of awaken bodies
-        Island** mIslands;
 
         /// Sleep linear velocity threshold
         decimal mSleepLinearVelocity;
@@ -119,28 +95,13 @@ class DynamicsWorld : public CollisionWorld {
         /// becomes smaller than the sleep velocity.
         decimal mTimeBeforeSleep;
 
-        /// List of free ID for joints
-        List<luint> mFreeJointsIDs;
-
         /// Current joint id
         uint mCurrentJointId;
 
         // -------------------- Methods -------------------- //
 
-        /// Integrate the positions and orientations of rigid bodies.
-        void integrateRigidBodiesPositions();
-
-        /// Reset the external force and torque applied to the bodies
-        void resetBodiesForceAndTorque();
-
-        /// Initialize the bodies velocities arrays for the next simulation step.
-        void initVelocityArrays();
-
-        /// Integrate the velocities of rigid bodies.
-        void integrateRigidBodiesVelocities();
-
         /// Solve the contacts and constraints
-        void solveContactsAndConstraints();
+        void solveContactsAndConstraints(decimal timeStep);
 
         /// Solve the position error correction of the constraints
         void solvePositionCorrection();
@@ -148,17 +109,14 @@ class DynamicsWorld : public CollisionWorld {
         /// Compute the islands of awake bodies.
         void computeIslands();
 
-        /// Update the postion/orientation of the bodies
-        void updateBodiesState();
+        /// Compute the islands using potential contacts and joints and create the actual contacts.
+        void createIslands();
 
         /// Put bodies to sleep if needed.
-        void updateSleepingBodies();
+        void updateSleepingBodies(decimal timeStep);
 
         /// Add the joint to the list of joints of the two bodies involved in the joint
-        void addJointToBody(Joint* joint);
-
-        /// Return the next available joint id
-        uint computeNextAvailableJointId();
+        void addJointToBodies(Entity body1, Entity body2, Entity joint);
 
     public :
 
@@ -201,6 +159,9 @@ class DynamicsWorld : public CollisionWorld {
         /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform);
 
+        /// Disable the joints for pair of sleeping bodies
+        void disableJointsOfSleepingBodies();
+
         /// Destroy a rigid body and all the joints which it belongs
         void destroyRigidBody(RigidBody* rigidBody);
 
@@ -221,12 +182,6 @@ class DynamicsWorld : public CollisionWorld {
 
         /// Enable/Disable the gravity
         void setIsGratityEnabled(bool isGravityEnabled);
-
-        /// Return the number of rigid bodies in the world
-        uint getNbRigidBodies() const;
-
-        /// Return the number of joints in the world
-        uint getNbJoints() const;
 
         /// Return true if the sleeping technique is enabled
         bool isSleepingEnabled() const;
@@ -255,24 +210,15 @@ class DynamicsWorld : public CollisionWorld {
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
 
-        /// Return the list of all contacts of the world
-        List<const ContactManifold*> getContactsList();
-
         // -------------------- Friendship -------------------- //
 
         friend class RigidBody;
+        friend class Joint;
+        friend class BallAndSocketJoint;
+        friend class FixedJoint;
+        friend class HingeJoint;
+        friend class SliderJoint;
 };
-
-// Reset the external force and torque applied to the bodies
-inline void DynamicsWorld::resetBodiesForceAndTorque() {
-
-    // For each body of the world
-    List<RigidBody*>::Iterator it;
-    for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
-        (*it)->mExternalForce.setToZero();
-        (*it)->mExternalTorque.setToZero();
-    }
-}
 
 // Get the number of iterations for the velocity constraint solver
 /**
@@ -319,10 +265,10 @@ inline void DynamicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
 inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
                               ContactsPositionCorrectionTechnique technique) {
     if (technique == ContactsPositionCorrectionTechnique::BAUMGARTE_CONTACTS) {
-        mContactSolver.setIsSplitImpulseActive(false);
+        mContactSolverSystem.setIsSplitImpulseActive(false);
     }
     else {
-        mContactSolver.setIsSplitImpulseActive(true);
+        mContactSolverSystem.setIsSplitImpulseActive(true);
     }
 }
 
@@ -333,10 +279,10 @@ inline void DynamicsWorld::setContactsPositionCorrectionTechnique(
 inline void DynamicsWorld::setJointsPositionCorrectionTechnique(
                               JointsPositionCorrectionTechnique technique) {
     if (technique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-        mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
+        mConstraintSolverSystem.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
     }
     else {
-        mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
+        mConstraintSolverSystem.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
     }
 }
 
@@ -377,22 +323,6 @@ inline void DynamicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
              "Dynamics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")));
-}
-
-// Return the number of rigid bodies in the world
-/**
- * @return Number of rigid bodies in the world
- */
-inline uint DynamicsWorld::getNbRigidBodies() const {
-    return mRigidBodies.size();
-}
-
-/// Return the number of joints in the world
-/**
- * @return Number of joints in the world
- */
-inline uint DynamicsWorld::getNbJoints() const {
-    return mJoints.size();
 }
 
 // Return true if the sleeping technique is enabled
@@ -456,7 +386,6 @@ inline void DynamicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity)
 inline decimal DynamicsWorld::getTimeBeforeSleep() const {
     return mTimeBeforeSleep;
 }
-
 
 // Set the time a body is required to stay still before sleeping
 /**

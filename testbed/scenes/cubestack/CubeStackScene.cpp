@@ -47,7 +47,9 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    dynamicsWorld->setEventListener(this);
+    mPhysicsWorld = dynamicsWorld;
 
     // Create all the cubes of the scene
     for (int i=1; i<=NB_FLOORS; i++) {
@@ -119,6 +121,8 @@ CubeStackScene::~CubeStackScene() {
 
 // Reset the scene
 void CubeStackScene::reset() {
+
+    SceneDemo::reset();
 
     int index = 0;
     for (int i=NB_FLOORS; i > 0; i--) {
