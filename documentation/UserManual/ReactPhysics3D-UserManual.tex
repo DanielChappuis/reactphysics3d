@@ -961,6 +961,9 @@ convexMeshShape = new rp3d::ConvexMeshShape(polyhedronMesh);
     When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in counter clockwise order
     as seen from the outside of your convex mesh. \\
 
+    You also need to make sure that the origin of your mesh is inside the convex mesh. A mesh with an origin outside the
+    convex mesh is not currently supported by the library. \\
+
     You can also specify a scaling factor in the constructor when you create a \texttt{Convex\allowbreak MeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
     when used in the collision shape. \\
 
