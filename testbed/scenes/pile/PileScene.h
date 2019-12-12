@@ -23,78 +23,84 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef CONCAVE_MESH_H
-#define CONCAVE_MESH_H
+#ifndef PILE_SCENE_H
+#define PILE_SCENE_H
 
 // Libraries
 #include "openglframework.h"
 #include "reactphysics3d.h"
-#include "PhysicsObject.h"
+#include "SceneDemo.h"
+#include "Sphere.h"
+#include "Box.h"
+#include "Capsule.h"
+#include "ConvexMesh.h"
+#include "ConcaveMesh.h"
+#include "Dumbbell.h"
+#include "VisualContactPoint.h"
 
-// Class ConcaveMesh
-class ConcaveMesh : public PhysicsObject {
+namespace pilescene {
+
+// Constants
+const float SCENE_RADIUS = 30.0f;
+const int NB_BOXES = 150;
+const int NB_SPHERES = 80;
+const int NB_CAPSULES = 5;
+const int NB_MESHES = 0;
+const int NB_COMPOUND_SHAPES = 0;
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);
+const float SPHERE_RADIUS = 1.5f;
+const float CONE_RADIUS = 2.0f;
+const float CONE_HEIGHT = 3.0f;
+const float CYLINDER_RADIUS = 1.0f;
+const float CYLINDER_HEIGHT = 5.0f;
+const float CAPSULE_RADIUS = 1.0f;
+const float CAPSULE_HEIGHT = 1.0f;
+const float DUMBBELL_HEIGHT = 1.0f;
+const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);        // Floor dimensions in meters
+const float BOX_MASS = 1.0f;
+const float CONE_MASS = 1.0f;
+const float CYLINDER_MASS = 1.0f;
+const float CAPSULE_MASS = 1.0f;
+const float MESH_MASS = 1.0f;
+const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
+
+// Class PileScene
+class PileScene : public SceneDemo {
 
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// Previous transform (for interpolation)
-        rp3d::Transform mPreviousTransform;
+        /// All the boxes of the scene
+        std::vector<Box*> mBoxes;
 
-        /// Collision shape
-        rp3d::ConcaveMeshShape* mConcaveShape;
-        rp3d::ProxyShape* mProxyShape;
+        std::vector<Sphere*> mSpheres;
 
-        /// Scaling matrix
-        openglframework::Matrix4 mScalingMatrix;
+        std::vector<Capsule*> mCapsules;
 
-        /// Vertex Buffer Object for the vertices data
-        openglframework::VertexBufferObject mVBOVertices;
+        /// All the convex meshes of the scene
+        std::vector<ConvexMesh*> mConvexMeshes;
 
-        /// Vertex Buffer Object for the normals data
-        openglframework::VertexBufferObject mVBONormals;
+        /// All the dumbbell of the scene
+        std::vector<Dumbbell*> mDumbbells;
 
-        /// Vertex Buffer Object for the texture coords
-        openglframework::VertexBufferObject mVBOTextureCoords;
+        /// Sandbox for the floor
+        ConcaveMesh* mSandbox;
 
-        /// Vertex Buffer Object for the indices
-        openglframework::VertexBufferObject mVBOIndices;
-
-        /// Vertex Array Object for the vertex data
-        openglframework::VertexArrayObject mVAO;
-
-        /// Structure with pointer to the shared mesh data (vertices, indices, ...)
-        rp3d::TriangleMesh* mPhysicsTriangleMesh;
-
-        // -------------------- Methods -------------------- //
-
-        // Create the Vertex Buffer Objects used to render with OpenGL.
-        void createVBOAndVAO();
-
-    public :
+    public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMesh(reactphysics3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world, const std::string& meshPath);
-
-        /// Constructor
-        ConcaveMesh(float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
+        PileScene(const std::string& name, EngineSettings& settings);
 
         /// Destructor
-        ~ConcaveMesh();
+        virtual ~PileScene() override;
 
-        /// Render the mesh at the correct position and with the correct orientation
-        void render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix) override;
-
-        /// Update the transform matrix of the object
-        virtual void updateTransform(float interpolationFactor) override;
+        /// Reset the scene
+        virtual void reset() override;
 };
 
-// Update the transform matrix of the object
-inline void ConcaveMesh::updateTransform(float interpolationFactor) {
-    mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
 }
 
 #endif

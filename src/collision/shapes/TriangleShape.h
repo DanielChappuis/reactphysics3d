@@ -107,16 +107,16 @@ class TriangleShape : public ConvexPolyhedronShape {
                                       const Transform& worldToOtherShapeTransform, decimal penetrationDepth, bool isTriangleShape1,
                                       Vector3& outNewLocalContactPointOtherShape, Vector3& outSmoothWorldContactTriangleNormal) const;
 
-    public:
-
-        // -------------------- Methods -------------------- //
-
         /// Constructor
         TriangleShape(const Vector3* vertices, const Vector3* verticesNormals,
                       uint shapeId, MemoryAllocator& allocator);
 
         /// Destructor
         virtual ~TriangleShape() override = default;
+
+    public:
+
+        // -------------------- Methods -------------------- //
 
         /// Deleted copy-constructor
         TriangleShape(const TriangleShape& shape) = delete;
@@ -181,6 +181,7 @@ class TriangleShape : public ConvexPolyhedronShape {
         friend class TriangleOverlapCallback;
         friend class MiddlePhaseTriangleCallback;
         friend class HeightFieldShape;
+        friend class CollisionDetectionSystem;
 };
 
 // Return the number of bytes used by the collision shape

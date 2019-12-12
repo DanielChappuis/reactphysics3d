@@ -101,6 +101,9 @@ class PoolAllocator : public MemoryAllocator {
         /// True if the mMapSizeToHeapIndex array has already been initialized
         static bool isMapSizeToHeadIndexInitialized;
 
+        /// Base memory allocator
+        MemoryAllocator& mBaseAllocator;
+
         /// Pointers to the first free memory unit for each heap
         MemoryUnit* mFreeMemoryUnits[NB_HEAPS];
 
@@ -126,7 +129,7 @@ class PoolAllocator : public MemoryAllocator {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        PoolAllocator();
+        PoolAllocator(MemoryAllocator& baseAllocator);
 
         /// Destructor
         virtual ~PoolAllocator() override;

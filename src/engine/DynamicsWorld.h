@@ -100,6 +100,10 @@ class DynamicsWorld : public CollisionWorld {
 
         // -------------------- Methods -------------------- //
 
+        /// Constructor
+        DynamicsWorld(const Vector3& mGravity, const WorldSettings& worldSettings = WorldSettings(),
+                      Logger* logger = nullptr, Profiler* profiler = nullptr);
+
         /// Solve the contacts and constraints
         void solveContactsAndConstraints(decimal timeStep);
 
@@ -118,16 +122,12 @@ class DynamicsWorld : public CollisionWorld {
         /// Add the joint to the list of joints of the two bodies involved in the joint
         void addJointToBodies(Entity body1, Entity body2, Entity joint);
 
+        /// Destructor
+        virtual ~DynamicsWorld() override;
+
     public :
 
         // -------------------- Methods -------------------- //
-
-        /// Constructor
-        DynamicsWorld(const Vector3& mGravity, const WorldSettings& worldSettings = WorldSettings(),
-                      Logger* logger = nullptr, Profiler* profiler = nullptr);
-
-        /// Destructor
-        virtual ~DynamicsWorld() override;
 
         /// Deleted copy-constructor
         DynamicsWorld(const DynamicsWorld& world) = delete;
@@ -212,6 +212,7 @@ class DynamicsWorld : public CollisionWorld {
 
         // -------------------- Friendship -------------------- //
 
+        friend class PhysicsCommon;
         friend class RigidBody;
         friend class Joint;
         friend class BallAndSocketJoint;

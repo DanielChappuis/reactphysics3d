@@ -96,6 +96,8 @@ class SceneDemo : public Scene {
 
         std::string mMeshFolderPath;
 
+        rp3d::PhysicsCommon mPhysicsCommon;
+
 		std::vector<PhysicsObject*> mPhysicsObjects;
 
         rp3d::CollisionWorld* mPhysicsWorld;

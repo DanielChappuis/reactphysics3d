@@ -291,8 +291,14 @@ class Profiler {
         /// Starting profiling time
         long double mProfilingStartTime;
 
-        /// All the output destinations
-        List<Destination*> mDestinations;
+        /// Number of allocated destinations
+        uint mNbAllocatedDestinations;
+
+        /// Number of destinations
+        uint mNbDestinations;
+
+        /// Array with all the output destinations
+        Destination** mDestinations;
 
         /// Recursively print the report of a given node of the profiler tree
         void printRecursiveNodeReport(ProfileNodeIterator* iterator,  int spacing,
@@ -335,6 +341,9 @@ class Profiler {
 
         /// Return an iterator over the profiler tree starting at the root
         ProfileNodeIterator* getIterator();
+
+        // Allocate memory for the destinations
+        void allocatedDestinations(uint nbDestinationsToAllocate);
 
         // Add a file destination to the profiler
         void addFileDestination(const std::string& filePath, Format format);

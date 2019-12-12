@@ -34,9 +34,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling)
+ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, const Vector3& scaling)
                 // TODO : Do not use the default base allocator here
-                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH), mDynamicAABBTree(MemoryManager::getBaseAllocator()),
+                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH), mDynamicAABBTree(allocator),
                    mScaling(scaling) {
     mTriangleMesh = triangleMesh;
     mRaycastTestType = TriangleRaycastSide::FRONT;

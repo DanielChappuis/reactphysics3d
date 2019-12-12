@@ -8,6 +8,16 @@
  - The CollisionWorld::testOverlap() methods do not have the 'categoryMaskBits' parameter anymore.
  - Many methods in the EventListener class have changed. Check the user manual for more information.
  - The way to retrieve contacts from a CollisionCallbackInfo object has changed. Check the user manual for more information.
+ - Now, the collision shapes need be be created with the PhysicsWorld::createXXXShape() methods instead of using the constructor of the shape as before. For instance, you need to use the PhysicsWorld::createBoxShape() method to create a BoxShape.
+ - There is now a single MemoryManager (with memory allocators) per PhysicsWorld. The memory allocators are no longer shared between worlds. 
+ - An instance of the BoxShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createBoxShape() method.
+ - An instance of the SphereShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createSphereShape() method.
+ - An instance of the CapsuleShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createCapsuleShape() method.
+ - An instance of the ConvexMeshShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createConvexMeshShape() method.
+ - An instance of the HeightFieldShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createHeightFieldShape() method.
+ - An instance of the ConcaveMeshShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createConcaveMeshShape() method.
+ - An instance of the PolyhedronMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createPolyhedronMesh() method.
+ - An instance of the TriangleMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createTriangleMesh() method.
 
 ### Removed
 
@@ -24,7 +34,7 @@
 
  - Make possible for the user to get vertices, normals and triangle indices of a ConcaveMeshShape
  - Make possible for the user to get vertices and height values of the HeightFieldShape
- - Make possible for the user to use a custom single frame and pool memory allocator
+ - Add PhysicsCommon class that needs to be instanciated at the beginning and is used as a factory for other objects of the library
 
 ### Fixed
 

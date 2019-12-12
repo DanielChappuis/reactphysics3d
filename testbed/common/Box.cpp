@@ -38,9 +38,9 @@ openglframework::VertexArrayObject Box::mVAO;
 int Box::totalNbBoxes = 0;
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* world,
+Box::Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::CollisionWorld* world,
          const std::string& meshFolderPath)
-    : PhysicsObject(meshFolderPath + "cube.obj") {
+    : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -56,7 +56,7 @@ Box::Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* w
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mBoxShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
+    mBoxShape = mPhysicsCommon.createBoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
     //mBoxShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
 
     mPreviousTransform = rp3d::Transform::identity();
@@ -80,9 +80,9 @@ Box::Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* w
 }
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::DynamicsWorld* world,
+Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::PhysicsCommon &physicsCommon, reactphysics3d::DynamicsWorld* world,
          const std::string& meshFolderPath)
-    : PhysicsObject(meshFolderPath + "cube.obj") {
+    : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cube.obj", *this);
@@ -104,7 +104,7 @@ Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::Dynam
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mBoxShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
+    mBoxShape = mPhysicsCommon.createBoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
     mPreviousTransform = rp3d::Transform::identity();
 
@@ -138,7 +138,7 @@ Box::~Box() {
         mVBONormals.destroy();
         mVAO.destroy();
     }
-    delete mBoxShape;
+    mPhysicsCommon.destroyBoxShape(mBoxShape);
     totalNbBoxes--;
 }
 

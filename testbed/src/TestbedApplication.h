@@ -83,8 +83,11 @@ class TestbedApplication : public Screen {
         /// Update time (in seconds)
         double mFrameTime;
 
-        /// Physics update time (in seconds)
-        double mPhysicsTime;
+        /// Total physics update time (in seconds)
+        double mTotalPhysicsTime;
+
+        /// Time of a single physics step (in seconds)
+        double mPhysicsStepTime;
 
         /// Width and height of the window
         int mWidth, mHeight;

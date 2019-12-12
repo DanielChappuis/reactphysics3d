@@ -79,10 +79,10 @@ class Sphere : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Sphere(float radius, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
+        Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
 
         /// Constructor
-        Sphere(float radius, float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
+        Sphere(float radius, float mass, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
         ~Sphere();

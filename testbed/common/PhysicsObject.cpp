@@ -27,7 +27,8 @@
 #include "PhysicsObject.h"
 
 /// Constructor
-PhysicsObject::PhysicsObject() : openglframework::Mesh() {
+PhysicsObject::PhysicsObject(rp3d::PhysicsCommon& physicsCommon)
+              : openglframework::Mesh(), mPhysicsCommon(physicsCommon) {
 
     mBody = nullptr;
     mColor = openglframework::Color(1, 1, 1, 1);
@@ -35,7 +36,7 @@ PhysicsObject::PhysicsObject() : openglframework::Mesh() {
 }
 
 /// Constructor
-PhysicsObject::PhysicsObject(const std::string& meshPath) : PhysicsObject() {
+PhysicsObject::PhysicsObject(rp3d::PhysicsCommon& physicsCommon, const std::string& meshPath) : PhysicsObject(physicsCommon) {
 
     // Load the mesh from a file
     openglframework::MeshReaderWriter::loadMeshFromFile(meshPath, *this);

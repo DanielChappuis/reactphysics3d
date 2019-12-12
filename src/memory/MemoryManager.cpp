@@ -24,11 +24,14 @@
 ********************************************************************************/
 
 // Libraries
-#include "MemoryManager.h"
+#include "memory/MemoryManager.h"
 
 using namespace reactphysics3d;
 
-// Static variables
-DefaultAllocator MemoryManager::mDefaultAllocator;
-MemoryAllocator* MemoryManager::mBaseAllocator = &mDefaultAllocator;
+// Constructor
+MemoryManager::MemoryManager(MemoryAllocator* baseAllocator) :
+               mBaseAllocator(baseAllocator == nullptr ? &mDefaultAllocator : baseAllocator),
+               mPoolAllocator(baseAllocator == nullptr ? mDefaultAllocator : *baseAllocator),
+               mSingleFrameAllocator(baseAllocator == nullptr ? mDefaultAllocator : *baseAllocator) {
 
+}

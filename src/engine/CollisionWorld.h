@@ -143,22 +143,22 @@ class CollisionWorld {
 
         // -------------------- Methods -------------------- //
 
+        /// Constructor
+        CollisionWorld(const WorldSettings& worldSettings = WorldSettings(), Logger* logger = nullptr,
+                       Profiler* profiler = nullptr, MemoryAllocator* baseMemoryAllocator = nullptr);
+
         /// Notify the world if a body is disabled (slepping or inactive) or not
         void setBodyDisabled(Entity entity, bool isDisabled);
 
         /// Notify the world whether a joint is disabled or not
         void setJointDisabled(Entity jointEntity, bool isDisabled);
 
+        /// Destructor
+        virtual ~CollisionWorld();
+
     public :
 
         // -------------------- Methods -------------------- //
-
-        /// Constructor
-        CollisionWorld(const WorldSettings& worldSettings = WorldSettings(), Logger* logger = nullptr,
-                       Profiler* profiler = nullptr);
-
-        /// Destructor
-        virtual ~CollisionWorld();
 
         /// Deleted copy-constructor
         CollisionWorld(const CollisionWorld& world) = delete;
@@ -221,6 +221,7 @@ class CollisionWorld {
 
         // -------------------- Friendship -------------------- //
 
+        friend class PhysicsCommon;
         friend class CollisionDetectionSystem;
         friend class CollisionBody;
         friend class RigidBody;

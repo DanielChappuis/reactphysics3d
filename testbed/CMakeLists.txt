@@ -116,6 +116,8 @@ SET(SCENES_SOURCES
     scenes/heightfield/HeightFieldScene.cpp
     scenes/cubestack/CubeStackScene.h
     scenes/cubestack/CubeStackScene.cpp
+    scenes/pile/PileScene.h
+    scenes/pile/PileScene.cpp
 )
 
 # Add .user file to set debug path in Visual Studio

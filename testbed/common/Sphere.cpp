@@ -34,9 +34,9 @@ openglframework::VertexArrayObject Sphere::mVAO;
 int Sphere::totalNbSpheres = 0;
 
 // Constructor
-Sphere::Sphere(float radius, rp3d::CollisionWorld* world,
+Sphere::Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world,
                const std::string& meshFolderPath)
-       : PhysicsObject(meshFolderPath + "sphere.obj"), mRadius(radius) {
+       : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -47,7 +47,7 @@ Sphere::Sphere(float radius, rp3d::CollisionWorld* world,
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mCollisionShape = new rp3d::SphereShape(mRadius);
+    mCollisionShape = mPhysicsCommon.createSphereShape(mRadius);
     //mCollisionShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
 
     mPreviousTransform = rp3d::Transform::identity();
@@ -69,9 +69,9 @@ Sphere::Sphere(float radius, rp3d::CollisionWorld* world,
 }
 
 // Constructor
-Sphere::Sphere(float radius, float mass, reactphysics3d::DynamicsWorld* world,
+Sphere::Sphere(float radius, float mass,  rp3d::PhysicsCommon& physicsCommon,reactphysics3d::DynamicsWorld* world,
                const std::string& meshFolderPath)
-       : PhysicsObject(meshFolderPath + "sphere.obj"), mRadius(radius) {
+       : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -82,7 +82,7 @@ Sphere::Sphere(float radius, float mass, reactphysics3d::DynamicsWorld* world,
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mCollisionShape = new rp3d::SphereShape(mRadius);
+    mCollisionShape = mPhysicsCommon.createSphereShape(mRadius);
 
     mPreviousTransform = rp3d::Transform::identity();
 
@@ -118,7 +118,7 @@ Sphere::~Sphere() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-    delete mCollisionShape;
+    mPhysicsCommon.destroySphereShape(mCollisionShape);
     totalNbSpheres--;
 }
 

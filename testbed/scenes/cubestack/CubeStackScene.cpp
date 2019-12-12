@@ -47,7 +47,7 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = mPhysicsCommon.createDynamicsWorld(gravity, worldSettings);
     dynamicsWorld->setEventListener(this);
     mPhysicsWorld = dynamicsWorld;
 
@@ -57,7 +57,7 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
         for (int j=0; j<i; j++) {
 
             // Create a cube and a corresponding rigid in the dynamics world
-            Box* cube = new Box(BOX_SIZE, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
+            Box* cube = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
 
             // Set the box color
             cube->setColor(mDemoColors[i % mNbDemoColors]);
@@ -76,7 +76,7 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
     // ------------------------- FLOOR ----------------------- //
 
     // Create the floor
-    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, getDynamicsWorld(), mMeshFolderPath);
+    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
     mFloor->setColor(mGreyColorDemo);
     mFloor->setSleepingColor(mGreyColorDemo);
 
@@ -116,7 +116,7 @@ CubeStackScene::~CubeStackScene() {
     delete mFloor;
 
     // Destroy the dynamics world
-    delete getDynamicsWorld();
+    mPhysicsCommon.destroyDynamicsWorld(getDynamicsWorld());
 }
 
 // Reset the scene

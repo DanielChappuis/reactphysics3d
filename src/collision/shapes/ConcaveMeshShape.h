@@ -146,6 +146,9 @@ class ConcaveMeshShape : public ConcaveShape {
 
         // -------------------- Methods -------------------- //
 
+        /// Constructor
+        ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, const Vector3& scaling = Vector3(1, 1, 1));
+
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
 
@@ -169,13 +172,10 @@ class ConcaveMeshShape : public ConcaveShape {
                                                  List<Vector3> &triangleVerticesNormals, List<uint>& shapeIds,
                                                  MemoryAllocator& allocator) const override;
 
-    public:
-
-        /// Constructor
-        ConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling = Vector3(1, 1, 1));
-
         /// Destructor
         virtual ~ConcaveMeshShape() override = default;
+
+    public:
 
         /// Deleted copy-constructor
         ConcaveMeshShape(const ConcaveMeshShape& shape) = delete;
@@ -215,6 +215,7 @@ class ConcaveMeshShape : public ConcaveShape {
 
         friend class ConvexTriangleAABBOverlapCallback;
         friend class ConcaveMeshRaycastCallback;
+        friend class PhysicsCommon;
 };
 
 // Return the number of bytes used by the collision shape

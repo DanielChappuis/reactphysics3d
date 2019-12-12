@@ -265,6 +265,8 @@ class TestCollisionWorld : public Test {
 
         // ---------- Atributes ---------- //
 
+        PhysicsCommon mPhysicsCommon;
+
         // Physics world
         CollisionWorld* mWorld;
 
@@ -330,37 +332,37 @@ class TestCollisionWorld : public Test {
         TestCollisionWorld(const std::string& name) : Test(name) {
 
             // Create the collision world
-            mWorld = new CollisionWorld();
+            mWorld = mPhysicsCommon.createCollisionWorld();
 
             // ---------- Boxes ---------- //
             Transform boxTransform1(Vector3(-20, 20, 0), Quaternion::identity());
             mBoxBody1 = mWorld->createCollisionBody(boxTransform1);
-            mBoxShape1 = new BoxShape(Vector3(3, 3, 3));
+            mBoxShape1 = mPhysicsCommon.createBoxShape(Vector3(3, 3, 3));
             mBoxProxyShape1 = mBoxBody1->addCollisionShape(mBoxShape1, Transform::identity());
 
 			Transform boxTransform2(Vector3(-10, 20, 0), Quaternion::identity());
 			mBoxBody2 = mWorld->createCollisionBody(boxTransform2);
-			mBoxShape2 = new BoxShape(Vector3(4, 2, 8));
+            mBoxShape2 = mPhysicsCommon.createBoxShape(Vector3(4, 2, 8));
             mBoxProxyShape2 = mBoxBody2->addCollisionShape(mBoxShape2, Transform::identity());
 
 			// ---------- Spheres ---------- //
-            mSphereShape1 = new SphereShape(3.0);
+            mSphereShape1 = mPhysicsCommon.createSphereShape(3.0);
             Transform sphereTransform1(Vector3(10, 20, 0), Quaternion::identity());
             mSphereBody1 = mWorld->createCollisionBody(sphereTransform1);
             mSphereProxyShape1 = mSphereBody1->addCollisionShape(mSphereShape1, Transform::identity());
 
-			mSphereShape2 = new SphereShape(5.0);
+            mSphereShape2 = mPhysicsCommon.createSphereShape(5.0);
 			Transform sphereTransform2(Vector3(20, 20, 0), Quaternion::identity());
 			mSphereBody2 = mWorld->createCollisionBody(sphereTransform2);
 			mSphereProxyShape2 = mSphereBody2->addCollisionShape(mSphereShape2, Transform::identity());
 
 			// ---------- Capsules ---------- //
-            mCapsuleShape1 = new CapsuleShape(2, 6);
+            mCapsuleShape1 = mPhysicsCommon.createCapsuleShape(2, 6);
             Transform capsuleTransform1(Vector3(-10, 0, 0), Quaternion::identity());
             mCapsuleBody1 = mWorld->createCollisionBody(capsuleTransform1);
             mCapsuleProxyShape1 = mCapsuleBody1->addCollisionShape(mCapsuleShape1, Transform::identity());
 
-			mCapsuleShape2 = new CapsuleShape(3, 4);
+            mCapsuleShape2 = mPhysicsCommon.createCapsuleShape(3, 4);
 			Transform capsuleTransform2(Vector3(-20, 0, 0), Quaternion::identity());
 			mCapsuleBody2 = mWorld->createCollisionBody(capsuleTransform2);
 			mCapsuleProxyShape2 = mCapsuleBody2->addCollisionShape(mCapsuleShape2, Transform::identity());
@@ -393,8 +395,8 @@ class TestCollisionWorld : public Test {
 					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-			mConvexMesh1PolyhedronMesh = new rp3d::PolyhedronMesh(mConvexMesh1PolygonVertexArray);
-			mConvexMeshShape1 = new rp3d::ConvexMeshShape(mConvexMesh1PolyhedronMesh);
+            mConvexMesh1PolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMesh1PolygonVertexArray);
+            mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1PolyhedronMesh);
             Transform convexMeshTransform1(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshBody1 = mWorld->createCollisionBody(convexMeshTransform1);
             mConvexMeshProxyShape1 = mConvexMeshBody1->addCollisionShape(mConvexMeshShape1, Transform::identity());
@@ -412,8 +414,8 @@ class TestCollisionWorld : public Test {
 					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-			mConvexMesh2PolyhedronMesh = new rp3d::PolyhedronMesh(mConvexMesh2PolygonVertexArray);
-			mConvexMeshShape2 = new rp3d::ConvexMeshShape(mConvexMesh2PolyhedronMesh);
+            mConvexMesh2PolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMesh2PolygonVertexArray);
+            mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2PolyhedronMesh);
             Transform convexMeshTransform2(Vector3(20, 0, 0), Quaternion::identity());
             mConvexMeshBody2 = mWorld->createCollisionBody(convexMeshTransform2);
             mConvexMeshProxyShape2 = mConvexMeshBody2->addCollisionShape(mConvexMeshShape2, Transform::identity());
@@ -449,9 +451,9 @@ class TestCollisionWorld : public Test {
 
 			// Add the triangle vertex array of the subpart to the triangle mesh
             Transform concaveMeshTransform(Vector3(0, -20, 0), Quaternion::identity());
-            mConcaveTriangleMesh = new TriangleMesh();
+            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh();
             mConcaveTriangleMesh->addSubpart(mConcaveMeshTriangleVertexArray);
-            mConcaveMeshShape = new rp3d::ConcaveMeshShape(mConcaveTriangleMesh);
+            mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshBody = mWorld->createCollisionBody(concaveMeshTransform);
             mConcaveMeshProxyShape = mConcaveMeshBody->addCollisionShape(mConcaveMeshShape, rp3d::Transform::identity());
         }
@@ -459,28 +461,32 @@ class TestCollisionWorld : public Test {
         /// Destructor
         virtual ~TestCollisionWorld() {
 
-            delete mBoxShape1;
-            delete mBoxShape2;
+            mPhysicsCommon.destroyBoxShape(mBoxShape1);
+            mPhysicsCommon.destroyBoxShape(mBoxShape2);
 
-			delete mSphereShape1;
-			delete mSphereShape2;
+            mPhysicsCommon.destroySphereShape(mSphereShape1);
+            mPhysicsCommon.destroySphereShape(mSphereShape2);
 
-			delete mCapsuleShape1;
-			delete mCapsuleShape2;
+            mPhysicsCommon.destroyCapsuleShape(mCapsuleShape1);
+            mPhysicsCommon.destroyCapsuleShape(mCapsuleShape2);
 
-			delete mConvexMeshShape1;
-			delete mConvexMeshShape2;
-			delete mConvexMesh1PolyhedronMesh;
-			delete mConvexMesh2PolyhedronMesh;
+            mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape1);
+            mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape2);
+
+            mPhysicsCommon.destroyPolyhedronMesh(mConvexMesh1PolyhedronMesh);
+            mPhysicsCommon.destroyPolyhedronMesh(mConvexMesh2PolyhedronMesh);
+
 			delete mConvexMesh1PolygonVertexArray;
 			delete mConvexMesh2PolygonVertexArray;
             delete[] mConvexMeshPolygonFaces;
 
-            delete mConcaveMeshShape;
-            delete mConcaveTriangleMesh;
+            mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
+
+            mPhysicsCommon.destroyTriangleMesh(mConcaveTriangleMesh);
+
             delete mConcaveMeshTriangleVertexArray;
 
-			delete mWorld;
+            mPhysicsCommon.destroyCollisionWorld(mWorld);
         }
 
         /// Run the tests

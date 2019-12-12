@@ -48,7 +48,7 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = mPhysicsCommon.createDynamicsWorld(gravity, worldSettings);
     dynamicsWorld->setEventListener(this);
     mPhysicsWorld = dynamicsWorld;
 
@@ -115,7 +115,7 @@ JointsScene::~JointsScene() {
     delete mFloor;
 
     // Destroy the dynamics world
-    delete getDynamicsWorld();
+    mPhysicsCommon.destroyDynamicsWorld(getDynamicsWorld());
 }
 
 // Update the physics world (take a simulation step)
@@ -214,7 +214,7 @@ void JointsScene::createBallAndSocketJoints() {
 
         // Create a box and a corresponding rigid in the dynamics world
         mBallAndSocketJointChainBoxes[i] = new Box(boxDimension, boxMass,
-                                                   getDynamicsWorld(), mMeshFolderPath);
+                                                   mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
         mBallAndSocketJointChainBoxes[i]->setTransform(rp3d::Transform(positionBox, rp3d::Quaternion::identity()));
 
         // Set the box color
@@ -266,7 +266,7 @@ void JointsScene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mSliderJointBottomBox = new Box(box1Dimension , BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
+    mSliderJointBottomBox = new Box(box1Dimension , BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
     mSliderJointBottomBox->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -288,7 +288,7 @@ void JointsScene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 box2Dimension(1.5f, 4, 1.5f);
-    mSliderJointTopBox = new Box(box2Dimension, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
+    mSliderJointTopBox = new Box(box2Dimension, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
     mSliderJointTopBox->setTransform(rp3d::Transform(positionBox2, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -330,7 +330,7 @@ void JointsScene::createPropellerHingeJoint() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(10, 1, 1);
-    mPropellerBox = new Box(boxDimension, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
+    mPropellerBox = new Box(boxDimension, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
     mPropellerBox->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -371,7 +371,7 @@ void JointsScene::createFixedJoints() {
 
     // Create a box and a corresponding rigid in the dynamics world
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
-    mFixedJointBox1 = new Box(boxDimension, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
+    mFixedJointBox1 = new Box(boxDimension, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
     mFixedJointBox1->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -389,7 +389,7 @@ void JointsScene::createFixedJoints() {
     rp3d::Vector3 positionBox2(-5, 7, 0);
 
     // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2 = new Box(boxDimension, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
+    mFixedJointBox2 = new Box(boxDimension, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
     mFixedJointBox2->setTransform(rp3d::Transform(positionBox2, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -430,7 +430,7 @@ void JointsScene::createFloor() {
 
     // Create the floor
     rp3d::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, getDynamicsWorld(), mMeshFolderPath);
+    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
 
     // Set the box color
     mFloor->setColor(mGreyColorDemo);

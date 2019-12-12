@@ -53,6 +53,9 @@ class SingleFrameAllocator : public MemoryAllocator {
 
         // -------------------- Attributes -------------------- //
 
+        /// Reference to the base memory allocator
+        MemoryAllocator& mBaseAllocator;
+
         /// Total size (in bytes) of memory of the allocator
         size_t mTotalSizeBytes;
 
@@ -74,7 +77,7 @@ class SingleFrameAllocator : public MemoryAllocator {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SingleFrameAllocator();
+        SingleFrameAllocator(MemoryAllocator& baseAllocator);
 
         /// Destructor
         virtual ~SingleFrameAllocator() override;

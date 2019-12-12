@@ -520,7 +520,7 @@ void DynamicsWorld::createIslands() {
 
     uint nbTotalManifolds = 0;
 
-    // For each dynamic component
+    // For each rigid body component
     for (uint b=0; b < mRigidBodyComponents.getNbEnabledComponents(); b++) {
 
         // If the body has already been added to an island, we go to the next body

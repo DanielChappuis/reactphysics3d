@@ -82,10 +82,10 @@ class Capsule : public PhysicsObject {
 		// -------------------- Methods -------------------- //
 
 		/// Constructor
-        Capsule(float radius, float height, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
+        Capsule(float radius, float height, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
 
 		/// Constructor
-        Capsule(float radius, float height, float mass, rp3d::DynamicsWorld* dynamicsWorld,
+        Capsule(float radius, float height, float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld,
 				const std::string& meshFolderPath);
 
 		/// Destructor

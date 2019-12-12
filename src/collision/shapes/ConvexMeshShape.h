@@ -66,6 +66,9 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
 
         // -------------------- Methods -------------------- //
 
+        /// Constructor
+        ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling = Vector3(1,1,1));
+
         /// Recompute the bounds of the mesh
         void recalculateBounds();
 
@@ -81,15 +84,12 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
 
+        /// Destructor
+        virtual ~ConvexMeshShape() override = default;
+
     public :
 
         // -------------------- Methods -------------------- //
-
-        /// Constructor
-        ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling = Vector3(1,1,1));
-
-        /// Destructor
-        virtual ~ConvexMeshShape() override = default;
 
         /// Deleted copy-constructor
         ConvexMeshShape(const ConvexMeshShape& shape) = delete;
@@ -135,6 +135,10 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
 
         /// Return the string representation of the shape
         virtual std::string to_string() const override;
+
+        // ----- Friendship ----- //
+
+        friend class PhysicsCommon;
 };
 
 // Return the number of bytes used by the collision shape

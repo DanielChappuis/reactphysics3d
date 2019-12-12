@@ -39,6 +39,7 @@
 #include "mathematics/mathematics.h"
 #include "body/CollisionBody.h"
 #include "body/RigidBody.h"
+#include "engine/PhysicsCommon.h"
 #include "engine/DynamicsWorld.h"
 #include "engine/CollisionWorld.h"
 #include "engine/Material.h"

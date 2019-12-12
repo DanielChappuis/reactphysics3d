@@ -28,8 +28,8 @@
 #include "PerlinNoise.h"
 
 // Constructor
-HeightField::HeightField(rp3d::CollisionWorld* world)
-           : mVBOVertices(GL_ARRAY_BUFFER),
+HeightField::HeightField(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world)
+           : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
@@ -44,7 +44,7 @@ HeightField::HeightField(rp3d::CollisionWorld* world)
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
+    mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
                                                mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
 
     mPreviousTransform = rp3d::Transform::identity();
@@ -62,8 +62,8 @@ HeightField::HeightField(rp3d::CollisionWorld* world)
 }
 
 // Constructor
-HeightField::HeightField(float mass, rp3d::DynamicsWorld* dynamicsWorld)
-           : mVBOVertices(GL_ARRAY_BUFFER),
+HeightField::HeightField(float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld)
+           : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
@@ -78,7 +78,7 @@ HeightField::HeightField(float mass, rp3d::DynamicsWorld* dynamicsWorld)
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
+    mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
                                                    mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
 
     mPreviousTransform = rp3d::Transform::identity();
@@ -110,7 +110,7 @@ HeightField::~HeightField() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    delete mHeightFieldShape;
+    mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
 }
 
 // Render the sphere at the correct position and with the correct orientation

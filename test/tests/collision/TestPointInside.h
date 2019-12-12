@@ -33,6 +33,7 @@
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexMeshShape.h"
 #include "engine/CollisionWorld.h"
+#include "engine/PhysicsCommon.h"
 #include "collision/PolygonVertexArray.h"
 
 /// Reactphysics3D namespace
@@ -47,6 +48,9 @@ class TestPointInside : public Test {
     private :
 
         // ---------- Atributes ---------- //
+
+        // Physics common
+        PhysicsCommon mPhysicsCommon;
 
         // Physics world
         CollisionWorld* mWorld;
@@ -93,7 +97,7 @@ class TestPointInside : public Test {
         TestPointInside(const std::string& name) : Test(name) {
 
             // Create the world
-            mWorld = new CollisionWorld();
+            mWorld = mPhysicsCommon.createCollisionWorld();
 
             // Body transform
             Vector3 position(-3, 2, 7);
@@ -120,13 +124,13 @@ class TestPointInside : public Test {
             mLocalShapeToWorld = mBodyTransform * mShapeTransform;
 
             // Create collision shapes
-            mBoxShape = new BoxShape(Vector3(2, 3, 4));
+            mBoxShape = mPhysicsCommon.createBoxShape(Vector3(2, 3, 4));
             mBoxProxyShape = mBoxBody->addCollisionShape(mBoxShape, mShapeTransform);
 
-            mSphereShape = new SphereShape(3);
+            mSphereShape = mPhysicsCommon.createSphereShape(3);
             mSphereProxyShape = mSphereBody->addCollisionShape(mSphereShape, mShapeTransform);
 
-            mCapsuleShape = new CapsuleShape(3, 10);
+            mCapsuleShape = mPhysicsCommon.createCapsuleShape(3, 10);
             mCapsuleProxyShape = mCapsuleBody->addCollisionShape(mCapsuleShape, mShapeTransform);
 
             mConvexMeshCubeVertices[0] = Vector3(-2, -3, 4);
@@ -156,8 +160,8 @@ class TestPointInside : public Test {
                     &(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
                     PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            mConvexMeshPolyhedronMesh = new PolyhedronMesh(mConvexMeshPolygonVertexArray);
-            mConvexMeshShape = new ConvexMeshShape(mConvexMeshPolyhedronMesh);
+            mConvexMeshPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMeshPolygonVertexArray);
+            mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMeshPolyhedronMesh);
             Transform convexMeshTransform(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshProxyShape = mConvexMeshBody->addCollisionShape(mConvexMeshShape, mShapeTransform);
 
@@ -172,11 +176,11 @@ class TestPointInside : public Test {
 
         /// Destructor
         virtual ~TestPointInside() {
-            delete mWorld;
-            delete mBoxShape;
-            delete mSphereShape;
-            delete mCapsuleShape;
-            delete mConvexMeshShape;
+            mPhysicsCommon.destroyBoxShape(mBoxShape);
+            mPhysicsCommon.destroySphereShape(mSphereShape);
+            mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
+            mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape);
+            mPhysicsCommon.destroyCollisionWorld(mWorld);
             delete[] mConvexMeshPolygonFaces;
             delete mConvexMeshPolygonVertexArray;
             delete mConvexMeshPolyhedronMesh;

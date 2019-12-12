@@ -50,6 +50,9 @@ class SphereShape : public ConvexShape {
 
         // -------------------- Methods -------------------- //
 
+        /// Constructor
+        SphereShape(decimal radius);
+
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
@@ -62,15 +65,12 @@ class SphereShape : public ConvexShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
 
+        /// Destructor
+        virtual ~SphereShape() override = default;
+
     public :
 
         // -------------------- Methods -------------------- //
-
-        /// Constructor
-        SphereShape(decimal radius);
-
-        /// Destructor
-        virtual ~SphereShape() override = default;
 
         /// Deleted copy-constructor
         SphereShape(const SphereShape& shape) = delete;
@@ -95,6 +95,10 @@ class SphereShape : public ConvexShape {
 
         /// Return the string representation of the shape
         virtual std::string to_string() const override;
+
+        // ----- Friendship ----- //
+
+        friend class PhysicsCommon;
 };
 
 // Get the radius of the sphere

@@ -32,12 +32,12 @@
 using namespace reactphysics3d;
 
 // Constructor
-SingleFrameAllocator::SingleFrameAllocator()
-    : mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES),
-      mCurrentOffset(0), mNbFramesTooMuchAllocated(0), mNeedToAllocatedMore(false) {
+SingleFrameAllocator::SingleFrameAllocator(MemoryAllocator& baseAllocator) : mBaseAllocator(baseAllocator),
+                                           mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES),
+                                           mCurrentOffset(0), mNbFramesTooMuchAllocated(0), mNeedToAllocatedMore(false) {
 
     // Allocate a whole block of memory at the beginning
-    mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
+    mMemoryBufferStart = static_cast<char*>(mBaseAllocator.allocate(mTotalSizeBytes));
     assert(mMemoryBufferStart != nullptr);
 }
 
@@ -45,7 +45,7 @@ SingleFrameAllocator::SingleFrameAllocator()
 SingleFrameAllocator::~SingleFrameAllocator() {
 
     // Release the memory allocated at the beginning
-    MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
+    mBaseAllocator.release(mMemoryBufferStart, mTotalSizeBytes);
 }
 
 
@@ -60,7 +60,7 @@ void* SingleFrameAllocator::allocate(size_t size) {
         mNeedToAllocatedMore = true;
 
         // Return default memory allocation
-        return MemoryManager::getBaseAllocator().allocate(size);
+        return mBaseAllocator.allocate(size);
     }
 
     // Next available memory location
@@ -81,7 +81,7 @@ void SingleFrameAllocator::release(void* pointer, size_t size) {
     if (p < mMemoryBufferStart || p > mMemoryBufferStart + mTotalSizeBytes) {
 
         // Use default deallocation
-        MemoryManager::getBaseAllocator().release(pointer, size);
+        mBaseAllocator.release(pointer, size);
     }
 }
 
@@ -96,14 +96,14 @@ void SingleFrameAllocator::reset() {
         if (mNbFramesTooMuchAllocated > NB_FRAMES_UNTIL_SHRINK) {
 
             // Release the memory allocated at the beginning
-            MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
+            mBaseAllocator.release(mMemoryBufferStart, mTotalSizeBytes);
 
             // Divide the total memory to allocate by two
             mTotalSizeBytes /= 2;
             if (mTotalSizeBytes == 0) mTotalSizeBytes = 1;
 
             // Allocate a whole block of memory at the beginning
-            mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
+            mMemoryBufferStart = static_cast<char*>(mBaseAllocator.allocate(mTotalSizeBytes));
             assert(mMemoryBufferStart != nullptr);
 
             mNbFramesTooMuchAllocated = 0;
@@ -117,13 +117,13 @@ void SingleFrameAllocator::reset() {
     if (mNeedToAllocatedMore) {
 
         // Release the memory allocated at the beginning
-        MemoryManager::getBaseAllocator().release(mMemoryBufferStart, mTotalSizeBytes);
+        mBaseAllocator.release(mMemoryBufferStart, mTotalSizeBytes);
 
         // Multiply the total memory to allocate by two
         mTotalSizeBytes *= 2;
 
         // Allocate a whole block of memory at the beginning
-        mMemoryBufferStart = static_cast<char*>(MemoryManager::getBaseAllocator().allocate(mTotalSizeBytes));
+        mMemoryBufferStart = static_cast<char*>(mBaseAllocator.allocate(mTotalSizeBytes));
         assert(mMemoryBufferStart != nullptr);
 
         mNeedToAllocatedMore = false;

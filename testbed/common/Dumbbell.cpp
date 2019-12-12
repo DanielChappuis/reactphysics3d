@@ -34,8 +34,8 @@ openglframework::VertexArrayObject Dumbbell::mVAO;
 int Dumbbell::totalNbDumbbells = 0;
 
 // Constructor
-Dumbbell::Dumbbell(rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
-         : PhysicsObject(meshFolderPath + "dumbbell.obj") {
+Dumbbell::Dumbbell(rp3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
+         : PhysicsObject(physicsCommon, meshFolderPath + "dumbbell.obj") {
 
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
@@ -47,7 +47,7 @@ Dumbbell::Dumbbell(rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFo
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusSphere = rp3d::decimal(1.5);
     const rp3d::decimal massSphere = rp3d::decimal(2.0);
-    mSphereShape = new rp3d::SphereShape(radiusSphere);
+    mSphereShape = mPhysicsCommon.createSphereShape(radiusSphere);
 
     // Create a capsule collision shape for the middle of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
@@ -55,7 +55,7 @@ Dumbbell::Dumbbell(rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFo
     const rp3d::decimal radiusCapsule = rp3d::decimal(0.5);
     const rp3d::decimal heightCapsule = rp3d::decimal(7.0);
     const rp3d::decimal massCylinder = rp3d::decimal(1.0);
-    mCapsuleShape = new rp3d::CapsuleShape(radiusCapsule, heightCapsule);
+    mCapsuleShape = mPhysicsCommon.createCapsuleShape(radiusCapsule, heightCapsule);
 
     mPreviousTransform = rp3d::Transform::identity();
 
@@ -89,8 +89,8 @@ Dumbbell::Dumbbell(rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFo
 }
 
 // Constructor
-Dumbbell::Dumbbell(rp3d::CollisionWorld* world, const std::string& meshFolderPath)
-         : PhysicsObject(meshFolderPath + "dumbbell.obj"){
+Dumbbell::Dumbbell(reactphysics3d::PhysicsCommon &physicsCommon, rp3d::CollisionWorld* world, const std::string& meshFolderPath)
+         : PhysicsObject(physicsCommon, meshFolderPath + "dumbbell.obj"){
 
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
@@ -101,14 +101,14 @@ Dumbbell::Dumbbell(rp3d::CollisionWorld* world, const std::string& meshFolderPat
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusSphere = rp3d::decimal(1.5);
-    mSphereShape = new rp3d::SphereShape(radiusSphere);
+    mSphereShape = mPhysicsCommon.createSphereShape(radiusSphere);
 
     // Create a cylinder collision shape for the middle of the dumbbell
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusCapsule = rp3d::decimal(0.5);
     const rp3d::decimal heightCapsule = rp3d::decimal(7.0);
-    mCapsuleShape = new rp3d::CapsuleShape(radiusCapsule, heightCapsule);
+    mCapsuleShape = mPhysicsCommon.createCapsuleShape(radiusCapsule, heightCapsule);
 
     // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
     rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
@@ -154,8 +154,8 @@ Dumbbell::~Dumbbell() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-    delete mSphereShape;
-    delete mCapsuleShape;
+    mPhysicsCommon.destroySphereShape(mSphereShape);
+    mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
     totalNbDumbbells--;
 }
 

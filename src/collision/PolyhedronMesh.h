@@ -47,6 +47,9 @@ class PolyhedronMesh {
 
         // -------------------- Attributes -------------------- //
 
+        /// Reference to the memory allocator
+        MemoryAllocator& mMemoryAllocator;
+
         /// Pointer the the polygon vertex array with vertices and faces
         /// of the mesh
         PolygonVertexArray* mPolygonVertexArray;
@@ -62,6 +65,9 @@ class PolyhedronMesh {
 
         // -------------------- Methods -------------------- //
 
+        /// Constructor
+        PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator);
+
         /// Create the half-edge structure of the mesh
         void createHalfEdgeStructure();
 
@@ -74,9 +80,6 @@ class PolyhedronMesh {
     public:
 
         // -------------------- Methods -------------------- //
-
-        /// Constructor
-        PolyhedronMesh(PolygonVertexArray* polygonVertexArray);
 
         /// Destructor
         ~PolyhedronMesh();
@@ -98,6 +101,10 @@ class PolyhedronMesh {
 
         /// Return the centroid of the polyhedron
         Vector3 getCentroid() const;
+
+        // ---------- Friendship ---------- //
+
+        friend class PhysicsCommon;
 };
 
 // Return the number of vertices

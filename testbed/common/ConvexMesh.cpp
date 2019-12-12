@@ -27,8 +27,8 @@
 #include "ConvexMesh.h"
 
 // Constructor
-ConvexMesh::ConvexMesh(rp3d::CollisionWorld* world, const std::string& meshPath)
-           : PhysicsObject(meshPath), mVBOVertices(GL_ARRAY_BUFFER),
+ConvexMesh::ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world, const std::string& meshPath)
+           : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
@@ -53,11 +53,11 @@ ConvexMesh::ConvexMesh(rp3d::CollisionWorld* world, const std::string& meshPath)
                                          rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Create the polyhedron mesh
-    mPolyhedronMesh = new rp3d::PolyhedronMesh(mPolygonVertexArray);
+    mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray);
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mConvexShape = new rp3d::ConvexMeshShape(mPolyhedronMesh);
+    mConvexShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh);
 
     mPreviousTransform = rp3d::Transform::identity();
 
@@ -74,8 +74,8 @@ ConvexMesh::ConvexMesh(rp3d::CollisionWorld* world, const std::string& meshPath)
 }
 
 // Constructor
-ConvexMesh::ConvexMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath)
-           : PhysicsObject(meshPath), mVBOVertices(GL_ARRAY_BUFFER),
+ConvexMesh::ConvexMesh(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath)
+           : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
@@ -100,11 +100,11 @@ ConvexMesh::ConvexMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std
                                          rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Create the polyhedron mesh
-    mPolyhedronMesh = new rp3d::PolyhedronMesh(mPolygonVertexArray);
+    mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray);
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end
-    mConvexShape = new rp3d::ConvexMeshShape(mPolyhedronMesh);
+    mConvexShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh);
 
     mPreviousTransform = rp3d::Transform::identity();
 
@@ -135,10 +135,10 @@ ConvexMesh::~ConvexMesh() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    delete mPolyhedronMesh;
+    mPhysicsCommon.destroyConvexMeshShape(mConvexShape);
+    mPhysicsCommon.destroyPolyhedronMesh(mPolyhedronMesh);
     delete mPolygonVertexArray;
     delete[] mPolygonFaces;
-    delete mConvexShape;
 }
 
 // Render the sphere at the correct position and with the correct orientation

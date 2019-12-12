@@ -155,11 +155,15 @@ void ProfileNodeIterator::enterParent() {
 }
 
 // Constructor
-Profiler::Profiler() :mRootNode("Root", nullptr), mDestinations(MemoryManager::getBaseAllocator()) {
+Profiler::Profiler() :mRootNode("Root", nullptr) {
 
 	mCurrentNode = &mRootNode;
+    mNbDestinations = 0;
+    mNbAllocatedDestinations = 0;
     mProfilingStartTime = Timer::getCurrentSystemTime() * 1000.0L;
 	mFrameCounter = 0;
+
+    allocatedDestinations(1);
 }
 
 // Destructor
@@ -174,11 +178,11 @@ Profiler::~Profiler() {
 void Profiler::removeAllDestinations() {
 
     // Delete all the destinations
-    for (uint i=0; i<mDestinations.size(); i++) {
+    for (uint i=0; i<mNbDestinations; i++) {
         delete mDestinations[i];
     }
 
-    mDestinations.clear();
+    mNbDestinations = 0;
 }
 
 // Method called when we want to start profiling a block of code.
@@ -217,12 +221,12 @@ void Profiler::reset() {
 void Profiler::printReport() {
 
     // For each destination
-    for (auto it = mDestinations.begin(); it != mDestinations.end(); ++it) {
+    for (uint i=0; i < mNbDestinations; i++) {
 
         ProfileNodeIterator* iterator = Profiler::getIterator();
 
         // Recursively print the report of each node of the profiler tree
-        printRecursiveNodeReport(iterator, 0, (*it)->getOutputStream());
+        printRecursiveNodeReport(iterator, 0, mDestinations[i]->getOutputStream());
 
         // Destroy the iterator
         destroyIterator(iterator);
@@ -232,15 +236,39 @@ void Profiler::printReport() {
 // Add a file destination to the profiler
 void Profiler::addFileDestination(const std::string& filePath, Format format) {
 
+    if (mNbAllocatedDestinations == mNbDestinations) {
+        allocatedDestinations(mNbAllocatedDestinations * 2);
+    }
+
     FileDestination* destination = new FileDestination(filePath, format);
-    mDestinations.add(destination);
+    mDestinations[mNbDestinations] = destination;
+
+    mNbDestinations++;
+}
+
+// Allocate memory for the destinations
+void Profiler::allocatedDestinations(uint nbDestinationsToAllocate) {
+
+    if (mNbAllocatedDestinations >= nbDestinationsToAllocate) return;
+
+    Destination** newArray = static_cast<Destination**>(std::malloc(nbDestinationsToAllocate * sizeof(Destination*)));
+    std::memcpy(newArray, mDestinations, mNbAllocatedDestinations * sizeof(Destination*));
+
+    mDestinations = newArray;
+    mNbAllocatedDestinations = nbDestinationsToAllocate;
 }
 
 // Add a stream destination to the profiler
 void Profiler::addStreamDestination(std::ostream& outputStream, Format format) {
 
+    if (mNbAllocatedDestinations == mNbDestinations) {
+        allocatedDestinations(mNbAllocatedDestinations * 2);
+    }
+
     StreamDestination* destination = new StreamDestination(outputStream, format);
-    mDestinations.add(destination);
+    mDestinations[mNbDestinations] = destination;
+
+    mNbDestinations++;
 }
 
 // Recursively print the report of a given node of the profiler tree

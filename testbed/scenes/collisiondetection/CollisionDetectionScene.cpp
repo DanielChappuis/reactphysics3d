@@ -52,12 +52,12 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    mPhysicsWorld = new rp3d::CollisionWorld(worldSettings);
+    mPhysicsWorld = mPhysicsCommon.createCollisionWorld(worldSettings);
 
     // ---------- Sphere 1 ---------- //
 
     // Create a sphere and a corresponding collision body in the dynamics world
-    mSphere1 = new Sphere(4, mPhysicsWorld, mMeshFolderPath);
+    mSphere1 = new Sphere(4, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mSphere1);
 
     // Set the color
@@ -69,7 +69,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Sphere 2 ---------- //
 
     // Create a sphere and a corresponding collision body in the dynamics world
-    mSphere2 = new Sphere(2, mPhysicsWorld, mMeshFolderPath);
+    mSphere2 = new Sphere(2, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mSphere2);
 
     // Set the color
@@ -81,7 +81,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Capsule 1 ---------- //
 
     // Create a cylinder and a corresponding collision body in the dynamics world
-    mCapsule1 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsWorld, mMeshFolderPath);
+    mCapsule1 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mCapsule1);
 
     // Set the color
@@ -92,7 +92,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Capsule 2 ---------- //
 
     // Create a cylinder and a corresponding collision body in the dynamics world
-    mCapsule2 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsWorld, mMeshFolderPath);
+    mCapsule2 = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mCapsule2);
 
     // Set the color
@@ -103,7 +103,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConcaveMesh = new ConcaveMesh(mPhysicsWorld, mMeshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "city.obj");
     mAllShapes.push_back(mConcaveMesh);
 
     // Set the color
@@ -114,7 +114,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Box 1 ---------- //
 
     // Create a cylinder and a corresponding collision body in the dynamics world
-    mBox1 = new Box(BOX_SIZE, mPhysicsWorld, mMeshFolderPath);
+    mBox1 = new Box(BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mBox1);
 
     // Set the color
@@ -125,7 +125,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Box 2 ---------- //
 
     // Create a cylinder and a corresponding collision body in the dynamics world
-    mBox2 = new Box(openglframework::Vector3(3, 2, 5), mPhysicsWorld, mMeshFolderPath);
+    mBox2 = new Box(openglframework::Vector3(3, 2, 5), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mBox2);
 
     // Set the color
@@ -136,7 +136,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Convex Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mConvexMesh = new ConvexMesh(mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
     mAllShapes.push_back(mConvexMesh);
 
     // Set the color
@@ -147,7 +147,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Heightfield ---------- //
 
     // Create a convex mesh and a corresponding collision body in the dynamics world
-    mHeightField = new HeightField(mPhysicsWorld);
+    mHeightField = new HeightField(mPhysicsCommon, mPhysicsWorld);
 
     // Set the color
     mHeightField->setColor(mGreyColorDemo);
@@ -212,7 +212,7 @@ CollisionDetectionScene::~CollisionDetectionScene() {
     VisualContactPoint::destroyStaticData();
 
     // Destroy the collision world
-    delete mPhysicsWorld;
+    mPhysicsCommon.destroyCollisionWorld(mPhysicsWorld);
 }
 
 // Take a step for the simulation

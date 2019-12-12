@@ -25,12 +25,15 @@
 
 // Libraries
 #include "TriangleMesh.h"
-#include "memory/MemoryManager.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-TriangleMesh::TriangleMesh()
-             : mTriangleArrays(MemoryManager::getBaseAllocator()) {
+TriangleMesh::TriangleMesh(MemoryAllocator& allocator) : mTriangleArrays(allocator) {
+
+}
+
+// Destructor
+TriangleMesh::~TriangleMesh() {
 
 }

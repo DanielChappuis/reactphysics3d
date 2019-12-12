@@ -49,14 +49,14 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     worldSettings.worldName = name;
 
     // Create the dynamics world for the physics simulation
-    rp3d::DynamicsWorld* dynamicsWorld = new rp3d::DynamicsWorld(gravity, worldSettings);
+    rp3d::DynamicsWorld* dynamicsWorld = mPhysicsCommon.createDynamicsWorld(gravity, worldSettings);
     dynamicsWorld->setEventListener(this);
     mPhysicsWorld = dynamicsWorld;
 
     for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        Dumbbell* dumbbell = new Dumbbell(getDynamicsWorld(), meshFolderPath);
+        Dumbbell* dumbbell = new Dumbbell(mPhysicsCommon, getDynamicsWorld(), meshFolderPath);
 
         // Set the box color
         dumbbell->setColor(mDemoColors[i % mNbDemoColors]);
@@ -75,7 +75,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     for (int i=0; i<NB_BOXES; i++) {
 
         // Create a sphere and a corresponding rigid in the dynamics world
-        Box* box = new Box(BOX_SIZE, BOX_MASS, getDynamicsWorld(), mMeshFolderPath);
+        Box* box = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
 
         // Set the box color
         box->setColor(mDemoColors[i % mNbDemoColors]);
@@ -94,7 +94,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     for (int i=0; i<NB_SPHERES; i++) {
 
         // Create a sphere and a corresponding rigid in the dynamics world
-        Sphere* sphere = new Sphere(SPHERE_RADIUS, BOX_MASS, getDynamicsWorld(), meshFolderPath);
+        Sphere* sphere = new Sphere(SPHERE_RADIUS, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), meshFolderPath);
 
         // Add some rolling resistance
         sphere->getRigidBody()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
@@ -117,7 +117,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
 
         // Create a cylinder and a corresponding rigid in the dynamics world
         Capsule* capsule = new Capsule(CAPSULE_RADIUS, CAPSULE_HEIGHT, CAPSULE_MASS,
-                                       getDynamicsWorld(), meshFolderPath);
+                                       mPhysicsCommon, getDynamicsWorld(), meshFolderPath);
 
         capsule->getRigidBody()->getMaterial().setRollingResistance(rp3d::decimal(0.08f));
 
@@ -138,7 +138,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     for (int i=0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the dynamics world
-        ConvexMesh* mesh = new ConvexMesh(MESH_MASS, getDynamicsWorld(), meshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(MESH_MASS, mPhysicsCommon, getDynamicsWorld(), meshFolderPath + "convexmesh.obj");
 
         // Set the box color
         mesh->setColor(mDemoColors[i % mNbDemoColors]);
@@ -155,7 +155,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
 
     // ---------- Create the floor ---------
 
-    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, getDynamicsWorld(), mMeshFolderPath);
+    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
 	mPhysicsObjects.push_back(mFloor);
 
     // Set the box color
@@ -195,7 +195,7 @@ CollisionShapesScene::~CollisionShapesScene() {
     }
 
     // Destroy the dynamics world
-    delete mPhysicsWorld;
+    mPhysicsCommon.destroyDynamicsWorld(static_cast<rp3d::DynamicsWorld*>(mPhysicsWorld));
 }
 
 /// Reset the scene

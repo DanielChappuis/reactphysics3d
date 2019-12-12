@@ -36,12 +36,14 @@ double Gui::mScrollY = 0.0;
 double Gui::mTimeSinceLastProfilingDisplay = 0;
 double Gui::mCachedFPS = 0;
 double Gui::mCachedUpdateTime = 0;
-double Gui::mCachedPhysicsUpdateTime = 0;
+double Gui::mCachedTotalPhysicsUpdateTime = 0;
+double Gui::mCachedPhysicsStepTime = 0;
 
 // Constructor
 Gui::Gui(TestbedApplication* app)
     : mApp(app), mSimulationPanel(nullptr), mSettingsPanel(nullptr), mPhysicsPanel(nullptr),
-      mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mPhysicsTimeLabel(nullptr)
+      mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mTotalPhysicsTimeLabel(nullptr),
+      mPhysicsStepTimeLabel(nullptr)
 {
 
 }
@@ -78,7 +80,8 @@ void Gui::update() {
         mTimeSinceLastProfilingDisplay = mApp->mCurrentTime;
         mCachedFPS = mApp->mFPS;
         mCachedUpdateTime = mApp->mFrameTime;
-        mCachedPhysicsUpdateTime = mApp->mPhysicsTime;
+        mCachedTotalPhysicsUpdateTime = mApp->mTotalPhysicsTime;
+        mCachedPhysicsStepTime = mApp->mPhysicsStepTime;
     }
 
     // Framerate (FPS)
@@ -87,8 +90,11 @@ void Gui::update() {
     // Frame time
     mFrameTimeLabel->setCaption(std::string("Frame time : ") + floatToString(mCachedUpdateTime * 1000.0, 1) + std::string(" ms"));
 
-    // Physics time
-    mPhysicsTimeLabel->setCaption(std::string("Physics time : ") + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"));
+    // Total Physics time
+    mTotalPhysicsTimeLabel->setCaption(std::string("Total physics time : ") + floatToString(mCachedTotalPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"));
+
+    // Physics step time
+    mPhysicsStepTimeLabel->setCaption(std::string("Physics step time : ") + floatToString(mCachedPhysicsStepTime * 1000.0, 1) + std::string(" ms"));
 }
 
 void Gui::createSimulationPanel() {
@@ -447,8 +453,11 @@ void Gui::createProfilingPanel() {
     // Update time
     mFrameTimeLabel = new Label(profilingPanel, std::string("Frame time : ") + floatToString(mCachedUpdateTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
 
-    // Update time
-    mPhysicsTimeLabel = new Label(profilingPanel, std::string("Physics time : ") + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
+    // Total physics time
+    mTotalPhysicsTimeLabel = new Label(profilingPanel, std::string("Total physics time : ") + floatToString(mCachedTotalPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
+
+    // Physics step time
+    mPhysicsStepTimeLabel = new Label(profilingPanel, std::string("Physics step time : ") + floatToString(mCachedPhysicsStepTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
 
     profilingPanel->setVisible(true);
 }

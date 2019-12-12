@@ -82,10 +82,10 @@ class Dumbbell : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Dumbbell(rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
+        Dumbbell(reactphysics3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
 
         /// Constructor
-        Dumbbell(rp3d::CollisionWorld* world, const std::string& meshFolderPath);
+        Dumbbell(reactphysics3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
 
         /// Destructor
         ~Dumbbell();

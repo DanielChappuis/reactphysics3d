@@ -96,6 +96,12 @@ class HeightFieldShape : public ConcaveShape {
 
         // -------------------- Methods -------------------- //
 
+        /// Constructor
+        HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
+                         const void* heightFieldData, HeightDataType dataType,
+                         int upAxis = 1, decimal integerHeightScale = 1.0f,
+                         const Vector3& scaling = Vector3(1,1,1));
+
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
 
@@ -119,16 +125,10 @@ class HeightFieldShape : public ConcaveShape {
         /// Compute the shape Id for a given triangle
         uint computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const;
 
-    public:
-
-        /// Constructor
-        HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
-                         const void* heightFieldData, HeightDataType dataType,
-                         int upAxis = 1, decimal integerHeightScale = 1.0f,
-                         const Vector3& scaling = Vector3(1,1,1));
-
         /// Destructor
         virtual ~HeightFieldShape() override = default;
+
+    public:
 
         /// Deleted copy-constructor
         HeightFieldShape(const HeightFieldShape& shape) = delete;
@@ -172,6 +172,7 @@ class HeightFieldShape : public ConcaveShape {
 
         friend class ConvexTriangleAABBOverlapCallback;
         friend class ConcaveMeshRaycastCallback;
+        friend class PhysicsCommon;
 };
 
 // Return the scaling factor

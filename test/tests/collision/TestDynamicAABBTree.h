@@ -30,6 +30,7 @@
 #include "Test.h"
 #include "collision/broadphase/DynamicAABBTree.h"
 #include "memory/MemoryManager.h"
+#include "engine/PhysicsCommon.h"
 #include "utils/Profiler.h"
 #include <vector>
 
@@ -57,6 +58,28 @@ class DynamicTreeRaycastCallback : public DynamicAABBTreeRaycastCallback {
         }
 };
 
+class DefaultTestTreeAllocator : public MemoryAllocator {
+
+    public:
+
+        /// Destructor
+        virtual ~DefaultTestTreeAllocator() override = default;
+
+        /// Assignment operator
+        DefaultTestTreeAllocator& operator=(DefaultTestTreeAllocator& allocator) = default;
+
+        /// Allocate memory of a given size (in bytes) and return a pointer to the
+        /// allocated memory.
+        virtual void* allocate(size_t size) override {
+
+            return malloc(size);
+        }
+
+        /// Release previously allocated memory.
+        virtual void release(void* pointer, size_t size) override {
+            free(pointer);
+        }
+};
 
 // Class TestDynamicAABBTree
 /**
@@ -68,8 +91,9 @@ class TestDynamicAABBTree : public Test {
 
         // ---------- Atributes ---------- //
 
+        DefaultTestTreeAllocator mAllocator;
+
         DynamicTreeRaycastCallback mRaycastCallback;
-        PoolAllocator mAllocator;
 
     public :
 
@@ -99,7 +123,7 @@ class TestDynamicAABBTree : public Test {
             // ------------ Create tree ---------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
+            DynamicAABBTree tree(mAllocator);
 			
 #ifdef IS_PROFILING_ACTIVE
 			/// Pointer to the profiler
@@ -155,7 +179,7 @@ class TestDynamicAABBTree : public Test {
             // ------------- Create tree ----------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
+            DynamicAABBTree tree(mAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 			/// Pointer to the profiler
@@ -356,7 +380,7 @@ class TestDynamicAABBTree : public Test {
             // ------------- Create tree ----------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
+            DynamicAABBTree tree(mAllocator);
 
 #ifdef IS_PROFILING_ACTIVE
 			/// Pointer to the profiler

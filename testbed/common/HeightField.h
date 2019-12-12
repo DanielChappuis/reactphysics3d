@@ -89,10 +89,10 @@ class HeightField : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HeightField(rp3d::CollisionWorld* world);
+        HeightField(reactphysics3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world);
 
         /// Constructor
-        HeightField(float mass, rp3d::DynamicsWorld* dynamicsWorld);
+        HeightField(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld);
 
         /// Destructor
         ~HeightField();

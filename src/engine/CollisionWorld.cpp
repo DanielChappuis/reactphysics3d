@@ -36,8 +36,8 @@ using namespace std;
 uint CollisionWorld::mNbWorlds = 0;
 
 // Constructor
-CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
-               : mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
+CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler, MemoryAllocator* baseMemoryAllocator)
+               : mMemoryManager(baseMemoryAllocator), mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
                  mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
                  mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
                  mJointsComponents(mMemoryManager.getBaseAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getBaseAllocator()),

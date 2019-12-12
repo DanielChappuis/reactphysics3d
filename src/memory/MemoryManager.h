@@ -47,10 +47,10 @@ class MemoryManager {
     private:
 
        /// Default malloc/free memory allocator
-       static DefaultAllocator mDefaultAllocator;
+       DefaultAllocator mDefaultAllocator;
 
        /// Pointer to the base memory allocator to use
-       static MemoryAllocator* mBaseAllocator;
+       MemoryAllocator* mBaseAllocator;
 
        /// Memory pool allocator
        PoolAllocator mPoolAllocator;
@@ -68,7 +68,7 @@ class MemoryManager {
        };
 
        /// Constructor
-       MemoryManager() = default;
+       MemoryManager(MemoryAllocator* baseAllocator);
 
        /// Destructor
        ~MemoryManager() = default;
@@ -86,10 +86,10 @@ class MemoryManager {
         SingleFrameAllocator& getSingleFrameAllocator();
 
         /// Return the base memory allocator
-        static MemoryAllocator& getBaseAllocator();
+        MemoryAllocator& getBaseAllocator();
 
         /// Set the base memory allocator
-        static void setBaseAllocator(MemoryAllocator* memoryAllocator);
+        void setBaseAllocator(MemoryAllocator* memoryAllocator);
 
         /// Reset the single frame allocator
         void resetFrameAllocator();

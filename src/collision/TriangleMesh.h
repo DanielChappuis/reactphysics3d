@@ -29,12 +29,12 @@
 // Libraries
 #include <cassert>
 #include "containers/List.h"
+#include "memory/MemoryAllocator.h"
 
 namespace reactphysics3d {
 
 // Declarations
 class TriangleVertexArray;
-class MemoryManager;
 
 // Class TriangleMesh
 /**
@@ -51,13 +51,13 @@ class TriangleMesh {
         /// All the triangle arrays of the mesh (one triangle array per part)
         List<TriangleVertexArray*> mTriangleArrays;
 
+        /// Constructor
+        TriangleMesh(reactphysics3d::MemoryAllocator& allocator);
+
     public:
 
-        /// Constructor
-        TriangleMesh();
-
         /// Destructor
-        ~TriangleMesh() = default;
+        ~TriangleMesh();
 
         /// Add a subpart of the mesh
         void addSubpart(TriangleVertexArray* triangleVertexArray);
@@ -67,6 +67,11 @@ class TriangleMesh {
 
         /// Return the number of subparts of the mesh
         uint getNbSubparts() const;
+
+
+        // ---------- Friendship ---------- //
+
+        friend class PhysicsCommon;
 };
 
 // Add a subpart of the mesh

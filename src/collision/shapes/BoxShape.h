@@ -58,6 +58,9 @@ class BoxShape : public ConvexPolyhedronShape {
 
         // -------------------- Methods -------------------- //
 
+        /// Constructor
+        BoxShape(const Vector3& extent, MemoryAllocator& allocator);
+
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
@@ -70,15 +73,12 @@ class BoxShape : public ConvexPolyhedronShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
 
+        /// Destructor
+        virtual ~BoxShape() override = default;
+
     public :
 
         // -------------------- Methods -------------------- //
-
-        /// Constructor
-        BoxShape(const Vector3& extent);
-
-        /// Destructor
-        virtual ~BoxShape() override = default;
 
         /// Deleted copy-constructor
         BoxShape(const BoxShape& shape) = delete;
@@ -124,6 +124,10 @@ class BoxShape : public ConvexPolyhedronShape {
 
         /// Return the string representation of the shape
         virtual std::string to_string() const override;
+
+        // ----- Friendship ----- //
+
+        friend class PhysicsCommon;
 };
 
 // Return the extents of the box
