@@ -88,9 +88,6 @@ class MemoryManager {
         /// Return the base memory allocator
         MemoryAllocator& getBaseAllocator();
 
-        /// Set the base memory allocator
-        void setBaseAllocator(MemoryAllocator* memoryAllocator);
-
         /// Reset the single frame allocator
         void resetFrameAllocator();
 };
@@ -130,11 +127,6 @@ inline SingleFrameAllocator& MemoryManager::getSingleFrameAllocator() {
 // Return the base memory allocator
 inline MemoryAllocator& MemoryManager::getBaseAllocator() {
     return *mBaseAllocator;
-}
-
-// Set the base memory allocator
-inline void MemoryManager::setBaseAllocator(MemoryAllocator* baseAllocator) {
-    mBaseAllocator = baseAllocator;
 }
 
 // Reset the single frame allocator
