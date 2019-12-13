@@ -27,6 +27,7 @@
  - The EventListener::beginInternalTick() method has been removed (because internal ticks do not exist anymore).
  - The EventListener::endInternalTick() method has been removed (because internal ticks do not exist anymore).
  - The RigidBody::getJointsList() method has been removed.
+ - It is not possible anymore to set custom pool and stack frame allocators. Only the base allocator can be customized when creating a PhysicsCommon instance.
 
 ## Version 0.7.1 (July 01, 2019)
 
