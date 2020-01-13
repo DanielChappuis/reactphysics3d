@@ -382,6 +382,9 @@ class ContactSolverSystem {
         /// Solve the contacts
         void solve();
 
+        /// Release allocated memory
+        void reset();
+
         /// Return true if the split impulses position correction technique is used for contacts
         bool isSplitImpulseActive() const;
 

@@ -29,6 +29,7 @@
 // Libraries
 #include "memory/DefaultAllocator.h"
 #include "memory/PoolAllocator.h"
+#include "memory/HeapAllocator.h"
 #include "memory/SingleFrameAllocator.h"
 
 /// Namespace ReactPhysics3D
@@ -40,7 +41,11 @@ class MemoryAllocator;
 // Class MemoryManager
 /**
  * The memory manager is used to store the different memory allocators that are used
- * by the library.
+ * by the library. The base allocator is either the default allocator (malloc/free) of a custom
+ * allocated specified by the user. The HeapAllocator is used on top of the base allocator.
+ * The SingleFrameAllocator is used for memory that is allocated only during a frame and the PoolAllocator
+ * is used to allocated objects of small size. Both SingleFrameAllocator and PoolAllocator will fall back to
+ * HeapAllocator if an allocation request cannot be fulfilled.
  */
 class MemoryManager {
 
@@ -51,6 +56,9 @@ class MemoryManager {
 
        /// Pointer to the base memory allocator to use
        MemoryAllocator* mBaseAllocator;
+
+       /// Memory heap allocator
+       HeapAllocator mHeapAllocator;
 
        /// Memory pool allocator
        PoolAllocator mPoolAllocator;

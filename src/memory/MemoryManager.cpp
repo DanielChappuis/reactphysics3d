@@ -31,7 +31,8 @@ using namespace reactphysics3d;
 // Constructor
 MemoryManager::MemoryManager(MemoryAllocator* baseAllocator) :
                mBaseAllocator(baseAllocator == nullptr ? &mDefaultAllocator : baseAllocator),
-               mPoolAllocator(baseAllocator == nullptr ? mDefaultAllocator : *baseAllocator),
-               mSingleFrameAllocator(baseAllocator == nullptr ? mDefaultAllocator : *baseAllocator) {
+               mHeapAllocator(*mBaseAllocator),
+               mPoolAllocator(mHeapAllocator),
+               mSingleFrameAllocator(mHeapAllocator) {
 
 }

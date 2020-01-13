@@ -180,6 +180,9 @@ void DynamicsWorld::solveContactsAndConstraints(decimal timeStep) {
     }
 
     mContactSolverSystem.storeImpulses();
+
+    // Reset the contact solver
+    mContactSolverSystem.reset();
 }
 
 // Solve the position error correction of the constraints

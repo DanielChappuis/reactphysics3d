@@ -99,6 +99,13 @@ void ContactSolverSystem::init(List<ContactManifold>* contactManifolds, List<Con
     warmStart();
 }
 
+// Release allocated memory
+void ContactSolverSystem::reset() {
+
+    if (mAllContactPoints->size() > 0) mMemoryManager.release(MemoryManager::AllocationType::Frame, mContactPoints, sizeof(ContactPointSolver) * mAllContactPoints->size());
+    if (mAllContactManifolds->size() > 0) mMemoryManager.release(MemoryManager::AllocationType::Frame, mContactConstraints, sizeof(ContactManifoldSolver) * mAllContactManifolds->size());
+}
+
 // Initialize the constraint solver for a given island
 void ContactSolverSystem::initializeForIsland(uint islandIndex) {
 
