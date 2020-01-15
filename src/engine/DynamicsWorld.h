@@ -101,7 +101,7 @@ class DynamicsWorld : public CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsWorld(const Vector3& mGravity, const WorldSettings& worldSettings = WorldSettings(),
+        DynamicsWorld(const Vector3& mGravity, MemoryManager& memoryManager, const WorldSettings& worldSettings = WorldSettings(),
                       Logger* logger = nullptr, Profiler* profiler = nullptr);
 
         /// Solve the contacts and constraints

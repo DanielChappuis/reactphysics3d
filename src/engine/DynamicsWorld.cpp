@@ -47,8 +47,8 @@ using namespace std;
  * @param logger Pointer to the logger
  * @param profiler Pointer to the profiler
  */
-DynamicsWorld::DynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
-              : CollisionWorld(worldSettings, logger, profiler),
+DynamicsWorld::DynamicsWorld(const Vector3& gravity, MemoryManager& memoryManager, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
+              : CollisionWorld(memoryManager, worldSettings, logger, profiler),
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
                 mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mProxyShapesComponents, mConfig),

@@ -72,11 +72,12 @@ class MemoryManager {
        enum class AllocationType {
            Base, 	// Base memory allocator
            Pool,	// Memory pool allocator
+           Heap,	// Memory pool allocator
            Frame,   // Single frame memory allocator
        };
 
        /// Constructor
-       MemoryManager(MemoryAllocator* baseAllocator);
+       MemoryManager(MemoryAllocator* baseAllocator, size_t initAllocatedMemory = 0);
 
        /// Destructor
        ~MemoryManager() = default;
@@ -93,8 +94,8 @@ class MemoryManager {
         /// Return the single frame stack allocator
         SingleFrameAllocator& getSingleFrameAllocator();
 
-        /// Return the base memory allocator
-        MemoryAllocator& getBaseAllocator();
+        /// Return the heap allocator
+        HeapAllocator& getHeapAllocator();
 
         /// Reset the single frame allocator
         void resetFrameAllocator();
@@ -106,6 +107,7 @@ inline void* MemoryManager::allocate(AllocationType allocationType, size_t size)
     switch (allocationType) {
        case AllocationType::Base: return mBaseAllocator->allocate(size);
        case AllocationType::Pool: return mPoolAllocator.allocate(size);
+       case AllocationType::Heap: return mHeapAllocator.allocate(size);
        case AllocationType::Frame: return mSingleFrameAllocator.allocate(size);
     }
 
@@ -118,6 +120,7 @@ inline void MemoryManager::release(AllocationType allocationType, void* pointer,
     switch (allocationType) {
        case AllocationType::Base: mBaseAllocator->release(pointer, size); break;
        case AllocationType::Pool: mPoolAllocator.release(pointer, size); break;
+       case AllocationType::Heap: mHeapAllocator.release(pointer, size); break;
        case AllocationType::Frame: mSingleFrameAllocator.release(pointer, size); break;
     }
 }
@@ -132,9 +135,9 @@ inline SingleFrameAllocator& MemoryManager::getSingleFrameAllocator() {
    return mSingleFrameAllocator;
 }
 
-// Return the base memory allocator
-inline MemoryAllocator& MemoryManager::getBaseAllocator() {
-    return *mBaseAllocator;
+// Return the heap allocator
+inline HeapAllocator& MemoryManager::getHeapAllocator() {
+   return mHeapAllocator;
 }
 
 // Reset the single frame allocator

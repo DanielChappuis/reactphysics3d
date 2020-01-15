@@ -36,15 +36,15 @@ using namespace std;
 uint CollisionWorld::mNbWorlds = 0;
 
 // Constructor
-CollisionWorld::CollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler, MemoryAllocator* baseMemoryAllocator)
-               : mMemoryManager(baseMemoryAllocator), mConfig(worldSettings), mEntityManager(mMemoryManager.getPoolAllocator()),
-                 mCollisionBodyComponents(mMemoryManager.getBaseAllocator()), mRigidBodyComponents(mMemoryManager.getBaseAllocator()),
-                 mTransformComponents(mMemoryManager.getBaseAllocator()), mProxyShapesComponents(mMemoryManager.getBaseAllocator()),
-                 mJointsComponents(mMemoryManager.getBaseAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getBaseAllocator()),
-                 mFixedJointsComponents(mMemoryManager.getBaseAllocator()), mHingeJointsComponents(mMemoryManager.getBaseAllocator()),
-                 mSliderJointsComponents(mMemoryManager.getBaseAllocator()),
+CollisionWorld::CollisionWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
+               : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()),
+                 mCollisionBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
+                 mTransformComponents(mMemoryManager.getHeapAllocator()), mProxyShapesComponents(mMemoryManager.getHeapAllocator()),
+                 mJointsComponents(mMemoryManager.getHeapAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getHeapAllocator()),
+                 mFixedJointsComponents(mMemoryManager.getHeapAllocator()), mHingeJointsComponents(mMemoryManager.getHeapAllocator()),
+                 mSliderJointsComponents(mMemoryManager.getHeapAllocator()),
                  mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents, mMemoryManager),
-                 mBodies(mMemoryManager.getPoolAllocator()),  mEventListener(nullptr),
+                 mBodies(mMemoryManager.getHeapAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {
 

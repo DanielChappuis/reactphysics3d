@@ -181,9 +181,9 @@ class TestPointInside : public Test {
             mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape);
             mPhysicsCommon.destroyCollisionWorld(mWorld);
+            mPhysicsCommon.destroyPolyhedronMesh(mConvexMeshPolyhedronMesh);
             delete[] mConvexMeshPolygonFaces;
             delete mConvexMeshPolygonVertexArray;
-            delete mConvexMeshPolyhedronMesh;
         }
 
         /// Run the tests

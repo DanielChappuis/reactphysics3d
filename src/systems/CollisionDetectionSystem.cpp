@@ -61,7 +61,6 @@ CollisionDetectionSystem::CollisionDetectionSystem(CollisionWorld* world, ProxyS
                      mBroadPhaseSystem(*this, mProxyShapesComponents, transformComponents, rigidBodyComponents),
                      mMapBroadPhaseIdToProxyShapeEntity(memoryManager.getPoolAllocator()),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator(), mOverlappingPairs), mPotentialContactPoints(mMemoryManager.getSingleFrameAllocator()),
-                     // TODO : We should probably use single frame allocator for mPotentialContactPoints, mPotentialContactManifolds,  mMapPairIdToOverlappingPairContacts
                      mPotentialContactManifolds(mMemoryManager.getSingleFrameAllocator()), mContactPairs1(mMemoryManager.getPoolAllocator()),
                      mContactPairs2(mMemoryManager.getPoolAllocator()), mPreviousContactPairs(&mContactPairs1), mCurrentContactPairs(&mContactPairs2),
                      mMapPairIdToContactPairIndex1(mMemoryManager.getPoolAllocator()), mMapPairIdToContactPairIndex2(mMemoryManager.getPoolAllocator()),
@@ -582,7 +581,7 @@ bool CollisionDetectionSystem::computeNarrowPhaseCollisionSnapshot(NarrowPhaseIn
 
     RP3D_PROFILE("CollisionDetectionSystem::computeNarrowPhaseCollisionSnapshot()", mProfiler);
 
-    MemoryAllocator& allocator = mMemoryManager.getPoolAllocator();
+    MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
 
     // Test the narrow-phase collision detection on the batches to be tested
     bool collisionFound = testNarrowPhaseCollision(narrowPhaseInput, true, false, allocator);
@@ -928,8 +927,6 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
             // Add the contact point to the list of potential contact points
             const uint contactPointIndex = static_cast<uint>(potentialContactPoints.size());
 
-            // TODO : We should probably use single frame allocator here for potentialContactPoints
-            //        If so, do not forget to call potentialContactPoints.clear(true) at the end of frame
             potentialContactPoints.add(contactPoint);
 
             bool similarManifoldFound = false;
@@ -975,8 +972,6 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
             if (!similarManifoldFound) {
 
                 // Create a new contact manifold for the overlapping pair
-                // TODO : We should probably use single frame allocator here
-                //        If so, do not forget to call potentialContactPoints.clear(true) at the end of frame
                 ContactManifoldInfo contactManifoldInfo(pairId, mMemoryManager.getPoolAllocator());
 
                 // Add the contact point to the manifold
@@ -993,11 +988,10 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
                     assert(!mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) || !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity));
 
-                    // TODO : We should probably use a single frame allocator here
                     const uint newContactPairIndex = contactPairs->size();
                     ContactPair overlappingPairContact(pairId, body1Entity, body2Entity,
                                                        proxyShape1Entity, proxyShape2Entity,
-                                                       newContactPairIndex, mMemoryManager.getPoolAllocator());
+                                                       newContactPairIndex, mMemoryManager.getHeapAllocator());
                     contactPairs->add(overlappingPairContact);
                     pairContact = &((*contactPairs)[newContactPairIndex]);
                     mapPairIdToContactPairIndex->add(Pair<uint64, uint>(pairId, newContactPairIndex));

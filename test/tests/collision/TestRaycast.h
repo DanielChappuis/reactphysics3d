@@ -279,6 +279,7 @@ class TestRaycast : public Test {
                                                   vertexType, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
             // Add the triangle vertex array of the subpart to the triangle mesh
+            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh();
             mConcaveTriangleMesh->addSubpart(mConcaveMeshVertexArray);
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshProxyShape = mConcaveMeshBody->addCollisionShape(mConcaveMeshShape, mShapeTransform);
@@ -314,7 +315,7 @@ class TestRaycast : public Test {
             delete mConcaveMeshVertexArray;
 
             delete mPolygonVertexArray;
-            delete mPolyhedronMesh;
+            mPhysicsCommon.destroyPolyhedronMesh(mPolyhedronMesh);
         }
 
         /// Run the tests

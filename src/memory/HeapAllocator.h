@@ -100,9 +100,6 @@ class HeapAllocator : public MemoryAllocator {
         /// Pointer to a cached free memory unit
         MemoryUnitHeader* mCachedFreeUnit;
 
-        // TODO : REMOVE THIS
-        Map<size_t, int> mDebug;
-
 #ifndef NDEBUG
         /// This variable is incremented by one when the allocate() method has been
         /// called and decreased by one when the release() method has been called.
@@ -125,7 +122,7 @@ class HeapAllocator : public MemoryAllocator {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HeapAllocator(MemoryAllocator& baseAllocator);
+        HeapAllocator(MemoryAllocator& baseAllocator, size_t initAllocatedMemory = 0);
 
         /// Destructor
         virtual ~HeapAllocator() override;

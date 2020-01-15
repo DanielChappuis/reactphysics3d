@@ -73,7 +73,7 @@ class CollisionWorld {
         // -------------------- Attributes -------------------- //
 
         /// Memory manager
-        MemoryManager mMemoryManager;
+        MemoryManager& mMemoryManager;
 
         /// Configuration of the physics world
         WorldSettings mConfig;
@@ -144,8 +144,8 @@ class CollisionWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionWorld(const WorldSettings& worldSettings = WorldSettings(), Logger* logger = nullptr,
-                       Profiler* profiler = nullptr, MemoryAllocator* baseMemoryAllocator = nullptr);
+        CollisionWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings = WorldSettings(), Logger* logger = nullptr,
+                       Profiler* profiler = nullptr);
 
         /// Notify the world if a body is disabled (slepping or inactive) or not
         void setBodyDisabled(Entity entity, bool isDisabled);

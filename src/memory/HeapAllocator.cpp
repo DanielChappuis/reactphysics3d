@@ -32,22 +32,18 @@
 
 using namespace reactphysics3d;
 
-size_t HeapAllocator::INIT_ALLOCATED_SIZE = 1024;
+size_t HeapAllocator::INIT_ALLOCATED_SIZE = 5 * 1048576;    // 5 Mb
 
 // Constructor
-HeapAllocator::HeapAllocator(MemoryAllocator& baseAllocator)
+HeapAllocator::HeapAllocator(MemoryAllocator& baseAllocator, size_t initAllocatedMemory)
               : mBaseAllocator(baseAllocator), mAllocatedMemory(0), mMemoryUnits(nullptr), mCachedFreeUnit(nullptr),
-                mNbTimesAllocateMethodCalled(0), mDebug(baseAllocator) {
+                mNbTimesAllocateMethodCalled(0) {
 
-    reserve(INIT_ALLOCATED_SIZE);
+    reserve(initAllocatedMemory == 0 ? INIT_ALLOCATED_SIZE : initAllocatedMemory);
 }
 
 // Destructor
 HeapAllocator::~HeapAllocator() {
-
-    for (auto it = mDebug.begin(); it != mDebug.end(); ++it) {
-        std::cout << "Size: " << (*it).first << " -> " << (*it).second << std::endl;
-    }
 
 #ifndef NDEBUG
         // Check that the allocate() and release() methods have been called the same
@@ -112,13 +108,6 @@ void* HeapAllocator::allocate(size_t size) {
 
     // We cannot allocate zero bytes
     if (size == 0) return nullptr;
-
-    if (mDebug.containsKey(size)) {
-       mDebug[size]++;
-    }
-    else {
-       mDebug.add(Pair<size_t, int>(size, 1));
-    }
 
 #ifndef NDEBUG
         mNbTimesAllocateMethodCalled++;
@@ -188,11 +177,6 @@ void HeapAllocator::release(void* pointer, size_t size) {
 
     // Cannot release a 0-byte allocated memory
     if (size == 0) return;
-
-    mDebug[size]--;
-    if (mDebug[size] == 0) {
-        mDebug.remove(size);
-    }
 
 #ifndef NDEBUG
         mNbTimesAllocateMethodCalled--;

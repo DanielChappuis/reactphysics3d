@@ -30,13 +30,12 @@ using namespace reactphysics3d;
 
 /// Constructor
 PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
-                // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
-              : mMemoryManager(baseMemoryAllocator), mCollisionWorlds(mMemoryManager.getPoolAllocator()),
-                mDynamicsWorlds(mMemoryManager.getPoolAllocator()), mSphereShapes(mMemoryManager.getPoolAllocator()),
-                mBoxShapes(mMemoryManager.getPoolAllocator()), mCapsuleShapes(mMemoryManager.getPoolAllocator()),
-                mConvexMeshShapes(mMemoryManager.getPoolAllocator()), mConcaveMeshShapes(mMemoryManager.getPoolAllocator()),
-                mHeightFieldShapes(mMemoryManager.getPoolAllocator()), mPolyhedronMeshes(mMemoryManager.getPoolAllocator()),
-                mTriangleMeshes(mMemoryManager.getPoolAllocator()) {
+              : mMemoryManager(baseMemoryAllocator), mCollisionWorlds(mMemoryManager.getHeapAllocator()),
+                mDynamicsWorlds(mMemoryManager.getHeapAllocator()), mSphereShapes(mMemoryManager.getHeapAllocator()),
+                mBoxShapes(mMemoryManager.getHeapAllocator()), mCapsuleShapes(mMemoryManager.getHeapAllocator()),
+                mConvexMeshShapes(mMemoryManager.getHeapAllocator()), mConcaveMeshShapes(mMemoryManager.getHeapAllocator()),
+                mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mPolyhedronMeshes(mMemoryManager.getHeapAllocator()),
+                mTriangleMeshes(mMemoryManager.getHeapAllocator()) {
 
 }
 
@@ -104,8 +103,7 @@ void PhysicsCommon::release() {
 // Create and return an instance of CollisionWorld
 CollisionWorld* PhysicsCommon::createCollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler) {
 
-    // TODO : Allocate in heap allocator here instead of pool
-    CollisionWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(CollisionWorld))) CollisionWorld(worldSettings, logger, profiler);
+    CollisionWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(CollisionWorld))) CollisionWorld(mMemoryManager, worldSettings, logger, profiler);
     mCollisionWorlds.add(world);
 
     return world;
@@ -118,8 +116,7 @@ void PhysicsCommon::destroyCollisionWorld(CollisionWorld* world) {
    world->~CollisionWorld();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
-   mMemoryManager.release(MemoryManager::AllocationType::Pool, world, sizeof(CollisionWorld));
+   mMemoryManager.release(MemoryManager::AllocationType::Heap, world, sizeof(CollisionWorld));
 
    mCollisionWorlds.remove(world);
 }
@@ -128,8 +125,7 @@ void PhysicsCommon::destroyCollisionWorld(CollisionWorld* world) {
 DynamicsWorld* PhysicsCommon::createDynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings,
                                                   Logger* logger, Profiler* profiler) {
 
-    // TODO : Allocate in heap allocator here instead of pool
-    DynamicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(DynamicsWorld))) DynamicsWorld(gravity, worldSettings, logger, profiler);
+    DynamicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(DynamicsWorld))) DynamicsWorld(gravity, mMemoryManager, worldSettings, logger, profiler);
 
     mDynamicsWorlds.add(world);
 
@@ -143,8 +139,7 @@ DynamicsWorld* PhysicsCommon::destroyDynamicsWorld(DynamicsWorld* world) {
    world->~DynamicsWorld();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
-   mMemoryManager.release(MemoryManager::AllocationType::Pool, world, sizeof(DynamicsWorld));
+   mMemoryManager.release(MemoryManager::AllocationType::Heap, world, sizeof(DynamicsWorld));
 
    mDynamicsWorlds.remove(world);
 }
@@ -165,7 +160,6 @@ void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
    sphereShape->~SphereShape();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
    mMemoryManager.release(MemoryManager::AllocationType::Pool, sphereShape, sizeof(SphereShape));
 
    mSphereShapes.remove(sphereShape);
@@ -174,8 +168,7 @@ void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
 // Create and return a box collision shape
 BoxShape* PhysicsCommon::createBoxShape(const Vector3& extent) {
 
-    // TODO : Pass heap allocator here in parameter
-    BoxShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(BoxShape))) BoxShape(extent, mMemoryManager.getPoolAllocator());
+    BoxShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(BoxShape))) BoxShape(extent, mMemoryManager.getHeapAllocator());
 
     mBoxShapes.add(shape);
 
@@ -189,7 +182,6 @@ void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
    boxShape->~BoxShape();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
    mMemoryManager.release(MemoryManager::AllocationType::Pool, boxShape, sizeof(BoxShape));
 
    mBoxShapes.remove(boxShape);
@@ -212,7 +204,6 @@ void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
    capsuleShape->~CapsuleShape();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
    mMemoryManager.release(MemoryManager::AllocationType::Pool, capsuleShape, sizeof(CapsuleShape));
 
    mCapsuleShapes.remove(capsuleShape);
@@ -235,7 +226,6 @@ void PhysicsCommon::destroyConvexMeshShape(ConvexMeshShape* convexMeshShape) {
    convexMeshShape->~ConvexMeshShape();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
    mMemoryManager.release(MemoryManager::AllocationType::Pool, convexMeshShape, sizeof(ConvexMeshShape));
 
    mConvexMeshShapes.remove(convexMeshShape);
@@ -261,7 +251,6 @@ void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) 
    heightFieldShape->~HeightFieldShape();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
    mMemoryManager.release(MemoryManager::AllocationType::Pool, heightFieldShape, sizeof(HeightFieldShape));
 
    mHeightFieldShapes.remove(heightFieldShape);
@@ -270,8 +259,7 @@ void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) 
 // Create and return a concave mesh shape
 ConcaveMeshShape* PhysicsCommon::createConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling) {
 
-    // TODO : Pass heap allocator here in parameter
-    ConcaveMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConcaveMeshShape))) ConcaveMeshShape(triangleMesh, mMemoryManager.getPoolAllocator(), scaling);
+    ConcaveMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConcaveMeshShape))) ConcaveMeshShape(triangleMesh, mMemoryManager.getHeapAllocator(), scaling);
 
     mConcaveMeshShapes.add(shape);
 
@@ -285,7 +273,6 @@ void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) 
    concaveMeshShape->~ConcaveMeshShape();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
    mMemoryManager.release(MemoryManager::AllocationType::Pool, concaveMeshShape, sizeof(ConcaveMeshShape));
 
    mConcaveMeshShapes.remove(concaveMeshShape);
@@ -294,8 +281,7 @@ void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) 
 // Create a polyhedron mesh
 PolyhedronMesh* PhysicsCommon::createPolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
 
-    // TODO : Pass heap allocator here in parameter
-    PolyhedronMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(PolyhedronMesh))) PolyhedronMesh(polygonVertexArray, mMemoryManager.getPoolAllocator());
+    PolyhedronMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(PolyhedronMesh))) PolyhedronMesh(polygonVertexArray, mMemoryManager.getHeapAllocator());
 
     mPolyhedronMeshes.add(mesh);
 
@@ -309,7 +295,6 @@ void PhysicsCommon::destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
    polyhedronMesh->~PolyhedronMesh();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
    mMemoryManager.release(MemoryManager::AllocationType::Pool, polyhedronMesh, sizeof(PolyhedronMesh));
 
    mPolyhedronMeshes.remove(polyhedronMesh);
@@ -318,8 +303,7 @@ void PhysicsCommon::destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
 // Create a triangle mesh
 TriangleMesh* PhysicsCommon::createTriangleMesh() {
 
-    // TODO : Pass heap allocator here in parameter
-    TriangleMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(TriangleMesh))) TriangleMesh(mMemoryManager.getPoolAllocator());
+    TriangleMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(TriangleMesh))) TriangleMesh(mMemoryManager.getHeapAllocator());
 
     mTriangleMeshes.add(mesh);
 
@@ -333,7 +317,6 @@ void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
    triangleMesh->~TriangleMesh();
 
    // Release allocated memory
-   // TODO : Use Heap allocator for internal Sets<> here instead of Pool allocator
    mMemoryManager.release(MemoryManager::AllocationType::Pool, triangleMesh, sizeof(TriangleMesh));
 
    mTriangleMeshes.remove(triangleMesh);
