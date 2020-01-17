@@ -61,8 +61,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mAllShapes.push_back(mSphere1);
 
     // Set the color
-    mSphere1->setColor(mGreyColorDemo);
-    mSphere1->setSleepingColor(mRedColorDemo);
+    mSphere1->setColor(mObjectColorDemo);
+    mSphere1->setSleepingColor(mSleepingColorDemo);
     //mSphere1->setScaling(0.5f);
     mPhysicsObjects.push_back(mSphere1);
 
@@ -73,8 +73,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mAllShapes.push_back(mSphere2);
 
     // Set the color
-    mSphere2->setColor(mGreyColorDemo);
-    mSphere2->setSleepingColor(mRedColorDemo);
+    mSphere2->setColor(mObjectColorDemo);
+    mSphere2->setSleepingColor(mSleepingColorDemo);
     mPhysicsObjects.push_back(mSphere2);
 
 
@@ -85,8 +85,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mAllShapes.push_back(mCapsule1);
 
     // Set the color
-    mCapsule1->setColor(mGreyColorDemo);
-    mCapsule1->setSleepingColor(mRedColorDemo);
+    mCapsule1->setColor(mObjectColorDemo);
+    mCapsule1->setSleepingColor(mSleepingColorDemo);
     mPhysicsObjects.push_back(mCapsule1);
 
     // ---------- Capsule 2 ---------- //
@@ -96,8 +96,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mAllShapes.push_back(mCapsule2);
 
     // Set the color
-    mCapsule2->setColor(mGreyColorDemo);
-    mCapsule2->setSleepingColor(mRedColorDemo);
+    mCapsule2->setColor(mObjectColorDemo);
+    mCapsule2->setSleepingColor(mSleepingColorDemo);
     mPhysicsObjects.push_back(mCapsule2);
 
     // ---------- Concave Mesh ---------- //
@@ -107,8 +107,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mAllShapes.push_back(mConcaveMesh);
 
     // Set the color
-    mConcaveMesh->setColor(mGreyColorDemo);
-    mConcaveMesh->setSleepingColor(mRedColorDemo);
+    mConcaveMesh->setColor(mObjectColorDemo);
+    mConcaveMesh->setSleepingColor(mSleepingColorDemo);
     mPhysicsObjects.push_back(mConcaveMesh);
 
     // ---------- Box 1 ---------- //
@@ -118,8 +118,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mAllShapes.push_back(mBox1);
 
     // Set the color
-    mBox1->setColor(mGreyColorDemo);
-    mBox1->setSleepingColor(mRedColorDemo);
+    mBox1->setColor(mObjectColorDemo);
+    mBox1->setSleepingColor(mSleepingColorDemo);
     mPhysicsObjects.push_back(mBox1);
 
     // ---------- Box 2 ---------- //
@@ -129,8 +129,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mAllShapes.push_back(mBox2);
 
     // Set the color
-    mBox2->setColor(mGreyColorDemo);
-    mBox2->setSleepingColor(mRedColorDemo);
+    mBox2->setColor(mObjectColorDemo);
+    mBox2->setSleepingColor(mSleepingColorDemo);
     mPhysicsObjects.push_back(mBox2);
 
     // ---------- Convex Mesh ---------- //
@@ -140,8 +140,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mAllShapes.push_back(mConvexMesh);
 
     // Set the color
-    mConvexMesh->setColor(mGreyColorDemo);
-    mConvexMesh->setSleepingColor(mRedColorDemo);
+    mConvexMesh->setColor(mObjectColorDemo);
+    mConvexMesh->setSleepingColor(mSleepingColorDemo);
     mPhysicsObjects.push_back(mConvexMesh);
 
     // ---------- Heightfield ---------- //
@@ -150,11 +150,11 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mHeightField = new HeightField(mPhysicsCommon, mPhysicsWorld);
 
     // Set the color
-    mHeightField->setColor(mGreyColorDemo);
-    mHeightField->setSleepingColor(mRedColorDemo);
+    mHeightField->setColor(mObjectColorDemo);
+    mHeightField->setSleepingColor(mSleepingColorDemo);
 	mPhysicsObjects.push_back(mHeightField);
 
-    mAllShapes[mSelectedShapeIndex]->setColor(mBlueColorDemo);
+    mAllShapes[mSelectedShapeIndex]->setColor(mObjectColorDemo);
 }
 
 // Reset the scene
@@ -194,19 +194,19 @@ CollisionDetectionScene::~CollisionDetectionScene() {
     delete mCapsule2;
 
     mPhysicsWorld->destroyCollisionBody(mBox1->getCollisionBody());
-	delete mBox1;
+    delete mBox1;
 
     mPhysicsWorld->destroyCollisionBody(mBox2->getCollisionBody());
-	delete mBox2;
+    delete mBox2;
 
     mPhysicsWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
-	delete mConvexMesh;
+    delete mConvexMesh;
 
     mPhysicsWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
-	delete mConcaveMesh;
+    delete mConcaveMesh;
 
     mPhysicsWorld->destroyCollisionBody(mHeightField->getCollisionBody());
-	delete mHeightField;
+    delete mHeightField;
 
     // Destroy the static data for the visual contact points
     VisualContactPoint::destroyStaticData();
@@ -233,8 +233,8 @@ void CollisionDetectionScene::selectNextShape() {
         mSelectedShapeIndex = 0;
     }
 
-    mAllShapes[previousIndex]->setColor(mGreyColorDemo);
-    mAllShapes[mSelectedShapeIndex]->setColor(mBlueColorDemo);
+    mAllShapes[previousIndex]->setColor(mObjectColorDemo);
+    mAllShapes[mSelectedShapeIndex]->setColor(mSelectedObjectColorDemo);
 }
 
 // Called when a keyboard event occurs

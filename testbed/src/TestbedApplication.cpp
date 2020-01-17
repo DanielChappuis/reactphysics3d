@@ -54,13 +54,13 @@ using namespace pilescene;
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
 
 // Constructor
-TestbedApplication::TestbedApplication(bool isFullscreen)
-                   : Screen(Vector2i(1280, 800), "Testbed ReactPhysics3D", true, isFullscreen, 8, 8, 24, 8, 8),
+TestbedApplication::TestbedApplication(bool isFullscreen, int windowWidth, int windowHeight)
+                   : Screen(Vector2i(windowWidth, windowHeight), "Testbed ReactPhysics3D", true, isFullscreen, 8, 8, 24, 8, 8),
                      mIsInitialized(false), mGui(this), mCurrentScene(nullptr),
                      mEngineSettings(EngineSettings::defaultSettings()),
                      mFPS(0), mNbFrames(0), mPreviousTime(0),
                      mLastTimeComputedFPS(0), mFrameTime(0), mTotalPhysicsTime(0), mPhysicsStepTime(0),
-                     mWidth(1280), mHeight(720),
+                     mWidth(windowWidth), mHeight(windowHeight),
                      mSinglePhysicsStepEnabled(false), mSinglePhysicsStepDone(false),
                      mWindowToFramebufferRatio(Vector2(1, 1)), mIsShadowMappingEnabled(true),
                      mIsContactPointsDisplayed(false), mIsAABBsDisplayed(false), mIsWireframeEnabled(false),
@@ -130,7 +130,6 @@ void TestbedApplication::createScenes() {
     // Pile scene
     PileScene* pileScene = new PileScene("Pile", mEngineSettings);
     mScenes.push_back(pileScene);
-
     assert(mScenes.size() > 0);
 
     const int firstSceneIndex = 0;
@@ -145,7 +144,7 @@ void TestbedApplication::destroyScenes() {
         delete mScenes[i];
     }
 
-    mCurrentScene = nullptr;
+    mCurrentScene = NULL;
 }
 
 void TestbedApplication::updateSinglePhysicsStep() {

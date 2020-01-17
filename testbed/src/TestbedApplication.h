@@ -167,7 +167,7 @@ class TestbedApplication : public Screen {
         // -------------------- Methods -------------------- //
 
         /// Private constructor (for the singleton class)
-        TestbedApplication(bool isFullscreen);
+        TestbedApplication(bool isFullscreen, int windowWidth, int windowHeight);
 
         /// Destructor
         virtual ~TestbedApplication() override;

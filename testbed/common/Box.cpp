@@ -84,12 +84,6 @@ Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::Physi
          const std::string& meshFolderPath)
     : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
 
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cube.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
-
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
     mSize[1] = size.y * 0.5f;
@@ -201,8 +195,7 @@ void Box::render(openglframework::Shader& shader, const openglframework::Matrix4
 }
 
 // Create the Vertex Buffer Objects used to render to box with OpenGL.
-/// We create two VBOs (one for vertices and one for indices) to render all the boxes
-/// in the simulation.
+/// We create two VBOs (one for vertices and one for indices) to render the box
 void Box::createVBOAndVAO() {
 
     // Create the VBO for the vertices data
@@ -228,7 +221,7 @@ void Box::createVBOAndVAO() {
         mVBOTextureCoords.unbind();
     }
 
-    // Create th VBO for the indices data
+    // Create the VBO for the indices data
     mVBOIndices.create();
     mVBOIndices.bind();
     size_t sizeIndices = mIndices[0].size() * sizeof(unsigned int);

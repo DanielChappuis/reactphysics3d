@@ -57,8 +57,8 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
         Dumbbell* dumbbell = new Dumbbell(mPhysicsCommon, getDynamicsWorld(), meshFolderPath);
 
         // Set the box color
-        dumbbell->setColor(mDemoColors[i % mNbDemoColors]);
-        dumbbell->setSleepingColor(mRedColorDemo);
+        dumbbell->setColor(mObjectColorDemo);
+        dumbbell->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
@@ -76,8 +76,8 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
         Box* box = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
 
         // Set the box color
-        box->setColor(mDemoColors[i % mNbDemoColors]);
-        box->setSleepingColor(mRedColorDemo);
+        box->setColor(mObjectColorDemo);
+        box->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = box->getRigidBody()->getMaterial();
@@ -98,8 +98,8 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
         sphere->getRigidBody()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
 
         // Set the box color
-        sphere->setColor(mDemoColors[i % mNbDemoColors]);
-        sphere->setSleepingColor(mRedColorDemo);
+        sphere->setColor(mObjectColorDemo);
+        sphere->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = sphere->getRigidBody()->getMaterial();
@@ -120,8 +120,8 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
         capsule->getRigidBody()->getMaterial().setRollingResistance(rp3d::decimal(0.08f));
 
         // Set the box color
-        capsule->setColor(mDemoColors[i % mNbDemoColors]);
-        capsule->setSleepingColor(mRedColorDemo);
+        capsule->setColor(mObjectColorDemo);
+        capsule->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = capsule->getRigidBody()->getMaterial();
@@ -139,8 +139,8 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
         ConvexMesh* mesh = new ConvexMesh(MESH_MASS, mPhysicsCommon, getDynamicsWorld(), meshFolderPath + "convexmesh.obj");
 
         // Set the box color
-        mesh->setColor(mDemoColors[i % mNbDemoColors]);
-        mesh->setSleepingColor(mRedColorDemo);
+        mesh->setColor(mObjectColorDemo);
+        mesh->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = mesh->getRigidBody()->getMaterial();
@@ -163,8 +163,8 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
     mSandbox->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Set the box color
-    mSandbox->setColor(mGreyColorDemo);
-    mSandbox->setSleepingColor(mGreyColorDemo);
+    mSandbox->setColor(mFloorColorDemo);
+    mSandbox->setSleepingColor(mFloorColorDemo);
 
     mPhysicsObjects.push_back(mSandbox);
 

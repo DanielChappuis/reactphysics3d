@@ -60,8 +60,8 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
         Dumbbell* dumbbell = new Dumbbell(mPhysicsCommon, getDynamicsWorld(), meshFolderPath);
 
         // Set the box color
-        dumbbell->setColor(mDemoColors[i % mNbDemoColors]);
-        dumbbell->setSleepingColor(mRedColorDemo);
+        dumbbell->setColor(mObjectColorDemo);
+        dumbbell->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
@@ -79,8 +79,8 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
         Box* box = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
 
         // Set the box color
-        box->setColor(mDemoColors[i % mNbDemoColors]);
-        box->setSleepingColor(mRedColorDemo);
+        box->setColor(mObjectColorDemo);
+        box->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = box->getRigidBody()->getMaterial();
@@ -101,8 +101,8 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
         sphere->getRigidBody()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
 
         // Set the box color
-        sphere->setColor(mDemoColors[i % mNbDemoColors]);
-        sphere->setSleepingColor(mRedColorDemo);
+        sphere->setColor(mObjectColorDemo);
+        sphere->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = sphere->getRigidBody()->getMaterial();
@@ -123,8 +123,8 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
         capsule->getRigidBody()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
 
         // Set the box color
-        capsule->setColor(mDemoColors[i % mNbDemoColors]);
-        capsule->setSleepingColor(mRedColorDemo);
+        capsule->setColor(mObjectColorDemo);
+        capsule->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = capsule->getRigidBody()->getMaterial();
@@ -142,8 +142,8 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
         ConvexMesh* mesh = new ConvexMesh(MESH_MASS, mPhysicsCommon, getDynamicsWorld(), meshFolderPath + "convexmesh.obj");
 
         // Set the box color
-        mesh->setColor(mDemoColors[i % mNbDemoColors]);
-        mesh->setSleepingColor(mRedColorDemo);
+        mesh->setColor(mObjectColorDemo);
+        mesh->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
         rp3d::Material& material = mesh->getRigidBody()->getMaterial();
@@ -166,8 +166,8 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     mConcaveMesh->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Set the box color
-    mConcaveMesh->setColor(mGreyColorDemo);
-    mConcaveMesh->setSleepingColor(mGreyColorDemo);
+    mConcaveMesh->setColor(mFloorColorDemo);
+    mConcaveMesh->setSleepingColor(mFloorColorDemo);
 
     mPhysicsObjects.push_back(mConcaveMesh);
 

@@ -218,8 +218,8 @@ void JointsScene::createBallAndSocketJoints() {
         mBallAndSocketJointChainBoxes[i]->setTransform(rp3d::Transform(positionBox, rp3d::Quaternion::identity()));
 
         // Set the box color
-        mBallAndSocketJointChainBoxes[i]->setColor(mDemoColors[i % mNbDemoColors]);
-        mBallAndSocketJointChainBoxes[i]->setSleepingColor(mRedColorDemo);
+        mBallAndSocketJointChainBoxes[i]->setColor(mObjectColorDemo);
+        mBallAndSocketJointChainBoxes[i]->setSleepingColor(mSleepingColorDemo);
 
         // The fist box cannot move (static body)
         if (i == 0) {
@@ -270,8 +270,8 @@ void JointsScene::createSliderJoint() {
     mSliderJointBottomBox->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
-    mSliderJointBottomBox->setColor(mBlueColorDemo);
-    mSliderJointBottomBox->setSleepingColor(mRedColorDemo);
+    mSliderJointBottomBox->setColor(mObjectColorDemo);
+    mSliderJointBottomBox->setSleepingColor(mSleepingColorDemo);
 
     // The fist box cannot move
     mSliderJointBottomBox->getRigidBody()->setType(rp3d::BodyType::STATIC);
@@ -292,8 +292,8 @@ void JointsScene::createSliderJoint() {
     mSliderJointTopBox->setTransform(rp3d::Transform(positionBox2, rp3d::Quaternion::identity()));
 
     // Set the box color
-    mSliderJointTopBox->setColor(mOrangeColorDemo);
-    mSliderJointTopBox->setSleepingColor(mRedColorDemo);
+    mSliderJointTopBox->setColor(mObjectColorDemo);
+    mSliderJointTopBox->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mSliderJointTopBox->getRigidBody()->getMaterial();
@@ -334,8 +334,8 @@ void JointsScene::createPropellerHingeJoint() {
     mPropellerBox->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
-    mPropellerBox->setColor(mYellowColorDemo);
-    mPropellerBox->setSleepingColor(mRedColorDemo);
+    mPropellerBox->setColor(mObjectColorDemo);
+    mPropellerBox->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mPropellerBox->getRigidBody()->getMaterial();
@@ -375,8 +375,8 @@ void JointsScene::createFixedJoints() {
     mFixedJointBox1->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
-    mFixedJointBox1->setColor(mPinkColorDemo);
-    mFixedJointBox1->setSleepingColor(mRedColorDemo);
+    mFixedJointBox1->setColor(mObjectColorDemo);
+    mFixedJointBox1->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mFixedJointBox1->getRigidBody()->getMaterial();
@@ -393,8 +393,8 @@ void JointsScene::createFixedJoints() {
     mFixedJointBox2->setTransform(rp3d::Transform(positionBox2, rp3d::Quaternion::identity()));
 
     // Set the box color
-    mFixedJointBox2->setColor(mBlueColorDemo);
-    mFixedJointBox2->setSleepingColor(mRedColorDemo);
+    mFixedJointBox2->setColor(mObjectColorDemo);
+    mFixedJointBox2->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body
     rp3d::Material& material2 = mFixedJointBox2->getRigidBody()->getMaterial();
@@ -433,8 +433,8 @@ void JointsScene::createFloor() {
     mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
 
     // Set the box color
-    mFloor->setColor(mGreyColorDemo);
-    mFloor->setSleepingColor(mGreyColorDemo);
+    mFloor->setColor(mFloorColorDemo);
+    mFloor->setSleepingColor(mFloorColorDemo);
 
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
