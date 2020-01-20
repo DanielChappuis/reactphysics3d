@@ -35,7 +35,7 @@ namespace reactphysics3d {
 // Declarations
 class CollisionBody;
 class CollisionWorld;
-class ProxyShape;
+class Collider;
 struct Entity;
 
 // Class OverlapCallback
@@ -49,7 +49,7 @@ class OverlapCallback {
 
         // Class OverlapPair
         /**
-         * This class represents the contact between two proxy-shapes of the physics world.
+         * This class represents the contact between two colliders of the physics world.
          */
         class OverlapPair {
 
@@ -110,7 +110,7 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                CallbackData(List<Pair<Entity, Entity>>& overlapProxyShapes, CollisionWorld& world);
+                CallbackData(List<Pair<Entity, Entity>>& overlapColliders, CollisionWorld& world);
 
                 /// Deleted copy constructor
                 CallbackData(const CallbackData& callbackData) = delete;

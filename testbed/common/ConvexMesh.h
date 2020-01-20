@@ -49,7 +49,7 @@ class ConvexMesh : public PhysicsObject {
 
         /// Collision shape
         rp3d::ConvexMeshShape* mConvexShape;
-        rp3d::ProxyShape* mProxyShape;
+        rp3d::Collider* mCollider;
 
         /// Scaling matrix
         openglframework::Matrix4 mScalingMatrix;

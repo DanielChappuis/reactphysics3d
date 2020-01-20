@@ -31,7 +31,7 @@
 #include "utils/Profiler.h"
 #include "engine/Island.h"
 #include "components/CollisionBodyComponents.h"
-#include "components/ProxyShapeComponents.h"
+#include "components/ColliderComponents.h"
 #include "collision/ContactManifold.h"
 
 using namespace reactphysics3d;
@@ -44,12 +44,12 @@ const decimal ContactSolverSystem::SLOP = decimal(0.01);
 
 // Constructor
 ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, DynamicsWorld& world, Islands& islands, CollisionBodyComponents& bodyComponents,
-                             RigidBodyComponents& rigidBodyComponents, ProxyShapeComponents& proxyShapeComponents,
+                             RigidBodyComponents& rigidBodyComponents, ColliderComponents& colliderComponents,
                              const WorldSettings& worldSettings)
               :mMemoryManager(memoryManager), mWorld(world), mContactConstraints(nullptr), mContactPoints(nullptr),
                mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr),
                mBodyComponents(bodyComponents), mRigidBodyComponents(rigidBodyComponents),
-               mProxyShapeComponents(proxyShapeComponents), mIsSplitImpulseActive(true),
+               mColliderComponents(colliderComponents), mIsSplitImpulseActive(true),
                mWorldSettings(worldSettings) {
 
 #ifdef IS_PROFILING_ACTIVE
@@ -169,8 +169,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
             ContactPoint& externalContact = (*mAllContactPoints)[c];
 
             // Get the contact point on the two bodies
-            Vector3 p1 = mProxyShapeComponents.getLocalToWorldTransform(externalManifold.proxyShapeEntity1) * externalContact.getLocalPointOnShape1();
-            Vector3 p2 = mProxyShapeComponents.getLocalToWorldTransform(externalManifold.proxyShapeEntity2) * externalContact.getLocalPointOnShape2();
+            Vector3 p1 = mColliderComponents.getLocalToWorldTransform(externalManifold.colliderEntity1) * externalContact.getLocalPointOnShape1();
+            Vector3 p2 = mColliderComponents.getLocalToWorldTransform(externalManifold.colliderEntity2) * externalContact.getLocalPointOnShape2();
 
             new (mContactPoints + mNbContactPoints) ContactPointSolver();
             mContactPoints[mNbContactPoints].externalContact = &externalContact;

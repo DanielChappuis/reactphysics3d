@@ -49,7 +49,7 @@ class Capsule : public PhysicsObject {
 
         /// Collision shape
         rp3d::CapsuleShape* mCapsuleShape;
-        rp3d::ProxyShape* mProxyShape;
+        rp3d::Collider* mCollider;
 
 		/// Previous transform (for interpolation)
 		rp3d::Transform mPreviousTransform;

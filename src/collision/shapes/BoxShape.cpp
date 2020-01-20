@@ -25,7 +25,7 @@
 
 // Libraries
 #include "BoxShape.h"
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 #include "configuration.h"
 #include "memory/MemoryManager.h"
 #include "collision/RaycastInfo.h"
@@ -96,7 +96,7 @@ void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const 
 }
 
 // Raycast method with feedback information
-bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     Vector3 rayDirection = ray.point2 - ray.point1;
     decimal tMin = DECIMAL_SMALLEST;
@@ -151,8 +151,8 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* pro
     // The ray intersects the three slabs, we compute the hit point
     Vector3 localHitPoint = ray.point1 + tMin * rayDirection;
 
-    raycastInfo.body = proxyShape->getBody();
-    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.body = collider->getBody();
+    raycastInfo.collider = collider;
     raycastInfo.hitFraction = tMin;
     raycastInfo.worldPoint = localHitPoint;
     raycastInfo.worldNormal = normalDirection;

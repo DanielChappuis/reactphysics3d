@@ -36,7 +36,7 @@ SphereVsSphereNarrowPhaseInfoBatch::SphereVsSphereNarrowPhaseInfoBatch(MemoryAll
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-void SphereVsSphereNarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1, CollisionShape* shape2,
+void SphereVsSphereNarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1, CollisionShape* shape2,
                                                             const Transform& shape1Transform, const Transform& shape2Transform) {
 
     assert(shape1->getType() == CollisionShapeType::SPHERE);
@@ -47,8 +47,8 @@ void SphereVsSphereNarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint6
 
     sphere1Radiuses.add(sphere1->getRadius());
     sphere2Radiuses.add(sphere2->getRadius());
-    proxyShapeEntities1.add(proxyShape1);
-    proxyShapeEntities2.add(proxyShape2);
+    colliderEntities1.add(collider1);
+    colliderEntities2.add(collider2);
     shape1ToWorldTransforms.add(shape1Transform);
     shape2ToWorldTransforms.add(shape2Transform);
     overlappingPairIds.add(pairId);
@@ -64,8 +64,8 @@ void SphereVsSphereNarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint6
 void SphereVsSphereNarrowPhaseInfoBatch::reserveMemory() {
 
     overlappingPairIds.reserve(mCachedCapacity);
-    proxyShapeEntities1.reserve(mCachedCapacity);
-    proxyShapeEntities2.reserve(mCachedCapacity);
+    colliderEntities1.reserve(mCachedCapacity);
+    colliderEntities2.reserve(mCachedCapacity);
     shape1ToWorldTransforms.reserve(mCachedCapacity);
     shape2ToWorldTransforms.reserve(mCachedCapacity);
     lastFrameCollisionInfos.reserve(mCachedCapacity);
@@ -87,8 +87,8 @@ void SphereVsSphereNarrowPhaseInfoBatch::clear() {
     mCachedCapacity = overlappingPairIds.size();
 
     overlappingPairIds.clear(true);
-    proxyShapeEntities1.clear(true);
-    proxyShapeEntities2.clear(true);
+    colliderEntities1.clear(true);
+    colliderEntities2.clear(true);
     shape1ToWorldTransforms.clear(true);
     shape2ToWorldTransforms.clear(true);
     lastFrameCollisionInfos.clear(true);

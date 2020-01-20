@@ -106,7 +106,7 @@ void ConvexMeshShape::recalculateBounds() {
 // Raycast method with feedback information
 /// This method implements the technique in the book "Real-time Collision Detection" by
 /// Christer Ericson.
-bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     // Ray direction
     Vector3 direction = ray.point2 - ray.point1;
@@ -172,8 +172,8 @@ bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySha
         Vector3 localHitPoint = ray.point1 + tMin * direction;
 
         raycastInfo.hitFraction = tMin;
-        raycastInfo.body = proxyShape->getBody();
-        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.body = collider->getBody();
+        raycastInfo.collider = collider;
         raycastInfo.worldPoint = localHitPoint;
         raycastInfo.worldNormal = currentFaceNormal;
 
@@ -184,7 +184,7 @@ bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySha
 }
 
 // Return true if a point is inside the collision shape
-bool ConvexMeshShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
 
     const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
 

@@ -59,7 +59,7 @@ class WorldRaycastCallback : public RaycastCallback {
     public:
 
         RaycastInfo raycastInfo;
-        ProxyShape* shapeToTest;
+        Collider* shapeToTest;
         bool isHit;
 
         WorldRaycastCallback() {
@@ -72,7 +72,7 @@ class WorldRaycastCallback : public RaycastCallback {
             if (shapeToTest->getBody()->getEntity() == info.body->getEntity()) {
                 raycastInfo.body = info.body;
                 raycastInfo.hitFraction = info.hitFraction;
-                raycastInfo.proxyShape = info.proxyShape;
+                raycastInfo.collider = info.collider;
                 raycastInfo.worldNormal = info.worldNormal;
                 raycastInfo.worldPoint = info.worldPoint;
                 isHit = true;
@@ -85,7 +85,7 @@ class WorldRaycastCallback : public RaycastCallback {
         void reset() {
             raycastInfo.body = nullptr;
             raycastInfo.hitFraction = decimal(0.0);
-            raycastInfo.proxyShape = nullptr;
+            raycastInfo.collider = nullptr;
             raycastInfo.worldNormal.setToZero();
             raycastInfo.worldPoint.setToZero();
             isHit = false;
@@ -139,15 +139,15 @@ class TestRaycast : public Test {
         ConcaveMeshShape* mConcaveMeshShape;
         HeightFieldShape* mHeightFieldShape;
 
-        // Proxy Shapes
-        ProxyShape* mBoxProxyShape;
-        ProxyShape* mSphereProxyShape;
-        ProxyShape* mCapsuleProxyShape;
-        ProxyShape* mConvexMeshProxyShape;
-        ProxyShape* mCompoundSphereProxyShape;
-        ProxyShape* mCompoundCapsuleProxyShape;
-        ProxyShape* mConcaveMeshProxyShape;
-        ProxyShape* mHeightFieldProxyShape;
+        // Collider
+        Collider* mBoxCollider;
+        Collider* mSphereCollider;
+        Collider* mCapsuleCollider;
+        Collider* mConvexMeshCollider;
+        Collider* mCompoundSphereCollider;
+        Collider* mCompoundCapsuleCollider;
+        Collider* mConcaveMeshCollider;
+        Collider* mHeightFieldCollider;
 
         // Triangle meshes
         TriangleMesh* mConcaveTriangleMesh;
@@ -199,13 +199,13 @@ class TestRaycast : public Test {
 
             // Create collision shapes
             mBoxShape = mPhysicsCommon.createBoxShape(Vector3(2, 3, 4));
-            mBoxProxyShape = mBoxBody->addCollisionShape(mBoxShape, mShapeTransform);
+            mBoxCollider = mBoxBody->addCollider(mBoxShape, mShapeTransform);
 
             mSphereShape = mPhysicsCommon.createSphereShape(3);
-            mSphereProxyShape = mSphereBody->addCollisionShape(mSphereShape, mShapeTransform);
+            mSphereCollider = mSphereBody->addCollider(mSphereShape, mShapeTransform);
 
             mCapsuleShape = mPhysicsCommon.createCapsuleShape(2, 5);
-            mCapsuleProxyShape = mCapsuleBody->addCollisionShape(mCapsuleShape, mShapeTransform);
+            mCapsuleCollider = mCapsuleBody->addCollider(mCapsuleShape, mShapeTransform);
 
             mPolyhedronVertices[0] = Vector3(-2, -3, 4);
             mPolyhedronVertices[1] = Vector3(2, -3, 4);
@@ -239,15 +239,15 @@ class TestRaycast : public Test {
 
             mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray);
             mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh);
-            mConvexMeshProxyShape = mConvexMeshBody->addCollisionShape(mConvexMeshShape, mShapeTransform);
+            mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);
 
             // Compound shape is a cylinder and a sphere
             Vector3 positionShape2(Vector3(4, 2, -3));
             Quaternion orientationShape2 = Quaternion::fromEulerAngles(-3 *PI / 8, 1.5 * PI/ 3, PI / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
-            mCompoundCapsuleProxyShape = mCompoundBody->addCollisionShape(mCapsuleShape, mShapeTransform);
-            mCompoundSphereProxyShape = mCompoundBody->addCollisionShape(mSphereShape, shapeTransform2);
+            mCompoundCapsuleCollider = mCompoundBody->addCollider(mCapsuleShape, mShapeTransform);
+            mCompoundSphereCollider = mCompoundBody->addCollider(mSphereShape, shapeTransform2);
 
             // Concave Mesh shape
             mConcaveMeshVertices.push_back(Vector3(-2, -3, -4));
@@ -282,23 +282,23 @@ class TestRaycast : public Test {
             mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh();
             mConcaveTriangleMesh->addSubpart(mConcaveMeshVertexArray);
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
-            mConcaveMeshProxyShape = mConcaveMeshBody->addCollisionShape(mConcaveMeshShape, mShapeTransform);
+            mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, mShapeTransform);
 
 
             // Heightfield shape (plane height field at height=4)
             for (int i=0; i<100; i++) mHeightFieldData[i] = 4;
             mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(10, 10, 0, 4, mHeightFieldData, HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
-            mHeightFieldProxyShape = mHeightFieldBody->addCollisionShape(mHeightFieldShape, mShapeTransform);
+            mHeightFieldCollider = mHeightFieldBody->addCollider(mHeightFieldShape, mShapeTransform);
 
-            // Assign proxy shapes to the different categories
-            mBoxProxyShape->setCollisionCategoryBits(CATEGORY1);
-            mSphereProxyShape->setCollisionCategoryBits(CATEGORY1);
-            mCapsuleProxyShape->setCollisionCategoryBits(CATEGORY1);
-            mConvexMeshProxyShape->setCollisionCategoryBits(CATEGORY2);
-            mCompoundSphereProxyShape->setCollisionCategoryBits(CATEGORY2);
-            mCompoundCapsuleProxyShape->setCollisionCategoryBits(CATEGORY2);
-            mConcaveMeshProxyShape->setCollisionCategoryBits(CATEGORY2);
-            mHeightFieldProxyShape->setCollisionCategoryBits(CATEGORY2);
+            // Assign colliders to the different categories
+            mBoxCollider->setCollisionCategoryBits(CATEGORY1);
+            mSphereCollider->setCollisionCategoryBits(CATEGORY1);
+            mCapsuleCollider->setCollisionCategoryBits(CATEGORY1);
+            mConvexMeshCollider->setCollisionCategoryBits(CATEGORY2);
+            mCompoundSphereCollider->setCollisionCategoryBits(CATEGORY2);
+            mCompoundCapsuleCollider->setCollisionCategoryBits(CATEGORY2);
+            mConcaveMeshCollider->setCollisionCategoryBits(CATEGORY2);
+            mHeightFieldCollider->setCollisionCategoryBits(CATEGORY2);
         }
 
         /// Destructor
@@ -329,7 +329,7 @@ class TestRaycast : public Test {
             testHeightField();
         }
 
-        /// Test the ProxyBoxShape::raycast(), CollisionBody::raycast() and
+        /// Test the Collider::raycast(), CollisionBody::raycast() and
         /// CollisionWorld::raycast() methods.
         void testBox() {
 
@@ -339,14 +339,14 @@ class TestRaycast : public Test {
             Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(1, 2, 4);
 
-            mCallback.shapeToTest = mBoxProxyShape;
+            mCallback.shapeToTest = mBoxCollider;
 
             // CollisionWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mBoxBody);
-            rp3d_test(mCallback.raycastInfo.proxyShape == mBoxProxyShape);
+            rp3d_test(mCallback.raycastInfo.collider == mBoxCollider);
             rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
@@ -366,17 +366,17 @@ class TestRaycast : public Test {
             RaycastInfo raycastInfo2;
             rp3d_test(mBoxBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mBoxBody);
-            rp3d_test(raycastInfo2.proxyShape == mBoxProxyShape);
+            rp3d_test(raycastInfo2.collider == mBoxCollider);
             rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo3;
-            rp3d_test(mBoxProxyShape->raycast(ray, raycastInfo3));
+            rp3d_test(mBoxCollider->raycast(ray, raycastInfo3));
             rp3d_test(raycastInfo3.body == mBoxBody);
-            rp3d_test(raycastInfo3.proxyShape == mBoxProxyShape);
+            rp3d_test(raycastInfo3.collider == mBoxCollider);
             rp3d_test(approxEqual(raycastInfo3.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
@@ -401,7 +401,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast miss ----- //
             rp3d_test(!mBoxBody->raycast(ray1, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray1, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray1, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -413,55 +413,55 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray2, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray2, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray2, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray2, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray3, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray3, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray3, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray3, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray4, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray4, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray4, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray4, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray5, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray5, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray5, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray5, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray6, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray6, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray6, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray6, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray7, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray7, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray7, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray7, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray8, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray8, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray8, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray8, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray9, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray9, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray9, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray9, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray10, raycastInfo3));
-            rp3d_test(!mBoxProxyShape->raycast(ray10, raycastInfo3));
+            rp3d_test(!mBoxCollider->raycast(ray10, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray10, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -487,7 +487,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast hits ----- //
             rp3d_test(mBoxBody->raycast(ray11, raycastInfo3));
-            rp3d_test(mBoxProxyShape->raycast(ray11, raycastInfo3));
+            rp3d_test(mBoxCollider->raycast(ray11, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -496,7 +496,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray12, raycastInfo3));
-            rp3d_test(mBoxProxyShape->raycast(ray12, raycastInfo3));
+            rp3d_test(mBoxCollider->raycast(ray12, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -505,7 +505,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray13, raycastInfo3));
-            rp3d_test(mBoxProxyShape->raycast(ray13, raycastInfo3));
+            rp3d_test(mBoxCollider->raycast(ray13, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -514,7 +514,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray14, raycastInfo3));
-            rp3d_test(mBoxProxyShape->raycast(ray14, raycastInfo3));
+            rp3d_test(mBoxCollider->raycast(ray14, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -523,7 +523,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray15, raycastInfo3));
-            rp3d_test(mBoxProxyShape->raycast(ray15, raycastInfo3));
+            rp3d_test(mBoxCollider->raycast(ray15, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -532,7 +532,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray16, raycastInfo3));
-            rp3d_test(mBoxProxyShape->raycast(ray16, raycastInfo3));
+            rp3d_test(mBoxCollider->raycast(ray16, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -541,7 +541,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
         }
 
-        /// Test the ProxySphereShape::raycast(), CollisionBody::raycast() and
+        /// Test the Collider::raycast(), CollisionBody::raycast() and
         /// CollisionWorld::raycast() methods.
         void testSphere() {
 
@@ -551,14 +551,14 @@ class TestRaycast : public Test {
             Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(-3, 0, 0);
 
-            mCallback.shapeToTest = mSphereProxyShape;
+            mCallback.shapeToTest = mSphereCollider;
 
             // CollisionWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mSphereBody);
-            rp3d_test(mCallback.raycastInfo.proxyShape == mSphereProxyShape);
+            rp3d_test(mCallback.raycastInfo.collider == mSphereCollider);
             rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, 0.2, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
@@ -578,17 +578,17 @@ class TestRaycast : public Test {
             RaycastInfo raycastInfo2;
             rp3d_test(mSphereBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mSphereBody);
-            rp3d_test(raycastInfo2.proxyShape == mSphereProxyShape);
+            rp3d_test(raycastInfo2.collider == mSphereCollider);
             rp3d_test(approxEqual(raycastInfo2.hitFraction, 0.2, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo3;
-            rp3d_test(mSphereProxyShape->raycast(ray, raycastInfo3));
+            rp3d_test(mSphereCollider->raycast(ray, raycastInfo3));
             rp3d_test(raycastInfo3.body == mSphereBody);
-            rp3d_test(raycastInfo3.proxyShape == mSphereProxyShape);
+            rp3d_test(raycastInfo3.collider == mSphereCollider);
             rp3d_test(approxEqual(raycastInfo3.hitFraction, 0.2, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
@@ -613,7 +613,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast miss ----- //
             rp3d_test(!mSphereBody->raycast(ray1, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray1, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray1, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -625,55 +625,55 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray2, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray2, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray2, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray2, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray3, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray3, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray3, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray3, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray4, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray4, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray4, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray4, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray5, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray5, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray5, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray5, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray6, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray6, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray6, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray6, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray7, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray7, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray7, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray7, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray8, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray8, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray8, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray8, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray9, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray9, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray9, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray9, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray10, raycastInfo3));
-            rp3d_test(!mSphereProxyShape->raycast(ray10, raycastInfo3));
+            rp3d_test(!mSphereCollider->raycast(ray10, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray10, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -699,7 +699,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast hits ----- //
             rp3d_test(mSphereBody->raycast(ray11, raycastInfo3));
-            rp3d_test(mSphereProxyShape->raycast(ray11, raycastInfo3));
+            rp3d_test(mSphereCollider->raycast(ray11, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -708,7 +708,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mSphereBody->raycast(ray12, raycastInfo3));
-            rp3d_test(mSphereProxyShape->raycast(ray12, raycastInfo3));
+            rp3d_test(mSphereCollider->raycast(ray12, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -717,14 +717,14 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mSphereBody->raycast(ray13, raycastInfo3));
-            rp3d_test(mSphereProxyShape->raycast(ray13, raycastInfo3));
+            rp3d_test(mSphereCollider->raycast(ray13, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray13, &mCallback);
             mCallback.reset();
             mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), &mCallback);
 
             rp3d_test(mSphereBody->raycast(ray14, raycastInfo3));
-            rp3d_test(mSphereProxyShape->raycast(ray14, raycastInfo3));
+            rp3d_test(mSphereCollider->raycast(ray14, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -733,7 +733,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mSphereBody->raycast(ray15, raycastInfo3));
-            rp3d_test(mSphereProxyShape->raycast(ray15, raycastInfo3));
+            rp3d_test(mSphereCollider->raycast(ray15, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -742,7 +742,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mSphereBody->raycast(ray16, raycastInfo3));
-            rp3d_test(mSphereProxyShape->raycast(ray16, raycastInfo3));
+            rp3d_test(mSphereCollider->raycast(ray16, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -751,7 +751,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
         }
 
-        /// Test the ProxyCapsuleShape::raycast(), CollisionBody::raycast() and
+        /// Test the Collider::raycast(), CollisionBody::raycast() and
         /// CollisionWorld::raycast() methods.
         void testCapsule() {
 
@@ -771,14 +771,14 @@ class TestRaycast : public Test {
             Ray rayBottom(point3A, point3B);
             Vector3 hitPointBottom = mLocalShapeToWorld * Vector3(0, decimal(-4.5), 0);
 
-            mCallback.shapeToTest = mCapsuleProxyShape;
+            mCallback.shapeToTest = mCapsuleCollider;
 
             // CollisionWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mCapsuleBody);
-            rp3d_test(mCallback.raycastInfo.proxyShape == mCapsuleProxyShape);
+            rp3d_test(mCallback.raycastInfo.collider == mCapsuleCollider);
             rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
@@ -798,36 +798,36 @@ class TestRaycast : public Test {
             RaycastInfo raycastInfo2;
             rp3d_test(mCapsuleBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mCapsuleBody);
-            rp3d_test(raycastInfo2.proxyShape == mCapsuleProxyShape);
+            rp3d_test(raycastInfo2.collider == mCapsuleCollider);
             rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo3;
-            rp3d_test(mCapsuleProxyShape->raycast(ray, raycastInfo3));
+            rp3d_test(mCapsuleCollider->raycast(ray, raycastInfo3));
             rp3d_test(raycastInfo3.body == mCapsuleBody);
-            rp3d_test(raycastInfo3.proxyShape == mCapsuleProxyShape);
+            rp3d_test(raycastInfo3.collider == mCapsuleCollider);
             rp3d_test(approxEqual(raycastInfo3.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
 
             RaycastInfo raycastInfo4;
-            rp3d_test(mCapsuleProxyShape->raycast(rayTop, raycastInfo4));
+            rp3d_test(mCapsuleCollider->raycast(rayTop, raycastInfo4));
             rp3d_test(raycastInfo4.body == mCapsuleBody);
-            rp3d_test(raycastInfo4.proxyShape == mCapsuleProxyShape);
+            rp3d_test(raycastInfo4.collider == mCapsuleCollider);
             rp3d_test(approxEqual(raycastInfo4.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo4.worldPoint.x, hitPointTop.x, epsilon));
             rp3d_test(approxEqual(raycastInfo4.worldPoint.y, hitPointTop.y, epsilon));
             rp3d_test(approxEqual(raycastInfo4.worldPoint.z, hitPointTop.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo5;
-            rp3d_test(mCapsuleProxyShape->raycast(rayBottom, raycastInfo5));
+            rp3d_test(mCapsuleCollider->raycast(rayBottom, raycastInfo5));
             rp3d_test(raycastInfo5.body == mCapsuleBody);
-            rp3d_test(raycastInfo5.proxyShape == mCapsuleProxyShape);
+            rp3d_test(raycastInfo5.collider == mCapsuleCollider);
             rp3d_test(approxEqual(raycastInfo5.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.x, hitPointBottom.x, epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.y, hitPointBottom.y, epsilon));
@@ -852,7 +852,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast miss ----- //
             rp3d_test(!mCapsuleBody->raycast(ray1, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray1, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray1, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -864,54 +864,54 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray2, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray2, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray2, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray2, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray3, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray3, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray3, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray3, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray4, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray4, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray4, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray4, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray5, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray5, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray5, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray5, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray6, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray6, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray6, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray6, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray7, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray7, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray7, raycastInfo3));
             mWorld->raycast(ray7, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray8, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray8, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray8, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray8, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray9, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray9, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray9, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray9, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray10, raycastInfo3));
-            rp3d_test(!mCapsuleProxyShape->raycast(ray10, raycastInfo3));
+            rp3d_test(!mCapsuleCollider->raycast(ray10, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray10, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -937,7 +937,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast hits ----- //
             rp3d_test(mCapsuleBody->raycast(ray11, raycastInfo3));
-            rp3d_test(mCapsuleProxyShape->raycast(ray11, raycastInfo3));
+            rp3d_test(mCapsuleCollider->raycast(ray11, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -946,7 +946,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray12, raycastInfo3));
-            rp3d_test(mCapsuleProxyShape->raycast(ray12, raycastInfo3));
+            rp3d_test(mCapsuleCollider->raycast(ray12, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -955,7 +955,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray13, raycastInfo3));
-            rp3d_test(mCapsuleProxyShape->raycast(ray13, raycastInfo3));
+            rp3d_test(mCapsuleCollider->raycast(ray13, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -964,7 +964,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray14, raycastInfo3));
-            rp3d_test(mCapsuleProxyShape->raycast(ray14, raycastInfo3));
+            rp3d_test(mCapsuleCollider->raycast(ray14, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -973,7 +973,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray15, raycastInfo3));
-            rp3d_test(mCapsuleProxyShape->raycast(ray15, raycastInfo3));
+            rp3d_test(mCapsuleCollider->raycast(ray15, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -982,7 +982,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray16, raycastInfo3));
-            rp3d_test(mCapsuleProxyShape->raycast(ray16, raycastInfo3));
+            rp3d_test(mCapsuleCollider->raycast(ray16, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -991,7 +991,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
         }
 
-        /// Test the ProxyConvexMeshShape::raycast(), CollisionBody::raycast() and
+        /// Test the Collider::raycast(), CollisionBody::raycast() and
         /// CollisionWorld::raycast() methods.
         void testConvexMesh() {
 
@@ -1001,14 +1001,14 @@ class TestRaycast : public Test {
             Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(1, 2, 4);
 
-            mCallback.shapeToTest = mConvexMeshProxyShape;
+            mCallback.shapeToTest = mConvexMeshCollider;
 
             // CollisionWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mConvexMeshBody);
-            rp3d_test(mCallback.raycastInfo.proxyShape == mConvexMeshProxyShape);
+            rp3d_test(mCallback.raycastInfo.collider == mConvexMeshCollider);
             rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
@@ -1028,17 +1028,17 @@ class TestRaycast : public Test {
             RaycastInfo raycastInfo2;
             rp3d_test(mConvexMeshBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mConvexMeshBody);
-            rp3d_test(raycastInfo2.proxyShape == mConvexMeshProxyShape);
+            rp3d_test(raycastInfo2.collider == mConvexMeshCollider);
             rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo4;
-            rp3d_test(mConvexMeshProxyShape->raycast(ray, raycastInfo4));
+            rp3d_test(mConvexMeshCollider->raycast(ray, raycastInfo4));
             rp3d_test(raycastInfo4.body == mConvexMeshBody);
-            rp3d_test(raycastInfo4.proxyShape == mConvexMeshProxyShape);
+            rp3d_test(raycastInfo4.collider == mConvexMeshCollider);
             rp3d_test(approxEqual(raycastInfo4.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo4.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo4.worldPoint.y, hitPoint.y, epsilon));
@@ -1064,7 +1064,7 @@ class TestRaycast : public Test {
             // ----- Test raycast miss ----- //
             RaycastInfo raycastInfo3;
             rp3d_test(!mConvexMeshBody->raycast(ray1, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray1, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray1, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -1076,55 +1076,55 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray2, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray2, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray2, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray2, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray3, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray3, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray3, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray3, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray4, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray4, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray4, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray4, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray5, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray5, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray5, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray5, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray6, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray6, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray6, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray6, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray7, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray7, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray7, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray7, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray8, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray8, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray8, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray8, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray9, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray9, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray9, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray9, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray10, raycastInfo3));
-            rp3d_test(!mConvexMeshProxyShape->raycast(ray10, raycastInfo3));
+            rp3d_test(!mConvexMeshCollider->raycast(ray10, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray10, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -1150,7 +1150,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast hits ----- //
             rp3d_test(mConvexMeshBody->raycast(ray11, raycastInfo3));
-            rp3d_test(mConvexMeshProxyShape->raycast(ray11, raycastInfo3));
+            rp3d_test(mConvexMeshCollider->raycast(ray11, raycastInfo3));
            mCallback.reset();
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1159,7 +1159,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray12, raycastInfo3));
-            rp3d_test(mConvexMeshProxyShape->raycast(ray12, raycastInfo3));
+            rp3d_test(mConvexMeshCollider->raycast(ray12, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1168,7 +1168,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray13, raycastInfo3));
-            rp3d_test(mConvexMeshProxyShape->raycast(ray13, raycastInfo3));
+            rp3d_test(mConvexMeshCollider->raycast(ray13, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1177,7 +1177,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray14, raycastInfo3));
-            rp3d_test(mConvexMeshProxyShape->raycast(ray14, raycastInfo3));
+            rp3d_test(mConvexMeshCollider->raycast(ray14, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1186,7 +1186,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray15, raycastInfo3));
-            rp3d_test(mConvexMeshProxyShape->raycast(ray15, raycastInfo3));
+            rp3d_test(mConvexMeshCollider->raycast(ray15, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1195,7 +1195,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray16, raycastInfo3));
-            rp3d_test(mConvexMeshProxyShape->raycast(ray16, raycastInfo3));
+            rp3d_test(mConvexMeshCollider->raycast(ray16, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1218,7 +1218,7 @@ class TestRaycast : public Test {
             Ray ray5(mLocalShape2ToWorld * Vector3(0, -4, 1), mLocalShape2ToWorld * Vector3(0, 30, 1));
             Ray ray6(mLocalShape2ToWorld * Vector3(-1, 2, -11), mLocalShape2ToWorld * Vector3(-1, 2, 30));
 
-            mCallback.shapeToTest = mCompoundSphereProxyShape;
+            mCallback.shapeToTest = mCompoundSphereCollider;
 
             // Correct category filter mask
             mCallback.reset();
@@ -1287,7 +1287,7 @@ class TestRaycast : public Test {
             Ray ray15(mLocalShapeToWorld * Vector3(0, -9, 1), mLocalShapeToWorld * Vector3(0, 30, 1));
             Ray ray16(mLocalShapeToWorld * Vector3(-1, 2, -7), mLocalShapeToWorld * Vector3(-1, 2, 30));
 
-            mCallback.shapeToTest = mCompoundCapsuleProxyShape;
+            mCallback.shapeToTest = mCompoundCapsuleCollider;
 
             rp3d_test(mCompoundBody->raycast(ray11, raycastInfo));
             mCallback.reset();
@@ -1347,14 +1347,14 @@ class TestRaycast : public Test {
             Ray ray(point1, point2);
             Vector3 hitPoint = mLocalShapeToWorld * Vector3(1, 2, 4);
 
-            mCallback.shapeToTest = mConcaveMeshProxyShape;
+            mCallback.shapeToTest = mConcaveMeshCollider;
 
             // CollisionWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mConcaveMeshBody);
-            rp3d_test(mCallback.raycastInfo.proxyShape == mConcaveMeshProxyShape);
+            rp3d_test(mCallback.raycastInfo.collider == mConcaveMeshCollider);
             rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
@@ -1374,37 +1374,37 @@ class TestRaycast : public Test {
             RaycastInfo raycastInfo2;
             rp3d_test(mConcaveMeshBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mConcaveMeshBody);
-            rp3d_test(raycastInfo2.proxyShape == mConcaveMeshProxyShape);
+            rp3d_test(raycastInfo2.collider == mConcaveMeshCollider);
             rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo3;
             rp3d_test(mConcaveMeshBody->raycast(ray, raycastInfo3));
             rp3d_test(raycastInfo3.body == mConcaveMeshBody);
-            rp3d_test(raycastInfo3.proxyShape == mConcaveMeshProxyShape);
+            rp3d_test(raycastInfo3.collider == mConcaveMeshCollider);
             rp3d_test(approxEqual(raycastInfo3.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo4;
             rp3d_test(mConcaveMeshBody->raycast(ray, raycastInfo4));
             rp3d_test(raycastInfo4.body == mConcaveMeshBody);
-            rp3d_test(raycastInfo4.proxyShape == mConcaveMeshProxyShape);
+            rp3d_test(raycastInfo4.collider == mConcaveMeshCollider);
             rp3d_test(approxEqual(raycastInfo4.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo4.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo4.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo4.worldPoint.z, hitPoint.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo5;
             rp3d_test(mConcaveMeshBody->raycast(ray, raycastInfo5));
             rp3d_test(raycastInfo5.body == mConcaveMeshBody);
-            rp3d_test(raycastInfo5.proxyShape == mConcaveMeshProxyShape);
+            rp3d_test(raycastInfo5.collider == mConcaveMeshCollider);
             rp3d_test(approxEqual(raycastInfo5.hitFraction, decimal(0.2), epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.y, hitPoint.y, epsilon));
@@ -1429,7 +1429,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast miss ----- //
             rp3d_test(!mConcaveMeshBody->raycast(ray1, raycastInfo3));
-            //rp3d_test(!mConvexMeshProxyShape->raycast(ray1, raycastInfo3));
+            //rp3d_test(!mConvexMeshCollider->raycast(ray1, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -1441,55 +1441,55 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray2, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray2, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray2, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray2, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray3, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray3, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray3, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray3, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray4, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray4, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray4, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray4, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray5, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray5, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray5, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray5, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray6, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray6, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray6, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray6, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray7, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray7, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray7, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray7, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray8, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray8, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray8, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray8, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray9, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray9, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray9, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray9, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray10, raycastInfo3));
-            rp3d_test(!mConcaveMeshProxyShape->raycast(ray10, raycastInfo3));
+            rp3d_test(!mConcaveMeshCollider->raycast(ray10, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray10, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -1515,7 +1515,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast hits ----- //
             rp3d_test(mConcaveMeshBody->raycast(ray11, raycastInfo3));
-            rp3d_test(mConcaveMeshProxyShape->raycast(ray11, raycastInfo3));
+            rp3d_test(mConcaveMeshCollider->raycast(ray11, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1524,7 +1524,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray12, raycastInfo3));
-            rp3d_test(mConcaveMeshProxyShape->raycast(ray12, raycastInfo3));
+            rp3d_test(mConcaveMeshCollider->raycast(ray12, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1533,7 +1533,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray13, raycastInfo3));
-            rp3d_test(mConcaveMeshProxyShape->raycast(ray13, raycastInfo3));
+            rp3d_test(mConcaveMeshCollider->raycast(ray13, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1542,7 +1542,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray14, raycastInfo3));
-            rp3d_test(mConcaveMeshProxyShape->raycast(ray14, raycastInfo3));
+            rp3d_test(mConcaveMeshCollider->raycast(ray14, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1551,7 +1551,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray15, raycastInfo3));
-            rp3d_test(mConcaveMeshProxyShape->raycast(ray15, raycastInfo3));
+            rp3d_test(mConcaveMeshCollider->raycast(ray15, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1560,7 +1560,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray16, raycastInfo3));
-            rp3d_test(mConcaveMeshProxyShape->raycast(ray16, raycastInfo3));
+            rp3d_test(mConcaveMeshCollider->raycast(ray16, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1582,14 +1582,14 @@ class TestRaycast : public Test {
             Ray rayBottom(point2A, point2B);
             Vector3 hitPoint2 = mLocalShapeToWorld * Vector3(1, 2, -4);
 
-            mCallback.shapeToTest = mHeightFieldProxyShape;
+            mCallback.shapeToTest = mHeightFieldCollider;
 
             // CollisionWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mHeightFieldBody);
-            rp3d_test(mCallback.raycastInfo.proxyShape == mHeightFieldProxyShape);
+            rp3d_test(mCallback.raycastInfo.collider == mHeightFieldCollider);
             rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.4), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
@@ -1609,17 +1609,17 @@ class TestRaycast : public Test {
             RaycastInfo raycastInfo2;
             rp3d_test(mHeightFieldBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mHeightFieldBody);
-            rp3d_test(raycastInfo2.proxyShape == mHeightFieldProxyShape);
+            rp3d_test(raycastInfo2.collider == mHeightFieldCollider);
             rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.4), epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo3;
-            rp3d_test(mHeightFieldProxyShape->raycast(ray, raycastInfo3));
+            rp3d_test(mHeightFieldCollider->raycast(ray, raycastInfo3));
             rp3d_test(raycastInfo3.body == mHeightFieldBody);
-            rp3d_test(raycastInfo3.proxyShape == mHeightFieldProxyShape);
+            rp3d_test(raycastInfo3.collider == mHeightFieldCollider);
             rp3d_test(approxEqual(raycastInfo3.hitFraction, decimal(0.4), epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
@@ -1629,7 +1629,7 @@ class TestRaycast : public Test {
             mWorld->raycast(rayBottom, &mCallback);
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mHeightFieldBody);
-            rp3d_test(mCallback.raycastInfo.proxyShape == mHeightFieldProxyShape);
+            rp3d_test(mCallback.raycastInfo.collider == mHeightFieldCollider);
             rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.375), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint2.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint2.y, epsilon));
@@ -1639,17 +1639,17 @@ class TestRaycast : public Test {
             RaycastInfo raycastInfo5;
             rp3d_test(mHeightFieldBody->raycast(rayBottom, raycastInfo5));
             rp3d_test(raycastInfo5.body == mHeightFieldBody);
-            rp3d_test(raycastInfo5.proxyShape == mHeightFieldProxyShape);
+            rp3d_test(raycastInfo5.collider == mHeightFieldCollider);
             rp3d_test(approxEqual(raycastInfo5.hitFraction, decimal(0.375), epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.x, hitPoint2.x, epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.y, hitPoint2.y, epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.z, hitPoint2.z, epsilon));
 
-            // ProxyCollisionShape::raycast()
+            // Collider::raycast()
             RaycastInfo raycastInfo6;
-            rp3d_test(mHeightFieldProxyShape->raycast(rayBottom, raycastInfo6));
+            rp3d_test(mHeightFieldCollider->raycast(rayBottom, raycastInfo6));
             rp3d_test(raycastInfo6.body == mHeightFieldBody);
-            rp3d_test(raycastInfo6.proxyShape == mHeightFieldProxyShape);
+            rp3d_test(raycastInfo6.collider == mHeightFieldCollider);
             rp3d_test(approxEqual(raycastInfo6.hitFraction, decimal(0.375), epsilon));
             rp3d_test(approxEqual(raycastInfo6.worldPoint.x, hitPoint2.x, epsilon));
             rp3d_test(approxEqual(raycastInfo6.worldPoint.y, hitPoint2.y, epsilon));
@@ -1668,7 +1668,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast miss ----- //
             rp3d_test(!mHeightFieldBody->raycast(ray1, raycastInfo3));
-            rp3d_test(!mHeightFieldProxyShape->raycast(ray1, raycastInfo3));
+            rp3d_test(!mHeightFieldCollider->raycast(ray1, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -1680,25 +1680,25 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mHeightFieldBody->raycast(ray2, raycastInfo3));
-            rp3d_test(!mHeightFieldProxyShape->raycast(ray2, raycastInfo3));
+            rp3d_test(!mHeightFieldCollider->raycast(ray2, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray2, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mHeightFieldBody->raycast(ray3, raycastInfo3));
-            rp3d_test(!mHeightFieldProxyShape->raycast(ray3, raycastInfo3));
+            rp3d_test(!mHeightFieldCollider->raycast(ray3, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray3, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mHeightFieldBody->raycast(ray4, raycastInfo3));
-            rp3d_test(!mHeightFieldProxyShape->raycast(ray4, raycastInfo3));
+            rp3d_test(!mHeightFieldCollider->raycast(ray4, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray4, &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mHeightFieldBody->raycast(ray5, raycastInfo3));
-            rp3d_test(!mHeightFieldProxyShape->raycast(ray5, raycastInfo3));
+            rp3d_test(!mHeightFieldCollider->raycast(ray5, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray5, &mCallback);
             rp3d_test(!mCallback.isHit);
@@ -1707,7 +1707,7 @@ class TestRaycast : public Test {
 
             // ----- Test raycast hits ----- //
             rp3d_test(mHeightFieldBody->raycast(ray11, raycastInfo3));
-            rp3d_test(mHeightFieldProxyShape->raycast(ray11, raycastInfo3));
+            rp3d_test(mHeightFieldCollider->raycast(ray11, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1716,7 +1716,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mHeightFieldBody->raycast(ray12, raycastInfo3));
-            rp3d_test(mHeightFieldProxyShape->raycast(ray12, raycastInfo3));
+            rp3d_test(mHeightFieldCollider->raycast(ray12, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1725,7 +1725,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mHeightFieldBody->raycast(ray13, raycastInfo3));
-            rp3d_test(mHeightFieldProxyShape->raycast(ray13, raycastInfo3));
+            rp3d_test(mHeightFieldCollider->raycast(ray13, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1734,7 +1734,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mHeightFieldBody->raycast(ray14, raycastInfo3));
-            rp3d_test(mHeightFieldProxyShape->raycast(ray14, raycastInfo3));
+            rp3d_test(mHeightFieldCollider->raycast(ray14, raycastInfo3));
             mCallback.reset();
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);

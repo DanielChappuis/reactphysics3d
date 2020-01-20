@@ -56,7 +56,7 @@ Sphere::Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::Collision
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mProxyShape = mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
+    mCollider = mBody->addCollider(mCollisionShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -90,7 +90,7 @@ Sphere::Sphere(float radius, float mass,  rp3d::PhysicsCommon& physicsCommon,rea
     rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mProxyShape = body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
+    mCollider = body->addCollider(mCollisionShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 

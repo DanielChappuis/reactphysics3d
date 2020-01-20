@@ -57,10 +57,10 @@ class SphereShape : public ConvexShape {
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
+        virtual bool testPointInside(const Vector3& localPoint, Collider* collider) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
@@ -165,7 +165,7 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
 }
 
 // Return true if a point is inside the collision shape
-inline bool SphereShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+inline bool SphereShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
     return (localPoint.lengthSquare() < mMargin * mMargin);
 }
 

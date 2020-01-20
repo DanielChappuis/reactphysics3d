@@ -68,7 +68,7 @@ class ConcaveShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const override;
+        virtual bool testPointInside(const Vector3& localPoint, Collider* collider) const override;
 
     public :
 
@@ -115,7 +115,7 @@ inline bool ConcaveShape::isPolyhedron() const {
 }
 
 // Return true if a point is inside the collision shape
-inline bool ConcaveShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+inline bool ConcaveShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
     return false;
 }
 

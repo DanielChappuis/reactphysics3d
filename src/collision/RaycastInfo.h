@@ -34,7 +34,7 @@ namespace reactphysics3d {
 
 // Declarations
 class CollisionBody;
-class ProxyShape;
+class Collider;
 class CollisionShape;
 struct Ray;
 
@@ -69,13 +69,13 @@ struct RaycastInfo {
         /// Pointer to the hit collision body
         CollisionBody* body;
 
-        /// Pointer to the hit proxy collision shape
-        ProxyShape* proxyShape;
+        /// Pointer to the hit collider
+        Collider* collider;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(nullptr), proxyShape(nullptr) {
+        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(nullptr), collider(nullptr) {
 
         }
 
@@ -93,7 +93,7 @@ struct RaycastInfo {
 /**
  * This class can be used to register a callback for ray casting queries.
  * You should implement your own class inherited from this one and implement
- * the notifyRaycastHit() method. This method will be called for each ProxyShape
+ * the notifyRaycastHit() method. This method will be called for each collider
  * that is hit by the ray.
  */
 class RaycastCallback {
@@ -107,7 +107,7 @@ class RaycastCallback {
 
         }
 
-        /// This method will be called for each ProxyShape that is hit by the
+        /// This method will be called for each collider that is hit by the
         /// ray. You cannot make any assumptions about the order of the
         /// calls. You should use the return value to control the continuation
         /// of the ray. The returned value is the next maxFraction value to use.
@@ -117,7 +117,7 @@ class RaycastCallback {
         /// occurred. If you return the fraction in the parameter (hitFraction
         /// value in the RaycastInfo object), the current ray will be clipped
         /// to this fraction in the next queries. If you return -1.0, it will
-        /// ignore this ProxyShape and continue the ray cast.
+        /// ignore this collider and continue the ray cast.
         /**
          * @param raycastInfo Information about the raycast hit
          * @return Value that controls the continuation of the ray after a hit
@@ -139,8 +139,8 @@ struct RaycastTest {
             userCallback = callback;
         }
 
-        /// Ray cast test against a proxy shape
-        decimal raycastAgainstShape(ProxyShape* shape, const Ray& ray);
+        /// Ray cast test against a collider
+        decimal raycastAgainstShape(Collider* shape, const Ray& ray);
 };
 
 }

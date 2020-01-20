@@ -55,7 +55,7 @@ class Logger {
         enum class Level {Error = 1, Warning = 2, Information = 4};
 
         /// Log categories
-        enum class Category {World, Body, Joint, ProxyShape};
+        enum class Category {World, Body, Joint, Collider};
 
         /// Log verbosity level
         enum class Format {Text, HTML};
@@ -67,7 +67,7 @@ class Logger {
                 case Category::World: return "World";
                 case Category::Body: return "Body";
                 case Category::Joint: return "Joint";
-                case Category::ProxyShape: return "ProxyShape";
+                case Category::Collider: return "Collider";
             }
 
             assert(false);
@@ -253,7 +253,7 @@ class Logger {
                       ".joint .category, .joint > .message { "
                         "color: #bf8040; "
                       "} "
-                      ".proxyshape .category, .proxyshape > .message { "
+                      ".collider .category, .collider > .message { "
                         "color: #9933ff; "
                       "} "
                       ".warning { "

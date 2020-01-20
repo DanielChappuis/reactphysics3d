@@ -36,7 +36,7 @@
 #include "components/CollisionBodyComponents.h"
 #include "components/RigidBodyComponents.h"
 #include "components/TransformComponents.h"
-#include "components/ProxyShapeComponents.h"
+#include "components/ColliderComponents.h"
 #include "components/JointComponents.h"
 #include "components/BallAndSocketJointComponents.h"
 #include "components/FixedJointComponents.h"
@@ -90,8 +90,8 @@ class CollisionWorld {
         /// Transform Components
         TransformComponents mTransformComponents;
 
-        /// Proxy-Shapes Components
-        ProxyShapeComponents mProxyShapesComponents;
+        /// Collider Components
+        ColliderComponents mCollidersComponents;
 
         /// Joint Components
         JointComponents mJointsComponents;
@@ -213,8 +213,8 @@ class CollisionWorld {
 
 #endif
 
-        /// Return the current world-space AABB of given proxy shape
-        AABB getWorldAABB(const ProxyShape* proxyShape) const;
+        /// Return the current world-space AABB of given collider
+        AABB getWorldAABB(const Collider* collider) const;
 
         /// Return the name of the world
         const std::string& getName() const;
@@ -225,7 +225,7 @@ class CollisionWorld {
         friend class CollisionDetectionSystem;
         friend class CollisionBody;
         friend class RigidBody;
-        friend class ProxyShape;
+        friend class Collider;
         friend class ConvexMeshShape;
         friend class CollisionCallback::ContactPair;
         friend class OverlapCallback::OverlapPair;

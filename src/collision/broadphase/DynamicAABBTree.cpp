@@ -694,7 +694,7 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& ca
     Stack<int32> stack(mAllocator, 128);
     stack.push(mRootNodeID);
 
-    // Walk through the tree from the root looking for proxy shapes
+    // Walk through the tree from the root looking for colliders
     // that overlap with the ray AABB
     while (stack.size() > 0) {
 
@@ -735,7 +735,7 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& ca
             }
 
             // If the user returned a negative fraction, we continue
-            // the raycasting as if the proxy shape did not exist
+            // the raycasting as if the collider did not exist
         }
         else {  // If the node has children
 

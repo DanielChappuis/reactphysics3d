@@ -25,7 +25,7 @@
 
 // Libraries
 #include "TriangleShape.h"
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 #include "mathematics/mathematics_functions.h"
 #include "collision/RaycastInfo.h"
 #include "utils/Profiler.h"
@@ -237,7 +237,7 @@ void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
 // Raycast method with feedback information
 /// This method use the line vs triangle raycasting technique described in
 /// Real-time Collision Detection by Christer Ericson.
-bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     RP3D_PROFILE("TriangleShape::raycast()", mProfiler);
 
@@ -298,8 +298,8 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     Vector3 localHitNormal = (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]);
     if (localHitNormal.dot(pq) > decimal(0.0)) localHitNormal = -localHitNormal;
 
-    raycastInfo.body = proxyShape->getBody();
-    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.body = collider->getBody();
+    raycastInfo.collider = collider;
     raycastInfo.worldPoint = localHitPoint;
     raycastInfo.hitFraction = hitFraction;
     raycastInfo.worldNormal = localHitNormal;

@@ -30,7 +30,7 @@
 #include "collision/broadphase/DynamicAABBTree.h"
 #include "containers/LinkedList.h"
 #include "containers/Set.h"
-#include "components/ProxyShapeComponents.h"
+#include "components/ColliderComponents.h"
 #include "components/TransformComponents.h"
 #include "components/RigidBodyComponents.h"
 #include <cstring>
@@ -42,7 +42,7 @@ namespace reactphysics3d {
 class CollisionDetectionSystem;
 class BroadPhaseSystem;
 class CollisionBody;
-class ProxyShape;
+class Collider;
 class MemoryManager;
 class Profiler;
 
@@ -100,7 +100,7 @@ class BroadPhaseRaycastCallback : public DynamicAABBTreeRaycastCallback {
 // Class BroadPhaseSystem
 /**
  * This class represents the broad-phase collision detection. The
- * goal of the broad-phase collision detection is to compute the pairs of proxy shapes
+ * goal of the broad-phase collision detection is to compute the pairs of colliders
  * that have their AABBs overlapping. Only those pairs of bodies will be tested
  * later for collision during the narrow-phase collision detection. A dynamic AABB
  * tree data structure is used for fast broad-phase collision detection.
@@ -114,8 +114,8 @@ class BroadPhaseSystem {
         /// Dynamic AABB tree
         DynamicAABBTree mDynamicAABBTree;
 
-        /// Reference to the proxy-shapes components
-        ProxyShapeComponents& mProxyShapesComponents;
+        /// Reference to the colliders components
+        ColliderComponents& mCollidersComponents;
 
         /// Reference to the transform components
         TransformComponents& mTransformsComponents;
@@ -139,18 +139,18 @@ class BroadPhaseSystem {
 #endif
         // -------------------- Methods -------------------- //
 
-        /// Notify the Dynamic AABB tree that a proxy-shape needs to be updated
-        void updateProxyShapeInternal(int32 broadPhaseId, ProxyShape* proxyShape, const AABB& aabb, const Vector3& displacement);
+        /// Notify the Dynamic AABB tree that a collider needs to be updated
+        void updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb, const Vector3& displacement);
 
-        /// Update the broad-phase state of some proxy-shapes components
-        void updateProxyShapesComponents(uint32 startIndex, uint32 nbItems, decimal timeStep);
+        /// Update the broad-phase state of some colliders components
+        void updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal timeStep);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
+        BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ColliderComponents& collidersComponents,
                          TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents);
 
         /// Destructor
@@ -162,21 +162,21 @@ class BroadPhaseSystem {
         /// Deleted assignment operator
         BroadPhaseSystem& operator=(const BroadPhaseSystem& algorithm) = delete;
         
-        /// Add a proxy collision shape into the broad-phase collision detection
-        void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
+        /// Add a collider into the broad-phase collision detection
+        void addCollider(Collider* collider, const AABB& aabb);
 
-        /// Remove a proxy collision shape from the broad-phase collision detection
-        void removeProxyCollisionShape(ProxyShape* proxyShape);
+        /// Remove a collider from the broad-phase collision detection
+        void removeCollider(Collider* collider);
 
-        /// Update the broad-phase state of a single proxy-shape
-        void updateProxyShape(Entity proxyShapeEntity, decimal timeStep);
+        /// Update the broad-phase state of a single collider
+        void updateCollider(Entity colliderEntity, decimal timeStep);
 
-        /// Update the broad-phase state of all the enabled proxy-shapes
-        void updateProxyShapes(decimal timeStep);
+        /// Update the broad-phase state of all the enabled colliders
+        void updateColliders(decimal timeStep);
 
         /// Add a collision shape in the array of shapes that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.
-        void addMovedCollisionShape(int broadPhaseID, ProxyShape* proxyShape);
+        void addMovedCollisionShape(int broadPhaseID, Collider* collider);
 
         /// Remove a collision shape from the array of shapes that have moved in the last simulation
         /// step and that need to be tested again for broad-phase overlapping.
@@ -185,8 +185,8 @@ class BroadPhaseSystem {
         /// Compute all the overlapping pairs of collision shapes
         void computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int32, int32>>& overlappingNodes);
 
-        /// Return the proxy shape corresponding to the broad-phase node id in parameter
-        ProxyShape* getProxyShapeForBroadPhaseId(int broadPhaseId) const;
+        /// Return the collider corresponding to the broad-phase node id in parameter
+        Collider* getColliderForBroadPhaseId(int broadPhaseId) const;
 
         /// Return true if the two broad-phase collision shapes are overlapping
         bool testOverlappingShapes(int32 shape1BroadPhaseId, int32 shape2BroadPhaseId) const;
@@ -219,9 +219,9 @@ inline void BroadPhaseSystem::removeMovedCollisionShape(int broadPhaseID) {
     mMovedShapes.remove(broadPhaseID);
 }
 
-// Return the proxy shape corresponding to the broad-phase node id in parameter
-inline ProxyShape* BroadPhaseSystem::getProxyShapeForBroadPhaseId(int broadPhaseId) const {
-    return static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(broadPhaseId));
+// Return the collider corresponding to the broad-phase node id in parameter
+inline Collider* BroadPhaseSystem::getColliderForBroadPhaseId(int broadPhaseId) const {
+    return static_cast<Collider*>(mDynamicAABBTree.getNodeDataPointer(broadPhaseId));
 }
 
 #ifdef IS_PROFILING_ACTIVE

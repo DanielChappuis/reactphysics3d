@@ -25,7 +25,7 @@
 
 // Libraries
 #include "ContactPoint.h"
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 
 using namespace reactphysics3d;
 using namespace std;

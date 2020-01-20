@@ -39,7 +39,7 @@ class OverlappingPair;
 class ContactManifold;
 struct ContactManifoldListElement;
 class CollisionBody;
-class ProxyShape;
+class Collider;
 class MemoryManager;
 class CollisionCallbackInfo;
 
@@ -90,10 +90,10 @@ class CollisionCallback {
                 /// Return the world-space contact normal
                 const Vector3& getWorldNormal() const;
 
-                /// Return the contact point on the first proxy shape in the local-space of the first proxy shape
+                /// Return the contact point on the first collider in the local-space of the first collider
                 const Vector3& getLocalPointOnShape1() const;
 
-                /// Return the contact point on the second proxy shape in the local-space of the second proxy shape
+                /// Return the contact point on the second collider in the local-space of the second collider
                 const Vector3& getLocalPointOnShape2() const;
 
                 // -------------------- Friendship -------------------- //
@@ -151,11 +151,11 @@ class CollisionCallback {
                 /// Return a pointer to the second body in contact
                 CollisionBody* getBody2() const;
 
-                /// Return a pointer to the first proxy-shape in contact (in body 1)
-                ProxyShape* getProxyShape1() const;
+                /// Return a pointer to the first collider in contact (in body 1)
+                Collider* getCollider1() const;
 
-                /// Return a pointer to the second proxy-shape in contact (in body 2)
-                ProxyShape* getProxyShape2() const;
+                /// Return a pointer to the second collider in contact (in body 2)
+                Collider* getCollider2() const;
 
                 // -------------------- Friendship -------------------- //
 
@@ -253,17 +253,17 @@ inline const Vector3& CollisionCallback::ContactPoint::getWorldNormal() const {
    return mContactPoint.getNormal();
 }
 
-// Return the contact point on the first proxy shape in the local-space of the first proxy shape
+// Return the contact point on the first collider in the local-space of the first collider
 /**
- * @return The contact point in the local-space of the first proxy-shape (from body1) in contact
+ * @return The contact point in the local-space of the first collider (from body1) in contact
  */
 inline const Vector3& CollisionCallback::ContactPoint::getLocalPointOnShape1() const {
    return mContactPoint.getLocalPointOnShape1();
 }
 
-// Return the contact point on the second proxy shape in the local-space of the second proxy shape
+// Return the contact point on the second collider in the local-space of the second collider
 /**
- * @return The contact point in the local-space of the second proxy-shape (from body2) in contact
+ * @return The contact point in the local-space of the second collider (from body2) in contact
  */
 inline const Vector3& CollisionCallback::ContactPoint::getLocalPointOnShape2() const {
    return mContactPoint.getLocalPointOnShape2();

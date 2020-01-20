@@ -38,7 +38,7 @@ namespace reactphysics3d {
 
 // Declarations
 struct ContactManifoldListElement;
-class ProxyShape;
+class Collider;
 class CollisionWorld;
 class CollisionShape;
 struct RaycastInfo;
@@ -125,11 +125,11 @@ class CollisionBody {
         /// Set the current position and orientation
         virtual void setTransform(const Transform& transform);
 
-        /// Add a collision shape to the body.
-        virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape, const Transform& transform);
+        /// Create a new collider and add it to the body.
+        virtual Collider* addCollider(CollisionShape* collisionShape, const Transform& transform);
 
-        /// Remove a collision shape from the body
-        virtual void removeCollisionShape(ProxyShape *proxyShape);
+        /// Remove a collider from the body
+        virtual void removeCollider(Collider* collider);
 
         /// Return true if a point is inside the collision body
         bool testPointInside(const Vector3& worldPoint) const;
@@ -140,17 +140,17 @@ class CollisionBody {
         /// Test if the collision body overlaps with a given AABB
         bool testAABBOverlap(const AABB& worldAABB) const;
 
-        /// Compute and return the AABB of the body by merging all proxy shapes AABBs
+        /// Compute and return the AABB of the body by merging all colliders AABBs
         AABB getAABB() const;
 
-        /// Return a const pointer to a given proxy-shape of the body
-        const ProxyShape* getProxyShape(uint proxyShapeIndex) const;
+        /// Return a const pointer to a given collider of the body
+        const Collider* getCollider(uint colliderIndex) const;
 
-        /// Return a pointer to a given proxy-shape of the body
-        ProxyShape* getProxyShape(uint proxyShapeIndex);
+        /// Return a pointer to a given collider of the body
+        Collider* getCollider(uint colliderIndex);
 
-        /// Return the number of proxy-shapes associated with this body
-        uint getNbProxyShapes() const;
+        /// Return the number of colliders associated with this body
+        uint getNbColliders() const;
 
         /// Return the world-space coordinates of a point given the local-space coordinates of the body
         Vector3 getWorldPoint(const Vector3& localPoint) const;
@@ -184,7 +184,7 @@ class CollisionBody {
         friend class CollisionDetectionSystem;
         friend class BroadPhaseAlgorithm;
         friend class ConvexMeshShape;
-        friend class ProxyShape;
+        friend class Collider;
 };
 
 /// Test if the collision body overlaps with a given AABB

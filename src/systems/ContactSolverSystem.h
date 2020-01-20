@@ -46,7 +46,7 @@ class RigidBody;
 class CollisionBodyComponents;
 class DynamicsComponents;
 class RigidBodyComponents;
-class ProxyShapeComponents;
+class ColliderComponents;
 
 // Class ContactSolverSystem
 /**
@@ -319,8 +319,8 @@ class ContactSolverSystem {
         /// Reference to the dynamics components
         RigidBodyComponents& mRigidBodyComponents;
 
-        /// Reference to the proxy-shapes components
-        ProxyShapeComponents& mProxyShapeComponents;
+        /// Reference to the colliders components
+        ColliderComponents& mColliderComponents;
 
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
@@ -363,7 +363,7 @@ class ContactSolverSystem {
 
         /// Constructor
         ContactSolverSystem(MemoryManager& memoryManager, DynamicsWorld& world, Islands& islands, CollisionBodyComponents& bodyComponents,
-                      RigidBodyComponents& rigidBodyComponents, ProxyShapeComponents& proxyShapeComponents,
+                      RigidBodyComponents& rigidBodyComponents, ColliderComponents& colliderComponents,
                       const WorldSettings& worldSettings);
 
         /// Destructor

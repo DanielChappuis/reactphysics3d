@@ -54,7 +54,7 @@ enum class NarrowPhaseAlgorithmType {
 /**
  * This is the collision dispatch configuration use in ReactPhysics3D.
  * Collision dispatching decides which collision
- * algorithm to use given two types of proxy collision shapes.
+ * algorithm to use given two types of colliders.
  */
 class CollisionDispatch {
 

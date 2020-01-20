@@ -52,7 +52,7 @@ const int NB_COLLISION_SHAPE_TYPES = 4;
 enum class CollisionShapeName { TRIANGLE, SPHERE, CAPSULE, BOX, CONVEX_MESH, TRIANGLE_MESH, HEIGHTFIELD };
 
 // Declarations
-class ProxyShape;
+class Collider;
 class CollisionBody;
 
 // Class CollisionShape
@@ -85,10 +85,10 @@ class CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint, ProxyShape* proxyShape) const=0;
+        virtual bool testPointInside(const Vector3& worldPoint, Collider* collider) const=0;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const=0;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const=0;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const = 0;
@@ -145,7 +145,7 @@ class CollisionShape {
 
         // -------------------- Friendship -------------------- //
 
-        friend class ProxyShape;
+        friend class Collider;
         friend class CollisionWorld;
 };
 

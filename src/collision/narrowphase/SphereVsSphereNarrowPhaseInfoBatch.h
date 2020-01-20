@@ -55,7 +55,7 @@ struct SphereVsSphereNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
         virtual ~SphereVsSphereNarrowPhaseInfoBatch() override = default;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        virtual void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1,
+        virtual void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
                                         CollisionShape* shape2, const Transform& shape1Transform,
                                         const Transform& shape2Transform);
 

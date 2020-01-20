@@ -53,7 +53,7 @@
 #include "collision/shapes/HeightFieldShape.h"
 #include "collision/PolyhedronMesh.h"
 #include "collision/shapes/AABB.h"
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 #include "collision/RaycastInfo.h"
 #include "collision/TriangleMesh.h"
 #include "collision/PolyhedronMesh.h"

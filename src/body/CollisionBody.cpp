@@ -57,55 +57,52 @@ CollisionBody::~CollisionBody() {
 
 }
 
-// Add a collision shape to the body. Note that you can share a collision
-// shape between several bodies using the same collision shape instance to
-// when you add the shape to the different bodies. Do not forget to delete
-// the collision shape you have created at the end of your program.
-/// This method will return a pointer to a new proxy shape. A proxy shape is
-/// an object that links a collision shape and a given body. You can use the
-/// returned proxy shape to get and set information about the corresponding
+// Create a new collider and add it to the body
+/// This method will return a pointer to a new collider. A collider is
+/// an object with a collision shape that is attached to a body. It is possible to
+/// attach multiple colliders to a given body. You can use the
+/// returned collider to get and set information about the corresponding
 /// collision shape for that body.
 /**
- * @param collisionShape A pointer to the collision shape you want to add to the body
- * @param transform The transformation of the collision shape that transforms the
- *        local-space of the collision shape into the local-space of the body
- * @return A pointer to the proxy shape that has been created to link the body to
- *         the new collision shape you have added.
+ * @param collisionShape A pointer to the collision shape of the new collider
+ * @param transform The transformation of the collider that transforms the
+ *        local-space of the collider into the local-space of the body
+ * @return A pointer to the collider that has been created
  */
-ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape, const Transform& transform) {
+Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Transform& transform) {
 
-    // Create a new entity for the proxy-shape
-    Entity proxyShapeEntity = mWorld.mEntityManager.createEntity();
+    // Create a new entity for the collider
+    Entity colliderEntity = mWorld.mEntityManager.createEntity();
 
-    // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                      sizeof(ProxyShape))) ProxyShape(proxyShapeEntity, this, mWorld.mMemoryManager);
+    // Create a new collider to attach the collision shape to the body
+    Collider* collider = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                      sizeof(Collider))) Collider(colliderEntity, this, mWorld.mMemoryManager);
 
-    // Add the proxy-shape component to the entity of the body
+    // Add the collider component to the entity of the body
     Vector3 localBoundsMin;
     Vector3 localBoundsMax;
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
-    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape,
+    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider,
                                                                   AABB(localBoundsMin, localBoundsMax),
                                                                   transform, collisionShape, decimal(1), 0x0001, 0xFFFF, localToWorldTransform);
     bool isActive = mWorld.mCollisionBodyComponents.getIsActive(mEntity);
-    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, !isActive, proxyShapeComponent);
+    mWorld.mCollidersComponents.addComponent(colliderEntity, !isActive, colliderComponent);
 
-    mWorld.mCollisionBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
+    mWorld.mCollisionBodyComponents.addColliderToBody(mEntity, colliderEntity);
 
 #ifdef IS_PROFILING_ACTIVE
 
 	// Set the profiler
-	proxyShape->setProfiler(mProfiler);
+    collider->setProfiler(mProfiler);
 
 #endif
 
 #ifdef IS_LOGGING_ACTIVE
 
     // Set the logger
-    proxyShape->setLogger(mLogger);
+    collider->setLogger(mLogger);
 
 #endif
 
@@ -114,94 +111,92 @@ ProxyShape* CollisionBody::addCollisionShape(CollisionShape* collisionShape, con
     collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
-    mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
+    mWorld.mCollisionDetection.addCollider(collider, aabb);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
+             "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " added to body");
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
-             proxyShape->getCollisionShape()->to_string());
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
+             "Collider " + std::to_string(collider->getBroadPhaseId()) + ":  collisionShape=" +
+             collider->getCollisionShape()->to_string());
 
     // Return a pointer to the collision shape
-    return proxyShape;
+    return collider;
 }
 
-// Return the number of proxy-shapes associated with this body
+// Return the number of colliders associated with this body
 /**
-* @return The number of proxy-shapes associated with this body
+* @return The number of colliders associated with this body
 */
-uint CollisionBody::getNbProxyShapes() const {
-    return static_cast<uint>(mWorld.mCollisionBodyComponents.getProxyShapes(mEntity).size());
+uint CollisionBody::getNbColliders() const {
+    return static_cast<uint>(mWorld.mCollisionBodyComponents.getColliders(mEntity).size());
 }
 
-// Return a const pointer to a given proxy-shape of the body
+// Return a const pointer to a given collider of the body
 /**
-* @return The const pointer of a given proxy-shape of the body
+* @return The const pointer of a given collider of the body
 */
-const ProxyShape* CollisionBody::getProxyShape(uint proxyShapeIndex) const {
+const Collider* CollisionBody::getCollider(uint colliderIndex) const {
 
-    assert(proxyShapeIndex < getNbProxyShapes());
+    assert(colliderIndex < getNbColliders());
 
-    Entity proxyShapeEntity = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity)[proxyShapeIndex];
+    Entity colliderEntity = mWorld.mCollisionBodyComponents.getColliders(mEntity)[colliderIndex];
 
-    return mWorld.mProxyShapesComponents.getProxyShape(proxyShapeEntity);
+    return mWorld.mCollidersComponents.getCollider(colliderEntity);
 }
 
-// Return a pointer to a given proxy-shape of the body
+// Return a pointer to a given collider of the body
 /**
-* @return The pointer of a given proxy-shape of the body
+* @return The pointer of a given collider of the body
 */
-ProxyShape* CollisionBody::getProxyShape(uint proxyShapeIndex) {
+Collider* CollisionBody::getCollider(uint colliderIndex) {
 
-    assert(proxyShapeIndex < getNbProxyShapes());
+    assert(colliderIndex < getNbColliders());
 
-    Entity proxyShapeEntity = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity)[proxyShapeIndex];
+    Entity colliderEntity = mWorld.mCollisionBodyComponents.getColliders(mEntity)[colliderIndex];
 
-    return mWorld.mProxyShapesComponents.getProxyShape(proxyShapeEntity);
+    return mWorld.mCollidersComponents.getCollider(colliderEntity);
 }
 
-// Remove a collision shape from the body
-/// To remove a collision shape, you need to specify the pointer to the proxy
-/// shape that has been returned when you have added the collision shape to the
-/// body
+// Remove a collider from the body
+/// To remove a collider, you need to specify its pointer
 /**
- * @param proxyShape The pointer of the proxy shape you want to remove
+ * @param collider The pointer of the collider you want to remove
  */
-void CollisionBody::removeCollisionShape(ProxyShape* proxyShape) {
+void CollisionBody::removeCollider(Collider* collider) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " removed from body");
+             "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " removed from body");
 
-    // Remove the proxy-shape from the broad-phase
-    if (proxyShape->getBroadPhaseId() != -1) {
-        mWorld.mCollisionDetection.removeProxyCollisionShape(proxyShape);
+    // Remove the collider from the broad-phase
+    if (collider->getBroadPhaseId() != -1) {
+        mWorld.mCollisionDetection.removeCollider(collider);
     }
 
-    mWorld.mCollisionBodyComponents.removeProxyShapeFromBody(mEntity, proxyShape->getEntity());
+    mWorld.mCollisionBodyComponents.removeColliderFromBody(mEntity, collider->getEntity());
 
-    // Remove the proxy-shape component
-    mWorld.mProxyShapesComponents.removeComponent(proxyShape->getEntity());
+    // Remove the collider component
+    mWorld.mCollidersComponents.removeComponent(collider->getEntity());
 
     // Destroy the entity
-    mWorld.mEntityManager.destroyEntity(proxyShape->getEntity());
+    mWorld.mEntityManager.destroyEntity(collider->getEntity());
 
-    // Call the constructor of the proxy-shape
-    proxyShape->~ProxyShape();
+    // Call the constructor of the collider
+    collider->~Collider();
 
-    // Release allocated memory for the proxy-shape
-    mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, proxyShape, sizeof(ProxyShape));
+    // Release allocated memory for the collider
+    mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, collider, sizeof(Collider));
 }
 
 // Remove all the collision shapes
 void CollisionBody::removeAllCollisionShapes() {
 
-    // Look for the proxy shape that contains the collision shape in parameter.
-    // Note that we need to copy the list of proxy shapes entities because we are deleting them in a loop.
-    const List<Entity> proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+    // Look for the collider that contains the collision shape in parameter.
+    // Note that we need to copy the list of collider entities because we are deleting them in a loop.
+    const List<Entity> collidersEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < collidersEntities.size(); i++) {
 
-        removeCollisionShape(mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]));
+        removeCollider(mWorld.mCollidersComponents.getCollider(collidersEntities[i]));
     }
 }
 
@@ -218,17 +213,17 @@ const Transform& CollisionBody::getTransform() const {
 // Update the broad-phase state for this body (because it has moved for instance)
 void CollisionBody::updateBroadPhaseState(decimal timeStep) const {
 
-    // For all the proxy collision shapes of the body
-    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+    // For all the colliders of the body
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
 
-        // Update the local-to-world transform of the proxy-shape
-        mWorld.mProxyShapesComponents.setLocalToWorldTransform(proxyShapesEntities[i],
+        // Update the local-to-world transform of the collider
+        mWorld.mCollidersComponents.setLocalToWorldTransform(colliderEntities[i],
                                                                mWorld.mTransformComponents.getTransform(mEntity) *
-                                                               mWorld.mProxyShapesComponents.getLocalToBodyTransform(proxyShapesEntities[i]));
+                                                               mWorld.mCollidersComponents.getLocalToBodyTransform(colliderEntities[i]));
 
-        // Update the proxy
-        mWorld.mCollisionDetection.updateProxyShape(proxyShapesEntities[i], timeStep);
+        // Update the collider
+        mWorld.mCollisionDetection.updateCollider(colliderEntities[i], timeStep);
     }
 }
 
@@ -248,32 +243,32 @@ void CollisionBody::setIsActive(bool isActive) {
 
         const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
 
-        // For each proxy shape of the body
-        const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-        for (uint i=0; i < proxyShapesEntities.size(); i++) {
+        // For each collider of the body
+        const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+        for (uint i=0; i < colliderEntities.size(); i++) {
 
-            ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+            Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
             // Compute the world-space AABB of the new collision shape
             AABB aabb;
-            proxyShape->getCollisionShape()->computeAABB(aabb, transform * mWorld.mProxyShapesComponents.getLocalToBodyTransform(proxyShape->getEntity()));
+            collider->getCollisionShape()->computeAABB(aabb, transform * mWorld.mCollidersComponents.getLocalToBodyTransform(collider->getEntity()));
 
-            // Add the proxy shape to the collision detection
-            mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
+            // Add the collider to the collision detection
+            mWorld.mCollisionDetection.addCollider(collider, aabb);
         }
     }
     else {  // If we have to deactivate the body
 
-        // For each proxy shape of the body
-        const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-        for (uint i=0; i < proxyShapesEntities.size(); i++) {
+        // For each collider of the body
+        const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+        for (uint i=0; i < colliderEntities.size(); i++) {
 
-            ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+            Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
-            if (proxyShape->getBroadPhaseId() != -1) {
+            if (collider->getBroadPhaseId() != -1) {
 
-                // Remove the proxy shape from the collision detection
-                mWorld.mCollisionDetection.removeProxyCollisionShape(proxyShape);
+                // Remove the collider from the collision detection
+                mWorld.mCollisionDetection.removeCollider(collider);
             }
         }
     }
@@ -287,13 +282,13 @@ void CollisionBody::setIsActive(bool isActive) {
 // (as if the body has moved).
 void CollisionBody::askForBroadPhaseCollisionCheck() const {
 
-    // For all the proxy collision shapes of the body
-    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+    // For all the colliders of the body
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
 
-        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
-        mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(proxyShape);
+        mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(collider);
     }
 }
 
@@ -305,14 +300,14 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
  */
 bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 
-    // For each collision shape of the body
-    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+    // For each collider of the body
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
 
-        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
-        // Test if the point is inside the collision shape
-        if (proxyShape->testPointInside(worldPoint)) return true;
+        // Test if the point is inside the collider
+        if (collider->testPointInside(worldPoint)) return true;
     }
 
     return false;
@@ -334,14 +329,14 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     bool isHit = false;
     Ray rayTemp(ray);
 
-    // For each collision shape of the body
-    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+    // For each collider of the body
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
 
-        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
-        // Test if the ray hits the collision shape
-        if (proxyShape->raycast(rayTemp, raycastInfo)) {
+        // Test if the ray hits the collider
+        if (collider->raycast(rayTemp, raycastInfo)) {
             rayTemp.maxFraction = raycastInfo.hitFraction;
             isHit = true;
         }
@@ -350,7 +345,7 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     return isHit;
 }
 
-// Compute and return the AABB of the body by merging all proxy shapes AABBs
+// Compute and return the AABB of the body by merging all colliders AABBs
 /**
 * @return The axis-aligned bounding box (AABB) of the body in world-space coordinates
 */
@@ -358,24 +353,24 @@ AABB CollisionBody::getAABB() const {
 
     AABB bodyAABB;
 
-    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    if (proxyShapesEntities.size() == 0) return bodyAABB;
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    if (colliderEntities.size() == 0) return bodyAABB;
 
     const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
 
-    ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[0]);
-    proxyShape->getCollisionShape()->computeAABB(bodyAABB, transform * proxyShape->getLocalToBodyTransform());
+    Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[0]);
+    collider->getCollisionShape()->computeAABB(bodyAABB, transform * collider->getLocalToBodyTransform());
 
-    // For each proxy shape of the body
-    for (uint i=1; i < proxyShapesEntities.size(); i++) {
+    // For each collider of the body
+    for (uint i=1; i < colliderEntities.size(); i++) {
 
-        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
-        // Compute the world-space AABB of the collision shape
+        // Compute the world-space AABB of the collider
         AABB aabb;
-        proxyShape->getCollisionShape()->computeAABB(aabb, transform * proxyShape->getLocalToBodyTransform());
+        collider->getCollisionShape()->computeAABB(aabb, transform * collider->getLocalToBodyTransform());
 
-        // Merge the proxy shape AABB with the current body AABB
+        // Merge the collider AABB with the current body AABB
         bodyAABB.mergeWithAABB(aabb);
     }
 

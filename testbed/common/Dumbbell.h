@@ -44,9 +44,9 @@ class Dumbbell : public PhysicsObject {
         /// Collision shapes
         rp3d::CapsuleShape* mCapsuleShape;
         rp3d::SphereShape* mSphereShape;
-        rp3d::ProxyShape* mProxyShapeCapsule;
-        rp3d::ProxyShape* mProxyShapeSphere1;
-        rp3d::ProxyShape* mProxyShapeSphere2;
+        rp3d::Collider* mColliderCapsule;
+        rp3d::Collider* mColliderSphere1;
+        rp3d::Collider* mColliderSphere2;
 
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;

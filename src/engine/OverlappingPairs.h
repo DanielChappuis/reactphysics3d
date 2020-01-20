@@ -27,13 +27,13 @@
 #define	REACTPHYSICS3D_OVERLAPPING_PAIR_H
 
 // Libraries
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 #include "containers/Map.h"
 #include "containers/Pair.h"
 #include "containers/Set.h"
 #include "containers/containers_common.h"
 #include "utils/Profiler.h"
-#include "components/ProxyShapeComponents.h"
+#include "components/ColliderComponents.h"
 #include "components/CollisionBodyComponents.h"
 #include "components/RigidBodyComponents.h"
 #include <cstddef>
@@ -96,9 +96,9 @@ struct LastFrameCollisionInfo {
 
 // Class OverlappingPairs
 /**
- * This class contains pairs of two proxy collision shapes that are overlapping
+ * This class contains pairs of two colliders that are overlapping
  * during the broad-phase collision detection. A pair is created when
- * the two proxy collision shapes start to overlap and is destroyed when they do not
+ * the two colliders start to overlap and is destroyed when they do not
  * overlap anymore. Each contains a contact manifold that
  * store all the contact points between the two bodies.
  */
@@ -148,11 +148,11 @@ class OverlappingPairs {
         /// Array with the broad-phase Ids of the second shape
         int32* mPairBroadPhaseId2;
 
-        /// Array of Entity of the first proxy-shape of the convex vs convex pairs
-        Entity* mProxyShapes1;
+        /// Array of Entity of the first collider of the convex vs convex pairs
+        Entity* mColliders1;
 
-        /// Array of Entity of the second proxy-shape of the convex vs convex pairs
-        Entity* mProxyShapes2;
+        /// Array of Entity of the second collider of the convex vs convex pairs
+        Entity* mColliders2;
 
         /// Temporal coherence collision data for each overlapping collision shapes of this pair.
         /// Temporal coherence data store collision information about the last frame.
@@ -173,8 +173,8 @@ class OverlappingPairs {
         /// True if the first shape of the pair is convex
         bool* mIsShape1Convex;
 
-        /// Reference to the proxy-shapes components
-        ProxyShapeComponents& mProxyShapeComponents;
+        /// Reference to the colliders components
+        ColliderComponents& mColliderComponents;
 
         /// Reference to the collision body components
         CollisionBodyComponents& mCollisionBodyComponents;
@@ -218,7 +218,7 @@ class OverlappingPairs {
 
         /// Constructor
         OverlappingPairs(MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator,
-                         ProxyShapeComponents& proxyShapeComponents, CollisionBodyComponents& collisionBodyComponents,
+                         ColliderComponents& colliderComponents, CollisionBodyComponents& collisionBodyComponents,
                          RigidBodyComponents& rigidBodyComponents, Set<bodypair>& noCollisionPairs,
                          CollisionDispatch& collisionDispatch);
 
@@ -232,7 +232,7 @@ class OverlappingPairs {
         OverlappingPairs& operator=(const OverlappingPairs& pair) = delete;
 
         /// Add an overlapping pair
-        uint64 addPair(ProxyShape* shape1, ProxyShape* shape2);
+        uint64 addPair(Collider* shape1, Collider* shape2);
 
         /// Remove a component at a given index
         void removePair(uint64 pairId);
@@ -249,11 +249,11 @@ class OverlappingPairs {
         /// Return the starting index of the convex vs concave pairs
         uint64 getConvexVsConcavePairsStartIndex() const;
 
-        /// Return the entity of the first proxy-shape
-        Entity getProxyShape1(uint64 pairId) const;
+        /// Return the entity of the first collider
+        Entity getCollider1(uint64 pairId) const;
 
-        /// Return the entity of the second proxy-shape
-        Entity getProxyShape2(uint64 pairId) const;
+        /// Return the entity of the second collider
+        Entity getCollider2(uint64 pairId) const;
 
         /// Notify if a given pair is active or not
         void setIsPairActive(uint64 pairId, bool isActive);
@@ -295,18 +295,18 @@ class OverlappingPairs {
         friend class CollisionDetectionSystem;
 };
 
-// Return the entity of the first proxy-shape
-inline Entity OverlappingPairs::getProxyShape1(uint64 pairId) const {
+// Return the entity of the first collider
+inline Entity OverlappingPairs::getCollider1(uint64 pairId) const {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     assert(mMapPairIdToPairIndex[pairId] < mNbPairs);
-    return mProxyShapes1[mMapPairIdToPairIndex[pairId]];
+    return mColliders1[mMapPairIdToPairIndex[pairId]];
 }
 
-// Return the entity of the second proxy-shape
-inline Entity OverlappingPairs::getProxyShape2(uint64 pairId) const {
+// Return the entity of the second collider
+inline Entity OverlappingPairs::getCollider2(uint64 pairId) const {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     assert(mMapPairIdToPairIndex[pairId] < mNbPairs);
-    return mProxyShapes2[mMapPairIdToPairIndex[pairId]];
+    return mColliders2[mMapPairIdToPairIndex[pairId]];
 }
 
 // Notify if a given pair is active or not

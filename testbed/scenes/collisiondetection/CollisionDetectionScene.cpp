@@ -331,13 +331,13 @@ void ContactManager::onContact(const CallbackData& callbackData) {
             openglframework::Vector3 contactNormal(normal.x, normal.y, normal.z);
 
             rp3d::Vector3 point1 = contactPoint.getLocalPointOnShape1();
-            point1 = contactPair.getProxyShape1()->getLocalToWorldTransform() * point1;
+            point1 = contactPair.getCollider1()->getLocalToWorldTransform() * point1;
 
             openglframework::Vector3 position1(point1.x, point1.y, point1.z);
             mContactPoints.push_back(SceneContactPoint(position1, contactNormal, openglframework::Color::red()));
 
             rp3d::Vector3 point2 = contactPoint.getLocalPointOnShape2();
-            point2 = contactPair.getProxyShape2()->getLocalToWorldTransform() * point2;
+            point2 = contactPair.getCollider2()->getLocalToWorldTransform() * point2;
             openglframework::Vector3 position2(point2.x, point2.y, point2.z);
             mContactPoints.push_back(SceneContactPoint(position2, contactNormal, openglframework::Color::blue()));
         }

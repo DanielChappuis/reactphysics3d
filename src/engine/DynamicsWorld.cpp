@@ -51,11 +51,11 @@ DynamicsWorld::DynamicsWorld(const Vector3& gravity, MemoryManager& memoryManage
               : CollisionWorld(memoryManager, worldSettings, logger, profiler),
                 mIslands(mMemoryManager.getSingleFrameAllocator()),
                 mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
-                               mProxyShapesComponents, mConfig),
+                               mCollidersComponents, mConfig),
                 mConstraintSolverSystem(*this, mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
                                         mBallAndSocketJointsComponents, mFixedJointsComponents, mHingeJointsComponents,
                                         mSliderJointsComponents),
-                mDynamicsSystem(*this, mCollisionBodyComponents, mRigidBodyComponents, mTransformComponents, mProxyShapesComponents, mIsGravityEnabled, mGravity),
+                mDynamicsSystem(*this, mCollisionBodyComponents, mRigidBodyComponents, mTransformComponents, mCollidersComponents, mIsGravityEnabled, mGravity),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
@@ -142,8 +142,8 @@ void DynamicsWorld::update(decimal timeStep) {
     // Update the state (positions and velocities) of the bodies
     mDynamicsSystem.updateBodiesState();
 
-    // Update the proxy-shapes components
-    mCollisionDetection.updateProxyShapes(timeStep);
+    // Update the colliders components
+    mCollisionDetection.updateColliders(timeStep);
 
     if (mIsSleepingEnabled) updateSleepingBodies(timeStep);
 

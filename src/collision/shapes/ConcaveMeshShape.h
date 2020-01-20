@@ -75,7 +75,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         List<int32> mHitAABBNodes;
         const DynamicAABBTree& mDynamicAABBTree;
         const ConcaveMeshShape& mConcaveMeshShape;
-        ProxyShape* mProxyShape;
+        Collider* mCollider;
         RaycastInfo& mRaycastInfo;
         const Ray& mRay;
         bool mIsHit;
@@ -92,8 +92,8 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
         // Constructor
         ConcaveMeshRaycastCallback(const DynamicAABBTree& dynamicAABBTree, const ConcaveMeshShape& concaveMeshShape,
-                                   ProxyShape* proxyShape, RaycastInfo& raycastInfo, const Ray& ray, MemoryAllocator& allocator)
-            : mHitAABBNodes(allocator), mDynamicAABBTree(dynamicAABBTree), mConcaveMeshShape(concaveMeshShape), mProxyShape(proxyShape),
+                                   Collider* collider, RaycastInfo& raycastInfo, const Ray& ray, MemoryAllocator& allocator)
+            : mHitAABBNodes(allocator), mDynamicAABBTree(dynamicAABBTree), mConcaveMeshShape(concaveMeshShape), mCollider(collider),
               mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false), mAllocator(allocator) {
 
         }
@@ -150,7 +150,7 @@ class ConcaveMeshShape : public ConcaveShape {
         ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, const Vector3& scaling = Vector3(1, 1, 1));
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;

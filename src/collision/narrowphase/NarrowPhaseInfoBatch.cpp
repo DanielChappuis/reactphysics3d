@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 // Constructor
 NarrowPhaseInfoBatch::NarrowPhaseInfoBatch(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs)
       : mMemoryAllocator(allocator), mOverlappingPairs(overlappingPairs), overlappingPairIds(allocator),
-        proxyShapeEntities1(allocator), proxyShapeEntities2(allocator), collisionShapes1(allocator), collisionShapes2(allocator),
+        colliderEntities1(allocator), colliderEntities2(allocator), collisionShapes1(allocator), collisionShapes2(allocator),
         shape1ToWorldTransforms(allocator), shape2ToWorldTransforms(allocator),
         isColliding(allocator), contactPoints(allocator), collisionShapeAllocators(allocator),
         lastFrameCollisionInfos(allocator) {
@@ -48,13 +48,13 @@ NarrowPhaseInfoBatch::~NarrowPhaseInfoBatch() {
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1, CollisionShape* shape2,
+void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1, CollisionShape* shape2,
                                               const Transform& shape1Transform, const Transform& shape2Transform,
                                               MemoryAllocator& shapeAllocator) {
 
     overlappingPairIds.add(pairId);
-    proxyShapeEntities1.add(proxyShape1);
-    proxyShapeEntities2.add(proxyShape2);
+    colliderEntities1.add(collider1);
+    colliderEntities2.add(collider2);
     collisionShapes1.add(shape1);
     collisionShapes2.add(shape2);
     shape1ToWorldTransforms.add(shape1Transform);
@@ -110,8 +110,8 @@ void NarrowPhaseInfoBatch::resetContactPoints(uint index) {
 void NarrowPhaseInfoBatch::reserveMemory() {
 
     overlappingPairIds.reserve(mCachedCapacity);
-    proxyShapeEntities1.reserve(mCachedCapacity);
-    proxyShapeEntities2.reserve(mCachedCapacity);
+    colliderEntities1.reserve(mCachedCapacity);
+    colliderEntities2.reserve(mCachedCapacity);
     collisionShapes1.reserve(mCachedCapacity);
     collisionShapes2.reserve(mCachedCapacity);
     shape1ToWorldTransforms.reserve(mCachedCapacity);
@@ -149,8 +149,8 @@ void NarrowPhaseInfoBatch::clear() {
     mCachedCapacity = overlappingPairIds.size();
 
     overlappingPairIds.clear(true);
-    proxyShapeEntities1.clear(true);
-    proxyShapeEntities2.clear(true);
+    colliderEntities1.clear(true);
+    colliderEntities2.clear(true);
     collisionShapes1.clear(true);
     collisionShapes2.clear(true);
     shape1ToWorldTransforms.clear(true);

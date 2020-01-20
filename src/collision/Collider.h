@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_PROXY_SHAPE_H
-#define REACTPHYSICS3D_PROXY_SHAPE_H
+#ifndef REACTPHYSICS3D_COLLIDER_H
+#define REACTPHYSICS3D_COLLIDER_H
 
 // Libraries
 #include "body/CollisionBody.h"
@@ -35,17 +35,17 @@ namespace  reactphysics3d {
 // Declarations
 class MemoryManager;
 
-// Class ProxyShape
+// Class Collider
 /**
  * The CollisionShape instances are supposed to be unique for memory optimization. For instance,
  * consider two rigid bodies with the same sphere collision shape. In this situation, we will have
  * a unique instance of SphereShape but we need to differentiate between the two instances during
  * the collision detection. They do not have the same position in the world and they do not
- * belong to the same rigid body. The ProxyShape class is used for that purpose by attaching a
- * rigid body with one of its collision shape. A body can have multiple proxy shapes (one for
+ * belong to the same rigid body. The Collider class is used for that purpose by attaching a
+ * rigid body with one of its collision shape. A body can have multiple colliders (one for
  * each collision shape attached to the body).
  */
-class ProxyShape {
+class Collider {
 
     protected:
 
@@ -60,36 +60,8 @@ class ProxyShape {
         /// Pointer to the parent body
         CollisionBody* mBody;
 
-        /// Internal collision shape
-        //CollisionShape* mCollisionShape;
-
-        /// Local-space to parent body-space transform (does not change over time)
-        //Transform mLocalToBodyTransform;
-
-        /// Mass (in kilogramms) of the corresponding collision shape
-        //decimal mMass;
-
-        /// Pointer to the next proxy shape of the body (linked list)
-        //ProxyShape* mNext;
-
-        /// Broad-phase ID (node ID in the dynamic AABB tree)
-        //int mBroadPhaseID;
-
         /// Pointer to user data
         void* mUserData;
-
-        /// Bits used to define the collision category of this shape.
-        /// You can set a single bit to one to define a category value for this
-        /// shape. This value is one (0x0001) by default. This variable can be used
-        /// together with the mCollideWithMaskBits variable so that given
-        /// categories of shapes collide with each other and do not collide with
-        /// other categories.
-        //unsigned short mCollisionCategoryBits;
-
-        /// Bits mask used to state which collision categories this shape can
-        /// collide with. This value is 0xFFFF by default. It means that this
-        /// proxy shape will collide with every collision categories by default.
-        //unsigned short mCollideWithMaskBits;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -114,18 +86,18 @@ class ProxyShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ProxyShape(Entity entity, CollisionBody* body, MemoryManager& memoryManager);
+        Collider(Entity entity, CollisionBody* body, MemoryManager& memoryManager);
 
         /// Destructor
-        virtual ~ProxyShape();
+        virtual ~Collider();
 
         /// Deleted copy-constructor
-        ProxyShape(const ProxyShape& proxyShape) = delete;
+        Collider(const Collider& collider) = delete;
 
         /// Deleted assignment operator
-        ProxyShape& operator=(const ProxyShape& proxyShape) = delete;
+        Collider& operator=(const Collider& collider) = delete;
 
-        /// Return the corresponding entity of the proxy-shape
+        /// Return the corresponding entity of the collider
         Entity getEntity() const;
 
         /// Return the collision shape
@@ -152,10 +124,10 @@ class ProxyShape {
         /// Return the local to world transform
         const Transform getLocalToWorldTransform() const;
 
-        /// Return the AABB of the proxy shape in world-space
+        /// Return the AABB of the collider in world-space
         const AABB getWorldAABB() const;
 
-        /// Test if the proxy shape overlaps with a given AABB
+        /// Test if the collider overlaps with a given AABB
         bool testAABBOverlap(const AABB& worldAABB) const;
 
         /// Return true if a point is inside the collision shape
@@ -209,11 +181,11 @@ class ProxyShape {
 
 };
 
-// Return the corresponding entity of the proxy-shape
+// Return the corresponding entity of the collider
 /**
- * @return The entity of the proxy-shape
+ * @return The entity of the collider
  */
-inline Entity ProxyShape::getEntity() const {
+inline Entity Collider::getEntity() const {
     return mEntity;
 }
 
@@ -221,39 +193,39 @@ inline Entity ProxyShape::getEntity() const {
 /**
  * @return Pointer to the parent body
  */
-inline CollisionBody* ProxyShape::getBody() const {
+inline CollisionBody* Collider::getBody() const {
     return mBody;
 }
 
 // Return a pointer to the user data attached to this body
 /**
- * @return A pointer to the user data stored into the proxy shape
+ * @return A pointer to the user data stored into the collider
  */
-inline void* ProxyShape::getUserData() const {
+inline void* Collider::getUserData() const {
     return mUserData;
 }
 
 // Attach user data to this body
 /**
- * @param userData Pointer to the user data you want to store within the proxy shape
+ * @param userData Pointer to the user data you want to store within the collider
  */
-inline void ProxyShape::setUserData(void* userData) {
+inline void Collider::setUserData(void* userData) {
     mUserData = userData;
 }
 
-/// Test if the proxy shape overlaps with a given AABB
+/// Test if the collider overlaps with a given AABB
 /**
 * @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
 * @return True if the given AABB overlaps with the AABB of the collision body
 */
-inline bool ProxyShape::testAABBOverlap(const AABB& worldAABB) const {
+inline bool Collider::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getWorldAABB());
 }
 
 #ifdef IS_LOGGING_ACTIVE
 
 // Set the logger
-inline void ProxyShape::setLogger(Logger* logger) {
+inline void Collider::setLogger(Logger* logger) {
 
    mLogger = logger;
 }

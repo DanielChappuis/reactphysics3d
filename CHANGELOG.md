@@ -18,6 +18,7 @@
  - An instance of the ConcaveMeshShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createConcaveMeshShape() method.
  - An instance of the PolyhedronMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createPolyhedronMesh() method.
  - An instance of the TriangleMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createTriangleMesh() method.
+ - The ProxyShape class has been renamed to Collider. The CollisionBody::addCollider(), RigidBody::addCollider() methods have to be used to create and add a collider to a body. Then methods CollisionBody::removeCollider(), RigidBody::removeCollider() need to be used to remove a collider.
 
 ### Removed
 

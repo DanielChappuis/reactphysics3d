@@ -55,7 +55,7 @@ Capsule::Capsule(float radius, float height, rp3d::PhysicsCommon& physicsCommon,
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mProxyShape = mBody->addCollisionShape(mCapsuleShape, rp3d::Transform::identity());
+    mCollider = mBody->addCollider(mCapsuleShape, rp3d::Transform::identity());
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -89,7 +89,7 @@ Capsule::Capsule(float radius, float height, float mass, reactphysics3d::Physics
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
-    mProxyShape = body->addCollisionShape(mCapsuleShape, rp3d::Transform::identity(), mass);
+    mCollider = body->addCollider(mCapsuleShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 

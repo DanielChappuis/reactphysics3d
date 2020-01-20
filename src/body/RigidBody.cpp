@@ -307,58 +307,53 @@ void RigidBody::setMass(decimal mass) {
 }
 
 
-// Add a collision shape to the body.
-/// When you add a collision shape to the body, an internal copy of this
-/// collision shape will be created internally. Therefore, you can delete it
-/// right after calling this method or use it later to add it to another body.
-/// This method will return a pointer to a new proxy shape. A proxy shape is
-/// an object that links a collision shape and a given body. You can use the
-/// returned proxy shape to get and set information about the corresponding
+// Create a new collider and add it to the body
+/// This method will return a pointer to a new collider. A collider is
+/// an object with a collision shape that is attached to a body. It is possible to
+/// attach multiple colliders to a given body. You can use the
+/// returned collider to get and set information about the corresponding
 /// collision shape for that body.
 /**
- * @param collisionShape The collision shape you want to add to the body
- * @param transform The transformation of the collision shape that transforms the
- *        local-space of the collision shape into the local-space of the body
- * @param mass Mass (in kilograms) of the collision shape you want to add
- * @return A pointer to the proxy shape that has been created to link the body to
- *         the new collision shape you have added.
+ * @param collisionShape The collision shape of the new collider
+ * @param transform The transformation of the collider that transforms the
+ *        local-space of the collider into the local-space of the body
+ * @param mass Mass (in kilograms) of the collider you want to add
+ * @return A pointer to the collider that has been created
  */
-ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
-                                         const Transform& transform,
-                                         decimal mass) {
+Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform& transform, decimal mass) {
 
-    // Create a new entity for the proxy-shape
-    Entity proxyShapeEntity = mWorld.mEntityManager.createEntity();
+    // Create a new entity for the collider
+    Entity colliderEntity = mWorld.mEntityManager.createEntity();
 
-    // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                      sizeof(ProxyShape))) ProxyShape(proxyShapeEntity, this, mWorld.mMemoryManager);
+    // Create a new collider for the body
+    Collider* collider = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                      sizeof(Collider))) Collider(colliderEntity, this, mWorld.mMemoryManager);
 
-    // Add the proxy-shape component to the entity of the body
+    // Add the collider component to the entity of the body
     Vector3 localBoundsMin;
     Vector3 localBoundsMax;
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
-    ProxyShapeComponents::ProxyShapeComponent proxyShapeComponent(mEntity, proxyShape,
+    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider,
                                                                    AABB(localBoundsMin, localBoundsMax),
                                                                    transform, collisionShape, mass, 0x0001, 0xFFFF, localToWorldTransform);
     bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
-    mWorld.mProxyShapesComponents.addComponent(proxyShapeEntity, isSleeping, proxyShapeComponent);
+    mWorld.mCollidersComponents.addComponent(colliderEntity, isSleeping, colliderComponent);
 
-    mWorld.mCollisionBodyComponents.addProxyShapeToBody(mEntity, proxyShapeEntity);
+    mWorld.mCollisionBodyComponents.addColliderToBody(mEntity, colliderEntity);
 
 #ifdef IS_PROFILING_ACTIVE
 
 	// Set the profiler
-	proxyShape->setProfiler(mProfiler);
+    collider->setProfiler(mProfiler);
 
 #endif
 
 #ifdef IS_LOGGING_ACTIVE
 
     // Set the logger
-    proxyShape->setLogger(mLogger);
+    collider->setLogger(mLogger);
 
 #endif
 
@@ -367,34 +362,32 @@ ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
     collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
-    mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
+    mWorld.mCollisionDetection.addCollider(collider, aabb);
 
     // Recompute the center of mass, total mass and inertia tensor of the body with the new
     // collision shape
     recomputeMassInformation();
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
+             "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " added to body");
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
-             proxyShape->getCollisionShape()->to_string());
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
+             "Collider " + std::to_string(collider->getBroadPhaseId()) + ":  collisionShape=" +
+             collider->getCollisionShape()->to_string());
 
-    // Return a pointer to the proxy collision shape
-    return proxyShape;
+    // Return a pointer to the collider
+    return collider;
 }
 
-// Remove a collision shape from the body
-/// To remove a collision shape, you need to specify the pointer to the proxy
-/// shape that has been returned when you have added the collision shape to the
-/// body
+// Remove a collider from the body
+/// To remove a collider, you need to specify its pointer.
 /**
- * @param proxyShape The pointer of the proxy shape you want to remove
+ * @param collider The pointer of the collider you want to remove
  */
-void RigidBody::removeCollisionShape(ProxyShape* proxyShape) {
+void RigidBody::removeCollider(Collider* collider) {
 
     // Remove the collision shape
-    CollisionBody::removeCollisionShape(proxyShape);
+    CollisionBody::removeCollider(collider);
 
     // Recompute the total mass, center of mass and inertia tensor
     recomputeMassInformation();
@@ -540,14 +533,14 @@ void RigidBody::recomputeMassInformation() {
     assert(mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::DYNAMIC);
 
     // Compute the total mass of the body
-    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
-        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
-        mWorld.mRigidBodyComponents.setInitMass(mEntity, mWorld.mRigidBodyComponents.getInitMass(mEntity) + proxyShape->getMass());
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+        mWorld.mRigidBodyComponents.setInitMass(mEntity, mWorld.mRigidBodyComponents.getInitMass(mEntity) + collider->getMass());
 
         if (!mIsCenterOfMassSetByUser) {
             mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity) +
-                                                            proxyShape->getLocalToBodyTransform().getPosition() * proxyShape->getMass());
+                                                            collider->getLocalToBodyTransform().getPosition() * collider->getMass());
         }
     }
 
@@ -570,22 +563,22 @@ void RigidBody::recomputeMassInformation() {
 
     if (!mIsInertiaTensorSetByUser) {
 
-        // Compute the inertia tensor using all the collision shapes
-        const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-        for (uint i=0; i < proxyShapesEntities.size(); i++) {
+        // Compute the inertia tensor using all the colliders
+        const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+        for (uint i=0; i < colliderEntities.size(); i++) {
 
-            ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+            Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
-            // Get the inertia tensor of the collision shape in its local-space
+            // Get the inertia tensor of the collider in its local-space
             Matrix3x3 inertiaTensor;
-            proxyShape->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, proxyShape->getMass());
+            collider->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, collider->getMass());
 
-            // Convert the collision shape inertia tensor into the local-space of the body
-            const Transform& shapeTransform = proxyShape->getLocalToBodyTransform();
+            // Convert the collider inertia tensor into the local-space of the body
+            const Transform& shapeTransform = collider->getLocalToBodyTransform();
             Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
             inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
 
-            // Use the parallel axis theorem to convert the inertia tensor w.r.t the collision shape
+            // Use the parallel axis theorem to convert the inertia tensor w.r.t the collider
             // center into a inertia tensor w.r.t to the body origin.
             Vector3 offset = shapeTransform.getPosition() - mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
             decimal offsetSquare = offset.lengthSquare();
@@ -596,7 +589,7 @@ void RigidBody::recomputeMassInformation() {
             offsetMatrix[0] += offset * (-offset.x);
             offsetMatrix[1] += offset * (-offset.y);
             offsetMatrix[2] += offset * (-offset.z);
-            offsetMatrix *= proxyShape->getMass();
+            offsetMatrix *= collider->getMass();
 
             inertiaTensorLocal += inertiaTensor + offsetMatrix;
         }
@@ -705,12 +698,12 @@ void RigidBody::setIsSleeping(bool isSleeping) {
 // Update whether the current overlapping pairs where this body is involed are active or not
 void RigidBody::updateOverlappingPairs() {
 
-    // For each proxy-shape of the body
-    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+    // For each collider of the body
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
 
-        // Get the currently overlapping pairs for this proxy-shape
-        List<uint64> overlappingPairs = mWorld.mProxyShapesComponents.getOverlappingPairs(proxyShapesEntities[i]);
+        // Get the currently overlapping pairs for this collider
+        List<uint64> overlappingPairs = mWorld.mCollidersComponents.getOverlappingPairs(colliderEntities[i]);
 
         for (uint j=0; j < overlappingPairs.size(); j++) {
 
@@ -779,13 +772,13 @@ void RigidBody::setProfiler(Profiler* profiler) {
 
 	CollisionBody::setProfiler(profiler);
 
-	// Set the profiler for each proxy shape
-    const List<Entity>& proxyShapesEntities = mWorld.mCollisionBodyComponents.getProxyShapes(mEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+    // Set the profiler for each collider
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
 
-        ProxyShape* proxyShape = mWorld.mProxyShapesComponents.getProxyShape(proxyShapesEntities[i]);
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
-		proxyShape->setProfiler(profiler);
+        collider->setProfiler(profiler);
 	}
 }
 

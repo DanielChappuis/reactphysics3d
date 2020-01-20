@@ -63,7 +63,7 @@ ConcaveMesh::ConcaveMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorl
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = mBody->addCollisionShape(mConcaveShape, rp3d::Transform::identity());
+    mCollider = mBody->addCollider(mConcaveShape, rp3d::Transform::identity());
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -106,7 +106,7 @@ ConcaveMesh::ConcaveMesh(float mass, reactphysics3d::PhysicsCommon& physicsCommo
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = body->addCollisionShape(mConcaveShape, rp3d::Transform::identity(), mass);
+    mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 

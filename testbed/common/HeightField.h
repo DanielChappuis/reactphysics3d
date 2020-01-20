@@ -50,7 +50,7 @@ class HeightField : public PhysicsObject {
 
         /// Collision shape
         rp3d::HeightFieldShape* mHeightFieldShape;
-        rp3d::ProxyShape* mProxyShape;
+        rp3d::Collider* mCollider;
 
         /// Scaling matrix
         openglframework::Matrix4 mScalingMatrix;

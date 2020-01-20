@@ -57,8 +57,8 @@ class CollisionBodyComponents : public Components {
         /// Array of pointers to the corresponding bodies
         CollisionBody** mBodies;
 
-        /// Array with the list of proxy-shapes of each body
-        List<Entity>* mProxyShapes;
+        /// Array with the list of colliders of each body
+        List<Entity>* mColliders;
 
         /// Array of boolean values to know if the body is active.
         bool* mIsActive;
@@ -104,17 +104,17 @@ class CollisionBodyComponents : public Components {
         /// Add a component
         void addComponent(Entity bodyEntity, bool isSleeping, const CollisionBodyComponent& component);
 
-        /// Add a proxy-shape to a body component
-        void addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity);
+        /// Add a collider to a body component
+        void addColliderToBody(Entity bodyEntity, Entity colliderEntity);
 
-        /// Remove a proxy-shape from a body component
-        void removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity);
+        /// Remove a collider from a body component
+        void removeColliderFromBody(Entity bodyEntity, Entity colliderEntity);
 
         /// Return a pointer to a body
         CollisionBody* getBody(Entity bodyEntity);
 
-        /// Return the list of proxy-shapes of a body
-        const List<Entity>& getProxyShapes(Entity bodyEntity) const;
+        /// Return the list of colliders of a body
+        const List<Entity>& getColliders(Entity bodyEntity) const;
 
         /// Return true if the body is active
         bool getIsActive(Entity bodyEntity) const;
@@ -129,20 +129,20 @@ class CollisionBodyComponents : public Components {
         void setUserData(Entity bodyEntity, void* userData) const;
 };
 
-// Add a proxy-shape to a body component
-inline void CollisionBodyComponents::addProxyShapeToBody(Entity bodyEntity, Entity proxyShapeEntity) {
+// Add a collider to a body component
+inline void CollisionBodyComponents::addColliderToBody(Entity bodyEntity, Entity colliderEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    mProxyShapes[mMapEntityToComponentIndex[bodyEntity]].add(proxyShapeEntity);
+    mColliders[mMapEntityToComponentIndex[bodyEntity]].add(colliderEntity);
 }
 
-// Remove a proxy-shape from a body component
-inline void CollisionBodyComponents::removeProxyShapeFromBody(Entity bodyEntity, Entity proxyShapeEntity) {
+// Remove a collider from a body component
+inline void CollisionBodyComponents::removeColliderFromBody(Entity bodyEntity, Entity colliderEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    mProxyShapes[mMapEntityToComponentIndex[bodyEntity]].remove(proxyShapeEntity);
+    mColliders[mMapEntityToComponentIndex[bodyEntity]].remove(colliderEntity);
 }
 
 // Return a pointer to a body
@@ -153,12 +153,12 @@ inline CollisionBody *CollisionBodyComponents::getBody(Entity bodyEntity) {
     return mBodies[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Return the list of proxy-shapes of a body
-inline const List<Entity>& CollisionBodyComponents::getProxyShapes(Entity bodyEntity) const {
+// Return the list of colliders of a body
+inline const List<Entity>& CollisionBodyComponents::getColliders(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-    return mProxyShapes[mMapEntityToComponentIndex[bodyEntity]];
+    return mColliders[mMapEntityToComponentIndex[bodyEntity]];
 }
 
 // Return true if the body is active

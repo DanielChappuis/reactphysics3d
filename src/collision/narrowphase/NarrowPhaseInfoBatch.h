@@ -63,11 +63,11 @@ struct NarrowPhaseInfoBatch {
         /// List of Broadphase overlapping pairs ids
         List<uint64> overlappingPairIds;
 
-        /// List of pointers to the first proxy-shapes to test collision with
-        List<Entity> proxyShapeEntities1;
+        /// List of pointers to the first colliders to test collision with
+        List<Entity> colliderEntities1;
 
-        /// List of pointers to the second proxy-shapes to test collision with
-        List<Entity> proxyShapeEntities2;
+        /// List of pointers to the second colliders to test collision with
+        List<Entity> colliderEntities2;
 
         /// List of pointers to the first collision shapes to test collision with
         List<CollisionShape*> collisionShapes1;
@@ -103,7 +103,7 @@ struct NarrowPhaseInfoBatch {
         uint getNbObjects() const;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity proxyShape1, Entity proxyShape2, CollisionShape* shape1,
+        void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
                                 CollisionShape* shape2, const Transform& shape1Transform,
                                 const Transform& shape2Transform, MemoryAllocator& shapeAllocator);
 

@@ -34,7 +34,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-OverlappingPairs::OverlappingPairs(MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator, ProxyShapeComponents& proxyShapeComponents,
+OverlappingPairs::OverlappingPairs(MemoryAllocator& persistentMemoryAllocator, MemoryAllocator& temporaryMemoryAllocator, ColliderComponents &colliderComponents,
                                    CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents, Set<bodypair> &noCollisionPairs, CollisionDispatch &collisionDispatch)
                 : mPersistentAllocator(persistentMemoryAllocator), mTempMemoryAllocator(temporaryMemoryAllocator),
                   mNbPairs(0), mConcavePairsStartIndex(0), mPairDataSize(sizeof(uint64) + sizeof(int32) + sizeof(int32) + sizeof(Entity) +
@@ -43,7 +43,7 @@ OverlappingPairs::OverlappingPairs(MemoryAllocator& persistentMemoryAllocator, M
                                                                          sizeof(bool)),
                   mNbAllocatedPairs(0), mBuffer(nullptr),
                   mMapPairIdToPairIndex(persistentMemoryAllocator),
-                  mProxyShapeComponents(proxyShapeComponents), mCollisionBodyComponents(collisionBodyComponents),
+                  mColliderComponents(colliderComponents), mCollisionBodyComponents(collisionBodyComponents),
                   mRigidBodyComponents(rigidBodyComponents), mNoCollisionPairs(noCollisionPairs), mCollisionDispatch(collisionDispatch) {
     
     // Allocate memory for the components data
@@ -69,11 +69,11 @@ OverlappingPairs::~OverlappingPairs() {
                 mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
             }
 
-            // Remove the involved overlapping pair to the two proxy-shapes
-            assert(mProxyShapeComponents.getOverlappingPairs(mProxyShapes1[i]).find(mPairIds[i]) != mProxyShapeComponents.getOverlappingPairs(mProxyShapes1[i]).end());
-            assert(mProxyShapeComponents.getOverlappingPairs(mProxyShapes2[i]).find(mPairIds[i]) != mProxyShapeComponents.getOverlappingPairs(mProxyShapes2[i]).end());
-            mProxyShapeComponents.getOverlappingPairs(mProxyShapes1[i]).remove(mPairIds[i]);
-            mProxyShapeComponents.getOverlappingPairs(mProxyShapes2[i]).remove(mPairIds[i]);
+            // Remove the involved overlapping pair to the two colliders
+            assert(mColliderComponents.getOverlappingPairs(mColliders1[i]).find(mPairIds[i]) != mColliderComponents.getOverlappingPairs(mColliders1[i]).end());
+            assert(mColliderComponents.getOverlappingPairs(mColliders2[i]).find(mPairIds[i]) != mColliderComponents.getOverlappingPairs(mColliders2[i]).end());
+            mColliderComponents.getOverlappingPairs(mColliders1[i]).remove(mPairIds[i]);
+            mColliderComponents.getOverlappingPairs(mColliders2[i]).remove(mPairIds[i]);
 
             destroyPair(i);
         }
@@ -144,11 +144,11 @@ void OverlappingPairs::removePair(uint64 pairId) {
         mPersistentAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
     }
 
-    // Remove the involved overlapping pair to the two proxy-shapes
-    assert(mProxyShapeComponents.getOverlappingPairs(mProxyShapes1[index]).find(pairId) != mProxyShapeComponents.getOverlappingPairs(mProxyShapes1[index]).end());
-    assert(mProxyShapeComponents.getOverlappingPairs(mProxyShapes2[index]).find(pairId) != mProxyShapeComponents.getOverlappingPairs(mProxyShapes2[index]).end());
-    mProxyShapeComponents.getOverlappingPairs(mProxyShapes1[index]).remove(pairId);
-    mProxyShapeComponents.getOverlappingPairs(mProxyShapes2[index]).remove(pairId);
+    // Remove the involved overlapping pair to the two colliders
+    assert(mColliderComponents.getOverlappingPairs(mColliders1[index]).find(pairId) != mColliderComponents.getOverlappingPairs(mColliders1[index]).end());
+    assert(mColliderComponents.getOverlappingPairs(mColliders2[index]).find(pairId) != mColliderComponents.getOverlappingPairs(mColliders2[index]).end());
+    mColliderComponents.getOverlappingPairs(mColliders1[index]).remove(pairId);
+    mColliderComponents.getOverlappingPairs(mColliders2[index]).remove(pairId);
 
     // Destroy the pair
     destroyPair(index);
@@ -204,9 +204,9 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
     uint64* newPairIds = static_cast<uint64*>(newBuffer);
     int32* newPairBroadPhaseId1 = reinterpret_cast<int32*>(newPairIds + nbPairsToAllocate);
     int32* newPairBroadPhaseId2 = reinterpret_cast<int32*>(newPairBroadPhaseId1 + nbPairsToAllocate);
-    Entity* newProxyShapes1 = reinterpret_cast<Entity*>(newPairBroadPhaseId2 + nbPairsToAllocate);
-    Entity* newProxyShapes2 = reinterpret_cast<Entity*>(newProxyShapes1 + nbPairsToAllocate);
-    Map<uint64, LastFrameCollisionInfo*>* newLastFrameCollisionInfos = reinterpret_cast<Map<uint64, LastFrameCollisionInfo*>*>(newProxyShapes2 + nbPairsToAllocate);
+    Entity* newColliders1 = reinterpret_cast<Entity*>(newPairBroadPhaseId2 + nbPairsToAllocate);
+    Entity* newColliders2 = reinterpret_cast<Entity*>(newColliders1 + nbPairsToAllocate);
+    Map<uint64, LastFrameCollisionInfo*>* newLastFrameCollisionInfos = reinterpret_cast<Map<uint64, LastFrameCollisionInfo*>*>(newColliders2 + nbPairsToAllocate);
     bool* newNeedToTestOverlap = reinterpret_cast<bool*>(newLastFrameCollisionInfos + nbPairsToAllocate);
     bool* newIsActive = reinterpret_cast<bool*>(newNeedToTestOverlap + nbPairsToAllocate);
     NarrowPhaseAlgorithmType* newNarrowPhaseAlgorithmType = reinterpret_cast<NarrowPhaseAlgorithmType*>(newIsActive + nbPairsToAllocate);
@@ -219,8 +219,8 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
         memcpy(newPairIds, mPairIds, mNbPairs * sizeof(uint64));
         memcpy(newPairBroadPhaseId1, mPairBroadPhaseId1, mNbPairs * sizeof(int32));
         memcpy(newPairBroadPhaseId2, mPairBroadPhaseId2, mNbPairs * sizeof(int32));
-        memcpy(newProxyShapes1, mProxyShapes1, mNbPairs * sizeof(Entity));
-        memcpy(newProxyShapes2, mProxyShapes2, mNbPairs * sizeof(Entity));
+        memcpy(newColliders1, mColliders1, mNbPairs * sizeof(Entity));
+        memcpy(newColliders2, mColliders2, mNbPairs * sizeof(Entity));
         memcpy(newLastFrameCollisionInfos, mLastFrameCollisionInfos, mNbPairs * sizeof(Map<uint64, LastFrameCollisionInfo*>));
         memcpy(newNeedToTestOverlap, mNeedToTestOverlap, mNbPairs * sizeof(bool));
         memcpy(newIsActive, mIsActive, mNbPairs * sizeof(bool));
@@ -235,8 +235,8 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
     mPairIds = newPairIds;
     mPairBroadPhaseId1 = newPairBroadPhaseId1;
     mPairBroadPhaseId2 = newPairBroadPhaseId2;
-    mProxyShapes1 = newProxyShapes1;
-    mProxyShapes2 = newProxyShapes2;
+    mColliders1 = newColliders1;
+    mColliders2 = newColliders2;
     mLastFrameCollisionInfos = newLastFrameCollisionInfos;
     mNeedToTestOverlap = newNeedToTestOverlap;
     mIsActive = newIsActive;
@@ -247,18 +247,18 @@ void OverlappingPairs::allocate(uint64 nbPairsToAllocate) {
 }
 
 // Add an overlapping pair
-uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2) {
+uint64 OverlappingPairs::addPair(Collider* shape1, Collider* shape2) {
 
     RP3D_PROFILE("OverlappingPairs::addPair()", mProfiler);
 
-    const Entity proxyShape1 = shape1->getEntity();
-    const Entity proxyShape2 = shape2->getEntity();
+    const Entity collider1 = shape1->getEntity();
+    const Entity collider2 = shape2->getEntity();
 
-    const uint proxyShape1Index = mProxyShapeComponents.getEntityIndex(proxyShape1);
-    const uint proxyShape2Index = mProxyShapeComponents.getEntityIndex(proxyShape2);
+    const uint collider1Index = mColliderComponents.getEntityIndex(collider1);
+    const uint collider2Index = mColliderComponents.getEntityIndex(collider2);
 
-    const CollisionShape* collisionShape1 = mProxyShapeComponents.mCollisionShapes[proxyShape1Index];
-    const CollisionShape* collisionShape2 = mProxyShapeComponents.mCollisionShapes[proxyShape2Index];
+    const CollisionShape* collisionShape1 = mColliderComponents.mCollisionShapes[collider1Index];
+    const CollisionShape* collisionShape2 = mColliderComponents.mCollisionShapes[collider2Index];
 
     const bool isShape1Convex = collisionShape1->isConvex();
     const bool isShape2Convex = collisionShape2->isConvex();
@@ -291,8 +291,8 @@ uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2) {
     new (mPairIds + index) uint64(pairId);
     new (mPairBroadPhaseId1 + index) int32(shape1->getBroadPhaseId());
     new (mPairBroadPhaseId2 + index) int32(shape2->getBroadPhaseId());
-    new (mProxyShapes1 + index) Entity(shape1->getEntity());
-    new (mProxyShapes2 + index) Entity(shape2->getEntity());
+    new (mColliders1 + index) Entity(shape1->getEntity());
+    new (mColliders2 + index) Entity(shape2->getEntity());
     new (mLastFrameCollisionInfos + index) Map<uint64, LastFrameCollisionInfo*>(mPersistentAllocator);
     new (mNeedToTestOverlap + index) bool(false);
     new (mIsActive + index) bool(true);
@@ -302,11 +302,11 @@ uint64 OverlappingPairs::addPair(ProxyShape* shape1, ProxyShape* shape2) {
     // Map the entity with the new component lookup index
     mMapPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, index));
 
-    // Add the involved overlapping pair to the two proxy-shapes
-    assert(mProxyShapeComponents.mOverlappingPairs[proxyShape1Index].find(pairId) == mProxyShapeComponents.mOverlappingPairs[proxyShape1Index].end());
-    assert(mProxyShapeComponents.mOverlappingPairs[proxyShape2Index].find(pairId) == mProxyShapeComponents.mOverlappingPairs[proxyShape2Index].end());
-    mProxyShapeComponents.mOverlappingPairs[proxyShape1Index].add(pairId);
-    mProxyShapeComponents.mOverlappingPairs[proxyShape2Index].add(pairId);
+    // Add the involved overlapping pair to the two colliders
+    assert(mColliderComponents.mOverlappingPairs[collider1Index].find(pairId) == mColliderComponents.mOverlappingPairs[collider1Index].end());
+    assert(mColliderComponents.mOverlappingPairs[collider2Index].find(pairId) == mColliderComponents.mOverlappingPairs[collider2Index].end());
+    mColliderComponents.mOverlappingPairs[collider1Index].add(pairId);
+    mColliderComponents.mOverlappingPairs[collider2Index].add(pairId);
 
     mNbPairs++;
 
@@ -328,8 +328,8 @@ void OverlappingPairs::movePairToIndex(uint64 srcIndex, uint64 destIndex) {
     mPairIds[destIndex] = mPairIds[srcIndex];
     mPairBroadPhaseId1[destIndex] = mPairBroadPhaseId1[srcIndex];
     mPairBroadPhaseId2[destIndex] = mPairBroadPhaseId2[srcIndex];
-    new (mProxyShapes1 + destIndex) Entity(mProxyShapes1[srcIndex]);
-    new (mProxyShapes2 + destIndex) Entity(mProxyShapes2[srcIndex]);
+    new (mColliders1 + destIndex) Entity(mColliders1[srcIndex]);
+    new (mColliders2 + destIndex) Entity(mColliders2[srcIndex]);
     new (mLastFrameCollisionInfos + destIndex) Map<uint64, LastFrameCollisionInfo*>(mLastFrameCollisionInfos[srcIndex]);
     mNeedToTestOverlap[destIndex] = mNeedToTestOverlap[srcIndex];
     mIsActive[destIndex] = mIsActive[srcIndex];
@@ -354,8 +354,8 @@ void OverlappingPairs::swapPairs(uint64 index1, uint64 index2) {
     uint64 pairId = mPairIds[index1];
     int32 pairBroadPhaseId1 = mPairBroadPhaseId1[index1];
     int32 pairBroadPhaseId2 = mPairBroadPhaseId2[index1];
-    Entity proxyShape1 = mProxyShapes1[index1];
-    Entity proxyShape2 = mProxyShapes2[index1];
+    Entity collider1 = mColliders1[index1];
+    Entity collider2 = mColliders2[index1];
     Map<uint64, LastFrameCollisionInfo*> lastFrameCollisionInfo(mLastFrameCollisionInfos[index1]);
     bool needTestOverlap = mNeedToTestOverlap[index1];
     bool isActive = mIsActive[index1];
@@ -371,8 +371,8 @@ void OverlappingPairs::swapPairs(uint64 index1, uint64 index2) {
     mPairIds[index2] = pairId;
     mPairBroadPhaseId1[index2] = pairBroadPhaseId1;
     mPairBroadPhaseId2[index2] = pairBroadPhaseId2;
-    new (mProxyShapes1 + index2) Entity(proxyShape1);
-    new (mProxyShapes2 + index2) Entity(proxyShape2);
+    new (mColliders1 + index2) Entity(collider1);
+    new (mColliders2 + index2) Entity(collider2);
     new (mLastFrameCollisionInfos + index2) Map<uint64, LastFrameCollisionInfo*>(lastFrameCollisionInfo);
     mNeedToTestOverlap[index2] = needTestOverlap;
     mIsActive[index2] = isActive;
@@ -396,8 +396,8 @@ void OverlappingPairs::destroyPair(uint64 index) {
 
     mMapPairIdToPairIndex.remove(mPairIds[index]);
 
-    mProxyShapes1[index].~Entity();
-    mProxyShapes2[index].~Entity();
+    mColliders1[index].~Entity();
+    mColliders2[index].~Entity();
     mLastFrameCollisionInfos[index].~Map<uint64, LastFrameCollisionInfo*>();
     mNarrowPhaseAlgorithmType[index].~NarrowPhaseAlgorithmType();
 }
@@ -409,11 +409,11 @@ void OverlappingPairs::updateOverlappingPairIsActive(uint64 pairId) {
 
     const uint64 pairIndex = mMapPairIdToPairIndex[pairId];
 
-    const Entity proxyShape1 = mProxyShapes1[pairIndex];
-    const Entity proxyShape2 = mProxyShapes2[pairIndex];
+    const Entity collider1 = mColliders1[pairIndex];
+    const Entity collider2 = mColliders2[pairIndex];
 
-    const Entity body1 = mProxyShapeComponents.getBody(proxyShape1);
-    const Entity body2 = mProxyShapeComponents.getBody(proxyShape2);
+    const Entity body1 = mColliderComponents.getBody(collider1);
+    const Entity body2 = mColliderComponents.getBody(collider2);
 
     const bool isBody1Enabled = !mCollisionBodyComponents.getIsEntityDisabled(body1);
     const bool isBody2Enabled = !mCollisionBodyComponents.getIsEntityDisabled(body2);

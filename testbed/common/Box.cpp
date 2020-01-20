@@ -65,7 +65,7 @@ Box::Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& ph
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add the collision shape to the body
-    mProxyShape = mBody->addCollisionShape(mBoxShape, rp3d::Transform::identity());
+    mCollider = mBody->addCollider(mBoxShape, rp3d::Transform::identity());
 
     // If the Vertex Buffer object has not been created yet
     if (totalNbBoxes == 0) {
@@ -106,7 +106,7 @@ Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::Physi
     rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
 
     // Add the collision shape to the body
-    mProxyShape = body->addCollisionShape(mBoxShape, rp3d::Transform::identity(), mass);
+    mCollider = body->addCollider(mBoxShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 

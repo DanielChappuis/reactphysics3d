@@ -47,7 +47,7 @@ CollisionBody* OverlapCallback::OverlapPair::getBody2() const {
 }
 
 // CollisionCallbackData Constructor
-OverlapCallback::CallbackData::CallbackData(List<Pair<Entity, Entity>>& overlapBodies, CollisionWorld& world)
-                :mOverlapBodies(overlapBodies), mWorld(world) {
+OverlapCallback::CallbackData::CallbackData(List<Pair<Entity, Entity>>& overlapColliders, CollisionWorld& world)
+                :mOverlapBodies(overlapColliders), mWorld(world) {
 
 }

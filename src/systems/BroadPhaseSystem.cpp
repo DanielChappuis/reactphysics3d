@@ -35,10 +35,10 @@
 using namespace reactphysics3d;
 
 // Constructor
-BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ProxyShapeComponents& proxyShapesComponents,
+BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ColliderComponents& collidersComponents,
                                    TransformComponents& transformComponents, RigidBodyComponents &rigidBodyComponents)
                     :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
-                     mProxyShapesComponents(proxyShapesComponents), mTransformsComponents(transformComponents),
+                     mCollidersComponents(collidersComponents), mTransformsComponents(transformComponents),
                      mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
 
@@ -76,30 +76,30 @@ void BroadPhaseSystem::raycast(const Ray& ray, RaycastTest& raycastTest,
     mDynamicAABBTree.raycast(ray, broadPhaseRaycastCallback);
 }
 
-// Add a proxy collision shape into the broad-phase collision detection
-void BroadPhaseSystem::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
+// Add a collider into the broad-phase collision detection
+void BroadPhaseSystem::addCollider(Collider* collider, const AABB& aabb) {
 
-    assert(proxyShape->getBroadPhaseId() == -1);
+    assert(collider->getBroadPhaseId() == -1);
 
     // Add the collision shape into the dynamic AABB tree and get its broad-phase ID
-    int nodeId = mDynamicAABBTree.addObject(aabb, proxyShape);
+    int nodeId = mDynamicAABBTree.addObject(aabb, collider);
 
-    // Set the broad-phase ID of the proxy shape
-    mProxyShapesComponents.setBroadPhaseId(proxyShape->getEntity(), nodeId);
+    // Set the broad-phase ID of the collider
+    mCollidersComponents.setBroadPhaseId(collider->getEntity(), nodeId);
 
     // Add the collision shape into the array of bodies that have moved (or have been created)
     // during the last simulation step
-    addMovedCollisionShape(proxyShape->getBroadPhaseId(), proxyShape);
+    addMovedCollisionShape(collider->getBroadPhaseId(), collider);
 }
 
-// Remove a proxy collision shape from the broad-phase collision detection
-void BroadPhaseSystem::removeProxyCollisionShape(ProxyShape* proxyShape) {
+// Remove a collider from the broad-phase collision detection
+void BroadPhaseSystem::removeCollider(Collider* collider) {
 
-    assert(proxyShape->getBroadPhaseId() != -1);
+    assert(collider->getBroadPhaseId() != -1);
 
-    int broadPhaseID = proxyShape->getBroadPhaseId();
+    int broadPhaseID = collider->getBroadPhaseId();
 
-    mProxyShapesComponents.setBroadPhaseId(proxyShape->getEntity(), -1);
+    mCollidersComponents.setBroadPhaseId(collider->getEntity(), -1);
 
     // Remove the collision shape from the dynamic AABB tree
     mDynamicAABBTree.removeObject(broadPhaseID);
@@ -109,31 +109,31 @@ void BroadPhaseSystem::removeProxyCollisionShape(ProxyShape* proxyShape) {
     removeMovedCollisionShape(broadPhaseID);
 }
 
-// Update the broad-phase state of a single proxy-shape
-void BroadPhaseSystem::updateProxyShape(Entity proxyShapeEntity, decimal timeStep) {
+// Update the broad-phase state of a single collider
+void BroadPhaseSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
 
-    assert(mProxyShapesComponents.mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+    assert(mCollidersComponents.mMapEntityToComponentIndex.containsKey(colliderEntity));
 
-    // Get the index of the proxy-shape component in the array
-    uint32 index = mProxyShapesComponents.mMapEntityToComponentIndex[proxyShapeEntity];
+    // Get the index of the collider component in the array
+    uint32 index = mCollidersComponents.mMapEntityToComponentIndex[colliderEntity];
 
-    // Update the proxy-shape component
-    updateProxyShapesComponents(index, 1, timeStep);
+    // Update the collider component
+    updateCollidersComponents(index, 1, timeStep);
 }
 
-// Update the broad-phase state of all the enabled proxy-shapes
-void BroadPhaseSystem::updateProxyShapes(decimal timeStep) {
+// Update the broad-phase state of all the enabled colliders
+void BroadPhaseSystem::updateColliders(decimal timeStep) {
 
-    RP3D_PROFILE("BroadPhaseSystem::updateProxyShapes()", mProfiler);
+    RP3D_PROFILE("BroadPhaseSystem::updateColliders()", mProfiler);
 
-    // Update all the enabled proxy-shape components
-    if (mProxyShapesComponents.getNbEnabledComponents() > 0) {
-        updateProxyShapesComponents(0, mProxyShapesComponents.getNbEnabledComponents(), timeStep);
+    // Update all the enabled collider components
+    if (mCollidersComponents.getNbEnabledComponents() > 0) {
+        updateCollidersComponents(0, mCollidersComponents.getNbEnabledComponents(), timeStep);
     }
 }
 
 // Notify the broad-phase that a collision shape has moved and need to be updated
-void BroadPhaseSystem::updateProxyShapeInternal(int32 broadPhaseId, ProxyShape* proxyShape, const AABB& aabb, const Vector3& displacement) {
+void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb, const Vector3& displacement) {
 
     assert(broadPhaseId >= 0);
 
@@ -146,33 +146,33 @@ void BroadPhaseSystem::updateProxyShapeInternal(int32 broadPhaseId, ProxyShape* 
 
         // Add the collision shape into the array of shapes that have moved (or have been created)
         // during the last simulation step
-        addMovedCollisionShape(broadPhaseId, proxyShape);
+        addMovedCollisionShape(broadPhaseId, collider);
     }
 }
 
-// Update the broad-phase state of some proxy-shapes components
-void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbItems, decimal timeStep) {
+// Update the broad-phase state of some colliders components
+void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal timeStep) {
 
-    RP3D_PROFILE("BroadPhaseSystem::updateProxyShapesComponents()", mProfiler);
+    RP3D_PROFILE("BroadPhaseSystem::updateCollidersComponents()", mProfiler);
 
     assert(nbItems > 0);
-    assert(startIndex < mProxyShapesComponents.getNbComponents());
-    assert(startIndex + nbItems <= mProxyShapesComponents.getNbComponents());
+    assert(startIndex < mCollidersComponents.getNbComponents());
+    assert(startIndex + nbItems <= mCollidersComponents.getNbComponents());
 
     // Make sure we do not update disabled components
-    startIndex = std::min(startIndex, mProxyShapesComponents.getNbEnabledComponents());
-    uint32 endIndex = std::min(startIndex + nbItems, mProxyShapesComponents.getNbEnabledComponents());
+    startIndex = std::min(startIndex, mCollidersComponents.getNbEnabledComponents());
+    uint32 endIndex = std::min(startIndex + nbItems, mCollidersComponents.getNbEnabledComponents());
     nbItems = endIndex - startIndex;
     assert(nbItems >= 0);
 
-    // For each proxy-shape component to update
+    // For each collider component to update
     for (uint32 i = startIndex; i < startIndex + nbItems; i++) {
 
         // TODO : Can we remove this test
-        const int32 broadPhaseId = mProxyShapesComponents.mBroadPhaseIds[i];
+        const int32 broadPhaseId = mCollidersComponents.mBroadPhaseIds[i];
         if (broadPhaseId != -1) {
 
-            const Entity& bodyEntity = mProxyShapesComponents.mBodiesEntities[i];
+            const Entity& bodyEntity = mCollidersComponents.mBodiesEntities[i];
             const Transform& transform = mTransformsComponents.getTransform(bodyEntity);
 
             // If there is a dynamics component for the current entity
@@ -187,10 +187,10 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbI
 
             // Recompute the world-space AABB of the collision shape
             AABB aabb;
-            mProxyShapesComponents.mCollisionShapes[i]->computeAABB(aabb, transform * mProxyShapesComponents.mLocalToBodyTransforms[i]);
+            mCollidersComponents.mCollisionShapes[i]->computeAABB(aabb, transform * mCollidersComponents.mLocalToBodyTransforms[i]);
 
-            // Update the broad-phase state for the proxy collision shape
-            updateProxyShapeInternal(broadPhaseId, mProxyShapesComponents.mProxyShapes[i], aabb, displacement);
+            // Update the broad-phase state for the collider
+            updateColliderInternal(broadPhaseId, mCollidersComponents.mColliders[i], aabb, displacement);
         }
     }
 }
@@ -198,7 +198,7 @@ void BroadPhaseSystem::updateProxyShapesComponents(uint32 startIndex, uint32 nbI
 
 // Add a collision shape in the array of shapes that have moved in the last simulation step
 // and that need to be tested again for broad-phase overlapping.
-void BroadPhaseSystem::addMovedCollisionShape(int broadPhaseID, ProxyShape* proxyShape) {
+void BroadPhaseSystem::addMovedCollisionShape(int broadPhaseID, Collider* collider) {
 
     assert(broadPhaseID != -1);
 
@@ -206,7 +206,7 @@ void BroadPhaseSystem::addMovedCollisionShape(int broadPhaseID, ProxyShape* prox
     mMovedShapes.add(broadPhaseID);
 
     // Notify that the overlapping pairs where this shape is involved need to be tested for overlap
-    mCollisionDetection.notifyOverlappingPairsToTestOverlap(proxyShape);
+    mCollisionDetection.notifyOverlappingPairsToTestOverlap(collider);
 }
 
 // Compute all the overlapping pairs of collision shapes
@@ -214,7 +214,7 @@ void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, Lis
 
     RP3D_PROFILE("BroadPhaseSystem::computeOverlappingPairs()", mProfiler);
 
-    // Get the list of the proxy-shapes that have moved or have been created in the last frame
+    // Get the list of the colliders that have moved or have been created in the last frame
     List<int> shapesToTest = mMovedShapes.toList(memoryManager.getPoolAllocator());
 
     // Ask the dynamic AABB tree to report all collision shapes that overlap with the shapes to test
@@ -236,16 +236,16 @@ decimal BroadPhaseRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const Ra
 
     decimal hitFraction = decimal(-1.0);
 
-    // Get the proxy shape from the node
-    ProxyShape* proxyShape = static_cast<ProxyShape*>(mDynamicAABBTree.getNodeDataPointer(nodeId));
+    // Get the collider from the node
+    Collider* collider = static_cast<Collider*>(mDynamicAABBTree.getNodeDataPointer(nodeId));
 
     // Check if the raycast filtering mask allows raycast against this shape
-    if ((mRaycastWithCategoryMaskBits & proxyShape->getCollisionCategoryBits()) != 0) {
+    if ((mRaycastWithCategoryMaskBits & collider->getCollisionCategoryBits()) != 0) {
 
         // Ask the collision detection to perform a ray cast test against
-        // the proxy shape of this node because the ray is overlapping
+        // the collider of this node because the ray is overlapping
         // with the shape in the broad-phase
-        hitFraction = mRaycastTest.raycastAgainstShape(proxyShape, ray);
+        hitFraction = mRaycastTest.raycastAgainstShape(collider, ray);
     }
 
     return hitFraction;

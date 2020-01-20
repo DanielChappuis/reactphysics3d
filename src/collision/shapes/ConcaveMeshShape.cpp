@@ -176,12 +176,12 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<V
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     RP3D_PROFILE("ConcaveMeshShape::raycast()", mProfiler);
 
     // Create the callback object that will compute ray casting against triangles
-    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray, allocator);
+    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, collider, raycastInfo, ray, allocator);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -259,7 +259,7 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
 
         // Ray casting test against the collision shape
         RaycastInfo raycastInfo;
-        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape, mAllocator);
+        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mCollider, mAllocator);
 
         // If the ray hit the collision shape
         if (isTriangleHit && raycastInfo.hitFraction <= smallestHitFraction) {
@@ -267,7 +267,7 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
             assert(raycastInfo.hitFraction >= decimal(0.0));
 
             mRaycastInfo.body = raycastInfo.body;
-            mRaycastInfo.proxyShape = raycastInfo.proxyShape;
+            mRaycastInfo.collider = raycastInfo.collider;
             mRaycastInfo.hitFraction = raycastInfo.hitFraction;
             mRaycastInfo.worldPoint = raycastInfo.worldPoint;
             mRaycastInfo.worldNormal = raycastInfo.worldNormal;

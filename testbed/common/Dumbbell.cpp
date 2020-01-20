@@ -72,9 +72,9 @@ Dumbbell::Dumbbell(rp3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dyna
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    mProxyShapeSphere1 = body->addCollisionShape(mSphereShape, transformSphereShape1, massSphere);
-    mProxyShapeSphere2 = body->addCollisionShape(mSphereShape, transformSphereShape2, massSphere);
-    mProxyShapeCapsule = body->addCollisionShape(mCapsuleShape, transformCylinderShape, massCylinder);
+    mColliderSphere1 = body->addCollider(mSphereShape, transformSphereShape1, massSphere);
+    mColliderSphere2 = body->addCollider(mSphereShape, transformSphereShape2, massSphere);
+    mColliderCapsule = body->addCollider(mCapsuleShape, transformCylinderShape, massCylinder);
 
     mBody = body;
 
@@ -125,9 +125,9 @@ Dumbbell::Dumbbell(reactphysics3d::PhysicsCommon &physicsCommon, rp3d::Collision
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    mProxyShapeSphere1 = mBody->addCollisionShape(mSphereShape, transformSphereShape1);
-    mProxyShapeSphere2 = mBody->addCollisionShape(mSphereShape, transformSphereShape2);
-    mProxyShapeCapsule = mBody->addCollisionShape(mCapsuleShape, transformCylinderShape);
+    mColliderSphere1 = mBody->addCollider(mSphereShape, transformSphereShape1);
+    mColliderSphere2 = mBody->addCollider(mSphereShape, transformSphereShape2);
+    mColliderCapsule = mBody->addCollider(mCapsuleShape, transformCylinderShape);
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 

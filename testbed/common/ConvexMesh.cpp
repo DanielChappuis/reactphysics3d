@@ -79,7 +79,7 @@ ConvexMesh::ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld*
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = mBody->addCollisionShape(mConvexShape, rp3d::Transform::identity());
+    mCollider = mBody->addCollider(mConvexShape, rp3d::Transform::identity());
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -139,7 +139,7 @@ ConvexMesh::ConvexMesh(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::Dyn
     rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = body->addCollisionShape(mConvexShape, rp3d::Transform::identity(), mass);
+    mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity(), mass);
 
     mBody = body;
 

@@ -27,7 +27,7 @@
 #define	REACTPHYSICS3D_CONTACT_MANIFOLD_H
 
 // Libraries
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -71,11 +71,11 @@ class ContactManifold {
         /// Entity of the second body in contact
         Entity bodyEntity2;
 
-        /// Entity of the first proxy-shape in contact
-        Entity proxyShapeEntity1;
+        /// Entity of the first collider in contact
+        Entity colliderEntity1;
 
-        /// Entity of the second proxy-shape in contact
-        Entity proxyShapeEntity2;
+        /// Entity of the second collider in contact
+        Entity colliderEntity2;
 
         /// Number of contacts in the cache
         int8 nbContactPoints;
@@ -106,7 +106,7 @@ class ContactManifold {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity proxyShapeEntity1, Entity proxyShapeEntity2,
+        ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity colliderEntity1, Entity colliderEntity2,
                         uint contactPointsIndex, int8 nbContactPoints);
 
         /// Destructor

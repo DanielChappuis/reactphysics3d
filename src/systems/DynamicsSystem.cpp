@@ -32,8 +32,8 @@ using namespace reactphysics3d;
 
 // Constructor
 DynamicsSystem::DynamicsSystem(DynamicsWorld& world, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
-                               TransformComponents& transformComponents, ProxyShapeComponents& proxyShapeComponents, bool& isGravityEnabled, Vector3& gravity)
-              :mWorld(world), mCollisionBodyComponents(collisionBodyComponents), mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents), mProxyShapeComponents(proxyShapeComponents),
+                               TransformComponents& transformComponents, ColliderComponents& colliderComponents, bool& isGravityEnabled, Vector3& gravity)
+              :mWorld(world), mCollisionBodyComponents(collisionBodyComponents), mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents), mColliderComponents(colliderComponents),
                mIsGravityEnabled(isGravityEnabled), mGravity(gravity) {
 
 }
@@ -97,12 +97,12 @@ void DynamicsSystem::updateBodiesState() {
         transform.setPosition(centerOfMassWorld - transform.getOrientation() * centerOfMassLocal);
     }
 
-    // Update the local-to-world transform of the proxy-shapes
-    for (uint32 i=0; i < mProxyShapeComponents.getNbEnabledComponents(); i++) {
+    // Update the local-to-world transform of the colliders
+    for (uint32 i=0; i < mColliderComponents.getNbEnabledComponents(); i++) {
 
-        // Update the local-to-world transform of the proxy-shape
-        mProxyShapeComponents.mLocalToWorldTransforms[i] = mTransformComponents.getTransform(mProxyShapeComponents.mBodiesEntities[i]) *
-                                                           mProxyShapeComponents.mLocalToBodyTransforms[i];
+        // Update the local-to-world transform of the collider
+        mColliderComponents.mLocalToWorldTransforms[i] = mTransformComponents.getTransform(mColliderComponents.mBodiesEntities[i]) *
+                                                           mColliderComponents.mLocalToBodyTransforms[i];
     }
 }
 

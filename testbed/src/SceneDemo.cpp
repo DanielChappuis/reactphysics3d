@@ -443,13 +443,13 @@ void SceneDemo::renderAABBs(const openglframework::Matrix4& worldToCameraMatrix)
     // For each physics object of the scene
     for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
 
-       // For each proxy shape of the object
-       for (uint i=0; i < (*it)->getCollisionBody()->getNbProxyShapes(); i++) {
+       // For each collider of the object
+       for (uint i=0; i < (*it)->getCollisionBody()->getNbColliders(); i++) {
 
-           rp3d::ProxyShape* proxyShape = (*it)->getCollisionBody()->getProxyShape(i);
+           rp3d::Collider* collider = (*it)->getCollisionBody()->getCollider(i);
 
-           // Get the broad-phase AABB corresponding to the proxy shape
-           rp3d::AABB aabb = mPhysicsWorld->getWorldAABB(proxyShape);
+           // Get the broad-phase AABB corresponding to the collider
+           rp3d::AABB aabb = mPhysicsWorld->getWorldAABB(collider);
 
            openglframework::Vector3 aabbCenter(aabb.getCenter().x, aabb.getCenter().y, aabb.getCenter().z);
            openglframework::Vector3 aabbMin(aabb.getMin().x, aabb.getMin().y, aabb.getMin().z);

@@ -54,10 +54,10 @@ class ContactPoint {
         /// Penetration depth
         decimal mPenetrationDepth;
 
-        /// Contact point on proxy shape 1 in local-space of proxy shape 1
+        /// Contact point on collider 1 in local-space of collider 1
         Vector3 mLocalPointOnShape1;
 
-        /// Contact point on proxy shape 2 in local-space of proxy shape 2
+        /// Contact point on collider 2 in local-space of collider 2
         Vector3 mLocalPointOnShape2;
 
         /// True if the contact is a resting contact (exists for more than one time step)
@@ -115,10 +115,10 @@ class ContactPoint {
         /// Return the normal vector of the contact
         const Vector3& getNormal() const;
 
-        /// Return the contact point on the first proxy shape in the local-space of the proxy shape
+        /// Return the contact point on the first collider in the local-space of the collider
         const Vector3& getLocalPointOnShape1() const;
 
-        /// Return the contact point on the second proxy shape in the local-space of the proxy shape
+        /// Return the contact point on the second collider in the local-space of the collider
         const Vector3& getLocalPointOnShape2() const;
 
         /// Return the cached penetration impulse
@@ -148,17 +148,17 @@ inline const Vector3& ContactPoint::getNormal() const {
     return mNormal;
 }
 
-// Return the contact point on the first proxy shape in the local-space of the proxy shape
+// Return the contact point on the first collider in the local-space of the collider
 /**
- * @return The contact point on the first proxy shape in the local-space of the proxy shape
+ * @return The contact point on the first collider in the local-space of the collider
  */
 inline const Vector3& ContactPoint::getLocalPointOnShape1() const {
     return mLocalPointOnShape1;
 }
 
-// Return the contact point on the second proxy shape in the local-space of the proxy shape
+// Return the contact point on the second collider in the local-space of the collider
 /**
- * @return The contact point on the second proxy shape in the local-space of the proxy shape
+ * @return The contact point on the second collider in the local-space of the collider
  */
 inline const Vector3& ContactPoint::getLocalPointOnShape2() const {
     return mLocalPointOnShape2;

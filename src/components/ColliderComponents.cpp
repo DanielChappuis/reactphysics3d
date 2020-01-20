@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "ProxyShapeComponents.h"
+#include "ColliderComponents.h"
 #include "engine/EntityManager.h"
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 #include <cassert>
 #include <random>
 
@@ -34,8 +34,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ProxyShapeComponents::ProxyShapeComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(ProxyShape*) + sizeof(int) +
+ColliderComponents::ColliderComponents(MemoryAllocator& allocator)
+                    :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Collider*) + sizeof(int) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(decimal) + sizeof(unsigned short) +
                 sizeof(unsigned short) + sizeof(Transform) + sizeof(List<uint64>)) {
 
@@ -44,7 +44,7 @@ ProxyShapeComponents::ProxyShapeComponents(MemoryAllocator& allocator)
 }
 
 // Allocate memory for a given number of components
-void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
+void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
 
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
@@ -56,10 +56,10 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(newBuffer != nullptr);
 
     // New pointers to components data
-    Entity* newProxyShapesEntities = static_cast<Entity*>(newBuffer);
-    Entity* newBodiesEntities = reinterpret_cast<Entity*>(newProxyShapesEntities + nbComponentsToAllocate);
-    ProxyShape** newProxyShapes = reinterpret_cast<ProxyShape**>(newBodiesEntities + nbComponentsToAllocate);
-    int32* newBroadPhaseIds = reinterpret_cast<int32*>(newProxyShapes + nbComponentsToAllocate);
+    Entity* newCollidersEntities = static_cast<Entity*>(newBuffer);
+    Entity* newBodiesEntities = reinterpret_cast<Entity*>(newCollidersEntities + nbComponentsToAllocate);
+    Collider** newColliders = reinterpret_cast<Collider**>(newBodiesEntities + nbComponentsToAllocate);
+    int32* newBroadPhaseIds = reinterpret_cast<int32*>(newColliders + nbComponentsToAllocate);
     Transform* newLocalToBodyTransforms = reinterpret_cast<Transform*>(newBroadPhaseIds + nbComponentsToAllocate);
     CollisionShape** newCollisionShapes = reinterpret_cast<CollisionShape**>(newLocalToBodyTransforms + nbComponentsToAllocate);
     decimal* newMasses = reinterpret_cast<decimal*>(newCollisionShapes + nbComponentsToAllocate);
@@ -72,9 +72,9 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
     if (mNbComponents > 0) {
 
         // Copy component data from the previous buffer to the new one
-        memcpy(newProxyShapesEntities, mProxyShapesEntities, mNbComponents * sizeof(Entity));
+        memcpy(newCollidersEntities, mCollidersEntities, mNbComponents * sizeof(Entity));
         memcpy(newBodiesEntities, mBodiesEntities, mNbComponents * sizeof(Entity));
-        memcpy(newProxyShapes, mProxyShapes, mNbComponents * sizeof(ProxyShape*));
+        memcpy(newColliders, mColliders, mNbComponents * sizeof(Collider*));
         memcpy(newBroadPhaseIds, mBroadPhaseIds, mNbComponents * sizeof(int32));
         memcpy(newLocalToBodyTransforms, mLocalToBodyTransforms, mNbComponents * sizeof(Transform));
         memcpy(newCollisionShapes, mCollisionShapes, mNbComponents * sizeof(CollisionShape*));
@@ -89,10 +89,10 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
     }
 
     mBuffer = newBuffer;
-    mProxyShapesEntities = newProxyShapesEntities;
+    mCollidersEntities = newCollidersEntities;
     mBodiesEntities = newBodiesEntities;
-    mProxyShapesEntities = newProxyShapesEntities;
-    mProxyShapes = newProxyShapes;
+    mCollidersEntities = newCollidersEntities;
+    mColliders = newColliders;
     mBroadPhaseIds = newBroadPhaseIds;
     mLocalToBodyTransforms = newLocalToBodyTransforms;
     mCollisionShapes = newCollisionShapes;
@@ -106,15 +106,15 @@ void ProxyShapeComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void ProxyShapeComponents::addComponent(Entity proxyShapeEntity, bool isSleeping, const ProxyShapeComponent& component) {
+void ColliderComponents::addComponent(Entity colliderEntity, bool isSleeping, const ColliderComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
     uint32 index = prepareAddComponent(isSleeping);
 
     // Insert the new component data
-    new (mProxyShapesEntities + index) Entity(proxyShapeEntity);
+    new (mCollidersEntities + index) Entity(colliderEntity);
     new (mBodiesEntities + index) Entity(component.bodyEntity);
-    mProxyShapes[index] = component.proxyShape;
+    mColliders[index] = component.collider;
     new (mBroadPhaseIds + index) int32(-1);
     new (mLocalToBodyTransforms + index) Transform(component.localToBodyTransform);
     mCollisionShapes[index] = component.collisionShape;
@@ -125,7 +125,7 @@ void ProxyShapeComponents::addComponent(Entity proxyShapeEntity, bool isSleeping
     new (mOverlappingPairs + index) List<uint64>(mMemoryAllocator);
 
     // Map the entity with the new component lookup index
-    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(proxyShapeEntity, index));
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(colliderEntity, index));
 
     mNbComponents++;
 
@@ -134,14 +134,14 @@ void ProxyShapeComponents::addComponent(Entity proxyShapeEntity, bool isSleeping
 
 // Move a component from a source to a destination index in the components array
 // The destination location must contain a constructed object
-void ProxyShapeComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
+void ColliderComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex) {
 
-    const Entity proxyShapeEntity = mProxyShapesEntities[srcIndex];
+    const Entity colliderEntity = mCollidersEntities[srcIndex];
 
     // Copy the data of the source component to the destination location
-    new (mProxyShapesEntities + destIndex) Entity(mProxyShapesEntities[srcIndex]);
+    new (mCollidersEntities + destIndex) Entity(mCollidersEntities[srcIndex]);
     new (mBodiesEntities + destIndex) Entity(mBodiesEntities[srcIndex]);
-    mProxyShapes[destIndex] = mProxyShapes[srcIndex];
+    mColliders[destIndex] = mColliders[srcIndex];
     new (mBroadPhaseIds + destIndex) int32(mBroadPhaseIds[srcIndex]);
     new (mLocalToBodyTransforms + destIndex) Transform(mLocalToBodyTransforms[srcIndex]);
     mCollisionShapes[destIndex] = mCollisionShapes[srcIndex];
@@ -154,21 +154,21 @@ void ProxyShapeComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInde
     // Destroy the source component
     destroyComponent(srcIndex);
 
-    assert(!mMapEntityToComponentIndex.containsKey(proxyShapeEntity));
+    assert(!mMapEntityToComponentIndex.containsKey(colliderEntity));
 
     // Update the entity to component index mapping
-    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(proxyShapeEntity, destIndex));
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(colliderEntity, destIndex));
 
-    assert(mMapEntityToComponentIndex[mProxyShapesEntities[destIndex]] == destIndex);
+    assert(mMapEntityToComponentIndex[mCollidersEntities[destIndex]] == destIndex);
 }
 
 // Swap two components in the array
-void ProxyShapeComponents::swapComponents(uint32 index1, uint32 index2) {
+void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Copy component 1 data
-    Entity proxyShapeEntity1(mProxyShapesEntities[index1]);
+    Entity colliderEntity1(mCollidersEntities[index1]);
     Entity bodyEntity1(mBodiesEntities[index1]);
-    ProxyShape* proxyShape1 = mProxyShapes[index1];
+    Collider* collider1 = mColliders[index1];
     int32 broadPhaseId1 = mBroadPhaseIds[index1];
     Transform localToBodyTransform1 = mLocalToBodyTransforms[index1];
     CollisionShape* collisionShape1 = mCollisionShapes[index1];
@@ -184,9 +184,9 @@ void ProxyShapeComponents::swapComponents(uint32 index1, uint32 index2) {
     moveComponentToIndex(index2, index1);
 
     // Reconstruct component 1 at component 2 location
-    new (mProxyShapesEntities + index2) Entity(proxyShapeEntity1);
+    new (mCollidersEntities + index2) Entity(colliderEntity1);
     new (mBodiesEntities + index2) Entity(bodyEntity1);
-    mProxyShapes[index2] = proxyShape1;
+    mColliders[index2] = collider1;
     new (mBroadPhaseIds + index2) int32(broadPhaseId1);
     new (mLocalToBodyTransforms + index2) Transform(localToBodyTransform1);
     mCollisionShapes[index2] = collisionShape1;
@@ -197,25 +197,25 @@ void ProxyShapeComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mOverlappingPairs + index2) List<uint64>(overlappingPairs);
 
     // Update the entity to component index mapping
-    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(proxyShapeEntity1, index2));
+    mMapEntityToComponentIndex.add(Pair<Entity, uint32>(colliderEntity1, index2));
 
-    assert(mMapEntityToComponentIndex[mProxyShapesEntities[index1]] == index1);
-    assert(mMapEntityToComponentIndex[mProxyShapesEntities[index2]] == index2);
+    assert(mMapEntityToComponentIndex[mCollidersEntities[index1]] == index1);
+    assert(mMapEntityToComponentIndex[mCollidersEntities[index2]] == index2);
     assert(mNbComponents == static_cast<uint32>(mMapEntityToComponentIndex.size()));
 }
 
 // Destroy a component at a given index
-void ProxyShapeComponents::destroyComponent(uint32 index) {
+void ColliderComponents::destroyComponent(uint32 index) {
 
     Components::destroyComponent(index);
 
-    assert(mMapEntityToComponentIndex[mProxyShapesEntities[index]] == index);
+    assert(mMapEntityToComponentIndex[mCollidersEntities[index]] == index);
 
-    mMapEntityToComponentIndex.remove(mProxyShapesEntities[index]);
+    mMapEntityToComponentIndex.remove(mCollidersEntities[index]);
 
-    mProxyShapesEntities[index].~Entity();
+    mCollidersEntities[index].~Entity();
     mBodiesEntities[index].~Entity();
-    mProxyShapes[index] = nullptr;
+    mColliders[index] = nullptr;
     mLocalToBodyTransforms[index].~Transform();
     mCollisionShapes[index] = nullptr;
     mLocalToWorldTransforms[index].~Transform();

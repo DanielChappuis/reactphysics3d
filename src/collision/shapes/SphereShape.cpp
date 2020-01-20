@@ -25,7 +25,7 @@
 
 // Libraries
 #include "SphereShape.h"
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 #include "configuration.h"
 #include "collision/RaycastInfo.h"
 #include <cassert>
@@ -60,7 +60,7 @@ void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
 }
 
 // Raycast method with feedback information
-bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     const Vector3 m = ray.point1;
     decimal c = m.dot(m) - mMargin * mMargin;
@@ -93,8 +93,8 @@ bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* 
 
         // Compute the intersection information
         t /= raySquareLength;
-        raycastInfo.body = proxyShape->getBody();
-        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.body = collider->getBody();
+        raycastInfo.collider = collider;
         raycastInfo.hitFraction = t;
         raycastInfo.worldPoint = ray.point1 + t * rayDirection;
         raycastInfo.worldNormal = raycastInfo.worldPoint;

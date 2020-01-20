@@ -25,7 +25,7 @@
 
 // Libraries
 #include "CapsuleShape.h"
-#include "collision/ProxyShape.h"
+#include "collision/Collider.h"
 #include "configuration.h"
 #include "collision/RaycastInfo.h"
 #include <cassert>
@@ -70,7 +70,7 @@ void CapsuleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) co
 }
 
 // Return true if a point is inside the collision shape
-bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+bool CapsuleShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
 
     const decimal diffYCenterSphere1 = localPoint.y - mHalfHeight;
     const decimal diffYCenterSphere2 = localPoint.y + mHalfHeight;
@@ -86,7 +86,7 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
 }
 
 // Raycast method with feedback information
-bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     const Vector3 n = ray.point2 - ray.point1;
 
@@ -129,8 +129,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
             Vector3 hitLocalPoint;
             decimal hitFraction;
             if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
-                raycastInfo.body = proxyShape->getBody();
-                raycastInfo.proxyShape = proxyShape;
+                raycastInfo.body = collider->getBody();
+                raycastInfo.collider = collider;
                 raycastInfo.hitFraction = hitFraction;
                 raycastInfo.worldPoint = hitLocalPoint;
                 Vector3 normalDirection = hitLocalPoint - p;
@@ -147,8 +147,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
             Vector3 hitLocalPoint;
             decimal hitFraction;
             if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
-                raycastInfo.body = proxyShape->getBody();
-                raycastInfo.proxyShape = proxyShape;
+                raycastInfo.body = collider->getBody();
+                raycastInfo.collider = collider;
                 raycastInfo.hitFraction = hitFraction;
                 raycastInfo.worldPoint = hitLocalPoint;
                 Vector3 normalDirection = hitLocalPoint - q;
@@ -180,8 +180,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
         Vector3 hitLocalPoint;
         decimal hitFraction;
         if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
-            raycastInfo.body = proxyShape->getBody();
-            raycastInfo.proxyShape = proxyShape;
+            raycastInfo.body = collider->getBody();
+            raycastInfo.collider = collider;
             raycastInfo.hitFraction = hitFraction;
             raycastInfo.worldPoint = hitLocalPoint;
             Vector3 normalDirection = hitLocalPoint - p;
@@ -198,8 +198,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
         Vector3 hitLocalPoint;
         decimal hitFraction;
         if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
-            raycastInfo.body = proxyShape->getBody();
-            raycastInfo.proxyShape = proxyShape;
+            raycastInfo.body = collider->getBody();
+            raycastInfo.collider = collider;
             raycastInfo.hitFraction = hitFraction;
             raycastInfo.worldPoint = hitLocalPoint;
             Vector3 normalDirection = hitLocalPoint - q;
@@ -219,8 +219,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
 
     // Compute the hit information
     Vector3 localHitPoint = ray.point1 + t * n;
-    raycastInfo.body = proxyShape->getBody();
-    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.body = collider->getBody();
+    raycastInfo.collider = collider;
     raycastInfo.hitFraction = t;
     raycastInfo.worldPoint = localHitPoint;
     Vector3 v = localHitPoint - p;

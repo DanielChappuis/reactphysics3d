@@ -182,15 +182,13 @@ class RigidBody : public CollisionBody {
         /// Set whether or not the body is active
         virtual void setIsActive(bool isActive) override;
 
-        /// Add a collision shape to the body.
+        /// Create a new collider and add it to the body
         // TODO : Remove the mass from this parameter so that we can correctly use inheritance here
-        //        The user will then need to call ProxyShape->setMass() to set the mass of the shape
-        virtual ProxyShape* addCollisionShape(CollisionShape* collisionShape,
-                                              const Transform& transform,
-                                              decimal mass);
+        //        The user will then need to call Collider->setMass() to set the mass of the shape
+        virtual Collider* addCollider(CollisionShape* collisionShape, const Transform& transform, decimal mass);
 
-        /// Remove a collision shape from the body
-        virtual void removeCollisionShape(ProxyShape* proxyShape) override;
+        /// Remove a collider from the body
+        virtual void removeCollider(Collider* collider) override;
 
         /// Recompute the center of mass, total mass and inertia tensor of the body using all
         /// the collision shapes attached to the body.

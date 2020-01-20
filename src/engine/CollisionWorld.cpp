@@ -39,11 +39,11 @@ uint CollisionWorld::mNbWorlds = 0;
 CollisionWorld::CollisionWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
                : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()),
                  mCollisionBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
-                 mTransformComponents(mMemoryManager.getHeapAllocator()), mProxyShapesComponents(mMemoryManager.getHeapAllocator()),
+                 mTransformComponents(mMemoryManager.getHeapAllocator()), mCollidersComponents(mMemoryManager.getHeapAllocator()),
                  mJointsComponents(mMemoryManager.getHeapAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getHeapAllocator()),
                  mFixedJointsComponents(mMemoryManager.getHeapAllocator()), mHingeJointsComponents(mMemoryManager.getHeapAllocator()),
                  mSliderJointsComponents(mMemoryManager.getHeapAllocator()),
-                 mCollisionDetection(this, mProxyShapesComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents, mMemoryManager),
+                 mCollisionDetection(this, mCollidersComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents, mMemoryManager),
                  mBodies(mMemoryManager.getHeapAllocator()),  mEventListener(nullptr),
                  mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
                  mIsLoggerCreatedByUser(logger != nullptr) {
@@ -137,7 +137,7 @@ CollisionWorld::~CollisionWorld() {
     assert(mBodies.size() == 0);
     assert(mCollisionBodyComponents.getNbComponents() == 0);
     assert(mTransformComponents.getNbComponents() == 0);
-    assert(mProxyShapesComponents.getNbComponents() == 0);
+    assert(mCollidersComponents.getNbComponents() == 0);
 }
 
 // Create a collision body and add it to the world
@@ -222,11 +222,11 @@ void CollisionWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
         mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     }
 
-    // For each proxy-shape of the body
-    const List<Entity>& proxyShapesEntities = mCollisionBodyComponents.getProxyShapes(bodyEntity);
-    for (uint i=0; i < proxyShapesEntities.size(); i++) {
+    // For each collider of the body
+    const List<Entity>& collidersEntities = mCollisionBodyComponents.getColliders(bodyEntity);
+    for (uint i=0; i < collidersEntities.size(); i++) {
 
-        mProxyShapesComponents.setIsEntityDisabled(proxyShapesEntities[i], isDisabled);
+        mCollidersComponents.setIsEntityDisabled(collidersEntities[i], isDisabled);
     }
 
     // Disable the joints of the body if necessary
@@ -288,16 +288,16 @@ bool CollisionWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
     return mCollisionDetection.testOverlap(body1, body2);
 }
 
-// Return the current world-space AABB of given proxy shape
+// Return the current world-space AABB of given collider
 /**
- * @param proxyShape Pointer to a proxy shape
- * @return The AAABB of the proxy shape in world-space
+ * @param collider Pointer to a collider
+ * @return The AAABB of the collider in world-space
  */
-AABB CollisionWorld::getWorldAABB(const ProxyShape* proxyShape) const {
+AABB CollisionWorld::getWorldAABB(const Collider* collider) const {
 
-    if (proxyShape->getBroadPhaseId() == -1) {
+    if (collider->getBroadPhaseId() == -1) {
         return AABB();
     }
 
-   return mCollisionDetection.getWorldAABB(proxyShape);
+   return mCollisionDetection.getWorldAABB(collider);
 }

@@ -55,14 +55,14 @@ CollisionBody* CollisionCallback::ContactPair::getBody2() const {
     return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mContactPair.body2Entity));
 }
 
-// Return a pointer to the first proxy-shape in contact (in body 1)
-ProxyShape* CollisionCallback::ContactPair::getProxyShape1() const {
-    return mWorld.mProxyShapesComponents.getProxyShape(mContactPair.proxyShape1Entity);
+// Return a pointer to the first collider in contact (in body 1)
+Collider* CollisionCallback::ContactPair::getCollider1() const {
+    return mWorld.mCollidersComponents.getCollider(mContactPair.collider1Entity);
 }
 
-// Return a pointer to the second proxy-shape in contact (in body 1)
-ProxyShape* CollisionCallback::ContactPair::getProxyShape2() const {
-    return mWorld.mProxyShapesComponents.getProxyShape(mContactPair.proxyShape2Entity);
+// Return a pointer to the second collider in contact (in body 1)
+Collider* CollisionCallback::ContactPair::getCollider2() const {
+    return mWorld.mCollidersComponents.getCollider(mContactPair.collider2Entity);
 }
 
 // CollisionCallbackInfo Constructor

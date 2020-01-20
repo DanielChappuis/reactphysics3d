@@ -26,12 +26,12 @@
 // Libraries
 #include "decimal.h"
 #include "RaycastInfo.h"
-#include "ProxyShape.h"
+#include "Collider.h"
 
 using namespace reactphysics3d;
 
-// Ray cast test against a proxy shape
-decimal RaycastTest::raycastAgainstShape(ProxyShape* shape, const Ray& ray) {
+// Ray cast test against a collider
+decimal RaycastTest::raycastAgainstShape(Collider* shape, const Ray& ray) {
 
     // Ray casting test against the collision shape
     RaycastInfo raycastInfo;

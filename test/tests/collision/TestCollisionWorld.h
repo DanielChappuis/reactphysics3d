@@ -90,10 +90,10 @@ struct ContactPairData {
 
 };
 
-// Collision data between two proxy shapes
+// Collision data between two colliders
 struct CollisionData {
 
-	std::pair<const ProxyShape*, const ProxyShape*> proxyShapes;
+    std::pair<const Collider*, const Collider*> colliders;
 	std::pair<CollisionBody*, CollisionBody*> bodies;
     std::vector<ContactPairData> contactPairs;
 
@@ -142,9 +142,9 @@ class WorldCollisionCallback : public CollisionCallback
 {
 	private:
 
-		std::map<std::pair<const ProxyShape*, const ProxyShape*>, CollisionData> mCollisionDatas;
+		std::map<std::pair<const Collider*, const Collider*>, CollisionData> mCollisionDatas;
 
-		std::pair<const ProxyShape*, const ProxyShape*> getCollisionKeyPair(std::pair<const ProxyShape*, const ProxyShape*> pair) const {
+		std::pair<const Collider*, const Collider*> getCollisionKeyPair(std::pair<const Collider*, const Collider*> pair) const {
 			
 			if (pair.first > pair.second) {
 				return std::make_pair(pair.second, pair.first);
@@ -169,12 +169,12 @@ class WorldCollisionCallback : public CollisionCallback
 			return mCollisionDatas.size() > 0;
 		}
 
-		bool areProxyShapesColliding(const ProxyShape* proxyShape1, const ProxyShape* proxyShape2) {
-			return mCollisionDatas.find(getCollisionKeyPair(std::make_pair(proxyShape1, proxyShape2))) != mCollisionDatas.end();
+        bool areCollidersColliding(const Collider* collider1, const Collider* collider2) {
+            return mCollisionDatas.find(getCollisionKeyPair(std::make_pair(collider1, collider2))) != mCollisionDatas.end();
 		}
 
-		const CollisionData* getCollisionData(const ProxyShape* proxyShape1, const ProxyShape* proxyShape2) const {
-			std::map<std::pair<const ProxyShape*, const ProxyShape*>, CollisionData>::const_iterator it = mCollisionDatas.find(getCollisionKeyPair(std::make_pair(proxyShape1, proxyShape2)));
+        const CollisionData* getCollisionData(const Collider* collider1, const Collider* collider2) const {
+            std::map<std::pair<const Collider*, const Collider*>, CollisionData>::const_iterator it = mCollisionDatas.find(getCollisionKeyPair(std::make_pair(collider1, collider2)));
 			if (it != mCollisionDatas.end()) {
 					return &(it->second);
 			}
@@ -195,7 +195,7 @@ class WorldCollisionCallback : public CollisionCallback
                 ContactPair contactPair = callbackData.getContactPair(p);
 
                 collisionData.bodies = std::make_pair(contactPair.getBody1(), contactPair.getBody2());
-                collisionData.proxyShapes = std::make_pair(contactPair.getProxyShape1(), contactPair.getProxyShape2());
+                collisionData.colliders = std::make_pair(contactPair.getCollider1(), contactPair.getCollider2());
 
                 // For each contact point
                 for (uint c=0; c < contactPair.getNbContactPoints(); c++) {
@@ -209,7 +209,7 @@ class WorldCollisionCallback : public CollisionCallback
                 collisionData.contactPairs.push_back(contactPairData);
             }
 
-            mCollisionDatas.insert(std::make_pair(getCollisionKeyPair(collisionData.proxyShapes), collisionData));
+            mCollisionDatas.insert(std::make_pair(getCollisionKeyPair(collisionData.colliders), collisionData));
         }
 };
 
@@ -292,16 +292,16 @@ class TestCollisionWorld : public Test {
 		ConvexMeshShape* mConvexMeshShape2;
         ConcaveMeshShape* mConcaveMeshShape;
 
-        // Proxy shapes
-        ProxyShape* mBoxProxyShape1;
-		ProxyShape* mBoxProxyShape2;
-        ProxyShape* mSphereProxyShape1;
-        ProxyShape* mSphereProxyShape2;
-		ProxyShape* mCapsuleProxyShape1;
-		ProxyShape* mCapsuleProxyShape2;
-		ProxyShape* mConvexMeshProxyShape1;
-		ProxyShape* mConvexMeshProxyShape2;
-        ProxyShape* mConcaveMeshProxyShape;
+        // Colliders
+        Collider* mBoxCollider1;
+        Collider* mBoxCollider2;
+        Collider* mSphereCollider1;
+        Collider* mSphereCollider2;
+        Collider* mCapsuleCollider1;
+        Collider* mCapsuleCollider2;
+        Collider* mConvexMeshCollider1;
+        Collider* mConvexMeshCollider2;
+        Collider* mConcaveMeshCollider;
 
 		PolygonVertexArray* mConvexMesh1PolygonVertexArray;
 		PolygonVertexArray* mConvexMesh2PolygonVertexArray;
@@ -338,34 +338,34 @@ class TestCollisionWorld : public Test {
             Transform boxTransform1(Vector3(-20, 20, 0), Quaternion::identity());
             mBoxBody1 = mWorld->createCollisionBody(boxTransform1);
             mBoxShape1 = mPhysicsCommon.createBoxShape(Vector3(3, 3, 3));
-            mBoxProxyShape1 = mBoxBody1->addCollisionShape(mBoxShape1, Transform::identity());
+            mBoxCollider1 = mBoxBody1->addCollider(mBoxShape1, Transform::identity());
 
 			Transform boxTransform2(Vector3(-10, 20, 0), Quaternion::identity());
 			mBoxBody2 = mWorld->createCollisionBody(boxTransform2);
             mBoxShape2 = mPhysicsCommon.createBoxShape(Vector3(4, 2, 8));
-            mBoxProxyShape2 = mBoxBody2->addCollisionShape(mBoxShape2, Transform::identity());
+            mBoxCollider2 = mBoxBody2->addCollider(mBoxShape2, Transform::identity());
 
 			// ---------- Spheres ---------- //
             mSphereShape1 = mPhysicsCommon.createSphereShape(3.0);
             Transform sphereTransform1(Vector3(10, 20, 0), Quaternion::identity());
             mSphereBody1 = mWorld->createCollisionBody(sphereTransform1);
-            mSphereProxyShape1 = mSphereBody1->addCollisionShape(mSphereShape1, Transform::identity());
+            mSphereCollider1 = mSphereBody1->addCollider(mSphereShape1, Transform::identity());
 
             mSphereShape2 = mPhysicsCommon.createSphereShape(5.0);
 			Transform sphereTransform2(Vector3(20, 20, 0), Quaternion::identity());
 			mSphereBody2 = mWorld->createCollisionBody(sphereTransform2);
-			mSphereProxyShape2 = mSphereBody2->addCollisionShape(mSphereShape2, Transform::identity());
+            mSphereCollider2 = mSphereBody2->addCollider(mSphereShape2, Transform::identity());
 
 			// ---------- Capsules ---------- //
             mCapsuleShape1 = mPhysicsCommon.createCapsuleShape(2, 6);
             Transform capsuleTransform1(Vector3(-10, 0, 0), Quaternion::identity());
             mCapsuleBody1 = mWorld->createCollisionBody(capsuleTransform1);
-            mCapsuleProxyShape1 = mCapsuleBody1->addCollisionShape(mCapsuleShape1, Transform::identity());
+            mCapsuleCollider1 = mCapsuleBody1->addCollider(mCapsuleShape1, Transform::identity());
 
             mCapsuleShape2 = mPhysicsCommon.createCapsuleShape(3, 4);
 			Transform capsuleTransform2(Vector3(-20, 0, 0), Quaternion::identity());
 			mCapsuleBody2 = mWorld->createCollisionBody(capsuleTransform2);
-			mCapsuleProxyShape2 = mCapsuleBody2->addCollisionShape(mCapsuleShape2, Transform::identity());
+            mCapsuleCollider2 = mCapsuleBody2->addCollider(mCapsuleShape2, Transform::identity());
 
 			// ---------- Convex Meshes ---------- //
 			mConvexMesh1CubeVertices[0] = Vector3(-3, -3, 3);
@@ -399,7 +399,7 @@ class TestCollisionWorld : public Test {
             mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1PolyhedronMesh);
             Transform convexMeshTransform1(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshBody1 = mWorld->createCollisionBody(convexMeshTransform1);
-            mConvexMeshProxyShape1 = mConvexMeshBody1->addCollisionShape(mConvexMeshShape1, Transform::identity());
+            mConvexMeshCollider1 = mConvexMeshBody1->addCollider(mConvexMeshShape1, Transform::identity());
 
 			mConvexMesh2CubeVertices[0] = Vector3(-4, -2, 8);
 			mConvexMesh2CubeVertices[1] = Vector3(4, -2, 8);
@@ -418,7 +418,7 @@ class TestCollisionWorld : public Test {
             mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2PolyhedronMesh);
             Transform convexMeshTransform2(Vector3(20, 0, 0), Quaternion::identity());
             mConvexMeshBody2 = mWorld->createCollisionBody(convexMeshTransform2);
-            mConvexMeshProxyShape2 = mConvexMeshBody2->addCollisionShape(mConvexMeshShape2, Transform::identity());
+            mConvexMeshCollider2 = mConvexMeshBody2->addCollider(mConvexMeshShape2, Transform::identity());
 
 			// ---------- Concave Meshes ---------- //
 			for (int i = 0; i < 6; i++) {
@@ -455,7 +455,7 @@ class TestCollisionWorld : public Test {
             mConcaveTriangleMesh->addSubpart(mConcaveMeshTriangleVertexArray);
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshBody = mWorld->createCollisionBody(concaveMeshTransform);
-            mConcaveMeshProxyShape = mConcaveMeshBody->addCollisionShape(mConcaveMeshShape, rp3d::Transform::identity());
+            mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, rp3d::Transform::identity());
         }
 
         /// Destructor
@@ -628,10 +628,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mSphereProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mSphereCollider2));
 
 			// Get collision data
-			const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mSphereProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mSphereCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -652,10 +652,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mSphereProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mSphereCollider2));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mSphereProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mSphereCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -673,10 +673,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mSphereProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mSphereCollider2));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mSphereProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mSphereCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -694,10 +694,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mSphereBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mSphereProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mSphereCollider2));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mSphereProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mSphereCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -744,10 +744,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -768,10 +768,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -789,10 +789,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -810,10 +810,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -850,10 +850,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -874,10 +874,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -895,10 +895,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -916,10 +916,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -956,10 +956,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -980,10 +980,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1001,10 +1001,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1022,10 +1022,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1072,10 +1072,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1096,10 +1096,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1117,10 +1117,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1138,10 +1138,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1178,10 +1178,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1202,10 +1202,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1223,10 +1223,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1244,10 +1244,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1294,10 +1294,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1318,10 +1318,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1339,10 +1339,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1360,10 +1360,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1400,10 +1400,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1424,10 +1424,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1445,10 +1445,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1466,10 +1466,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1506,10 +1506,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1530,10 +1530,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1551,10 +1551,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1572,10 +1572,10 @@ class TestCollisionWorld : public Test {
 			mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1622,10 +1622,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConcaveMeshProxyShape);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1646,10 +1646,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1667,10 +1667,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1688,10 +1688,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mSphereBody1, mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -1738,10 +1738,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mBoxProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mBoxCollider2));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mBoxProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mBoxCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -1780,10 +1780,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mBoxProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mBoxCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mBoxProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mBoxCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -1809,10 +1809,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mBoxProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mBoxCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mBoxProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mBoxCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -1839,10 +1839,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mBoxBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mBoxProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mBoxCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mBoxProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mBoxCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -1898,10 +1898,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConvexMeshProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -1940,10 +1940,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -1969,10 +1969,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -1999,10 +1999,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mConvexMeshBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2058,10 +2058,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConvexMeshProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2100,10 +2100,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2129,10 +2129,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2159,10 +2159,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mConvexMeshBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2218,10 +2218,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mCapsuleCollider1));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mCapsuleProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2241,10 +2241,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2262,10 +2262,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2283,10 +2283,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2333,10 +2333,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mCapsuleCollider1));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mCapsuleProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2356,10 +2356,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2377,10 +2377,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2398,10 +2398,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2448,10 +2448,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2465,10 +2465,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2482,10 +2482,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2499,10 +2499,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mBoxBody1, mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2546,10 +2546,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2563,10 +2563,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2580,10 +2580,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2597,10 +2597,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConvexMeshBody1, mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
@@ -2644,10 +2644,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2668,10 +2668,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2689,10 +2689,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2710,10 +2710,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCapsuleBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2750,10 +2750,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2774,10 +2774,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2795,10 +2795,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2816,10 +2816,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCapsuleBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2866,10 +2866,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2890,10 +2890,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2911,10 +2911,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
@@ -2932,10 +2932,10 @@ class TestCollisionWorld : public Test {
             mCollisionCallback.reset();
             mWorld->testCollision(mCapsuleBody1, mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);

@@ -41,7 +41,7 @@
 #include "collision/narrowphase/CollisionDispatch.h"
 #include "containers/Map.h"
 #include "containers/Set.h"
-#include "components/ProxyShapeComponents.h"
+#include "components/ColliderComponents.h"
 #include "components/TransformComponents.h"
 
 /// ReactPhysics3D namespace
@@ -80,8 +80,8 @@ class CollisionDetectionSystem {
         /// Memory manager
         MemoryManager& mMemoryManager;
 
-        /// Reference the proxy-shape components
-        ProxyShapeComponents& mProxyShapesComponents;
+        /// Reference the collider components
+        ColliderComponents& mCollidersComponents;
 
         /// Collision Detection Dispatch configuration
         CollisionDispatch mCollisionDispatch;
@@ -98,8 +98,8 @@ class CollisionDetectionSystem {
         /// Broad-phase system
         BroadPhaseSystem mBroadPhaseSystem;
 
-        /// Map a broad-phase id with the corresponding entity of the proxy-shape
-        Map<int, Entity> mMapBroadPhaseIdToProxyShapeEntity;
+        /// Map a broad-phase id with the corresponding entity of the collider
+        Map<int, Entity> mMapBroadPhaseIdToColliderEntity;
 
         /// Narrow-phase collision detection input
         NarrowPhaseInput mNarrowPhaseInput;
@@ -267,7 +267,7 @@ class CollisionDetectionSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetectionSystem(CollisionWorld* world, ProxyShapeComponents& proxyShapesComponents,
+        CollisionDetectionSystem(CollisionWorld* world, ColliderComponents& collidersComponents,
                            TransformComponents& transformComponents, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
                            MemoryManager& memoryManager);
 
@@ -283,17 +283,17 @@ class CollisionDetectionSystem {
         /// Set the collision dispatch configuration
         CollisionDispatch& getCollisionDispatch();
 
-        /// Add a proxy collision shape to the collision detection
-        void addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb);
+        /// Add a collider to the collision detection
+        void addCollider(Collider* collider, const AABB& aabb);
 
-        /// Remove a proxy collision shape from the collision detection
-        void removeProxyCollisionShape(ProxyShape *proxyShape);
+        /// Remove a collider from the collision detection
+        void removeCollider(Collider* collider);
 
-        /// Update a proxy collision shape (that has moved for instance)
-        void updateProxyShape(Entity proxyShapeEntity, decimal timeStep);
+        /// Update a collider (that has moved for instance)
+        void updateCollider(Entity colliderEntity, decimal timeStep);
 
-        /// Update all the enabled proxy-shapes
-        void updateProxyShapes(decimal timeStep);
+        /// Update all the enabled colliders
+        void updateColliders(decimal timeStep);
 
         /// Add a pair of bodies that cannot collide with each other
         void addNoCollisionPair(Entity body1Entity, Entity body2Entity);
@@ -302,10 +302,10 @@ class CollisionDetectionSystem {
         void removeNoCollisionPair(Entity body1Entity, Entity body2Entity);
 
         /// Ask for a collision shape to be tested again during broad-phase.
-        void askForBroadPhaseCollisionCheck(ProxyShape* shape);
+        void askForBroadPhaseCollisionCheck(Collider* shape);
 
-        /// Notify that the overlapping pairs where a given proxy-shape is involved need to be tested for overlap
-        void notifyOverlappingPairsToTestOverlap(ProxyShape* proxyShape);
+        /// Notify that the overlapping pairs where a given collider is involved need to be tested for overlap
+        void notifyOverlappingPairsToTestOverlap(Collider* collider);
 
         /// Report contacts
         void reportContacts();
@@ -351,8 +351,8 @@ class CollisionDetectionSystem {
 
 #endif
 
-        /// Return the world-space AABB of a given proxy shape
-        const AABB getWorldAABB(const ProxyShape* proxyShape) const;
+        /// Return the world-space AABB of a given collider
+        const AABB getWorldAABB(const Collider* collider) const;
 
         // -------------------- Friendship -------------------- //
 
@@ -367,17 +367,17 @@ inline CollisionDispatch& CollisionDetectionSystem::getCollisionDispatch() {
 }
 
 // Add a body to the collision detection
-inline void CollisionDetectionSystem::addProxyCollisionShape(ProxyShape* proxyShape, const AABB& aabb) {
+inline void CollisionDetectionSystem::addCollider(Collider* collider, const AABB& aabb) {
 
     // Add the body to the broad-phase
-    mBroadPhaseSystem.addProxyCollisionShape(proxyShape, aabb);
+    mBroadPhaseSystem.addCollider(collider, aabb);
 
-    int broadPhaseId = mProxyShapesComponents.getBroadPhaseId(proxyShape->getEntity());
+    int broadPhaseId = mCollidersComponents.getBroadPhaseId(collider->getEntity());
 
-    assert(!mMapBroadPhaseIdToProxyShapeEntity.containsKey(broadPhaseId));
+    assert(!mMapBroadPhaseIdToColliderEntity.containsKey(broadPhaseId));
 
-    // Add the mapping between the proxy-shape broad-phase id and its entity
-    mMapBroadPhaseIdToProxyShapeEntity.add(Pair<int, Entity>(broadPhaseId, proxyShape->getEntity()));
+    // Add the mapping between the collider broad-phase id and its entity
+    mMapBroadPhaseIdToColliderEntity.add(Pair<int, Entity>(broadPhaseId, collider->getEntity()));
 }
 
 // Add a pair of bodies that cannot collide with each other
@@ -393,7 +393,7 @@ inline void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, 
 // Ask for a collision shape to be tested again during broad-phase.
 /// We simply put the shape in the list of collision shape that have moved in the
 /// previous frame so that it is tested for collision again in the broad-phase.
-inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(ProxyShape* shape) {
+inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* shape) {
 
     if (shape->getBroadPhaseId() != -1) {
         mBroadPhaseSystem.addMovedCollisionShape(shape->getBroadPhaseId(), shape);
@@ -410,16 +410,16 @@ inline MemoryManager& CollisionDetectionSystem::getMemoryManager() const {
     return mMemoryManager;
 }
 
-// Update a proxy collision shape (that has moved for instance)
-inline void CollisionDetectionSystem::updateProxyShape(Entity proxyShapeEntity, decimal timeStep) {
+// Update a collider (that has moved for instance)
+inline void CollisionDetectionSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
 
-    // Update the proxy-shape component
-    mBroadPhaseSystem.updateProxyShape(proxyShapeEntity, timeStep);
+    // Update the collider component
+    mBroadPhaseSystem.updateCollider(colliderEntity, timeStep);
 }
 
-// Update all the enabled proxy-shapes
-inline void CollisionDetectionSystem::updateProxyShapes(decimal timeStep) {
-    mBroadPhaseSystem.updateProxyShapes(timeStep);
+// Update all the enabled colliders
+inline void CollisionDetectionSystem::updateColliders(decimal timeStep) {
+    mBroadPhaseSystem.updateColliders(timeStep);
 }
 
 #ifdef IS_PROFILING_ACTIVE

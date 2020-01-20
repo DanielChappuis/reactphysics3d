@@ -31,7 +31,7 @@
 #include "components/CollisionBodyComponents.h"
 #include "components/RigidBodyComponents.h"
 #include "components/TransformComponents.h"
-#include "components/ProxyShapeComponents.h"
+#include "components/ColliderComponents.h"
 
 namespace reactphysics3d {
 
@@ -60,8 +60,8 @@ class DynamicsSystem {
         /// Reference to the transform components
         TransformComponents& mTransformComponents;
 
-        /// Reference to the proxy-shapes components
-        ProxyShapeComponents& mProxyShapeComponents;
+        /// Reference to the colliders components
+        ColliderComponents& mColliderComponents;
 
         /// Reference to the variable to know if gravity is enabled in the world
         bool& mIsGravityEnabled;
@@ -82,7 +82,7 @@ class DynamicsSystem {
         /// Constructor
         DynamicsSystem(DynamicsWorld& world, CollisionBodyComponents& collisionBodyComponents,
                        RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents,
-                       ProxyShapeComponents& proxyShapeComponents, bool& isGravityEnabled, Vector3& gravity);
+                       ColliderComponents& colliderComponents, bool& isGravityEnabled, Vector3& gravity);
 
         /// Destructor
         ~DynamicsSystem() = default;

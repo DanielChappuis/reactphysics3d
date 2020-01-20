@@ -62,7 +62,7 @@ class NarrowPhaseCallback {
 /**
  * This abstract class is the base class for a  narrow-phase collision
  * detection algorithm. The goal of the narrow phase algorithm is to
- * compute information about the contact between two proxy shapes.
+ * compute information about the contact between two colliders.
  */
 class NarrowPhaseAlgorithm {
 

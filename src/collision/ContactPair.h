@@ -56,11 +56,11 @@ struct ContactPair {
         /// Entity of the second body of the contact
         Entity body2Entity;
 
-        /// Entity of the first proxy-shape of the contact
-        Entity proxyShape1Entity;
+        /// Entity of the first collider of the contact
+        Entity collider1Entity;
 
-        /// Entity of the second proxy-shape of the contact
-        Entity proxyShape2Entity;
+        /// Entity of the second collider of the contact
+        Entity collider2Entity;
 
         /// True if the manifold is already in an island
         bool isAlreadyInIsland;
@@ -83,10 +83,10 @@ struct ContactPair {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactPair(uint64 pairId, Entity body1Entity, Entity body2Entity, Entity proxyShape1Entity,
-                    Entity proxyShape2Entity, uint contactPairIndex, MemoryAllocator& allocator)
+        ContactPair(uint64 pairId, Entity body1Entity, Entity body2Entity, Entity collider1Entity,
+                    Entity collider2Entity, uint contactPairIndex, MemoryAllocator& allocator)
             : pairId(pairId), potentialContactManifoldsIndices(allocator), body1Entity(body1Entity), body2Entity(body2Entity),
-              proxyShape1Entity(proxyShape1Entity), proxyShape2Entity(proxyShape2Entity),
+              collider1Entity(collider1Entity), collider2Entity(collider2Entity),
               isAlreadyInIsland(false), contactPairIndex(contactPairIndex), contactManifoldsIndex(0), nbContactManifolds(0),
               contactPointsIndex(0), nbToTalContactPoints(0) {
 
