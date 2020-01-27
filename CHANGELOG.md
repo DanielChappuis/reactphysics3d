@@ -9,6 +9,8 @@
  - Many methods in the EventListener class have changed. Check the user manual for more information.
  - The way to retrieve contacts from a CollisionCallbackInfo object has changed. Check the user manual for more information.
  - Now, the collision shapes need be be created with the PhysicsWorld::createXXXShape() methods instead of using the constructor of the shape as before. For instance, you need to use the PhysicsWorld::createBoxShape() method to create a BoxShape.
+ - DynamicsWorld and CollisionWorld classes have been merged into a single class called PhysicsWorld.
+ - ProxyShape class has been renamed into Collider.
  - There is now a single MemoryManager (with memory allocators) per PhysicsWorld. The memory allocators are no longer shared between worlds. 
  - An instance of the BoxShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createBoxShape() method.
  - An instance of the SphereShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createSphereShape() method.
