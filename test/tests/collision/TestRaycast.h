@@ -29,7 +29,7 @@
 // Libraries
 #include "Test.h"
 #include "engine/PhysicsCommon.h"
-#include "engine/CollisionWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "body/CollisionBody.h"
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/SphereShape.h"
@@ -113,7 +113,7 @@ class TestRaycast : public Test {
         decimal epsilon;
 
         // Physics world
-        CollisionWorld* mWorld;
+        PhysicsWorld* mWorld;
 
         // Bodies
         CollisionBody* mBoxBody;
@@ -172,7 +172,7 @@ class TestRaycast : public Test {
             epsilon = decimal(0.0001);
 
             // Create the world
-            mWorld = mPhysicsCommon.createCollisionWorld();
+            mWorld = mPhysicsCommon.createPhysicsWorld();
 
             // Body transform
             Vector3 position(-3, 2, 7);
@@ -311,7 +311,7 @@ class TestRaycast : public Test {
             mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
             mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
 
-            mPhysicsCommon.destroyCollisionWorld(mWorld);
+            mPhysicsCommon.destroyPhysicsWorld(mWorld);
             delete mConcaveMeshVertexArray;
 
             delete mPolygonVertexArray;
@@ -330,7 +330,7 @@ class TestRaycast : public Test {
         }
 
         /// Test the Collider::raycast(), CollisionBody::raycast() and
-        /// CollisionWorld::raycast() methods.
+        /// PhysicsWorld::raycast() methods.
         void testBox() {
 
             // ----- Test feedback data ----- //
@@ -341,7 +341,7 @@ class TestRaycast : public Test {
 
             mCallback.shapeToTest = mBoxCollider;
 
-            // CollisionWorld::raycast()
+            // PhysicsWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -542,7 +542,7 @@ class TestRaycast : public Test {
         }
 
         /// Test the Collider::raycast(), CollisionBody::raycast() and
-        /// CollisionWorld::raycast() methods.
+        /// PhysicsWorld::raycast() methods.
         void testSphere() {
 
             // ----- Test feedback data ----- //
@@ -553,7 +553,7 @@ class TestRaycast : public Test {
 
             mCallback.shapeToTest = mSphereCollider;
 
-            // CollisionWorld::raycast()
+            // PhysicsWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -752,7 +752,7 @@ class TestRaycast : public Test {
         }
 
         /// Test the Collider::raycast(), CollisionBody::raycast() and
-        /// CollisionWorld::raycast() methods.
+        /// PhysicsWorld::raycast() methods.
         void testCapsule() {
 
             // ----- Test feedback data ----- //
@@ -773,7 +773,7 @@ class TestRaycast : public Test {
 
             mCallback.shapeToTest = mCapsuleCollider;
 
-            // CollisionWorld::raycast()
+            // PhysicsWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -992,7 +992,7 @@ class TestRaycast : public Test {
         }
 
         /// Test the Collider::raycast(), CollisionBody::raycast() and
-        /// CollisionWorld::raycast() methods.
+        /// PhysicsWorld::raycast() methods.
         void testConvexMesh() {
 
             // ----- Test feedback data ----- //
@@ -1003,7 +1003,7 @@ class TestRaycast : public Test {
 
             mCallback.shapeToTest = mConvexMeshCollider;
 
-            // CollisionWorld::raycast()
+            // PhysicsWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1205,7 +1205,7 @@ class TestRaycast : public Test {
         }
 
         /// Test the CollisionBody::raycast() and
-        /// CollisionWorld::raycast() methods.
+        /// PhysicsWorld::raycast() methods.
         void testCompound() {
 
             // ----- Test feedback data ----- //
@@ -1349,7 +1349,7 @@ class TestRaycast : public Test {
 
             mCallback.shapeToTest = mConcaveMeshCollider;
 
-            // CollisionWorld::raycast()
+            // PhysicsWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);
@@ -1584,7 +1584,7 @@ class TestRaycast : public Test {
 
             mCallback.shapeToTest = mHeightFieldCollider;
 
-            // CollisionWorld::raycast()
+            // PhysicsWorld::raycast()
             mCallback.reset();
             mWorld->raycast(ray, &mCallback);
             rp3d_test(mCallback.isHit);

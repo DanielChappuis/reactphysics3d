@@ -25,12 +25,12 @@
 
 // Libraries
 #include "Joint.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-Joint::Joint(Entity entity, DynamicsWorld& world) :mEntity(entity), mWorld(world) {
+Joint::Joint(Entity entity, PhysicsWorld& world) :mEntity(entity), mWorld(world) {
 
 }
 

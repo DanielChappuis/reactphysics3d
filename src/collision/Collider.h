@@ -172,8 +172,7 @@ class Collider {
         friend class BroadPhaseAlgorithm;
         friend class DynamicAABBTree;
         friend class CollisionDetectionSystem;
-        friend class CollisionWorld;
-        friend class DynamicsWorld;
+        friend class PhysicsWorld;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
 		friend class ContactManifoldSet;

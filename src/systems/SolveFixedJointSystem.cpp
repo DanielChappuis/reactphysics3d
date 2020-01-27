@@ -25,7 +25,7 @@
 
 // Libraries
 #include "systems/SolveFixedJointSystem.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "body/RigidBody.h"
 
 using namespace reactphysics3d;
@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 const decimal SolveFixedJointSystem::BETA = decimal(0.2);
 
 // Constructor
-SolveFixedJointSystem::SolveFixedJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
+SolveFixedJointSystem::SolveFixedJointSystem(PhysicsWorld& world, RigidBodyComponents& rigidBodyComponents,
                                              TransformComponents& transformComponents,
                                              JointComponents& jointComponents,
                                              FixedJointComponents& fixedJointComponents)

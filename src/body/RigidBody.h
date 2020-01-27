@@ -37,8 +37,7 @@ namespace reactphysics3d {
 
 // Class declarations
 struct JointListElement;
-class Joint;
-class DynamicsWorld;
+class PhysicsWorld;
 class MemoryManager;
 enum class BodyType;
 
@@ -77,14 +76,14 @@ class RigidBody : public CollisionBody {
         void updateOverlappingPairs();
 
         /// Return the inverse of the inertia tensor in world coordinates.
-        static const Matrix3x3 getInertiaTensorInverseWorld(CollisionWorld& world, Entity bodyEntity);
+        static const Matrix3x3 getInertiaTensorInverseWorld(PhysicsWorld& world, Entity bodyEntity);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RigidBody(CollisionWorld& world, Entity entity);
+        RigidBody(PhysicsWorld& world, Entity entity);
 
         /// Destructor
         virtual ~RigidBody() override = default;
@@ -203,10 +202,9 @@ class RigidBody : public CollisionBody {
 
         // -------------------- Friendship -------------------- //
 
-        friend class DynamicsWorld;
+        friend class PhysicsWorld;
         friend class ContactSolverSystem;
         friend class DynamicsSystem;
-        friend class Joint;
         friend class BallAndSocketJoint;
         friend class SliderJoint;
         friend class HingeJoint;
@@ -215,6 +213,7 @@ class RigidBody : public CollisionBody {
         friend class SolveFixedJointSystem;
         friend class SolveHingeJointSystem;
         friend class SolveSliderJointSystem;
+        friend class Joint;
 };
 
 // Return a reference to the material properties of the rigid body

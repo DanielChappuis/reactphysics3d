@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "DynamicsWorld.h"
+#include "PhysicsWorld.h"
 #include "constraint/BallAndSocketJoint.h"
 #include "constraint/SliderJoint.h"
 #include "constraint/HingeJoint.h"
@@ -32,13 +32,16 @@
 #include "utils/Profiler.h"
 #include "engine/EventListener.h"
 #include "engine/Island.h"
-#include "engine/Islands.h"
 #include "collision/ContactManifold.h"
 #include "containers/Stack.h"
 
 // Namespaces
 using namespace reactphysics3d;
 using namespace std;
+
+// Static initializations
+
+uint PhysicsWorld::mNbWorlds = 0;
 
 // Constructor
 /**
@@ -47,38 +50,129 @@ using namespace std;
  * @param logger Pointer to the logger
  * @param profiler Pointer to the profiler
  */
-DynamicsWorld::DynamicsWorld(const Vector3& gravity, MemoryManager& memoryManager, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
-              : CollisionWorld(memoryManager, worldSettings, logger, profiler),
-                mIslands(mMemoryManager.getSingleFrameAllocator()),
+PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
+              : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()),
+                mCollisionBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
+                mTransformComponents(mMemoryManager.getHeapAllocator()), mCollidersComponents(mMemoryManager.getHeapAllocator()),
+                mJointsComponents(mMemoryManager.getHeapAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getHeapAllocator()),
+                mFixedJointsComponents(mMemoryManager.getHeapAllocator()), mHingeJointsComponents(mMemoryManager.getHeapAllocator()),
+                mSliderJointsComponents(mMemoryManager.getHeapAllocator()), mCollisionDetection(this, mCollidersComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents,
+                                        mMemoryManager),
+                mBodies(mMemoryManager.getHeapAllocator()), mEventListener(nullptr),
+                mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
+                mIsLoggerCreatedByUser(logger != nullptr), mIslands(mMemoryManager.getSingleFrameAllocator()),
                 mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
-                               mCollidersComponents, mConfig),
+                               mCollidersComponents, mConfig.restitutionVelocityThreshold),
                 mConstraintSolverSystem(*this, mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
                                         mBallAndSocketJointsComponents, mFixedJointsComponents, mHingeJointsComponents,
                                         mSliderJointsComponents),
-                mDynamicsSystem(*this, mCollisionBodyComponents, mRigidBodyComponents, mTransformComponents, mCollidersComponents, mIsGravityEnabled, mGravity),
+                mDynamicsSystem(*this, mCollisionBodyComponents, mRigidBodyComponents, mTransformComponents, mCollidersComponents, mIsGravityEnabled, mConfig.gravity),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
-                mGravity(gravity), mIsGravityEnabled(true), mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
+                mIsGravityEnabled(true), mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
                 mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep), mCurrentJointId(0) {
+
+    // Automatically generate a name for the world
+    if (mName == "") {
+
+        std::stringstream ss;
+        ss << "world";
+
+        if (mNbWorlds > 0) {
+            ss << mNbWorlds;
+        }
+
+        mName = ss.str();
+    }
 
 #ifdef IS_PROFILING_ACTIVE
 
-	// Set the profiler
+    mProfiler = profiler;
+
+    // If the user has not provided its own profiler, we create one
+    if (mProfiler == nullptr) {
+
+       mProfiler = new Profiler();
+
+        // Add a destination file for the profiling data
+        mProfiler->addFileDestination("rp3d_profiling_" + mName + ".txt", Profiler::Format::Text);
+    }
+
+
+    // Set the profiler
     mConstraintSolverSystem.setProfiler(mProfiler);
     mContactSolverSystem.setProfiler(mProfiler);
     mDynamicsSystem.setProfiler(mProfiler);
+    mCollisionDetection.setProfiler(mProfiler);
 
 #endif
 
+#ifdef IS_LOGGING_ACTIVE
+
+    mLogger = logger;
+
+    // If the user has not provided its own logger, we create one
+    if (mLogger == nullptr) {
+
+       mLogger = new Logger();
+
+        // Add a log destination file
+        uint logLevel = static_cast<uint>(Logger::Level::Information) | static_cast<uint>(Logger::Level::Warning) |
+                static_cast<uint>(Logger::Level::Error);
+        mLogger->addFileDestination("rp3d_log_" + mName + ".html", logLevel, Logger::Format::HTML);
+    }
+
+#endif
+
+    mNbWorlds++;
+
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Dynamics World: Dynamics world " + mName + " has been created");
+             "Physics World: Physics world " + mName + " has been created");
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Physics World: Initial world settings: " + worldSettings.to_string());
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Physics World: Physics world " + mName + " has been created");
 
 }
 
 // Destructor
-DynamicsWorld::~DynamicsWorld() {
+PhysicsWorld::~PhysicsWorld() {
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Physics World: Physics world " + mName + " has been destroyed");
+
+    // Destroy all the collision bodies that have not been removed
+    for (int i=mBodies.size() - 1 ; i >= 0; i--) {
+        destroyCollisionBody(mBodies[i]);
+    }
+
+#ifdef IS_PROFILING_ACTIVE
+
+    /// Delete the profiler
+    if (!mIsProfilerCreatedByUser) {
+        delete mProfiler;
+    }
+
+    // Print the profiling report into the destinations
+    mProfiler->printReport();
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+    /// Delete the logger
+    if (!mIsLoggerCreatedByUser) {
+        delete mLogger;
+    }
+
+#endif
+
+    assert(mBodies.size() == 0);
+    assert(mCollisionBodyComponents.getNbComponents() == 0);
+    assert(mTransformComponents.getNbComponents() == 0);
+    assert(mCollidersComponents.getNbComponents() == 0);
     // Destroy all the joints that have not been removed
     for (uint32 i=0; i < mJointsComponents.getNbComponents(); i++) {
         destroyJoint(mJointsComponents.mJoints[i]);
@@ -92,28 +186,184 @@ DynamicsWorld::~DynamicsWorld() {
     assert(mJointsComponents.getNbComponents() == 0);
     assert(mRigidBodies.size() == 0);
 
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+             "Physics World: Physics world " + mName + " has been destroyed");
+}
+
+// Create a collision body and add it to the world
+/**
+ * @param transform Transformation mapping the local-space of the body to world-space
+ * @return A pointer to the body that has been created in the world
+ */
+CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
+
+    // Create a new entity for the body
+    Entity entity = mEntityManager.createEntity();
+
+    mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
+
+    // Create the collision body
+    CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                        sizeof(CollisionBody)))
+                                        CollisionBody(*this, entity);
+
+    assert(collisionBody != nullptr);
+
+    // Add the components
+    CollisionBodyComponents::CollisionBodyComponent bodyComponent(collisionBody);
+    mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
+
+    // Add the collision body to the world
+    mBodies.add(collisionBody);
+
 #ifdef IS_PROFILING_ACTIVE
 
-    // Print the profiling report into the destinations
-    mProfiler->printReport();
+    collisionBody->setProfiler(mProfiler);
+
 #endif
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Dynamics World: Dynamics world " + mName + " has been destroyed");
+#ifdef IS_LOGGING_ACTIVE
+   collisionBody->setLogger(mLogger);
+#endif
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(entity.id) + ": New collision body created");
+
+    // Return the pointer to the rigid body
+    return collisionBody;
+}
+
+// Destroy a collision body
+/**
+ * @param collisionBody Pointer to the body to destroy
+ */
+void PhysicsWorld::destroyCollisionBody(CollisionBody* collisionBody) {
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(collisionBody->getEntity().id) + ": collision body destroyed");
+
+    // Remove all the collision shapes of the body
+    collisionBody->removeAllCollisionShapes();
+
+    mCollisionBodyComponents.removeComponent(collisionBody->getEntity());
+    mTransformComponents.removeComponent(collisionBody->getEntity());
+    mEntityManager.destroyEntity(collisionBody->getEntity());
+
+    // Call the destructor of the collision body
+    collisionBody->~CollisionBody();
+
+    // Remove the collision body from the list of bodies
+    mBodies.remove(collisionBody);
+
+    // Free the object from the memory allocator
+    mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
+}
+
+// Notify the world if a body is disabled (sleeping) or not
+void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
+
+    if (isDisabled == mCollisionBodyComponents.getIsEntityDisabled(bodyEntity)) return;
+
+    // Notify all the components
+    mCollisionBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+
+    if (mRigidBodyComponents.hasComponent(bodyEntity)) {
+        mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    }
+
+    // For each collider of the body
+    const List<Entity>& collidersEntities = mCollisionBodyComponents.getColliders(bodyEntity);
+    for (uint i=0; i < collidersEntities.size(); i++) {
+
+        mCollidersComponents.setIsEntityDisabled(collidersEntities[i], isDisabled);
+    }
+
+    // Disable the joints of the body if necessary
+    if (mRigidBodyComponents.hasComponent(bodyEntity)) {
+
+        // For each joint of the body
+        const List<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
+        for(uint32 i=0; i < joints.size(); i++) {
+
+            const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
+            const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
+
+            // If both bodies of the joint are disabled
+            if (mRigidBodyComponents.getIsEntityDisabled(body1Entity) &&
+                mRigidBodyComponents.getIsEntityDisabled(body2Entity)) {
+
+                // We disable the joint
+                setJointDisabled(joints[i], true);
+            }
+            else {
+
+                // Enable the joint
+                setJointDisabled(joints[i], false);
+            }
+        }
+    }
+}
+
+// Notify the world whether a joint is disabled or not
+void PhysicsWorld::setJointDisabled(Entity jointEntity, bool isDisabled) {
+
+    if (isDisabled == mJointsComponents.getIsEntityDisabled(jointEntity)) return;
+
+    mJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    if (mBallAndSocketJointsComponents.hasComponent(jointEntity)) {
+        mBallAndSocketJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
+    if (mFixedJointsComponents.hasComponent(jointEntity)) {
+        mFixedJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
+    if (mHingeJointsComponents.hasComponent(jointEntity)) {
+        mHingeJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
+    if (mSliderJointsComponents.hasComponent(jointEntity)) {
+        mSliderJointsComponents.setIsEntityDisabled(jointEntity, isDisabled);
+    }
+}
+
+// Return true if two bodies overlap
+/// Use this method if you are not interested in contacts but if you simply want to know
+/// if the two bodies overlap. If you want to get the contacts, you need to use the
+/// testCollision() method instead.
+/**
+ * @param body1 Pointer to the first body
+ * @param body2 Pointer to a second body
+ * @return True if the two bodies overlap
+ */
+bool PhysicsWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
+    return mCollisionDetection.testOverlap(body1, body2);
+}
+
+// Return the current world-space AABB of given collider
+/**
+ * @param collider Pointer to a collider
+ * @return The AAABB of the collider in world-space
+ */
+AABB PhysicsWorld::getWorldAABB(const Collider* collider) const {
+
+    if (collider->getBroadPhaseId() == -1) {
+        return AABB();
+    }
+
+   return mCollisionDetection.getWorldAABB(collider);
 }
 
 // Update the physics simulation
 /**
  * @param timeStep The amount of time to step the simulation by (in seconds)
  */
-void DynamicsWorld::update(decimal timeStep) {
+void PhysicsWorld::update(decimal timeStep) {
 
 #ifdef IS_PROFILING_ACTIVE
     // Increment the frame counter of the profiler
     mProfiler->incrementFrameCounter();
 #endif
 
-    RP3D_PROFILE("DynamicsWorld::update()", mProfiler);
+    RP3D_PROFILE("PhysicsWorld::update()", mProfiler);
 
     // Compute the collision detection
     mCollisionDetection.computeCollisionDetection();
@@ -159,9 +409,9 @@ void DynamicsWorld::update(decimal timeStep) {
 
 
 // Solve the contacts and constraints
-void DynamicsWorld::solveContactsAndConstraints(decimal timeStep) {
+void PhysicsWorld::solveContactsAndConstraints(decimal timeStep) {
 
-    RP3D_PROFILE("DynamicsWorld::solveContactsAndConstraints()", mProfiler);
+    RP3D_PROFILE("PhysicsWorld::solveContactsAndConstraints()", mProfiler);
 
     // ---------- Solve velocity constraints for joints and contacts ---------- //
 
@@ -186,9 +436,9 @@ void DynamicsWorld::solveContactsAndConstraints(decimal timeStep) {
 }
 
 // Solve the position error correction of the constraints
-void DynamicsWorld::solvePositionCorrection() {
+void PhysicsWorld::solvePositionCorrection() {
 
-    RP3D_PROFILE("DynamicsWorld::solvePositionCorrection()", mProfiler);
+    RP3D_PROFILE("PhysicsWorld::solvePositionCorrection()", mProfiler);
 
     // ---------- Solve the position error correction for the constraints ---------- //
 
@@ -201,7 +451,7 @@ void DynamicsWorld::solvePositionCorrection() {
 }
 
 // Disable the joints for pair of sleeping bodies
-void DynamicsWorld::disableJointsOfSleepingBodies() {
+void PhysicsWorld::disableJointsOfSleepingBodies() {
 
     // For each joint
     for (uint32 i=0; i < mJointsComponents.getNbEnabledComponents(); i++) {
@@ -223,7 +473,7 @@ void DynamicsWorld::disableJointsOfSleepingBodies() {
  * @param transform Transformation from body local-space to world-space
  * @return A pointer to the body that has been created in the world
  */
-RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
+RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
 
     // Create a new entity for the body
     Entity entity = mEntityManager.createEntity();
@@ -267,7 +517,7 @@ RigidBody* DynamicsWorld::createRigidBody(const Transform& transform) {
 /**
  * @param rigidBody Pointer to the body you want to destroy
  */
-void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
+void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body destroyed");
@@ -303,7 +553,7 @@ void DynamicsWorld::destroyRigidBody(RigidBody* rigidBody) {
  * @param jointInfo The information that is necessary to create the joint
  * @return A pointer to the joint that has been created in the world
  */
-Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
+Joint* PhysicsWorld::createJoint(const JointInfo& jointInfo) {
 
     // Create a new entity for the joint
     Entity entity = mEntityManager.createEntity();
@@ -426,7 +676,7 @@ Joint* DynamicsWorld::createJoint(const JointInfo& jointInfo) {
 /**
  * @param joint Pointer to the joint you want to destroy
  */
-void DynamicsWorld::destroyJoint(Joint* joint) {
+void PhysicsWorld::destroyJoint(Joint* joint) {
 
     assert(joint != nullptr);
 
@@ -479,7 +729,7 @@ void DynamicsWorld::destroyJoint(Joint* joint) {
 }
 
 // Add the joint to the list of joints of the two bodies involved in the joint
-void DynamicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
+void PhysicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
 
     mRigidBodyComponents.addJointToBody(body1, joint);
 
@@ -502,12 +752,12 @@ void DynamicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
 /// (graph where nodes are the bodies and where the edges are the constraints between the bodies) to
 /// find all the bodies that are connected with it (the bodies that share joints or contacts with
 /// it). Then, we create an island with this group of connected bodies.
-void DynamicsWorld::createIslands() {
+void PhysicsWorld::createIslands() {
 
     // list of contact pairs involving a non-rigid body
     List<uint> nonRigidBodiesContactPairs(mMemoryManager.getSingleFrameAllocator());
 
-    RP3D_PROFILE("DynamicsWorld::createIslands()", mProfiler);
+    RP3D_PROFILE("PhysicsWorld::createIslands()", mProfiler);
 
     // Reset all the isAlreadyInIsland variables of bodies and joints
     for (uint b=0; b < mRigidBodyComponents.getNbComponents(); b++) {
@@ -640,9 +890,9 @@ void DynamicsWorld::createIslands() {
 // Put bodies to sleep if needed.
 /// For each island, if all the bodies have been almost still for a long enough period of
 /// time, we put all the bodies of the island to sleep.
-void DynamicsWorld::updateSleepingBodies(decimal timeStep) {
+void PhysicsWorld::updateSleepingBodies(decimal timeStep) {
 
-    RP3D_PROFILE("DynamicsWorld::updateSleepingBodies()", mProfiler);
+    RP3D_PROFILE("PhysicsWorld::updateSleepingBodies()", mProfiler);
 
     const decimal sleepLinearVelocitySquare = mSleepLinearVelocity * mSleepLinearVelocity;
     const decimal sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;
@@ -704,7 +954,7 @@ void DynamicsWorld::updateSleepingBodies(decimal timeStep) {
  * @param isSleepingEnabled True if you want to enable the sleeping technique
  *                          and false otherwise
  */
-void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
+void PhysicsWorld::enableSleeping(bool isSleepingEnabled) {
     mIsSleepingEnabled = isSleepingEnabled;
 
     if (!mIsSleepingEnabled) {
@@ -719,5 +969,5 @@ void DynamicsWorld::enableSleeping(bool isSleepingEnabled) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Dynamics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) );
+             "Physics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) );
 }

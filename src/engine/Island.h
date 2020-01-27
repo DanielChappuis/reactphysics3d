@@ -101,7 +101,7 @@ class Island {
 
         // -------------------- Friendship -------------------- //
 
-        friend class DynamicsWorld;
+        friend class PhysicsWorld;
 };
 
 // Add a body into the island

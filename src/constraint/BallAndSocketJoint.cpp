@@ -27,7 +27,7 @@
 #include "BallAndSocketJoint.h"
 #include "systems/ConstraintSolverSystem.h"
 #include "components/RigidBodyComponents.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 
 using namespace reactphysics3d;
 
@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 const decimal BallAndSocketJoint::BETA = decimal(0.2);
 
 // Constructor
-BallAndSocketJoint::BallAndSocketJoint(Entity entity, DynamicsWorld& world, const BallAndSocketJointInfo& jointInfo)
+BallAndSocketJoint::BallAndSocketJoint(Entity entity, PhysicsWorld& world, const BallAndSocketJointInfo& jointInfo)
                    : Joint(entity, world) {
 
     // Get the transforms of the two bodies

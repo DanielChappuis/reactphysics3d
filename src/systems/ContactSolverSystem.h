@@ -30,7 +30,6 @@
 #include "configuration.h"
 #include "mathematics/Vector3.h"
 #include "mathematics/Matrix3x3.h"
-#include "engine/Islands.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -42,7 +41,9 @@ class ContactManifold;
 class MemoryManager;
 class Profiler;
 class Island;
+struct Islands;
 class RigidBody;
+class PhysicsWorld;
 class CollisionBodyComponents;
 class DynamicsComponents;
 class RigidBodyComponents;
@@ -285,10 +286,13 @@ class ContactSolverSystem {
         MemoryManager& mMemoryManager;
 
         /// Physics world
-        DynamicsWorld& mWorld;
+        PhysicsWorld& mWorld;
 
         /// Current time step
         decimal mTimeStep;
+
+        /// Reference to the velocity threshold for contact velocity restitution
+        decimal& mRestitutionVelocityThreshold;
 
         /// Contact constraints
         // TODO : Use List<> here
@@ -325,9 +329,6 @@ class ContactSolverSystem {
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
 
-        /// World settings
-        const WorldSettings& mWorldSettings;
-
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -362,9 +363,8 @@ class ContactSolverSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactSolverSystem(MemoryManager& memoryManager, DynamicsWorld& world, Islands& islands, CollisionBodyComponents& bodyComponents,
-                      RigidBodyComponents& rigidBodyComponents, ColliderComponents& colliderComponents,
-                      const WorldSettings& worldSettings);
+        ContactSolverSystem(MemoryManager& memoryManager, PhysicsWorld& world, Islands& islands, CollisionBodyComponents& bodyComponents,
+                      RigidBodyComponents& rigidBodyComponents, ColliderComponents& colliderComponents, decimal& restitutionVelocityThreshold);
 
         /// Destructor
         ~ContactSolverSystem() = default;

@@ -25,7 +25,7 @@
 
 // Libraries
 #include "systems/SolveBallAndSocketJointSystem.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "body/RigidBody.h"
 
 using namespace reactphysics3d;
@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 const decimal SolveBallAndSocketJointSystem::BETA = decimal(0.2);
 
 // Constructor
-SolveBallAndSocketJointSystem::SolveBallAndSocketJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
+SolveBallAndSocketJointSystem::SolveBallAndSocketJointSystem(PhysicsWorld& world, RigidBodyComponents& rigidBodyComponents,
                                                              TransformComponents& transformComponents,
                                                              JointComponents& jointComponents,
                                                              BallAndSocketJointComponents& ballAndSocketJointComponents)

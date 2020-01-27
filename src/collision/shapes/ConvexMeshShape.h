@@ -35,9 +35,8 @@
 namespace reactphysics3d {
 
 // Declaration
-class CollisionWorld;
 class GJKAlgorithm;
-class CollisionWorld;
+class PhysicsWorld;
 
 // Class ConvexMeshShape
 /**

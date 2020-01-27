@@ -27,7 +27,7 @@
 #include "collision/CollisionCallback.h"
 #include "collision/ContactPair.h"
 #include "constraint/ContactPoint.h"
-#include "engine/CollisionWorld.h"
+#include "engine/PhysicsWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -39,7 +39,7 @@ CollisionCallback::ContactPoint::ContactPoint(const reactphysics3d::ContactPoint
 
 // Contact Pair Constructor
 CollisionCallback::ContactPair::ContactPair(const reactphysics3d::ContactPair& contactPair,
-                                            List<reactphysics3d::ContactPoint>* contactPoints, CollisionWorld& world)
+                                            List<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld& world)
                                :mContactPair(contactPair), mContactPoints(contactPoints),
                                 mWorld(world) {
 
@@ -67,7 +67,7 @@ Collider* CollisionCallback::ContactPair::getCollider2() const {
 
 // CollisionCallbackInfo Constructor
 CollisionCallback::CallbackData::CallbackData(List<reactphysics3d::ContactPair>* contactPairs, List<ContactManifold>* manifolds,
-                                                                List<reactphysics3d::ContactPoint>* contactPoints, CollisionWorld& world)
+                                                                List<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld &world)
                       :mContactPairs(contactPairs), mContactManifolds(manifolds), mContactPoints(contactPoints), mWorld(world) {
 
 }

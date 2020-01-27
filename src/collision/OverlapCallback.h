@@ -34,7 +34,7 @@ namespace reactphysics3d {
 
 // Declarations
 class CollisionBody;
-class CollisionWorld;
+class PhysicsWorld;
 class Collider;
 struct Entity;
 
@@ -61,12 +61,12 @@ class OverlapCallback {
                 Pair<Entity, Entity>& mOverlapPair;
 
                 /// Reference to the physics world
-                CollisionWorld& mWorld;
+                PhysicsWorld& mWorld;
 
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                OverlapPair(Pair<Entity, Entity>& overlapPair, CollisionWorld& world);
+                OverlapPair(Pair<Entity, Entity>& overlapPair, reactphysics3d::PhysicsWorld& world);
 
             public:
 
@@ -105,12 +105,12 @@ class OverlapCallback {
                 List<Pair<Entity, Entity>>& mOverlapBodies;
 
                 /// Reference to the physics world
-                CollisionWorld& mWorld;
+                PhysicsWorld& mWorld;
 
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                CallbackData(List<Pair<Entity, Entity>>& overlapColliders, CollisionWorld& world);
+                CallbackData(List<Pair<Entity, Entity>>& overlapColliders, PhysicsWorld& world);
 
                 /// Deleted copy constructor
                 CallbackData(const CallbackData& callbackData) = delete;

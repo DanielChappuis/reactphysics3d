@@ -36,7 +36,7 @@ namespace reactphysics3d {
  * This class can be used to receive event callbacks from the physics engine.
  * In order to receive callbacks, you need to create a new class that inherits from
  * this one and you must override the methods you need. Then, you need to register your
- * new event listener class to the physics world using the DynamicsWorld::setEventListener()
+ * new event listener class to the physics world using the PhysicsWorld::setEventListener()
  * method.
  */
 class EventListener : public CollisionCallback {

@@ -118,13 +118,13 @@ class CollisionCallback {
                 List<reactphysics3d::ContactPoint>* mContactPoints;
 
                 /// Reference to the physics world
-                CollisionWorld& mWorld;
+                PhysicsWorld& mWorld;
 
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
                 ContactPair(const reactphysics3d::ContactPair& contactPair,  List<reactphysics3d::ContactPoint>* contactPoints,
-                            CollisionWorld& world);
+                            PhysicsWorld& world);
 
             public:
 
@@ -182,13 +182,13 @@ class CollisionCallback {
                 List<reactphysics3d::ContactPoint>* mContactPoints;
 
                 /// Reference to the physics world
-                CollisionWorld& mWorld;
+                PhysicsWorld& mWorld;
 
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
                 CallbackData(List<reactphysics3d::ContactPair>* contactPairs, List<ContactManifold>* manifolds,
-                             List<reactphysics3d::ContactPoint>* contactPoints, CollisionWorld& world);
+                             List<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld& world);
 
                 /// Deleted copy constructor
                 CallbackData(const CallbackData& callbackData) = delete;

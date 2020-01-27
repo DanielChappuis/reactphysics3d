@@ -36,7 +36,7 @@
 namespace reactphysics3d {
 
 // Forward declarations
-class DynamicsWorld;
+class PhysicsWorld;
 
 // Class SolveBallAndSocketJointSystem
 /**
@@ -54,7 +54,7 @@ class SolveBallAndSocketJointSystem {
         // -------------------- Attributes -------------------- //
 
         /// Physics world
-        DynamicsWorld& mWorld;
+        PhysicsWorld& mWorld;
 
         /// Reference to the rigid body components
         RigidBodyComponents& mRigidBodyComponents;
@@ -85,7 +85,7 @@ class SolveBallAndSocketJointSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SolveBallAndSocketJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
+        SolveBallAndSocketJointSystem(PhysicsWorld& world, RigidBodyComponents& rigidBodyComponents,
                                       TransformComponents& transformComponents,
                                       JointComponents& jointComponents,
                                       BallAndSocketJointComponents& ballAndSocketJointComponents);

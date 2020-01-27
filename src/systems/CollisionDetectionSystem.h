@@ -48,7 +48,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class CollisionWorld;
+class PhysicsWorld;
 class CollisionCallback;
 class OverlapCallback;
 class RaycastCallback;
@@ -87,7 +87,7 @@ class CollisionDetectionSystem {
         CollisionDispatch mCollisionDispatch;
 
         /// Pointer to the physics world
-        CollisionWorld* mWorld;
+        PhysicsWorld* mWorld;
 
         /// Set of pair of bodies that cannot collide between each other
         Set<bodypair> mNoCollisionPairs;
@@ -267,7 +267,7 @@ class CollisionDetectionSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetectionSystem(CollisionWorld* world, ColliderComponents& collidersComponents,
+        CollisionDetectionSystem(PhysicsWorld* world, ColliderComponents& collidersComponents,
                            TransformComponents& transformComponents, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
                            MemoryManager& memoryManager);
 
@@ -339,7 +339,7 @@ class CollisionDetectionSystem {
         MemoryManager& getMemoryManager() const;
 
         /// Return a pointer to the world
-        CollisionWorld* getWorld();
+        PhysicsWorld* getWorld();
 
         /// Return the world event listener
         EventListener* getWorldEventListener();
@@ -356,7 +356,7 @@ class CollisionDetectionSystem {
 
         // -------------------- Friendship -------------------- //
 
-        friend class DynamicsWorld;
+        friend class PhysicsWorld;
         friend class ConvexMeshShape;
         friend class RigidBody;
 };
@@ -401,7 +401,7 @@ inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* s
 }
 
 // Return a pointer to the world
-inline CollisionWorld* CollisionDetectionSystem::getWorld() {
+inline PhysicsWorld* CollisionDetectionSystem::getWorld() {
     return mWorld;
 }
 

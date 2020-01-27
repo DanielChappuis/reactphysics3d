@@ -120,7 +120,7 @@ class ContactManifold {
 
         // -------------------- Friendship -------------------- //
 
-        friend class DynamicsWorld;
+        friend class PhysicsWorld;
         friend class Island;
         friend class CollisionBody;
         friend class ContactManifoldSet;

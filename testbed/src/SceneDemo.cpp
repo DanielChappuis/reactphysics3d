@@ -39,14 +39,14 @@ openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.25f, 0.25f,
 openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.59f, 0.88f, 1.0f);
 
 // Constructor
-SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, float sceneRadius, bool isShadowMappingEnabled)
+SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, bool isPhysicsWorldSimulated, float sceneRadius, bool isShadowMappingEnabled)
           : Scene(name, settings, isShadowMappingEnabled), mIsShadowMappingInitialized(false),
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
 					 mColorShader("shaders/color.vert", "shaders/color.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
                      mVBOQuad(GL_ARRAY_BUFFER), mMeshFolderPath("meshes/"),
-                     mPhysicsWorld(nullptr) {
+                     mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated) {
 
     shadowMapTextureLevel++;
 
@@ -143,10 +143,10 @@ void SceneDemo::updatePhysics() {
     // Clear contacts points
     mContactPoints.clear();
 
-    if (getDynamicsWorld() != nullptr) {
+    if (mIsPhysicsWorldSimulated) {
 
         // Take a simulation step
-        getDynamicsWorld()->update(mEngineSettings.timeStep);
+        mPhysicsWorld->update(mEngineSettings.timeStep);
     }
 }
 
@@ -474,18 +474,18 @@ void SceneDemo::removeAllVisualContactPoints() {
 // Update the engine settings
 void SceneDemo::updateEngineSettings() {
 
-    if (getDynamicsWorld() != nullptr) {
+    if (mIsPhysicsWorldSimulated) {
 
         // Update the physics engine parameters
-        getDynamicsWorld()->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
+        mPhysicsWorld->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
         rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
                          mEngineSettings.gravity.z);
-        getDynamicsWorld()->setGravity(gravity);
-        getDynamicsWorld()->enableSleeping(mEngineSettings.isSleepingEnabled);
-        getDynamicsWorld()->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
-        getDynamicsWorld()->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
-        getDynamicsWorld()->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
-        getDynamicsWorld()->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
-        getDynamicsWorld()->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
+        mPhysicsWorld->setGravity(gravity);
+        mPhysicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
+        mPhysicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
+        mPhysicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
+        mPhysicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
+        mPhysicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
+        mPhysicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
     }
 }

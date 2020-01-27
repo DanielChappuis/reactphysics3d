@@ -29,7 +29,6 @@
 // Libraries
 #include "configuration.h"
 #include "mathematics/mathematics.h"
-#include "engine/Islands.h"
 #include "systems/SolveBallAndSocketJointSystem.h"
 #include "systems/SolveFixedJointSystem.h"
 #include "systems/SolveHingeJointSystem.h"
@@ -40,6 +39,7 @@ namespace reactphysics3d {
 // Declarations
 class Joint;
 class Island;
+struct Islands;
 class Profiler;
 class RigidBodyComponents;
 class JointComponents;
@@ -184,7 +184,7 @@ class ConstraintSolverSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConstraintSolverSystem(DynamicsWorld& world, Islands& islands, RigidBodyComponents& rigidBodyComponents,
+        ConstraintSolverSystem(PhysicsWorld& world, Islands& islands, RigidBodyComponents& rigidBodyComponents,
                                TransformComponents& transformComponents,
                                JointComponents& jointComponents,
                                BallAndSocketJointComponents& ballAndSocketJointComponents,

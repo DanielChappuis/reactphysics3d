@@ -33,7 +33,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConstraintSolverSystem::ConstraintSolverSystem(DynamicsWorld& world, Islands& islands, RigidBodyComponents& rigidBodyComponents,
+ConstraintSolverSystem::ConstraintSolverSystem(PhysicsWorld& world, Islands& islands, RigidBodyComponents& rigidBodyComponents,
                                                TransformComponents& transformComponents,
                                                JointComponents& jointComponents,
                                                BallAndSocketJointComponents& ballAndSocketJointComponents,

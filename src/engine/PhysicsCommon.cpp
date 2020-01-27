@@ -30,8 +30,8 @@ using namespace reactphysics3d;
 
 /// Constructor
 PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
-              : mMemoryManager(baseMemoryAllocator), mCollisionWorlds(mMemoryManager.getHeapAllocator()),
-                mDynamicsWorlds(mMemoryManager.getHeapAllocator()), mSphereShapes(mMemoryManager.getHeapAllocator()),
+              : mMemoryManager(baseMemoryAllocator),
+                mPhysicsWorlds(mMemoryManager.getHeapAllocator()), mSphereShapes(mMemoryManager.getHeapAllocator()),
                 mBoxShapes(mMemoryManager.getHeapAllocator()), mCapsuleShapes(mMemoryManager.getHeapAllocator()),
                 mConvexMeshShapes(mMemoryManager.getHeapAllocator()), mConcaveMeshShapes(mMemoryManager.getHeapAllocator()),
                 mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mPolyhedronMeshes(mMemoryManager.getHeapAllocator()),
@@ -49,14 +49,9 @@ PhysicsCommon::~PhysicsCommon() {
 // Destroy and release everything that has been allocated
 void PhysicsCommon::release() {
 
-    // Destroy the collision worlds
-    for (auto it = mCollisionWorlds.begin(); it != mCollisionWorlds.end(); ++it) {
-        destroyCollisionWorld(*it);
-    }
-
-    // Destroy the dynamics worlds
-    for (auto it = mDynamicsWorlds.begin(); it != mDynamicsWorlds.end(); ++it) {
-        destroyDynamicsWorld(*it);
+    // Destroy the physics worlds
+    for (auto it = mPhysicsWorlds.begin(); it != mPhysicsWorlds.end(); ++it) {
+        destroyPhysicsWorld(*it);
     }
 
     // Destroy the sphere shapes
@@ -100,48 +95,26 @@ void PhysicsCommon::release() {
     }
 }
 
-// Create and return an instance of CollisionWorld
-CollisionWorld* PhysicsCommon::createCollisionWorld(const WorldSettings& worldSettings, Logger* logger, Profiler* profiler) {
+// Create and return an instance of PhysicsWorld
+PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings, Logger* logger, Profiler* profiler) {
 
-    CollisionWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(CollisionWorld))) CollisionWorld(mMemoryManager, worldSettings, logger, profiler);
-    mCollisionWorlds.add(world);
+    PhysicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(PhysicsWorld))) PhysicsWorld(mMemoryManager, worldSettings, logger, profiler);
 
-    return world;
-}
-
-// Destroy an instance of CollisionWorld
-void PhysicsCommon::destroyCollisionWorld(CollisionWorld* world) {
-
-   // Call the destructor of the world
-   world->~CollisionWorld();
-
-   // Release allocated memory
-   mMemoryManager.release(MemoryManager::AllocationType::Heap, world, sizeof(CollisionWorld));
-
-   mCollisionWorlds.remove(world);
-}
-
-// Create and return an instance of DynamicsWorld
-DynamicsWorld* PhysicsCommon::createDynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings,
-                                                  Logger* logger, Profiler* profiler) {
-
-    DynamicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(DynamicsWorld))) DynamicsWorld(gravity, mMemoryManager, worldSettings, logger, profiler);
-
-    mDynamicsWorlds.add(world);
+    mPhysicsWorlds.add(world);
 
     return world;
 }
 
-// Destroy an instance of DynamicsWorld
-DynamicsWorld* PhysicsCommon::destroyDynamicsWorld(DynamicsWorld* world) {
+// Destroy an instance of PhysicsWorld
+PhysicsWorld* PhysicsCommon::destroyPhysicsWorld(PhysicsWorld* world) {
 
    // Call the destructor of the world
-   world->~DynamicsWorld();
+   world->~PhysicsWorld();
 
    // Release allocated memory
-   mMemoryManager.release(MemoryManager::AllocationType::Heap, world, sizeof(DynamicsWorld));
+   mMemoryManager.release(MemoryManager::AllocationType::Heap, world, sizeof(PhysicsWorld));
 
-   mDynamicsWorlds.remove(world);
+   mPhysicsWorlds.remove(world);
 }
 
 // Create and return a sphere collision shape

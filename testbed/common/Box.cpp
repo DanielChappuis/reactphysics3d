@@ -38,7 +38,7 @@ openglframework::VertexArrayObject Box::mVAO;
 int Box::totalNbBoxes = 0;
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::CollisionWorld* world,
+Box::Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world,
          const std::string& meshFolderPath)
     : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
 
@@ -61,7 +61,7 @@ Box::Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& ph
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body in the dynamics world
+    // Create a rigid body in the physics world
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add the collision shape to the body
@@ -80,7 +80,7 @@ Box::Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& ph
 }
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::PhysicsCommon &physicsCommon, reactphysics3d::DynamicsWorld* world,
+Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::PhysicsCommon &physicsCommon, reactphysics3d::PhysicsWorld* world,
          const std::string& meshFolderPath)
     : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
 
@@ -102,7 +102,7 @@ Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::Physi
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body in the dynamics world
+    // Create a rigid body in the physics world
     rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
 
     // Add the collision shape to the body

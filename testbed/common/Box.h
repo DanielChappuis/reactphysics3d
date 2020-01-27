@@ -76,10 +76,10 @@ class Box : public PhysicsObject {
 
 		/// Constructor
         Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon,
-            reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath);
+            reactphysics3d::PhysicsWorld* world, const std::string& meshFolderPath);
 
 		/// Constructor
-        Box(const openglframework::Vector3& size, float mass, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::DynamicsWorld *world, const std::string& meshFolderPath);
+        Box(const openglframework::Vector3& size, float mass, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld *world, const std::string& meshFolderPath);
 
 		/// Destructor
 		~Box();

@@ -32,7 +32,7 @@ using namespace cubesscene;
 
 // Constructor
 CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
-      : SceneDemo(name, settings, SCENE_RADIUS) {
+      : SceneDemo(name, settings, true, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 5, 0);
@@ -40,22 +40,22 @@ CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
-    // Gravity vector in the dynamics world
+    // Gravity vector in the physics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
-    rp3d::WorldSettings worldSettings;
+    rp3d::PhysicsWorld::WorldSettings worldSettings;
     worldSettings.worldName = name;
 
-    // Create the dynamics world for the physics simulation
-    rp3d::DynamicsWorld* dynamicsWorld = mPhysicsCommon.createDynamicsWorld(gravity, worldSettings);
-    dynamicsWorld->setEventListener(this);
-    mPhysicsWorld = dynamicsWorld;
+    // Create the physics world for the physics simulation
+    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
+    physicsWorld->setEventListener(this);
+    mPhysicsWorld = physicsWorld;
 
     // Create all the cubes of the scene
     for (int i=0; i<NB_CUBES; i++) {
 
-        // Create a cube and a corresponding rigid in the dynamics world
-        Box* cube = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+        // Create a cube and a corresponding rigid in the physics world
+        Box* cube = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         cube->setColor(mObjectColorDemo);
@@ -73,7 +73,7 @@ CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
 	// ------------------------- FLOOR ----------------------- //
 
     // Create the floor
-    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFloor->setColor(mFloorColorDemo);
     mFloor->setSleepingColor(mFloorColorDemo);
 
@@ -82,15 +82,15 @@ CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
 	mPhysicsObjects.push_back(mFloor);
 
     // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = getDynamicsWorld()->isGravityEnabled();
-    rp3d::Vector3 gravityVector = getDynamicsWorld()->getGravity();
+    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
+    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
     mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = getDynamicsWorld()->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = getDynamicsWorld()->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = getDynamicsWorld()->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = getDynamicsWorld()->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = getDynamicsWorld()->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = getDynamicsWorld()->getTimeBeforeSleep();
+    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
+    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
+    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
+    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
+    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
+    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
 // Destructor
@@ -99,21 +99,21 @@ CubesScene::~CubesScene() {
     // Destroy all the cubes of the scene
     for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
 
-        // Destroy the corresponding rigid body from the dynamics world
-        getDynamicsWorld()->destroyRigidBody((*it)->getRigidBody());
+        // Destroy the corresponding rigid body from the physics world
+        mPhysicsWorld->destroyRigidBody((*it)->getRigidBody());
 
         // Destroy the cube
         delete (*it);
     }
 
     // Destroy the rigid body of the floor
-    getDynamicsWorld()->destroyRigidBody(mFloor->getRigidBody());
+    mPhysicsWorld->destroyRigidBody(mFloor->getRigidBody());
 
     // Destroy the floor
     delete mFloor;
 
-    // Destroy the dynamics world
-    mPhysicsCommon.destroyDynamicsWorld(getDynamicsWorld());
+    // Destroy the physics world
+    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
 }
 
 // Reset the scene

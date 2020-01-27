@@ -25,7 +25,7 @@
 
 // Libraries
 #include "systems/ContactSolverSystem.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "body/RigidBody.h"
 #include "constraint/ContactPoint.h"
 #include "utils/Profiler.h"
@@ -43,14 +43,14 @@ const decimal ContactSolverSystem::BETA_SPLIT_IMPULSE = decimal(0.2);
 const decimal ContactSolverSystem::SLOP = decimal(0.01);
 
 // Constructor
-ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, DynamicsWorld& world, Islands& islands, CollisionBodyComponents& bodyComponents,
-                             RigidBodyComponents& rigidBodyComponents, ColliderComponents& colliderComponents,
-                             const WorldSettings& worldSettings)
-              :mMemoryManager(memoryManager), mWorld(world), mContactConstraints(nullptr), mContactPoints(nullptr),
+ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, PhysicsWorld& world, Islands& islands,
+                                         CollisionBodyComponents& bodyComponents, RigidBodyComponents& rigidBodyComponents,
+                                         ColliderComponents& colliderComponents, decimal& restitutionVelocityThreshold)
+              :mMemoryManager(memoryManager), mWorld(world), mRestitutionVelocityThreshold(restitutionVelocityThreshold),
+               mContactConstraints(nullptr), mContactPoints(nullptr),
                mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr),
                mBodyComponents(bodyComponents), mRigidBodyComponents(rigidBodyComponents),
-               mColliderComponents(colliderComponents), mIsSplitImpulseActive(true),
-               mWorldSettings(worldSettings) {
+               mColliderComponents(colliderComponents), mIsSplitImpulseActive(true) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -237,7 +237,7 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
                                  deltaV.y * mContactPoints[mNbContactPoints].normal.y +
                                  deltaV.z * mContactPoints[mNbContactPoints].normal.z;
             const decimal restitutionFactor = computeMixedRestitutionFactor(body1, body2);
-            if (deltaVDotN < -mWorldSettings.restitutionVelocityThreshold) {
+            if (deltaVDotN < -mRestitutionVelocityThreshold) {
                 mContactPoints[mNbContactPoints].restitutionBias = restitutionFactor * deltaVDotN;
             }
 

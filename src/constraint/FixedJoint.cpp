@@ -27,12 +27,12 @@
 #include "FixedJoint.h"
 #include "systems/ConstraintSolverSystem.h"
 #include "components/RigidBodyComponents.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-FixedJoint::FixedJoint(Entity entity, DynamicsWorld &world, const FixedJointInfo& jointInfo)
+FixedJoint::FixedJoint(Entity entity, PhysicsWorld &world, const FixedJointInfo& jointInfo)
            : Joint(entity, world) {
 
     // Compute the local-space anchor point for each body

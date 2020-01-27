@@ -25,13 +25,13 @@
 
 // Libraries
 #include "collision/OverlapCallback.h"
-#include "engine/CollisionWorld.h"
+#include "engine/PhysicsWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Contact Pair Constructor
-OverlapCallback::OverlapPair::OverlapPair(Pair<Entity, Entity>& overlapPair, CollisionWorld& world)
+OverlapCallback::OverlapPair::OverlapPair(Pair<Entity, Entity>& overlapPair, PhysicsWorld& world)
                              : mOverlapPair(overlapPair), mWorld(world) {
 
 }
@@ -47,7 +47,7 @@ CollisionBody* OverlapCallback::OverlapPair::getBody2() const {
 }
 
 // CollisionCallbackData Constructor
-OverlapCallback::CallbackData::CallbackData(List<Pair<Entity, Entity>>& overlapColliders, CollisionWorld& world)
+OverlapCallback::CallbackData::CallbackData(List<Pair<Entity, Entity>>& overlapColliders, PhysicsWorld& world)
                 :mOverlapBodies(overlapColliders), mWorld(world) {
 
 }

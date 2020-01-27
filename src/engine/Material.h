@@ -53,18 +53,20 @@ class Material {
         /// Bounciness during collisions (between 0 and 1) where 1 is for a very bouncy body
         decimal mBounciness;
 
-    public :
-
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Material(const WorldSettings& worldSettings);
+        Material(decimal frictionCoefficient, decimal rollingResistance, decimal bounciness);
 
         /// Copy-constructor
         Material(const Material& material);
 
         /// Destructor
         ~Material() = default;
+
+    public :
+
+        // -------------------- Methods -------------------- //
 
         /// Return the bounciness
         decimal getBounciness() const;
@@ -89,6 +91,10 @@ class Material {
 
         /// Overloaded assignment operator
         Material& operator=(const Material& material);
+
+        // ---------- Friendship ---------- //
+
+        friend class RigidBody;
 };
 
 // Return the bounciness

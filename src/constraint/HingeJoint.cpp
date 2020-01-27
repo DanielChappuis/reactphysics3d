@@ -27,12 +27,12 @@
 #include "HingeJoint.h"
 #include "systems/ConstraintSolverSystem.h"
 #include "components/RigidBodyComponents.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-HingeJoint::HingeJoint(Entity entity, DynamicsWorld &world, const HingeJointInfo& jointInfo) : Joint(entity, world) {
+HingeJoint::HingeJoint(Entity entity, PhysicsWorld &world, const HingeJointInfo& jointInfo) : Joint(entity, world) {
 
     const decimal lowerLimit = mWorld.mHingeJointsComponents.getLowerLimit(mEntity);
     const decimal upperLimit = mWorld.mHingeJointsComponents.getUpperLimit(mEntity);

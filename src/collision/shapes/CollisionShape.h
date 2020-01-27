@@ -146,7 +146,7 @@ class CollisionShape {
         // -------------------- Friendship -------------------- //
 
         friend class Collider;
-        friend class CollisionWorld;
+        friend class PhyscisWorld;
 };
 
 // Return the name of the collision shape

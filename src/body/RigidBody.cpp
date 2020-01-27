@@ -25,9 +25,8 @@
 
 // Libraries
 #include "RigidBody.h"
-#include "constraint/Joint.h"
 #include "collision/shapes/CollisionShape.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "utils/Profiler.h"
 
 // We want to use the ReactPhysics3D namespace
@@ -39,8 +38,9 @@ using namespace reactphysics3d;
 * @param world The world where the body has been added
 * @param id The ID of the body
 */
-RigidBody::RigidBody(CollisionWorld& world, Entity entity)
-          : CollisionBody(world, entity),  mMaterial(world.mConfig),
+RigidBody::RigidBody(PhysicsWorld& world, Entity entity)
+          : CollisionBody(world, entity),
+            mMaterial(world.mConfig.defaultFrictionCoefficient, world.mConfig.defaultRollingRestistance, world.mConfig.defaultBounciness),
             mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
 }
@@ -147,7 +147,7 @@ decimal RigidBody::getMass() const {
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied forces and that this sum will be
-/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
  * @param force The force to apply on the body
@@ -197,7 +197,7 @@ void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
 // Apply an external force to the body at its center of mass.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied forces and that this sum will be
-/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
  * @param force The external force to apply on the center of mass of the body
@@ -632,7 +632,7 @@ bool RigidBody::isGravityEnabled() const {
 // Apply an external torque to the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied torques and that this sum will be
-/// reset to zero at the end of each call of the DynamicsWorld::update() method.
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
  * @param torque The external torque to apply on the body
@@ -713,7 +713,7 @@ void RigidBody::updateOverlappingPairs() {
 }
 
 /// Return the inverse of the inertia tensor in world coordinates.
-const Matrix3x3 RigidBody::getInertiaTensorInverseWorld(CollisionWorld& world, Entity bodyEntity) {
+const Matrix3x3 RigidBody::getInertiaTensorInverseWorld(PhysicsWorld& world, Entity bodyEntity) {
 
     Matrix3x3 orientation = world.mTransformComponents.getTransform(bodyEntity).getOrientation().getMatrix();
     const Matrix3x3& inverseInertiaLocalTensor = world.mRigidBodyComponents.getInertiaTensorLocalInverse(bodyEntity);

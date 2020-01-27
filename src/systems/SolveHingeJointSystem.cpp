@@ -25,7 +25,7 @@
 
 // Libraries
 #include "systems/SolveHingeJointSystem.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "body/RigidBody.h"
 
 using namespace reactphysics3d;
@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 const decimal SolveHingeJointSystem::BETA = decimal(0.2);
 
 // Constructor
-SolveHingeJointSystem::SolveHingeJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
+SolveHingeJointSystem::SolveHingeJointSystem(PhysicsWorld& world, RigidBodyComponents& rigidBodyComponents,
                                                              TransformComponents& transformComponents,
                                                              JointComponents& jointComponents,
                                                              HingeJointComponents& hingeJointComponents)

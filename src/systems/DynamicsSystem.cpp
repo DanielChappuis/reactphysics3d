@@ -26,12 +26,12 @@
 // Libraries
 #include "systems/DynamicsSystem.h"
 #include "body/RigidBody.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 
 using namespace reactphysics3d;
 
 // Constructor
-DynamicsSystem::DynamicsSystem(DynamicsWorld& world, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
+DynamicsSystem::DynamicsSystem(PhysicsWorld& world, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
                                TransformComponents& transformComponents, ColliderComponents& colliderComponents, bool& isGravityEnabled, Vector3& gravity)
               :mWorld(world), mCollisionBodyComponents(collisionBodyComponents), mRigidBodyComponents(rigidBodyComponents), mTransformComponents(transformComponents), mColliderComponents(colliderComponents),
                mIsGravityEnabled(isGravityEnabled), mGravity(gravity) {

@@ -72,7 +72,7 @@ struct EngineSettings {
 
            EngineSettings defaultSettings;
 
-           rp3d::WorldSettings worldSettings;
+           rp3d::PhysicsWorld::WorldSettings worldSettings;
            defaultSettings.timeStep = 1.0f / 60.0f;
            defaultSettings.nbVelocitySolverIterations = worldSettings.defaultVelocitySolverNbIterations;
            defaultSettings.nbPositionSolverIterations = worldSettings.defaultPositionSolverNbIterations;

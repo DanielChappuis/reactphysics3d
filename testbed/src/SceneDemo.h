@@ -106,7 +106,10 @@ class SceneDemo : public Scene {
 
 		std::vector<PhysicsObject*> mPhysicsObjects;
 
-        rp3d::CollisionWorld* mPhysicsWorld;
+        rp3d::PhysicsWorld* mPhysicsWorld;
+
+        /// True if we need to step the physics simulation each frame
+        bool mIsPhysicsWorldSimulated;
 
         // -------------------- Methods -------------------- //
 
@@ -132,18 +135,12 @@ class SceneDemo : public Scene {
         /// Remove all contact points
         void removeAllVisualContactPoints();
 
-        /// Return a reference to the dynamics world
-        rp3d::DynamicsWorld* getDynamicsWorld();
-
-        /// Return a reference to the dynamics world
-        const rp3d::DynamicsWorld* getDynamicsWorld() const;
-
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SceneDemo(const std::string& name, EngineSettings& settings, float sceneRadius, bool isShadowMappingEnabled = true);
+        SceneDemo(const std::string& name, EngineSettings& settings, bool isPhysicsWorldSimulated, float sceneRadius, bool isShadowMappingEnabled = true);
 
         /// Destructor
         virtual ~SceneDemo() override;
@@ -176,16 +173,6 @@ inline void SceneDemo::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
     if (mIsShadowMappingEnabled && !mIsShadowMappingInitialized) {
         createShadowMapFBOAndTexture();
     }
-}
-
-// Return a reference to the dynamics world
-inline rp3d::DynamicsWorld* SceneDemo::getDynamicsWorld() {
-    return dynamic_cast<rp3d::DynamicsWorld*>(mPhysicsWorld);
-}
-
-// Return a reference to the dynamics world
-inline const rp3d::DynamicsWorld* SceneDemo::getDynamicsWorld() const {
-    return dynamic_cast<rp3d::DynamicsWorld*>(mPhysicsWorld);
 }
 
 #endif

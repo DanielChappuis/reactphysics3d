@@ -35,7 +35,7 @@
 
 namespace reactphysics3d {
 
-class DynamicsWorld;
+class PhysicsWorld;
 
 // Class DynamicsSystem
 /**
@@ -49,7 +49,7 @@ class DynamicsSystem {
         // -------------------- Attributes -------------------- //
 
         /// Physics world
-        DynamicsWorld& mWorld;
+        PhysicsWorld& mWorld;
 
         /// Reference to the collision body components
         CollisionBodyComponents& mCollisionBodyComponents;
@@ -80,7 +80,7 @@ class DynamicsSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicsSystem(DynamicsWorld& world, CollisionBodyComponents& collisionBodyComponents,
+        DynamicsSystem(PhysicsWorld& world, CollisionBodyComponents& collisionBodyComponents,
                        RigidBodyComponents& rigidBodyComponents, TransformComponents& transformComponents,
                        ColliderComponents& colliderComponents, bool& isGravityEnabled, Vector3& gravity);
 

@@ -27,7 +27,7 @@
 #include "SliderJoint.h"
 #include "systems/ConstraintSolverSystem.h"
 #include "components/RigidBodyComponents.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 
 using namespace reactphysics3d;
 
@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 const decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
-SliderJoint::SliderJoint(Entity entity, DynamicsWorld &world, const SliderJointInfo& jointInfo)
+SliderJoint::SliderJoint(Entity entity, PhysicsWorld &world, const SliderJointInfo& jointInfo)
             : Joint(entity, world) {
 
     assert(mWorld.mSliderJointsComponents.getUpperLimit(mEntity) >= decimal(0.0));

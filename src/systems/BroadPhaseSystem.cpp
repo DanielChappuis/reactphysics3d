@@ -29,7 +29,7 @@
 #include "utils/Profiler.h"
 #include "collision/RaycastInfo.h"
 #include "memory/MemoryManager.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

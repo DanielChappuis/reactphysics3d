@@ -34,7 +34,7 @@ openglframework::VertexArrayObject Dumbbell::mVAO;
 int Dumbbell::totalNbDumbbells = 0;
 
 // Constructor
-Dumbbell::Dumbbell(rp3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath)
+Dumbbell::Dumbbell(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshFolderPath)
          : PhysicsObject(physicsCommon, meshFolderPath + "dumbbell.obj") {
 
     // Identity scaling matrix
@@ -68,66 +68,28 @@ Dumbbell::Dumbbell(rp3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dyna
     // Initial transform of the cylinder collision shape of the dumbell (in local-space)
     rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
 
-    // Create a rigid body corresponding to the dumbbell in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
+    // Create a body corresponding to the dumbbell in the physics world
+    if (createRigidBody) {
 
-    // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    mColliderSphere1 = body->addCollider(mSphereShape, transformSphereShape1, massSphere);
-    mColliderSphere2 = body->addCollider(mSphereShape, transformSphereShape2, massSphere);
-    mColliderCapsule = body->addCollider(mCapsuleShape, transformCylinderShape, massCylinder);
+        rp3d::RigidBody* body;
+        body = physicsWorld->createRigidBody(mPreviousTransform);
 
-    mBody = body;
+        // Add the three collision shapes to the body and specify the mass and transform of the shapes
+        mColliderSphere1 = body->addCollider(mSphereShape, transformSphereShape1, massSphere);
+        mColliderSphere2 = body->addCollider(mSphereShape, transformSphereShape2, massSphere);
+        mColliderCapsule = body->addCollider(mCapsuleShape, transformCylinderShape, massCylinder);
 
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-
-    // Create the VBOs and VAO
-    if (totalNbDumbbells == 0) {
-        createVBOAndVAO();
+        mBody = body;
     }
+    else {
 
-    totalNbDumbbells++;
-}
+        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
 
-// Constructor
-Dumbbell::Dumbbell(reactphysics3d::PhysicsCommon &physicsCommon, rp3d::CollisionWorld* world, const std::string& meshFolderPath)
-         : PhysicsObject(physicsCommon, meshFolderPath + "dumbbell.obj"){
-
-    // Identity scaling matrix
-    mScalingMatrix.setToIdentity();
-
-    mDistanceBetweenSphere = 8.0f;
-
-    // Create a sphere collision shape for the two ends of the dumbbell
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::decimal radiusSphere = rp3d::decimal(1.5);
-    mSphereShape = mPhysicsCommon.createSphereShape(radiusSphere);
-
-    // Create a cylinder collision shape for the middle of the dumbbell
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    const rp3d::decimal radiusCapsule = rp3d::decimal(0.5);
-    const rp3d::decimal heightCapsule = rp3d::decimal(7.0);
-    mCapsuleShape = mPhysicsCommon.createCapsuleShape(radiusCapsule, heightCapsule);
-
-    // Initial transform of the first sphere collision shape of the dumbbell (in local-space)
-    rp3d::Transform transformSphereShape1(rp3d::Vector3(0, mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
-
-    // Initial transform of the second sphere collision shape of the dumbell (in local-space)
-    rp3d::Transform transformSphereShape2(rp3d::Vector3(0, -mDistanceBetweenSphere / 2.0f, 0), rp3d::Quaternion::identity());
-
-    // Initial transform of the cylinder collision shape of the dumbell (in local-space)
-    rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body corresponding to the dumbbell in the dynamics world
-    mBody = world->createCollisionBody(mPreviousTransform);
-
-    // Add the three collision shapes to the body and specify the mass and transform of the shapes
-    mColliderSphere1 = mBody->addCollider(mSphereShape, transformSphereShape1);
-    mColliderSphere2 = mBody->addCollider(mSphereShape, transformSphereShape2);
-    mColliderCapsule = mBody->addCollider(mCapsuleShape, transformCylinderShape);
+        // Add the three collision shapes to the body and specify the mass and transform of the shapes
+        mColliderSphere1 = mBody->addCollider(mSphereShape, transformSphereShape1);
+        mColliderSphere2 = mBody->addCollider(mSphereShape, transformSphereShape2);
+        mColliderCapsule = mBody->addCollider(mCapsuleShape, transformCylinderShape);
+    }
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 

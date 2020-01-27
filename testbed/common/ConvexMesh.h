@@ -89,10 +89,10 @@ class ConvexMesh : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world, const std::string& meshPath);
+        ConvexMesh(rp3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world, const std::string& meshPath);
 
         /// Constructor
-        ConvexMesh(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
+        ConvexMesh(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath);
 
         /// Destructor
         ~ConvexMesh();

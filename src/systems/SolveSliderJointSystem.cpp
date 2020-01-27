@@ -25,7 +25,7 @@
 
 // Libraries
 #include "systems/SolveSliderJointSystem.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "body/RigidBody.h"
 
 using namespace reactphysics3d;
@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 const decimal SolveSliderJointSystem::BETA = decimal(0.2);
 
 // Constructor
-SolveSliderJointSystem::SolveSliderJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
+SolveSliderJointSystem::SolveSliderJointSystem(PhysicsWorld& world, RigidBodyComponents& rigidBodyComponents,
                                                              TransformComponents& transformComponents,
                                                              JointComponents& jointComponents,
                                                              SliderJointComponents& sliderJointComponents)

@@ -32,7 +32,7 @@
 #include "collision/shapes/SphereShape.h"
 #include "collision/shapes/CapsuleShape.h"
 #include "collision/shapes/ConvexMeshShape.h"
-#include "engine/CollisionWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "engine/PhysicsCommon.h"
 #include "collision/PolygonVertexArray.h"
 
@@ -53,7 +53,7 @@ class TestPointInside : public Test {
         PhysicsCommon mPhysicsCommon;
 
         // Physics world
-        CollisionWorld* mWorld;
+        PhysicsWorld* mWorld;
 
         // Bodies
         CollisionBody* mBoxBody;
@@ -97,7 +97,7 @@ class TestPointInside : public Test {
         TestPointInside(const std::string& name) : Test(name) {
 
             // Create the world
-            mWorld = mPhysicsCommon.createCollisionWorld();
+            mWorld = mPhysicsCommon.createPhysicsWorld();
 
             // Body transform
             Vector3 position(-3, 2, 7);
@@ -180,7 +180,7 @@ class TestPointInside : public Test {
             mPhysicsCommon.destroySphereShape(mSphereShape);
             mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape);
-            mPhysicsCommon.destroyCollisionWorld(mWorld);
+            mPhysicsCommon.destroyPhysicsWorld(mWorld);
             mPhysicsCommon.destroyPolyhedronMesh(mConvexMeshPolyhedronMesh);
             delete[] mConvexMeshPolygonFaces;
             delete mConvexMeshPolygonVertexArray;

@@ -34,41 +34,7 @@ openglframework::VertexArrayObject Capsule::mVAO;
 int Capsule::totalNbCapsules = 0;
 
 // Constructor
-Capsule::Capsule(float radius, float height, rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world, const std::string& meshFolderPath)
-        : PhysicsObject(physicsCommon, meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height) {
-
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
-                                              0, (mHeight + 2.0f * mRadius) / 3, 0,0,
-                                              0, 0, mRadius, 0,
-                                              0, 0, 0, 1.0f);
-
-    // Create the collision shape for the rigid body (sphere shape)
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mCapsuleShape = mPhysicsCommon.createCapsuleShape(mRadius, mHeight);
-    //mCapsuleShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body corresponding in the dynamics world
-    mBody = world->createCollisionBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the shape
-    mCollider = mBody->addCollider(mCapsuleShape, rp3d::Transform::identity());
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-
-    // Create the VBOs and VAO
-    if (totalNbCapsules == 0) {
-        createVBOAndVAO();
-    }
-
-    totalNbCapsules++;
-}
-
-// Constructor
-Capsule::Capsule(float radius, float height, float mass, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::DynamicsWorld* dynamicsWorld,
+Capsule::Capsule(bool createRigidBody, float radius, float height, float mass, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                  const std::string& meshFolderPath)
         : PhysicsObject(physicsCommon, meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height) {
 
@@ -85,13 +51,24 @@ Capsule::Capsule(float radius, float height, float mass, reactphysics3d::Physics
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mCapsuleShape = mPhysicsCommon.createCapsuleShape(mRadius, mHeight);
 
-    // Create a rigid body corresponding in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
+    // Create a body corresponding in the physics world
+    if (createRigidBody) {
 
-    // Add a collision shape to the body and specify the mass of the shape
-    mCollider = body->addCollider(mCapsuleShape, rp3d::Transform::identity(), mass);
+        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
 
-    mBody = body;
+        // Add a collision shape to the body and specify the mass of the shape
+        mCollider = body->addCollider(mCapsuleShape, rp3d::Transform::identity(), mass);
+
+        mBody = body;
+    }
+    else {
+
+        // Create a rigid body corresponding in the physics world
+        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
+
+        // Add a collision shape to the body and specify the mass of the shape
+        mCollider = mBody->addCollider(mCapsuleShape, rp3d::Transform::identity());
+    }
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 

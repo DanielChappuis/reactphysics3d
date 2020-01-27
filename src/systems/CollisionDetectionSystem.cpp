@@ -25,7 +25,7 @@
 
 // Libraries
 #include "systems/CollisionDetectionSystem.h"
-#include "engine/CollisionWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "collision/OverlapCallback.h"
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/ConcaveShape.h"
@@ -40,7 +40,6 @@
 #include "utils/Profiler.h"
 #include "engine/EventListener.h"
 #include "collision/RaycastInfo.h"
-#include "engine/Islands.h"
 #include "containers/Pair.h"
 #include <cassert>
 #include <iostream>
@@ -49,9 +48,8 @@
 using namespace reactphysics3d;
 using namespace std;
 
-
 // Constructor
-CollisionDetectionSystem::CollisionDetectionSystem(CollisionWorld* world, ColliderComponents& collidersComponents, TransformComponents& transformComponents,
+CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, ColliderComponents& collidersComponents, TransformComponents& transformComponents,
                                        CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents, MemoryManager& memoryManager)
                    : mMemoryManager(memoryManager), mCollidersComponents(collidersComponents),
                      mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
@@ -687,7 +685,7 @@ void CollisionDetectionSystem::createContacts() {
                 ContactPointInfo& potentialContactPoint = mPotentialContactPoints[potentialManifold.potentialContactPointsIndices[c]];
 
                 // Create a new contact point
-                ContactPoint contactPoint(potentialContactPoint, mWorld->mConfig);
+                ContactPoint contactPoint(potentialContactPoint, mWorld->mConfig.persistentContactDistanceThreshold);
 
                 // Add the contact point
                 mCurrentContactPoints->add(contactPoint);
@@ -755,7 +753,7 @@ void CollisionDetectionSystem::createSnapshotContacts(List<ContactPair>& contact
                 ContactPointInfo& potentialContactPoint = potentialContactPoints[potentialManifold.potentialContactPointsIndices[c]];
 
                 // Create a new contact point
-                ContactPoint contactPoint(potentialContactPoint, mWorld->mConfig);
+                ContactPoint contactPoint(potentialContactPoint, mWorld->mConfig.persistentContactDistanceThreshold);
 
                 // Add the contact point
                 contactPoints.add(contactPoint);

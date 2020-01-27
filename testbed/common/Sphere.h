@@ -79,13 +79,13 @@ class Sphere : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
+        Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world, const std::string& meshFolderPath);
 
         /// Constructor
-        Sphere(float radius, float mass, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
+        Sphere(float radius, float mass, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshFolderPath);
 
         /// Destructor
-        ~Sphere();
+        virtual ~Sphere() override;
 
         /// Render the sphere at the correct position and with the correct orientation
         void virtual render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;

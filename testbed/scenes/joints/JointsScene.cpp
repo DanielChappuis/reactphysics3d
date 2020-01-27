@@ -33,7 +33,7 @@ using namespace jointsscene;
 
 // Constructor
 JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
-      : SceneDemo(name, settings, SCENE_RADIUS) {
+      : SceneDemo(name, settings, true, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 5, 0);
@@ -41,16 +41,16 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
-    // Gravity vector in the dynamics world
+    // Gravity vector in the physics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
-    rp3d::WorldSettings worldSettings;
+    rp3d::PhysicsWorld::WorldSettings worldSettings;
     worldSettings.worldName = name;
 
-    // Create the dynamics world for the physics simulation
-    rp3d::DynamicsWorld* dynamicsWorld = mPhysicsCommon.createDynamicsWorld(gravity, worldSettings);
-    dynamicsWorld->setEventListener(this);
-    mPhysicsWorld = dynamicsWorld;
+    // Create the physics world for the physics simulation
+    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
+    physicsWorld->setEventListener(this);
+    mPhysicsWorld = physicsWorld;
 
     // Create the Ball-and-Socket joint
     createBallAndSocketJoints();
@@ -68,37 +68,37 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
     createFloor();
 
     // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = getDynamicsWorld()->isGravityEnabled();
-    rp3d::Vector3 gravityVector = getDynamicsWorld()->getGravity();
+    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
+    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
     mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = getDynamicsWorld()->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = getDynamicsWorld()->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = getDynamicsWorld()->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = getDynamicsWorld()->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = getDynamicsWorld()->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = getDynamicsWorld()->getTimeBeforeSleep();
+    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
+    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
+    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
+    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
+    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
+    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
 // Destructor
 JointsScene::~JointsScene() {
 
     // Destroy the joints
-    getDynamicsWorld()->destroyJoint(mSliderJoint);
-    getDynamicsWorld()->destroyJoint(mPropellerHingeJoint);
-    getDynamicsWorld()->destroyJoint(mFixedJoint1);
-    getDynamicsWorld()->destroyJoint(mFixedJoint2);
+    mPhysicsWorld->destroyJoint(mSliderJoint);
+    mPhysicsWorld->destroyJoint(mPropellerHingeJoint);
+    mPhysicsWorld->destroyJoint(mFixedJoint1);
+    mPhysicsWorld->destroyJoint(mFixedJoint2);
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES-1; i++) {
-        getDynamicsWorld()->destroyJoint(mBallAndSocketJoints[i]);
+        mPhysicsWorld->destroyJoint(mBallAndSocketJoints[i]);
     }
 
     // Destroy all the rigid bodies of the scene
-    getDynamicsWorld()->destroyRigidBody(mSliderJointBottomBox->getRigidBody());
-    getDynamicsWorld()->destroyRigidBody(mSliderJointTopBox->getRigidBody());
-    getDynamicsWorld()->destroyRigidBody(mPropellerBox->getRigidBody());
-    getDynamicsWorld()->destroyRigidBody(mFixedJointBox1->getRigidBody());
-    getDynamicsWorld()->destroyRigidBody(mFixedJointBox2->getRigidBody());
+    mPhysicsWorld->destroyRigidBody(mSliderJointBottomBox->getRigidBody());
+    mPhysicsWorld->destroyRigidBody(mSliderJointTopBox->getRigidBody());
+    mPhysicsWorld->destroyRigidBody(mPropellerBox->getRigidBody());
+    mPhysicsWorld->destroyRigidBody(mFixedJointBox1->getRigidBody());
+    mPhysicsWorld->destroyRigidBody(mFixedJointBox2->getRigidBody());
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-        getDynamicsWorld()->destroyRigidBody(mBallAndSocketJointChainBoxes[i]->getRigidBody());
+        mPhysicsWorld->destroyRigidBody(mBallAndSocketJointChainBoxes[i]->getRigidBody());
     }
 
     delete mSliderJointBottomBox;
@@ -111,11 +111,11 @@ JointsScene::~JointsScene() {
     }
 
     // Destroy the floor
-    getDynamicsWorld()->destroyRigidBody(mFloor->getRigidBody());
+    mPhysicsWorld->destroyRigidBody(mFloor->getRigidBody());
     delete mFloor;
 
-    // Destroy the dynamics world
-    mPhysicsCommon.destroyDynamicsWorld(getDynamicsWorld());
+    // Destroy the physics world
+    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
 }
 
 // Update the physics world (take a simulation step)
@@ -143,7 +143,7 @@ void JointsScene::reset() {
         rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
         rp3d::Transform transform(initPosition, initOrientation);
 
-        // Create a box and a corresponding rigid in the dynamics world
+        // Create a box and a corresponding rigid in the physics world
         mBallAndSocketJointChainBoxes[i]->setTransform(transform);
 
         positionBox.y -= boxDimension.y + 0.5f;
@@ -157,7 +157,7 @@ void JointsScene::reset() {
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transformBottomBox(initPosition, initOrientation);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     mSliderJointBottomBox->setTransform(transformBottomBox);
 
     // Position of the box
@@ -166,7 +166,7 @@ void JointsScene::reset() {
     initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transformTopBox(initPosition, initOrientation);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     mSliderJointTopBox->setTransform(transformTopBox);
 
     // --------------- Propeller Hinge joint --------------- //
@@ -177,7 +177,7 @@ void JointsScene::reset() {
     initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transformHingeBox(initPosition, initOrientation);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     mPropellerBox->setTransform(transformHingeBox);
 
     // --------------- Fixed joint --------------- //
@@ -188,7 +188,7 @@ void JointsScene::reset() {
     initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transformFixedBox1(initPosition, initOrientation);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     mFixedJointBox1->setTransform(transformFixedBox1);
 
     // Position of the box
@@ -197,7 +197,7 @@ void JointsScene::reset() {
     initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transformFixedBox2(initPosition, initOrientation);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     mFixedJointBox2->setTransform(transformFixedBox2);
 }
 
@@ -212,9 +212,9 @@ void JointsScene::createBallAndSocketJoints() {
 
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
 
-        // Create a box and a corresponding rigid in the dynamics world
+        // Create a box and a corresponding rigid in the physics world
         mBallAndSocketJointChainBoxes[i] = new Box(boxDimension, boxMass,
-                                                   mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+                                                   mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
         mBallAndSocketJointChainBoxes[i]->setTransform(rp3d::Transform(positionBox, rp3d::Quaternion::identity()));
 
         // Set the box color
@@ -250,9 +250,9 @@ void JointsScene::createBallAndSocketJoints() {
         const rp3d::Vector3 anchorPointWorldSpace = 0.5 * (body1Position + body2Position);
         rp3d::BallAndSocketJointInfo jointInfo(body1, body2, anchorPointWorldSpace);
 
-        // Create the joint in the dynamics world
+        // Create the joint in the physics world
         mBallAndSocketJoints[i] = dynamic_cast<rp3d::BallAndSocketJoint*>(
-                    getDynamicsWorld()->createJoint(jointInfo));
+                    mPhysicsWorld->createJoint(jointInfo));
     }
 }
 
@@ -264,9 +264,9 @@ void JointsScene::createSliderJoint() {
     // Position of the box
     rp3d::Vector3 positionBox1(0, 2.1f, 0);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mSliderJointBottomBox = new Box(box1Dimension , BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+    mSliderJointBottomBox = new Box(box1Dimension , BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mSliderJointBottomBox->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -286,9 +286,9 @@ void JointsScene::createSliderJoint() {
     // Position of the box
     rp3d::Vector3 positionBox2(0, 4.2f, 0);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     openglframework::Vector3 box2Dimension(1.5f, 4, 1.5f);
-    mSliderJointTopBox = new Box(box2Dimension, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+    mSliderJointTopBox = new Box(box2Dimension, BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mSliderJointTopBox->setTransform(rp3d::Transform(positionBox2, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -316,8 +316,8 @@ void JointsScene::createSliderJoint() {
     jointInfo.maxMotorForce = 10000.0;
     jointInfo.isCollisionEnabled = false;
 
-    // Create the joint in the dynamics world
-    mSliderJoint = dynamic_cast<rp3d::SliderJoint*>(getDynamicsWorld()->createJoint(jointInfo));
+    // Create the joint in the physics world
+    mSliderJoint = dynamic_cast<rp3d::SliderJoint*>(mPhysicsWorld->createJoint(jointInfo));
 }
 
 /// Create the boxes and joint for the Hinge joint example
@@ -328,9 +328,9 @@ void JointsScene::createPropellerHingeJoint() {
     // Position of the box
     rp3d::Vector3 positionBox1(0, 7, 0);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     openglframework::Vector3 boxDimension(10, 1, 1);
-    mPropellerBox = new Box(boxDimension, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+    mPropellerBox = new Box(boxDimension, BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mPropellerBox->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -357,8 +357,8 @@ void JointsScene::createPropellerHingeJoint() {
     jointInfo.maxMotorTorque = rp3d::decimal(60.0);
     jointInfo.isCollisionEnabled = false;
 
-    // Create the joint in the dynamics world
-    mPropellerHingeJoint = dynamic_cast<rp3d::HingeJoint*>(getDynamicsWorld()->createJoint(jointInfo));
+    // Create the joint in the physics world
+    mPropellerHingeJoint = dynamic_cast<rp3d::HingeJoint*>(mPhysicsWorld->createJoint(jointInfo));
 }
 
 /// Create the boxes and joints for the fixed joints
@@ -369,9 +369,9 @@ void JointsScene::createFixedJoints() {
     // Position of the box
     rp3d::Vector3 positionBox1(5, 7, 0);
 
-    // Create a box and a corresponding rigid in the dynamics world
+    // Create a box and a corresponding rigid in the physics world
     openglframework::Vector3 boxDimension(1.5, 1.5, 1.5);
-    mFixedJointBox1 = new Box(boxDimension, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+    mFixedJointBox1 = new Box(boxDimension, BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFixedJointBox1->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -388,8 +388,8 @@ void JointsScene::createFixedJoints() {
     // Position of the box
     rp3d::Vector3 positionBox2(-5, 7, 0);
 
-    // Create a box and a corresponding rigid in the dynamics world
-    mFixedJointBox2 = new Box(boxDimension, BOX_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+    // Create a box and a corresponding rigid in the physics world
+    mFixedJointBox2 = new Box(boxDimension, BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFixedJointBox2->setTransform(rp3d::Transform(positionBox2, rp3d::Quaternion::identity()));
 
     // Set the box color
@@ -410,8 +410,8 @@ void JointsScene::createFixedJoints() {
     rp3d::FixedJointInfo jointInfo1(body1, propellerBody, anchorPointWorldSpace1);
     jointInfo1.isCollisionEnabled = false;
 
-    // Create the joint in the dynamics world
-    mFixedJoint1 = dynamic_cast<rp3d::FixedJoint*>(getDynamicsWorld()->createJoint(jointInfo1));
+    // Create the joint in the physics world
+    mFixedJoint1 = dynamic_cast<rp3d::FixedJoint*>(mPhysicsWorld->createJoint(jointInfo1));
 
     // --------------- Create the second fixed joint --------------- //
 
@@ -421,8 +421,8 @@ void JointsScene::createFixedJoints() {
     rp3d::FixedJointInfo jointInfo2(body2, propellerBody, anchorPointWorldSpace2);
     jointInfo2.isCollisionEnabled = false;
 
-    // Create the joint in the dynamics world
-    mFixedJoint2 = dynamic_cast<rp3d::FixedJoint*>(getDynamicsWorld()->createJoint(jointInfo2));
+    // Create the joint in the physics world
+    mFixedJoint2 = dynamic_cast<rp3d::FixedJoint*>(mPhysicsWorld->createJoint(jointInfo2));
 }
 
 // Create the floor
@@ -430,7 +430,7 @@ void JointsScene::createFloor() {
 
     // Create the floor
     rp3d::Vector3 floorPosition(0, 0, 0);
-    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, getDynamicsWorld(), mMeshFolderPath);
+    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
     // Set the box color
     mFloor->setColor(mFloorColorDemo);

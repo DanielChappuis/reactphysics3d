@@ -291,7 +291,7 @@ class OverlappingPairs {
 
         // -------------------- Friendship -------------------- //
 
-        friend class DynamicsWorld;
+        friend class PhysicsWorld;
         friend class CollisionDetectionSystem;
 };
 

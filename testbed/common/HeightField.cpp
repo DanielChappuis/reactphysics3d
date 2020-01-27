@@ -28,7 +28,7 @@
 #include "PerlinNoise.h"
 
 // Constructor
-HeightField::HeightField(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world)
+HeightField::HeightField(rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world)
            : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -49,7 +49,7 @@ HeightField::HeightField(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorl
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
+    // Create a rigid body corresponding to the sphere in the physics world
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
@@ -62,7 +62,7 @@ HeightField::HeightField(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorl
 }
 
 // Constructor
-HeightField::HeightField(float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld)
+HeightField::HeightField(float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
            : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -83,8 +83,8 @@ HeightField::HeightField(float mass, reactphysics3d::PhysicsCommon& physicsCommo
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
+    // Create a rigid body corresponding to the sphere in the physics world
+    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
     mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity(), mass);

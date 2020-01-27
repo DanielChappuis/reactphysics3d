@@ -28,8 +28,7 @@
 
 // Libraries
 #include "memory/MemoryManager.h"
-#include "engine/CollisionWorld.h"
-#include "engine/DynamicsWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "collision/shapes/SphereShape.h"
 #include "collision/shapes/BoxShape.h"
 #include "collision/shapes/CapsuleShape.h"
@@ -56,11 +55,8 @@ class PhysicsCommon {
         /// Memory manager
         MemoryManager mMemoryManager;
 
-        /// Set of collision worlds
-        Set<CollisionWorld*> mCollisionWorlds;
-
-        /// Set of dynamics worlds
-        Set<DynamicsWorld*> mDynamicsWorlds;
+        /// Set of physics worlds
+        Set<PhysicsWorld*> mPhysicsWorlds;
 
         /// Set of sphere shapes
         Set<SphereShape*> mSphereShapes;
@@ -104,19 +100,12 @@ class PhysicsCommon {
         /// Destructor
         ~PhysicsCommon();
 
-        /// Create and return an instance of CollisionWorld
-        CollisionWorld* createCollisionWorld(const WorldSettings& worldSettings = WorldSettings(), Logger* logger = nullptr,
-                                             Profiler* profiler = nullptr);
-
-        /// Destroy an instance of CollisionWorld
-        void destroyCollisionWorld(CollisionWorld* world);
-
-        /// Create and return an instance of DynamicsWorld
-        DynamicsWorld* createDynamicsWorld(const Vector3& gravity, const WorldSettings& worldSettings = WorldSettings(),
+        /// Create and return an instance of PhysicsWorld
+        PhysicsWorld* createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings = PhysicsWorld::WorldSettings(),
                                            Logger* logger = nullptr, Profiler* profiler = nullptr);
 
-        /// Destroy an instance of DynamicsWorld
-        DynamicsWorld* destroyDynamicsWorld(DynamicsWorld* world);
+        /// Destroy an instance of PhysicsWorld
+        PhysicsWorld* destroyPhysicsWorld(PhysicsWorld* world);
 
         /// Create and return a sphere collision shape
         SphereShape* createSphereShape(const decimal radius);

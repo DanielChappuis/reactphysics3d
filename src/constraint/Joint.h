@@ -40,6 +40,7 @@ enum class JointType {BALLSOCKETJOINT, SLIDERJOINT, HINGEJOINT, FIXEDJOINT};
 // Class declarations
 struct ConstraintSolverData;
 class Joint;
+class RigidBody;
 
 // Structure JointInfo
 /**
@@ -71,7 +72,9 @@ struct JointInfo {
         JointInfo(JointType constraintType)
                       : body1(nullptr), body2(nullptr), type(constraintType),
                         positionCorrectionTechnique(JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL),
-                        isCollisionEnabled(true) {}
+                        isCollisionEnabled(true) {
+
+        }
 
         /// Constructor
         JointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2, JointType constraintType)
@@ -99,7 +102,7 @@ class Joint {
         Entity mEntity;
 
         /// Reference to the physics world
-        DynamicsWorld& mWorld;
+        PhysicsWorld& mWorld;
 
         // -------------------- Methods -------------------- //
 
@@ -114,7 +117,7 @@ class Joint {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Joint(Entity entity, DynamicsWorld& world);
+        Joint(Entity entity, PhysicsWorld& world);
 
         /// Destructor
         virtual ~Joint() = default;
@@ -145,7 +148,7 @@ class Joint {
 
         // -------------------- Friendship -------------------- //
 
-        friend class DynamicsWorld;
+        friend class PhysicsWorld;
         friend class Island;
         friend class ConstraintSolverSystem;
 };

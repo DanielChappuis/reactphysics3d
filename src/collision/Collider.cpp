@@ -28,7 +28,7 @@
 #include "utils/Logger.h"
 #include "collision/RaycastInfo.h"
 #include "memory/MemoryManager.h"
-#include "engine/CollisionWorld.h"
+#include "engine/PhysicsWorld.h"
 
 using namespace reactphysics3d;
 

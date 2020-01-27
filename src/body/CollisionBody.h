@@ -39,8 +39,8 @@ namespace reactphysics3d {
 // Declarations
 struct ContactManifoldListElement;
 class Collider;
-class CollisionWorld;
 class CollisionShape;
+class PhysicsWorld;
 struct RaycastInfo;
 class DefaultPoolAllocator;
 class Profiler;
@@ -61,7 +61,7 @@ class CollisionBody {
         Entity mEntity;
 
         /// Reference to the world the body belongs to
-        CollisionWorld& mWorld;
+        PhysicsWorld& mWorld;
 
 #ifdef IS_LOGGING_ACTIVE
 
@@ -93,7 +93,7 @@ class CollisionBody {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionBody(CollisionWorld& world, Entity entity);
+        CollisionBody(PhysicsWorld& world, Entity entity);
 
         /// Destructor
         virtual ~CollisionBody();
@@ -179,8 +179,7 @@ class CollisionBody {
 
         // -------------------- Friendship -------------------- //
 
-        friend class CollisionWorld;
-        friend class DynamicsWorld;
+        friend class PhysicsWorld;
         friend class CollisionDetectionSystem;
         friend class BroadPhaseAlgorithm;
         friend class ConvexMeshShape;

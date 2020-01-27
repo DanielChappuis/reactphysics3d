@@ -34,7 +34,7 @@ openglframework::VertexArrayObject Sphere::mVAO;
 int Sphere::totalNbSpheres = 0;
 
 // Constructor
-Sphere::Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world,
+Sphere::Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world,
                const std::string& meshFolderPath)
        : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius) {
 
@@ -52,7 +52,7 @@ Sphere::Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::Collision
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
+    // Create a rigid body corresponding to the sphere in the physics world
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape
@@ -69,7 +69,7 @@ Sphere::Sphere(float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::Collision
 }
 
 // Constructor
-Sphere::Sphere(float radius, float mass,  rp3d::PhysicsCommon& physicsCommon,reactphysics3d::DynamicsWorld* world,
+Sphere::Sphere(float radius, float mass,  rp3d::PhysicsCommon& physicsCommon,reactphysics3d::PhysicsWorld* world,
                const std::string& meshFolderPath)
        : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius) {
 
@@ -86,7 +86,7 @@ Sphere::Sphere(float radius, float mass,  rp3d::PhysicsCommon& physicsCommon,rea
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
+    // Create a rigid body corresponding to the sphere in the physics world
     rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the shape

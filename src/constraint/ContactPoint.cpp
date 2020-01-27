@@ -31,13 +31,13 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, const WorldSettings& worldSettings)
+ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, decimal persistentContactDistanceThreshold)
              : mNormal(contactInfo->normal),
                mPenetrationDepth(contactInfo->penetrationDepth),
                mLocalPointOnShape1(contactInfo->localPoint1),
                mLocalPointOnShape2(contactInfo->localPoint2),
                mIsRestingContact(false), mIsObsolete(false), mNext(nullptr), mPrevious(nullptr),
-               mWorldSettings(worldSettings) {
+               mPersistentContactDistanceThreshold(persistentContactDistanceThreshold) {
 
     assert(mPenetrationDepth > decimal(0.0));
     assert(mNormal.lengthSquare() > decimal(0.8));
@@ -46,13 +46,13 @@ ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, const WorldSetti
 }
 
 // Constructor
-ContactPoint::ContactPoint(const ContactPointInfo& contactInfo, const WorldSettings& worldSettings)
+ContactPoint::ContactPoint(const ContactPointInfo& contactInfo, decimal persistentContactDistanceThreshold)
              : mNormal(contactInfo.normal),
                mPenetrationDepth(contactInfo.penetrationDepth),
                mLocalPointOnShape1(contactInfo.localPoint1),
                mLocalPointOnShape2(contactInfo.localPoint2),
                mIsRestingContact(false), mPenetrationImpulse(0), mIsObsolete(false),
-               mWorldSettings(worldSettings) {
+               mPersistentContactDistanceThreshold(persistentContactDistanceThreshold) {
 
     assert(mPenetrationDepth > decimal(0.0));
     assert(mNormal.lengthSquare() > decimal(0.8));

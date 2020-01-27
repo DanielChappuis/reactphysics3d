@@ -25,7 +25,7 @@
 
  // Libraries
 #include "CollisionBody.h"
-#include "engine/CollisionWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "collision/ContactManifold.h"
 #include "collision/RaycastInfo.h"
 #include "utils/Logger.h"
@@ -39,7 +39,7 @@ using namespace reactphysics3d;
  * @param world The physics world where the body is created
  * @param id ID of the body
  */
-CollisionBody::CollisionBody(CollisionWorld& world, Entity entity)
+CollisionBody::CollisionBody(PhysicsWorld& world, Entity entity)
               : mEntity(entity), mWorld(world)  {
 
 #ifdef IS_LOGGING_ACTIVE

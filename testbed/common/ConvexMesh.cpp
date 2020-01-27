@@ -28,7 +28,7 @@
 #include <unordered_set>
 
 // Constructor
-ConvexMesh::ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld* world, const std::string& meshPath)
+ConvexMesh::ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world, const std::string& meshPath)
            : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -75,7 +75,7 @@ ConvexMesh::ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld*
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
+    // Create a rigid body corresponding to the sphere in the physics world
     mBody = world->createCollisionBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
@@ -88,7 +88,7 @@ ConvexMesh::ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::CollisionWorld*
 }
 
 // Constructor
-ConvexMesh::ConvexMesh(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath)
+ConvexMesh::ConvexMesh(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
            : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -135,8 +135,8 @@ ConvexMesh::ConvexMesh(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::Dyn
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
+    // Create a rigid body corresponding to the sphere in the physics world
+    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
 
     // Add a collision shape to the body and specify the mass of the collision shape
     mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity(), mass);

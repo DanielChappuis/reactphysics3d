@@ -35,7 +35,7 @@
 
 namespace reactphysics3d {
 
-class DynamicsWorld;
+class PhysicsWorld;
 
 // Class SolveSliderJointSystem
 /**
@@ -53,7 +53,7 @@ class SolveSliderJointSystem {
         // -------------------- Attributes -------------------- //
 
         /// Physics world
-        DynamicsWorld& mWorld;
+        PhysicsWorld& mWorld;
 
         /// Reference to the rigid body components
         RigidBodyComponents& mRigidBodyComponents;
@@ -86,7 +86,7 @@ class SolveSliderJointSystem {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SolveSliderJointSystem(DynamicsWorld& world, RigidBodyComponents& rigidBodyComponents,
+        SolveSliderJointSystem(PhysicsWorld& world, RigidBodyComponents& rigidBodyComponents,
                               TransformComponents& transformComponents,
                               JointComponents& jointComponents,
                               SliderJointComponents& sliderJointComponents);

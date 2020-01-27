@@ -268,7 +268,7 @@ class TestCollisionWorld : public Test {
         PhysicsCommon mPhysicsCommon;
 
         // Physics world
-        CollisionWorld* mWorld;
+        PhysicsWorld* mWorld;
 
         // Bodies
         CollisionBody* mBoxBody1;
@@ -332,7 +332,7 @@ class TestCollisionWorld : public Test {
         TestCollisionWorld(const std::string& name) : Test(name) {
 
             // Create the collision world
-            mWorld = mPhysicsCommon.createCollisionWorld();
+            mWorld = mPhysicsCommon.createPhysicsWorld();
 
             // ---------- Boxes ---------- //
             Transform boxTransform1(Vector3(-20, 20, 0), Quaternion::identity());
@@ -486,7 +486,7 @@ class TestCollisionWorld : public Test {
 
             delete mConcaveMeshTriangleVertexArray;
 
-            mPhysicsCommon.destroyCollisionWorld(mWorld);
+            mPhysicsCommon.destroyPhysicsWorld(mWorld);
         }
 
         /// Run the tests

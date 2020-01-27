@@ -26,7 +26,7 @@
 // Libraries
 #include "configuration.h"
 #include "ConvexMeshShape.h"
-#include "engine/CollisionWorld.h"
+#include "engine/PhysicsWorld.h"
 #include "collision/RaycastInfo.h"
 
 using namespace reactphysics3d;

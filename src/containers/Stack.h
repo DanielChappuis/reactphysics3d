@@ -119,8 +119,11 @@ class Stack {
 
             clear();
 
-            // Release the memory allocated on the heap
-            mAllocator.release(mArray, mCapacity * sizeof(T));
+            if (mCapacity > 0) {
+
+                // Release the memory allocated on the heap
+                mAllocator.release(mArray, mCapacity * sizeof(T));
+            }
         }
 
         /// Remove all the items from the stack
