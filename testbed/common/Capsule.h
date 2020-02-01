@@ -51,9 +51,6 @@ class Capsule : public PhysicsObject {
         rp3d::CapsuleShape* mCapsuleShape;
         rp3d::Collider* mCollider;
 
-		/// Previous transform (for interpolation)
-		rp3d::Transform mPreviousTransform;
-
 		/// Vertex Buffer Object for the vertices data
 		static openglframework::VertexBufferObject mVBOVertices;
 
@@ -86,18 +83,26 @@ class Capsule : public PhysicsObject {
                 const std::string& meshFolderPath);
 
 		/// Destructor
-		~Capsule();
+        virtual ~Capsule() override;
 
 		/// Render the sphere at the correct position and with the correct orientation
         virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
 };
 
 // Update the transform matrix of the object
 inline void Capsule::updateTransform(float interpolationFactor) {
 	mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* Capsule::getCollider() {
+    return mCollider;
 }
 
 #endif

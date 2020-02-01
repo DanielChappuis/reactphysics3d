@@ -29,6 +29,8 @@
 // Libraries
 #include "body/CollisionBody.h"
 #include "collision/shapes/CollisionShape.h"
+#include "engine/Material.h"
+#include "utils/Logger.h"
 
 namespace  reactphysics3d {
 
@@ -37,13 +39,10 @@ class MemoryManager;
 
 // Class Collider
 /**
- * The CollisionShape instances are supposed to be unique for memory optimization. For instance,
- * consider two rigid bodies with the same sphere collision shape. In this situation, we will have
- * a unique instance of SphereShape but we need to differentiate between the two instances during
- * the collision detection. They do not have the same position in the world and they do not
- * belong to the same rigid body. The Collider class is used for that purpose by attaching a
- * rigid body with one of its collision shape. A body can have multiple colliders (one for
- * each collision shape attached to the body).
+ * A collider has a collision shape (box, sphere, capsule, ...) and is attached to a CollisionBody or
+ * RigidBody. A body can have multiple colliders. The collider also have a mass value and a Material
+ * with many physics parameters like friction or bounciness. When you create a body, you need to attach
+ * at least one collider to it if you want that body to be able to collide in the physics world.
  */
 class Collider {
 
@@ -59,6 +58,9 @@ class Collider {
 
         /// Pointer to the parent body
         CollisionBody* mBody;
+
+        /// Material properties of the rigid body
+        Material mMaterial;
 
         /// Pointer to user data
         void* mUserData;
@@ -151,6 +153,12 @@ class Collider {
         /// Return the broad-phase id
         int getBroadPhaseId() const;
 
+        /// Return a reference to the material properties of the collider
+        Material& getMaterial();
+
+        /// Set a new material for this collider
+        void setMaterial(const Material& material);
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Set the profiler
@@ -219,6 +227,30 @@ inline void Collider::setUserData(void* userData) {
 */
 inline bool Collider::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getWorldAABB());
+}
+
+// Return a reference to the material properties of the collider
+/**
+ * @return A reference to the material of the body
+ */
+inline Material& Collider::getMaterial() {
+    return mMaterial;
+}
+
+// Set a new material for this rigid body
+/**
+ * @param material The material you want to set to the body
+ */
+inline void Collider::setMaterial(const Material& material) {
+
+    mMaterial = material;
+
+#ifdef IS_LOGGING_ACTIVE
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
+             "Collider " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string());
+#endif
+
 }
 
 #ifdef IS_LOGGING_ACTIVE

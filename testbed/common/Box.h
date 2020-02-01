@@ -82,18 +82,26 @@ class Box : public PhysicsObject {
         Box(const openglframework::Vector3& size, float mass, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld *world, const std::string& meshFolderPath);
 
 		/// Destructor
-		~Box();
+        virtual ~Box() override;
 
 		/// Render the cube at the correct position and with the correct orientation
         virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
 };
 
 // Update the transform matrix of the object
 inline void Box::updateTransform(float interpolationFactor) {
 	mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* Box::getCollider() {
+   return mCollider;
 }
 
 

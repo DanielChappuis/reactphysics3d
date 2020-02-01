@@ -36,8 +36,11 @@ size_t HeapAllocator::INIT_ALLOCATED_SIZE = 5 * 1048576;    // 5 Mb
 
 // Constructor
 HeapAllocator::HeapAllocator(MemoryAllocator& baseAllocator, size_t initAllocatedMemory)
-              : mBaseAllocator(baseAllocator), mAllocatedMemory(0), mMemoryUnits(nullptr), mCachedFreeUnit(nullptr),
-                mNbTimesAllocateMethodCalled(0) {
+              : mBaseAllocator(baseAllocator), mAllocatedMemory(0), mMemoryUnits(nullptr), mCachedFreeUnit(nullptr) {
+
+#ifndef NDEBUG
+        mNbTimesAllocateMethodCalled = 0;
+#endif
 
     reserve(initAllocatedMemory == 0 ? INIT_ALLOCATED_SIZE : initAllocatedMemory);
 }

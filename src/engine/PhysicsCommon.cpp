@@ -35,7 +35,8 @@ PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
                 mBoxShapes(mMemoryManager.getHeapAllocator()), mCapsuleShapes(mMemoryManager.getHeapAllocator()),
                 mConvexMeshShapes(mMemoryManager.getHeapAllocator()), mConcaveMeshShapes(mMemoryManager.getHeapAllocator()),
                 mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mPolyhedronMeshes(mMemoryManager.getHeapAllocator()),
-                mTriangleMeshes(mMemoryManager.getHeapAllocator()) {
+                mTriangleMeshes(mMemoryManager.getHeapAllocator()), mLoggers(mMemoryManager.getHeapAllocator()),
+                mProfilers(mMemoryManager.getHeapAllocator()) {
 
 }
 
@@ -93,10 +94,48 @@ void PhysicsCommon::release() {
     for (auto it = mTriangleMeshes.begin(); it != mTriangleMeshes.end(); ++it) {
         destroyTriangleMesh(*it);
     }
+
+    // Destroy the loggers
+    for (auto it = mLoggers.begin(); it != mLoggers.end(); ++it) {
+        destroyLogger(*it);
+    }
+
+    // Destroy the profilers
+    for (auto it = mProfilers.begin(); it != mProfilers.end(); ++it) {
+        destroyProfiler(*it);
+    }
 }
 
 // Create and return an instance of PhysicsWorld
 PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings, Logger* logger, Profiler* profiler) {
+
+#ifdef IS_PROFILING_ACTIVE
+
+    // If the user has not provided its own profiler, we create one
+    if (profiler == nullptr) {
+
+        profiler = createProfiler();
+
+        // Add a destination file for the profiling data
+        profiler->addFileDestination("rp3d_profiling_" + worldSettings.worldName + ".txt", Profiler::Format::Text);
+    }
+
+#endif
+
+#ifdef IS_LOGGING_ACTIVE
+
+    // If the user has not provided its own logger, we create one
+    if (logger == nullptr) {
+
+       logger = createLogger();
+
+        // Add a log destination file
+        uint logLevel = static_cast<uint>(Logger::Level::Information) | static_cast<uint>(Logger::Level::Warning) |
+                static_cast<uint>(Logger::Level::Error);
+        logger->addFileDestination("rp3d_log_" + worldSettings.worldName + ".html", logLevel, Logger::Format::HTML);
+    }
+
+#endif
 
     PhysicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(PhysicsWorld))) PhysicsWorld(mMemoryManager, worldSettings, logger, profiler);
 
@@ -106,7 +145,7 @@ PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSetting
 }
 
 // Destroy an instance of PhysicsWorld
-PhysicsWorld* PhysicsCommon::destroyPhysicsWorld(PhysicsWorld* world) {
+void PhysicsCommon::destroyPhysicsWorld(PhysicsWorld* world) {
 
    // Call the destructor of the world
    world->~PhysicsWorld();
@@ -293,4 +332,49 @@ void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
    mMemoryManager.release(MemoryManager::AllocationType::Pool, triangleMesh, sizeof(TriangleMesh));
 
    mTriangleMeshes.remove(triangleMesh);
+}
+
+// Create and return a new logger
+Logger* PhysicsCommon::createLogger() {
+
+    Logger* logger = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(Logger))) Logger(mMemoryManager.getHeapAllocator());
+
+    mLoggers.add(logger);
+
+    return logger;
+}
+
+// Destroy a logger
+void PhysicsCommon::destroyLogger(Logger* logger) {
+
+   // Call the destructor of the logger
+   logger->~Logger();
+
+   // Release allocated memory
+   mMemoryManager.release(MemoryManager::AllocationType::Pool, logger, sizeof(Logger));
+
+   mLoggers.remove(logger);
+}
+
+// Create and return a new profiler
+/// Note that you need to use a different profiler for each PhysicsWorld.
+Profiler* PhysicsCommon::createProfiler() {
+
+    Profiler* profiler = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(Profiler))) Profiler();
+
+    mProfilers.add(profiler);
+
+    return profiler;
+}
+
+// Destroy a profiler
+void PhysicsCommon::destroyProfiler(Profiler* profiler) {
+
+   // Call the destructor of the profiler
+   profiler->~Profiler();
+
+   // Release allocated memory
+   mMemoryManager.release(MemoryManager::AllocationType::Pool, profiler, sizeof(Profiler));
+
+   mProfilers.remove(profiler);
 }

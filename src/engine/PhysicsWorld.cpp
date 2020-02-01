@@ -59,8 +59,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
                 mSliderJointsComponents(mMemoryManager.getHeapAllocator()), mCollisionDetection(this, mCollidersComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents,
                                         mMemoryManager),
                 mBodies(mMemoryManager.getHeapAllocator()), mEventListener(nullptr),
-                mName(worldSettings.worldName), mIsProfilerCreatedByUser(profiler != nullptr),
-                mIsLoggerCreatedByUser(logger != nullptr), mIslands(mMemoryManager.getSingleFrameAllocator()),
+                mName(worldSettings.worldName),  mIslands(mMemoryManager.getSingleFrameAllocator()),
                 mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mCollidersComponents, mConfig.restitutionVelocityThreshold),
                 mConstraintSolverSystem(*this, mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
@@ -88,17 +87,8 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
 
 #ifdef IS_PROFILING_ACTIVE
 
+    assert(profiler != nullptr);
     mProfiler = profiler;
-
-    // If the user has not provided its own profiler, we create one
-    if (mProfiler == nullptr) {
-
-       mProfiler = new Profiler();
-
-        // Add a destination file for the profiling data
-        mProfiler->addFileDestination("rp3d_profiling_" + mName + ".txt", Profiler::Format::Text);
-    }
-
 
     // Set the profiler
     mConstraintSolverSystem.setProfiler(mProfiler);
@@ -110,18 +100,8 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
 
 #ifdef IS_LOGGING_ACTIVE
 
+    assert(logger != nullptr);
     mLogger = logger;
-
-    // If the user has not provided its own logger, we create one
-    if (mLogger == nullptr) {
-
-       mLogger = new Logger();
-
-        // Add a log destination file
-        uint logLevel = static_cast<uint>(Logger::Level::Information) | static_cast<uint>(Logger::Level::Warning) |
-                static_cast<uint>(Logger::Level::Error);
-        mLogger->addFileDestination("rp3d_log_" + mName + ".html", logLevel, Logger::Format::HTML);
-    }
 
 #endif
 
@@ -150,22 +130,8 @@ PhysicsWorld::~PhysicsWorld() {
 
 #ifdef IS_PROFILING_ACTIVE
 
-    /// Delete the profiler
-    if (!mIsProfilerCreatedByUser) {
-        delete mProfiler;
-    }
-
     // Print the profiling report into the destinations
     mProfiler->printReport();
-
-#endif
-
-#ifdef IS_LOGGING_ACTIVE
-
-    /// Delete the logger
-    if (!mIsLoggerCreatedByUser) {
-        delete mLogger;
-    }
 
 #endif
 

@@ -230,7 +230,7 @@ void JointsScene::createBallAndSocketJoints() {
         mBallAndSocketJointChainBoxes[i]->getRigidBody()->setAngularDamping(rp3d::decimal(0.2));
 
         // Change the material properties of the rigid body
-        rp3d::Material& material = mBallAndSocketJointChainBoxes[i]->getRigidBody()->getMaterial();
+        rp3d::Material& material = mBallAndSocketJointChainBoxes[i]->getCollider()->getMaterial();
         material.setBounciness(rp3d::decimal(0.4));
 
 		mPhysicsObjects.push_back(mBallAndSocketJointChainBoxes[i]);
@@ -277,7 +277,7 @@ void JointsScene::createSliderJoint() {
     mSliderJointBottomBox->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
-    rp3d::Material& material1 = mSliderJointBottomBox->getRigidBody()->getMaterial();
+    rp3d::Material& material1 = mSliderJointBottomBox->getCollider()->getMaterial();
     material1.setBounciness(0.4f);
 	mPhysicsObjects.push_back(mSliderJointBottomBox);
 
@@ -296,7 +296,7 @@ void JointsScene::createSliderJoint() {
     mSliderJointTopBox->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body
-    rp3d::Material& material2 = mSliderJointTopBox->getRigidBody()->getMaterial();
+    rp3d::Material& material2 = mSliderJointTopBox->getCollider()->getMaterial();
     material2.setBounciness(0.4f);
 	mPhysicsObjects.push_back(mSliderJointTopBox);
 
@@ -338,7 +338,7 @@ void JointsScene::createPropellerHingeJoint() {
     mPropellerBox->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body
-    rp3d::Material& material = mPropellerBox->getRigidBody()->getMaterial();
+    rp3d::Material& material = mPropellerBox->getCollider()->getMaterial();
     material.setBounciness(rp3d::decimal(0.4));
 	mPhysicsObjects.push_back(mPropellerBox);
 
@@ -379,7 +379,7 @@ void JointsScene::createFixedJoints() {
     mFixedJointBox1->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body
-    rp3d::Material& material1 = mFixedJointBox1->getRigidBody()->getMaterial();
+    rp3d::Material& material1 = mFixedJointBox1->getCollider()->getMaterial();
     material1.setBounciness(rp3d::decimal(0.4));
 	mPhysicsObjects.push_back(mFixedJointBox1);
 
@@ -397,7 +397,7 @@ void JointsScene::createFixedJoints() {
     mFixedJointBox2->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body
-    rp3d::Material& material2 = mFixedJointBox2->getRigidBody()->getMaterial();
+    rp3d::Material& material2 = mFixedJointBox2->getCollider()->getMaterial();
     material2.setBounciness(rp3d::decimal(0.4));
 	mPhysicsObjects.push_back(mFixedJointBox2);
 
@@ -440,7 +440,7 @@ void JointsScene::createFloor() {
     mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
-    rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
+    rp3d::Material& material = mFloor->getCollider()->getMaterial();
     material.setBounciness(rp3d::decimal(0.3));
 	mPhysicsObjects.push_back(mFloor);
 }

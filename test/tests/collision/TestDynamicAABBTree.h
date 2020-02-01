@@ -125,12 +125,6 @@ class TestDynamicAABBTree : public Test {
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
 			
-#ifdef IS_PROFILING_ACTIVE
-			/// Pointer to the profiler
-			Profiler* profiler = new Profiler();
-			tree.setProfiler(profiler);
-#endif
-
             int object1Data = 56;
             int object2Data = 23;
             int object3Data = 13;
@@ -168,10 +162,6 @@ class TestDynamicAABBTree : public Test {
             rp3d_test(*(int*)(tree.getNodeDataPointer(object2Id)) == object2Data);
             rp3d_test(*(int*)(tree.getNodeDataPointer(object3Id)) == object3Data);
             rp3d_test(*(int*)(tree.getNodeDataPointer(object4Id)) == object4Data);
-
-#ifdef IS_PROFILING_ACTIVE
-			delete profiler;
-#endif
         }
 
         void testOverlapping() {
@@ -180,12 +170,6 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
-
-#ifdef IS_PROFILING_ACTIVE
-			/// Pointer to the profiler
-			Profiler* profiler = new Profiler();
-			tree.setProfiler(profiler);
-#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -370,9 +354,6 @@ class TestDynamicAABBTree : public Test {
             rp3d_test(!isOverlapping(object3Id, overlappingNodes));
             rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
-#ifdef IS_PROFILING_ACTIVE
-			delete profiler;
-#endif
         }
 
         void testRaycast() {
@@ -381,12 +362,6 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
-
-#ifdef IS_PROFILING_ACTIVE
-			/// Pointer to the profiler
-			Profiler* profiler = new Profiler();
-			tree.setProfiler(profiler);
-#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -551,9 +526,6 @@ class TestDynamicAABBTree : public Test {
             rp3d_test(mRaycastCallback.isHit(object3Id));
             rp3d_test(mRaycastCallback.isHit(object4Id));
 
-#ifdef IS_PROFILING_ACTIVE
-			delete profiler;
-#endif
         }
  };
 

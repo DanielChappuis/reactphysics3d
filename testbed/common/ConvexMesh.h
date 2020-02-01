@@ -38,9 +38,6 @@ class ConvexMesh : public PhysicsObject {
 
         // -------------------- Attributes -------------------- //
 
-        /// Previous transform (for interpolation)
-        rp3d::Transform mPreviousTransform;
-
         rp3d::PolygonVertexArray::PolygonFace* mPolygonFaces;
 
         rp3d::PolygonVertexArray* mPolygonVertexArray;
@@ -95,18 +92,26 @@ class ConvexMesh : public PhysicsObject {
         ConvexMesh(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath);
 
         /// Destructor
-        ~ConvexMesh();
+        virtual ~ConvexMesh() override;
 
         /// Render the mesh at the correct position and with the correct orientation
         virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
 };
 
 // Update the transform matrix of the object
 inline void ConvexMesh::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* ConvexMesh::getCollider() {
+    return mCollider;
 }
 
 #endif

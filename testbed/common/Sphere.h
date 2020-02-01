@@ -48,9 +48,6 @@ class Sphere : public PhysicsObject {
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 
-        /// Previous transform (for interpolation)
-        rp3d::Transform mPreviousTransform;
-
         /// Vertex Buffer Object for the vertices data
         static openglframework::VertexBufferObject mVBOVertices;
 
@@ -92,11 +89,19 @@ class Sphere : public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
 };
 
 // Update the transform matrix of the object
 inline void Sphere::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* Sphere::getCollider() {
+    return mCollider;
 }
 
 #endif

@@ -234,12 +234,6 @@ class PhysicsWorld {
         Logger* mLogger;
 #endif
 
-        /// True if the profiler has been created by the user
-        bool mIsProfilerCreatedByUser;
-
-        /// True if the logger has been created by the user
-        bool mIsLoggerCreatedByUser;
-
         /// Total number of worlds
         static uint mNbWorlds;
 

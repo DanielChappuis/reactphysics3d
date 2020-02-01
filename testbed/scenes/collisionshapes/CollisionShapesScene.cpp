@@ -63,8 +63,12 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
         dumbbell->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
-        rp3d::Material& material = dumbbell->getRigidBody()->getMaterial();
-        material.setBounciness(rp3d::decimal(0.2));
+        rp3d::Material& capsuleMaterial = dumbbell->getCapsuleCollider()->getMaterial();
+        capsuleMaterial.setBounciness(rp3d::decimal(0.2));
+        rp3d::Material& sphere1Material = dumbbell->getSphere1Collider()->getMaterial();
+        sphere1Material.setBounciness(rp3d::decimal(0.2));
+        rp3d::Material& sphere2Material = dumbbell->getSphere2Collider()->getMaterial();
+        sphere2Material.setBounciness(rp3d::decimal(0.2));
 
         // Add the mesh the list of dumbbells in the scene
         mDumbbells.push_back(dumbbell);
@@ -82,7 +86,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
         box->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
-        rp3d::Material& material = box->getRigidBody()->getMaterial();
+        rp3d::Material& material = box->getCollider()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
 
         // Add the sphere the list of sphere in the scene
@@ -97,14 +101,14 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
         Sphere* sphere = new Sphere(SPHERE_RADIUS, BOX_MASS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
 
         // Add some rolling resistance
-        sphere->getRigidBody()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
+        sphere->getCollider()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
 
         // Set the box color
         sphere->setColor(mObjectColorDemo);
         sphere->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
-        rp3d::Material& material = sphere->getRigidBody()->getMaterial();
+        rp3d::Material& material = sphere->getCollider()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
 
         // Add the sphere the list of sphere in the scene
@@ -119,14 +123,14 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
         Capsule* capsule = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT, CAPSULE_MASS,
                                        mPhysicsCommon, mPhysicsWorld, meshFolderPath);
 
-        capsule->getRigidBody()->getMaterial().setRollingResistance(rp3d::decimal(0.08f));
+        capsule->getCollider()->getMaterial().setRollingResistance(rp3d::decimal(0.08f));
 
         // Set the box color
         capsule->setColor(mObjectColorDemo);
         capsule->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
-        rp3d::Material& material = capsule->getRigidBody()->getMaterial();
+        rp3d::Material& material = capsule->getCollider()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
 
         // Add the cylinder the list of sphere in the scene
@@ -145,7 +149,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
         mesh->setSleepingColor(mSleepingColorDemo);
 
         // Change the material properties of the rigid body
-        rp3d::Material& material = mesh->getRigidBody()->getMaterial();
+        rp3d::Material& material = mesh->getCollider()->getMaterial();
         material.setBounciness(rp3d::decimal(0.2));
 
         // Add the mesh the list of sphere in the scene
@@ -166,7 +170,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
-    rp3d::Material& material = mFloor->getRigidBody()->getMaterial();
+    rp3d::Material& material = mFloor->getCollider()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
 
     // Get the physics engine parameters

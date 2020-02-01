@@ -39,9 +39,7 @@ using namespace reactphysics3d;
 * @param id The ID of the body
 */
 RigidBody::RigidBody(PhysicsWorld& world, Entity entity)
-          : CollisionBody(world, entity),
-            mMaterial(world.mConfig.defaultFrictionCoefficient, world.mConfig.defaultRollingRestistance, world.mConfig.defaultBounciness),
-            mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
+          : CollisionBody(world, entity), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
 
 }
 
@@ -429,17 +427,6 @@ void RigidBody::setAngularDamping(decimal angularDamping) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set angularDamping=" + std::to_string(angularDamping));
-}
-
-// Set a new material for this rigid body
-/**
- * @param material The material you want to set to the body
- */
-void RigidBody::setMaterial(const Material& material) {
-    mMaterial = material;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string());
 }
 
 // Set the linear velocity of the rigid body.

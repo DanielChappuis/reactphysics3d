@@ -11,6 +11,10 @@
  - Now, the collision shapes need be be created with the PhysicsWorld::createXXXShape() methods instead of using the constructor of the shape as before. For instance, you need to use the PhysicsWorld::createBoxShape() method to create a BoxShape.
  - DynamicsWorld and CollisionWorld classes have been merged into a single class called PhysicsWorld.
  - ProxyShape class has been renamed into Collider.
+ - The Material is now part of the Collider instead of the RigidBody. Therefore, it is now possible to have a RigidBody with multiple
+   colliders and a different material per Collider.
+ - The Logger has to be instanciated using the PhysicsCommon::createLogger() method instead of using its constructor.
+ - The Profiler has to be instanciated using the PhysicsCommon::createProfiler() method instead of using its constructor.
  - There is now a single MemoryManager (with memory allocators) per PhysicsWorld. The memory allocators are no longer shared between worlds. 
  - An instance of the BoxShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createBoxShape() method.
  - An instance of the SphereShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createSphereShape() method.

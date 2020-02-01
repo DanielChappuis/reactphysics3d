@@ -29,7 +29,6 @@
 // Libraries
 #include <cassert>
 #include "CollisionBody.h"
-#include "engine/Material.h"
 #include "mathematics/mathematics.h"
 
 /// Namespace reactphysics3d
@@ -57,9 +56,6 @@ class RigidBody : public CollisionBody {
         /// Inverse Local inertia tensor of the body (in local-space) set
         /// by the user with respect to the center of mass of the body
         Matrix3x3 mUserInertiaTensorLocalInverse;
-
-        /// Material properties of the rigid body
-        Material mMaterial;
 
         /// True if the center of mass is set by the user
         bool mIsCenterOfMassSetByUser;
@@ -142,12 +138,6 @@ class RigidBody : public CollisionBody {
         /// Set the variable to know if the gravity is applied to this rigid body
         void enableGravity(bool isEnabled);
 
-        /// Return a reference to the material properties of the rigid body
-        Material& getMaterial();
-
-        /// Set a new material for this rigid body
-        void setMaterial(const Material& material);
-
         /// Return the linear velocity damping factor
         decimal getLinearDamping() const;
 
@@ -215,14 +205,6 @@ class RigidBody : public CollisionBody {
         friend class SolveSliderJointSystem;
         friend class Joint;
 };
-
-// Return a reference to the material properties of the rigid body
-/**
- * @return A reference to the material of the body
- */
-inline Material& RigidBody::getMaterial() {
-    return mMaterial;
-}
 
 }
 

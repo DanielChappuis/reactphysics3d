@@ -51,9 +51,6 @@ class Dumbbell : public PhysicsObject {
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 
-        /// Previous transform (for interpolation)
-        rp3d::Transform mPreviousTransform;
-
         /// Vertex Buffer Object for the vertices data
         static openglframework::VertexBufferObject mVBOVertices;
 
@@ -86,18 +83,42 @@ class Dumbbell : public PhysicsObject {
                  const std::string& meshFolderPath);
 
         /// Destructor
-        ~Dumbbell();
+        virtual ~Dumbbell() override;
 
         /// Render the sphere at the correct position and with the correct orientation
         virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the capsule collider
+        rp3d::Collider* getCapsuleCollider();
+
+        /// Return the first sphere collider
+        rp3d::Collider* getSphere1Collider();
+
+        /// Return the second sphere collider
+        rp3d::Collider* getSphere2Collider();
 };
 
 // Update the transform matrix of the object
 inline void Dumbbell::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the capsule collider
+inline rp3d::Collider* Dumbbell::getCapsuleCollider() {
+   return mColliderCapsule;
+}
+
+// Return the first sphere collider
+inline rp3d::Collider* Dumbbell::getSphere1Collider() {
+    return mColliderSphere1;
+}
+
+// Return the second sphere collider
+inline rp3d::Collider* Dumbbell::getSphere2Collider() {
+    return mColliderSphere2;
 }
 
 #endif

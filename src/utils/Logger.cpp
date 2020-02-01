@@ -32,10 +32,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-Logger::Logger()
-       : mDestinations(MemoryManager::getBaseAllocator()), mFormatters(MemoryManager::getBaseAllocator())
+Logger::Logger(MemoryAllocator& allocator)
+       : mAllocator(allocator), mDestinations(allocator), mFormatters(allocator)
 {
-
     // Create the log formatters
     mFormatters.add(Pair<Format, Formatter*>(Format::Text, new TextFormatter()));
     mFormatters.add(Pair<Format, Formatter*>(Format::HTML, new HtmlFormatter()));
@@ -46,7 +45,7 @@ Logger::~Logger() {
 
     removeAllDestinations();
 
-    // Remove all the loggers
+    // Remove all the formatters
     for (auto it = mFormatters.begin(); it != mFormatters.end(); ++it) {
 
        delete it->second;
@@ -67,14 +66,14 @@ Logger::Formatter* Logger::getFormatter(Format format) const {
 // Add a log file destination to the logger
 void Logger::addFileDestination(const std::string& filePath, uint logLevelFlag, Format format) {
 
-    FileDestination* destination = new FileDestination(filePath, logLevelFlag, getFormatter(format));
+    FileDestination* destination = new (mAllocator.allocate(sizeof(FileDestination))) FileDestination(filePath, logLevelFlag, getFormatter(format));
     mDestinations.add(destination);
 }
 
 /// Add a stream destination to the logger
 void Logger::addStreamDestination(std::ostream& outputStream, uint logLevelFlag, Format format) {
 
-    StreamDestination* destination = new StreamDestination(outputStream, logLevelFlag, getFormatter(format));
+    StreamDestination* destination = new (mAllocator.allocate(sizeof(StreamDestination))) StreamDestination(outputStream, logLevelFlag, getFormatter(format));
     mDestinations.add(destination);
 }
 
@@ -83,7 +82,12 @@ void Logger::removeAllDestinations() {
 
     // Delete all the destinations
     for (uint i=0; i<mDestinations.size(); i++) {
-        delete mDestinations[i];
+
+        size_t size = mDestinations[i]->getSizeBytes();
+
+        mDestinations[i]->~Destination();
+
+        mAllocator.release(mDestinations[i], size);
     }
 
     mDestinations.clear();

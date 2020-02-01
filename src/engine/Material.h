@@ -94,7 +94,7 @@ class Material {
 
         // ---------- Friendship ---------- //
 
-        friend class RigidBody;
+        friend class Collider;
 };
 
 // Return the bounciness

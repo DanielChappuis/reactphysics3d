@@ -45,9 +45,6 @@ class HeightField : public PhysicsObject {
         /// Height field data
         float mHeightData[NB_POINTS_WIDTH * NB_POINTS_LENGTH];
 
-        /// Previous transform (for interpolation)
-        rp3d::Transform mPreviousTransform;
-
         /// Collision shape
         rp3d::HeightFieldShape* mHeightFieldShape;
         rp3d::Collider* mCollider;
@@ -95,7 +92,7 @@ class HeightField : public PhysicsObject {
         HeightField(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld);
 
         /// Destructor
-        ~HeightField();
+        virtual ~HeightField() override;
 
         /// Render the mesh at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
@@ -103,11 +100,19 @@ class HeightField : public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
 };
 
 // Update the transform matrix of the object
 inline void HeightField::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* HeightField::getCollider() {
+    return mCollider;
 }
 
 #endif

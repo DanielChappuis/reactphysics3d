@@ -82,6 +82,12 @@ class PhysicsCommon {
         /// Set of triangle meshes
         Set<TriangleMesh*> mTriangleMeshes;
 
+        /// Set of loggers
+        Set<Logger*> mLoggers;
+
+        /// Set of loggers
+        Set<Profiler*> mProfilers;
+
         // -------------------- Methods -------------------- //
 
         /// Destroy and release everything that has been allocated
@@ -100,12 +106,15 @@ class PhysicsCommon {
         /// Destructor
         ~PhysicsCommon();
 
+        // TODO : Add better code documentation for all methods in this class (document
+        //        the method parameters with the "@param" keyword for Doxygen
+
         /// Create and return an instance of PhysicsWorld
         PhysicsWorld* createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings = PhysicsWorld::WorldSettings(),
-                                           Logger* logger = nullptr, Profiler* profiler = nullptr);
+                                         Logger* logger = nullptr, Profiler* profiler = nullptr);
 
         /// Destroy an instance of PhysicsWorld
-        PhysicsWorld* destroyPhysicsWorld(PhysicsWorld* world);
+        void destroyPhysicsWorld(PhysicsWorld* world);
 
         /// Create and return a sphere collision shape
         SphereShape* createSphereShape(const decimal radius);
@@ -157,6 +166,18 @@ class PhysicsCommon {
 
         /// Destroy a triangle mesh
         void destroyTriangleMesh(TriangleMesh* triangleMesh);
+
+        /// Create and return a new logger
+        Logger* createLogger();
+
+        /// Destroy a logger
+        void destroyLogger(Logger* logger);
+
+        /// Create and return a new profiler
+        Profiler* createProfiler();
+
+        /// Destroy a profiler
+        void destroyProfiler(Profiler* profiler);
 };
 
 }

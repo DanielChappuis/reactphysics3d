@@ -41,6 +41,8 @@ using namespace reactphysics3d;
  */
 Collider::Collider(Entity entity, CollisionBody* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mEntity(entity), mBody(body),
+            mMaterial(body->mWorld.mConfig.defaultFrictionCoefficient, body->mWorld.mConfig.defaultRollingRestistance,
+                      body->mWorld.mConfig.defaultBounciness),
             mUserData(nullptr) {
 
 }
@@ -106,7 +108,7 @@ void Collider::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
     int broadPhaseId = mBody->mWorld.mCollidersComponents.getBroadPhaseId(mEntity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
-             "Collider" " + std::to_string(broadPhaseId) + ": Set collideWithMaskBits=" +
+             "Collider" + std::to_string(broadPhaseId) + ": Set collideWithMaskBits=" +
              std::to_string(collideWithMaskBits));
 }
 
@@ -127,7 +129,7 @@ void Collider::setLocalToBodyTransform(const Transform& transform) {
     mBody->mWorld.mCollisionDetection.updateCollider(mEntity, 0);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
-             "Collider " + std::to_string(broadPhaseId) + ": Set localToBodyTransform=" +
+             "Collider " + std::to_string(getBroadPhaseId()) + ": Set localToBodyTransform=" +
              transform.to_string());
 }
 

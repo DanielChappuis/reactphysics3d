@@ -30,6 +30,7 @@
 #include "constraint/ContactPoint.h"
 #include "utils/Profiler.h"
 #include "engine/Island.h"
+#include "collision/Collider.h"
 #include "components/CollisionBodyComponents.h"
 #include "components/ColliderComponents.h"
 #include "collision/ContactManifold.h"
@@ -134,6 +135,9 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         const uint rigidBodyIndex1 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity1);
         const uint rigidBodyIndex2 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity2);
 
+        Collider* collider1 = mColliderComponents.getCollider(externalManifold.colliderEntity1);
+        Collider* collider2 = mColliderComponents.getCollider(externalManifold.colliderEntity2);
+
         // Get the position of the two bodies
         const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[rigidBodyIndex1];
         const Vector3& x2 = mRigidBodyComponents.mCentersOfMassWorld[rigidBodyIndex2];
@@ -147,8 +151,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].massInverseBody1 = mRigidBodyComponents.mInverseMasses[rigidBodyIndex1];
         mContactConstraints[mNbContactManifolds].massInverseBody2 = mRigidBodyComponents.mInverseMasses[rigidBodyIndex2];
         mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.nbContactPoints;
-        mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
-        mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(body1, body2);
+        mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(collider1, collider2);
+        mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(collider1, collider2);
         mContactConstraints[mNbContactManifolds].externalContactManifold = &externalManifold;
         mContactConstraints[mNbContactManifolds].normal.setToZero();
         mContactConstraints[mNbContactManifolds].frictionPointBody1.setToZero();
@@ -236,7 +240,7 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
             decimal deltaVDotN = deltaV.x * mContactPoints[mNbContactPoints].normal.x +
                                  deltaV.y * mContactPoints[mNbContactPoints].normal.y +
                                  deltaV.z * mContactPoints[mNbContactPoints].normal.z;
-            const decimal restitutionFactor = computeMixedRestitutionFactor(body1, body2);
+            const decimal restitutionFactor = computeMixedRestitutionFactor(collider1, collider2);
             if (deltaVDotN < -mRestitutionVelocityThreshold) {
                 mContactPoints[mNbContactPoints].restitutionBias = restitutionFactor * deltaVDotN;
             }
@@ -769,25 +773,26 @@ void ContactSolverSystem::solve() {
     }
 }
 
-// Compute the collision restitution factor from the restitution factor of each body
-decimal ContactSolverSystem::computeMixedRestitutionFactor(RigidBody* body1, RigidBody* body2) const {
-    decimal restitution1 = body1->getMaterial().getBounciness();
-    decimal restitution2 = body2->getMaterial().getBounciness();
+// Compute the collision restitution factor from the restitution factor of each collider
+decimal ContactSolverSystem::computeMixedRestitutionFactor(Collider* collider1, Collider* collider2) const {
+    decimal restitution1 = collider1->getMaterial().getBounciness();
+    decimal restitution2 = collider2->getMaterial().getBounciness();
 
     // Return the largest restitution factor
     return (restitution1 > restitution2) ? restitution1 : restitution2;
 }
 
-// Compute the mixed friction coefficient from the friction coefficient of each body
-decimal ContactSolverSystem::computeMixedFrictionCoefficient(RigidBody* body1, RigidBody* body2) const {
+// Compute the mixed friction coefficient from the friction coefficient of each collider
+decimal ContactSolverSystem::computeMixedFrictionCoefficient(Collider* collider1, Collider* collider2) const {
+
     // Use the geometric mean to compute the mixed friction coefficient
-    return std::sqrt(body1->getMaterial().getFrictionCoefficient() *
-                body2->getMaterial().getFrictionCoefficient());
+    return std::sqrt(collider1->getMaterial().getFrictionCoefficient() *
+                collider2->getMaterial().getFrictionCoefficient());
 }
 
-// Compute th mixed rolling resistance factor between two bodies
-inline decimal ContactSolverSystem::computeMixedRollingResistance(RigidBody* body1, RigidBody* body2) const {
-    return decimal(0.5f) * (body1->getMaterial().getRollingResistance() + body2->getMaterial().getRollingResistance());
+// Compute th mixed rolling resistance factor between two colliders
+inline decimal ContactSolverSystem::computeMixedRollingResistance(Collider* collider1, Collider* collider2) const {
+    return decimal(0.5f) * (collider1->getMaterial().getRollingResistance() + collider2->getMaterial().getRollingResistance());
 }
 
 // Store the computed impulses to use them to

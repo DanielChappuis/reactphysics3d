@@ -64,7 +64,7 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
             cube->setSleepingColor(mSleepingColorDemo);
 
             // Change the material properties of the rigid body
-            rp3d::Material& material = cube->getRigidBody()->getMaterial();
+            rp3d::Material& material = cube->getCollider()->getMaterial();
             material.setBounciness(rp3d::decimal(0.4));
 
             // Add the box the list of box in the scene

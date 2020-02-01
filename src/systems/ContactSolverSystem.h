@@ -43,6 +43,7 @@ class Profiler;
 class Island;
 struct Islands;
 class RigidBody;
+class Collider;
 class PhysicsWorld;
 class CollisionBodyComponents;
 class DynamicsComponents;
@@ -338,16 +339,15 @@ class ContactSolverSystem {
 
         // -------------------- Methods -------------------- //
 
-        /// Compute the collision restitution factor from the restitution factor of each body
-        decimal computeMixedRestitutionFactor(RigidBody* body1,
-                                              RigidBody* body2) const;
+        /// Compute the collision restitution factor from the restitution factor of each collider
+        decimal computeMixedRestitutionFactor(Collider* collider1,
+                                              Collider* collider2) const;
 
-        /// Compute the mixed friction coefficient from the friction coefficient of each body
-        decimal computeMixedFrictionCoefficient(RigidBody* body1,
-                                                RigidBody* body2) const;
+        /// Compute the mixed friction coefficient from the friction coefficient of each collider
+        decimal computeMixedFrictionCoefficient(Collider* collider1, Collider* collider2) const;
 
-        /// Compute th mixed rolling resistance factor between two bodies
-        decimal computeMixedRollingResistance(RigidBody* body1, RigidBody* body2) const;
+        /// Compute th mixed rolling resistance factor between two colliders
+        decimal computeMixedRollingResistance(Collider* collider1, Collider* collider2) const;
 
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact manifold. The two vectors have to be

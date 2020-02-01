@@ -343,6 +343,9 @@ class Logger {
 
                 /// Write a message into the output stream
                 virtual void write(const time_t& time, const std::string& message, Level level, Category category) = 0;
+
+                /// Return the size in bytes of the type
+                virtual size_t getSizeBytes() const=0;
         };
 
         class FileDestination : public Destination {
@@ -386,6 +389,11 @@ class Logger {
                 virtual void write(const time_t& time, const std::string& message, Level level, Category category) override {
                     mFileStream << formatter->format(time, message, level, category) << std::endl << std::flush;
                 }
+
+                /// Return the size in bytes of the type
+                virtual size_t getSizeBytes() const override {
+                    return sizeof(FileDestination);
+                }
         };
 
         /// Stream destination to output the logs into a stream
@@ -417,12 +425,20 @@ class Logger {
                 virtual void write(const time_t& time, const std::string& message, Level level, Category category) override {
                     mOutputStream << formatter->format(time, message, level, category) << std::endl << std::flush;
                 }
+
+                /// Return the size in bytes of the type
+                virtual size_t getSizeBytes() const override {
+                    return sizeof(StreamDestination);
+                }
         };
 
 
     private:
 
         // -------------------- Attributes -------------------- //
+
+        /// Memory allocator
+        MemoryAllocator& mAllocator;
 
         /// All the log destinations
         List<Destination*> mDestinations;
@@ -438,15 +454,15 @@ class Logger {
         /// Return the corresponding formatter
         Formatter* getFormatter(Format format) const;
 
-    public :
-
-        // -------------------- Methods -------------------- //
-
         /// Constructor
-        Logger();
+        Logger(MemoryAllocator& allocator);
 
         /// Destructor
         ~Logger();
+
+    public :
+
+        // -------------------- Methods -------------------- //
 
         /// Add a file destination to the logger
         void addFileDestination(const std::string& filePath, uint logLevelFlag, Format format);
@@ -459,6 +475,10 @@ class Logger {
 
         /// Log something
         void log(Level level, Category category, const std::string& message);
+
+        // ---------- Friendship ---------- //
+
+        friend class PhysicsCommon;
 };
 
 }
