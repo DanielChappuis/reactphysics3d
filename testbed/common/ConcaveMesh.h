@@ -73,10 +73,7 @@ class ConcaveMesh : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMesh(reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world, const std::string& meshPath);
-
-        /// Constructor
-        ConcaveMesh(float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath);
+        ConcaveMesh(bool createRigidBody, float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath);
 
         /// Destructor
         virtual ~ConcaveMesh() override;

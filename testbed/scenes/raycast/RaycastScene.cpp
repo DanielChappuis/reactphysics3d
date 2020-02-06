@@ -95,7 +95,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     // ---------- Convex Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConvexMesh = new ConvexMesh(mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(false, 1.0f, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
 
     // Set the color
     mConvexMesh->setColor(mObjectColorDemo);
@@ -105,7 +105,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(false, 1.0f, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "city.obj");
 
     // Set the color
     mConcaveMesh->setColor(mObjectColorDemo);
@@ -115,7 +115,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
     // ---------- Heightfield ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mHeightField = new HeightField(mPhysicsCommon, mPhysicsWorld);
+    mHeightField = new HeightField(false, 1.0f, mPhysicsCommon, mPhysicsWorld);
 
     // Set the color
     mHeightField->setColor(mObjectColorDemo);

@@ -65,6 +65,9 @@ class ConcaveShape : public CollisionShape {
         /// Raycast test type for the triangle (front, back, front-back)
         TriangleRaycastSide mRaycastTestType;
 
+        /// Scale of the shape
+        Vector3 mScale;
+
         // -------------------- Methods -------------------- //
 
         /// Return true if a point is inside the collision shape
@@ -75,7 +78,7 @@ class ConcaveShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveShape(CollisionShapeName name);
+        ConcaveShape(CollisionShapeName name, const Vector3& scaling);
 
         /// Destructor
         virtual ~ConcaveShape() override = default;
@@ -91,6 +94,12 @@ class ConcaveShape : public CollisionShape {
 
         // Set the raycast test type (front, back, front-back)
         void setRaycastTestType(TriangleRaycastSide testType);
+
+        /// Return the scale of the shape
+        const Vector3& getScale() const;
+
+        /// Set the scale of the shape
+        void setScale(const Vector3& scale);
 
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const override;
@@ -130,6 +139,18 @@ inline TriangleRaycastSide ConcaveShape::getRaycastTestType() const {
  */
 inline void ConcaveShape::setRaycastTestType(TriangleRaycastSide testType) {
     mRaycastTestType = testType;
+}
+
+// Return the scale of the shape
+inline const Vector3& ConcaveShape::getScale() const {
+    return mScale;
+}
+
+// Set the scale of the shape
+/// Note that you might want to recompute the inertia tensor and center of mass of the body
+/// after changing the scale of a collision shape
+inline void ConcaveShape::setScale(const Vector3& scale) {
+    mScale = scale;
 }
 
 }

@@ -2,6 +2,15 @@
 
 ## Develop
 
+### Added
+
+ - It is now possible to change the size of a BoxShape using the BoxShape::setHalfExtents() method
+ - It is now possible to change the radius of a SphereShape using the SphereShape::setRadius() method
+ - It is now possible to change the height and radius of a CapsuleShape using the CapsuleShape::setHeight() and CapsuleShape::setRadius methods
+ - It is now possible to change the scale of a ConvexMeshShape using the ConvexMeshShape::setScale() method
+ - It is now possible to change the scale of a ConcaveMeshShape using the ConcaveMeshShape::setScale() method
+ - It is now possible to change the scale of a HeightFieldShape using the HeightFieldShape::setScale() method
+
 ### Changed
 
  - The CollisionWorld::testCollision() methods do not have the 'categoryMaskBits' parameter anymore.
@@ -16,6 +25,7 @@
  - The Logger has to be instanciated using the PhysicsCommon::createLogger() method instead of using its constructor.
  - The Profiler has to be instanciated using the PhysicsCommon::createProfiler() method instead of using its constructor.
  - There is now a single MemoryManager (with memory allocators) per PhysicsWorld. The memory allocators are no longer shared between worlds. 
+ - The Box::getExtent() method has been renamed to Box::getHalfExtents()
  - An instance of the BoxShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createBoxShape() method.
  - An instance of the SphereShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createSphereShape() method.
  - An instance of the CapsuleShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createCapsuleShape() method.
@@ -25,6 +35,7 @@
  - An instance of the PolyhedronMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createPolyhedronMesh() method.
  - An instance of the TriangleMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createTriangleMesh() method.
  - The ProxyShape class has been renamed to Collider. The CollisionBody::addCollider(), RigidBody::addCollider() methods have to be used to create and add a collider to a body. Then methods CollisionBody::removeCollider(), RigidBody::removeCollider() need to be used to remove a collider.
+ - The rendering in the testbed application has been improved
 
 ### Removed
 

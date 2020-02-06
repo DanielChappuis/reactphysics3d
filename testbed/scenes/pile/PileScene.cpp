@@ -140,7 +140,7 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
     for (int i=0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(MESH_MASS, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(true, MESH_MASS, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "convexmesh.obj");
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -161,7 +161,7 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
     rp3d::decimal mass = 1.0;
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mSandbox = new ConcaveMesh(mass, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "sandbox.obj");
+    mSandbox = new ConcaveMesh(true, mass, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "sandbox.obj");
 
     // Set the mesh as beeing static
     mSandbox->getRigidBody()->setType(rp3d::BodyType::STATIC);

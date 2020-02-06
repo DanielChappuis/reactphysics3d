@@ -50,8 +50,8 @@ class BoxShape : public ConvexPolyhedronShape {
 
         // -------------------- Attributes -------------------- //
 
-        /// Extent sizes of the box in the x, y and z direction
-        Vector3 mExtent;
+        /// Half-extents of the box in the x, y and z direction
+        Vector3 mHalfExtents;
 
         /// Half-edge structure of the polyhedron
         HalfEdgeStructure mHalfEdgeStructure;
@@ -59,7 +59,7 @@ class BoxShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BoxShape(const Vector3& extent, MemoryAllocator& allocator);
+        BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator);
 
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
@@ -86,8 +86,11 @@ class BoxShape : public ConvexPolyhedronShape {
         /// Deleted assignment operator
         BoxShape& operator=(const BoxShape& shape) = delete;
 
-        /// Return the extents of the box
-        Vector3 getExtent() const;
+        /// Return the half-extents of the box
+        Vector3 getHalfExtents() const;
+
+        /// Set the half-extents of the box
+        void setHalfExtents(const Vector3& halfExtents);
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
@@ -132,10 +135,20 @@ class BoxShape : public ConvexPolyhedronShape {
 
 // Return the extents of the box
 /**
- * @return The vector with the three extents of the box shape (in meters)
+ * @return The vector with the three half-extents of the box shape
  */
-inline Vector3 BoxShape::getExtent() const {
-    return mExtent;
+inline Vector3 BoxShape::getHalfExtents() const {
+    return mHalfExtents;
+}
+
+// Set the half-extents of the box
+/// Note that you might want to recompute the inertia tensor and center of mass of the body
+/// after changing the size of the collision shape
+/**
+ * @param halfExtents The vector with the three half-extents of the box
+ */
+inline void BoxShape::setHalfExtents(const Vector3& halfExtents) {
+    mHalfExtents = halfExtents;
 }
 
 // Return the local bounds of the shape in x, y and z directions
@@ -147,7 +160,7 @@ inline Vector3 BoxShape::getExtent() const {
 inline void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
-    max = mExtent;
+    max = mHalfExtents;
 
     // Minimum bounds
     min = -max;
@@ -161,16 +174,16 @@ inline size_t BoxShape::getSizeInBytes() const {
 // Return a local support point in a given direction without the object margin
 inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
-    return Vector3(direction.x < decimal(0.0) ? -mExtent.x : mExtent.x,
-                   direction.y < decimal(0.0) ? -mExtent.y : mExtent.y,
-                   direction.z < decimal(0.0) ? -mExtent.z : mExtent.z);
+    return Vector3(direction.x < decimal(0.0) ? -mHalfExtents.x : mHalfExtents.x,
+                   direction.y < decimal(0.0) ? -mHalfExtents.y : mHalfExtents.y,
+                   direction.z < decimal(0.0) ? -mHalfExtents.z : mHalfExtents.z);
 }
 
 // Return true if a point is inside the collision shape
 inline bool BoxShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
-    return (localPoint.x < mExtent[0] && localPoint.x > -mExtent[0] &&
-            localPoint.y < mExtent[1] && localPoint.y > -mExtent[1] &&
-            localPoint.z < mExtent[2] && localPoint.z > -mExtent[2]);
+    return (localPoint.x < mHalfExtents[0] && localPoint.x > -mHalfExtents[0] &&
+            localPoint.y < mHalfExtents[1] && localPoint.y > -mHalfExtents[1] &&
+            localPoint.z < mHalfExtents[2] && localPoint.z > -mHalfExtents[2]);
 }
 
 // Return the number of faces of the polyhedron
@@ -199,7 +212,7 @@ inline HalfEdgeStructure::Vertex BoxShape::getVertex(uint vertexIndex) const {
 inline Vector3 BoxShape::getVertexPosition(uint vertexIndex) const {
     assert(vertexIndex < getNbVertices());
 
-    Vector3 extent = getExtent();
+    Vector3 extent = getHalfExtents();
 
     switch(vertexIndex) {
         case 0: return Vector3(-extent.x, -extent.y, extent.z);
@@ -240,7 +253,7 @@ inline Vector3 BoxShape::getCentroid() const {
 
 // Return the string representation of the shape
 inline std::string BoxShape::to_string() const {
-    return "BoxShape{extents=" + mExtent.to_string() + "}";
+    return "BoxShape{extents=" + mHalfExtents.to_string() + "}";
 }
 
 // Return the number of half-edges of the polyhedron

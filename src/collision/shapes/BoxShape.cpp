@@ -35,15 +35,15 @@ using namespace reactphysics3d;
 
 // Constructor
 /**
- * @param extent The vector with the three extents of the box (in meters)
+ * @param halfExtents The vector with the three half-extents of the box
  */
-BoxShape::BoxShape(const Vector3& extent, MemoryAllocator& allocator)
-         : ConvexPolyhedronShape(CollisionShapeName::BOX), mExtent(extent),
+BoxShape::BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator)
+         : ConvexPolyhedronShape(CollisionShapeName::BOX), mHalfExtents(halfExtents),
            mHalfEdgeStructure(allocator, 6, 8, 24) {
 
-    assert(extent.x > decimal(0.0));
-    assert(extent.y > decimal(0.0));
-    assert(extent.z > decimal(0.0));
+    assert(halfExtents.x > decimal(0.0));
+    assert(halfExtents.y > decimal(0.0));
+    assert(halfExtents.z > decimal(0.0));
 
     // Vertices
     mHalfEdgeStructure.addVertex(0);
@@ -87,9 +87,9 @@ BoxShape::BoxShape(const Vector3& extent, MemoryAllocator& allocator)
  */
 void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
     decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    decimal xSquare = mExtent.x * mExtent.x;
-    decimal ySquare = mExtent.y * mExtent.y;
-    decimal zSquare = mExtent.z * mExtent.z;
+    decimal xSquare = mHalfExtents.x * mHalfExtents.x;
+    decimal ySquare = mHalfExtents.y * mHalfExtents.y;
+    decimal zSquare = mHalfExtents.z * mHalfExtents.z;
     tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
                         0.0, factor * (xSquare + zSquare), 0.0,
                         0.0, 0.0, factor * (xSquare + ySquare));
@@ -111,17 +111,17 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* colli
         if (std::abs(rayDirection[i]) < MACHINE_EPSILON) {
 
             // If the ray's origin is not inside the slab, there is no hit
-            if (ray.point1[i] > mExtent[i] || ray.point1[i] < -mExtent[i]) return false;
+            if (ray.point1[i] > mHalfExtents[i] || ray.point1[i] < -mHalfExtents[i]) return false;
         }
         else {
 
             // Compute the intersection of the ray with the near and far plane of the slab
             decimal oneOverD = decimal(1.0) / rayDirection[i];
-            decimal t1 = (-mExtent[i] - ray.point1[i]) * oneOverD;
-            decimal t2 = (mExtent[i] - ray.point1[i]) * oneOverD;
-            currentNormal[0] = (i == 0) ? -mExtent[i] : decimal(0.0);
-            currentNormal[1] = (i == 1) ? -mExtent[i] : decimal(0.0);
-            currentNormal[2] = (i == 2) ? -mExtent[i] : decimal(0.0);
+            decimal t1 = (-mHalfExtents[i] - ray.point1[i]) * oneOverD;
+            decimal t2 = (mHalfExtents[i] - ray.point1[i]) * oneOverD;
+            currentNormal[0] = (i == 0) ? -mHalfExtents[i] : decimal(0.0);
+            currentNormal[1] = (i == 1) ? -mHalfExtents[i] : decimal(0.0);
+            currentNormal[2] = (i == 2) ? -mHalfExtents[i] : decimal(0.0);
 
             // Swap t1 and t2 if need so that t1 is intersection with near plane and
             // t2 with far plane

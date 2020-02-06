@@ -93,8 +93,14 @@ class CapsuleShape : public ConvexShape {
         /// Return the radius of the capsule
         decimal getRadius() const;
 
+        /// Set the radius of the capsule
+        void setRadius(decimal radius);
+
         /// Return the height of the capsule
         decimal getHeight() const;
+
+        /// Set the height of the capsule
+        void setHeight(decimal height);
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
@@ -121,12 +127,37 @@ inline decimal CapsuleShape::getRadius() const {
     return mMargin;
 }
 
+// Set the radius of the capsule
+/// Note that you might want to recompute the inertia tensor and center of mass of the body
+/// after changing the radius of the collision shape
+/**
+ * @param radius The radius of the capsule (in meters)
+ */
+inline void CapsuleShape::setRadius(decimal radius) {
+    // TODO : Throw a library error here if radius is not larger than zero
+    assert(radius > decimal(0.0));
+    mMargin = radius;
+}
+
 // Return the height of the capsule
 /**
  * @return The height of the capsule shape (in meters)
  */
 inline decimal CapsuleShape::getHeight() const {
     return mHalfHeight + mHalfHeight;
+}
+
+// Set the height of the capsule
+/// Note that you might want to recompute the inertia tensor and center of mass of the body
+/// after changing the height of the collision shape
+/**
+ * @param height The height of the capsule (in meters)
+ */
+inline void CapsuleShape::setHeight(decimal height) {
+
+    // TODO : Throw a library error here if radius is not larger than zero
+    assert(height > decimal(0.0));
+    mHalfHeight = height * decimal(0.5);
 }
 
 // Return the number of bytes used by the collision shape

@@ -86,10 +86,7 @@ class HeightField : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HeightField(reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world);
-
-        /// Constructor
-        HeightField(float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld);
+        HeightField(bool createRigidBody, float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld);
 
         /// Destructor
         virtual ~HeightField() override;

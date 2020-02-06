@@ -39,9 +39,9 @@ using namespace reactphysics3d;
  * @param stride Stride between the beginning of two elements in the vertices array
  * @param margin Collision margin (in meters) around the collision shape
  */
-ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling)
+ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scale)
                 : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH), mPolyhedronMesh(polyhedronMesh),
-                  mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0), mScaling(scaling) {
+                  mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0), mScale(scale) {
 
     // Recalculate the bounds of the mesh
     recalculateBounds();
@@ -76,7 +76,7 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
     assert(maxDotProduct >= decimal(0.0));
 
     // Return the vertex with the largest dot product in the support direction
-    return mPolyhedronMesh->getVertex(indexMaxDotProduct) * mScaling;
+    return mPolyhedronMesh->getVertex(indexMaxDotProduct) * mScale;
 }
 
 // Recompute the bounds of the mesh
@@ -99,8 +99,8 @@ void ConvexMeshShape::recalculateBounds() {
     }
 
     // Apply the local scaling factor
-    mMaxBounds = mMaxBounds * mScaling;
-    mMinBounds = mMinBounds * mScaling;
+    mMaxBounds = mMaxBounds * mScale;
+    mMinBounds = mMinBounds * mScale;
 }
 
 // Raycast method with feedback information

@@ -112,6 +112,9 @@ class AABB {
         /// Return true if the ray intersects the AABB
         bool testRayIntersect(const Ray& ray) const;
 
+        /// Apply a scale factor to the AABB
+        void applyScale(const Vector3& scale);
+
         /// Create and return an AABB for a triangle
         static AABB createAABBForTriangle(const Vector3* trianglePoints);
 
@@ -197,6 +200,12 @@ inline bool AABB::contains(const Vector3& point) const {
     return (point.x >= mMinCoordinates.x - MACHINE_EPSILON && point.x <= mMaxCoordinates.x + MACHINE_EPSILON &&
             point.y >= mMinCoordinates.y - MACHINE_EPSILON && point.y <= mMaxCoordinates.y + MACHINE_EPSILON &&
             point.z >= mMinCoordinates.z - MACHINE_EPSILON && point.z <= mMaxCoordinates.z + MACHINE_EPSILON);
+}
+
+// Apply a scale factor to the AABB
+inline void AABB::applyScale(const Vector3& scale) {
+    mMinCoordinates = mMinCoordinates * scale;
+    mMaxCoordinates = mMaxCoordinates * scale;
 }
 
 // Assignment operator

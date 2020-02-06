@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 
 // Constructor
 /**
- * @param radius Radius of the sphere (in meters)
+ * @param radius Radius of the sphere
  */
 SphereShape::SphereShape(decimal radius)
             : ConvexShape(CollisionShapeName::SPHERE, CollisionShapeType::SPHERE, radius) {

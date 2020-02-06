@@ -80,6 +80,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         const Ray& mRay;
         bool mIsHit;
         MemoryAllocator& mAllocator;
+        const Vector3& mMeshScale;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -92,9 +93,9 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
         // Constructor
         ConcaveMeshRaycastCallback(const DynamicAABBTree& dynamicAABBTree, const ConcaveMeshShape& concaveMeshShape,
-                                   Collider* collider, RaycastInfo& raycastInfo, const Ray& ray, MemoryAllocator& allocator)
+                                   Collider* collider, RaycastInfo& raycastInfo, const Ray& ray, const Vector3& meshScale, MemoryAllocator& allocator)
             : mHitAABBNodes(allocator), mDynamicAABBTree(dynamicAABBTree), mConcaveMeshShape(concaveMeshShape), mCollider(collider),
-              mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false), mAllocator(allocator) {
+              mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false), mAllocator(allocator), mMeshScale(meshScale) {
 
         }
 
@@ -131,7 +132,7 @@ class ConcaveMeshShape : public ConcaveShape {
 
         // -------------------- Attributes -------------------- //
 
-        /// Triangle mesh
+        /// Pointer to the triangle mesh
         TriangleMesh* mTriangleMesh;
 
         /// Dynamic AABB tree to accelerate collision with the triangles
@@ -140,9 +141,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Array with computed vertices normals for each TriangleVertexArray of the triangle mesh (only
         /// if the user did not provide its own vertices normals)
         Vector3** mComputedVerticesNormals;
-
-        /// Scaling
-        const Vector3 mScaling;
 
         // -------------------- Methods -------------------- //
 
@@ -168,7 +166,7 @@ class ConcaveMeshShape : public ConcaveShape {
         uint computeTriangleShapeId(uint subPart, uint triangleIndex) const;
 
         /// Compute all the triangles of the mesh that are overlapping with the AABB in parameter
-        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3> &triangleVertices,
+        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
                                                  List<Vector3> &triangleVerticesNormals, List<uint>& shapeIds,
                                                  MemoryAllocator& allocator) const override;
 
@@ -183,9 +181,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Deleted assignment operator
         ConcaveMeshShape& operator=(const ConcaveMeshShape& shape) = delete;
 
-        /// Return the scaling vector
-        const Vector3& getScaling() const;
-		
         /// Return the number of sub parts contained in this mesh
 		uint getNbSubparts() const;
 		
@@ -221,11 +216,6 @@ class ConcaveMeshShape : public ConcaveShape {
 // Return the number of bytes used by the collision shape
 inline size_t ConcaveMeshShape::getSizeInBytes() const {
     return sizeof(ConcaveMeshShape);
-}
-
-// Return the scaling vector
-inline const Vector3& ConcaveMeshShape::getScaling() const {
-    return mScaling;
 }
 
 // Return the local bounds of the shape in x, y and z directions.

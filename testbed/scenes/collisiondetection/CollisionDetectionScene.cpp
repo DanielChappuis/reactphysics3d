@@ -103,7 +103,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(false, 1.0f, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "city.obj");
     mAllShapes.push_back(mConcaveMesh);
 
     // Set the color
@@ -136,7 +136,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Convex Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConvexMesh = new ConvexMesh(mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(false, 1.0f, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
     mAllShapes.push_back(mConvexMesh);
 
     // Set the color
@@ -147,7 +147,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Heightfield ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mHeightField = new HeightField(mPhysicsCommon, mPhysicsWorld);
+    mHeightField = new HeightField(false, 1.0f, mPhysicsCommon, mPhysicsWorld);
 
     // Set the color
     mHeightField->setColor(mObjectColorDemo);

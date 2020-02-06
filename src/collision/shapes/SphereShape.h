@@ -81,6 +81,9 @@ class SphereShape : public ConvexShape {
         /// Return the radius of the sphere
         decimal getRadius() const;
 
+        /// Set the radius of the sphere
+        void setRadius(decimal radius);
+
         /// Return true if the collision shape is a polyhedron
         virtual bool isPolyhedron() const override;
 
@@ -103,10 +106,21 @@ class SphereShape : public ConvexShape {
 
 // Get the radius of the sphere
 /**
- * @return Radius of the sphere (in meters)
+ * @return Radius of the sphere
  */
 inline decimal SphereShape::getRadius() const {
     return mMargin;
+}
+
+// Set the radius of the sphere
+/// Note that you might want to recompute the inertia tensor and center of mass of the body
+/// after changing the radius of the collision shape
+/**
+ * @param radius Radius of the sphere
+ */
+inline void SphereShape::setRadius(decimal radius) {
+   assert(radius > decimal(0.0));
+   mMargin = radius;
 }
 
 // Return true if the collision shape is a polyhedron

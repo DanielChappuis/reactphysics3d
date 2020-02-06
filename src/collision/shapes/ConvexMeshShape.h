@@ -60,13 +60,13 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         /// Mesh maximum bounds in the three local x, y and z directions
         Vector3 mMaxBounds;
 
-        /// Local scaling
-        const Vector3 mScaling;
+        /// Scale of the mesh
+        Vector3 mScale;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling = Vector3(1,1,1));
+        ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scale = Vector3(1,1,1));
 
         /// Recompute the bounds of the mesh
         void recalculateBounds();
@@ -96,8 +96,11 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         /// Deleted assignment operator
         ConvexMeshShape& operator=(const ConvexMeshShape& shape) = delete;
 
-        /// Return the scaling vector
-        const Vector3& getScaling() const;
+        /// Return the scale
+        const Vector3& getScale() const;
+
+        /// Set the scale
+        void setScale(const Vector3& scale);
 
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
@@ -146,8 +149,16 @@ inline size_t ConvexMeshShape::getSizeInBytes() const {
 }
 
 // Return the scaling vector
-inline const Vector3& ConvexMeshShape::getScaling() const {
-    return mScaling;
+inline const Vector3& ConvexMeshShape::getScale() const {
+    return mScale;
+}
+
+// Set the scale
+/// Note that you might want to recompute the inertia tensor and center of mass of the body
+/// after changing the scale of a collision shape
+inline void ConvexMeshShape::setScale(const Vector3& scale) {
+    mScale = scale;
+    recalculateBounds();
 }
 
 // Return the local bounds of the shape in x, y and z directions
@@ -216,7 +227,7 @@ inline const HalfEdgeStructure::Edge& ConvexMeshShape::getHalfEdge(uint edgeInde
 // Return the position of a given vertex
 inline Vector3 ConvexMeshShape::getVertexPosition(uint vertexIndex) const {
     assert(vertexIndex < getNbVertices());
-    return mPolyhedronMesh->getVertex(vertexIndex) * mScaling;
+    return mPolyhedronMesh->getVertex(vertexIndex) * mScale;
 }
 
 // Return the normal vector of a given face of the polyhedron
@@ -227,7 +238,7 @@ inline Vector3 ConvexMeshShape::getFaceNormal(uint faceIndex) const {
 
 // Return the centroid of the polyhedron
 inline Vector3 ConvexMeshShape::getCentroid() const {
-    return mPolyhedronMesh->getCentroid() * mScaling;
+    return mPolyhedronMesh->getCentroid() * mScale;
 }
 
 }

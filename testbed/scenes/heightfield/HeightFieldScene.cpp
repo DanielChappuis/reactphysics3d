@@ -142,7 +142,7 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
 	for (int i = 0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(MESH_MASS, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(true, MESH_MASS, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "convexmesh.obj");
 
 		// Set the box color
 		mesh->setColor(mObjectColorDemo);
@@ -163,7 +163,7 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
     rp3d::decimal mass = 1.0;
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mHeightField = new HeightField(mass, mPhysicsCommon, mPhysicsWorld);
+    mHeightField = new HeightField(true, mass, mPhysicsCommon, mPhysicsWorld);
 
     // Set the mesh as beeing static
     mHeightField->getRigidBody()->setType(rp3d::BodyType::STATIC);

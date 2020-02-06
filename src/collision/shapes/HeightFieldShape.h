@@ -91,9 +91,6 @@ class HeightFieldShape : public ConcaveShape {
         /// Local AABB of the height field (without scaling)
         AABB mAABB;
 
-        /// Scaling vector
-        const Vector3 mScaling;
-
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -136,9 +133,6 @@ class HeightFieldShape : public ConcaveShape {
         /// Deleted assignment operator
         HeightFieldShape& operator=(const HeightFieldShape& shape) = delete;
 
-        /// Return the scaling factor
-        const Vector3& getScaling() const;
-
         /// Return the number of rows in the height field
         int getNbRows() const;
 
@@ -174,11 +168,6 @@ class HeightFieldShape : public ConcaveShape {
         friend class ConcaveMeshRaycastCallback;
         friend class PhysicsCommon;
 };
-
-// Return the scaling factor
-inline const Vector3& HeightFieldShape::getScaling() const {
-    return mScaling;
-}
 
 // Return the number of rows in the height field
 inline int HeightFieldShape::getNbRows() const {

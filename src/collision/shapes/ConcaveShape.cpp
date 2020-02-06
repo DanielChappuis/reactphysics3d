@@ -31,7 +31,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConcaveShape::ConcaveShape(CollisionShapeName name)
-             : CollisionShape(name, CollisionShapeType::CONCAVE_SHAPE), mRaycastTestType(TriangleRaycastSide::FRONT) {
+ConcaveShape::ConcaveShape(CollisionShapeName name, const Vector3& scaling)
+             : CollisionShape(name, CollisionShapeType::CONCAVE_SHAPE), mRaycastTestType(TriangleRaycastSide::FRONT),
+               mScale(scaling) {
 
 }

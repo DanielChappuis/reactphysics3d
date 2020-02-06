@@ -28,47 +28,14 @@
 #include "PerlinNoise.h"
 
 // Constructor
-HeightField::HeightField(rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world)
+HeightField::HeightField(bool createRigidBody, float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
            : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
     // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4::identity();
-
-    // Generate the height field
-    generateHeightField();
-
-    // Generate the graphics mesh
-    generateGraphicsMesh();
-
-    // Create the collision shape for the rigid body (convex mesh shape) and
-    // do not forget to delete it at the end
-    mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
-                                               mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body corresponding to the sphere in the physics world
-    mBody = world->createCollisionBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the collision shape
-    mCollider = mBody->addCollider(mHeightFieldShape, rp3d::Transform::identity());
-
-    // Create the VBOs and VAO
-    createVBOAndVAO();
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-}
-
-// Constructor
-HeightField::HeightField(float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
-           : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
-             mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-             mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4::identity();
+    //mScalingMatrix = openglframework::Matrix4::identity();
+    mScalingMatrix = openglframework::Matrix4(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1);
 
     // Generate the height field
     generateHeightField();
@@ -80,16 +47,20 @@ HeightField::HeightField(float mass, reactphysics3d::PhysicsCommon& physicsCommo
     // do not forget to delete it at the end
     mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
                                                    mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
+    mHeightFieldShape->setScale(rp3d::Vector3(2, 2, 2));
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the physics world
-    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the collision shape
-    mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity(), mass);
-
-    mBody = body;
+    // Create a body
+    if (createRigidBody) {
+        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+        mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity(), mass);
+        mBody = body;
+    }
+    else {
+        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
+        mCollider = mBody->addCollider(mHeightFieldShape, rp3d::Transform::identity());
+    }
 
     // Create the VBOs and VAO
     createVBOAndVAO();

@@ -27,52 +27,7 @@
 #include "ConcaveMesh.h"
 
 // Constructor
-ConcaveMesh::ConcaveMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world, const std::string& meshPath)
-           : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
-             mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-             mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    mPhysicsTriangleMesh = mPhysicsCommon.createTriangleMesh();
-
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4::identity();
-
-    mPhysicsTriangleMesh = mPhysicsCommon.createTriangleMesh();
-
-    // For each subpart of the mesh
-    for (unsigned int i=0; i<getNbParts(); i++) {
-
-        // Vertex and Indices array for the triangle mesh (data in shared and not copied)
-        rp3d::TriangleVertexArray* vertexArray =
-                new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                              getNbFaces(i), &(mIndices[i][0]), 3 * sizeof(int),
-                                              rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-
-        // Add the triangle vertex array of the subpart to the triangle mesh
-        mPhysicsTriangleMesh->addSubpart(vertexArray);
-    }
-
-    // Create the collision shape for the rigid body (convex mesh shape) and
-    // do not forget to delete it at the end
-    mConcaveShape = mPhysicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh);
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body corresponding to the sphere in the physics world
-    mBody = world->createCollisionBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the collision shape
-    mCollider = mBody->addCollider(mConcaveShape, rp3d::Transform::identity());
-
-    // Create the VBOs and VAO
-    createVBOAndVAO();
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-}
-
-// Constructor
-ConcaveMesh::ConcaveMesh(float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
+ConcaveMesh::ConcaveMesh(bool createRigidBody, float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
            : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -102,13 +57,16 @@ ConcaveMesh::ConcaveMesh(float mass, reactphysics3d::PhysicsCommon& physicsCommo
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the physics world
-    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the collision shape
-    mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity(), mass);
-
-    mBody = body;
+    // Create the body
+    if (createRigidBody) {
+        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+        mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity(), mass);
+        mBody = body;
+    }
+    else {
+        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
+        mCollider = mBody->addCollider(mConcaveShape, rp3d::Transform::identity());
+    }
 
     // Create the VBOs and VAO
     createVBOAndVAO();

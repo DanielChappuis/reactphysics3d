@@ -44,10 +44,10 @@ using namespace reactphysics3d;
 HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                                    const void* heightFieldData, HeightDataType dataType, int upAxis,
                                    decimal integerHeightScale, const Vector3& scaling)
-                 : ConcaveShape(CollisionShapeName::HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
+                 : ConcaveShape(CollisionShapeName::HEIGHTFIELD, scaling), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
                    mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
-                   mHeightDataType(dataType), mScaling(scaling) {
+                   mHeightDataType(dataType) {
 
     assert(nbGridColumns >= 2);
     assert(nbGridRows >= 2);
@@ -83,8 +83,8 @@ HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal mi
  * @param max The maximum bounds of the shape in local-space coordinates
  */
 void HeightFieldShape::getLocalBounds(Vector3& min, Vector3& max) const {
-    min = mAABB.getMin() * mScaling;
-    max = mAABB.getMax() * mScaling;
+    min = mAABB.getMin() * mScale;
+    max = mAABB.getMax() * mScale;
 }
 
 // Test collision with the triangles of the height field shape. The idea is to use the AABB
@@ -98,8 +98,8 @@ void HeightFieldShape::computeOverlappingTriangles(const AABB& localAABB, List<V
     RP3D_PROFILE("HeightFieldShape::computeOverlappingTriangles()", mProfiler);
 
    // Compute the non-scaled AABB
-   Vector3 inverseScaling(decimal(1.0) / mScaling.x, decimal(1.0) / mScaling.y, decimal(1.0) / mScaling.z);
-   AABB aabb(localAABB.getMin() * inverseScaling, localAABB.getMax() * inverseScaling);
+   Vector3 inverseScale(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z);
+   AABB aabb(localAABB.getMin() * inverseScale, localAABB.getMax() * inverseScale);
 
    // Compute the integer grid coordinates inside the area we need to test for collision
    int minGridCoords[3];
@@ -310,7 +310,7 @@ Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
 
     assert(mAABB.contains(vertex));
 
-    return vertex * mScaling;
+    return vertex * mScale;
 }
 
 // Return the string representation of the shape
