@@ -78,7 +78,7 @@ class ConcaveShape : public CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveShape(CollisionShapeName name, const Vector3& scaling);
+        ConcaveShape(CollisionShapeName name, MemoryAllocator& allocator, const Vector3& scaling);
 
         /// Destructor
         virtual ~ConcaveShape() override = default;
@@ -151,6 +151,8 @@ inline const Vector3& ConcaveShape::getScale() const {
 /// after changing the scale of a collision shape
 inline void ConcaveShape::setScale(const Vector3& scale) {
     mScale = scale;
+
+    notifyColliderAboutChangedSize();
 }
 
 }

@@ -47,7 +47,7 @@ using namespace reactphysics3d;
  */
 TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId,
                              MemoryAllocator& allocator)
-    : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE), mFaces{HalfEdgeStructure::Face(allocator), HalfEdgeStructure::Face(allocator)} {
+    : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, allocator), mFaces{HalfEdgeStructure::Face(allocator), HalfEdgeStructure::Face(allocator)} {
 
     mPoints[0] = vertices[0];
     mPoints[1] = vertices[1];

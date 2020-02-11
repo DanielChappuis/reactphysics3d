@@ -39,8 +39,8 @@ using namespace reactphysics3d;
  * @param stride Stride between the beginning of two elements in the vertices array
  * @param margin Collision margin (in meters) around the collision shape
  */
-ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scale)
-                : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH), mPolyhedronMesh(polyhedronMesh),
+ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, MemoryAllocator& allocator, const Vector3& scale)
+                : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH, allocator), mPolyhedronMesh(polyhedronMesh),
                   mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0), mScale(scale) {
 
     // Recalculate the bounds of the mesh

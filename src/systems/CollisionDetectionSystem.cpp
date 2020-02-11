@@ -99,7 +99,7 @@ void CollisionDetectionSystem::computeBroadPhase() {
 
     RP3D_PROFILE("CollisionDetectionSystem::computeBroadPhase()", mProfiler);
 
-    // Ask the broad-phase to compute all the shapes overlapping the shapes that
+    // Ask the broad-phase to compute all the shapes overlapping with the shapes that
     // have moved or have been added in the last frame. This call can only add new
     // overlapping pairs in the collision detection.
     List<Pair<int32, int32>> overlappingNodes(mMemoryManager.getPoolAllocator(), 32);

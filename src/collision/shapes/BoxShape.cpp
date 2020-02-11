@@ -38,7 +38,7 @@ using namespace reactphysics3d;
  * @param halfExtents The vector with the three half-extents of the box
  */
 BoxShape::BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator)
-         : ConvexPolyhedronShape(CollisionShapeName::BOX), mHalfExtents(halfExtents),
+         : ConvexPolyhedronShape(CollisionShapeName::BOX, allocator), mHalfExtents(halfExtents),
            mHalfEdgeStructure(allocator, 6, 8, 24) {
 
     assert(halfExtents.x > decimal(0.0));

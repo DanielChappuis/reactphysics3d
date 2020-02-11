@@ -225,7 +225,8 @@ class DynamicAABBTree {
         void removeObject(int32 nodeID);
 
         /// Update the dynamic tree after an object has moved.
-        bool updateObject(int32 nodeID, const AABB& newAABB, const Vector3& displacement);
+        bool updateObject(int32 nodeID, const AABB& newAABB, const Vector3& displacement,
+                          bool forceReinsert = false);
 
         /// Return the fat AABB corresponding to a given node ID
         const AABB& getFatAABB(int32 nodeID) const;

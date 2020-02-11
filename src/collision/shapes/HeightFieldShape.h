@@ -95,7 +95,7 @@ class HeightFieldShape : public ConcaveShape {
 
         /// Constructor
         HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
-                         const void* heightFieldData, HeightDataType dataType,
+                         const void* heightFieldData, HeightDataType dataType, MemoryAllocator& allocator,
                          int upAxis = 1, decimal integerHeightScale = 1.0f,
                          const Vector3& scaling = Vector3(1,1,1));
 

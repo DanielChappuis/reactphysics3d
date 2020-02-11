@@ -140,7 +140,8 @@ class BroadPhaseSystem {
         // -------------------- Methods -------------------- //
 
         /// Notify the Dynamic AABB tree that a collider needs to be updated
-        void updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb, const Vector3& displacement);
+        void updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb, const Vector3& displacement,
+                                    bool forceReInsert);
 
         /// Update the broad-phase state of some colliders components
         void updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal timeStep);
@@ -174,13 +175,13 @@ class BroadPhaseSystem {
         /// Update the broad-phase state of all the enabled colliders
         void updateColliders(decimal timeStep);
 
-        /// Add a collision shape in the array of shapes that have moved in the last simulation step
+        /// Add a collider in the array of colliders that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.
-        void addMovedCollisionShape(int broadPhaseID, Collider* collider);
+        void addMovedCollider(int broadPhaseID, Collider* collider);
 
-        /// Remove a collision shape from the array of shapes that have moved in the last simulation
+        /// Remove a collider from the array of colliders that have moved in the last simulation
         /// step and that need to be tested again for broad-phase overlapping.
-        void removeMovedCollisionShape(int broadPhaseID);
+        void removeMovedCollider(int broadPhaseID);
 
         /// Compute all the overlapping pairs of collision shapes
         void computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int32, int32>>& overlappingNodes);
@@ -211,9 +212,9 @@ inline const AABB& BroadPhaseSystem::getFatAABB(int broadPhaseId) const  {
     return mDynamicAABBTree.getFatAABB(broadPhaseId);
 }
 
-// Remove a collision shape from the array of shapes that have moved in the last simulation step
+// Remove a collider from the array of colliders that have moved in the last simulation step
 // and that need to be tested again for broad-phase overlapping.
-inline void BroadPhaseSystem::removeMovedCollisionShape(int broadPhaseID) {
+inline void BroadPhaseSystem::removeMovedCollider(int broadPhaseID) {
 
     // Remove the broad-phase ID from the set
     mMovedShapes.remove(broadPhaseID);

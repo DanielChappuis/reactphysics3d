@@ -75,6 +75,9 @@ class CollisionShape {
         /// Unique identifier of the shape inside an overlapping pair
         uint32 mId;
 
+        /// List of the colliders associated with this shape
+        List<Collider*> mColliders;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -93,12 +96,21 @@ class CollisionShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const = 0;
 
+        /// Assign a new collider to the collision shape
+        void addCollider(Collider* collider);
+
+        /// Remove an assigned collider from the collision shape
+        void removeCollider(Collider* collider);
+
+        /// Notify all the assign colliders that the size of the collision shape has changed
+        void notifyColliderAboutChangedSize();
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShape(CollisionShapeName name, CollisionShapeType type);
+        CollisionShape(CollisionShapeName name, CollisionShapeType type, MemoryAllocator& allocator);
 
         /// Destructor
         virtual ~CollisionShape() = default;
@@ -146,7 +158,10 @@ class CollisionShape {
         // -------------------- Friendship -------------------- //
 
         friend class Collider;
+        friend class CollisionBody;
+        friend class RigidBody;
         friend class PhyscisWorld;
+        friend class BroadPhaseSystem;
 };
 
 // Return the name of the collision shape
@@ -168,6 +183,16 @@ inline CollisionShapeType CollisionShape::getType() const {
 // Return the id of the shape
 inline uint32 CollisionShape::getId() const {
    return mId;
+}
+
+// Assign a new collider to the collision shape
+inline void CollisionShape::addCollider(Collider* collider) {
+    mColliders.add(collider);
+}
+
+// Remove an assigned collider from the collision shape
+inline void CollisionShape::removeCollider(Collider* collider) {
+    mColliders.remove(collider);
 }
 
 #ifdef IS_PROFILING_ACTIVE

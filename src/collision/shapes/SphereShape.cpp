@@ -36,8 +36,8 @@ using namespace reactphysics3d;
 /**
  * @param radius Radius of the sphere
  */
-SphereShape::SphereShape(decimal radius)
-            : ConvexShape(CollisionShapeName::SPHERE, CollisionShapeType::SPHERE, radius) {
+SphereShape::SphereShape(decimal radius, MemoryAllocator& allocator)
+            : ConvexShape(CollisionShapeName::SPHERE, CollisionShapeType::SPHERE, allocator, radius) {
     assert(radius > decimal(0.0));
 }
 

@@ -42,9 +42,9 @@ using namespace reactphysics3d;
  * @param integerHeightScale Scaling factor used to scale the height values (only when height values type is integer)
  */
 HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
-                                   const void* heightFieldData, HeightDataType dataType, int upAxis,
+                                   const void* heightFieldData, HeightDataType dataType, MemoryAllocator& allocator, int upAxis,
                                    decimal integerHeightScale, const Vector3& scaling)
-                 : ConcaveShape(CollisionShapeName::HEIGHTFIELD, scaling), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
+                 : ConcaveShape(CollisionShapeName::HEIGHTFIELD, allocator, scaling), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
                    mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
                    mHeightDataType(dataType) {

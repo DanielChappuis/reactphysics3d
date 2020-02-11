@@ -169,8 +169,10 @@ void DynamicAABBTree::removeObject(int32 nodeID) {
 /// nothing is done. Otherwise, the corresponding node is removed and reinserted into the tree.
 /// The method returns true if the object has been reinserted into the tree. The "displacement"
 /// argument is the linear velocity of the AABB multiplied by the elapsed time between two
-/// frames.
-bool DynamicAABBTree::updateObject(int32 nodeID, const AABB& newAABB, const Vector3& displacement) {
+/// frames. If the "forceReInsert" parameter is true, we force the existing AABB to take the size
+/// of the "newAABB" parameter even if it is larger than "newAABB". This can be used to shrink the
+/// AABB in the tree for instance if the corresponding collision shape has been shrunk.
+bool DynamicAABBTree::updateObject(int32 nodeID, const AABB& newAABB, const Vector3& displacement, bool forceReinsert) {
 
     RP3D_PROFILE("DynamicAABBTree::updateObject()", mProfiler);
 
@@ -179,7 +181,7 @@ bool DynamicAABBTree::updateObject(int32 nodeID, const AABB& newAABB, const Vect
     assert(mNodes[nodeID].height >= 0);
 
     // If the new AABB is still inside the fat AABB of the node
-    if (mNodes[nodeID].aabb.contains(newAABB)) {
+    if (!forceReinsert && mNodes[nodeID].aabb.contains(newAABB)) {
         return false;
     }
 
@@ -194,22 +196,22 @@ bool DynamicAABBTree::updateObject(int32 nodeID, const AABB& newAABB, const Vect
 
     // Inflate the fat AABB in direction of the linear motion of the AABB
     if (displacement.x < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.x;
+      mNodes[nodeID].aabb.mMinCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.x;
     }
     else {
-      mNodes[nodeID].aabb.mMaxCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.x;
+      mNodes[nodeID].aabb.mMaxCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.x;
     }
     if (displacement.y < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.y;
+      mNodes[nodeID].aabb.mMinCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.y;
     }
     else {
-      mNodes[nodeID].aabb.mMaxCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.y;
+      mNodes[nodeID].aabb.mMaxCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.y;
     }
     if (displacement.z < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.z;
+      mNodes[nodeID].aabb.mMinCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.z;
     }
     else {
-      mNodes[nodeID].aabb.mMaxCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.z;
+      mNodes[nodeID].aabb.mMaxCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.z;
     }
 
     assert(mNodes[nodeID].aabb.contains(newAABB));

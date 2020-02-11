@@ -58,7 +58,7 @@ class CapsuleShape : public ConvexShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CapsuleShape(decimal radius, decimal height);
+        CapsuleShape(decimal radius, decimal height, MemoryAllocator& allocator);
 
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
@@ -137,6 +137,8 @@ inline void CapsuleShape::setRadius(decimal radius) {
     // TODO : Throw a library error here if radius is not larger than zero
     assert(radius > decimal(0.0));
     mMargin = radius;
+
+    notifyColliderAboutChangedSize();
 }
 
 // Return the height of the capsule
@@ -158,6 +160,8 @@ inline void CapsuleShape::setHeight(decimal height) {
     // TODO : Throw a library error here if radius is not larger than zero
     assert(height > decimal(0.0));
     mHalfHeight = height * decimal(0.5);
+
+    notifyColliderAboutChangedSize();
 }
 
 // Return the number of bytes used by the collision shape

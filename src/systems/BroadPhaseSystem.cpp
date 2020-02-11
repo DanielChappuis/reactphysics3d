@@ -89,7 +89,7 @@ void BroadPhaseSystem::addCollider(Collider* collider, const AABB& aabb) {
 
     // Add the collision shape into the array of bodies that have moved (or have been created)
     // during the last simulation step
-    addMovedCollisionShape(collider->getBroadPhaseId(), collider);
+    addMovedCollider(collider->getBroadPhaseId(), collider);
 }
 
 // Remove a collider from the broad-phase collision detection
@@ -106,7 +106,7 @@ void BroadPhaseSystem::removeCollider(Collider* collider) {
 
     // Remove the collision shape into the array of shapes that have moved (or have been created)
     // during the last simulation step
-    removeMovedCollisionShape(broadPhaseID);
+    removeMovedCollider(broadPhaseID);
 }
 
 // Update the broad-phase state of a single collider
@@ -133,12 +133,13 @@ void BroadPhaseSystem::updateColliders(decimal timeStep) {
 }
 
 // Notify the broad-phase that a collision shape has moved and need to be updated
-void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb, const Vector3& displacement) {
+void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb, const Vector3& displacement,
+                                              bool forceReInsert) {
 
     assert(broadPhaseId >= 0);
 
     // Update the dynamic AABB tree according to the movement of the collision shape
-    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseId, aabb, displacement);
+    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseId, aabb, displacement, forceReInsert);
 
     // If the collision shape has moved out of its fat AABB (and therefore has been reinserted
     // into the tree).
@@ -146,7 +147,7 @@ void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* coll
 
         // Add the collision shape into the array of shapes that have moved (or have been created)
         // during the last simulation step
-        addMovedCollisionShape(broadPhaseId, collider);
+        addMovedCollider(broadPhaseId, collider);
     }
 }
 
@@ -189,16 +190,22 @@ void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbIte
             AABB aabb;
             mCollidersComponents.mCollisionShapes[i]->computeAABB(aabb, transform * mCollidersComponents.mLocalToBodyTransforms[i]);
 
-            // Update the broad-phase state for the collider
-            updateColliderInternal(broadPhaseId, mCollidersComponents.mColliders[i], aabb, displacement);
+            // If the size of the collision shape has been changed by the user,
+            // we need to reset the broad-phase AABB to its new size
+            const bool forceReInsert = mCollidersComponents.mHasCollisionShapeChangedSize[i];
+
+            // Update the broad-phase state of the collider
+            updateColliderInternal(broadPhaseId, mCollidersComponents.mColliders[i], aabb, displacement, forceReInsert);
+
+            mCollidersComponents.mHasCollisionShapeChangedSize[i] = false;
         }
     }
 }
 
 
-// Add a collision shape in the array of shapes that have moved in the last simulation step
+// Add a collider in the array of colliders that have moved in the last simulation step
 // and that need to be tested again for broad-phase overlapping.
-void BroadPhaseSystem::addMovedCollisionShape(int broadPhaseID, Collider* collider) {
+void BroadPhaseSystem::addMovedCollider(int broadPhaseID, Collider* collider) {
 
     assert(broadPhaseID != -1);
 

@@ -159,7 +159,7 @@ void PhysicsCommon::destroyPhysicsWorld(PhysicsWorld* world) {
 // Create and return a sphere collision shape
 SphereShape* PhysicsCommon::createSphereShape(const decimal radius) {
 
-    SphereShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(SphereShape))) SphereShape(radius);
+    SphereShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(SphereShape))) SphereShape(radius, mMemoryManager.getHeapAllocator());
     mSphereShapes.add(shape);
 
     return shape;
@@ -202,7 +202,7 @@ void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
 // Create and return a capsule shape
 CapsuleShape* PhysicsCommon::createCapsuleShape(decimal radius, decimal height) {
 
-    CapsuleShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(CapsuleShape))) CapsuleShape(radius, height);
+    CapsuleShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(CapsuleShape))) CapsuleShape(radius, height, mMemoryManager.getHeapAllocator());
 
     mCapsuleShapes.add(shape);
 
@@ -224,7 +224,7 @@ void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
 // Create and return a convex mesh shape
 ConvexMeshShape* PhysicsCommon::createConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling) {
 
-    ConvexMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConvexMeshShape))) ConvexMeshShape(polyhedronMesh, scaling);
+    ConvexMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConvexMeshShape))) ConvexMeshShape(polyhedronMesh, mMemoryManager.getHeapAllocator(), scaling);
 
     mConvexMeshShapes.add(shape);
 
@@ -249,7 +249,7 @@ HeightFieldShape* PhysicsCommon::createHeightFieldShape(int nbGridColumns, int n
                                          int upAxis, decimal integerHeightScale, const Vector3& scaling) {
 
     HeightFieldShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(HeightFieldShape))) HeightFieldShape(nbGridColumns, nbGridRows, minHeight, maxHeight,
-                                         heightFieldData, dataType, upAxis, integerHeightScale, scaling);
+                                         heightFieldData, dataType, mMemoryManager.getHeapAllocator(), upAxis, integerHeightScale, scaling);
 
     mHeightFieldShapes.add(shape);
 

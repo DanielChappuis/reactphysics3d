@@ -95,6 +95,11 @@ class ColliderComponents : public Components {
         /// Array with the list of involved overlapping pairs for each collider
         List<uint64>* mOverlappingPairs;
 
+        /// True if the size of the collision shape associated with the collider
+        /// has been changed by the user
+        bool* mHasCollisionShapeChangedSize;
+
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -190,6 +195,12 @@ class ColliderComponents : public Components {
 
         /// Return a reference to the list of overlapping pairs for a given collider
         List<uint64>& getOverlappingPairs(Entity colliderEntity);
+
+        /// Return true if the size of collision shape of the collider has been changed by the user
+        bool getHasCollisionShapeChangedSize(Entity colliderEntity) const;
+
+        /// Return true if the size of collision shape of the collider has been changed by the user
+        void setHasCollisionShapeChangedSize(Entity colliderEntity, bool hasCollisionShapeChangedSize);
 
         // -------------------- Friendship -------------------- //
 
@@ -317,6 +328,22 @@ inline List<uint64>& ColliderComponents::getOverlappingPairs(Entity colliderEnti
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
     return mOverlappingPairs[mMapEntityToComponentIndex[colliderEntity]];
+}
+
+// Return true if the size of collision shape of the collider has been changed by the user
+inline bool ColliderComponents::getHasCollisionShapeChangedSize(Entity colliderEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    return mHasCollisionShapeChangedSize[mMapEntityToComponentIndex[colliderEntity]];
+}
+
+// Return true if the size of collision shape of the collider has been changed by the user
+inline void ColliderComponents::setHasCollisionShapeChangedSize(Entity colliderEntity, bool hasCollisionShapeChangedSize) {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    mHasCollisionShapeChangedSize[mMapEntityToComponentIndex[colliderEntity]] = hasCollisionShapeChangedSize;
 }
 
 }

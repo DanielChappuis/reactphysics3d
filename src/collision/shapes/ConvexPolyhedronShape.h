@@ -47,7 +47,7 @@ class ConvexPolyhedronShape : public ConvexShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexPolyhedronShape(CollisionShapeName name);
+        ConvexPolyhedronShape(CollisionShapeName name, MemoryAllocator& allocator);
 
         /// Destructor
         virtual ~ConvexPolyhedronShape() override = default;

@@ -341,6 +341,9 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
 
     mWorld.mCollisionBodyComponents.addColliderToBody(mEntity, colliderEntity);
 
+    // Assign the collider with the collision shape
+    collisionShape->addCollider(collider);
+
 #ifdef IS_PROFILING_ACTIVE
 
 	// Set the profiler

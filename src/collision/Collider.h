@@ -80,8 +80,9 @@ class Collider {
 
 		// -------------------- Methods -------------------- //
 
-		/// Return the collision shape
-		CollisionShape* getCollisionShape();
+        /// Notify the collider that the size of the collision shape has been
+        /// changed by the user
+        void setHasCollisionShapeChangedSize(bool hasCollisionShapeChangedSize);
 
     public:
 
@@ -102,8 +103,8 @@ class Collider {
         /// Return the corresponding entity of the collider
         Entity getEntity() const;
 
-        /// Return the collision shape
-        const CollisionShape* getCollisionShape() const;
+        /// Return a pointer to the collision shape
+        CollisionShape* getCollisionShape() const;
 
         /// Return the parent body
         CollisionBody* getBody() const;
@@ -183,7 +184,8 @@ class Collider {
         friend class PhysicsWorld;
         friend class GJKAlgorithm;
         friend class ConvexMeshShape;
-		friend class ContactManifoldSet;
+        friend class CollisionShape;
+        friend class ContactManifoldSet;
 		friend class MiddlePhaseTriangleCallback;
 
 };

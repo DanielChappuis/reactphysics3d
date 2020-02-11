@@ -149,6 +149,8 @@ inline Vector3 BoxShape::getHalfExtents() const {
  */
 inline void BoxShape::setHalfExtents(const Vector3& halfExtents) {
     mHalfExtents = halfExtents;
+
+    notifyColliderAboutChangedSize();
 }
 
 // Return the local bounds of the shape in x, y and z directions

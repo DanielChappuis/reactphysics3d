@@ -51,7 +51,7 @@ class SphereShape : public ConvexShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereShape(decimal radius);
+        SphereShape(decimal radius, MemoryAllocator& allocator);
 
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
@@ -121,6 +121,8 @@ inline decimal SphereShape::getRadius() const {
 inline void SphereShape::setRadius(decimal radius) {
    assert(radius > decimal(0.0));
    mMargin = radius;
+
+   notifyColliderAboutChangedSize();
 }
 
 // Return true if the collision shape is a polyhedron

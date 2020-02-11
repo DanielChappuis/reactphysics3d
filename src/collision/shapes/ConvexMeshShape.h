@@ -66,7 +66,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scale = Vector3(1,1,1));
+        ConvexMeshShape(PolyhedronMesh* polyhedronMesh,  MemoryAllocator& allocator, const Vector3& scale = Vector3(1,1,1));
 
         /// Recompute the bounds of the mesh
         void recalculateBounds();
@@ -159,6 +159,7 @@ inline const Vector3& ConvexMeshShape::getScale() const {
 inline void ConvexMeshShape::setScale(const Vector3& scale) {
     mScale = scale;
     recalculateBounds();
+    notifyColliderAboutChangedSize();
 }
 
 // Return the local bounds of the shape in x, y and z directions

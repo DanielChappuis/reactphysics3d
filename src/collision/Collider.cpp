@@ -42,8 +42,7 @@ using namespace reactphysics3d;
 Collider::Collider(Entity entity, CollisionBody* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mEntity(entity), mBody(body),
             mMaterial(body->mWorld.mConfig.defaultFrictionCoefficient, body->mWorld.mConfig.defaultRollingRestistance,
-                      body->mWorld.mConfig.defaultBounciness),
-            mUserData(nullptr) {
+                      body->mWorld.mConfig.defaultBounciness), mUserData(nullptr) {
 
 }
 
@@ -144,19 +143,11 @@ const AABB Collider::getWorldAABB() const {
     return aabb;
 }
 
-// Return the collision shape
+// Return a pointer to the collision shape
 /**
  * @return Pointer to the internal collision shape
  */
-const CollisionShape* Collider::getCollisionShape() const {
-    return mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
-}
-
-// Return the collision shape
-/**
-* @return Pointer to the internal collision shape
-*/
-CollisionShape* Collider::getCollisionShape() {
+CollisionShape* Collider::getCollisionShape() const {
     return mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
 }
 
@@ -218,6 +209,11 @@ unsigned short Collider::getCollisionCategoryBits() const {
  */
 unsigned short Collider::getCollideWithMaskBits() const {
     return mBody->mWorld.mCollidersComponents.getCollideWithMaskBits(mEntity);
+}
+
+// Notify the collider that the size of the collision shape has been changed by the user
+void Collider::setHasCollisionShapeChangedSize(bool hasCollisionShapeChangedSize) {
+    mBody->mWorld.mCollidersComponents.setHasCollisionShapeChangedSize(mEntity, hasCollisionShapeChangedSize);
 }
 
 // Return the local to world transform

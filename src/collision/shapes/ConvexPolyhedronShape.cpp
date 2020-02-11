@@ -31,8 +31,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConvexPolyhedronShape::ConvexPolyhedronShape(CollisionShapeName name)
-            : ConvexShape(name, CollisionShapeType::CONVEX_POLYHEDRON) {
+ConvexPolyhedronShape::ConvexPolyhedronShape(CollisionShapeName name, MemoryAllocator& allocator)
+            : ConvexShape(name, CollisionShapeType::CONVEX_POLYHEDRON, allocator) {
 
 }
 

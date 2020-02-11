@@ -31,8 +31,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConvexShape::ConvexShape(CollisionShapeName name, CollisionShapeType type, decimal margin)
-            : CollisionShape(name, type), mMargin(margin) {
+ConvexShape::ConvexShape(CollisionShapeName name, CollisionShapeType type, MemoryAllocator& allocator, decimal margin)
+            : CollisionShape(name, type, allocator), mMargin(margin) {
 
 }
 

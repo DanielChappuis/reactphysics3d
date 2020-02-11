@@ -396,7 +396,7 @@ inline void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, 
 inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* shape) {
 
     if (shape->getBroadPhaseId() != -1) {
-        mBroadPhaseSystem.addMovedCollisionShape(shape->getBroadPhaseId(), shape);
+        mBroadPhaseSystem.addMovedCollider(shape->getBroadPhaseId(), shape);
     }
 }
 

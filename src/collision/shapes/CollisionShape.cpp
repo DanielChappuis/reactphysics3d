@@ -27,13 +27,14 @@
 #include "CollisionShape.h"
 #include "utils/Profiler.h"
 #include "body/CollisionBody.h"
+#include "collision/Collider.h"
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type)
-               : mType(type), mName(name), mId(0) {
+CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type, MemoryAllocator &allocator)
+               : mType(type), mName(name), mId(0), mColliders(allocator) {
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -89,4 +90,12 @@ void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(resultMin);
     aabb.setMax(resultMax);
+}
+
+/// Notify all the assign colliders that the size of the collision shape has changed
+void CollisionShape::notifyColliderAboutChangedSize() {
+
+    for (uint i=0; i < mColliders.size(); i++) {
+        mColliders[i]->setHasCollisionShapeChangedSize(true);
+    }
 }

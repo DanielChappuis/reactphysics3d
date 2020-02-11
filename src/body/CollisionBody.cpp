@@ -92,6 +92,9 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
 
     mWorld.mCollisionBodyComponents.addColliderToBody(mEntity, colliderEntity);
 
+    // Assign the collider with the collision shape
+    collisionShape->addCollider(collider);
+
 #ifdef IS_PROFILING_ACTIVE
 
 	// Set the profiler
@@ -174,6 +177,9 @@ void CollisionBody::removeCollider(Collider* collider) {
     }
 
     mWorld.mCollisionBodyComponents.removeColliderFromBody(mEntity, collider->getEntity());
+
+    // Unassign the collider from the collision shape
+    collider->getCollisionShape()->removeCollider(collider);
 
     // Remove the collider component
     mWorld.mCollidersComponents.removeComponent(collider->getEntity());
