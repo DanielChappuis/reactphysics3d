@@ -36,8 +36,8 @@ using namespace reactphysics3d;
 
 // Constructor
 BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ColliderComponents& collidersComponents,
-                                   TransformComponents& transformComponents, RigidBodyComponents &rigidBodyComponents)
-                    :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_AABB_GAP),
+                                   TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents)
+                    :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE),
                      mCollidersComponents(collidersComponents), mTransformsComponents(transformComponents),
                      mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
@@ -133,13 +133,13 @@ void BroadPhaseSystem::updateColliders(decimal timeStep) {
 }
 
 // Notify the broad-phase that a collision shape has moved and need to be updated
-void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb, const Vector3& displacement,
+void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb,
                                               bool forceReInsert) {
 
     assert(broadPhaseId >= 0);
 
     // Update the dynamic AABB tree according to the movement of the collision shape
-    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseId, aabb, displacement, forceReInsert);
+    bool hasBeenReInserted = mDynamicAABBTree.updateObject(broadPhaseId, aabb, forceReInsert);
 
     // If the collision shape has moved out of its fat AABB (and therefore has been reinserted
     // into the tree).
@@ -176,16 +176,6 @@ void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbIte
             const Entity& bodyEntity = mCollidersComponents.mBodiesEntities[i];
             const Transform& transform = mTransformsComponents.getTransform(bodyEntity);
 
-            // If there is a dynamics component for the current entity
-            Vector3 displacement(0, 0, 0);
-            if (mRigidBodyComponents.hasComponent(bodyEntity)) {
-
-                // Get the linear velocity from the dynamics component
-                const Vector3& linearVelocity = mRigidBodyComponents.getLinearVelocity(bodyEntity);
-
-                displacement = timeStep * linearVelocity;
-            }
-
             // Recompute the world-space AABB of the collision shape
             AABB aabb;
             mCollidersComponents.mCollisionShapes[i]->computeAABB(aabb, transform * mCollidersComponents.mLocalToBodyTransforms[i]);
@@ -195,7 +185,7 @@ void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbIte
             const bool forceReInsert = mCollidersComponents.mHasCollisionShapeChangedSize[i];
 
             // Update the broad-phase state of the collider
-            updateColliderInternal(broadPhaseId, mCollidersComponents.mColliders[i], aabb, displacement, forceReInsert);
+            updateColliderInternal(broadPhaseId, mCollidersComponents.mColliders[i], aabb, forceReInsert);
 
             mCollidersComponents.mHasCollisionShapeChangedSize[i] = false;
         }

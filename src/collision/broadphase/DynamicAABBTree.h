@@ -158,9 +158,8 @@ class DynamicAABBTree {
         /// Number of nodes in the tree
         int32 mNbNodes;
 
-        /// Extra AABB Gap used to allow the collision shape to move a little bit
-        /// without triggering a large modification of the tree which can be costly
-        decimal mExtraAABBGap;
+        /// The fat AABB is the initial AABB inflated by a given percentage of its size.
+        decimal mFatAABBInflatePercentage;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -210,7 +209,7 @@ class DynamicAABBTree {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        DynamicAABBTree(MemoryAllocator& allocator, decimal extraAABBGap = decimal(0.0));
+        DynamicAABBTree(MemoryAllocator& allocator, decimal fatAABBInflatePercentage = decimal(0.0));
 
         /// Destructor
         ~DynamicAABBTree();
@@ -225,8 +224,7 @@ class DynamicAABBTree {
         void removeObject(int32 nodeID);
 
         /// Update the dynamic tree after an object has moved.
-        bool updateObject(int32 nodeID, const AABB& newAABB, const Vector3& displacement,
-                          bool forceReinsert = false);
+        bool updateObject(int32 nodeID, const AABB& newAABB, bool forceReinsert = false);
 
         /// Return the fat AABB corresponding to a given node ID
         const AABB& getFatAABB(int32 nodeID) const;

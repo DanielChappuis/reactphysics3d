@@ -35,8 +35,8 @@ using namespace reactphysics3d;
 const int32 TreeNode::NULL_TREE_NODE = -1;
 
 // Constructor
-DynamicAABBTree::DynamicAABBTree(MemoryAllocator& allocator, decimal extraAABBGap)
-                : mAllocator(allocator), mExtraAABBGap(extraAABBGap) {
+DynamicAABBTree::DynamicAABBTree(MemoryAllocator& allocator, decimal fatAABBInflatePercentage)
+                : mAllocator(allocator), mFatAABBInflatePercentage(fatAABBInflatePercentage) {
 
     init();
 }
@@ -135,8 +135,8 @@ int32 DynamicAABBTree::addObjectInternal(const AABB& aabb) {
     // Get the next available node (or allocate new ones if necessary)
     int32 nodeID = allocateNode();
 
-    // Create the fat aabb to use in the tree
-    const Vector3 gap(mExtraAABBGap, mExtraAABBGap, mExtraAABBGap);
+    // Create the fat aabb to use in the tree (inflate the aabb by a constant percentage of its size)
+    const Vector3 gap(aabb.getExtent() * mFatAABBInflatePercentage * decimal(0.5f));
     mNodes[nodeID].aabb.setMin(aabb.getMin() - gap);
     mNodes[nodeID].aabb.setMax(aabb.getMax() + gap);
 
@@ -167,12 +167,11 @@ void DynamicAABBTree::removeObject(int32 nodeID) {
 // Update the dynamic tree after an object has moved.
 /// If the new AABB of the object that has moved is still inside its fat AABB, then
 /// nothing is done. Otherwise, the corresponding node is removed and reinserted into the tree.
-/// The method returns true if the object has been reinserted into the tree. The "displacement"
-/// argument is the linear velocity of the AABB multiplied by the elapsed time between two
-/// frames. If the "forceReInsert" parameter is true, we force the existing AABB to take the size
+/// The method returns true if the object has been reinserted into the tree.
+/// If the "forceReInsert" parameter is true, we force the existing AABB to take the size
 /// of the "newAABB" parameter even if it is larger than "newAABB". This can be used to shrink the
 /// AABB in the tree for instance if the corresponding collision shape has been shrunk.
-bool DynamicAABBTree::updateObject(int32 nodeID, const AABB& newAABB, const Vector3& displacement, bool forceReinsert) {
+bool DynamicAABBTree::updateObject(int32 nodeID, const AABB& newAABB, bool forceReinsert) {
 
     RP3D_PROFILE("DynamicAABBTree::updateObject()", mProfiler);
 
@@ -188,31 +187,11 @@ bool DynamicAABBTree::updateObject(int32 nodeID, const AABB& newAABB, const Vect
     // If the new AABB is outside the fat AABB, we remove the corresponding node
     removeLeafNode(nodeID);
 
-    // Compute the fat AABB by inflating the AABB with a constant gap
+    // Compute the fat AABB by inflating the AABB with by a constant percentage of the size of the AABB
     mNodes[nodeID].aabb = newAABB;
-    const Vector3 gap(mExtraAABBGap, mExtraAABBGap, mExtraAABBGap);
+    const Vector3 gap(newAABB.getExtent() * mFatAABBInflatePercentage * decimal(0.5f));
     mNodes[nodeID].aabb.mMinCoordinates -= gap;
     mNodes[nodeID].aabb.mMaxCoordinates += gap;
-
-    // Inflate the fat AABB in direction of the linear motion of the AABB
-    if (displacement.x < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.x;
-    }
-    else {
-      mNodes[nodeID].aabb.mMaxCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.x;
-    }
-    if (displacement.y < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.y;
-    }
-    else {
-      mNodes[nodeID].aabb.mMaxCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.y;
-    }
-    if (displacement.z < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.z;
-    }
-    else {
-      mNodes[nodeID].aabb.mMaxCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER * displacement.z;
-    }
 
     assert(mNodes[nodeID].aabb.contains(newAABB));
 

@@ -100,14 +100,9 @@ constexpr decimal PI = decimal(3.14159265);
 constexpr decimal PI_TIMES_2 = decimal(6.28318530);
 
 /// In the broad-phase collision detection (dynamic AABB tree), the AABBs are
-/// inflated with a constant gap to allow the collision shape to move a little bit
-/// without triggering a large modification of the tree which can be costly
-constexpr decimal DYNAMIC_TREE_AABB_GAP = decimal(0.1);
-
-/// In the broad-phase collision detection (dynamic AABB tree), the AABBs are
-/// also inflated in direction of the linear motion of the body by mutliplying the
-/// followin constant with the linear velocity and the elapsed time between two frames.
-constexpr decimal DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER = decimal(1.7);
+/// inflated by a constant percentage of its size to allow the collision shape to move a little bit
+/// without triggering a large modification of the tree each frame which can be costly
+constexpr decimal DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE = decimal(0.08);
 
 /// Current version of ReactPhysics3D
 const std::string RP3D_VERSION = std::string("0.7.1");

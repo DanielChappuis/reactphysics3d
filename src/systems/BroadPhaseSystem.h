@@ -140,7 +140,7 @@ class BroadPhaseSystem {
         // -------------------- Methods -------------------- //
 
         /// Notify the Dynamic AABB tree that a collider needs to be updated
-        void updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb, const Vector3& displacement,
+        void updateColliderInternal(int32 broadPhaseId, Collider* collider, const AABB& aabb,
                                     bool forceReInsert);
 
         /// Update the broad-phase state of some colliders components
