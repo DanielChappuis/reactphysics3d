@@ -65,6 +65,9 @@ struct Vector3 {
         /// Copy-constructor
         Vector3(const Vector3& vector);
 
+        /// Move-constructor
+        Vector3(Vector3&& vector) noexcept;
+
         /// Destructor
         ~Vector3() = default;
 
@@ -143,6 +146,9 @@ struct Vector3 {
         /// Overloaded operator
         Vector3& operator=(const Vector3& vector);
 
+        /// Overloaded move-assignment operator
+        Vector3& operator=(Vector3&& vector) noexcept;
+
         /// Overloaded less than operator for ordering to be used inside std::set for instance
         bool operator<(const Vector3& vector) const;
 
@@ -184,6 +190,9 @@ inline Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(n
 inline Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
 
 }
+
+/// Move-constructor
+inline Vector3::Vector3(Vector3&& vector) noexcept = default;
 
 // Set the vector to zero
 inline void Vector3::setToZero() {
@@ -363,6 +372,9 @@ inline Vector3& Vector3::operator=(const Vector3& vector) {
     }
     return *this;
 }
+
+// Move-assignment operator
+inline Vector3& Vector3::operator=(Vector3&& vector) noexcept = default;
 
 // Overloaded less than operator for ordering to be used inside std::set for instance
 inline bool Vector3::operator<(const Vector3& vector) const {
