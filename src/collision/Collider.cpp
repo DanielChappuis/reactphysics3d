@@ -147,7 +147,15 @@ const AABB Collider::getWorldAABB() const {
 /**
  * @return Pointer to the internal collision shape
  */
-CollisionShape* Collider::getCollisionShape() const {
+CollisionShape* Collider::getCollisionShape() {
+    return mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
+}
+
+// Return a const pointer to the collision shape
+/**
+ * @return Pointer to the internal collision shape
+ */
+const CollisionShape* Collider::getCollisionShape() const {
     return mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
 }
 

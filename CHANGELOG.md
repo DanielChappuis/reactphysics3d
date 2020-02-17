@@ -10,6 +10,8 @@
  - It is now possible to change the scale of a ConvexMeshShape using the ConvexMeshShape::setScale() method
  - It is now possible to change the scale of a ConcaveMeshShape using the ConcaveMeshShape::setScale() method
  - It is now possible to change the scale of a HeightFieldShape using the HeightFieldShape::setScale() method
+ - A method PhysicsWorld::getCollisionBody(uint index) has been added on a physics world to retrieve a given CollisionBody
+ - A method PhysicsWorld::getRigidBody(uint index) has been added on a physics world to retrieve a given RigidBody
 
 ### Changed
 

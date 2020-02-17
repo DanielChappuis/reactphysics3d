@@ -104,7 +104,10 @@ class Collider {
         Entity getEntity() const;
 
         /// Return a pointer to the collision shape
-        CollisionShape* getCollisionShape() const;
+        CollisionShape* getCollisionShape();
+
+        /// Return a const pointer to the collision shape
+        const CollisionShape* getCollisionShape() const;
 
         /// Return the parent body
         CollisionBody* getBody() const;

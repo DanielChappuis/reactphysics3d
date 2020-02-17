@@ -213,8 +213,8 @@ class PhysicsWorld {
         /// Reference to the collision detection
         CollisionDetectionSystem mCollisionDetection;
 
-        /// All the bodies (rigid and soft) of the world
-        List<CollisionBody*> mBodies;
+        /// All the collision bodies of the world
+        List<CollisionBody*> mCollisionBodies;
 
         /// Pointer to an event listener object
         EventListener* mEventListener;
@@ -433,6 +433,24 @@ class PhysicsWorld {
 
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
+
+        /// Return the number of CollisionBody in the physics world
+        uint getNbCollisionBodies() const;
+
+        /// Return a constant pointer to a given CollisionBody of the world
+        const CollisionBody* getCollisionBody(uint index) const;
+
+        /// Return a pointer to a given CollisionBody of the world
+        CollisionBody* getCollisionBody(uint index) ;
+
+        /// Return the number of RigidBody in the physics world
+        uint getNbRigidBodies() const;
+
+        /// Return a constant pointer to a given RigidBody of the world
+        const RigidBody* getRigidBody(uint index) const;
+
+        /// Return a pointer to a given RigidBody of the world
+        RigidBody* getRigidBody(uint index) ;
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -773,6 +791,73 @@ inline void PhysicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
  */
 inline void PhysicsWorld::setEventListener(EventListener* eventListener) {
     mEventListener = eventListener;
+}
+
+// Return the number of CollisionBody in the physics world
+/// Note that even if a RigidBody is also a collision body, this method does not return the rigid bodies
+inline uint PhysicsWorld::getNbCollisionBodies() const {
+   return mCollisionBodies.size();
+}
+
+// Return a constant pointer to a given CollisionBody of the world
+/**
+ * @param index Index of a CollisionBody in the world
+ * @return Constant pointer to a given CollisionBody
+ */
+inline const CollisionBody* PhysicsWorld::getCollisionBody(uint index) const {
+
+    assert(index < mCollisionBodies.size());
+
+    // TODO : Report error here if index is not within bounds
+
+    return mCollisionBodies[index];
+}
+
+// Return a pointer to a given CollisionBody of the world
+/**
+ * @param index Index of a CollisionBody in the world
+ * @return Pointer to a given CollisionBody
+ */
+inline CollisionBody* PhysicsWorld::getCollisionBody(uint index) {
+
+    assert(index < mCollisionBodies.size());
+
+    // TODO : Report error here if index is not within bounds
+
+    return mCollisionBodies[index];
+}
+
+// Return the number of RigidBody in the physics world
+inline uint PhysicsWorld::getNbRigidBodies() const {
+   return mRigidBodies.size();
+}
+
+
+// Return a constant pointer to a given RigidBody of the world
+/**
+ * @param index Index of a RigidBody in the world
+ * @return Constant pointer to a given RigidBody
+ */
+inline const RigidBody* PhysicsWorld::getRigidBody(uint index) const {
+    assert(index < mRigidBodies.size());
+
+    // TODO : Report error here if index is not within bounds
+
+    return mRigidBodies[index];
+}
+
+// Return a pointer to a given RigidBody of the world
+/**
+ * @param index Index of a RigidBody in the world
+ * @return Pointer to a given RigidBody
+ */
+inline RigidBody* PhysicsWorld::getRigidBody(uint index) {
+
+    assert(index < mRigidBodies.size());
+
+    // TODO : Report error here if index is not within bounds
+
+    return mRigidBodies[index];
 }
 
 }

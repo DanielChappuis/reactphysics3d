@@ -58,7 +58,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
                 mFixedJointsComponents(mMemoryManager.getHeapAllocator()), mHingeJointsComponents(mMemoryManager.getHeapAllocator()),
                 mSliderJointsComponents(mMemoryManager.getHeapAllocator()), mCollisionDetection(this, mCollidersComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents,
                                         mMemoryManager),
-                mBodies(mMemoryManager.getHeapAllocator()), mEventListener(nullptr),
+                mCollisionBodies(mMemoryManager.getHeapAllocator()), mEventListener(nullptr),
                 mName(worldSettings.worldName),  mIslands(mMemoryManager.getSingleFrameAllocator()),
                 mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mCollidersComponents, mConfig.restitutionVelocityThreshold),
@@ -124,8 +124,8 @@ PhysicsWorld::~PhysicsWorld() {
              "Physics World: Physics world " + mName + " has been destroyed");
 
     // Destroy all the collision bodies that have not been removed
-    for (int i=mBodies.size() - 1 ; i >= 0; i--) {
-        destroyCollisionBody(mBodies[i]);
+    for (int i=mCollisionBodies.size() - 1 ; i >= 0; i--) {
+        destroyCollisionBody(mCollisionBodies[i]);
     }
 
 #ifdef IS_PROFILING_ACTIVE
@@ -135,7 +135,7 @@ PhysicsWorld::~PhysicsWorld() {
 
 #endif
 
-    assert(mBodies.size() == 0);
+    assert(mCollisionBodies.size() == 0);
     assert(mCollisionBodyComponents.getNbComponents() == 0);
     assert(mTransformComponents.getNbComponents() == 0);
     assert(mCollidersComponents.getNbComponents() == 0);
@@ -180,7 +180,7 @@ CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
     mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
 
     // Add the collision body to the world
-    mBodies.add(collisionBody);
+    mCollisionBodies.add(collisionBody);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -219,7 +219,7 @@ void PhysicsWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     collisionBody->~CollisionBody();
 
     // Remove the collision body from the list of bodies
-    mBodies.remove(collisionBody);
+    mCollisionBodies.remove(collisionBody);
 
     // Free the object from the memory allocator
     mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
@@ -461,7 +461,6 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
     mRigidBodyComponents.setMassInverse(entity, decimal(1.0) / mRigidBodyComponents.getInitMass(entity));
 
     // Add the rigid body to the physics world
-    mBodies.add(rigidBody);
     mRigidBodies.add(rigidBody);
 
 #ifdef IS_PROFILING_ACTIVE
@@ -507,7 +506,6 @@ void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     rigidBody->~RigidBody();
 
     // Remove the rigid body from the list of rigid bodies
-    mBodies.remove(rigidBody);
     mRigidBodies.remove(rigidBody);
 
     // Free the object from the memory allocator
