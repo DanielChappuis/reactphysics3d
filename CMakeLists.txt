@@ -260,10 +260,12 @@ SET_TARGET_PROPERTIES(reactphysics3d  PROPERTIES
           SOVERSION "0.7" 
 )
 
-# Install target
+# Install target (install library only, not headers)
 INSTALL(TARGETS reactphysics3d
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/reactphysics3d
 )
+
+# Install the headers separately (because INSTALL(TARGETS ... PUBLIC_HEADER DESTINATION ...) does not support subfolders
+INSTALL(DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/reactphysics3d FILES_MATCHING PATTERN "*.h")
