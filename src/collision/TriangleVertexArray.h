@@ -91,7 +91,7 @@ class TriangleVertexArray {
         VertexDataType mVertexDataType;
 
         /// Data type of the vertex normals in the array
-        NormalDataType mVertexNormaldDataType;
+        NormalDataType mVertexNormalsDataType;
 
         /// Data type of the indices in the array
         IndexDataType mIndexDataType;
@@ -111,7 +111,8 @@ class TriangleVertexArray {
         /// Constructor without vertices normals
         TriangleVertexArray(uint nbVertices, const void* verticesStart, uint verticesStride,
                             uint nbTriangles, const void* indexesStart, uint indexesStride,
-                            VertexDataType vertexDataType, IndexDataType indexDataType);
+                            VertexDataType vertexDataType, IndexDataType indexDataType,
+                            bool generateNormals = true);
 
         /// Constructor with vertices normals
         TriangleVertexArray(uint nbVertices, const void* verticesStart, uint verticesStride,
@@ -191,7 +192,7 @@ inline TriangleVertexArray::VertexDataType TriangleVertexArray::getVertexDataTyp
  * @return The data type of the normals in the array
  */
 inline TriangleVertexArray::NormalDataType TriangleVertexArray::getVertexNormalDataType() const {
-    return mVertexNormaldDataType;
+    return mVertexNormalsDataType;
 }
 
 // Return the index data type

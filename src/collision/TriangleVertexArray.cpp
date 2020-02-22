@@ -50,7 +50,8 @@ using namespace reactphysics3d;
  */
 TriangleVertexArray::TriangleVertexArray(uint nbVertices, const void* verticesStart, uint verticesStride,
                                          uint nbTriangles, const void* indexesStart, uint indexesStride,
-                                         VertexDataType vertexDataType, IndexDataType indexDataType) {
+                                         VertexDataType vertexDataType, IndexDataType indexDataType,
+                                         bool generateNormals) {
     mNbVertices = nbVertices;
     mVerticesStart = static_cast<const uchar*>(verticesStart);
     mVerticesStride = verticesStride;
@@ -60,12 +61,14 @@ TriangleVertexArray::TriangleVertexArray(uint nbVertices, const void* verticesSt
     mIndicesStart = static_cast<const uchar*>(indexesStart);
     mIndicesStride = indexesStride;
     mVertexDataType = vertexDataType;
-    mVertexNormaldDataType = NormalDataType::NORMAL_FLOAT_TYPE;
+    mVertexNormalsDataType = NormalDataType::NORMAL_FLOAT_TYPE;
     mIndexDataType = indexDataType;
     mAreVerticesNormalsProvidedByUser = false;
 
     // Compute the vertices normals because they are not provided by the user
-    computeVerticesNormals();
+    if (generateNormals) {
+        computeVerticesNormals();
+    }
 }
 
 // Constructor with vertices normals
@@ -100,7 +103,7 @@ TriangleVertexArray::TriangleVertexArray(uint nbVertices, const void* verticesSt
     mIndicesStart = static_cast<const uchar*>(indexesStart);
     mIndicesStride = indexesStride;
     mVertexDataType = vertexDataType;
-    mVertexNormaldDataType = normalDataType;
+    mVertexNormalsDataType = normalDataType;
     mIndexDataType = indexDataType;
     mAreVerticesNormalsProvidedByUser = true;
 
@@ -264,6 +267,10 @@ void TriangleVertexArray::getTriangleVerticesNormals(uint triangleIndex, Vector3
 
     assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
 
+    if (!mVerticesNormalsStart) {
+        return;
+    }
+
     // Get the three vertex index of the three vertices of the triangle
     uint verticesIndices[3];
     getTriangleVerticesIndices(triangleIndex, verticesIndices);
@@ -275,13 +282,13 @@ void TriangleVertexArray::getTriangleVerticesNormals(uint triangleIndex, Vector3
         const void* vertexNormalPointer = static_cast<const void*>(vertexNormalPointerChar);
 
         // Get the normals from the array
-        if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE) {
+        if (mVertexNormalsDataType == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE) {
             const float* normal = static_cast<const float*>(vertexNormalPointer);
             outTriangleVerticesNormals[k][0] = decimal(normal[0]);
             outTriangleVerticesNormals[k][1] = decimal(normal[1]);
             outTriangleVerticesNormals[k][2] = decimal(normal[2]);
         }
-        else if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE) {
+        else if (mVertexNormalsDataType == TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE) {
             const double* normal = static_cast<const double*>(vertexNormalPointer);
             outTriangleVerticesNormals[k][0] = decimal(normal[0]);
             outTriangleVerticesNormals[k][1] = decimal(normal[1]);
@@ -332,17 +339,21 @@ void TriangleVertexArray::getNormal(uint vertexIndex, Vector3* outNormal) {
 
     assert(vertexIndex < mNbVertices);
 
+    if (!mVerticesNormalsStart) {
+        return;
+    }
+
     const uchar* vertexNormalPointerChar = mVerticesNormalsStart + vertexIndex * mVerticesNormalsStride;
     const void* vertexNormalPointer = static_cast<const void*>(vertexNormalPointerChar);
 
     // Get the normals from the array
-    if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE) {
+    if (mVertexNormalsDataType == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE) {
         const float* normal = static_cast<const float*>(vertexNormalPointer);
         (*outNormal)[0] = decimal(normal[0]);
         (*outNormal)[1] = decimal(normal[1]);
         (*outNormal)[2] = decimal(normal[2]);
     }
-    else if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE) {
+    else if (mVertexNormalsDataType == TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE) {
         const double* normal = static_cast<const double*>(vertexNormalPointer);
         (*outNormal)[0] = decimal(normal[0]);
         (*outNormal)[1] = decimal(normal[1]);
