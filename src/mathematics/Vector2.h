@@ -62,6 +62,9 @@ struct Vector2 {
         /// Copy-constructor
         Vector2(const Vector2& vector);
 
+        /// Move-constructor
+        Vector2(Vector2&& vector) noexcept;
+
         /// Destructor
         ~Vector2() = default;
 
@@ -131,6 +134,9 @@ struct Vector2 {
         /// Overloaded operator
         Vector2& operator=(const Vector2& vector);
 
+        /// Overloaded move-assignment operator
+        Vector2& operator=(Vector2&& vector) noexcept;
+
         /// Overloaded less than operator for ordering to be used inside std::set for instance
         bool operator<(const Vector2& vector) const;
 
@@ -173,6 +179,8 @@ inline Vector2::Vector2(const Vector2& vector) : x(vector.x), y(vector.y) {
 
 }
 
+/// Move-constructor
+inline Vector2::Vector2(Vector2&& vector) noexcept = default;
 
 // Set the vector to zero
 inline void Vector2::setToZero() {
@@ -336,6 +344,9 @@ inline Vector2& Vector2::operator=(const Vector2& vector) {
     }
     return *this;
 }
+
+/// Move-assignment operator
+inline Vector2& Vector2::operator=(Vector2&& vector) noexcept = default;
 
 // Overloaded less than operator for ordering to be used inside std::set for instance
 inline bool Vector2::operator<(const Vector2& vector) const {
