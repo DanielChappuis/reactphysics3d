@@ -304,6 +304,7 @@ class TestRaycast : public Test {
         /// Destructor
         virtual ~TestRaycast() {
 
+            mPhysicsCommon.destroyPhysicsWorld(mWorld);
             mPhysicsCommon.destroyBoxShape(mBoxShape);
             mPhysicsCommon.destroySphereShape(mSphereShape);
             mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
@@ -311,7 +312,6 @@ class TestRaycast : public Test {
             mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
             mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
 
-            mPhysicsCommon.destroyPhysicsWorld(mWorld);
             delete mConcaveMeshVertexArray;
 
             delete mPolygonVertexArray;

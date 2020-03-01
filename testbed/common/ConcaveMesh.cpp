@@ -27,7 +27,7 @@
 #include "ConcaveMesh.h"
 
 // Constructor
-ConcaveMesh::ConcaveMesh(bool createRigidBody, float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
+ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
            : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -60,7 +60,8 @@ ConcaveMesh::ConcaveMesh(bool createRigidBody, float mass, reactphysics3d::Physi
     // Create the body
     if (createRigidBody) {
         rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity(), mass);
+        mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
         mBody = body;
     }
     else {

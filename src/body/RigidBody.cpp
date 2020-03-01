@@ -38,8 +38,7 @@ using namespace reactphysics3d;
 * @param world The world where the body has been added
 * @param id The ID of the body
 */
-RigidBody::RigidBody(PhysicsWorld& world, Entity entity)
-          : CollisionBody(world, entity), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
+RigidBody::RigidBody(PhysicsWorld& world, Entity entity) : CollisionBody(world, entity) {
 
 }
 
@@ -50,12 +49,12 @@ BodyType RigidBody::getType() const {
 
 // Set the type of the body
 /// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
-/// STATIC : A static body has infinite mass, zero velocity but the position can be
+/// STATIC : A static body is simulated as if it has infinite mass, zero velocity but its position can be
 ///          changed manually. A static body does not collide with other static or kinematic bodies.
-/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+/// KINEMATIC : A kinematic body is simulated as if it has infinite mass, its velocity can be changed manually and its
 ///             position is computed by the physics engine. A kinematic body does not collide with
 ///             other static or kinematic bodies.
-/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+/// DYNAMIC : A dynamic body has non-zero mass, its velocity is determined by forces and its
 ///           position is determined by the physics engine. A dynamic body can collide with other
 ///           dynamic, static or kinematic bodies.
 /**
@@ -66,9 +65,6 @@ void RigidBody::setType(BodyType type) {
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == type) return;
 
     mWorld.mRigidBodyComponents.setBodyType(mEntity, type);
-
-    // Recompute the total mass, center of mass and inertia tensor
-    recomputeMassInformation();
 
     // If it is a static body
     if (type == BodyType::STATIC) {
@@ -86,10 +82,23 @@ void RigidBody::setType(BodyType type) {
         mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
     }
     else {  // If it is a dynamic body
-        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
 
-        if (mIsInertiaTensorSetByUser) {
-            mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
+        const decimal mass = mWorld.mRigidBodyComponents.getMass(mEntity);
+
+        if (mass > decimal(0.0)) {
+            mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mass) ;
+        }
+        else {
+            mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+        }
+
+        // Compute the inverse local inertia tensor
+        const Matrix3x3& inertiaTensorLocal = mWorld.mRigidBodyComponents.getLocalInertiaTensor(mEntity);
+        if (approxEqual(inertiaTensorLocal.getDeterminant(), decimal(0.0))) {
+            mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+        }
+        else {
+            mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
         }
     }
 
@@ -112,32 +121,12 @@ void RigidBody::setType(BodyType type) {
              (type == BodyType::STATIC ? "Static" : (type == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
 }
 
-// Get the inverse local inertia tensor of the body (in body coordinates)
-const Matrix3x3& RigidBody::getInverseInertiaTensorLocal() const {
-    return mWorld.mRigidBodyComponents.getInertiaTensorLocalInverse(mEntity);
-}
-
-// Return the inverse of the inertia tensor in world coordinates.
-/// The inertia tensor I_w in world coordinates is computed with the
-/// local inverse inertia tensor I_b^-1 in body coordinates
-/// by I_w = R * I_b^-1 * R^T
-/// where R is the rotation matrix (and R^T its transpose) of the
-/// current orientation quaternion of the body
-/**
- * @return The 3x3 inverse inertia tensor matrix of the body in world-space
- *         coordinates
- */
-const Matrix3x3 RigidBody::getInertiaTensorInverseWorld() const {
-
-    return getInertiaTensorInverseWorld(mWorld, mEntity);
-}
-
 // Method that return the mass of the body
 /**
  * @return The mass (in kilograms) of the body
  */
 decimal RigidBody::getMass() const {
-    return mWorld.mRigidBodyComponents.getInitMass(mEntity);
+    return mWorld.mRigidBodyComponents.getMass(mEntity);
 }
 
 // Apply an external force to the body at a given point (in world-space coordinates).
@@ -171,22 +160,29 @@ void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
     mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + (point - centerOfMassWorld).cross(force));
 }
 
+// Return the local inertia tensor of the body (in body coordinates)
+const Matrix3x3& RigidBody::getLocalInertiaTensor() const {
+
+    return mWorld.mRigidBodyComponents.getLocalInertiaTensor(mEntity);
+}
+
 // Set the local inertia tensor of the body (in local-space coordinates)
-/// If the inertia tensor is set with this method, it will not be computed
-/// using the collision shapes of the body.
+/// Note that an inertia tensor with a zero value on its diagonal is interpreted as infinite inertia.
 /**
  * @param inertiaTensorLocal The 3x3 inertia tensor matrix of the body in local-space
  *                           coordinates
  */
-void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
+void RigidBody::setLocalInertiaTensor(const Matrix3x3& inertiaTensorLocal) {
 
-    mUserInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
-    mIsInertiaTensorSetByUser = true;
-
-    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
 
     // Compute the inverse local inertia tensor
-    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
+    if (approxEqual(inertiaTensorLocal.getDeterminant(), decimal(0.0))) {
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+    }
+    else {
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
+    }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
@@ -231,45 +227,18 @@ decimal RigidBody::getAngularDamping() const {
     return mWorld.mRigidBodyComponents.getAngularDamping(mEntity);
 }
 
-// Set the inverse local inertia tensor of the body (in local-space coordinates)
-/// If the inverse inertia tensor is set with this method, it will not be computed
-/// using the collision shapes of the body.
+// Set the center of mass of the body (in local-space coordinates)
+/// This method does not move the rigid body in the world.
 /**
- * @param inverseInertiaTensorLocal The 3x3 inverse inertia tensor matrix of the body in local-space
- *                           		coordinates
+ * @param centerOfMass The center of mass of the body in local-space coordinates
  */
-void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTensorLocal) {
-
-    mUserInertiaTensorLocalInverse = inverseInertiaTensorLocal;
-    mIsInertiaTensorSetByUser = true;
-
-    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
-
-    // Compute the inverse local inertia tensor
-    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, mUserInertiaTensorLocalInverse);
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set inverseInertiaTensorLocal=" + inverseInertiaTensorLocal.to_string());
-}
-
-// Set the local center of mass of the body (in local-space coordinates)
-/// If you set the center of mass with the method, it will not be computed
-/// automatically using collision shapes.
-/**
- * @param centerOfMassLocal The center of mass of the body in local-space
- *                          coordinates
- */
-void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
-
-    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
-
-    mIsCenterOfMassSetByUser = true;
+void RigidBody::setLocalCenterOfMass(const Vector3& centerOfMass) {
 
     const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
-    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
+    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMass);
 
     // Compute the center of mass in world-space coordinates
-    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * centerOfMassLocal);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * centerOfMass);
 
     // Update the linear velocity of the center of mass
     Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
@@ -279,25 +248,257 @@ void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMass.to_string());
+}
+
+// Return the center of mass of the body (in local-space coordinates)
+const Vector3& RigidBody::getLocalCenterOfMass() const {
+    return mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+}
+
+// Compute and set the local-space center of mass of the body using its colliders
+/// This method uses the shape, mass density and transforms of the colliders to set
+/// the center of mass of the body. Note that calling this method will overwrite the
+/// mass that has been previously set with the RigidBody::setCenterOfMass() method. Moreover, this method
+/// does not use the mass set by the user with the RigidBody::setMass() method to compute the center
+/// of mass but only the mass density and volume of the colliders.
+void RigidBody::updateLocalCenterOfMassFromColliders() {
+
+    const Vector3 oldCenterOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+
+    Vector3 centerOfMassLocal = computeCenterOfMass();
+
+    const Vector3 centerOfMassWorld = mWorld.mTransformComponents.getTransform(mEntity) * centerOfMassLocal;
+
+    // Set the center of mass
+    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, centerOfMassWorld);
+
+    // Update the linear velocity of the center of mass
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMassWorld);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
 }
 
+// Compute and return the local-space center of mass of the body using its colliders
+Vector3 RigidBody::computeCenterOfMass() const {
+
+    decimal totalMass = decimal(0.0);
+    Vector3 centerOfMassLocal(0, 0, 0);
+
+    // Compute the local center of mass
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
+
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+
+        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
+        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+
+        const decimal colliderMass = colliderVolume * colliderMassDensity;
+
+        totalMass += colliderMass;
+        centerOfMassLocal += colliderMass * mWorld.mCollidersComponents.getLocalToBodyTransform(colliderEntities[i]).getPosition();
+    }
+
+    if (totalMass > decimal(0.0)) {
+        centerOfMassLocal /= totalMass;
+    }
+
+    return centerOfMassLocal;
+}
+
+// Compute the local-space inertia tensor and total mass of the body using its colliders
+void RigidBody::computeMassAndInertiaTensorLocal(Matrix3x3& inertiaTensorLocal, decimal& totalMass) const {
+
+    inertiaTensorLocal.setToZero();
+    totalMass = decimal(0.0);
+
+    const Vector3 centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+
+    // Compute the inertia tensor using all the colliders
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
+
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+
+        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
+        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+        const decimal colliderMass = colliderVolume * colliderMassDensity;
+
+        totalMass += colliderMass;
+
+        // Get the inertia tensor of the collider in its local-space
+        Matrix3x3 inertiaTensor;
+        collider->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, colliderMass);
+
+        // Convert the collider inertia tensor into the local-space of the body
+        const Transform& shapeTransform = collider->getLocalToBodyTransform();
+        Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
+        inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
+
+        // Use the parallel axis theorem to convert the inertia tensor w.r.t the collider
+        // center into a inertia tensor w.r.t to the body origin.
+        Vector3 offset = shapeTransform.getPosition() - centerOfMassLocal;
+        decimal offsetSquare = offset.lengthSquare();
+        Matrix3x3 offsetMatrix;
+        offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
+        offsetMatrix[1].setAllValues(decimal(0.0), offsetSquare, decimal(0.0));
+        offsetMatrix[2].setAllValues(decimal(0.0), decimal(0.0), offsetSquare);
+        offsetMatrix[0] += offset * (-offset.x);
+        offsetMatrix[1] += offset * (-offset.y);
+        offsetMatrix[2] += offset * (-offset.z);
+        offsetMatrix *= colliderMass;
+
+        inertiaTensorLocal += inertiaTensor + offsetMatrix;
+    }
+}
+
+// Compute and set the local-space inertia tensor of the body using its colliders
+/// This method uses the shape, mass density and transforms of the colliders to set
+/// the local-space inertia tensor of the body. Note that calling this method will overwrite the
+/// mass that has been set with the RigidBody::setInertiaTensorLocal() method.
+void RigidBody::updateLocalInertiaTensorFromColliders() {
+
+    const Vector3 centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+
+    // Compute the local-space inertia tensor
+    Matrix3x3 inertiaTensorLocal;
+    decimal totalMass;
+    computeMassAndInertiaTensorLocal(inertiaTensorLocal, totalMass);
+
+    mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
+
+    // Compute the inverse local inertia tensor
+    if (approxEqual(inertiaTensorLocal.getDeterminant(), decimal(0.0))) {
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+    }
+    else {
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
+    }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+}
+
+// Compute and set the mass of the body using its colliders
+/// This method uses the shape, mass density and transforms of the colliders to set
+/// the total mass of the body. Note that calling this method will overwrite the
+/// mass that has been set with the RigidBody::setMass() method
+void RigidBody::updateMassFromColliders() {
+
+    decimal totalMass = decimal(0.0);
+
+    // Compute the total mass of the body
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+
+        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
+        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+
+        const decimal colliderMass = colliderVolume * colliderMassDensity;
+
+        totalMass += colliderMass;
+    }
+
+    // Set the mass
+    mWorld.mRigidBodyComponents.setMass(mEntity, totalMass);
+
+    // Compute the inverse mass
+    if (totalMass > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / totalMass);
+    }
+    else {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+    }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(totalMass));
+}
+
+// Compute and set the center of mass, the mass and the local-space inertia tensor of the body using its colliders
+/// This method uses the shape, mass density and transform of the colliders of the body to set
+/// the total mass, the center of mass and the local inertia tensor of the body.
+/// Note that calling this method will overwrite the
+/// mass that has been set with the RigidBody::setMass(), the center of mass that has been
+/// set with RigidBody::setCenterOfMass() and the local inertia tensor that has been set with
+/// RigidBody::setInertiaTensorLocal().
+void RigidBody::updateMassPropertiesFromColliders() {
+
+    const Vector3 oldCenterOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+
+    // Compute the local center of mass
+    Vector3 centerOfMassLocal = computeCenterOfMass();
+
+    const Vector3 centerOfMassWorld = mWorld.mTransformComponents.getTransform(mEntity) * centerOfMassLocal;
+
+    // Set the center of mass
+    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, centerOfMassWorld);
+
+    // Update the linear velocity of the center of mass
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMassWorld);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
+
+    // Compute the mass and local-space inertia tensor
+    Matrix3x3 inertiaTensorLocal;
+    decimal totalMass;
+    computeMassAndInertiaTensorLocal(inertiaTensorLocal, totalMass);
+
+    mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
+
+    // Compute the inverse local inertia tensor
+    if (approxEqual(inertiaTensorLocal.getDeterminant(), decimal(0.0))) {
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+    }
+    else {
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
+    }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+
+    // Set the mass
+    mWorld.mRigidBodyComponents.setMass(mEntity, totalMass);
+
+    // Compute the inverse mass
+    if (totalMass > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / totalMass);
+    }
+    else {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+    }
+
+    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(totalMass));
+}
+
 // Set the mass of the rigid body
+/// Note that a mass of zero is interpreted as infinite mass.
 /**
  * @param mass The mass (in kilograms) of the body
  */
 void RigidBody::setMass(decimal mass) {
 
-    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+    mWorld.mRigidBodyComponents.setMass(mEntity, mass);
 
-    mWorld.mRigidBodyComponents.setInitMass(mEntity, mass);
+    // TODO : Report error if mass is negative
 
-    if (mWorld.mRigidBodyComponents.getInitMass(mEntity) > decimal(0.0)) {
-        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
+    if (mWorld.mRigidBodyComponents.getMass(mEntity) > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mass);
     }
     else {
-        mWorld.mRigidBodyComponents.setInitMass(mEntity, decimal(1.0));
-        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0));
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
@@ -315,10 +516,9 @@ void RigidBody::setMass(decimal mass) {
  * @param collisionShape The collision shape of the new collider
  * @param transform The transformation of the collider that transforms the
  *        local-space of the collider into the local-space of the body
- * @param mass Mass (in kilograms) of the collider you want to add
  * @return A pointer to the collider that has been created
  */
-Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform& transform, decimal mass) {
+Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform& transform) {
 
     // Create a new entity for the collider
     Entity colliderEntity = mWorld.mEntityManager.createEntity();
@@ -333,9 +533,8 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
-    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider,
-                                                                   AABB(localBoundsMin, localBoundsMax),
-                                                                   transform, collisionShape, mass, 0x0001, 0xFFFF, localToWorldTransform);
+    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, AABB(localBoundsMin, localBoundsMax),
+                                                            transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform);
     bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
     mWorld.mCollidersComponents.addComponent(colliderEntity, isSleeping, colliderComponent);
 
@@ -365,10 +564,6 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addCollider(collider, aabb);
 
-    // Recompute the center of mass, total mass and inertia tensor of the body with the new
-    // collision shape
-    recomputeMassInformation();
-
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " added to body");
 
@@ -389,9 +584,6 @@ void RigidBody::removeCollider(Collider* collider) {
 
     // Remove the collision shape
     CollisionBody::removeCollider(collider);
-
-    // Recompute the total mass, center of mass and inertia tensor
-    recomputeMassInformation();
 }
 
 // Set the variable to know if the gravity is applied to this rigid body
@@ -498,101 +690,6 @@ void RigidBody::setTransform(const Transform& transform) {
 
     // Awake the body if it is sleeping
     setIsSleeping(false);
-}
-
-// Recompute the center of mass, total mass and inertia tensor of the body using all
-// the collision shapes attached to the body.
-void RigidBody::recomputeMassInformation() {
-
-    mWorld.mRigidBodyComponents.setInitMass(mEntity, decimal(0.0));
-    mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
-    if (!mIsInertiaTensorSetByUser) mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
-    if (!mIsCenterOfMassSetByUser) mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, Vector3::zero());
-    Matrix3x3 inertiaTensorLocal;
-    inertiaTensorLocal.setToZero();
-
-    const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
-
-    // If it is a STATIC or a KINEMATIC body
-    BodyType type = mWorld.mRigidBodyComponents.getBodyType(mEntity);
-    if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
-        mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
-        return;
-    }
-
-    assert(mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::DYNAMIC);
-
-    // Compute the total mass of the body
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
-        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
-        mWorld.mRigidBodyComponents.setInitMass(mEntity, mWorld.mRigidBodyComponents.getInitMass(mEntity) + collider->getMass());
-
-        if (!mIsCenterOfMassSetByUser) {
-            mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity) +
-                                                            collider->getLocalToBodyTransform().getPosition() * collider->getMass());
-        }
-    }
-
-    if (mWorld.mRigidBodyComponents.getInitMass(mEntity) > decimal(0.0)) {
-        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mWorld.mRigidBodyComponents.getInitMass(mEntity));
-    }
-    else {
-        mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform.getPosition());
-        return;
-    }
-
-    // Compute the center of mass
-    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
-
-    if (!mIsCenterOfMassSetByUser) {
-        mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity) * mWorld.mRigidBodyComponents.getMassInverse(mEntity));
-    }
-
-    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform * mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity));
-
-    if (!mIsInertiaTensorSetByUser) {
-
-        // Compute the inertia tensor using all the colliders
-        const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-        for (uint i=0; i < colliderEntities.size(); i++) {
-
-            Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
-
-            // Get the inertia tensor of the collider in its local-space
-            Matrix3x3 inertiaTensor;
-            collider->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, collider->getMass());
-
-            // Convert the collider inertia tensor into the local-space of the body
-            const Transform& shapeTransform = collider->getLocalToBodyTransform();
-            Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
-            inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
-
-            // Use the parallel axis theorem to convert the inertia tensor w.r.t the collider
-            // center into a inertia tensor w.r.t to the body origin.
-            Vector3 offset = shapeTransform.getPosition() - mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
-            decimal offsetSquare = offset.lengthSquare();
-            Matrix3x3 offsetMatrix;
-            offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
-            offsetMatrix[1].setAllValues(decimal(0.0), offsetSquare, decimal(0.0));
-            offsetMatrix[2].setAllValues(decimal(0.0), decimal(0.0), offsetSquare);
-            offsetMatrix[0] += offset * (-offset.x);
-            offsetMatrix[1] += offset * (-offset.y);
-            offsetMatrix[2] += offset * (-offset.z);
-            offsetMatrix *= collider->getMass();
-
-            inertiaTensorLocal += inertiaTensor + offsetMatrix;
-        }
-
-        // Compute the local inverse inertia tensor
-        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
-    }
-
-    // Update the linear velocity of the center of mass
-    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
-    Vector3 angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
-    linearVelocity += angularVelocity.cross(mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity) - oldCenterOfMass);
-    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 }
 
 // Return the linear velocity

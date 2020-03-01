@@ -30,6 +30,7 @@
 #include <cassert>
 #include "configuration.h"
 #include "utils/Profiler.h"
+#include "containers/List.h"
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -141,6 +142,9 @@ class CollisionShape {
 
         /// Return the local inertia tensor of the collision shapes
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
+
+        /// Compute and return the volume of the collision shape
+        virtual decimal getVolume() const=0;
 
         /// Compute the world-space AABB of the collision shape given a transform
         virtual void computeAABB(AABB& aabb, const Transform& transform) const;

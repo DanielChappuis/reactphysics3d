@@ -28,7 +28,7 @@
 #include "PerlinNoise.h"
 
 // Constructor
-HeightField::HeightField(bool createRigidBody, float mass, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
+HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
            : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -54,13 +54,15 @@ HeightField::HeightField(bool createRigidBody, float mass, reactphysics3d::Physi
     // Create a body
     if (createRigidBody) {
         rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity(), mass);
+        mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
         mBody = body;
     }
     else {
         mBody = physicsWorld->createCollisionBody(mPreviousTransform);
         mCollider = mBody->addCollider(mHeightFieldShape, rp3d::Transform::identity());
     }
+
 
     // Create the VBOs and VAO
     createVBOAndVAO();

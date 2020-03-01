@@ -105,6 +105,9 @@ class CapsuleShape : public ConvexShape {
         /// Return the local bounds of the shape in x, y and z directions
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
+        /// Compute and return the volume of the collision shape
+        virtual decimal getVolume() const override;
+
         /// Return true if the collision shape is a polyhedron
         virtual bool isPolyhedron() const override;
 
@@ -186,6 +189,11 @@ inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
     min.x = -mMargin;
     min.y = -max.y;
     min.z = min.x;
+}
+
+// Compute and return the volume of the collision shape
+inline decimal CapsuleShape::getVolume() const {
+    return reactphysics3d::PI * mMargin * mMargin * (decimal(4.0) * mMargin / decimal(3.0) + decimal(2.0) * mHalfHeight);
 }
 
 // Return true if the collision shape is a polyhedron

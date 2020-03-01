@@ -111,6 +111,9 @@ class ConcaveShape : public CollisionShape {
         virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
                                                  List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
                                                  MemoryAllocator& allocator) const=0;
+
+        /// Compute and return the volume of the collision shape
+        virtual decimal getVolume() const override;
 };
 
 // Return true if the collision shape is convex, false if it is concave
@@ -154,6 +157,7 @@ inline void ConcaveShape::setScale(const Vector3& scale) {
 
     notifyColliderAboutChangedSize();
 }
+
 
 }
 

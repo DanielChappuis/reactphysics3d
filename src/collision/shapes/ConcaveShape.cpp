@@ -36,3 +36,19 @@ ConcaveShape::ConcaveShape(CollisionShapeName name, MemoryAllocator& allocator, 
                mScale(scaling) {
 
 }
+
+// Compute and return the volume of the collision shape
+/// Note that we approximate the volume of a concave shape with the volume of its AABB
+decimal ConcaveShape::getVolume() const {
+    Vector3 minBounds, maxBounds;
+
+    // Compute the local bounds
+    getLocalBounds(minBounds, maxBounds);
+
+    const decimal lengthX = maxBounds.x - minBounds.x;
+    const decimal lengthY = maxBounds.y - minBounds.y;
+    const decimal lengthZ = maxBounds.z - minBounds.z;
+
+    // Approximate the volume of the concave shape as the volume of its AABB
+    return lengthX * lengthY * lengthZ;
+}

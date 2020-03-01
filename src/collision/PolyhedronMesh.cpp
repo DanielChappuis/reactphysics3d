@@ -27,6 +27,7 @@
 #include "PolyhedronMesh.h"
 #include "memory/MemoryManager.h"
 #include "collision/PolygonVertexArray.h"
+#include <cstdlib>
 
 using namespace reactphysics3d;
 
@@ -152,4 +153,49 @@ void PolyhedronMesh::computeCentroid() {
     }
 
     mCentroid /= getNbVertices();
+}
+
+// Compute and return the area of a face
+decimal PolyhedronMesh::getFaceArea(uint faceIndex) const {
+
+    Vector3 sumCrossProducts(0, 0, 0);
+
+    const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(faceIndex);
+    assert(face.faceVertices.size() >= 3);
+
+    Vector3 v1 = getVertex(face.faceVertices[0]);
+
+    // For each vertex of the face
+    for (uint i=2; i < face.faceVertices.size(); i++) {
+
+        const Vector3 v2 = getVertex(face.faceVertices[i-1]);
+        const Vector3 v3 = getVertex(face.faceVertices[i]);
+
+        const Vector3 v1v2 = v2 - v1;
+        const Vector3 v1v3 = v3 - v1;
+
+        sumCrossProducts +=  v1v2.cross(v1v3);
+    }
+
+    return decimal(0.5) * sumCrossProducts.length();
+}
+
+// Compute and return the volume of the polyhedron
+/// We use the divergence theorem to compute the volume of the polyhedron using a sum over its faces.
+decimal PolyhedronMesh::getVolume() const {
+
+    decimal sum = 0.0;
+
+    // For each face of the polyhedron
+    for (uint f=0; f < getNbFaces(); f++) {
+
+        const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(f);
+        const decimal faceArea = getFaceArea(f);
+        const Vector3 faceNormal = mFacesNormals[f];
+        const Vector3 faceVertex = getVertex(face.faceVertices[0]);
+
+        sum += faceVertex.dot(faceNormal) * faceArea;
+    }
+
+    return std::abs(sum) / decimal(3.0);
 }

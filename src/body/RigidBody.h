@@ -51,18 +51,6 @@ class RigidBody : public CollisionBody {
 
     protected :
 
-        // -------------------- Attributes -------------------- //
-
-        /// Inverse Local inertia tensor of the body (in local-space) set
-        /// by the user with respect to the center of mass of the body
-        Matrix3x3 mUserInertiaTensorLocalInverse;
-
-        /// True if the center of mass is set by the user
-        bool mIsCenterOfMassSetByUser;
-
-        /// True if the inertia tensor is set by the user
-        bool mIsInertiaTensorSetByUser;
-
         // -------------------- Methods -------------------- //
 
         /// Set the variable to know whether or not the body is sleeping
@@ -70,6 +58,12 @@ class RigidBody : public CollisionBody {
 
         /// Update whether the current overlapping pairs where this body is involed are active or not
         void updateOverlappingPairs();
+
+        /// Compute and return the local-space center of mass of the body using its colliders
+        Vector3 computeCenterOfMass() const;
+
+        /// Compute the local-space inertia tensor and total mass of the body using its colliders
+        void computeMassAndInertiaTensorLocal(Matrix3x3& inertiaTensorLocal, decimal& totalMass) const;
 
         /// Return the inverse of the inertia tensor in world coordinates.
         static const Matrix3x3 getInertiaTensorInverseWorld(PhysicsWorld& world, Entity bodyEntity);
@@ -96,6 +90,9 @@ class RigidBody : public CollisionBody {
         /// Return the mass of the body
         decimal getMass() const;
 
+        /// Set the mass of the rigid body
+        void setMass(decimal mass);
+
         /// Return the linear velocity
         Vector3 getLinearVelocity() const;
 
@@ -108,23 +105,29 @@ class RigidBody : public CollisionBody {
         /// Set the angular velocity.
         void setAngularVelocity(const Vector3& angularVelocity);
 
+        /// Return the local inertia tensor of the body (in body coordinates)
+        const Matrix3x3& getLocalInertiaTensor() const;
+
         /// Set the local inertia tensor of the body (in body coordinates)
-        void setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal);
+        void setLocalInertiaTensor(const Matrix3x3& inertiaTensorLocal);
 
-        /// Set the inverse local inertia tensor of the body (in body coordinates)
-        void setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTensorLocal);
+        /// Return the center of mass of the body (in local-space coordinates)
+        const Vector3& getLocalCenterOfMass() const;
 
-        /// Get the inverse local inertia tensor of the body (in body coordinates)
-        const Matrix3x3& getInverseInertiaTensorLocal() const;
+        /// Set the center of mass of the body (in local-space coordinates)
+        void setLocalCenterOfMass(const Vector3& centerOfMass);
 
-        /// Return the inverse of the inertia tensor in world coordinates.
-        const Matrix3x3 getInertiaTensorInverseWorld() const;
+        /// Compute and set the local-space center of mass of the body using its colliders
+        void updateLocalCenterOfMassFromColliders();
 
-        /// Set the local center of mass of the body (in local-space coordinates)
-        void setCenterOfMassLocal(const Vector3& centerOfMassLocal);
+        /// Compute and set the local-space inertia tensor of the body using its colliders
+        void updateLocalInertiaTensorFromColliders();
 
-        /// Set the mass of the rigid body
-        void setMass(decimal mass);
+        /// Compute and set the mass of the body using its colliders
+        void updateMassFromColliders();
+
+        /// Compute and set the center of mass, the mass and the local-space inertia tensor of the body using its colliders
+        void updateMassPropertiesFromColliders();
 
         /// Return the type of the body
         BodyType getType() const;
@@ -172,16 +175,10 @@ class RigidBody : public CollisionBody {
         virtual void setIsActive(bool isActive) override;
 
         /// Create a new collider and add it to the body
-        // TODO : Remove the mass from this parameter so that we can correctly use inheritance here
-        //        The user will then need to call Collider->setMass() to set the mass of the shape
-        virtual Collider* addCollider(CollisionShape* collisionShape, const Transform& transform, decimal mass);
+        virtual Collider* addCollider(CollisionShape* collisionShape, const Transform& transform) override;
 
         /// Remove a collider from the body
         virtual void removeCollider(Collider* collider) override;
-
-        /// Recompute the center of mass, total mass and inertia tensor of the body using all
-        /// the collision shapes attached to the body.
-        void recomputeMassInformation();
 
 #ifdef IS_PROFILING_ACTIVE
 

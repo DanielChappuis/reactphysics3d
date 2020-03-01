@@ -46,7 +46,6 @@ Dumbbell::Dumbbell(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusSphere = rp3d::decimal(1.5);
-    const rp3d::decimal massSphere = rp3d::decimal(2.0);
     mSphereShape = mPhysicsCommon.createSphereShape(radiusSphere);
 
     // Create a capsule collision shape for the middle of the dumbbell
@@ -54,7 +53,6 @@ Dumbbell::Dumbbell(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     const rp3d::decimal radiusCapsule = rp3d::decimal(0.5);
     const rp3d::decimal heightCapsule = rp3d::decimal(7.0);
-    const rp3d::decimal massCylinder = rp3d::decimal(1.0);
     mCapsuleShape = mPhysicsCommon.createCapsuleShape(radiusCapsule, heightCapsule);
 
     mPreviousTransform = rp3d::Transform::identity();
@@ -71,25 +69,23 @@ Dumbbell::Dumbbell(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3
     // Create a body corresponding to the dumbbell in the physics world
     if (createRigidBody) {
 
-        rp3d::RigidBody* body;
-        body = physicsWorld->createRigidBody(mPreviousTransform);
-
-        // Add the three collision shapes to the body and specify the mass and transform of the shapes
-        mColliderSphere1 = body->addCollider(mSphereShape, transformSphereShape1, massSphere);
-        mColliderSphere2 = body->addCollider(mSphereShape, transformSphereShape2, massSphere);
-        mColliderCapsule = body->addCollider(mCapsuleShape, transformCylinderShape, massCylinder);
-
+        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+        mColliderSphere1 = body->addCollider(mSphereShape, transformSphereShape1);
+        mColliderSphere2 = body->addCollider(mSphereShape, transformSphereShape2);
+        mColliderCapsule = body->addCollider(mCapsuleShape, transformCylinderShape);
+        mColliderSphere1->getMaterial().setMassDensity(2);
+        mColliderSphere2->getMaterial().setMassDensity(2);
+        body->updateMassPropertiesFromColliders();
         mBody = body;
     }
     else {
 
         mBody = physicsWorld->createCollisionBody(mPreviousTransform);
-
-        // Add the three collision shapes to the body and specify the mass and transform of the shapes
         mColliderSphere1 = mBody->addCollider(mSphereShape, transformSphereShape1);
         mColliderSphere2 = mBody->addCollider(mSphereShape, transformSphereShape2);
         mColliderCapsule = mBody->addCollider(mCapsuleShape, transformCylinderShape);
     }
+
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 

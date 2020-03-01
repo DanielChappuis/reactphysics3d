@@ -57,7 +57,7 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
         for (int j=0; j<i; j++) {
 
             // Create a cube and a corresponding rigid in the physics world
-            Box* cube = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            Box* cube = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
             // Set the box color
             cube->setColor(mObjectColorDemo);
@@ -76,7 +76,7 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
     // ------------------------- FLOOR ----------------------- //
 
     // Create the floor
-    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFloor->setColor(mFloorColorDemo);
     mFloor->setSleepingColor(mFloorColorDemo);
 

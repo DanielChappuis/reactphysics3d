@@ -100,13 +100,17 @@ class RigidBodyComponents : public Components {
         /// Array with the angular damping factor of each component
         decimal* mAngularDampings;
 
-        /// Array with the initial mass of each component
-        decimal* mInitMasses;
+        /// Array with the mass of each component
+        decimal* mMasses;
 
         /// Array with the inverse mass of each component
         decimal* mInverseMasses;
 
+        /// Array with the inertia tensor of each component
+        Matrix3x3* mLocalInertiaTensors;
+
         /// Array with the inverse of the inertia tensor of each component
+        // TODO : We should use a Vector3 here for the diagonal instead of a Matrix3x3
         Matrix3x3* mInverseInertiaTensorsLocal;
 
         /// Array with the constrained linear velocity of each component
@@ -234,11 +238,23 @@ class RigidBodyComponents : public Components {
         /// Return the angular damping factor of an entity
         decimal getAngularDamping(Entity bodyEntity) const;
 
-        /// Return the initial mass of an entity
-        decimal getInitMass(Entity bodyEntity) const;
+        /// Return the mass of an entity
+        decimal getMass(Entity bodyEntity) const;
+
+        /// Set the mass of an entity
+        void setMass(Entity bodyEntity, decimal mass);
 
         /// Return the mass inverse of an entity
         decimal getMassInverse(Entity bodyEntity) const;
+
+        /// Set the inverse mass of an entity
+        void setMassInverse(Entity bodyEntity, decimal inverseMass);
+
+        /// Return the local inertia tensor of an entity
+        const Matrix3x3& getLocalInertiaTensor(Entity bodyEntity);
+
+        /// Set the local inertia tensor of an entity
+        void setLocalInertiaTensor(Entity bodyEntity, const Matrix3x3& inertiaTensorLocal);
 
         /// Return the inverse local inertia tensor of an entity
         const Matrix3x3& getInertiaTensorLocalInverse(Entity bodyEntity);
@@ -254,12 +270,6 @@ class RigidBodyComponents : public Components {
 
         /// Set the angular damping factor of an entity
         void setAngularDamping(Entity bodyEntity, decimal angularDamping);
-
-        /// Set the initial mass of an entity
-        void setInitMass(Entity bodyEntity, decimal initMass);
-
-        /// Set the inverse mass of an entity
-        void setMassInverse(Entity bodyEntity, decimal inverseMass);
 
         /// Set the inverse local inertia tensor of an entity
         void setInverseInertiaTensorLocal(Entity bodyEntity, const Matrix3x3& inertiaTensorLocalInverse);
@@ -484,12 +494,12 @@ inline decimal RigidBodyComponents::getAngularDamping(Entity bodyEntity) const {
    return mAngularDampings[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Return the initial mass of an entity
-inline decimal RigidBodyComponents::getInitMass(Entity bodyEntity) const {
+// Return the mass of an entity
+inline decimal RigidBodyComponents::getMass(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-   return mInitMasses[mMapEntityToComponentIndex[bodyEntity]];
+   return mMasses[mMapEntityToComponentIndex[bodyEntity]];
 }
 
 // Return the inverse mass of an entity
@@ -540,12 +550,12 @@ inline void RigidBodyComponents::setAngularDamping(Entity bodyEntity, decimal an
    mAngularDampings[mMapEntityToComponentIndex[bodyEntity]] = angularDamping;
 }
 
-// Set the initial mass of an entity
-inline void RigidBodyComponents::setInitMass(Entity bodyEntity, decimal initMass) {
+// Set the  mass of an entity
+inline void RigidBodyComponents::setMass(Entity bodyEntity, decimal mass) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
-   mInitMasses[mMapEntityToComponentIndex[bodyEntity]] = initMass;
+   mMasses[mMapEntityToComponentIndex[bodyEntity]] = mass;
 }
 
 // Set the mass inverse of an entity
@@ -554,6 +564,22 @@ inline void RigidBodyComponents::setMassInverse(Entity bodyEntity, decimal inver
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    mInverseMasses[mMapEntityToComponentIndex[bodyEntity]] = inverseMass;
+}
+
+// Return the local inertia tensor of an entity
+inline const Matrix3x3& RigidBodyComponents::getLocalInertiaTensor(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mLocalInertiaTensors[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the local inertia tensor of an entity
+inline void RigidBodyComponents::setLocalInertiaTensor(Entity bodyEntity, const Matrix3x3& inertiaTensorLocal) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mLocalInertiaTensors[mMapEntityToComponentIndex[bodyEntity]] = inertiaTensorLocal;
 }
 
 // Set the inverse local inertia tensor of an entity

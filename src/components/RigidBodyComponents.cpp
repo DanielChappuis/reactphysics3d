@@ -40,7 +40,7 @@ RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(decimal) + sizeof(decimal) +
                                 sizeof(decimal) + sizeof(decimal) + sizeof(Matrix3x3) +
-                                sizeof(Vector3) + sizeof(Vector3) +
+                                sizeof(Matrix3x3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(bool) + sizeof(bool) + sizeof(List<Entity>)) {
@@ -74,9 +74,10 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     Vector3* newExternalTorques = reinterpret_cast<Vector3*>(newExternalForces + nbComponentsToAllocate);
     decimal* newLinearDampings = reinterpret_cast<decimal*>(newExternalTorques + nbComponentsToAllocate);
     decimal* newAngularDampings = reinterpret_cast<decimal*>(newLinearDampings + nbComponentsToAllocate);
-    decimal* newInitMasses = reinterpret_cast<decimal*>(newAngularDampings + nbComponentsToAllocate);
-    decimal* newInverseMasses = reinterpret_cast<decimal*>(newInitMasses + nbComponentsToAllocate);
-    Matrix3x3* newInertiaTensorLocalInverses = reinterpret_cast<Matrix3x3*>(newInverseMasses + nbComponentsToAllocate);
+    decimal* newMasses = reinterpret_cast<decimal*>(newAngularDampings + nbComponentsToAllocate);
+    decimal* newInverseMasses = reinterpret_cast<decimal*>(newMasses + nbComponentsToAllocate);
+    Matrix3x3* newInertiaTensorLocal = reinterpret_cast<Matrix3x3*>(newInverseMasses + nbComponentsToAllocate);
+    Matrix3x3* newInertiaTensorLocalInverses = reinterpret_cast<Matrix3x3*>(newInertiaTensorLocal + nbComponentsToAllocate);
     Vector3* newConstrainedLinearVelocities = reinterpret_cast<Vector3*>(newInertiaTensorLocalInverses + nbComponentsToAllocate);
     Vector3* newConstrainedAngularVelocities = reinterpret_cast<Vector3*>(newConstrainedLinearVelocities + nbComponentsToAllocate);
     Vector3* newSplitLinearVelocities = reinterpret_cast<Vector3*>(newConstrainedAngularVelocities + nbComponentsToAllocate);
@@ -105,8 +106,9 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newExternalTorques, mExternalTorques, mNbComponents * sizeof(Vector3));
         memcpy(newLinearDampings, mLinearDampings, mNbComponents * sizeof(decimal));
         memcpy(newAngularDampings, mAngularDampings, mNbComponents * sizeof(decimal));
-        memcpy(newInitMasses, mInitMasses, mNbComponents * sizeof(decimal));
+        memcpy(newMasses, mMasses, mNbComponents * sizeof(decimal));
         memcpy(newInverseMasses, mInverseMasses, mNbComponents * sizeof(decimal));
+        memcpy(newInertiaTensorLocal, mLocalInertiaTensors, mNbComponents * sizeof(Matrix3x3));
         memcpy(newInertiaTensorLocalInverses, mInverseInertiaTensorsLocal, mNbComponents * sizeof(Matrix3x3));
         memcpy(newConstrainedLinearVelocities, mConstrainedLinearVelocities, mNbComponents * sizeof(Vector3));
         memcpy(newConstrainedAngularVelocities, mConstrainedAngularVelocities, mNbComponents * sizeof(Vector3));
@@ -138,8 +140,9 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     mExternalTorques = newExternalTorques;
     mLinearDampings = newLinearDampings;
     mAngularDampings = newAngularDampings;
-    mInitMasses = newInitMasses;
+    mMasses = newMasses;
     mInverseMasses = newInverseMasses;
+    mLocalInertiaTensors = newInertiaTensorLocal;
     mInverseInertiaTensorsLocal = newInertiaTensorLocalInverses;
     mConstrainedLinearVelocities = newConstrainedLinearVelocities;
     mConstrainedAngularVelocities = newConstrainedAngularVelocities;
@@ -173,8 +176,9 @@ void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     new (mExternalTorques + index) Vector3(0, 0, 0);
     mLinearDampings[index] = decimal(0.0);
     mAngularDampings[index] = decimal(0.0);
-    mInitMasses[index] = decimal(1.0);
+    mMasses[index] = decimal(1.0);
     mInverseMasses[index] = decimal(1.0);
+    new (mLocalInertiaTensors + index) Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
     new (mInverseInertiaTensorsLocal + index) Matrix3x3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
     new (mConstrainedLinearVelocities + index) Vector3(0, 0, 0);
     new (mConstrainedAngularVelocities + index) Vector3(0, 0, 0);
@@ -216,8 +220,9 @@ void RigidBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex
     new (mExternalTorques + destIndex) Vector3(mExternalTorques[srcIndex]);
     mLinearDampings[destIndex] = mLinearDampings[srcIndex];
     mAngularDampings[destIndex] = mAngularDampings[srcIndex];
-    mInitMasses[destIndex] = mInitMasses[srcIndex];
+    mMasses[destIndex] = mMasses[srcIndex];
     mInverseMasses[destIndex] = mInverseMasses[srcIndex];
+    new (mLocalInertiaTensors + destIndex) Matrix3x3(mLocalInertiaTensors[srcIndex]);
     new (mInverseInertiaTensorsLocal + destIndex) Matrix3x3(mInverseInertiaTensorsLocal[srcIndex]);
     new (mConstrainedLinearVelocities + destIndex) Vector3(mConstrainedLinearVelocities[srcIndex]);
     new (mConstrainedAngularVelocities + destIndex) Vector3(mConstrainedAngularVelocities[srcIndex]);
@@ -258,8 +263,9 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     Vector3 externalTorque1(mExternalTorques[index1]);
     decimal linearDamping1 = mLinearDampings[index1];
     decimal angularDamping1 = mAngularDampings[index1];
-    decimal initMass1 = mInitMasses[index1];
+    decimal mass1 = mMasses[index1];
     decimal inverseMass1 = mInverseMasses[index1];
+    Matrix3x3 inertiaTensorLocal1 = mLocalInertiaTensors[index1];
     Matrix3x3 inertiaTensorLocalInverse1 = mInverseInertiaTensorsLocal[index1];
     Vector3 constrainedLinearVelocity1(mConstrainedLinearVelocities[index1]);
     Vector3 constrainedAngularVelocity1(mConstrainedAngularVelocities[index1]);
@@ -291,8 +297,9 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mExternalTorques + index2) Vector3(externalTorque1);
     mLinearDampings[index2] = linearDamping1;
     mAngularDampings[index2] = angularDamping1;
-    mInitMasses[index2] = initMass1;
+    mMasses[index2] = mass1;
     mInverseMasses[index2] = inverseMass1;
+    mLocalInertiaTensors[index2] = inertiaTensorLocal1;
     mInverseInertiaTensorsLocal[index2] = inertiaTensorLocalInverse1;
     new (mConstrainedLinearVelocities + index2) Vector3(constrainedLinearVelocity1);
     new (mConstrainedAngularVelocities + index2) Vector3(constrainedAngularVelocity1);
@@ -329,6 +336,7 @@ void RigidBodyComponents::destroyComponent(uint32 index) {
     mAngularVelocities[index].~Vector3();
     mExternalForces[index].~Vector3();
     mExternalTorques[index].~Vector3();
+    mLocalInertiaTensors[index].~Matrix3x3();
     mInverseInertiaTensorsLocal[index].~Matrix3x3();
     mConstrainedLinearVelocities[index].~Vector3();
     mConstrainedAngularVelocities[index].~Vector3();

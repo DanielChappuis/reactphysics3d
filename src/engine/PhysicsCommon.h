@@ -167,17 +167,28 @@ class PhysicsCommon {
         /// Destroy a triangle mesh
         void destroyTriangleMesh(TriangleMesh* triangleMesh);
 
+// If logging is enabled
+#ifdef IS_LOGGING_ACTIVE
+
         /// Create and return a new logger
         Logger* createLogger();
 
         /// Destroy a logger
         void destroyLogger(Logger* logger);
 
+#endif
+
+// If profiling is enabled
+#ifdef IS_PROFILING_ACTIVE
+
         /// Create and return a new profiler
         Profiler* createProfiler();
 
         /// Destroy a profiler
         void destroyProfiler(Profiler* profiler);
+
+#endif
+
 };
 
 }

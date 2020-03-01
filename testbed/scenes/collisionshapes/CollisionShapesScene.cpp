@@ -79,7 +79,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     for (int i=0; i<NB_BOXES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Box* box = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Box* box = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         box->setColor(mObjectColorDemo);
@@ -98,7 +98,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     for (int i=0; i<NB_SPHERES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Sphere* sphere = new Sphere(SPHERE_RADIUS, BOX_MASS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
+        Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
 
         // Add some rolling resistance
         sphere->getCollider()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
@@ -120,7 +120,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     for (int i=0; i<NB_CAPSULES; i++) {
 
         // Create a cylinder and a corresponding rigid in the physics world
-        Capsule* capsule = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT, CAPSULE_MASS,
+        Capsule* capsule = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT,
                                        mPhysicsCommon, mPhysicsWorld, meshFolderPath);
 
         capsule->getCollider()->getMaterial().setRollingResistance(rp3d::decimal(0.08f));
@@ -142,7 +142,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
     for (int i=0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(true, MESH_MASS, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "convexmesh.obj");
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -159,7 +159,7 @@ CollisionShapesScene::CollisionShapesScene(const std::string& name, EngineSettin
 
     // ---------- Create the floor ---------
 
-    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 	mPhysicsObjects.push_back(mFloor);
 
     // Set the box color

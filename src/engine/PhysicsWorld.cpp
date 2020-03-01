@@ -209,7 +209,7 @@ void PhysicsWorld::destroyCollisionBody(CollisionBody* collisionBody) {
              "Body " + std::to_string(collisionBody->getEntity().id) + ": collision body destroyed");
 
     // Remove all the collision shapes of the body
-    collisionBody->removeAllCollisionShapes();
+    collisionBody->removeAllColliders();
 
     mCollisionBodyComponents.removeComponent(collisionBody->getEntity());
     mTransformComponents.removeComponent(collisionBody->getEntity());
@@ -458,7 +458,7 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
     mRigidBodyComponents.addComponent(entity, false, rigidBodyComponent);
 
     // Compute the inverse mass
-    mRigidBodyComponents.setMassInverse(entity, decimal(1.0) / mRigidBodyComponents.getInitMass(entity));
+    mRigidBodyComponents.setMassInverse(entity, decimal(1.0) / mRigidBodyComponents.getMass(entity));
 
     // Add the rigid body to the physics world
     mRigidBodies.add(rigidBody);
@@ -488,7 +488,7 @@ void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
              "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body destroyed");
 
     // Remove all the collision shapes of the body
-    rigidBody->removeAllCollisionShapes();
+    rigidBody->removeAllColliders();
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     const List<Entity>& joints = mRigidBodyComponents.getJoints(rigidBody->getEntity());

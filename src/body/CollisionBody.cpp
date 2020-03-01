@@ -86,7 +86,7 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
     ColliderComponents::ColliderComponent colliderComponent(mEntity, collider,
                                                                   AABB(localBoundsMin, localBoundsMax),
-                                                                  transform, collisionShape, decimal(1), 0x0001, 0xFFFF, localToWorldTransform);
+                                                                  transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform);
     bool isActive = mWorld.mCollisionBodyComponents.getIsActive(mEntity);
     mWorld.mCollidersComponents.addComponent(colliderEntity, !isActive, colliderComponent);
 
@@ -196,8 +196,8 @@ void CollisionBody::removeCollider(Collider* collider) {
     mWorld.mMemoryManager.release(MemoryManager::AllocationType::Pool, collider, sizeof(Collider));
 }
 
-// Remove all the collision shapes
-void CollisionBody::removeAllCollisionShapes() {
+// Remove all the colliders
+void CollisionBody::removeAllColliders() {
 
     // Look for the collider that contains the collision shape in parameter.
     // Note that we need to copy the list of collider entities because we are deleting them in a loop.

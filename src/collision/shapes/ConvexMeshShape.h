@@ -135,6 +135,9 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
 
+        /// Compute and return the volume of the collision shape
+        virtual decimal getVolume() const override;
+
         /// Return the string representation of the shape
         virtual std::string to_string() const override;
 
@@ -240,6 +243,12 @@ inline Vector3 ConvexMeshShape::getFaceNormal(uint faceIndex) const {
 // Return the centroid of the polyhedron
 inline Vector3 ConvexMeshShape::getCentroid() const {
     return mPolyhedronMesh->getCentroid() * mScale;
+}
+
+
+// Compute and return the volume of the collision shape
+inline decimal ConvexMeshShape::getVolume() const {
+    return mPolyhedronMesh->getVolume();
 }
 
 }

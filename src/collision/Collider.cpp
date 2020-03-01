@@ -51,15 +51,6 @@ Collider::~Collider() {
 
 }
 
-// Return the mass of the collision shape
-/**
- * @return Mass of the collision shape (in kilograms)
- */
-decimal Collider::getMass() const {
-    return mBody->mWorld.mCollidersComponents.getMass(mEntity);
-}
-
-
 // Return true if a point is inside the collision shape
 /**
  * @param worldPoint Point to test in world-space coordinates

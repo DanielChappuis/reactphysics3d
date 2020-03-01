@@ -166,6 +166,9 @@ class TriangleShape : public ConvexPolyhedronShape {
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
 
+        /// Compute and return the volume of the collision shape
+        virtual decimal getVolume() const override;
+
         /// This method compute the smooth mesh contact with a triangle in case one of the two collision shapes is a triangle. The idea in this case is to use a smooth vertex normal of the triangle mesh
         static void computeSmoothTriangleMeshContact(const CollisionShape* shape1, const CollisionShape* shape2,
                                                      Vector3& localContactPointShape1, Vector3& localContactPointShape2,
@@ -302,6 +305,11 @@ inline void TriangleShape::setRaycastTestType(TriangleRaycastSide testType) {
 inline std::string TriangleShape::to_string() const {
     return "TriangleShape{v1=" + mPoints[0].to_string() + ", v2=" + mPoints[1].to_string() + "," +
             "v3=" + mPoints[2].to_string() + "}";
+}
+
+// Compute and return the volume of the collision shape
+inline decimal TriangleShape::getVolume() const {
+    return decimal(0.0);
 }
 
 }

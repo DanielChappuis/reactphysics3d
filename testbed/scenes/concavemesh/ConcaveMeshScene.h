@@ -56,11 +56,6 @@ const float CYLINDER_HEIGHT = 5.0f;
 const float CAPSULE_RADIUS = 1.0f;
 const float CAPSULE_HEIGHT = 1.0f;
 const float DUMBBELL_HEIGHT = 1.0f;
-const float BOX_MASS = 1.0f;
-const float CONE_MASS = 1.0f;
-const float CYLINDER_MASS = 1.0f;
-const float CAPSULE_MASS = 1.0f;
-const float MESH_MASS = 1.0f;
 
 // Class TriangleMeshScene
 class ConcaveMeshScene : public SceneDemo {

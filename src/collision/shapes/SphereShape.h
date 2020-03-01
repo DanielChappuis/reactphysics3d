@@ -93,6 +93,9 @@ class SphereShape : public ConvexShape {
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
+        /// Compute and return the volume of the collision shape
+        virtual decimal getVolume() const override;
+
         /// Update the AABB of a body using its collision shape
         virtual void computeAABB(AABB& aabb, const Transform& transform) const override;
 
@@ -178,6 +181,11 @@ inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal ma
     tensor.setAllValues(diag, 0.0, 0.0,
                         0.0, diag, 0.0,
                         0.0, 0.0, diag);
+}
+
+// Compute and return the volume of the collision shape
+inline decimal SphereShape::getVolume() const {
+    return decimal(4.0) / decimal(3.0) * reactphysics3d::PI * mMargin * mMargin * mMargin;
 }
 
 // Return true if a point is inside the collision shape

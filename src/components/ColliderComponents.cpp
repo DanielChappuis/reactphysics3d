@@ -35,8 +35,8 @@ using namespace reactphysics3d;
 
 // Constructor
 ColliderComponents::ColliderComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Collider*) + sizeof(int) +
-                sizeof(Transform) + sizeof(CollisionShape*) + sizeof(decimal) + sizeof(unsigned short) +
+                    :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Collider*) + sizeof(int32) +
+                sizeof(Transform) + sizeof(CollisionShape*) + sizeof(unsigned short) +
                 sizeof(unsigned short) + sizeof(Transform) + sizeof(List<uint64>) + sizeof(bool)) {
 
     // Allocate memory for the components data
@@ -62,8 +62,7 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     int32* newBroadPhaseIds = reinterpret_cast<int32*>(newColliders + nbComponentsToAllocate);
     Transform* newLocalToBodyTransforms = reinterpret_cast<Transform*>(newBroadPhaseIds + nbComponentsToAllocate);
     CollisionShape** newCollisionShapes = reinterpret_cast<CollisionShape**>(newLocalToBodyTransforms + nbComponentsToAllocate);
-    decimal* newMasses = reinterpret_cast<decimal*>(newCollisionShapes + nbComponentsToAllocate);
-    unsigned short* newCollisionCategoryBits = reinterpret_cast<unsigned short*>(newMasses + nbComponentsToAllocate);
+    unsigned short* newCollisionCategoryBits = reinterpret_cast<unsigned short*>(newCollisionShapes + nbComponentsToAllocate);
     unsigned short* newCollideWithMaskBits = reinterpret_cast<unsigned short*>(newCollisionCategoryBits + nbComponentsToAllocate);
     Transform* newLocalToWorldTransforms = reinterpret_cast<Transform*>(newCollideWithMaskBits + nbComponentsToAllocate);
     List<uint64>* newOverlappingPairs = reinterpret_cast<List<uint64>*>(newLocalToWorldTransforms + nbComponentsToAllocate);
@@ -79,7 +78,6 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newBroadPhaseIds, mBroadPhaseIds, mNbComponents * sizeof(int32));
         memcpy(newLocalToBodyTransforms, mLocalToBodyTransforms, mNbComponents * sizeof(Transform));
         memcpy(newCollisionShapes, mCollisionShapes, mNbComponents * sizeof(CollisionShape*));
-        memcpy(newMasses, mMasses, mNbComponents * sizeof(decimal));
         memcpy(newCollisionCategoryBits, mCollisionCategoryBits, mNbComponents * sizeof(unsigned short));
         memcpy(newCollideWithMaskBits, mCollideWithMaskBits, mNbComponents * sizeof(unsigned short));
         memcpy(newLocalToWorldTransforms, mLocalToWorldTransforms, mNbComponents * sizeof(Transform));
@@ -98,7 +96,6 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     mBroadPhaseIds = newBroadPhaseIds;
     mLocalToBodyTransforms = newLocalToBodyTransforms;
     mCollisionShapes = newCollisionShapes;
-    mMasses = newMasses;
     mCollisionCategoryBits = newCollisionCategoryBits;
     mCollideWithMaskBits = newCollideWithMaskBits;
     mLocalToWorldTransforms = newLocalToWorldTransforms;
@@ -121,7 +118,6 @@ void ColliderComponents::addComponent(Entity colliderEntity, bool isSleeping, co
     new (mBroadPhaseIds + index) int32(-1);
     new (mLocalToBodyTransforms + index) Transform(component.localToBodyTransform);
     mCollisionShapes[index] = component.collisionShape;
-    new (mMasses + index) decimal(component.mass);
     new (mCollisionCategoryBits + index) unsigned short(component.collisionCategoryBits);
     new (mCollideWithMaskBits + index) unsigned short(component.collideWithMaskBits);
     new (mLocalToWorldTransforms + index) Transform(component.localToWorldTransform);
@@ -149,7 +145,6 @@ void ColliderComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
     new (mBroadPhaseIds + destIndex) int32(mBroadPhaseIds[srcIndex]);
     new (mLocalToBodyTransforms + destIndex) Transform(mLocalToBodyTransforms[srcIndex]);
     mCollisionShapes[destIndex] = mCollisionShapes[srcIndex];
-    new (mMasses + destIndex) decimal(mMasses[srcIndex]);
     new (mCollisionCategoryBits + destIndex) unsigned short(mCollisionCategoryBits[srcIndex]);
     new (mCollideWithMaskBits + destIndex) unsigned short(mCollideWithMaskBits[srcIndex]);
     new (mLocalToWorldTransforms + destIndex) Transform(mLocalToWorldTransforms[srcIndex]);
@@ -177,7 +172,6 @@ void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
     int32 broadPhaseId1 = mBroadPhaseIds[index1];
     Transform localToBodyTransform1 = mLocalToBodyTransforms[index1];
     CollisionShape* collisionShape1 = mCollisionShapes[index1];
-    decimal mass1 = mMasses[index1];
     unsigned short collisionCategoryBits1 = mCollisionCategoryBits[index1];
     unsigned short collideWithMaskBits1 = mCollideWithMaskBits[index1];
     Transform localToWorldTransform1 = mLocalToWorldTransforms[index1];
@@ -196,7 +190,6 @@ void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mBroadPhaseIds + index2) int32(broadPhaseId1);
     new (mLocalToBodyTransforms + index2) Transform(localToBodyTransform1);
     mCollisionShapes[index2] = collisionShape1;
-    new (mMasses + index2) decimal(mass1);
     new (mCollisionCategoryBits + index2) unsigned short(collisionCategoryBits1);
     new (mCollideWithMaskBits + index2) unsigned short(collideWithMaskBits1);
     new (mLocalToWorldTransforms + index2) Transform(localToWorldTransform1);

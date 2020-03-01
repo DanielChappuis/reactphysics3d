@@ -38,7 +38,7 @@ openglframework::VertexArrayObject Box::mVAO;
 int Box::totalNbBoxes = 0;
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world,
+Box::Box(bool createRigidBody, const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world,
          const std::string& meshFolderPath)
     : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
 
@@ -57,58 +57,23 @@ Box::Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& ph
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mBoxShape = mPhysicsCommon.createBoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
-    //mBoxShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body in the physics world
-    mBody = world->createCollisionBody(mPreviousTransform);
+    if (createRigidBody) {
 
-    // Add the collision shape to the body
-    mCollider = mBody->addCollider(mBoxShape, rp3d::Transform::identity());
-
-    // If the Vertex Buffer object has not been created yet
-    if (totalNbBoxes == 0) {
-
-        // Create the Vertex Buffer
-        createVBOAndVAO();
+        // Create a rigid body in the physics world
+        rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
+        mCollider = body->addCollider(mBoxShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
+        mBody = body;
     }
+    else {
 
-    totalNbBoxes++;
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-}
-
-// Constructor
-Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::PhysicsCommon &physicsCommon, reactphysics3d::PhysicsWorld* world,
-         const std::string& meshFolderPath)
-    : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
-
-    // Initialize the size of the box
-    mSize[0] = size.x * 0.5f;
-    mSize[1] = size.y * 0.5f;
-    mSize[2] = size.z * 0.5f;
-
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4(mSize[0], 0, 0, 0,
-                                              0, mSize[1], 0, 0,
-                                              0, 0, mSize[2], 0,
-                                              0, 0, 0, 1);
-
-    // Create the collision shape for the rigid body (box shape)
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mBoxShape = mPhysicsCommon.createBoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body in the physics world
-    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
-
-    // Add the collision shape to the body
-    mCollider = body->addCollider(mBoxShape, rp3d::Transform::identity(), mass);
-
-    mBody = body;
+        // Create a body in the physics world
+        mBody = world->createCollisionBody(mPreviousTransform);
+        mCollider = mBody->addCollider(mBoxShape, rp3d::Transform::identity());
+    }
 
     // If the Vertex Buffer object has not been created yet
     if (totalNbBoxes == 0) {

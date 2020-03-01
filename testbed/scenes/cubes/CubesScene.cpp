@@ -34,6 +34,8 @@ using namespace cubesscene;
 CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
       : SceneDemo(name, settings, true, SCENE_RADIUS) {
 
+    iter = 0;
+
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 5, 0);
 
@@ -55,7 +57,7 @@ CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
     for (int i=0; i<NB_CUBES; i++) {
 
         // Create a cube and a corresponding rigid in the physics world
-        Box* cube = new Box(BOX_SIZE, BOX_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Box* cube = new Box(true, BOX_SIZE,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         cube->setColor(mObjectColorDemo);
@@ -73,7 +75,7 @@ CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
 	// ------------------------- FLOOR ----------------------- //
 
     // Create the floor
-    mFloor = new Box(FLOOR_SIZE, FLOOR_MASS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFloor->setColor(mFloorColorDemo);
     mFloor->setSleepingColor(mFloorColorDemo);
 

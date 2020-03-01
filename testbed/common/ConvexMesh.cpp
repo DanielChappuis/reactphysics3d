@@ -28,7 +28,7 @@
 #include <unordered_set>
 
 // Constructor
-ConvexMesh::ConvexMesh(bool createRigidBody, float mass, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
+ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
            : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -39,7 +39,7 @@ ConvexMesh::ConvexMesh(bool createRigidBody, float mass, rp3d::PhysicsCommon& ph
     // Polygon faces descriptions for the polyhedron
     mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
     rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
-    for (int f=0; f < getNbFaces(0); f++) {
+    for (uint f=0; f < getNbFaces(0); f++) {
 
 		for (int v = 0; v < 3; v++) {
 			
@@ -78,7 +78,8 @@ ConvexMesh::ConvexMesh(bool createRigidBody, float mass, rp3d::PhysicsCommon& ph
     // Create a rigid body corresponding to the sphere in the physics world
     if (createRigidBody) {
         rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity(), mass);
+        mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
         mBody = body;
     }
     else {
@@ -86,6 +87,7 @@ ConvexMesh::ConvexMesh(bool createRigidBody, float mass, rp3d::PhysicsCommon& ph
         mBody = physicsWorld->createCollisionBody(mPreviousTransform);
         mCollider = mBody->addCollider(mConvexShape, rp3d::Transform::identity());
     }
+
 
     // Create the VBOs and VAO
     createVBOAndVAO();

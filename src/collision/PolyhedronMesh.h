@@ -77,6 +77,9 @@ class PolyhedronMesh {
         /// Compute the centroid of the polyhedron
         void computeCentroid() ;
 
+        /// Compute and return the area of a face
+        decimal getFaceArea(uint faceIndex) const;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -101,6 +104,9 @@ class PolyhedronMesh {
 
         /// Return the centroid of the polyhedron
         Vector3 getCentroid() const;
+
+        /// Compute and return the volume of the polyhedron
+        decimal getVolume() const;
 
         // ---------- Friendship ---------- //
 

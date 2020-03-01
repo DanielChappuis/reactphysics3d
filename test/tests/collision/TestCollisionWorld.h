@@ -461,6 +461,8 @@ class TestCollisionWorld : public Test {
         /// Destructor
         virtual ~TestCollisionWorld() {
 
+            mPhysicsCommon.destroyPhysicsWorld(mWorld);
+
             mPhysicsCommon.destroyBoxShape(mBoxShape1);
             mPhysicsCommon.destroyBoxShape(mBoxShape2);
 
@@ -486,7 +488,6 @@ class TestCollisionWorld : public Test {
 
             delete mConcaveMeshTriangleVertexArray;
 
-            mPhysicsCommon.destroyPhysicsWorld(mWorld);
         }
 
         /// Run the tests

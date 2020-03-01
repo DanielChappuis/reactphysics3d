@@ -112,9 +112,6 @@ class Collider {
         /// Return the parent body
         CollisionBody* getBody() const;
 
-        /// Return the mass of the collision shape
-        decimal getMass() const;
-
         /// Return a pointer to the user data attached to this body
         void* getUserData() const;
 

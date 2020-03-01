@@ -176,11 +176,11 @@ class TestPointInside : public Test {
 
         /// Destructor
         virtual ~TestPointInside() {
+            mPhysicsCommon.destroyPhysicsWorld(mWorld);
             mPhysicsCommon.destroyBoxShape(mBoxShape);
             mPhysicsCommon.destroySphereShape(mSphereShape);
             mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape);
-            mPhysicsCommon.destroyPhysicsWorld(mWorld);
             mPhysicsCommon.destroyPolyhedronMesh(mConvexMeshPolyhedronMesh);
             delete[] mConvexMeshPolygonFaces;
             delete mConvexMeshPolygonVertexArray;

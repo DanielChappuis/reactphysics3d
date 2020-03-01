@@ -75,11 +75,8 @@ class Box : public PhysicsObject {
 		// -------------------- Methods -------------------- //
 
 		/// Constructor
-        Box(const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon,
+        Box(bool createRigidBody, const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon,
             reactphysics3d::PhysicsWorld* world, const std::string& meshFolderPath);
-
-		/// Constructor
-        Box(const openglframework::Vector3& size, float mass, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld *world, const std::string& meshFolderPath);
 
 		/// Destructor
         virtual ~Box() override;

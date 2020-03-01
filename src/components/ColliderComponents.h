@@ -73,9 +73,6 @@ class ColliderComponents : public Components {
         /// Pointers to the collision shapes of the colliders
         CollisionShape** mCollisionShapes;
 
-        /// Masses (in kilogramms) of the colliders
-        decimal* mMasses;
-
         /// Array of bits used to define the collision category of this shape.
         /// You can set a single bit to one to define a category value for this
         /// shape. This value is one (0x0001) by default. This variable can be used
@@ -124,17 +121,16 @@ class ColliderComponents : public Components {
             AABB localBounds;
             const Transform& localToBodyTransform;
             CollisionShape* collisionShape;
-            decimal mass;
             unsigned short collisionCategoryBits;
             unsigned short collideWithMaskBits;
             const Transform& localToWorldTransform;
 
             /// Constructor
             ColliderComponent(Entity bodyEntity, Collider* collider, AABB localBounds, const Transform& localToBodyTransform,
-                                CollisionShape* collisionShape, decimal mass, unsigned short collisionCategoryBits,
+                                CollisionShape* collisionShape, unsigned short collisionCategoryBits,
                                 unsigned short collideWithMaskBits, const Transform& localToWorldTransform)
                  :bodyEntity(bodyEntity), collider(collider), localBounds(localBounds), localToBodyTransform(localToBodyTransform),
-                  collisionShape(collisionShape), mass(mass), collisionCategoryBits(collisionCategoryBits), collideWithMaskBits(collideWithMaskBits),
+                  collisionShape(collisionShape), collisionCategoryBits(collisionCategoryBits), collideWithMaskBits(collideWithMaskBits),
                   localToWorldTransform(localToWorldTransform) {
 
             }
@@ -153,9 +149,6 @@ class ColliderComponents : public Components {
 
         /// Return the body entity of a given collider
         Entity getBody(Entity colliderEntity) const;
-
-        /// Return the mass of a collider
-        decimal getMass(Entity colliderEntity) const;
 
         /// Return a pointer to a given collider
         Collider* getCollider(Entity colliderEntity) const;
@@ -216,14 +209,6 @@ inline Entity ColliderComponents::getBody(Entity colliderEntity) const {
    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
    return mBodiesEntities[mMapEntityToComponentIndex[colliderEntity]];
-}
-
-// Return the mass of a collider
-inline decimal ColliderComponents::getMass(Entity colliderEntity) const {
-
-   assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
-
-   return mMasses[mMapEntityToComponentIndex[colliderEntity]];
 }
 
 // Return a pointer to a given collider

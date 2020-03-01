@@ -34,7 +34,7 @@ openglframework::VertexArrayObject Capsule::mVAO;
 int Capsule::totalNbCapsules = 0;
 
 // Constructor
-Capsule::Capsule(bool createRigidBody, float radius, float height, float mass, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+Capsule::Capsule(bool createRigidBody, float radius, float height, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                  const std::string& meshFolderPath)
         : PhysicsObject(physicsCommon, meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height) {
 
@@ -55,18 +55,14 @@ Capsule::Capsule(bool createRigidBody, float radius, float height, float mass, r
     if (createRigidBody) {
 
         rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-
-        // Add a collision shape to the body and specify the mass of the shape
-        mCollider = body->addCollider(mCapsuleShape, rp3d::Transform::identity(), mass);
-
+        mCollider = body->addCollider(mCapsuleShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
         mBody = body;
     }
     else {
 
         // Create a rigid body corresponding in the physics world
         mBody = physicsWorld->createCollisionBody(mPreviousTransform);
-
-        // Add a collision shape to the body and specify the mass of the shape
         mCollider = mBody->addCollider(mCapsuleShape, rp3d::Transform::identity());
     }
 

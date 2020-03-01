@@ -79,7 +79,7 @@ class CollisionBody {
         // -------------------- Methods -------------------- //
 
         /// Remove all the collision shapes
-        void removeAllCollisionShapes();
+        void removeAllColliders();
 
         /// Update the broad-phase state for this body (because it has moved for instance)
         void updateBroadPhaseState(decimal timeStep) const;

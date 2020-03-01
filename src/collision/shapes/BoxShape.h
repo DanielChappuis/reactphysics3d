@@ -98,6 +98,9 @@ class BoxShape : public ConvexPolyhedronShape {
         /// Return the local inertia tensor of the collision shape
         virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
 
+        /// Compute and return the volume of the collision shape
+        virtual decimal getVolume() const override;
+
         /// Return the number of faces of the polyhedron
         virtual uint getNbFaces() const override;
 
@@ -251,6 +254,11 @@ inline Vector3 BoxShape::getFaceNormal(uint faceIndex) const {
 // Return the centroid of the box
 inline Vector3 BoxShape::getCentroid() const {
     return Vector3::zero();
+}
+
+// Compute and return the volume of the collision shape
+inline decimal BoxShape::getVolume() const {
+    return 8 * mHalfExtents.x * mHalfExtents.y * mHalfExtents.z;
 }
 
 // Return the string representation of the shape

@@ -88,7 +88,7 @@ void DynamicsSystem::updateBodiesState() {
         mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).setOrientation(constrainedOrientation.getUnit());
     }
 
-    // Update the transform of the body (using the new center of mass and new orientation)
+    // Update the position of the body (using the new center of mass and new orientation)
     for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
 
         Transform& transform = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]);
@@ -144,7 +144,7 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
 
                 // Integrate the gravity force
                 mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] + timeStep *
-                                                                       mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mInitMasses[i] * mGravity;
+                                                                       mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mMasses[i] * mGravity;
             }
         }
     }

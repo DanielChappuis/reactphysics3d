@@ -95,15 +95,26 @@ void PhysicsCommon::release() {
         destroyTriangleMesh(*it);
     }
 
+// If logging is enabled
+#ifdef IS_LOGGING_ACTIVE
+
     // Destroy the loggers
     for (auto it = mLoggers.begin(); it != mLoggers.end(); ++it) {
         destroyLogger(*it);
     }
 
+#endif
+
+// If profiling is enabled
+#ifdef IS_PROFILING_ACTIVE
+
     // Destroy the profilers
     for (auto it = mProfilers.begin(); it != mProfilers.end(); ++it) {
         destroyProfiler(*it);
     }
+
+#endif
+
 }
 
 // Create and return an instance of PhysicsWorld
@@ -168,6 +179,10 @@ SphereShape* PhysicsCommon::createSphereShape(const decimal radius) {
 // Destroy a sphere collision shape
 void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
 
+    // TODO Test if collision shape is still part of some colliders, if so throw error
+
+    assert(sphereShape->mColliders.size() == 0);
+
    // Call the destructor of the shape
    sphereShape->~SphereShape();
 
@@ -189,6 +204,10 @@ BoxShape* PhysicsCommon::createBoxShape(const Vector3& extent) {
 
 // Destroy a box collision shape
 void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
+
+    // TODO Test if collision shape is still part of some colliders, if so throw error
+
+    assert(boxShape->mColliders.size() == 0);
 
    // Call the destructor of the shape
    boxShape->~BoxShape();
@@ -212,6 +231,10 @@ CapsuleShape* PhysicsCommon::createCapsuleShape(decimal radius, decimal height) 
 // Destroy a capsule collision shape
 void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
 
+    // TODO Test if collision shape is still part of some colliders, if so throw error
+
+    assert(capsuleShape->mColliders.size() == 0);
+
    // Call the destructor of the shape
    capsuleShape->~CapsuleShape();
 
@@ -233,6 +256,10 @@ ConvexMeshShape* PhysicsCommon::createConvexMeshShape(PolyhedronMesh* polyhedron
 
 // Destroy a convex mesh shape
 void PhysicsCommon::destroyConvexMeshShape(ConvexMeshShape* convexMeshShape) {
+
+    // TODO Test if collision shape is still part of some colliders, if so throw error
+
+    assert(convexMeshShape->mColliders.size() == 0);
 
    // Call the destructor of the shape
    convexMeshShape->~ConvexMeshShape();
@@ -259,6 +286,10 @@ HeightFieldShape* PhysicsCommon::createHeightFieldShape(int nbGridColumns, int n
 // Destroy a height-field shape
 void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) {
 
+   // TODO Test if collision shape is still part of some colliders, if so throw error
+
+   assert(heightFieldShape->mColliders.size() == 0);
+
    // Call the destructor of the shape
    heightFieldShape->~HeightFieldShape();
 
@@ -280,6 +311,10 @@ ConcaveMeshShape* PhysicsCommon::createConcaveMeshShape(TriangleMesh* triangleMe
 
 // Destroy a concave mesh shape
 void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
+
+   // TODO Test if collision shape is still part of some colliders, if so throw error
+
+   assert(concaveMeshShape->mColliders.size() == 0);
 
    // Call the destructor of the shape
    concaveMeshShape->~ConcaveMeshShape();
@@ -334,6 +369,9 @@ void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
    mTriangleMeshes.remove(triangleMesh);
 }
 
+// If logging is enabled
+#ifdef IS_LOGGING_ACTIVE
+
 // Create and return a new logger
 Logger* PhysicsCommon::createLogger() {
 
@@ -355,6 +393,11 @@ void PhysicsCommon::destroyLogger(Logger* logger) {
 
    mLoggers.remove(logger);
 }
+
+#endif
+
+// If profiling is enabled
+#ifdef IS_PROFILING_ACTIVE
 
 // Create and return a new profiler
 /// Note that you need to use a different profiler for each PhysicsWorld.
@@ -378,3 +421,5 @@ void PhysicsCommon::destroyProfiler(Profiler* profiler) {
 
    mProfilers.remove(profiler);
 }
+
+#endif

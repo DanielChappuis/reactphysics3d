@@ -12,6 +12,14 @@
  - It is now possible to change the scale of a HeightFieldShape using the HeightFieldShape::setScale() method
  - A method PhysicsWorld::getCollisionBody(uint index) has been added on a physics world to retrieve a given CollisionBody
  - A method PhysicsWorld::getRigidBody(uint index) has been added on a physics world to retrieve a given RigidBody
+ - The Material of a Collider now has a mass density parameter that is used to compute its mass
+ - A RigidBody::getLocalCenterOfMass() method has been added to retrieve the current center of mass of a rigid body
+ - Add PhysicsCommon class that needs to be instanciated at the beginning and is used as a factory for other objects of the library
+ - The RigidBody::updateLocalCenterOfMassFromColliders() method has been added to compute and set the center of mass of a body using its colliders
+ - The RigidBody::updateLocalInertiaTensorFromColliders() method has been added to compute and set the local inertia tensor of a body using its colliders
+ - The RigidBody::getLocalInertiaTensor() method has been added to retrieve the local-space inertia tensor of a rigid body.
+ - The RigidBody::updateMassFromColliders() method has been added to compute and set the mass of a body using its colliders
+ - A Material nows has a mass density parameter that can be set using the Material::setMassDensity() method. The mass density is used to compute the mass of a collider when computing the mass of a rigid body
 
 ### Changed
 
@@ -37,6 +45,11 @@
  - An instance of the PolyhedronMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createPolyhedronMesh() method.
  - An instance of the TriangleMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createTriangleMesh() method.
  - The ProxyShape class has been renamed to Collider. The CollisionBody::addCollider(), RigidBody::addCollider() methods have to be used to create and add a collider to a body. Then methods CollisionBody::removeCollider(), RigidBody::removeCollider() need to be used to remove a collider.
+ - The RigidBody::addCollider() method (previously addProxyShape() method) does not take a "mass" parameter anymore.
+ - The RigidBody::setCenterOfMassLocal() method has been renamed to RigidBody::setLocalCenterOfMass()
+ - The RigidBody::setInertiaTensorLocal() method has been renamed to RigidBody::setLocalInertiaTensor()
+ - The RigidBody::recomputeMassInformation() method has been renamed to RigidBody::updateMassPropertiesFromColliders.
+ - Now, you need to manually call the RigidBody::recomputeMassInformation() method after adding colliders to a rigid body to recompute its inertia tensor, center of mass and mass
  - The rendering in the testbed application has been improved
 
 ### Removed
@@ -48,6 +61,9 @@
  - The EventListener::endInternalTick() method has been removed (because internal ticks do not exist anymore).
  - The RigidBody::getJointsList() method has been removed.
  - It is not possible anymore to set custom pool and stack frame allocators. Only the base allocator can be customized when creating a PhysicsCommon instance.
+ - The RigidBody::setInverseInertiaTensorLocal() method has been removed. The RigidBody::setInertiaTensorLocal() has to be used instead.
+ - The RigidBody::getInverseInertiaTensorWorld() method has been removed.
+ - The Collider::getMass() method has been removed.
 
 ## Version 0.7.1 (July 01, 2019)
 
@@ -55,7 +71,6 @@
 
  - Make possible for the user to get vertices, normals and triangle indices of a ConcaveMeshShape
  - Make possible for the user to get vertices and height values of the HeightFieldShape
- - Add PhysicsCommon class that needs to be instanciated at the beginning and is used as a factory for other objects of the library
 
 ### Fixed
 
