@@ -79,7 +79,7 @@ void RigidBody::setType(BodyType type) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
         mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0));
-        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Vector3::zero());
     }
     else {  // If it is a dynamic body
 
@@ -93,13 +93,11 @@ void RigidBody::setType(BodyType type) {
         }
 
         // Compute the inverse local inertia tensor
-        const Matrix3x3& inertiaTensorLocal = mWorld.mRigidBodyComponents.getLocalInertiaTensor(mEntity);
-        if (approxEqual(inertiaTensorLocal.getDeterminant(), decimal(0.0))) {
-            mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
-        }
-        else {
-            mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
-        }
+        const Vector3& inertiaTensorLocal = mWorld.mRigidBodyComponents.getLocalInertiaTensor(mEntity);
+        Vector3 inverseInertiaTensorLocal(inertiaTensorLocal.x != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.x : 0,
+                                          inertiaTensorLocal.y != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.y : 0,
+                                          inertiaTensorLocal.z != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.z : 0);
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
     }
 
     // Awake the body
@@ -161,7 +159,7 @@ void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
 }
 
 // Return the local inertia tensor of the body (in body coordinates)
-const Matrix3x3& RigidBody::getLocalInertiaTensor() const {
+const Vector3& RigidBody::getLocalInertiaTensor() const {
 
     return mWorld.mRigidBodyComponents.getLocalInertiaTensor(mEntity);
 }
@@ -172,17 +170,15 @@ const Matrix3x3& RigidBody::getLocalInertiaTensor() const {
  * @param inertiaTensorLocal The 3x3 inertia tensor matrix of the body in local-space
  *                           coordinates
  */
-void RigidBody::setLocalInertiaTensor(const Matrix3x3& inertiaTensorLocal) {
+void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
 
     mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
 
     // Compute the inverse local inertia tensor
-    if (approxEqual(inertiaTensorLocal.getDeterminant(), decimal(0.0))) {
-        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
-    }
-    else {
-        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
-    }
+    Vector3 inverseInertiaTensorLocal(inertiaTensorLocal.x != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.x : 0,
+                                      inertiaTensorLocal.y != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.y : 0,
+                                      inertiaTensorLocal.z != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.z : 0);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
@@ -313,10 +309,12 @@ Vector3 RigidBody::computeCenterOfMass() const {
 }
 
 // Compute the local-space inertia tensor and total mass of the body using its colliders
-void RigidBody::computeMassAndInertiaTensorLocal(Matrix3x3& inertiaTensorLocal, decimal& totalMass) const {
+void RigidBody::computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, decimal& totalMass) const {
 
     inertiaTensorLocal.setToZero();
     totalMass = decimal(0.0);
+
+    Matrix3x3 tempLocalInertiaTensor = Matrix3x3::zero();
 
     const Vector3 centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
 
@@ -333,13 +331,16 @@ void RigidBody::computeMassAndInertiaTensorLocal(Matrix3x3& inertiaTensorLocal, 
         totalMass += colliderMass;
 
         // Get the inertia tensor of the collider in its local-space
-        Matrix3x3 inertiaTensor;
-        collider->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, colliderMass);
+        Vector3 shapeLocalInertiaTensor = collider->getCollisionShape()->getLocalInertiaTensor(colliderMass);
 
         // Convert the collider inertia tensor into the local-space of the body
         const Transform& shapeTransform = collider->getLocalToBodyTransform();
         Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
-        inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
+        Matrix3x3 rotationMatrixTranspose = rotationMatrix.getTranspose();
+        rotationMatrixTranspose[0] *= shapeLocalInertiaTensor.x;
+        rotationMatrixTranspose[1] *= shapeLocalInertiaTensor.y;
+        rotationMatrixTranspose[2] *= shapeLocalInertiaTensor.z;
+        Matrix3x3 inertiaTensor = rotationMatrix * rotationMatrixTranspose;
 
         // Use the parallel axis theorem to convert the inertia tensor w.r.t the collider
         // center into a inertia tensor w.r.t to the body origin.
@@ -354,8 +355,11 @@ void RigidBody::computeMassAndInertiaTensorLocal(Matrix3x3& inertiaTensorLocal, 
         offsetMatrix[2] += offset * (-offset.z);
         offsetMatrix *= colliderMass;
 
-        inertiaTensorLocal += inertiaTensor + offsetMatrix;
+        tempLocalInertiaTensor += inertiaTensor + offsetMatrix;
     }
+
+    // Get the diagonal value of the computed local inertia tensor
+    inertiaTensorLocal.setAllValues(tempLocalInertiaTensor[0][0], tempLocalInertiaTensor[1][1], tempLocalInertiaTensor[2][2]);
 }
 
 // Compute and set the local-space inertia tensor of the body using its colliders
@@ -367,19 +371,17 @@ void RigidBody::updateLocalInertiaTensorFromColliders() {
     const Vector3 centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
 
     // Compute the local-space inertia tensor
-    Matrix3x3 inertiaTensorLocal;
+    Vector3 inertiaTensorLocal;
     decimal totalMass;
     computeMassAndInertiaTensorLocal(inertiaTensorLocal, totalMass);
 
     mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
 
     // Compute the inverse local inertia tensor
-    if (approxEqual(inertiaTensorLocal.getDeterminant(), decimal(0.0))) {
-        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
-    }
-    else {
-        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
-    }
+    Vector3 inverseInertiaTensorLocal(inertiaTensorLocal.x != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.x : 0,
+                                      inertiaTensorLocal.y != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.y : 0,
+                                      inertiaTensorLocal.z != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.z : 0);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
@@ -451,19 +453,17 @@ void RigidBody::updateMassPropertiesFromColliders() {
              "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
 
     // Compute the mass and local-space inertia tensor
-    Matrix3x3 inertiaTensorLocal;
+    Vector3 inertiaTensorLocal;
     decimal totalMass;
     computeMassAndInertiaTensorLocal(inertiaTensorLocal, totalMass);
 
     mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
 
     // Compute the inverse local inertia tensor
-    if (approxEqual(inertiaTensorLocal.getDeterminant(), decimal(0.0))) {
-        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Matrix3x3::zero());
-    }
-    else {
-        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inertiaTensorLocal.getInverse());
-    }
+    Vector3 inverseInertiaTensorLocal(inertiaTensorLocal.x != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.x : 0,
+                                      inertiaTensorLocal.y != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.y : 0,
+                                      inertiaTensorLocal.z != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.z : 0);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
@@ -800,11 +800,15 @@ void RigidBody::updateOverlappingPairs() {
 }
 
 /// Return the inverse of the inertia tensor in world coordinates.
-const Matrix3x3 RigidBody::getInertiaTensorInverseWorld(PhysicsWorld& world, Entity bodyEntity) {
+const Matrix3x3 RigidBody::getWorldInertiaTensorInverse(PhysicsWorld& world, Entity bodyEntity) {
 
     Matrix3x3 orientation = world.mTransformComponents.getTransform(bodyEntity).getOrientation().getMatrix();
-    const Matrix3x3& inverseInertiaLocalTensor = world.mRigidBodyComponents.getInertiaTensorLocalInverse(bodyEntity);
-    return orientation * inverseInertiaLocalTensor * orientation.getTranspose();
+    const Vector3& inverseInertiaLocalTensor = world.mRigidBodyComponents.getInertiaTensorLocalInverse(bodyEntity);
+    Matrix3x3 orientationTranspose = orientation.getTranspose();
+    orientationTranspose[0] *= inverseInertiaLocalTensor.x;
+    orientationTranspose[1] *= inverseInertiaLocalTensor.y;
+    orientationTranspose[2] *= inverseInertiaLocalTensor.z;
+    return orientation * orientationTranspose;
 }
 
 // Set whether or not the body is allowed to go to sleep

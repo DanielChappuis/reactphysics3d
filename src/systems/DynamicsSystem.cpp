@@ -131,7 +131,7 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
         mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + timeStep *
                                                               mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
         mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep *
-                                                 RigidBody::getInertiaTensorInverseWorld(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
+                                                 RigidBody::getWorldInertiaTensorInverse(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
     }
 
     // Apply gravity force

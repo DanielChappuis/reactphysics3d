@@ -101,6 +101,9 @@ class ConcaveShape : public CollisionShape {
         /// Set the scale of the shape
         void setScale(const Vector3& scale);
 
+        /// Return the local inertia tensor of the collision shape
+        virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
+
         /// Return true if the collision shape is convex, false if it is concave
         virtual bool isConvex() const override;
 
@@ -156,6 +159,19 @@ inline void ConcaveShape::setScale(const Vector3& scale) {
     mScale = scale;
 
     notifyColliderAboutChangedSize();
+}
+
+// Return the local inertia tensor of the shape
+/**
+ * @param mass Mass to use to compute the inertia tensor of the collision shape
+ */
+inline Vector3 ConcaveShape::getLocalInertiaTensor(decimal mass) const {
+
+    // Default inertia tensor
+    // Note that this is not very realistic for a concave triangle mesh.
+    // However, in most cases, it will only be used static bodies and therefore,
+    // the inertia tensor is not used.
+    return Vector3(mass, mass, mass);
 }
 
 

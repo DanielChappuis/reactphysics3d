@@ -106,7 +106,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Return the local inertia tensor of the collision shape.
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
+        virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
 
         /// Return the number of faces of the polyhedron
         virtual uint getNbFaces() const override;
@@ -179,20 +179,16 @@ inline void ConvexMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 /// The local inertia tensor of the convex mesh is approximated using the inertia tensor
 /// of its bounding box.
 /**
-* @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
-*                    coordinates
 * @param mass Mass to use to compute the inertia tensor of the collision shape
 */
-inline void ConvexMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    Vector3 realExtent = decimal(0.5) * (mMaxBounds - mMinBounds);
+inline Vector3 ConvexMeshShape::getLocalInertiaTensor(decimal mass) const {
+    const decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
+    const Vector3 realExtent = decimal(0.5) * (mMaxBounds - mMinBounds);
     assert(realExtent.x > 0 && realExtent.y > 0 && realExtent.z > 0);
-    decimal xSquare = realExtent.x * realExtent.x;
-    decimal ySquare = realExtent.y * realExtent.y;
-    decimal zSquare = realExtent.z * realExtent.z;
-    tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
-                        0.0, factor * (xSquare + zSquare), 0.0,
-                        0.0, 0.0, factor * (xSquare + ySquare));
+    const decimal xSquare = realExtent.x * realExtent.x;
+    const decimal ySquare = realExtent.y * realExtent.y;
+    const decimal zSquare = realExtent.z * realExtent.z;
+    return Vector3(factor * (ySquare + zSquare), factor * (xSquare + zSquare), factor * (xSquare + ySquare));
 }
 
 // Return the number of faces of the polyhedron

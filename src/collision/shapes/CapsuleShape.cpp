@@ -46,28 +46,24 @@ CapsuleShape::CapsuleShape(decimal radius, decimal height, MemoryAllocator& allo
 
 // Return the local inertia tensor of the capsule
 /**
- * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
- *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-void CapsuleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+Vector3 CapsuleShape::getLocalInertiaTensor(decimal mass) const {
 
 	// The inertia tensor formula for a capsule can be found in : Game Engine Gems, Volume 1
 	
-    decimal height = mHalfHeight + mHalfHeight;
-    decimal radiusSquare = mMargin * mMargin;
-	decimal heightSquare = height * height;
-	decimal radiusSquareDouble = radiusSquare + radiusSquare;
-    decimal factor1 = decimal(2.0) * mMargin / (decimal(4.0) * mMargin + decimal(3.0) * height);
-    decimal factor2 = decimal(3.0) * height / (decimal(4.0) * mMargin + decimal(3.0) * height);
-	decimal sum1 = decimal(0.4) * radiusSquareDouble;
-    decimal sum2 = decimal(0.75) * height * mMargin + decimal(0.5) * heightSquare;
-	decimal sum3 = decimal(0.25) * radiusSquare + decimal(1.0 / 12.0) * heightSquare;
-	decimal IxxAndzz = factor1 * mass * (sum1 + sum2) + factor2 * mass * sum3;
-	decimal Iyy = factor1 * mass * sum1 + factor2 * mass * decimal(0.25) * radiusSquareDouble;
-    tensor.setAllValues(IxxAndzz, 0.0, 0.0,
-                        0.0, Iyy, 0.0,
-                        0.0, 0.0, IxxAndzz);
+    const decimal height = mHalfHeight + mHalfHeight;
+    const decimal radiusSquare = mMargin * mMargin;
+    const decimal heightSquare = height * height;
+    const decimal radiusSquareDouble = radiusSquare + radiusSquare;
+    const decimal factor1 = decimal(2.0) * mMargin / (decimal(4.0) * mMargin + decimal(3.0) * height);
+    const decimal factor2 = decimal(3.0) * height / (decimal(4.0) * mMargin + decimal(3.0) * height);
+    const decimal sum1 = decimal(0.4) * radiusSquareDouble;
+    const decimal sum2 = decimal(0.75) * height * mMargin + decimal(0.5) * heightSquare;
+    const decimal sum3 = decimal(0.25) * radiusSquare + decimal(1.0 / 12.0) * heightSquare;
+    const decimal IxxAndzz = factor1 * mass * (sum1 + sum2) + factor2 * mass * sum3;
+    const decimal Iyy = factor1 * mass * sum1 + factor2 * mass * decimal(0.25) * radiusSquareDouble;
+    return Vector3(IxxAndzz, Iyy, IxxAndzz);
 }
 
 // Return true if a point is inside the collision shape

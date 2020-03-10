@@ -128,7 +128,7 @@ class TriangleShape : public ConvexPolyhedronShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
+        virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
 
         /// Update the AABB of a body using its collision shape
         virtual void computeAABB(AABB& aabb, const Transform& transform) const override;
@@ -222,8 +222,8 @@ inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
  *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-inline void TriangleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    tensor.setToZero();
+inline Vector3 TriangleShape::getLocalInertiaTensor(decimal mass) const {
+    return Vector3(0, 0, 0);
 }
 
 // Return true if a point is inside the collision shape

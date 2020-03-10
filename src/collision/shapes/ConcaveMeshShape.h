@@ -193,9 +193,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
-        /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
-
         /// Return the string representation of the shape
         virtual std::string to_string() const override;
 
@@ -231,23 +228,6 @@ inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     min = treeAABB.getMin();
     max = treeAABB.getMax();
-}
-
-// Return the local inertia tensor of the shape
-/**
- * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
- *                    coordinates
- * @param mass Mass to use to compute the inertia tensor of the collision shape
- */
-inline void ConcaveMeshShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-
-    // Default inertia tensor
-    // Note that this is not very realistic for a concave triangle mesh.
-    // However, in most cases, it will only be used static bodies and therefore,
-    // the inertia tensor is not used.
-    tensor.setAllValues(mass, 0, 0,
-                        0, mass, 0,
-                        0, 0, mass);
 }
 
 // Called when a overlapping node has been found during the call to

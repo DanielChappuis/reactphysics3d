@@ -141,7 +141,7 @@ class CollisionShape {
         uint32 getId() const;
 
         /// Return the local inertia tensor of the collision shapes
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const=0;
+        virtual Vector3 getLocalInertiaTensor(decimal mass) const=0;
 
         /// Compute and return the volume of the collision shape
         virtual decimal getVolume() const=0;

@@ -96,7 +96,7 @@ class BoxShape : public ConvexPolyhedronShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
+        virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
 
         /// Compute and return the volume of the collision shape
         virtual decimal getVolume() const override;

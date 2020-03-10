@@ -48,6 +48,7 @@
  - The RigidBody::addCollider() method (previously addProxyShape() method) does not take a "mass" parameter anymore.
  - The RigidBody::setCenterOfMassLocal() method has been renamed to RigidBody::setLocalCenterOfMass()
  - The RigidBody::setInertiaTensorLocal() method has been renamed to RigidBody::setLocalInertiaTensor()
+ - Now, the local inertia tensor of a rigid body has to be set using a Vector3 instead of a Matrix3x3. You only need to provide the diagonal values of the matrix
  - The RigidBody::recomputeMassInformation() method has been renamed to RigidBody::updateMassPropertiesFromColliders.
  - Now, you need to manually call the RigidBody::recomputeMassInformation() method after adding colliders to a rigid body to recompute its inertia tensor, center of mass and mass
  - The rendering in the testbed application has been improved

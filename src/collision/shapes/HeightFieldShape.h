@@ -151,9 +151,6 @@ class HeightFieldShape : public ConcaveShape {
         /// Return the local bounds of the shape in x, y and z directions.
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
-        /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
-
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
                                                    List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
@@ -203,23 +200,6 @@ inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 // Return the closest inside integer grid value of a given floating grid value
 inline int HeightFieldShape::computeIntegerGridValue(decimal value) const {
     return (value < decimal(0.0)) ? value - decimal(0.5) : value + decimal(0.5);
-}
-
-// Return the local inertia tensor
-/**
- * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
- *                    coordinates
- * @param mass Mass to use to compute the inertia tensor of the collision shape
- */
-inline void HeightFieldShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-
-    // Default inertia tensor
-    // Note that this is not very realistic for a concave triangle mesh.
-    // However, in most cases, it will only be used static bodies and therefore,
-    // the inertia tensor is not used.
-    tensor.setAllValues(mass, 0, 0,
-                        0, mass, 0,
-                        0, 0, mass);
 }
 
 // Compute the shape Id for a given triangle

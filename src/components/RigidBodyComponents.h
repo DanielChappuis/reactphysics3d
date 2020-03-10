@@ -107,11 +107,11 @@ class RigidBodyComponents : public Components {
         decimal* mInverseMasses;
 
         /// Array with the inertia tensor of each component
-        Matrix3x3* mLocalInertiaTensors;
+        Vector3* mLocalInertiaTensors;
 
         /// Array with the inverse of the inertia tensor of each component
         // TODO : We should use a Vector3 here for the diagonal instead of a Matrix3x3
-        Matrix3x3* mInverseInertiaTensorsLocal;
+        Vector3* mInverseInertiaTensorsLocal;
 
         /// Array with the constrained linear velocity of each component
         Vector3* mConstrainedLinearVelocities;
@@ -251,13 +251,13 @@ class RigidBodyComponents : public Components {
         void setMassInverse(Entity bodyEntity, decimal inverseMass);
 
         /// Return the local inertia tensor of an entity
-        const Matrix3x3& getLocalInertiaTensor(Entity bodyEntity);
+        const Vector3& getLocalInertiaTensor(Entity bodyEntity);
 
         /// Set the local inertia tensor of an entity
-        void setLocalInertiaTensor(Entity bodyEntity, const Matrix3x3& inertiaTensorLocal);
+        void setLocalInertiaTensor(Entity bodyEntity, const Vector3& inertiaTensorLocal);
 
         /// Return the inverse local inertia tensor of an entity
-        const Matrix3x3& getInertiaTensorLocalInverse(Entity bodyEntity);
+        const Vector3& getInertiaTensorLocalInverse(Entity bodyEntity);
 
         /// Set the external force of an entity
         void setExternalForce(Entity bodyEntity, const Vector3& externalForce);
@@ -272,7 +272,7 @@ class RigidBodyComponents : public Components {
         void setAngularDamping(Entity bodyEntity, decimal angularDamping);
 
         /// Set the inverse local inertia tensor of an entity
-        void setInverseInertiaTensorLocal(Entity bodyEntity, const Matrix3x3& inertiaTensorLocalInverse);
+        void setInverseInertiaTensorLocal(Entity bodyEntity, const Vector3& inertiaTensorLocalInverse);
 
         /// Return the constrained linear velocity of an entity
         const Vector3& getConstrainedLinearVelocity(Entity bodyEntity) const;
@@ -511,7 +511,7 @@ inline decimal RigidBodyComponents::getMassInverse(Entity bodyEntity) const {
 }
 
 // Return the inverse local inertia tensor of an entity
-inline const Matrix3x3& RigidBodyComponents::getInertiaTensorLocalInverse(Entity bodyEntity) {
+inline const Vector3& RigidBodyComponents::getInertiaTensorLocalInverse(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -567,7 +567,7 @@ inline void RigidBodyComponents::setMassInverse(Entity bodyEntity, decimal inver
 }
 
 // Return the local inertia tensor of an entity
-inline const Matrix3x3& RigidBodyComponents::getLocalInertiaTensor(Entity bodyEntity) {
+inline const Vector3& RigidBodyComponents::getLocalInertiaTensor(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -575,7 +575,7 @@ inline const Matrix3x3& RigidBodyComponents::getLocalInertiaTensor(Entity bodyEn
 }
 
 // Set the local inertia tensor of an entity
-inline void RigidBodyComponents::setLocalInertiaTensor(Entity bodyEntity, const Matrix3x3& inertiaTensorLocal) {
+inline void RigidBodyComponents::setLocalInertiaTensor(Entity bodyEntity, const Vector3& inertiaTensorLocal) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -583,7 +583,7 @@ inline void RigidBodyComponents::setLocalInertiaTensor(Entity bodyEntity, const 
 }
 
 // Set the inverse local inertia tensor of an entity
-inline void RigidBodyComponents::setInverseInertiaTensorLocal(Entity bodyEntity, const Matrix3x3& inertiaTensorLocalInverse) {
+inline void RigidBodyComponents::setInverseInertiaTensorLocal(Entity bodyEntity, const Vector3& inertiaTensorLocalInverse) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 

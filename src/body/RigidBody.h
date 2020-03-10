@@ -63,10 +63,10 @@ class RigidBody : public CollisionBody {
         Vector3 computeCenterOfMass() const;
 
         /// Compute the local-space inertia tensor and total mass of the body using its colliders
-        void computeMassAndInertiaTensorLocal(Matrix3x3& inertiaTensorLocal, decimal& totalMass) const;
+        void computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, decimal& totalMass) const;
 
         /// Return the inverse of the inertia tensor in world coordinates.
-        static const Matrix3x3 getInertiaTensorInverseWorld(PhysicsWorld& world, Entity bodyEntity);
+        static const Matrix3x3 getWorldInertiaTensorInverse(PhysicsWorld& world, Entity bodyEntity);
 
     public :
 
@@ -106,10 +106,10 @@ class RigidBody : public CollisionBody {
         void setAngularVelocity(const Vector3& angularVelocity);
 
         /// Return the local inertia tensor of the body (in body coordinates)
-        const Matrix3x3& getLocalInertiaTensor() const;
+        const Vector3& getLocalInertiaTensor() const;
 
         /// Set the local inertia tensor of the body (in body coordinates)
-        void setLocalInertiaTensor(const Matrix3x3& inertiaTensorLocal);
+        void setLocalInertiaTensor(const Vector3& inertiaTensorLocal);
 
         /// Return the center of mass of the body (in local-space coordinates)
         const Vector3& getLocalCenterOfMass() const;

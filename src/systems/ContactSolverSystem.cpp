@@ -146,8 +146,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         new (mContactConstraints + mNbContactManifolds) ContactManifoldSolver();
         mContactConstraints[mNbContactManifolds].rigidBodyComponentIndexBody1 = rigidBodyIndex1;
         mContactConstraints[mNbContactManifolds].rigidBodyComponentIndexBody2 = rigidBodyIndex2;
-        mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 = RigidBody::getInertiaTensorInverseWorld(mWorld, externalManifold.bodyEntity1);
-        mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = RigidBody::getInertiaTensorInverseWorld(mWorld, externalManifold.bodyEntity2);
+        mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 = RigidBody::getWorldInertiaTensorInverse(mWorld, externalManifold.bodyEntity1);
+        mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2 = RigidBody::getWorldInertiaTensorInverse(mWorld, externalManifold.bodyEntity2);
         mContactConstraints[mNbContactManifolds].massInverseBody1 = mRigidBodyComponents.mInverseMasses[rigidBodyIndex1];
         mContactConstraints[mNbContactManifolds].massInverseBody2 = mRigidBodyComponents.mInverseMasses[rigidBodyIndex2];
         mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.nbContactPoints;

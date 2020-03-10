@@ -60,8 +60,8 @@ void SolveHingeJointSystem::initBeforeSolve() {
         assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
 
         // Get the inertia tensor of bodies
-        mHingeJointComponents.mI1[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity);
-        mHingeJointComponents.mI2[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity);
+        mHingeJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
+        mHingeJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
     }
 
     // For each joint
@@ -540,8 +540,8 @@ void SolveHingeJointSystem::solvePositionConstraint() {
         Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
         // Recompute the inverse inertia tensors
-        mHingeJointComponents.mI1[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body1Entity);
-        mHingeJointComponents.mI2[i] = RigidBody::getInertiaTensorInverseWorld(mWorld, body2Entity);
+        mHingeJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
+        mHingeJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
     }
 
     // For each joint component

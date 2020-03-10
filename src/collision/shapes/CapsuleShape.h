@@ -112,7 +112,7 @@ class CapsuleShape : public ConvexShape {
         virtual bool isPolyhedron() const override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
+        virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
 
         /// Return the string representation of the shape
         virtual std::string to_string() const override;

@@ -91,7 +91,7 @@ class SphereShape : public ConvexShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Return the local inertia tensor of the collision shape
-        virtual void computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const override;
+        virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
 
         /// Compute and return the volume of the collision shape
         virtual decimal getVolume() const override;
@@ -172,15 +172,11 @@ inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
 // Return the local inertia tensor of the sphere
 /**
- * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
- *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-inline void SphereShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+inline Vector3 SphereShape::getLocalInertiaTensor(decimal mass) const {
     decimal diag = decimal(0.4) * mass * mMargin * mMargin;
-    tensor.setAllValues(diag, 0.0, 0.0,
-                        0.0, diag, 0.0,
-                        0.0, 0.0, diag);
+    return Vector3(diag, diag, diag);
 }
 
 // Compute and return the volume of the collision shape

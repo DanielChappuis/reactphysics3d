@@ -81,18 +81,14 @@ BoxShape::BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator)
 
 // Return the local inertia tensor of the collision shape
 /**
- * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
- *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-void BoxShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
-    decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    decimal xSquare = mHalfExtents.x * mHalfExtents.x;
-    decimal ySquare = mHalfExtents.y * mHalfExtents.y;
-    decimal zSquare = mHalfExtents.z * mHalfExtents.z;
-    tensor.setAllValues(factor * (ySquare + zSquare), 0.0, 0.0,
-                        0.0, factor * (xSquare + zSquare), 0.0,
-                        0.0, 0.0, factor * (xSquare + ySquare));
+Vector3 BoxShape::getLocalInertiaTensor(decimal mass) const {
+    const decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
+    const decimal xSquare = mHalfExtents.x * mHalfExtents.x;
+    const decimal ySquare = mHalfExtents.y * mHalfExtents.y;
+    const decimal zSquare = mHalfExtents.z * mHalfExtents.z;
+    return Vector3(factor * (ySquare + zSquare), factor * (xSquare + zSquare), factor * (xSquare + ySquare));
 }
 
 // Raycast method with feedback information
