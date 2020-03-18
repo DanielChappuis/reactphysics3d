@@ -24,15 +24,15 @@
 ********************************************************************************/
 
 // Libraries
-#include "GJKAlgorithm.h"
-#include "constraint/ContactPoint.h"
-#include "engine/OverlappingPairs.h"
-#include "collision/shapes/TriangleShape.h"
-#include "configuration.h"
-#include "utils/Profiler.h"
-#include "containers/List.h"
-#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
-#include "collision/narrowphase/GJK/VoronoiSimplex.h"
+#include <reactphysics3d/collision/narrowphase/GJK/GJKAlgorithm.h>
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/engine/OverlappingPairs.h>
+#include <reactphysics3d/collision/shapes/TriangleShape.h>
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
+#include <reactphysics3d/collision/narrowphase/GJK/VoronoiSimplex.h>
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace

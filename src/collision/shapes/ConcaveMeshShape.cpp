@@ -24,12 +24,12 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConcaveMeshShape.h"
-#include "memory/MemoryManager.h"
-#include "collision/RaycastInfo.h"
-#include "collision/TriangleMesh.h"
-#include "utils/Profiler.h"
-#include "collision/TriangleVertexArray.h"
+#include <reactphysics3d/collision/shapes/ConcaveMeshShape.h>
+#include <reactphysics3d/memory/MemoryManager.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/collision/TriangleMesh.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/collision/TriangleVertexArray.h>
 
 using namespace reactphysics3d;
 

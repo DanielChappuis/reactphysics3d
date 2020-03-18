@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "CollisionDispatch.h"
+#include <reactphysics3d/collision/narrowphase/CollisionDispatch.h>
 
 using namespace reactphysics3d;
 

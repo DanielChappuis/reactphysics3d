@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "PoolAllocator.h"
-#include "MemoryManager.h"
+#include <reactphysics3d/memory/PoolAllocator.h>
+#include <reactphysics3d/memory/MemoryManager.h>
 #include <cstdlib>
 #include <cassert>
 

@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "PhysicsCommon.h"
+#include <reactphysics3d/engine/PhysicsCommon.h>
 
 using namespace reactphysics3d;
 

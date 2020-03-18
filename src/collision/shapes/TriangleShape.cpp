@@ -24,12 +24,12 @@
 ********************************************************************************/
 
 // Libraries
-#include "TriangleShape.h"
-#include "collision/Collider.h"
-#include "mathematics/mathematics_functions.h"
-#include "collision/RaycastInfo.h"
-#include "utils/Profiler.h"
-#include "configuration.h"
+#include <reactphysics3d/collision/shapes/TriangleShape.h>
+#include <reactphysics3d/collision/Collider.h>
+#include <reactphysics3d/mathematics/mathematics_functions.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/configuration.h>
 #include <cassert>
 
 using namespace reactphysics3d;

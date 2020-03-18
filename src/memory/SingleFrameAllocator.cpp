@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "SingleFrameAllocator.h"
-#include "MemoryManager.h"
+#include <reactphysics3d/memory/SingleFrameAllocator.h>
+#include <reactphysics3d/memory/MemoryManager.h>
 #include <cstdlib>
 #include <cassert>
 

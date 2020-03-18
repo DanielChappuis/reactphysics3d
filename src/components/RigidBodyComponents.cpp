@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "RigidBodyComponents.h"
-#include "engine/EntityManager.h"
-#include "body/RigidBody.h"
+#include <reactphysics3d/components/RigidBodyComponents.h>
+#include <reactphysics3d/engine/EntityManager.h>
+#include <reactphysics3d/body/RigidBody.h>
 #include <cassert>
 #include <random>
 

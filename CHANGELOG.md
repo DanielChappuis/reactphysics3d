@@ -21,6 +21,10 @@
  - The RigidBody::updateMassFromColliders() method has been added to compute and set the mass of a body using its colliders
  - A Material nows has a mass density parameter that can be set using the Material::setMassDensity() method. The mass density is used to compute the mass of a collider when computing the mass of a rigid body
 
+### Fixed
+
+ - Issues [#125](https://github.com/DanielChappuis/reactphysics3d/issues/125) and [#106](https://github.com/DanielChappuis/reactphysics3d/issues/106) have been fixed.
+
 ### Changed
 
  - The CollisionWorld::testCollision() methods do not have the 'categoryMaskBits' parameter anymore.

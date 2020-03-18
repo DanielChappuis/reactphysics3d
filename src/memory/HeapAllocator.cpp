@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "HeapAllocator.h"
-#include "MemoryManager.h"
+#include <reactphysics3d/memory/HeapAllocator.h>
+#include <reactphysics3d/memory/MemoryManager.h>
 #include <cstdlib>
 #include <cassert>
 #include <iostream>

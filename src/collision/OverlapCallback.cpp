@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "collision/OverlapCallback.h"
-#include "engine/PhysicsWorld.h"
+#include <reactphysics3d/collision/OverlapCallback.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

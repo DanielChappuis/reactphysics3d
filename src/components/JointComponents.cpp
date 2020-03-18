@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "JointComponents.h"
-#include "engine/EntityManager.h"
+#include <reactphysics3d/components/JointComponents.h>
+#include <reactphysics3d/engine/EntityManager.h>
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace

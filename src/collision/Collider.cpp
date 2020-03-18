@@ -24,11 +24,11 @@
 ********************************************************************************/
 
 // Libraries
-#include "Collider.h"
-#include "utils/Logger.h"
-#include "collision/RaycastInfo.h"
-#include "memory/MemoryManager.h"
-#include "engine/PhysicsWorld.h"
+#include <reactphysics3d/collision/Collider.h>
+#include <reactphysics3d/utils/Logger.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/memory/MemoryManager.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 
 using namespace reactphysics3d;
 

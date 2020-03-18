@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "PolygonVertexArray.h"
+#include <reactphysics3d/collision/PolygonVertexArray.h>
 
 using namespace reactphysics3d;
 

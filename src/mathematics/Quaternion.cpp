@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "Quaternion.h"
-#include "Vector3.h"
-#include "Matrix3x3.h"
+#include <reactphysics3d/mathematics/Quaternion.h>
+#include <reactphysics3d/mathematics/Vector3.h>
+#include <reactphysics3d/mathematics/Matrix3x3.h>
 #include <cassert>
 
 // Namespace

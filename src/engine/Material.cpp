@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "Material.h"
+#include <reactphysics3d/engine/Material.h>
 
 using namespace reactphysics3d;
 

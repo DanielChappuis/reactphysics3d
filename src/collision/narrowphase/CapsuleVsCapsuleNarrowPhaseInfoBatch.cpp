@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "CapsuleVsCapsuleNarrowPhaseInfoBatch.h"
-#include "collision/shapes/CapsuleShape.h"
+#include <reactphysics3d/collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.h>
+#include <reactphysics3d/collision/shapes/CapsuleShape.h>
 
 using namespace reactphysics3d;
 

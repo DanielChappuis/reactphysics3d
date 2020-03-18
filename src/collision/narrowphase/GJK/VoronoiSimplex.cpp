@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "VoronoiSimplex.h"
-#include "mathematics/Vector2.h"
+#include <reactphysics3d/collision/narrowphase/GJK/VoronoiSimplex.h>
+#include <reactphysics3d/mathematics/Vector2.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

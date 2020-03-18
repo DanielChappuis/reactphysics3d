@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "Matrix2x2.h"
+#include <reactphysics3d/mathematics/Matrix2x2.h>
 
 using namespace reactphysics3d;
 

@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereShape.h"
-#include "collision/Collider.h"
-#include "configuration.h"
-#include "collision/RaycastInfo.h"
+#include <reactphysics3d/collision/shapes/SphereShape.h>
+#include <reactphysics3d/collision/Collider.h>
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
 #include <cassert>
 
 using namespace reactphysics3d;

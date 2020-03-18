@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "CollisionBodyComponents.h"
-#include "engine/EntityManager.h"
+#include <reactphysics3d/components/CollisionBodyComponents.h>
+#include <reactphysics3d/engine/EntityManager.h>
 #include <cassert>
 #include <random>
 

@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "EntityManager.h"
-#include "Entity.h"
+#include <reactphysics3d/engine/EntityManager.h>
+#include <reactphysics3d/engine/Entity.h>
 
 using namespace reactphysics3d;
 

@@ -24,8 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConcaveShape.h"
-
+#include <reactphysics3d/collision/shapes/ConcaveShape.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

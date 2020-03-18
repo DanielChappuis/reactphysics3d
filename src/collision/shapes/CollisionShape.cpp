@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "CollisionShape.h"
-#include "utils/Profiler.h"
-#include "body/CollisionBody.h"
-#include "collision/Collider.h"
+#include <reactphysics3d/collision/shapes/CollisionShape.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/body/CollisionBody.h>
+#include <reactphysics3d/collision/Collider.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

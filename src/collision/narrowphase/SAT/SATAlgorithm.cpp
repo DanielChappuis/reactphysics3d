@@ -24,16 +24,16 @@
 ********************************************************************************/
 
 // Libraries
-#include "SATAlgorithm.h"
-#include "constraint/ContactPoint.h"
-#include "collision/PolyhedronMesh.h"
-#include "collision/shapes/CapsuleShape.h"
-#include "collision/shapes/SphereShape.h"
-#include "engine/OverlappingPairs.h"
-#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
-#include "collision/shapes/TriangleShape.h"
-#include "configuration.h"
-#include "utils/Profiler.h"
+#include <reactphysics3d/collision/narrowphase/SAT/SATAlgorithm.h>
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/PolyhedronMesh.h>
+#include <reactphysics3d/collision/shapes/CapsuleShape.h>
+#include <reactphysics3d/collision/shapes/SphereShape.h>
+#include <reactphysics3d/engine/OverlappingPairs.h>
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
+#include <reactphysics3d/collision/shapes/TriangleShape.h>
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/utils/Profiler.h>
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace

@@ -29,7 +29,7 @@
 // Libraries
 #include "Scene.h"
 #include "VisualContactPoint.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "PhysicsObject.h"
 
 // Constants

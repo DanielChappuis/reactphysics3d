@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "TriangleMesh.h"
+#include <reactphysics3d/collision/TriangleMesh.h>
 
 using namespace reactphysics3d;
 

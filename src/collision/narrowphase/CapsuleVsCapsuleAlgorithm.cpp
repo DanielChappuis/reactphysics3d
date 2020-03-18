@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "CapsuleVsCapsuleAlgorithm.h"
-#include "collision/shapes/CapsuleShape.h"
-#include "collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.h"
+#include <reactphysics3d/collision/narrowphase/CapsuleVsCapsuleAlgorithm.h>
+#include <reactphysics3d/collision/shapes/CapsuleShape.h>
+#include <reactphysics3d/collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  

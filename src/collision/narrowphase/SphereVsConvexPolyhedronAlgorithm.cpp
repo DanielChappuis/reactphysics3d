@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereVsConvexPolyhedronAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
-#include "SAT/SATAlgorithm.h"
-#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
+#include <reactphysics3d/collision/narrowphase/SphereVsConvexPolyhedronAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/GJK/GJKAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/SAT/SATAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

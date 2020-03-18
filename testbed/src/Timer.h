@@ -31,7 +31,7 @@
 #include <iostream>
 #include <ctime>
 #include <cassert>
-#include "configuration.h"
+#include <reactphysics3d/configuration.h>
 
 #if defined(WINDOWS_OS)   // For Windows platform
    #define NOMINMAX       // This is used to avoid definition of max() and min() macros

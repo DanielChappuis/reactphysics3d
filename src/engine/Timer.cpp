@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "Timer.h"
+#include <reactphysics3d/engine/Timer.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

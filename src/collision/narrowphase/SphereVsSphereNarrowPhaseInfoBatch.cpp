@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereVsSphereNarrowPhaseInfoBatch.h"
-#include "collision/shapes/SphereShape.h"
+#include <reactphysics3d/collision/narrowphase/SphereVsSphereNarrowPhaseInfoBatch.h>
+#include <reactphysics3d/collision/shapes/SphereShape.h>
 
 using namespace reactphysics3d;
 

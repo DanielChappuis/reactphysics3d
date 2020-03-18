@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "Components.h"
+#include <reactphysics3d/components/Components.h>
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace

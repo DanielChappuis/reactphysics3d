@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "TriangleVertexArray.h"
-#include "mathematics/Vector3.h"
+#include <reactphysics3d/collision/TriangleVertexArray.h>
+#include <reactphysics3d/mathematics/Vector3.h>
 #include <cassert>
 
 using namespace reactphysics3d;

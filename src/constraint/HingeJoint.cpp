@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "HingeJoint.h"
-#include "systems/ConstraintSolverSystem.h"
-#include "components/RigidBodyComponents.h"
-#include "engine/PhysicsWorld.h"
+#include <reactphysics3d/constraint/HingeJoint.h>
+#include <reactphysics3d/systems/ConstraintSolverSystem.h>
+#include <reactphysics3d/components/RigidBodyComponents.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 
 using namespace reactphysics3d;
 

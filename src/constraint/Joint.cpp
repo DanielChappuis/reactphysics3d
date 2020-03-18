@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "Joint.h"
-#include "engine/PhysicsWorld.h"
+#include <reactphysics3d/constraint/Joint.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 
 using namespace reactphysics3d;
 

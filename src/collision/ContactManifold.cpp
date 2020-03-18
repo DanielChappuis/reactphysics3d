@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "ContactManifold.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifoldInfo.h"
+#include <reactphysics3d/collision/ContactManifold.h>
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/ContactManifoldInfo.h>
 
 using namespace reactphysics3d;
 

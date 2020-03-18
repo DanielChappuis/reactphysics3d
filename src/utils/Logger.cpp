@@ -26,8 +26,8 @@
 #ifdef IS_LOGGING_ACTIVE
 
 // Libraries
-#include "Logger.h"
-#include "memory/MemoryManager.h"
+#include <reactphysics3d/utils/Logger.h>
+#include <reactphysics3d/memory/MemoryManager.h>
 
 using namespace reactphysics3d;
 

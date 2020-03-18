@@ -27,7 +27,7 @@
 #define TEST_TRIANGLE_VERTEX_ARRAY_H
 
 // Libraries
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

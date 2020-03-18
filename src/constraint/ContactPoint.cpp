@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "ContactPoint.h"
-#include "collision/Collider.h"
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/Collider.h>
 
 using namespace reactphysics3d;
 using namespace std;

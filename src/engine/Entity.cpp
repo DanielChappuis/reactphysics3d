@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "Entity.h"
+#include <reactphysics3d/engine/Entity.h>
 #include <cassert>
 
 using namespace reactphysics3d;

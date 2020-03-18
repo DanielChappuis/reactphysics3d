@@ -24,12 +24,12 @@
 ********************************************************************************/
 
 // Libraries
-#include "BroadPhaseSystem.h"
-#include "systems/CollisionDetectionSystem.h"
-#include "utils/Profiler.h"
-#include "collision/RaycastInfo.h"
-#include "memory/MemoryManager.h"
-#include "engine/PhysicsWorld.h"
+#include <reactphysics3d/systems/BroadPhaseSystem.h>
+#include <reactphysics3d/systems/CollisionDetectionSystem.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/memory/MemoryManager.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

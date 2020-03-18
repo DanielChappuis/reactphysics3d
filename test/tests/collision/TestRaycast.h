@@ -28,20 +28,20 @@
 
 // Libraries
 #include "Test.h"
-#include "engine/PhysicsCommon.h"
-#include "engine/PhysicsWorld.h"
-#include "body/CollisionBody.h"
-#include "collision/shapes/BoxShape.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/CapsuleShape.h"
-#include "collision/shapes/ConvexMeshShape.h"
-#include "collision/shapes/TriangleShape.h"
-#include "collision/shapes/ConcaveMeshShape.h"
-#include "collision/shapes/HeightFieldShape.h"
-#include "collision/TriangleMesh.h"
-#include "collision/TriangleVertexArray.h"
-#include "collision/RaycastInfo.h"
-#include "collision/PolygonVertexArray.h"
+#include <reactphysics3d/engine/PhysicsCommon.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/body/CollisionBody.h>
+#include <reactphysics3d/collision/shapes/BoxShape.h>
+#include <reactphysics3d/collision/shapes/SphereShape.h>
+#include <reactphysics3d/collision/shapes/CapsuleShape.h>
+#include <reactphysics3d/collision/shapes/ConvexMeshShape.h>
+#include <reactphysics3d/collision/shapes/TriangleShape.h>
+#include <reactphysics3d/collision/shapes/ConcaveMeshShape.h>
+#include <reactphysics3d/collision/shapes/HeightFieldShape.h>
+#include <reactphysics3d/collision/TriangleMesh.h>
+#include <reactphysics3d/collision/TriangleVertexArray.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <vector>
 
 /// Reactphysics3D namespace

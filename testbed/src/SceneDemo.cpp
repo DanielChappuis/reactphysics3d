@@ -27,8 +27,8 @@
 #include "SceneDemo.h"
 #include <GLFW/glfw3.h>
 #include "AABB.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifold.h"
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/ContactManifold.h>
 
 using namespace openglframework;
 

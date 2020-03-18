@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "systems/SolveHingeJointSystem.h"
-#include "engine/PhysicsWorld.h"
-#include "body/RigidBody.h"
+#include <reactphysics3d/systems/SolveHingeJointSystem.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/body/RigidBody.h>
 
 using namespace reactphysics3d;
 

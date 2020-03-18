@@ -28,7 +28,7 @@
 
 // Libraries
 #include "Test.h"
-#include "mathematics/Vector3.h"
+#include <reactphysics3d/mathematics/Vector3.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

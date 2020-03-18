@@ -29,7 +29,7 @@
 // Libraries
 #include "Profiler.h"
 #include <string>
-#include "memory/MemoryManager.h"
+#include <reactphysics3d/memory/MemoryManager.h>
 
 using namespace reactphysics3d;
 

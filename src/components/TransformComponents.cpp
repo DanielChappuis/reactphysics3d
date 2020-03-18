@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "TransformComponents.h"
-#include "engine/EntityManager.h"
+#include <reactphysics3d/components/TransformComponents.h>
+#include <reactphysics3d/engine/EntityManager.h>
 #include <cassert>
 #include <random>
 

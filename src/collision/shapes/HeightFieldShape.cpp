@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "HeightFieldShape.h"
-#include "collision/RaycastInfo.h"
-#include "utils/Profiler.h"
+#include <reactphysics3d/collision/shapes/HeightFieldShape.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/utils/Profiler.h>
 
 using namespace reactphysics3d;
 

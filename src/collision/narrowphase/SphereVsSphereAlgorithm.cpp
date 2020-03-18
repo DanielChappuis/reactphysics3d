@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereVsSphereAlgorithm.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/narrowphase/SphereVsSphereNarrowPhaseInfoBatch.h"
+#include <reactphysics3d/collision/narrowphase/SphereVsSphereAlgorithm.h>
+#include <reactphysics3d/collision/shapes/SphereShape.h>
+#include <reactphysics3d/collision/narrowphase/SphereVsSphereNarrowPhaseInfoBatch.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  

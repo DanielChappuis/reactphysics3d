@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "mathematics_functions.h"
-#include "Vector3.h"
-#include "Vector2.h"
+#include <reactphysics3d/mathematics/mathematics_functions.h>
+#include <reactphysics3d/mathematics/Vector3.h>
+#include <reactphysics3d/mathematics/Vector2.h>
 #include <cassert>
 
 using namespace reactphysics3d;

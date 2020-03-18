@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "collision/narrowphase/NarrowPhaseInput.h"
-#include "collision/narrowphase/CollisionDispatch.h"
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseInput.h>
+#include <reactphysics3d/collision/narrowphase/CollisionDispatch.h>
 
 using namespace reactphysics3d;
 

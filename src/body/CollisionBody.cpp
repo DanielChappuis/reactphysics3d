@@ -24,11 +24,11 @@
 ********************************************************************************/
 
  // Libraries
-#include "CollisionBody.h"
-#include "engine/PhysicsWorld.h"
-#include "collision/ContactManifold.h"
-#include "collision/RaycastInfo.h"
-#include "utils/Logger.h"
+#include <reactphysics3d/body/CollisionBody.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/collision/ContactManifold.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/utils/Logger.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

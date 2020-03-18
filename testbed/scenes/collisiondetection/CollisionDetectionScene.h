@@ -29,7 +29,7 @@
 // Libraries
 #include <cmath>
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"

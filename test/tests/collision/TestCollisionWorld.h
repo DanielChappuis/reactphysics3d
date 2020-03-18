@@ -27,10 +27,10 @@
 #define TEST_COLLISION_WORLD_H
 
 // Libraries
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "Test.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifold.h"
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/ContactManifold.h>
 #include <map>
 #include <vector>
 

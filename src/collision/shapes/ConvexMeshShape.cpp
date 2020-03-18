@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "configuration.h"
-#include "ConvexMeshShape.h"
-#include "engine/PhysicsWorld.h"
-#include "collision/RaycastInfo.h"
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/collision/shapes/ConvexMeshShape.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
 
 using namespace reactphysics3d;
 

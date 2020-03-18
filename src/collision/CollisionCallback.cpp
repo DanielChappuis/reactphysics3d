@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "collision/CollisionCallback.h"
-#include "collision/ContactPair.h"
-#include "constraint/ContactPoint.h"
-#include "engine/PhysicsWorld.h"
+#include <reactphysics3d/collision/CollisionCallback.h>
+#include <reactphysics3d/collision/ContactPair.h>
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

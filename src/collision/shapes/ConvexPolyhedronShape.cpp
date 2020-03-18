@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConvexPolyhedronShape.h"
+#include <reactphysics3d/collision/shapes/ConvexPolyhedronShape.h>
 
 
 // We want to use the ReactPhysics3D namespace

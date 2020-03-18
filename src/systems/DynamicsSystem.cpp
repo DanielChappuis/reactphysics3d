@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "systems/DynamicsSystem.h"
-#include "body/RigidBody.h"
-#include "engine/PhysicsWorld.h"
+#include <reactphysics3d/systems/DynamicsSystem.h>
+#include <reactphysics3d/body/RigidBody.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
 
 using namespace reactphysics3d;
 

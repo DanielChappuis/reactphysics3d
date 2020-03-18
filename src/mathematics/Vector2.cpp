@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "Vector2.h"
+#include <reactphysics3d/mathematics/Vector2.h>
 
 // Namespaces
 using namespace reactphysics3d;

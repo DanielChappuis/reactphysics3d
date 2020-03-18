@@ -24,16 +24,16 @@
 ********************************************************************************/
 
 // Libraries
-#include "systems/ContactSolverSystem.h"
-#include "engine/PhysicsWorld.h"
-#include "body/RigidBody.h"
-#include "constraint/ContactPoint.h"
-#include "utils/Profiler.h"
-#include "engine/Island.h"
-#include "collision/Collider.h"
-#include "components/CollisionBodyComponents.h"
-#include "components/ColliderComponents.h"
-#include "collision/ContactManifold.h"
+#include <reactphysics3d/systems/ContactSolverSystem.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/body/RigidBody.h>
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/engine/Island.h>
+#include <reactphysics3d/collision/Collider.h>
+#include <reactphysics3d/components/CollisionBodyComponents.h>
+#include <reactphysics3d/components/ColliderComponents.h>
+#include <reactphysics3d/collision/ContactManifold.h>
 
 using namespace reactphysics3d;
 using namespace std;

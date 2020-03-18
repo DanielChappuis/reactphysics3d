@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "HalfEdgeStructure.h"
-#include "containers/Map.h"
-#include "containers/Pair.h"
-#include "containers/containers_common.h"
+#include <reactphysics3d/collision/HalfEdgeStructure.h>
+#include <reactphysics3d/containers/Map.h>
+#include <reactphysics3d/containers/Pair.h>
+#include <reactphysics3d/containers/containers_common.h>
 
 using namespace reactphysics3d;
 

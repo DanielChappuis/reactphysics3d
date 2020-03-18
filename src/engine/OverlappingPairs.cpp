@@ -25,11 +25,11 @@
 
 // Libraries
 #include <cassert>
-#include "OverlappingPairs.h"
-#include "containers/containers_common.h"
-#include "collision/ContactPointInfo.h"
-#include "collision/narrowphase/NarrowPhaseAlgorithm.h"
-#include "collision/narrowphase/CollisionDispatch.h"
+#include <reactphysics3d/engine/OverlappingPairs.h>
+#include <reactphysics3d/containers/containers_common.h>
+#include <reactphysics3d/collision/ContactPointInfo.h>
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/CollisionDispatch.h>
 
 using namespace reactphysics3d;
 

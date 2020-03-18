@@ -27,8 +27,8 @@
 #define TEST_MATHEMATICS_FUNCTIONS_H
 
 // Libraries
-#include "containers/List.h"
-#include "memory/DefaultAllocator.h"
+#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/memory/DefaultAllocator.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {

@@ -24,16 +24,16 @@
 ********************************************************************************/
 
 // Libraries
-#include "PhysicsWorld.h"
-#include "constraint/BallAndSocketJoint.h"
-#include "constraint/SliderJoint.h"
-#include "constraint/HingeJoint.h"
-#include "constraint/FixedJoint.h"
-#include "utils/Profiler.h"
-#include "engine/EventListener.h"
-#include "engine/Island.h"
-#include "collision/ContactManifold.h"
-#include "containers/Stack.h"
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/constraint/BallAndSocketJoint.h>
+#include <reactphysics3d/constraint/SliderJoint.h>
+#include <reactphysics3d/constraint/HingeJoint.h>
+#include <reactphysics3d/constraint/FixedJoint.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/engine/EventListener.h>
+#include <reactphysics3d/engine/Island.h>
+#include <reactphysics3d/collision/ContactManifold.h>
+#include <reactphysics3d/containers/Stack.h>
 
 // Namespaces
 using namespace reactphysics3d;

@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "PolyhedronMesh.h"
-#include "memory/MemoryManager.h"
-#include "collision/PolygonVertexArray.h"
+#include <reactphysics3d/collision/PolyhedronMesh.h>
+#include <reactphysics3d/memory/MemoryManager.h>
+#include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <cstdlib>
 
 using namespace reactphysics3d;

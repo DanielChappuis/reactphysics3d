@@ -24,11 +24,11 @@
 ********************************************************************************/
 
 // Libraries
-#include "systems/ConstraintSolverSystem.h"
-#include "components/JointComponents.h"
-#include "components/BallAndSocketJointComponents.h"
-#include "utils/Profiler.h"
-#include "engine/Island.h"
+#include <reactphysics3d/systems/ConstraintSolverSystem.h>
+#include <reactphysics3d/components/JointComponents.h>
+#include <reactphysics3d/components/BallAndSocketJointComponents.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/engine/Island.h>
 
 using namespace reactphysics3d;
 

@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "DynamicAABBTree.h"
-#include "systems/BroadPhaseSystem.h"
-#include "containers/Stack.h"
-#include "utils/Profiler.h"
+#include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>
+#include <reactphysics3d/systems/BroadPhaseSystem.h>
+#include <reactphysics3d/containers/Stack.h>
+#include <reactphysics3d/utils/Profiler.h>
 
 using namespace reactphysics3d;
 

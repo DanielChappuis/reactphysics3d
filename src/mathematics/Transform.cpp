@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "Transform.h"
-#include "Matrix3x3.h"
+#include <reactphysics3d/mathematics/Transform.h>
+#include <reactphysics3d/mathematics/Matrix3x3.h>
 
 // Namespaces
 using namespace reactphysics3d;

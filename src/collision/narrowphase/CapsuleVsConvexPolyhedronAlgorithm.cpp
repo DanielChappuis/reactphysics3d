@@ -24,13 +24,13 @@
 ********************************************************************************/
 
 // Libraries
-#include "CapsuleVsConvexPolyhedronAlgorithm.h"
-#include "SAT/SATAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
-#include "collision/shapes/CapsuleShape.h"
-#include "collision/shapes/ConvexPolyhedronShape.h"
-#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
-#include "collision/ContactPointInfo.h"
+#include <reactphysics3d/collision/narrowphase/CapsuleVsConvexPolyhedronAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/SAT/SATAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/GJK/GJKAlgorithm.h>
+#include <reactphysics3d/collision/shapes/CapsuleShape.h>
+#include <reactphysics3d/collision/shapes/ConvexPolyhedronShape.h>
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
+#include <reactphysics3d/collision/ContactPointInfo.h>
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace

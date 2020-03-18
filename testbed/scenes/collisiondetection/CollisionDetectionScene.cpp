@@ -25,8 +25,8 @@
 
 // Libraries
 #include "CollisionDetectionScene.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifold.h"
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/ContactManifold.h>
 
 // Namespaces
 using namespace openglframework;

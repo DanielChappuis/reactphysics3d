@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "AABB.h"
-#include "configuration.h"
+#include <reactphysics3d/collision/shapes/AABB.h>
+#include <reactphysics3d/configuration.h>
 #include <cassert>
 
 using namespace reactphysics3d;

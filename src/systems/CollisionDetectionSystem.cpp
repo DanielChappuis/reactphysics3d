@@ -24,23 +24,23 @@
 ********************************************************************************/
 
 // Libraries
-#include "systems/CollisionDetectionSystem.h"
-#include "engine/PhysicsWorld.h"
-#include "collision/OverlapCallback.h"
-#include "collision/shapes/BoxShape.h"
-#include "collision/shapes/ConcaveShape.h"
-#include "collision/ContactManifoldInfo.h"
-#include "constraint/ContactPoint.h"
-#include "body/RigidBody.h"
-#include "configuration.h"
-#include "collision/CollisionCallback.h"
-#include "collision/OverlapCallback.h"
-#include "collision/narrowphase/NarrowPhaseInfoBatch.h"
-#include "collision/ContactManifold.h"
-#include "utils/Profiler.h"
-#include "engine/EventListener.h"
-#include "collision/RaycastInfo.h"
-#include "containers/Pair.h"
+#include <reactphysics3d/systems/CollisionDetectionSystem.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/collision/OverlapCallback.h>
+#include <reactphysics3d/collision/shapes/BoxShape.h>
+#include <reactphysics3d/collision/shapes/ConcaveShape.h>
+#include <reactphysics3d/collision/ContactManifoldInfo.h>
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/body/RigidBody.h>
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/collision/CollisionCallback.h>
+#include <reactphysics3d/collision/OverlapCallback.h>
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
+#include <reactphysics3d/collision/ContactManifold.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/engine/EventListener.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/containers/Pair.h>
 #include <cassert>
 #include <iostream>
 

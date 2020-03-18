@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "SliderJointComponents.h"
-#include "engine/EntityManager.h"
-#include "mathematics/Matrix3x3.h"
+#include <reactphysics3d/components/SliderJointComponents.h>
+#include <reactphysics3d/engine/EntityManager.h>
+#include <reactphysics3d/mathematics/Matrix3x3.h>
 #include <cassert>
 
 // We want to use the ReactPhysics3D namespace
