@@ -203,6 +203,20 @@
     Then, you should be able to compile your application using the
     ReactPhysics3D library. \\
 
+    Per example, a minimal cmake configuration might look something like the following:
+    \texttt{
+      cmake_minimum_required(VERSION 3.10) \\
+      project(physics) \\
+      \\
+      set(CMAKE_CXX_STANDARD 14) \\
+      \\
+      add_executable(physics main.cpp) \\
+      \\
+      include_directories(BEFORE PUBLIC /usr/local/include/reactphysics3d) \\
+      target_link_libraries(physics /usr/local/lib/libreactphysics3d.a) \\
+    }
+
+
     All the classes of the library are available in the \texttt{reactphysics3d} namespace or its shorter alias
     \texttt{rp3d}. Therefore, you need to include this namespace into your code with the following declaration: \\
 
