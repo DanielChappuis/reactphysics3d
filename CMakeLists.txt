@@ -252,7 +252,7 @@ IF(RP3D_COMPILE_TESTS)
    add_subdirectory(test/)
 ENDIF()
 
-SET_TARGET_PROPERTIES(reactphysics3d PROPERTIES PUBLIC_HEADER "${REACTPHYSICS3D_HEADERS}")
+#SET_TARGET_PROPERTIES(reactphysics3d PROPERTIES PUBLIC_HEADER "${REACTPHYSICS3D_HEADERS}")
 
 # Version number and soname for the library
 SET_TARGET_PROPERTIES(reactphysics3d  PROPERTIES
@@ -260,12 +260,23 @@ SET_TARGET_PROPERTIES(reactphysics3d  PROPERTIES
           SOVERSION "0.7" 
 )
 
-# Install target (install library only, not headers)
+IF(RP3D_DOUBLE_PRECISION_ENABLED)
+	set(DECIMAL_TYPE "double")
+ELSE()
+	set(DECIMAL_TYPE "float")
+ENDIF()
+
+configure_file("src/decimal.h.in" "decimal.h" )
+
+# Install target
 INSTALL(TARGETS reactphysics3d
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/reactphysics3d
 )
 
-# Install the headers separately (because INSTALL(TARGETS ... PUBLIC_HEADER DESTINATION ...) does not support subfolders
-INSTALL(DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/reactphysics3d FILES_MATCHING PATTERN "*.h")
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/" "${CMAKE_CURRENT_BINARY_DIR}/"
+        DESTINATION "include/reactphysics3d"
+        FILES_MATCHING  PATTERN "*.h"
+)
