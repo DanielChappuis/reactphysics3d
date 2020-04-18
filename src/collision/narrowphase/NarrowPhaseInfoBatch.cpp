@@ -36,7 +36,7 @@ using namespace reactphysics3d;
 NarrowPhaseInfoBatch::NarrowPhaseInfoBatch(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs)
       : mMemoryAllocator(allocator), mOverlappingPairs(overlappingPairs), overlappingPairIds(allocator),
         colliderEntities1(allocator), colliderEntities2(allocator), collisionShapes1(allocator), collisionShapes2(allocator),
-        shape1ToWorldTransforms(allocator), shape2ToWorldTransforms(allocator),
+        shape1ToWorldTransforms(allocator), shape2ToWorldTransforms(allocator), reportContacts(allocator),
         isColliding(allocator), contactPoints(allocator), collisionShapeAllocators(allocator),
         lastFrameCollisionInfos(allocator) {
 
@@ -49,7 +49,7 @@ NarrowPhaseInfoBatch::~NarrowPhaseInfoBatch() {
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
 void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1, CollisionShape* shape2,
-                                              const Transform& shape1Transform, const Transform& shape2Transform,
+                                              const Transform& shape1Transform, const Transform& shape2Transform, bool needToReportContacts,
                                               MemoryAllocator& shapeAllocator) {
 
     overlappingPairIds.add(pairId);
@@ -59,6 +59,7 @@ void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, E
     collisionShapes2.add(shape2);
     shape1ToWorldTransforms.add(shape1Transform);
     shape2ToWorldTransforms.add(shape2Transform);
+    reportContacts.add(needToReportContacts);
     collisionShapeAllocators.add(&shapeAllocator);
     contactPoints.add(List<ContactPointInfo*>(mMemoryAllocator));
     isColliding.add(false);
@@ -72,6 +73,7 @@ void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, E
 void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth,
                      const Vector3& localPt1, const Vector3& localPt2) {
 
+    assert(reportContacts[index]);
     assert(penDepth > decimal(0.0));
 
     // Get the memory allocator
@@ -116,6 +118,7 @@ void NarrowPhaseInfoBatch::reserveMemory() {
     collisionShapes2.reserve(mCachedCapacity);
     shape1ToWorldTransforms.reserve(mCachedCapacity);
     shape2ToWorldTransforms.reserve(mCachedCapacity);
+    reportContacts.reserve(mCachedCapacity);
     collisionShapeAllocators.reserve(mCachedCapacity);
     lastFrameCollisionInfos.reserve(mCachedCapacity);
     isColliding.reserve(mCachedCapacity);
@@ -155,6 +158,7 @@ void NarrowPhaseInfoBatch::clear() {
     collisionShapes2.clear(true);
     shape1ToWorldTransforms.clear(true);
     shape2ToWorldTransforms.clear(true);
+    reportContacts.clear(true);
     collisionShapeAllocators.clear(true);
     lastFrameCollisionInfos.clear(true);
     isColliding.clear(true);

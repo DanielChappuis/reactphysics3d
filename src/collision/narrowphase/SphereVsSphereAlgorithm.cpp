@@ -31,8 +31,7 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                            bool reportContacts, MemoryAllocator& memoryAllocator) {
+bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, MemoryAllocator& memoryAllocator) {
 
     bool isCollisionFound = false;
 
@@ -59,10 +58,11 @@ bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& 
         // If the sphere collision shapes intersect
         if (squaredDistanceBetweenCenters < sumRadiusesProducts) {
 
-            if (reportContacts) {
+            // If we need to report contacts
+            if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
 
-                Transform transform1Inverse = transform1.getInverse();
-                Transform transform2Inverse = transform2.getInverse();
+                const Transform transform1Inverse = transform1.getInverse();
+                const Transform transform2Inverse = transform2.getInverse();
 
                 decimal penetrationDepth = sumRadiuses - std::sqrt(squaredDistanceBetweenCenters);
                 Vector3 intersectionOnBody1;

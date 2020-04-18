@@ -20,6 +20,9 @@
  - The RigidBody::getLocalInertiaTensor() method has been added to retrieve the local-space inertia tensor of a rigid body.
  - The RigidBody::updateMassFromColliders() method has been added to compute and set the mass of a body using its colliders
  - A Material nows has a mass density parameter that can be set using the Material::setMassDensity() method. The mass density is used to compute the mass of a collider when computing the mass of a rigid body
+ - A Collider can now be a trigger. This collider will be used to only report collisions with another collider but no collision response will be applied. You can use the Collider::setIsTrigger() method for this.
+ - The EventListener class now has a onTrigger() method that is called when a trigger collider is colling with another collider.
+ - In the EventListener, the onContact() and onTrigger() method now reports the type of event (start, stay, exit) for each contact. This way the user can know whether it's a new contact or not or when two colliders are not in contact anymore. 
 
 ### Fixed
 

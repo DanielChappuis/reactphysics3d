@@ -41,7 +41,7 @@ using namespace reactphysics3d;
 // by Dirk Gregorius.
 bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                                        uint batchStartIndex, uint batchNbItems,
-                                                       bool reportContacts, bool clipWithPreviousAxisIfStillColliding,
+                                                       bool clipWithPreviousAxisIfStillColliding,
                                                        MemoryAllocator& memoryAllocator) {
 
     bool isCollisionFound = false;
@@ -59,7 +59,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
 
     // Run the GJK algorithm
     List<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
-    gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults, reportContacts);
+    gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults);
     assert(gjkResults.size() == batchNbItems);
 
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
@@ -78,7 +78,8 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
         // If we have found a contact point inside the margins (shallow penetration)
         if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
 
-            if (reportContacts) {
+            // If we need to report contacts
+            if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
 
                 bool noContact = false;
 
@@ -173,7 +174,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
         if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::INTERPENETRATE) {
 
             // Run the SAT algorithm to find the separating axis and compute contact point
-            narrowPhaseInfoBatch.isColliding[batchIndex] = satAlgorithm.testCollisionCapsuleVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex, reportContacts);
+            narrowPhaseInfoBatch.isColliding[batchIndex] = satAlgorithm.testCollisionCapsuleVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex);
 
             lastFrameCollisionInfo->wasUsingGJK = false;
             lastFrameCollisionInfo->wasUsingSAT = true;

@@ -110,7 +110,6 @@ class RigidBodyComponents : public Components {
         Vector3* mLocalInertiaTensors;
 
         /// Array with the inverse of the inertia tensor of each component
-        // TODO : We should use a Vector3 here for the diagonal instead of a Matrix3x3
         Vector3* mInverseInertiaTensorsLocal;
 
         /// Array with the constrained linear velocity of each component

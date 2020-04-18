@@ -224,6 +224,16 @@ const Transform Collider::getLocalToWorldTransform() const {
     return mBody->mWorld.mCollidersComponents.getLocalToWorldTransform(mEntity);
 }
 
+// Return true if the collider is a trigger
+bool Collider::getIsTrigger() const {
+   return mBody->mWorld.mCollidersComponents.getIsTrigger(mEntity);
+}
+
+// Set whether the collider is a trigger
+void Collider::setIsTrigger(bool isTrigger) const {
+   mBody->mWorld.mCollidersComponents.setIsTrigger(mEntity, isTrigger);
+}
+
 #ifdef IS_PROFILING_ACTIVE
 
 // Set the profiler

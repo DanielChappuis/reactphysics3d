@@ -66,7 +66,7 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
 
         /// Compute a contact info if the two bounding volume collide
         bool testCollision(SphereVsSphereNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, bool reportContacts, MemoryAllocator& memoryAllocator);
+                           uint batchNbItems, MemoryAllocator& memoryAllocator);
 };
 
 }

@@ -70,7 +70,7 @@ class CapsuleVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
 
         /// Compute the narrow-phase collision detection between a capsule and a polyhedron
         bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, bool reportContacts, bool clipWithPreviousAxisIfStillColliding,
+                           uint batchNbItems, bool clipWithPreviousAxisIfStillColliding,
                            MemoryAllocator& memoryAllocator);
 };
 

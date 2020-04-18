@@ -36,7 +36,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool SphereVsCapsuleAlgorithm::testCollision(SphereVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                             bool reportContacts, MemoryAllocator& memoryAllocator) {
+                                             MemoryAllocator& memoryAllocator) {
 
     bool isCollisionFound = false;
 
@@ -79,7 +79,8 @@ bool SphereVsCapsuleAlgorithm::testCollision(SphereVsCapsuleNarrowPhaseInfoBatch
             Vector3 contactPointSphereLocal;
             Vector3 contactPointCapsuleLocal;
 
-            if (reportContacts) {
+            // If we need to report contacts
+            if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
 
                 // If the sphere center is not on the capsule inner segment
                 if (sphereSegmentDistanceSquare > MACHINE_EPSILON) {

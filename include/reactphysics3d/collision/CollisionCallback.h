@@ -108,6 +108,22 @@ class CollisionCallback {
          */
         class ContactPair {
 
+            public:
+
+                /// Enumeration EventType that describes the type of contact event
+                enum class EventType {
+
+                    /// This contact is a new contact between the two
+                    /// colliders (the colliders where not touching in the previous frame)
+                    ContactStart,
+
+                    /// The two colliders were already touching in the previous frame and this is a new or updated contact
+                    ContactStay,
+
+                    /// The two colliders were in contact in the previous frame and are not in contact anymore
+                    ContactExit
+                };
+
             private:
 
                 // -------------------- Attributes -------------------- //
@@ -120,11 +136,14 @@ class CollisionCallback {
                 /// Reference to the physics world
                 PhysicsWorld& mWorld;
 
+                /// True if this is a lost contact pair (contact pair colliding in previous frame but not in current one)
+                bool mIsLostContactPair;
+
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                ContactPair(const reactphysics3d::ContactPair& contactPair,  List<reactphysics3d::ContactPoint>* contactPoints,
-                            PhysicsWorld& world);
+                ContactPair(const reactphysics3d::ContactPair& contactPair, List<reactphysics3d::ContactPoint>* contactPoints,
+                            PhysicsWorld& world, bool mIsLostContactPair);
 
             public:
 
@@ -157,6 +176,9 @@ class CollisionCallback {
                 /// Return a pointer to the second collider in contact (in body 2)
                 Collider* getCollider2() const;
 
+                /// Return the corresponding type of event for this contact pair
+                EventType getEventType() const;
+
                 // -------------------- Friendship -------------------- //
 
                 friend class CollisionCallback;
@@ -172,7 +194,7 @@ class CollisionCallback {
 
                 // -------------------- Attributes -------------------- //
 
-                /// Pointer to the list of contact pairs
+                /// Pointer to the list of contact pairs (contains contacts and triggers events)
                 List<reactphysics3d::ContactPair>* mContactPairs;
 
                 /// Pointer to the list of contact manifolds
@@ -181,6 +203,15 @@ class CollisionCallback {
                 /// Pointer to the contact points
                 List<reactphysics3d::ContactPoint>* mContactPoints;
 
+                /// Pointer to the list of lost contact pairs (contains contacts and triggers events)
+                List<reactphysics3d::ContactPair>& mLostContactPairs;
+
+                /// List of indices of the mContactPairs list that are contact events (not overlap/triggers)
+                List<uint> mContactPairsIndices;
+
+                /// List of indices of the mLostContactPairs list that are contact events (not overlap/triggers)
+                List<uint> mLostContactPairsIndices;
+
                 /// Reference to the physics world
                 PhysicsWorld& mWorld;
 
@@ -188,7 +219,8 @@ class CollisionCallback {
 
                 /// Constructor
                 CallbackData(List<reactphysics3d::ContactPair>* contactPairs, List<ContactManifold>* manifolds,
-                             List<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld& world);
+                             List<reactphysics3d::ContactPoint>* contactPoints, List<reactphysics3d::ContactPair>& lostContactPairs,
+                             PhysicsWorld& world);
 
                 /// Deleted copy constructor
                 CallbackData(const CallbackData& callbackData) = delete;
@@ -226,7 +258,7 @@ class CollisionCallback {
  * @return The number of contact pairs
  */
 inline uint CollisionCallback::CallbackData::getNbContactPairs() const {
-    return mContactPairs->size();
+    return mContactPairsIndices.size() + mLostContactPairsIndices.size();
 }
 
 // Return the number of contact points in the contact pair

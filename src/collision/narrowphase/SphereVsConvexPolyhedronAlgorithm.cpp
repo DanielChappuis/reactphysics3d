@@ -36,7 +36,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                                      bool reportContacts, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator) {
+                                                      bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator) {
 
     // First, we run the GJK algorithm
     GJKAlgorithm gjkAlgorithm;
@@ -50,7 +50,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
 #endif
 
     List<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
-    gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults, reportContacts);
+    gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults);
     assert(gjkResults.size() == batchNbItems);
 
     // For each item in the batch
@@ -88,7 +88,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
 
 #endif
 
-            isCollisionFound |= satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex, 1, reportContacts);
+            isCollisionFound |= satAlgorithm.testCollisionSphereVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex, 1);
 
             lastFrameCollisionInfo->wasUsingGJK = false;
             lastFrameCollisionInfo->wasUsingSAT = true;

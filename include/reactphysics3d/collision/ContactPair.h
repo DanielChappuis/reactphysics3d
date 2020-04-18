@@ -80,15 +80,21 @@ struct ContactPair {
         /// Total number of contact points in all the manifolds of the contact pair
         uint nbToTalContactPoints;
 
+        /// True if the colliders of the pair were already colliding in the previous frame
+        bool collidingInPreviousFrame;
+
+        /// True if one of the two involved colliders is a trigger
+        bool isTrigger;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
         ContactPair(uint64 pairId, Entity body1Entity, Entity body2Entity, Entity collider1Entity,
-                    Entity collider2Entity, uint contactPairIndex, MemoryAllocator& allocator)
+                    Entity collider2Entity, uint contactPairIndex, bool collidingInPreviousFrame, bool isTrigger, MemoryAllocator& allocator)
             : pairId(pairId), potentialContactManifoldsIndices(allocator), body1Entity(body1Entity), body2Entity(body2Entity),
               collider1Entity(collider1Entity), collider2Entity(collider2Entity),
               isAlreadyInIsland(false), contactPairIndex(contactPairIndex), contactManifoldsIndex(0), nbContactManifolds(0),
-              contactPointsIndex(0), nbToTalContactPoints(0) {
+              contactPointsIndex(0), nbToTalContactPoints(0), collidingInPreviousFrame(collidingInPreviousFrame), isTrigger(isTrigger) {
 
         }
 };

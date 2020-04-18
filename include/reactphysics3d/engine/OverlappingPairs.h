@@ -173,6 +173,12 @@ class OverlappingPairs {
         /// True if the first shape of the pair is convex
         bool* mIsShape1Convex;
 
+        /// True if the colliders of the overlapping pair were colliding in the previous frame
+        bool* mCollidingInPreviousFrame;
+
+        /// True if the colliders of the overlapping pair are colliding in the current frame
+        bool* mCollidingInCurrentFrame;
+
         /// Reference to the colliders components
         ColliderComponents& mColliderComponents;
 
@@ -276,11 +282,20 @@ class OverlappingPairs {
         /// Delete all the obsolete last frame collision info
         void clearObsoleteLastFrameCollisionInfos();
 
+        /// Set the collidingInPreviousFrame value with the collidinginCurrentFrame value for each pair
+        void updateCollidingInPreviousFrame();
+
         /// Return the pair of bodies index of the pair
         static bodypair computeBodiesIndexPair(Entity body1Entity, Entity body2Entity);
 
         /// Set if we need to test a given pair for overlap
         void setNeedToTestOverlap(uint64 pairId, bool needToTestOverlap);
+
+        /// Return true if the two colliders of the pair were already colliding the previous frame
+        bool getCollidingInPreviousFrame(uint64 pairId) const;
+
+        /// Set to true if the two colliders of the pair were already colliding the previous frame
+        void setCollidingInPreviousFrame(uint64 pairId, bool wereCollidingInPreviousFrame);
 
 #ifdef IS_PROFILING_ACTIVE
 
@@ -378,6 +393,18 @@ inline MemoryAllocator& OverlappingPairs::getTemporaryAllocator() {
 inline void OverlappingPairs::setNeedToTestOverlap(uint64 pairId, bool needToTestOverlap) {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     mNeedToTestOverlap[mMapPairIdToPairIndex[pairId]] = needToTestOverlap;
+}
+
+// Return true if the two colliders of the pair were already colliding the previous frame
+inline bool OverlappingPairs::getCollidingInPreviousFrame(uint64 pairId) const {
+    assert(mMapPairIdToPairIndex.containsKey(pairId));
+    return mCollidingInPreviousFrame[mMapPairIdToPairIndex[pairId]];
+}
+
+// Set to true if the two colliders of the pair were already colliding the previous frame
+inline void OverlappingPairs::setCollidingInPreviousFrame(uint64 pairId, bool wereCollidingInPreviousFrame) {
+    assert(mMapPairIdToPairIndex.containsKey(pairId));
+    mCollidingInPreviousFrame[mMapPairIdToPairIndex[pairId]] = wereCollidingInPreviousFrame;
 }
 
 #ifdef IS_PROFILING_ACTIVE

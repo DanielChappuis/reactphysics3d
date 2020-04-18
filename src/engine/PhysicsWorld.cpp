@@ -338,7 +338,7 @@ void PhysicsWorld::update(decimal timeStep) {
     createIslands();
 
     // Report the contacts to the user
-    mCollisionDetection.reportContacts();
+    mCollisionDetection.reportContactsAndTriggers();
 
     // Disable the joints for pair of sleeping bodies
     disableJointsOfSleepingBodies();
@@ -718,9 +718,6 @@ void PhysicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
 /// it). Then, we create an island with this group of connected bodies.
 void PhysicsWorld::createIslands() {
 
-    // list of contact pairs involving a non-rigid body
-    List<uint> nonRigidBodiesContactPairs(mMemoryManager.getSingleFrameAllocator());
-
     RP3D_PROFILE("PhysicsWorld::createIslands()", mProfiler);
 
     // Reset all the isAlreadyInIsland variables of bodies and joints
@@ -783,14 +780,15 @@ void PhysicsWorld::createIslands() {
                 for (uint p=0; p < contactPairs.size(); p++) {
 
                     ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[contactPairs[p]];
-                    assert(pair.potentialContactManifoldsIndices.size() > 0);
 
                     // Check if the current contact pair has already been added into an island
                     if (pair.isAlreadyInIsland) continue;
 
-                    // If the colliding body is a RigidBody (and not a CollisionBody instead)
-                    if (mRigidBodyComponents.hasComponent(pair.body1Entity) && mRigidBodyComponents.hasComponent(pair.body2Entity)) {
+                    // If the colliding body is a RigidBody (and not a CollisionBody) and is not a trigger
+                    if (mRigidBodyComponents.hasComponent(pair.body1Entity) && mRigidBodyComponents.hasComponent(pair.body2Entity)
+                        && !mCollidersComponents.getIsTrigger(pair.collider1Entity) && !mCollidersComponents.getIsTrigger(pair.collider2Entity)) {
 
+                        assert(pair.potentialContactManifoldsIndices.size() > 0);
                         nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
 
                         // Add the contact manifold into the island
@@ -809,7 +807,6 @@ void PhysicsWorld::createIslands() {
                     else {
 
                         // Add the contact pair index in the list of contact pairs that won't be part of islands
-                        nonRigidBodiesContactPairs.add(pair.contactPairIndex);
                         pair.isAlreadyInIsland = true;
                     }
                 }

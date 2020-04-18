@@ -70,7 +70,7 @@ class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
         SphereVsConvexPolyhedronAlgorithm& operator=(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
 
         /// Compute the narrow-phase collision detection between a sphere and a convex polyhedron
-        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, bool reportContacts,
+        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
                            bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator);
 };
 

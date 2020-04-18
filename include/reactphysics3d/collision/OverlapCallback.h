@@ -28,6 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/collision/ContactPair.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -53,20 +54,39 @@ class OverlapCallback {
          */
         class OverlapPair {
 
+            public:
+
+                /// Enumeration EventType that describes the type of overlapping event
+                enum class EventType {
+
+                    /// This overlap is a new overlap between the two
+                    /// colliders (the colliders where not overlapping in the previous frame)
+                    OverlapStart,
+
+                    /// The two colliders were already overlapping in the previous frame and this is a new or updated overlap
+                    OverlapStay,
+
+                    /// The two colliders were overlapping in the previous frame and are not overlapping anymore
+                    OverlapExit
+                };
+
             private:
 
                 // -------------------- Attributes -------------------- //
 
-                /// Pair of overlapping body entities
-                Pair<Entity, Entity>& mOverlapPair;
+                /// Contact pair
+                ContactPair& mContactPair;
 
                 /// Reference to the physics world
                 PhysicsWorld& mWorld;
 
+                /// True if the pair were overlapping in the previous frame but not in the current one
+                bool mIsLostOverlapPair;
+
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                OverlapPair(Pair<Entity, Entity>& overlapPair, reactphysics3d::PhysicsWorld& world);
+                OverlapPair(ContactPair& contactPair, reactphysics3d::PhysicsWorld& world, bool isLostOverlappingPair);
 
             public:
 
@@ -81,11 +101,20 @@ class OverlapCallback {
                 /// Destructor
                 ~OverlapPair() = default;
 
+                /// Return a pointer to the first collider in contact
+                Collider* getCollider1() const;
+
+                /// Return a pointer to the second collider in contact
+                Collider* getCollider2() const;
+
                 /// Return a pointer to the first body in contact
                 CollisionBody* getBody1() const;
 
                 /// Return a pointer to the second body in contact
                 CollisionBody* getBody2() const;
+
+                /// Return the corresponding type of event for this overlapping pair
+                EventType getEventType() const;
 
                 // -------------------- Friendship -------------------- //
 
@@ -102,7 +131,17 @@ class OverlapCallback {
 
                 // -------------------- Attributes -------------------- //
 
-                List<Pair<Entity, Entity>>& mOverlapBodies;
+                /// Reference to the list of contact pairs (contains contacts and triggers events)
+                List<ContactPair>& mContactPairs;
+
+                /// Reference to the list of lost contact pairs (contains contacts and triggers events)
+                List<ContactPair>& mLostContactPairs;
+
+                /// List of indices of the mContactPairs list that are overlap/triggers events (not contact events)
+                List<uint> mContactPairsIndices;
+
+                /// List of indices of the mLostContactPairs list that are overlap/triggers events (not contact events)
+                List<uint> mLostContactPairsIndices;
 
                 /// Reference to the physics world
                 PhysicsWorld& mWorld;
@@ -110,7 +149,7 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                CallbackData(List<Pair<Entity, Entity>>& overlapColliders, PhysicsWorld& world);
+                CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, PhysicsWorld& world);
 
                 /// Deleted copy constructor
                 CallbackData(const CallbackData& callbackData) = delete;
@@ -147,7 +186,7 @@ class OverlapCallback {
 
 // Return the number of overlapping pairs of bodies
 inline uint OverlapCallback::CallbackData::getNbOverlappingPairs() const {
-    return mOverlapBodies.size();
+    return mContactPairsIndices.size() + mLostContactPairsIndices.size();
 }
 
 // Return a given overlapping pair of bodies
@@ -158,7 +197,15 @@ inline OverlapCallback::OverlapPair OverlapCallback::CallbackData::getOverlappin
 
     assert(index < getNbOverlappingPairs());
 
-    return OverlapPair(mOverlapBodies[index], mWorld);
+    if (index < mContactPairsIndices.size()) {
+        // Return a contact pair
+        return OverlapCallback::OverlapPair((mContactPairs)[mContactPairsIndices[index]],  mWorld, false);
+    }
+    else {
+
+        // Return a lost contact pair
+        return OverlapCallback::OverlapPair(mLostContactPairs[mLostContactPairsIndices[index - mContactPairsIndices.size()]], mWorld, true);
+    }
 }
 
 }

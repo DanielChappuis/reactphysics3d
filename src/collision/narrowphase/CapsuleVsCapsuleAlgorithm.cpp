@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                              bool reportContacts, MemoryAllocator& memoryAllocator) {
+                                              MemoryAllocator& memoryAllocator) {
     
     bool isCollisionFound = false;
 
@@ -95,7 +95,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
             // If the segments were overlapping (the clip segment is valid)
             if (t1 > decimal(0.0) && t2 > decimal(0.0)) {
 
-                if (reportContacts) {
+                if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
 
                     // Clip the inner segment of capsule 2
                     if (t1 > decimal(1.0)) t1 = decimal(1.0);
@@ -171,7 +171,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
         // If the collision shapes overlap
         if (closestPointsDistanceSquare < sumRadius * sumRadius) {
 
-            if (reportContacts) {
+            if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
 
                 // If the distance between the inner segments is not zero
                 if (closestPointsDistanceSquare > MACHINE_EPSILON) {

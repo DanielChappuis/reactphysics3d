@@ -154,11 +154,10 @@ class SATAlgorithm {
 
         /// Test collision between a sphere and a convex mesh
         bool testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                                   uint batchStartIndex, uint batchNbItems,
-                                                   bool reportContacts) const;
+                                                   uint batchStartIndex, uint batchNbItems) const;
 
         /// Test collision between a capsule and a convex mesh
-        bool testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex, bool reportContacts) const;
+        bool testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) const;
 
         /// Compute the two contact points between a polyhedron and a capsule when the separating axis is a face normal of the polyhedron
         bool computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
@@ -172,8 +171,7 @@ class SATAlgorithm {
                                           const Vector3& edgeAdjacentFace2Normal) const;
 
         /// Test collision between two convex meshes
-        bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                                                             uint batchNbItems, bool reportContacts) const;
+        bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems) const;
 
 #ifdef IS_PROFILING_ACTIVE
 

@@ -61,6 +61,7 @@ class NarrowPhaseInput {
         NarrowPhaseInfoBatch mSphereVsConvexPolyhedronBatch;
         NarrowPhaseInfoBatch mCapsuleVsConvexPolyhedronBatch;
         NarrowPhaseInfoBatch mConvexPolyhedronVsConvexPolyhedronBatch;
+
     public:
 
         /// Constructor
@@ -69,7 +70,7 @@ class NarrowPhaseInput {
         /// Add shapes to be tested during narrow-phase collision detection into the batch
         void addNarrowPhaseTest(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
                         CollisionShape* shape2, const Transform& shape1Transform,
-                        const Transform& shape2Transform, NarrowPhaseAlgorithmType narrowPhaseAlgorithmType,
+                        const Transform& shape2Transform, NarrowPhaseAlgorithmType narrowPhaseAlgorithmType, bool reportContacts,
                         MemoryAllocator& shapeAllocator);
 
         /// Get a reference to the sphere vs sphere batch
@@ -98,32 +99,32 @@ class NarrowPhaseInput {
 };
 
 
-// Get a reference to the sphere vs sphere batch
+// Get a reference to the sphere vs sphere batch contacts
 inline SphereVsSphereNarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsSphereBatch() {
     return mSphereVsSphereBatch;
 }
 
-// Get a reference to the sphere vs capsule batch
+// Get a reference to the sphere vs capsule batch contacts
 inline SphereVsCapsuleNarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsCapsuleBatch() {
    return mSphereVsCapsuleBatch;
 }
 
-// Get a reference to the capsule vs capsule batch
+// Get a reference to the capsule vs capsule batch contacts
 inline CapsuleVsCapsuleNarrowPhaseInfoBatch& NarrowPhaseInput::getCapsuleVsCapsuleBatch() {
    return mCapsuleVsCapsuleBatch;
 }
 
-// Get a reference to the sphere vs convex polyhedron batch
+// Get a reference to the sphere vs convex polyhedron batch contacts
 inline NarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsConvexPolyhedronBatch() {
    return mSphereVsConvexPolyhedronBatch;
 }
 
-// Get a reference to the capsule vs convex polyhedron batch
+// Get a reference to the capsule vs convex polyhedron batch contacts
 inline NarrowPhaseInfoBatch& NarrowPhaseInput::getCapsuleVsConvexPolyhedronBatch() {
    return mCapsuleVsConvexPolyhedronBatch;
 }
 
-// Get a reference to the convex polyhedron vs convex polyhedron batch
+// Get a reference to the convex polyhedron vs convex polyhedron batch contacts
 inline NarrowPhaseInfoBatch& NarrowPhaseInput::getConvexPolyhedronVsConvexPolyhedronBatch() {
    return mConvexPolyhedronVsConvexPolyhedronBatch;
 }

@@ -31,23 +31,60 @@
 using namespace reactphysics3d;
 
 // Contact Pair Constructor
-OverlapCallback::OverlapPair::OverlapPair(Pair<Entity, Entity>& overlapPair, PhysicsWorld& world)
-                             : mOverlapPair(overlapPair), mWorld(world) {
+OverlapCallback::OverlapPair::OverlapPair(ContactPair& contactPair, PhysicsWorld& world, bool isLostOverlappingPair)
+                             : mContactPair(contactPair), mWorld(world), mIsLostOverlapPair(isLostOverlappingPair) {
 
+}
+
+// Return a pointer to the first collider in contact
+Collider* OverlapCallback::OverlapPair::getCollider1() const {
+    return static_cast<Collider*>(mWorld.mCollidersComponents.getCollider(mContactPair.collider1Entity));
+}
+
+// Return a pointer to the second collider in contact
+Collider* OverlapCallback::OverlapPair::getCollider2() const {
+    return static_cast<Collider*>(mWorld.mCollidersComponents.getCollider(mContactPair.collider2Entity));
 }
 
 // Return a pointer to the first body in contact
 CollisionBody* OverlapCallback::OverlapPair::getBody1() const {
-    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mOverlapPair.first));
+    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mContactPair.body1Entity));
 }
 
 // Return a pointer to the second body in contact
 CollisionBody* OverlapCallback::OverlapPair::getBody2() const {
-    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mOverlapPair.second));
+    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mContactPair.body2Entity));
+}
+
+// Return the corresponding type of event for this overlapping pair
+OverlapCallback::OverlapPair::EventType OverlapCallback::OverlapPair::getEventType() const {
+
+    if (mIsLostOverlapPair) return EventType::OverlapExit;
+
+    if (mContactPair.collidingInPreviousFrame) return EventType::OverlapStay;
+
+    return EventType::OverlapStart;
 }
 
 // CollisionCallbackData Constructor
-OverlapCallback::CallbackData::CallbackData(List<Pair<Entity, Entity>>& overlapColliders, PhysicsWorld& world)
-                :mOverlapBodies(overlapColliders), mWorld(world) {
+OverlapCallback::CallbackData::CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, PhysicsWorld& world)
+                :mContactPairs(contactPairs), mLostContactPairs(lostContactPairs),
+                 mContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mWorld(world) {
 
+    // Filter the contact pairs to only keep the overlap/trigger events (not the contact events)
+    for (uint i=0; i < mContactPairs.size(); i++) {
+
+        // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
+        if (mContactPairs[i].isTrigger) {
+           mContactPairsIndices.add(i);
+        }
+    }
+    // Filter the lost contact pairs to only keep the overlap/trigger events (not the contact events)
+    for (uint i=0; i < mLostContactPairs.size(); i++) {
+
+        // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
+        if (mLostContactPairs[i].isTrigger) {
+           mLostContactPairsIndices.add(i);
+        }
+    }
 }

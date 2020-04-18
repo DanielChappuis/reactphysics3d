@@ -160,6 +160,12 @@ class Collider {
         /// Set a new material for this collider
         void setMaterial(const Material& material);
 
+        /// Return true if the collider is a trigger
+        bool getIsTrigger() const;
+
+        /// Set whether the collider is a trigger
+        void setIsTrigger(bool isTrigger) const;
+
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Set the profiler

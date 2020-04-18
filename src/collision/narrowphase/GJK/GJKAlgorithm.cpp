@@ -48,7 +48,7 @@ using namespace reactphysics3d;
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
 void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                                 uint batchNbItems, List<GJKResult>& gjkResults, bool reportContacts) {
+                                 uint batchNbItems, List<GJKResult>& gjkResults) {
 
     RP3D_PROFILE("GJKAlgorithm::testCollision()", mProfiler);
     
@@ -214,7 +214,8 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
                 continue;
             }
 
-            if (reportContacts) {
+            // If we need to report contacts
+            if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
 
                 // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
                 TriangleShape::computeSmoothTriangleMeshContact(shape1, shape2, pA, pB, transform1, transform2,

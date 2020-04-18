@@ -98,7 +98,7 @@ class GJKAlgorithm {
 
         /// Compute a contact info if the two bounding volumes collide.
         void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, List<GJKResult>& gjkResults, bool reportContacts);
+                           uint batchNbItems, List<GJKResult>& gjkResults);
 
 #ifdef IS_PROFILING_ACTIVE
 

@@ -28,6 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/collision/CollisionCallback.h>
+#include <reactphysics3d/collision/OverlapCallback.h>
 
 namespace reactphysics3d {
 
@@ -54,6 +55,12 @@ class EventListener : public CollisionCallback {
          * @param collisionInfo Information about the contacts
          */
         virtual void onContact(const CollisionCallback::CallbackData& callbackData) override {}
+
+        /// Called when some trigger events occur
+        virtual void onTrigger(const OverlapCallback::CallbackData& callbackData) {}
+
+        /// Called to report rigid bodies that started to sleep or has woken up in the previous frame
+        virtual void onSleep() {}
 };
 
 }

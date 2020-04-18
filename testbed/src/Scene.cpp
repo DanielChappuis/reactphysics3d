@@ -207,3 +207,7 @@ void Scene::onContact(const rp3d::CollisionCallback::CallbackData& callbackData)
         }
     }
 }
+
+void Scene::onTrigger(const rp3d::OverlapCallback::CallbackData& callbackData) {
+
+}

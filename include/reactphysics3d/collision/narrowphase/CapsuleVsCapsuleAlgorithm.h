@@ -67,7 +67,7 @@ class CapsuleVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 
         /// Compute the narrow-phase collision detection between two capsules
         bool testCollision(CapsuleVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, bool reportContacts, MemoryAllocator& memoryAllocator);
+                           uint batchNbItems, MemoryAllocator& memoryAllocator);
 };
 
 }

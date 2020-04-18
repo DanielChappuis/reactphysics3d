@@ -481,6 +481,8 @@ class PhysicsWorld {
         friend class FixedJoint;
         friend class HingeJoint;
         friend class SliderJoint;
+        friend class CollisionCallback::CallbackData;
+        friend class OverlapCallback::CallbackData;
 };
 
 // Set the collision dispatch configuration

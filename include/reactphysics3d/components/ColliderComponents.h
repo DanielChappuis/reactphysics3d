@@ -96,6 +96,9 @@ class ColliderComponents : public Components {
         /// has been changed by the user
         bool* mHasCollisionShapeChangedSize;
 
+        /// True if the collider is a trigger
+        bool* mIsTrigger;
+
 
         // -------------------- Methods -------------------- //
 
@@ -192,8 +195,14 @@ class ColliderComponents : public Components {
         /// Return true if the size of collision shape of the collider has been changed by the user
         bool getHasCollisionShapeChangedSize(Entity colliderEntity) const;
 
-        /// Return true if the size of collision shape of the collider has been changed by the user
+        /// Set whether the size of collision shape of the collider has been changed by the user
         void setHasCollisionShapeChangedSize(Entity colliderEntity, bool hasCollisionShapeChangedSize);
+
+        /// Return true if a collider is a trigger
+        bool getIsTrigger(Entity colliderEntity) const;
+
+        /// Set whether a collider is a trigger
+        void setIsTrigger(Entity colliderEntity, bool isTrigger);
 
         // -------------------- Friendship -------------------- //
 
@@ -329,6 +338,23 @@ inline void ColliderComponents::setHasCollisionShapeChangedSize(Entity colliderE
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
     mHasCollisionShapeChangedSize[mMapEntityToComponentIndex[colliderEntity]] = hasCollisionShapeChangedSize;
+}
+
+
+// Return true if a collider is a trigger
+inline bool ColliderComponents::getIsTrigger(Entity colliderEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    return mIsTrigger[mMapEntityToComponentIndex[colliderEntity]];
+}
+
+// Set whether a collider is a trigger
+inline void ColliderComponents::setIsTrigger(Entity colliderEntity, bool isTrigger) {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    mIsTrigger[mMapEntityToComponentIndex[colliderEntity]] = isTrigger;
 }
 
 }

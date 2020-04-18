@@ -238,6 +238,8 @@ class Scene : public rp3d::EventListener {
 
         /// Called when some contacts occur
         virtual void onContact(const rp3d::CollisionCallback::CallbackData& callbackData) override;
+
+        virtual void onTrigger(const rp3d::OverlapCallback::CallbackData& callbackData) override;
 };
 
 // Called when a keyboard event occurs

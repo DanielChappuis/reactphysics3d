@@ -39,9 +39,9 @@ CollisionCallback::ContactPoint::ContactPoint(const reactphysics3d::ContactPoint
 
 // Contact Pair Constructor
 CollisionCallback::ContactPair::ContactPair(const reactphysics3d::ContactPair& contactPair,
-                                            List<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld& world)
+                                            List<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld& world, bool isLostContactPair)
                                :mContactPair(contactPair), mContactPoints(contactPoints),
-                                mWorld(world) {
+                                mWorld(world), mIsLostContactPair(isLostContactPair) {
 
 }
 
@@ -65,11 +65,38 @@ Collider* CollisionCallback::ContactPair::getCollider2() const {
     return mWorld.mCollidersComponents.getCollider(mContactPair.collider2Entity);
 }
 
+// Return the corresponding type of event for this contact pair
+CollisionCallback::ContactPair::EventType CollisionCallback::ContactPair::getEventType() const {
+
+    if (mIsLostContactPair) return EventType::ContactExit;
+
+    if (mContactPair.collidingInPreviousFrame) return EventType::ContactStay;
+
+    return EventType::ContactStart;
+}
+
 // CollisionCallbackInfo Constructor
 CollisionCallback::CallbackData::CallbackData(List<reactphysics3d::ContactPair>* contactPairs, List<ContactManifold>* manifolds,
-                                                                List<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld &world)
-                      :mContactPairs(contactPairs), mContactManifolds(manifolds), mContactPoints(contactPoints), mWorld(world) {
+                                              List<reactphysics3d::ContactPoint>* contactPoints, List<reactphysics3d::ContactPair>& lostContactPairs, PhysicsWorld& world)
+                      :mContactPairs(contactPairs), mContactManifolds(manifolds), mContactPoints(contactPoints), mLostContactPairs(lostContactPairs),
+                       mContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mWorld(world) {
 
+    // Filter the contact pairs to only keep the contact events (not the overlap/trigger events)
+    for (uint i=0; i < mContactPairs->size(); i++) {
+
+        // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
+        if (!(*mContactPairs)[i].isTrigger) {
+           mContactPairsIndices.add(i);
+        }
+    }
+    // Filter the lost contact pairs to only keep the contact events (not the overlap/trigger events)
+    for (uint i=0; i < mLostContactPairs.size(); i++) {
+
+        // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
+        if (!mLostContactPairs[i].isTrigger) {
+           mLostContactPairsIndices.add(i);
+        }
+    }
 }
 
 // Return a given contact point of the contact pair
@@ -91,5 +118,13 @@ CollisionCallback::ContactPair CollisionCallback::CallbackData::getContactPair(u
 
     assert(index < getNbContactPairs());
 
-    return CollisionCallback::ContactPair((*mContactPairs)[index], mContactPoints, mWorld);
+    if (index < mContactPairsIndices.size()) {
+        // Return a contact pair
+        return CollisionCallback::ContactPair((*mContactPairs)[mContactPairsIndices[index]], mContactPoints, mWorld, false);
+    }
+    else {
+
+        // Return a lost contact pair
+        return CollisionCallback::ContactPair(mLostContactPairs[mLostContactPairsIndices[index - mContactPairsIndices.size()]], mContactPoints, mWorld, true);
+    }
 }

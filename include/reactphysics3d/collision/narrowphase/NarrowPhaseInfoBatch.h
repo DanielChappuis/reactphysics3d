@@ -81,6 +81,9 @@ struct NarrowPhaseInfoBatch {
         /// List of transforms that maps from collision shape 2 local-space to world-space
         List<Transform> shape2ToWorldTransforms;
 
+        /// True for each pair of objects that we need to report contacts (false for triggers for instance)
+        List<bool> reportContacts;
+
         /// Result of the narrow-phase collision detection test
         List<bool> isColliding;
 
@@ -103,9 +106,9 @@ struct NarrowPhaseInfoBatch {
         uint getNbObjects() const;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
+        virtual void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
                                 CollisionShape* shape2, const Transform& shape1Transform,
-                                const Transform& shape2Transform, MemoryAllocator& shapeAllocator);
+                                const Transform& shape2Transform, bool needToReportContacts, MemoryAllocator& shapeAllocator);
 
         /// Add a new contact point
         virtual void addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth,
