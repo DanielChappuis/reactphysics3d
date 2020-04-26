@@ -36,6 +36,7 @@
 #include <reactphysics3d/collision/shapes/ConvexMeshShape.h>
 #include <reactphysics3d/collision/shapes/ConcaveMeshShape.h>
 #include <reactphysics3d/collision/TriangleMesh.h>
+#include <reactphysics3d/utils/DefaultLogger.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -82,8 +83,12 @@ class PhysicsCommon {
         /// Set of triangle meshes
         Set<TriangleMesh*> mTriangleMeshes;
 
+#ifdef IS_LOGGING_ACTIVE
+
         /// Set of loggers
-        Set<Logger*> mLoggers;
+        Set<DefaultLogger*> mLoggers;
+
+#endif
 
         /// Set of loggers
         Set<Profiler*> mProfilers;
@@ -170,11 +175,11 @@ class PhysicsCommon {
 // If logging is enabled
 #ifdef IS_LOGGING_ACTIVE
 
-        /// Create and return a new logger
-        Logger* createLogger();
+        /// Create and return a new default logger
+        DefaultLogger* createDefaultLogger();
 
-        /// Destroy a logger
-        void destroyLogger(Logger* logger);
+        /// Destroy a default logger
+        void destroyDefaultLogger(DefaultLogger* logger);
 
 #endif
 

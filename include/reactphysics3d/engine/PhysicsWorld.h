@@ -618,10 +618,11 @@ inline uint PhysicsWorld::getNbIterationsVelocitySolver() const {
  * @param nbIterations Number of iterations for the velocity solver
  */
 inline void PhysicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
+
     mNbVelocitySolverIterations = nbIterations;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Set nb iterations velocity solver to " + std::to_string(nbIterations));
+             "Physics World: Set nb iterations velocity solver to " + std::to_string(nbIterations),  __FILE__, __LINE__);
 }
 
 // Get the number of iterations for the position constraint solver
@@ -637,10 +638,11 @@ inline uint PhysicsWorld::getNbIterationsPositionSolver() const {
  * @param nbIterations Number of iterations for the position solver
  */
 inline void PhysicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
+
     mNbPositionSolverIterations = nbIterations;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Set nb iterations position solver to " + std::to_string(nbIterations));
+             "Physics World: Set nb iterations position solver to " + std::to_string(nbIterations),  __FILE__, __LINE__);
 }
 
 // Set the position correction technique used for contacts
@@ -688,7 +690,7 @@ inline void PhysicsWorld::setGravity(Vector3& gravity) {
     mConfig.gravity = gravity;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Set gravity vector to " + gravity.to_string());
+             "Physics World: Set gravity vector to " + gravity.to_string(),  __FILE__, __LINE__);
 }
 
 // Return if the gravity is enaled
@@ -708,7 +710,7 @@ inline void PhysicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
     mIsGravityEnabled = isGravityEnabled;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")));
+             "Physics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")),  __FILE__, __LINE__);
 }
 
 // Return true if the sleeping technique is enabled
@@ -739,7 +741,7 @@ inline void PhysicsWorld::setSleepLinearVelocity(decimal sleepLinearVelocity) {
     mSleepLinearVelocity = sleepLinearVelocity;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: sleepLinearVelocity= " + std::to_string(sleepLinearVelocity));
+             "Physics World: sleepLinearVelocity= " + std::to_string(sleepLinearVelocity),  __FILE__, __LINE__);
 }
 
 // Return the current sleep angular velocity
@@ -762,7 +764,7 @@ inline void PhysicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity) 
     mSleepAngularVelocity = sleepAngularVelocity;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: sleepAngularVelocity= " + std::to_string(sleepAngularVelocity));
+             "Physics World: sleepAngularVelocity= " + std::to_string(sleepAngularVelocity),  __FILE__, __LINE__);
 }
 
 // Return the time a body is required to stay still before sleeping
@@ -782,7 +784,7 @@ inline void PhysicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
     mTimeBeforeSleep = timeBeforeSleep;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: timeBeforeSleep= " + std::to_string(timeBeforeSleep));
+             "Physics World: timeBeforeSleep= " + std::to_string(timeBeforeSleep),  __FILE__, __LINE__);
 }
 
 // Set an event listener object to receive events callbacks.

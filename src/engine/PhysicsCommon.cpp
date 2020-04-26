@@ -35,7 +35,10 @@ PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
                 mBoxShapes(mMemoryManager.getHeapAllocator()), mCapsuleShapes(mMemoryManager.getHeapAllocator()),
                 mConvexMeshShapes(mMemoryManager.getHeapAllocator()), mConcaveMeshShapes(mMemoryManager.getHeapAllocator()),
                 mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mPolyhedronMeshes(mMemoryManager.getHeapAllocator()),
-                mTriangleMeshes(mMemoryManager.getHeapAllocator()), mLoggers(mMemoryManager.getHeapAllocator()),
+                mTriangleMeshes(mMemoryManager.getHeapAllocator()),
+#ifdef IS_LOGGING_ACTIVE
+                mLoggers(mMemoryManager.getHeapAllocator()),
+#endif
                 mProfilers(mMemoryManager.getHeapAllocator()) {
 
 }
@@ -100,7 +103,7 @@ void PhysicsCommon::release() {
 
     // Destroy the loggers
     for (auto it = mLoggers.begin(); it != mLoggers.end(); ++it) {
-        destroyLogger(*it);
+        destroyDefaultLogger(*it);
     }
 
 #endif
@@ -138,12 +141,14 @@ PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSetting
     // If the user has not provided its own logger, we create one
     if (logger == nullptr) {
 
-       logger = createLogger();
+       DefaultLogger* defaultLogger = createDefaultLogger();
 
         // Add a log destination file
         uint logLevel = static_cast<uint>(Logger::Level::Information) | static_cast<uint>(Logger::Level::Warning) |
                 static_cast<uint>(Logger::Level::Error);
-        logger->addFileDestination("rp3d_log_" + worldSettings.worldName + ".html", logLevel, Logger::Format::HTML);
+        defaultLogger->addFileDestination("rp3d_log_" + worldSettings.worldName + ".html", logLevel, DefaultLogger::Format::HTML);
+
+        logger = defaultLogger;
     }
 
 #endif
@@ -373,9 +378,9 @@ void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
 #ifdef IS_LOGGING_ACTIVE
 
 // Create and return a new logger
-Logger* PhysicsCommon::createLogger() {
+DefaultLogger* PhysicsCommon::createDefaultLogger() {
 
-    Logger* logger = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(Logger))) Logger(mMemoryManager.getHeapAllocator());
+    DefaultLogger* logger = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(DefaultLogger))) DefaultLogger(mMemoryManager.getHeapAllocator());
 
     mLoggers.add(logger);
 
@@ -383,13 +388,13 @@ Logger* PhysicsCommon::createLogger() {
 }
 
 // Destroy a logger
-void PhysicsCommon::destroyLogger(Logger* logger) {
+void PhysicsCommon::destroyDefaultLogger(DefaultLogger* logger) {
 
    // Call the destructor of the logger
-   logger->~Logger();
+   logger->~DefaultLogger();
 
    // Release allocated memory
-   mMemoryManager.release(MemoryManager::AllocationType::Pool, logger, sizeof(Logger));
+   mMemoryManager.release(MemoryManager::AllocationType::Pool, logger, sizeof(DefaultLogger));
 
    mLoggers.remove(logger);
 }

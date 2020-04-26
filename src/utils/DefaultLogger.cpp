@@ -26,13 +26,13 @@
 #ifdef IS_LOGGING_ACTIVE
 
 // Libraries
-#include <reactphysics3d/utils/Logger.h>
+#include <reactphysics3d/utils/DefaultLogger.h>
 #include <reactphysics3d/memory/MemoryManager.h>
 
 using namespace reactphysics3d;
 
 // Constructor
-Logger::Logger(MemoryAllocator& allocator)
+DefaultLogger::DefaultLogger(MemoryAllocator& allocator)
        : mAllocator(allocator), mDestinations(allocator), mFormatters(allocator)
 {
     // Create the log formatters
@@ -41,7 +41,7 @@ Logger::Logger(MemoryAllocator& allocator)
 }
 
 // Destructor
-Logger::~Logger() {
+DefaultLogger::~DefaultLogger() {
 
     removeAllDestinations();
 
@@ -53,7 +53,7 @@ Logger::~Logger() {
 }
 
 // Return the corresponding formatter
-Logger::Formatter* Logger::getFormatter(Format format) const {
+DefaultLogger::Formatter* DefaultLogger::getFormatter(Format format) const {
 
    auto it = mFormatters.find(format);
    if (it != mFormatters.end()) {
@@ -64,21 +64,21 @@ Logger::Formatter* Logger::getFormatter(Format format) const {
 }
 
 // Add a log file destination to the logger
-void Logger::addFileDestination(const std::string& filePath, uint logLevelFlag, Format format) {
+void DefaultLogger::addFileDestination(const std::string& filePath, uint logLevelFlag, Format format) {
 
     FileDestination* destination = new (mAllocator.allocate(sizeof(FileDestination))) FileDestination(filePath, logLevelFlag, getFormatter(format));
     mDestinations.add(destination);
 }
 
 /// Add a stream destination to the logger
-void Logger::addStreamDestination(std::ostream& outputStream, uint logLevelFlag, Format format) {
+void DefaultLogger::addStreamDestination(std::ostream& outputStream, uint logLevelFlag, Format format) {
 
     StreamDestination* destination = new (mAllocator.allocate(sizeof(StreamDestination))) StreamDestination(outputStream, logLevelFlag, getFormatter(format));
     mDestinations.add(destination);
 }
 
 // Remove all logs destination previously set
-void Logger::removeAllDestinations() {
+void DefaultLogger::removeAllDestinations() {
 
     // Delete all the destinations
     for (uint i=0; i<mDestinations.size(); i++) {
@@ -94,7 +94,7 @@ void Logger::removeAllDestinations() {
 }
 
 // Log something
-void Logger::log(Level level, Category category, const std::string& message) {
+void DefaultLogger::log(Level level, Category category, const std::string& message, const char* filename, int lineNumber) {
 
     // Get current time
     auto now = std::chrono::system_clock::now();
@@ -105,7 +105,7 @@ void Logger::log(Level level, Category category, const std::string& message) {
     // For each destination
     for (auto it = mDestinations.begin(); it != mDestinations.end(); ++it) {
 
-        (*it)->write(time, message, level, category);
+        (*it)->write(time, message, level, category, filename, lineNumber);
     }
 
     mMutex.unlock();

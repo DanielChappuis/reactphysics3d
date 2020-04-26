@@ -108,12 +108,12 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
     mNbWorlds++;
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Physics world " + mName + " has been created");
+             "Physics World: Physics world " + mName + " has been created",  __FILE__, __LINE__);
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Initial world settings: " + worldSettings.to_string());
+             "Physics World: Initial world settings: " + worldSettings.to_string(),  __FILE__, __LINE__);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Physics world " + mName + " has been created");
+             "Physics World: Physics world " + mName + " has been created",  __FILE__, __LINE__);
 
 }
 
@@ -121,7 +121,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
 PhysicsWorld::~PhysicsWorld() {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Physics world " + mName + " has been destroyed");
+             "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);
 
     // Destroy all the collision bodies that have not been removed
     for (int i=mCollisionBodies.size() - 1 ; i >= 0; i--) {
@@ -153,7 +153,7 @@ PhysicsWorld::~PhysicsWorld() {
     assert(mRigidBodies.size() == 0);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Physics world " + mName + " has been destroyed");
+             "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);
 }
 
 // Create a collision body and add it to the world
@@ -193,7 +193,7 @@ CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
 #endif
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(entity.id) + ": New collision body created");
+             "Body " + std::to_string(entity.id) + ": New collision body created",  __FILE__, __LINE__);
 
     // Return the pointer to the rigid body
     return collisionBody;
@@ -206,7 +206,7 @@ CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
 void PhysicsWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(collisionBody->getEntity().id) + ": collision body destroyed");
+             "Body " + std::to_string(collisionBody->getEntity().id) + ": collision body destroyed",  __FILE__, __LINE__);
 
     // Remove all the collision shapes of the body
     collisionBody->removeAllColliders();
@@ -472,7 +472,7 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
 #endif
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(entity.id) + ": New collision body created");
+             "Body " + std::to_string(entity.id) + ": New collision body created",  __FILE__, __LINE__);
 
     // Return the pointer to the rigid body
     return rigidBody;
@@ -485,7 +485,7 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
 void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body destroyed");
+             "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body destroyed",  __FILE__, __LINE__);
 
     // Remove all the collision shapes of the body
     rigidBody->removeAllColliders();
@@ -625,9 +625,9 @@ Joint* PhysicsWorld::createJoint(const JointInfo& jointInfo) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
-             "Joint " + std::to_string(newJoint->getEntity().id) + ": New joint created");
+             "Joint " + std::to_string(newJoint->getEntity().id) + ": New joint created",  __FILE__, __LINE__);
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
-             "Joint " + std::to_string(newJoint->getEntity().id) + ": " + newJoint->to_string());
+             "Joint " + std::to_string(newJoint->getEntity().id) + ": " + newJoint->to_string(),  __FILE__, __LINE__);
 
     // Add the joint into the joint list of the bodies involved in the joint
     addJointToBodies(jointInfo.body1->getEntity(), jointInfo.body2->getEntity(), entity);
@@ -645,7 +645,7 @@ void PhysicsWorld::destroyJoint(Joint* joint) {
     assert(joint != nullptr);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
-             "Joint " + std::to_string(joint->getEntity().id) + ": joint destroyed");
+             "Joint " + std::to_string(joint->getEntity().id) + ": joint destroyed",  __FILE__, __LINE__);
 
     // If the collision between the two bodies of the constraint was disabled
     if (!joint->isCollisionEnabled()) {
@@ -698,12 +698,12 @@ void PhysicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
     mRigidBodyComponents.addJointToBody(body1, joint);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(body1.id) + ": Joint " + std::to_string(joint.id) + " added to body");
+             "Body " + std::to_string(body1.id) + ": Joint " + std::to_string(joint.id) + " added to body",  __FILE__, __LINE__);
 
     mRigidBodyComponents.addJointToBody(body2, joint);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(body2.id) + ": Joint " + std::to_string(joint.id) + " added to body");
+             "Body " + std::to_string(body2.id) + ": Joint " + std::to_string(joint.id) + " added to body",  __FILE__, __LINE__);
 }
 
 // Compute the islands using potential contacts and joints
@@ -930,5 +930,5 @@ void PhysicsWorld::enableSleeping(bool isSleepingEnabled) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) );
+             "Physics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) ,  __FILE__, __LINE__);
 }

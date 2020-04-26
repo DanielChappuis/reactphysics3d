@@ -116,7 +116,7 @@ void RigidBody::setType(BodyType type) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set type=" +
-             (type == BodyType::STATIC ? "Static" : (type == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")));
+             (type == BodyType::STATIC ? "Static" : (type == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")),  __FILE__, __LINE__);
 }
 
 // Method that return the mass of the body
@@ -181,7 +181,7 @@ void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
     mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string(),  __FILE__, __LINE__);
 }
 
 // Apply an external force to the body at its center of mass.
@@ -244,7 +244,7 @@ void RigidBody::setLocalCenterOfMass(const Vector3& centerOfMass) {
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMass.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMass.to_string(),  __FILE__, __LINE__);
 }
 
 // Return the center of mass of the body (in local-space coordinates)
@@ -277,7 +277,7 @@ void RigidBody::updateLocalCenterOfMassFromColliders() {
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string(),  __FILE__, __LINE__);
 }
 
 // Compute and return the local-space center of mass of the body using its colliders
@@ -384,7 +384,7 @@ void RigidBody::updateLocalInertiaTensorFromColliders() {
     mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string(),  __FILE__, __LINE__);
 }
 
 // Compute and set the mass of the body using its colliders
@@ -420,7 +420,7 @@ void RigidBody::updateMassFromColliders() {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(totalMass));
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(totalMass),  __FILE__, __LINE__);
 }
 
 // Compute and set the center of mass, the mass and the local-space inertia tensor of the body using its colliders
@@ -450,7 +450,7 @@ void RigidBody::updateMassPropertiesFromColliders() {
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string(),  __FILE__, __LINE__);
 
     // Compute the mass and local-space inertia tensor
     Vector3 inertiaTensorLocal;
@@ -466,7 +466,7 @@ void RigidBody::updateMassPropertiesFromColliders() {
     mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string(),  __FILE__, __LINE__);
 
     // Set the mass
     mWorld.mRigidBodyComponents.setMass(mEntity, totalMass);
@@ -480,7 +480,7 @@ void RigidBody::updateMassPropertiesFromColliders() {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(totalMass));
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(totalMass),  __FILE__, __LINE__);
 }
 
 // Set the mass of the rigid body
@@ -499,10 +499,16 @@ void RigidBody::setMass(decimal mass) {
     }
     else {
         mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+
+        if (mWorld.mRigidBodyComponents.getMass(mEntity) < decimal(0.0)) {
+
+            RP3D_LOG(mLogger, Logger::Level::Error, Logger::Category::Body,
+                     "Error when setting mass of body " + std::to_string(mEntity.id) + ": mass cannot be negative",  __FILE__, __LINE__);
+        }
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(mass));
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(mass),  __FILE__, __LINE__);
 }
 
 
@@ -565,11 +571,11 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
     mWorld.mCollisionDetection.addCollider(collider, aabb);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " added to body");
+             "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " added to body",  __FILE__, __LINE__);
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(collider->getBroadPhaseId()) + ":  collisionShape=" +
-             collider->getCollisionShape()->to_string());
+             collider->getCollisionShape()->to_string(),  __FILE__, __LINE__);
 
     // Return a pointer to the collider
     return collider;
@@ -595,7 +601,7 @@ void RigidBody::enableGravity(bool isEnabled) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set isGravityEnabled=" +
-             (isEnabled ? "true" : "false"));
+             (isEnabled ? "true" : "false"),  __FILE__, __LINE__);
 }
 
 // Set the linear damping factor. This is the ratio of the linear velocity
@@ -605,10 +611,19 @@ void RigidBody::enableGravity(bool isEnabled) {
  */
 void RigidBody::setLinearDamping(decimal linearDamping) {
     assert(linearDamping >= decimal(0.0));
-    mWorld.mRigidBodyComponents.setLinearDamping(mEntity, linearDamping);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set linearDamping=" + std::to_string(linearDamping));
+    if (linearDamping >= decimal(0.0)) {
+
+        mWorld.mRigidBodyComponents.setLinearDamping(mEntity, linearDamping);
+
+        RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+                 "Body " + std::to_string(mEntity.id) + ": Set linearDamping=" + std::to_string(linearDamping),  __FILE__, __LINE__);
+    }
+    else {
+
+        RP3D_LOG(mLogger, Logger::Level::Error, Logger::Category::Body,
+                 "Error when setting the linear damping of body " + std::to_string(mEntity.id) + ": linear damping cannot be negative",  __FILE__, __LINE__);
+    }
 }
 
 // Set the angular damping factor. This is the ratio of the angular velocity
@@ -618,10 +633,18 @@ void RigidBody::setLinearDamping(decimal linearDamping) {
  */
 void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
-    mWorld.mRigidBodyComponents.setAngularDamping(mEntity, angularDamping);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set angularDamping=" + std::to_string(angularDamping));
+    if (angularDamping >= decimal(0.0)) {
+
+        mWorld.mRigidBodyComponents.setAngularDamping(mEntity, angularDamping);
+
+        RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+                 "Body " + std::to_string(mEntity.id) + ": Set angularDamping=" + std::to_string(angularDamping),  __FILE__, __LINE__);
+    }
+    else {
+        RP3D_LOG(mLogger, Logger::Level::Error, Logger::Category::Body,
+                 "Error when setting the angular damping of body " + std::to_string(mEntity.id) + ": angular damping cannot be negative",  __FILE__, __LINE__);
+    }
 }
 
 // Set the linear velocity of the rigid body.
@@ -642,7 +665,7 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set linearVelocity=" + linearVelocity.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set linearVelocity=" + linearVelocity.to_string(),  __FILE__, __LINE__);
 }
 
 // Set the angular velocity.
@@ -663,7 +686,7 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
     }
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mEntity.id) + ": Set angularVelocity=" + angularVelocity.to_string());
+             "Body " + std::to_string(mEntity.id) + ": Set angularVelocity=" + angularVelocity.to_string(),  __FILE__, __LINE__);
 }
 
 // Set the current position and orientation
@@ -779,7 +802,7 @@ void RigidBody::setIsSleeping(bool isSleeping) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
          "Body " + std::to_string(mEntity.id) + ": Set isSleeping=" +
-         (isSleeping ? "true" : "false"));
+         (isSleeping ? "true" : "false"),  __FILE__, __LINE__);
 }
 
 // Update whether the current overlapping pairs where this body is involed are active or not
@@ -823,7 +846,7 @@ void RigidBody::setIsAllowedToSleep(bool isAllowedToSleep) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set isAllowedToSleep=" +
-             (isAllowedToSleep ? "true" : "false"));
+             (isAllowedToSleep ? "true" : "false"),  __FILE__, __LINE__);
 }
 
 // Return whether or not the body is allowed to sleep

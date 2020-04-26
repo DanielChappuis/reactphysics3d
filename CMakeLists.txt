@@ -180,6 +180,7 @@ SET (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/containers/Deque.h"
     "include/reactphysics3d/utils/Profiler.h"
     "include/reactphysics3d/utils/Logger.h"
+    "include/reactphysics3d/utils/DefaultLogger.h"
 )
 
 # Source files
@@ -269,7 +270,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/memory/HeapAllocator.cpp"
     "src/memory/MemoryManager.cpp"
     "src/utils/Profiler.cpp"
-    "src/utils/Logger.cpp"
+    "src/utils/DefaultLogger.cpp"
 )
 
 # Create the library

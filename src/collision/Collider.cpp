@@ -80,7 +80,7 @@ void Collider::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(broadPhaseId) + ": Set collisionCategoryBits=" +
-             std::to_string(collisionCategoryBits));
+             std::to_string(collisionCategoryBits),  __FILE__, __LINE__);
 }
 
 // Set the collision bits mask
@@ -99,7 +99,7 @@ void Collider::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
              "Collider" + std::to_string(broadPhaseId) + ": Set collideWithMaskBits=" +
-             std::to_string(collideWithMaskBits));
+             std::to_string(collideWithMaskBits),  __FILE__, __LINE__);
 }
 
 // Set the local to parent body transform
@@ -120,7 +120,7 @@ void Collider::setLocalToBodyTransform(const Transform& transform) {
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(getBroadPhaseId()) + ": Set localToBodyTransform=" +
-             transform.to_string());
+             transform.to_string(),  __FILE__, __LINE__);
 }
 
 // Return the AABB of the collider in world-space

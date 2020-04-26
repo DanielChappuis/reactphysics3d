@@ -44,6 +44,15 @@ class EventListener : public CollisionCallback {
 
     public :
 
+        enum class ErrorType {
+            Warning,
+            InvalidParameter,
+            InvalidOperation,
+            InternalError
+        };
+
+        // ---------- Methods ---------- //
+
         /// Constructor
         EventListener() = default;
 
@@ -52,15 +61,15 @@ class EventListener : public CollisionCallback {
 
         /// Called when some contacts occur
         /**
-         * @param collisionInfo Information about the contacts
+         * @param callbackData Contains information about all the contacts
          */
         virtual void onContact(const CollisionCallback::CallbackData& callbackData) override {}
 
         /// Called when some trigger events occur
+        /**
+         * @param callbackData Contains information about all the triggers that are colliding
+         */
         virtual void onTrigger(const OverlapCallback::CallbackData& callbackData) {}
-
-        /// Called to report rigid bodies that started to sleep or has woken up in the previous frame
-        virtual void onSleep() {}
 };
 
 }

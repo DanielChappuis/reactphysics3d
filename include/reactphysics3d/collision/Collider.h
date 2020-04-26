@@ -256,7 +256,7 @@ inline void Collider::setMaterial(const Material& material) {
 #ifdef IS_LOGGING_ACTIVE
 
     RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
-             "Collider " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string());
+             "Collider " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string(),  __FILE__, __LINE__);
 #endif
 
 }

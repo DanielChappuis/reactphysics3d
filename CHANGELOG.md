@@ -59,6 +59,8 @@
  - The RigidBody::recomputeMassInformation() method has been renamed to RigidBody::updateMassPropertiesFromColliders.
  - Now, you need to manually call the RigidBody::recomputeMassInformation() method after adding colliders to a rigid body to recompute its inertia tensor, center of mass and mass
  - The rendering in the testbed application has been improved
+ - The old Logger class has been renamed to DefaultLogger
+ - The Logger class is now an abstract class that you can inherit from in order to receive log events from the library
 
 ### Removed
 
