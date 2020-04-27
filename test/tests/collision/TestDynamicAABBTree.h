@@ -95,6 +95,12 @@ class TestDynamicAABBTree : public Test {
 
         DynamicTreeRaycastCallback mRaycastCallback;
 
+        PhysicsCommon mPhysicsCommon;
+
+#ifdef IS_PROFILING_ACTIVE
+        Profiler* mProfiler;
+#endif
+
     public :
 
         // ---------- Methods ---------- //
@@ -102,7 +108,9 @@ class TestDynamicAABBTree : public Test {
         /// Constructor
         TestDynamicAABBTree(const std::string& name): Test(name)  {
 
-
+#ifdef IS_PROFILING_ACTIVE
+            mProfiler = mPhysicsCommon.createProfiler();
+#endif
         }
 
         bool isOverlapping(int nodeId, const List<int>& overlappingNodes) const {
@@ -124,6 +132,9 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
+#ifdef IS_PROFILING_ACTIVE
+            tree.setProfiler(mProfiler);
+#endif
 			
             int object1Data = 56;
             int object2Data = 23;
@@ -170,6 +181,9 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
+#ifdef IS_PROFILING_ACTIVE
+            tree.setProfiler(mProfiler);
+#endif
 
             int object1Data = 56;
             int object2Data = 23;
@@ -362,6 +376,9 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
+#ifdef IS_PROFILING_ACTIVE
+            tree.setProfiler(mProfiler);
+#endif
 
             int object1Data = 56;
             int object2Data = 23;
