@@ -30,10 +30,10 @@
 #ifdef IS_PROFILING_ACTIVE
 
 // Libraries
-#include "configuration.h"
-#include "engine/Timer.h"
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/engine/Timer.h>
 #include <fstream>
-#include "containers/List.h"
+#include <reactphysics3d/containers/List.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

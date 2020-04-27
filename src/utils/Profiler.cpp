@@ -27,7 +27,7 @@
 #ifdef IS_PROFILING_ACTIVE
 
 // Libraries
-#include "Profiler.h"
+#include <reactphysics3d/utils/Profiler.h>
 #include <string>
 #include <reactphysics3d/memory/MemoryManager.h>
 
