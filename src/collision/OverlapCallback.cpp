@@ -67,7 +67,7 @@ OverlapCallback::OverlapPair::EventType OverlapCallback::OverlapPair::getEventTy
 }
 
 // CollisionCallbackData Constructor
-OverlapCallback::CallbackData::CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, PhysicsWorld& world)
+OverlapCallback::CallbackData::CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world)
                 :mContactPairs(contactPairs), mLostContactPairs(lostContactPairs),
                  mContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mWorld(world) {
 
@@ -75,7 +75,7 @@ OverlapCallback::CallbackData::CallbackData(List<ContactPair>& contactPairs, Lis
     for (uint i=0; i < mContactPairs.size(); i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
-        if (mContactPairs[i].isTrigger) {
+        if (!onlyReportTriggers || mContactPairs[i].isTrigger) {
            mContactPairsIndices.add(i);
         }
     }
@@ -83,7 +83,7 @@ OverlapCallback::CallbackData::CallbackData(List<ContactPair>& contactPairs, Lis
     for (uint i=0; i < mLostContactPairs.size(); i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
-        if (mLostContactPairs[i].isTrigger) {
+        if (!onlyReportTriggers || mLostContactPairs[i].isTrigger) {
            mLostContactPairsIndices.add(i);
         }
     }

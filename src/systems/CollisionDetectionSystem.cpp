@@ -553,7 +553,7 @@ bool CollisionDetectionSystem::computeNarrowPhaseOverlapSnapshot(NarrowPhaseInpu
         computeOverlapSnapshotContactPairs(narrowPhaseInput, contactPairs);
 
         // Report overlapping colliders
-        OverlapCallback::CallbackData callbackData(contactPairs, lostContactPairs, *mWorld);
+        OverlapCallback::CallbackData callbackData(contactPairs, lostContactPairs, false, *mWorld);
         (*callback).onOverlap(callbackData);
     }
 
@@ -1421,7 +1421,7 @@ void CollisionDetectionSystem::reportTriggers(EventListener& eventListener, List
     // If there are contacts
     if (contactPairs->size() + lostContactPairs.size() > 0) {
 
-        OverlapCallback::CallbackData callbackData(*contactPairs, lostContactPairs, *mWorld);
+        OverlapCallback::CallbackData callbackData(*contactPairs, lostContactPairs, true, *mWorld);
 
         // Call the callback method to report the overlapping shapes
         eventListener.onTrigger(callbackData);

@@ -149,7 +149,7 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, PhysicsWorld& world);
+                CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world);
 
                 /// Deleted copy constructor
                 CallbackData(const CallbackData& callbackData) = delete;
