@@ -309,7 +309,8 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader, const openg
 
     // Set the vertex color
     openglframework::Vector4 color(1, 0.55f, 0, 1);
-	mColorShader.setVector4Uniform("vertexColor", color, false);
+    mColorShader.setIntUniform("isGlobalVertexColorEnabled", 1, false);
+    mColorShader.setVector4Uniform("globalVertexColor", color, false);
 
     // Get the location of shader attribute variables
     GLint vertexPositionLoc = mColorShader.getAttribLocation("vertexPosition");

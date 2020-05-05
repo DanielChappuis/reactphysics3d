@@ -37,7 +37,6 @@
 namespace reactphysics3d {
 
 // Declarations
-struct ContactManifoldListElement;
 class Collider;
 class CollisionShape;
 class PhysicsWorld;

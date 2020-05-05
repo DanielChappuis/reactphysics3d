@@ -42,11 +42,11 @@ namespace collisionshapesscene {
 
 // Constants
 const float SCENE_RADIUS = 30.0f;
-const int NB_BOXES = 5;
-const int NB_SPHERES = 5;
-const int NB_CAPSULES = 5;
-const int NB_MESHES = 4;
-const int NB_COMPOUND_SHAPES = 3;
+const int NB_BOXES = 2;
+const int NB_SPHERES = 2;
+const int NB_CAPSULES = 2;
+const int NB_MESHES = 2;
+const int NB_COMPOUND_SHAPES = 1;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
 const float CONE_RADIUS = 2.0f;

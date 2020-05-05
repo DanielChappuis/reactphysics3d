@@ -38,7 +38,7 @@ uniform sampler2D shadowMapSampler0;      // Shadow map texture sampler
 uniform sampler2D shadowMapSampler1;      // Shadow map texture sampler
 uniform sampler2D shadowMapSampler2;      // Shadow map texture sampler
 uniform bool isTexture;                     // True if we need to use the texture
-uniform vec4 vertexColor;                   // Vertex color
+uniform vec4 globalVertexColor;                   // Vertex color
 uniform bool isShadowEnabled;               // True if shadow mapping is enabled
 uniform vec2 shadowMapDimension;            // Shadow map dimension
 
@@ -64,7 +64,7 @@ void main() {
 	vec3 ambient = lightAmbientColor;
 
 	// Get the texture color
-	vec3 textureColor = vertexColor.rgb;
+        vec3 textureColor = globalVertexColor.rgb;
 	if (isTexture) textureColor = texture(textureSampler, texCoords).rgb;
 
 	// Compute the surface normal vector

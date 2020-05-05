@@ -51,7 +51,7 @@ uint PhysicsWorld::mNbWorlds = 0;
  * @param profiler Pointer to the profiler
  */
 PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
-              : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()),
+              : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()), mDebugRenderer(mMemoryManager.getHeapAllocator()),
                 mCollisionBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
                 mTransformComponents(mMemoryManager.getHeapAllocator()), mCollidersComponents(mMemoryManager.getHeapAllocator()),
                 mJointsComponents(mMemoryManager.getHeapAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getHeapAllocator()),
@@ -331,6 +331,11 @@ void PhysicsWorld::update(decimal timeStep) {
 
     RP3D_PROFILE("PhysicsWorld::update()", mProfiler);
 
+    // Reset the debug renderer
+    if (mIsDebugRenderingEnabled) {
+        mDebugRenderer.reset();
+    }
+
     // Compute the collision detection
     mCollisionDetection.computeCollisionDetection();
 
@@ -368,6 +373,11 @@ void PhysicsWorld::update(decimal timeStep) {
 
     // Reset the islands
     mIslands.clear();
+
+    // Generate debug rendering primitives (if enabled)
+    if (mIsDebugRenderingEnabled) {
+        mDebugRenderer.computeDebugRenderingPrimitives(*this);
+    }
 
     // Reset the single frame memory allocator
     mMemoryManager.resetFrameAllocator();

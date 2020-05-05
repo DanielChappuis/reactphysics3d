@@ -67,6 +67,16 @@ void VertexBufferObject::copyDataIntoVBO(GLsizei size, const void* data, GLenum 
     glBufferData(mTargetData, size, data, usage);
 }
 
+// Map VBO data memory into client's memory
+void* VertexBufferObject::mapBuffer(GLenum access) {
+    return glMapBuffer(mTargetData, access);
+}
+
+// Unmap VBO data memory from client's memory
+void VertexBufferObject::unmapBuffer() {
+    glUnmapBuffer(mTargetData);
+}
+
 // Destroy the VBO
 void VertexBufferObject::destroy() {
 

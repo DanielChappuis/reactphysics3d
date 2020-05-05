@@ -1386,18 +1386,25 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
 // Report contacts and triggers
 void CollisionDetectionSystem::reportContactsAndTriggers() {
 
-   if (mWorld->mEventListener != nullptr) {
+    // Report contacts and triggers to the user
+    if (mWorld->mEventListener != nullptr) {
 
         reportContacts(*(mWorld->mEventListener), mCurrentContactPairs, mCurrentContactManifolds, mCurrentContactPoints, mLostContactPairs);
         reportTriggers(*(mWorld->mEventListener), mCurrentContactPairs, mLostContactPairs);
-   }
+    }
 
-   mOverlappingPairs.updateCollidingInPreviousFrame();
+    // Report contacts for debug rendering (if enabled)
+    if (mWorld->mIsDebugRenderingEnabled) {
 
-   mLostContactPairs.clear(true);
+        reportDebugRenderingContacts(mCurrentContactPairs, mCurrentContactManifolds, mCurrentContactPoints, mLostContactPairs);
+    }
+
+    mOverlappingPairs.updateCollidingInPreviousFrame();
+
+    mLostContactPairs.clear(true);
 }
 
-// Report all contacts
+// Report all contacts to the user
 void CollisionDetectionSystem::reportContacts(CollisionCallback& callback, List<ContactPair>* contactPairs,
                                               List<ContactManifold>* manifolds, List<ContactPoint>* contactPoints, List<ContactPair>& lostContactPairs) {
 
@@ -1413,7 +1420,7 @@ void CollisionDetectionSystem::reportContacts(CollisionCallback& callback, List<
     }
 }
 
-// Report all triggers
+// Report all triggers to the user
 void CollisionDetectionSystem::reportTriggers(EventListener& eventListener, List<ContactPair>* contactPairs, List<ContactPair>& lostContactPairs) {
 
     RP3D_PROFILE("CollisionDetectionSystem::reportTriggers()", mProfiler);
@@ -1425,6 +1432,21 @@ void CollisionDetectionSystem::reportTriggers(EventListener& eventListener, List
 
         // Call the callback method to report the overlapping shapes
         eventListener.onTrigger(callbackData);
+    }
+}
+
+// Report all contacts for debug rendering
+void CollisionDetectionSystem::reportDebugRenderingContacts(List<ContactPair>* contactPairs, List<ContactManifold>* manifolds, List<ContactPoint>* contactPoints, List<ContactPair>& lostContactPairs) {
+
+    RP3D_PROFILE("CollisionDetectionSystem::reportDebugRenderingContacts()", mProfiler);
+
+    // If there are contacts
+    if (contactPairs->size() + lostContactPairs.size() > 0) {
+
+        CollisionCallback::CallbackData callbackData(contactPairs, manifolds, contactPoints, lostContactPairs, *mWorld);
+
+        // Call the callback method to report the contacts
+        mWorld->mDebugRenderer.onContact(callbackData);
     }
 }
 

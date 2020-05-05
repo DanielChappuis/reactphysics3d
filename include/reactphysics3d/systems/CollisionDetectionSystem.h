@@ -73,7 +73,7 @@ class CollisionDetectionSystem {
         // -------------------- Constants -------------------- //
 
         /// Maximum number of contact points in a reduced contact manifold
-        const int8 MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
+        static const int8 MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
 
         // -------------------- Attributes -------------------- //
 
@@ -263,6 +263,9 @@ class CollisionDetectionSystem {
         /// Report all triggers
         void reportTriggers(EventListener& eventListener, List<ContactPair>* contactPairs, List<ContactPair>& lostContactPairs);
 
+        /// Report all contacts for debug rendering
+        void reportDebugRenderingContacts(List<ContactPair>* contactPairs, List<ContactManifold>* manifolds, List<ContactPoint>* contactPoints, List<ContactPair>& lostContactPairs);
+
         /// Return the largest depth of all the contact points of a potential manifold
         decimal computePotentialManifoldLargestContactDepth(const ContactManifoldInfo& manifold,
                                                             const List<ContactPointInfo>& potentialContactPoints) const;
@@ -373,6 +376,7 @@ class CollisionDetectionSystem {
         friend class PhysicsWorld;
         friend class ConvexMeshShape;
         friend class RigidBody;
+        friend class DebugRenderer;
 };
 
 // Return a reference to the collision dispatch configuration

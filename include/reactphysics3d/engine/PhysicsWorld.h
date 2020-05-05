@@ -50,6 +50,7 @@
 #include <reactphysics3d/systems/ContactSolverSystem.h>
 #include <reactphysics3d/systems/DynamicsSystem.h>
 #include <reactphysics3d/engine/Islands.h>
+#include <reactphysics3d/utils/DebugRenderer.h>
 #include <sstream>
 
 /// Namespace ReactPhysics3D
@@ -182,6 +183,12 @@ class PhysicsWorld {
 
         /// Entity Manager for the ECS
         EntityManager mEntityManager;
+
+        /// Debug renderer
+        DebugRenderer mDebugRenderer;
+
+        /// True if debug rendering is enabled
+        bool mIsDebugRenderingEnabled;
 
         /// Collision Body Components
         CollisionBodyComponents mCollisionBodyComponents;
@@ -452,6 +459,15 @@ class PhysicsWorld {
         /// Return a pointer to a given RigidBody of the world
         RigidBody* getRigidBody(uint index) ;
 
+        /// Return true if the debug rendering is enabled
+        bool getIsDebugRenderingEnabled() const;
+
+        /// Set to true if debug rendering is enabled
+        void setIsDebugRenderingEnabled(bool isEnabled);
+
+        /// Return a reference to the Debug Renderer of the world
+        DebugRenderer& getDebugRenderer();
+
 #ifdef IS_PROFILING_ACTIVE
 
         /// Return a reference to the profiler
@@ -483,6 +499,7 @@ class PhysicsWorld {
         friend class SliderJoint;
         friend class CollisionCallback::CallbackData;
         friend class OverlapCallback::CallbackData;
+        friend class DebugRenderer;
 };
 
 // Set the collision dispatch configuration
@@ -862,6 +879,21 @@ inline RigidBody* PhysicsWorld::getRigidBody(uint index) {
     // TODO : Report error here if index is not within bounds
 
     return mRigidBodies[index];
+}
+
+// Return true if the debug rendering is enabled
+inline bool PhysicsWorld::getIsDebugRenderingEnabled() const {
+    return mIsDebugRenderingEnabled;
+}
+
+// Set to true if debug rendering is enabled
+inline void PhysicsWorld::setIsDebugRenderingEnabled(bool isEnabled) {
+    mIsDebugRenderingEnabled = isEnabled;
+}
+
+// Return a reference to the Debug Renderer of the world
+inline DebugRenderer& PhysicsWorld::getDebugRenderer() {
+    return mDebugRenderer;
 }
 
 }

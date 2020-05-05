@@ -40,8 +40,7 @@ Line::~Line() {
 }
 
 // Render the sphere at the correct position and with the correct orientation
-void Line::render(openglframework::Shader& shader,
-                    const openglframework::Matrix4& worldToCameraMatrix) {
+void Line::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();
@@ -52,7 +51,8 @@ void Line::render(openglframework::Shader& shader,
 
     // Set the vertex color
     openglframework::Vector4 color(1, 0, 0, 1);
-    shader.setVector4Uniform("vertexColor", color, false);
+    shader.setIntUniform("isGlobalVertexColorEnabled", 1, false);
+    shader.setVector4Uniform("globalVertexColor", color, false);
 
     /*
     glBegin(GL_LINES);

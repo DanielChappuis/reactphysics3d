@@ -26,13 +26,22 @@
 ********************************************************************************/
 
 // Uniform variables
-uniform vec4 vertexColor;                   // Vertex color
+uniform bool isGlobalVertexColorEnabled;          // True if we need to use the global vertex color
+uniform vec4 globalVertexColor;                   // Vertex color
 
-// Out variable
+// In variables
+in vec4 vertexColorOut;
+
+// Out variables
 out vec4 color;                        // Output color
 
 void main() {
 
     // Compute the final color
-    color = vertexColor;
+    if (isGlobalVertexColorEnabled) {
+        color = globalVertexColor;
+    }
+    else {
+        color = vertexColorOut;
+    }
 }

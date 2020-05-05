@@ -115,7 +115,7 @@ void Sphere::render(openglframework::Shader& shader, const openglframework::Matr
     rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
     openglframework::Color currentColor = rigidBody != nullptr && rigidBody->isSleeping() ? mSleepingColor : mColor;
     openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-    shader.setVector4Uniform("vertexColor", color, false);
+    shader.setVector4Uniform("globalVertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();

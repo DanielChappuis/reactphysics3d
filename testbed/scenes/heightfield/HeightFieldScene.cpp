@@ -53,7 +53,7 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
     physicsWorld->setEventListener(this);
     mPhysicsWorld = physicsWorld;
 
-	for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
+    for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
         Dumbbell* dumbbell = new Dumbbell(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath);

@@ -37,7 +37,6 @@ namespace reactphysics3d {
 // Declarations
 class OverlappingPair;
 class ContactManifold;
-struct ContactManifoldListElement;
 class CollisionBody;
 class Collider;
 class MemoryManager;

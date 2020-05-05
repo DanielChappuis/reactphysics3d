@@ -176,7 +176,7 @@ inline GLint Shader::getAttribLocation(const std::string& variableName, bool err
     GLint location = glGetAttribLocation(mProgramObjectID, variableName.c_str());
     if (location == -1 && errorIfMissing) {
         std::cerr << "Error in vertex shader " << mFilenameVertexShader << " or in fragment shader"
-                  << mFilenameFragmentShader << " : No Uniform variable : " << variableName
+                  << mFilenameFragmentShader << " : No variable : " << variableName
                   << std::endl;
         throw std::logic_error("Error in Shader");
     }

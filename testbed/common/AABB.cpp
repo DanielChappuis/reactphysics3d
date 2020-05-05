@@ -87,7 +87,8 @@ void AABB::render(const openglframework::Vector3& position, const openglframewor
 
     // Set the vertex color
     openglframework::Vector4 colorVec(color.r, color.g, color.b, color.a);
-    shader.setVector4Uniform("vertexColor", colorVec, false);
+    shader.setIntUniform("isGlobalVertexColorEnabled", 1, false);
+    shader.setVector4Uniform("globalVertexColor", colorVec, false);
 
     // Bind the VAO
     mVAO.bind();

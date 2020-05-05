@@ -189,6 +189,9 @@ inline size_t HeightFieldShape::getSizeInBytes() const {
 // Return the height of a given (x,y) point in the height field
 inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 
+    assert(x >= 0 && x < mNbColumns);
+    assert(y >= 0 && y < mNbRows);
+
     switch(mHeightDataType) {
         case HeightDataType::HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
         case HeightDataType::HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];

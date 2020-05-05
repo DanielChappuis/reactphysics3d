@@ -65,6 +65,12 @@ class VertexBufferObject {
         /// Copy data into the VBO
         void copyDataIntoVBO(GLsizei size, const void* data, GLenum usage);
 
+        /// Map VBO data memory into client's memory
+        void* mapBuffer(GLenum access);
+
+        /// Unmap VBO data memory from client's memory
+        void unmapBuffer();
+
         /// Bind the VBO
         void bind() const;
 

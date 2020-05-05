@@ -181,6 +181,7 @@ SET (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/utils/Profiler.h"
     "include/reactphysics3d/utils/Logger.h"
     "include/reactphysics3d/utils/DefaultLogger.h"
+    "include/reactphysics3d/utils/DebugRenderer.h"
 )
 
 # Source files
@@ -271,6 +272,7 @@ SET (REACTPHYSICS3D_SOURCES
     "src/memory/MemoryManager.cpp"
     "src/utils/Profiler.cpp"
     "src/utils/DefaultLogger.cpp"
+    "src/utils/DebugRenderer.cpp"
 )
 
 # Create the library

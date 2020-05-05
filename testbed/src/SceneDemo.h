@@ -95,6 +95,18 @@ class SceneDemo : public Scene {
 
         openglframework::VertexBufferObject mVBOQuad;
 
+        /// Vertex Buffer Object for the debug info lines vertices data
+        openglframework::VertexBufferObject mDebugVBOLinesVertices;
+
+        /// Vertex Array Object for the lines vertex data
+        openglframework::VertexArrayObject mDebugLinesVAO;
+
+        /// Vertex Buffer Object for the debug info trinangles vertices data
+        openglframework::VertexBufferObject mDebugVBOTrianglesVertices;
+
+        /// Vertex Array Object for the triangles vertex data
+        openglframework::VertexArrayObject mDebugTrianglesVAO;
+
         static openglframework::Color mObjectColorDemo;
         static openglframework::Color mFloorColorDemo;
         static openglframework::Color mSleepingColorDemo;
@@ -113,21 +125,30 @@ class SceneDemo : public Scene {
 
         // -------------------- Methods -------------------- //
 
-        // Create the Shadow map FBO and texture
+        /// Create the Shadow map FBO and texture
         void createShadowMapFBOAndTexture();
 
-        // Used for debugging shadow maps
+        /// Used for debugging shadow maps
         void createQuadVBO();
 
-        // TODO : Delete this
+        /// Create a the VAO and VBOs to render the debug infos
+        void createDebugVBO();
+
+        /// TODO : Delete this
         void drawTextureQuad();
 
-        // Update the contact points
+        /// Update the contact points
         void updateContactPoints();
 
-        // Render the contact points
+        /// Render the contact points
         void renderContactPoints(openglframework::Shader& shader,
                                  const openglframework::Matrix4& worldToCameraMatrix);
+
+        /// Update VBO with vertices and indices of debug info
+        void updateDebugVBO();
+
+        /// Render Debug Infos
+        void renderDebugInfos(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Render the AABBs
         void renderAABBs(const openglframework::Matrix4& worldToCameraMatrix);

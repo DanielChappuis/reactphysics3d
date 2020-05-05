@@ -208,6 +208,7 @@ class ConcaveMeshShape : public ConcaveShape {
         friend class ConvexTriangleAABBOverlapCallback;
         friend class ConcaveMeshRaycastCallback;
         friend class PhysicsCommon;
+        friend class DebugRenderer;
 };
 
 // Return the number of bytes used by the collision shape
