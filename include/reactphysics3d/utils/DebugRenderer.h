@@ -75,7 +75,8 @@ class DebugRenderer : public EventListener {
 			COLLIDER_BROADPHASE_AABB	= 1 << 1,
 			COLLISION_SHAPE				= 1 << 2,
 			CONTACT_POINT				= 1 << 3,
-		};
+            CONTACT_NORMAL				= 1 << 4,
+        };
 
         /// Struture that represents a point of the DebugRenderer
 		struct DebugPoint {
@@ -134,6 +135,9 @@ class DebugRenderer : public EventListener {
         /// Default radius of the sphere displayed to represent contact points
         static constexpr decimal DEFAULT_CONTACT_POINT_SPHERE_RADIUS = decimal(0.1);
 
+        /// Default radius of the sphere displayed to represent contact points
+        static constexpr decimal DEFAULT_CONTACT_NORMAL_LENGTH = decimal(1.0);
+
 		// -------------------- Attributes -------------------- //
 
 		/// Memory allocator
@@ -153,6 +157,9 @@ class DebugRenderer : public EventListener {
 
         /// Radius of the sphere displayed to represent contact points
         decimal mContactPointSphereRadius;
+
+        /// Lenght of contact normal
+        decimal mContactNormalLength;
 
         // -------------------- Methods -------------------- //
 
@@ -229,7 +236,13 @@ class DebugRenderer : public EventListener {
         /// Set the contact point sphere radius
         void setContactPointSphereRadius(decimal radius);
 
-		/// Generate the rendering primitives (triangles, lines, ...) of a physics world
+        /// Return the length of contact normal
+        decimal getContactNormalLength() const;
+
+        /// Return the length of contact normal
+        void setContactNormalLength(decimal contactNormalLength);
+
+        /// Generate the rendering primitives (triangles, lines, ...) of a physics world
 		void computeDebugRenderingPrimitives(const PhysicsWorld& world);
 
         /// Clear all the debugging primitives (points, lines, triangles, ...)
@@ -293,6 +306,17 @@ inline decimal DebugRenderer::getContactPointSphereRadius() const {
 inline void DebugRenderer::setContactPointSphereRadius(decimal radius) {
     assert(radius > decimal(0.0));
     mContactPointSphereRadius = radius;
+}
+
+
+// Return the length of contact normal
+inline decimal DebugRenderer::getContactNormalLength() const {
+    return mContactNormalLength;
+}
+
+// Return the length of contact normal
+inline void DebugRenderer::setContactNormalLength(decimal contactNormalLength) {
+    mContactNormalLength = contactNormalLength;
 }
 
 }

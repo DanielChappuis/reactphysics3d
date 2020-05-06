@@ -42,12 +42,13 @@ using namespace reactphysics3d;
 // Constructor
 DebugRenderer::DebugRenderer(MemoryAllocator& allocator)
               :mAllocator(allocator), mLines(allocator), mTriangles(allocator), mDisplayedDebugItems(0), mMapDebugItemWithColor(allocator),
-               mContactPointSphereRadius(DEFAULT_CONTACT_POINT_SPHERE_RADIUS) {
+               mContactPointSphereRadius(DEFAULT_CONTACT_POINT_SPHERE_RADIUS), mContactNormalLength(DEFAULT_CONTACT_NORMAL_LENGTH) {
 
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLIDER_AABB, static_cast<uint32>(DebugColor::MAGENTA)));
 	mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLIDER_BROADPHASE_AABB, static_cast<uint32>(DebugColor::YELLOW)));
 	mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLISION_SHAPE, static_cast<uint32>(DebugColor::GREEN)));
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::CONTACT_POINT, static_cast<uint32>(DebugColor::RED)));
+    mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::CONTACT_NORMAL, static_cast<uint32>(DebugColor::WHITE)));
 }
 
 // Destructor
@@ -438,7 +439,7 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
 void DebugRenderer::onContact(const CollisionCallback::CallbackData& callbackData) {
 
 	// If we need to draw contact points
-	if (getIsDebugItemDisplayed(DebugItem::CONTACT_POINT)) {
+    if (getIsDebugItemDisplayed(DebugItem::CONTACT_POINT) || getIsDebugItemDisplayed(DebugItem::CONTACT_NORMAL)) {
 
 		// For each contact pair
 		for (uint p = 0; p < callbackData.getNbContactPairs(); p++) {
@@ -454,7 +455,17 @@ void DebugRenderer::onContact(const CollisionCallback::CallbackData& callbackDat
 
                     Vector3 point = contactPair.getCollider1()->getLocalToWorldTransform() * contactPoint.getLocalPointOnShape1();
 
-                    drawSphere(point, DEFAULT_CONTACT_POINT_SPHERE_RADIUS, mMapDebugItemWithColor[DebugItem::CONTACT_POINT]);
+                    if (getIsDebugItemDisplayed(DebugItem::CONTACT_POINT)) {
+
+                        // Contact point
+                        drawSphere(point, DEFAULT_CONTACT_POINT_SPHERE_RADIUS, mMapDebugItemWithColor[DebugItem::CONTACT_POINT]);
+                    }
+
+                    if (getIsDebugItemDisplayed(DebugItem::CONTACT_NORMAL)) {
+
+                        // Contact normal
+                        mLines.add(DebugLine(point,  point + contactPoint.getWorldNormal() * mContactNormalLength, mMapDebugItemWithColor[DebugItem::CONTACT_NORMAL]));
+                    }
                 }
             }
 		}
