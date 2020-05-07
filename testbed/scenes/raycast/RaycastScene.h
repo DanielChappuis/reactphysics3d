@@ -72,9 +72,8 @@ class RaycastManager : public rp3d::RaycastCallback {
 
    public:
 
-        RaycastManager(openglframework::Shader& shader, const std::string& meshFolderPath,
-                       std::vector<SceneContactPoint>& hitPoints)
-            : mMeshFolderPath(meshFolderPath), mHitPoints(hitPoints) {
+        RaycastManager(const std::string& meshFolderPath, std::vector<SceneContactPoint>& hitPoints)
+            : mHitPoints(hitPoints), mMeshFolderPath(meshFolderPath) {
 
         }
 
@@ -93,10 +92,6 @@ class RaycastManager : public rp3d::RaycastCallback {
         void resetPoints() {
 
             mHitPoints.clear();
-        }
-
-        std::vector<SceneContactPoint> getHitPoints() const {
-            return mHitPoints;
         }
 };
 
@@ -146,7 +141,6 @@ class RaycastScene : public SceneDemo {
         // Create the Vertex Buffer Objects used to render with OpenGL.
         void createVBOAndVAO();
 
-
     public:
 
         // -------------------- Methods -------------------- //
@@ -180,7 +174,7 @@ class RaycastScene : public SceneDemo {
         virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
 
         /// Display/Hide the contact points
-        virtual void setIsContactPointsDisplayed(bool display) override;
+        virtual void setAreContactPointsDisplayed(bool display) override;
 };
 
 // Display or not the surface normals at hit points
@@ -194,8 +188,8 @@ inline void RaycastScene::setIsShadowMappingEnabled(bool isShadowMappingEnabled)
 }
 
 // Display/Hide the contact points
-inline void RaycastScene::setIsContactPointsDisplayed(bool display) {
-    SceneDemo::setIsContactPointsDisplayed(true);
+inline void RaycastScene::setAreContactPointsDisplayed(bool display) {
+    SceneDemo::setAreContactPointsDisplayed(true);
 }
 
 }

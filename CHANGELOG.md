@@ -23,6 +23,7 @@
  - A Collider can now be a trigger. This collider will be used to only report collisions with another collider but no collision response will be applied. You can use the Collider::setIsTrigger() method for this.
  - The EventListener class now has a onTrigger() method that is called when a trigger collider is colling with another collider.
  - In the EventListener, the onContact() and onTrigger() method now reports the type of event (start, stay, exit) for each contact. This way the user can know whether it's a new contact or not or when two colliders are not in contact anymore. 
+ - A DebugRenderer class has been added in order to display debug info (colliders, AABBs, contacts, ...) using graphics primities (lines, triangles).
 
 ### Fixed
 

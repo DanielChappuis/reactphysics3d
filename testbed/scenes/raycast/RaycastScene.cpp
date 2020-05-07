@@ -33,10 +33,8 @@ using namespace raycastscene;
 // Constructor
 RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
        : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
-         mRaycastManager(mPhongShader, mMeshFolderPath, mContactPoints), mCurrentBodyIndex(-1),
+         mRaycastManager(mMeshFolderPath, mSnapshotsContactPoints), mCurrentBodyIndex(-1),
          mAreNormalsDisplayed(false), mVBOVertices(GL_ARRAY_BUFFER) {
-
-    mIsContactPointsDisplayed = true;
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 0, 0);
@@ -267,11 +265,14 @@ RaycastScene::~RaycastScene() {
 // Take a step for the simulation
 void RaycastScene::update() {
 
+    // Compute debug rendering primitives
+    mPhysicsWorld->getDebugRenderer().reset();
+    mPhysicsWorld->getDebugRenderer().computeDebugRenderingPrimitives(*mPhysicsWorld);
+
     mRaycastManager.resetPoints();
 
     // For each line of the scene
-    for (std::vector<Line*>::iterator it = mLines.begin(); it != mLines.end();
-         ++it) {
+    for (std::vector<Line*>::iterator it = mLines.begin(); it != mLines.end(); ++it) {
 
         Line* line = *it;
 
@@ -293,6 +294,10 @@ void RaycastScene::update() {
 
 // Render the scene
 void RaycastScene::renderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+
+    if (mIsWireframeEnabled) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
 
     // Bind the VAO
     mVAO.bind();
@@ -342,6 +347,10 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader, const openg
 
 	// Unbind the shader
 	shader.unbind();
+
+    if (mIsWireframeEnabled) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 }
 
 // Create the Vertex Buffer Objects used to render with OpenGL.

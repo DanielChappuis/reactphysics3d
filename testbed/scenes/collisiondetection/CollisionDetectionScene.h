@@ -142,7 +142,7 @@ class CollisionDetectionScene : public SceneDemo {
         virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
 
         /// Display/Hide the contact points
-        virtual void setIsContactPointsDisplayed(bool display) override;
+        virtual void setAreContactPointsDisplayed(bool display) override;
 };
 
 // Display or not the surface normals at hit points
@@ -156,8 +156,8 @@ inline void CollisionDetectionScene::setIsShadowMappingEnabled(bool isShadowMapp
 }
 
 // Display/Hide the contact points
-inline void CollisionDetectionScene::setIsContactPointsDisplayed(bool display) {
-    SceneDemo::setIsContactPointsDisplayed(true);
+inline void CollisionDetectionScene::setAreContactPointsDisplayed(bool display) {
+    SceneDemo::setAreContactPointsDisplayed(true);
 }
 
 }

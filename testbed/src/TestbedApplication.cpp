@@ -63,8 +63,10 @@ TestbedApplication::TestbedApplication(bool isFullscreen, int windowWidth, int w
                      mWidth(windowWidth), mHeight(windowHeight),
                      mSinglePhysicsStepEnabled(false), mSinglePhysicsStepDone(false),
                      mWindowToFramebufferRatio(Vector2(1, 1)), mIsShadowMappingEnabled(true),
-                     mIsContactPointsDisplayed(false), mIsAABBsDisplayed(false), mIsWireframeEnabled(false),
-                     mIsVSyncEnabled(true) {
+                     mAreContactPointsDisplayed(false), mAreContactNormalsDisplayed(false),
+                     mAreBroadPhaseAABBsDisplayed(false), mAreCollidersAABBsDisplayed(false),
+                     mAreCollisionShapesDisplayed(false), mAreObjectsWireframeEnabled(false),
+                     mIsVSyncEnabled(true), mIsDebugRendererEnabled(false) {
 
     init();
 
@@ -88,6 +90,10 @@ void TestbedApplication::init() {
     mGui.init();
 
     mTimer.start();
+
+    // Enable OpenGL error reporting
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(onOpenGLError, 0);
 
     mIsInitialized = true;
 }
@@ -185,6 +191,8 @@ void TestbedApplication::update() {
 
     double currentTime = glfwGetTime();
 
+    mCurrentScene->setIsDebugRendererEnabled(mIsDebugRendererEnabled);
+
     // Update the physics
     if (mSinglePhysicsStepEnabled && !mSinglePhysicsStepDone) {
         updateSinglePhysicsStep();
@@ -208,13 +216,22 @@ void TestbedApplication::update() {
     mCurrentScene->setIsShadowMappingEnabled(mIsShadowMappingEnabled);
 
     // Display/Hide contact points
-    mCurrentScene->setIsContactPointsDisplayed(mIsContactPointsDisplayed);
+    mCurrentScene->setAreContactPointsDisplayed(mAreContactPointsDisplayed);
 
-    // Display/Hide the AABBs
-    mCurrentScene->setIsAABBsDisplayed(mIsAABBsDisplayed);
+    // Display/Hide contact normals
+    mCurrentScene->setAreContactNormalsDisplayed(mAreContactNormalsDisplayed);
+
+    // Display/Hide the broad phase AABBs
+    mCurrentScene->setAreBroadPhaseAABBsDisplayed(mAreBroadPhaseAABBsDisplayed);
+
+    // Display/Hide the colliders AABBs
+    mCurrentScene->setAreCollidersAABBsDisplayed(mAreCollidersAABBsDisplayed);
+
+    // Display/Hide the collision shapes
+    mCurrentScene->setAreCollisionShapesDisplayed(mAreCollisionShapesDisplayed);
 
     // Enable/Disable wireframe mode
-    mCurrentScene->setIsWireframeEnabled(mIsWireframeEnabled);
+    mCurrentScene->setIsWireframeEnabled(mAreObjectsWireframeEnabled);
 
     // Update the scene
     mCurrentScene->update();
@@ -233,9 +250,6 @@ void TestbedApplication::drawContents() {
 
     // Render the scene
     mCurrentScene->render();
-
-    // Check the OpenGL errors
-    checkOpenGLErrors();
 
     mGui.update();
 
@@ -283,33 +297,15 @@ void TestbedApplication::notifyEngineSetttingsChanged() {
    mCurrentScene->updateEngineSettings();
 }
 
-// Check the OpenGL errors
-void TestbedApplication::checkOpenGLErrorsInternal(const char* file, int line) {
-    GLenum glError;
+void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+                              const GLchar* message, const void* userParam ) {
 
-    // Get the OpenGL errors
-    glError = glGetError();
-
-    // While there are errors
-    while (glError != GL_NO_ERROR) {
-
-        std::string error;
-
-        switch(glError) {
-                case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
-                case GL_INVALID_ENUM:           error="INVALID_ENUM";           break;
-                case GL_INVALID_VALUE:          error="INVALID_VALUE";          break;
-                case GL_OUT_OF_MEMORY:          error="OUT_OF_MEMORY";          break;
-                case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
-        }
-
-        std::cerr << "OpenGL Error #" << error.c_str() << " - " << file << ": " << line << std::endl;
-
-        // Get the next error
-        glError = glGetError();
+    if (type == GL_DEBUG_TYPE_ERROR) {
+        fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+                   ("** GL ERROR **" ),
+                    type, severity, message );
     }
 }
-
 
 // Compute the FPS
 void TestbedApplication::computeFPS() {

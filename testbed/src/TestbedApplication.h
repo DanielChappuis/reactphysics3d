@@ -104,16 +104,28 @@ class TestbedApplication : public Screen {
         bool mIsShadowMappingEnabled;
 
         /// True if contact points are displayed
-        bool mIsContactPointsDisplayed;
+        bool mAreContactPointsDisplayed;
 
-        /// True if the AABBs of physics objects are displayed
-        bool mIsAABBsDisplayed;
+        /// True if contact normals are displayed
+        bool mAreContactNormalsDisplayed;
+
+        /// True if the broad phase AABBs are displayed
+        bool mAreBroadPhaseAABBsDisplayed;
+
+        /// True if the AABBs of the colliders are displayed
+        bool mAreCollidersAABBsDisplayed;
+
+        /// True if the collision shapes are displayed
+        bool mAreCollisionShapesDisplayed;
 
         /// True if the wireframe rendering is enabled
-        bool mIsWireframeEnabled;
+        bool mAreObjectsWireframeEnabled;
 
         /// True if vsync is enabled
         bool mIsVSyncEnabled;
+
+        /// True if the debug renderer is enabled
+        bool mIsDebugRendererEnabled;
 
         // -------------------- Methods -------------------- //
 
@@ -131,9 +143,6 @@ class TestbedApplication : public Screen {
 
         /// Update the simulation by taking a single physics step
         void updateSinglePhysicsStep();
-
-        /// Check the OpenGL errors
-        static void checkOpenGLErrorsInternal(const char* file, int line);
 
         /// Compute the FPS
         void computeFPS();
@@ -201,6 +210,10 @@ class TestbedApplication : public Screen {
 
         /// Notify that the engine settings have changed
         void notifyEngineSetttingsChanged();
+
+        /// Called when an OpenGL Error occurs
+        static void GLAPIENTRY onOpenGLError(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+                              const GLchar* message, const void* userParam );
 
         // -------------------- Friendship -------------------- //
 

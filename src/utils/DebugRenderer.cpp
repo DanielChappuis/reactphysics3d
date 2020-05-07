@@ -45,7 +45,7 @@ DebugRenderer::DebugRenderer(MemoryAllocator& allocator)
                mContactPointSphereRadius(DEFAULT_CONTACT_POINT_SPHERE_RADIUS), mContactNormalLength(DEFAULT_CONTACT_NORMAL_LENGTH) {
 
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLIDER_AABB, static_cast<uint32>(DebugColor::MAGENTA)));
-	mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLIDER_BROADPHASE_AABB, static_cast<uint32>(DebugColor::YELLOW)));
+    mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLIDER_BROADPHASE_AABB, static_cast<uint32>(DebugColor::YELLOW)));
 	mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLISION_SHAPE, static_cast<uint32>(DebugColor::GREEN)));
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::CONTACT_POINT, static_cast<uint32>(DebugColor::RED)));
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::CONTACT_NORMAL, static_cast<uint32>(DebugColor::WHITE)));
@@ -408,30 +408,35 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
 		// Get a body
         const CollisionBody* body = b < nbCollisionBodies ? world.getCollisionBody(b) : world.getRigidBody(b - nbCollisionBodies);
 
-		// For each collider of the body
-		for (uint c = 0; c < body->getNbColliders(); c++) {
+        if (body->isActive()) {
 
-			// Get a collider
-            const Collider* collider = body->getCollider(c);
+            // For each collider of the body
+            for (uint c = 0; c < body->getNbColliders(); c++) {
 
-			// If we need to draw the collider AABB
-			if (drawColliderAABB) {
+                // Get a collider
+                const Collider* collider = body->getCollider(c);
 
-				drawAABB(collider->getWorldAABB(), mMapDebugItemWithColor[DebugItem::COLLIDER_AABB]);
+                // If we need to draw the collider AABB
+                if (drawColliderAABB) {
+
+                    drawAABB(collider->getWorldAABB(), mMapDebugItemWithColor[DebugItem::COLLIDER_AABB]);
+                }
+
+                // If we need to draw the collider broad-phase AABB
+                if (drawColliderBroadphaseAABB) {
+
+                    if (collider->getBroadPhaseId() != -1) {
+                        drawAABB(world.mCollisionDetection.mBroadPhaseSystem.getFatAABB(collider->getBroadPhaseId()), mMapDebugItemWithColor[DebugItem::COLLIDER_BROADPHASE_AABB]);
+                    }
+                }
+
+                // If we need to draw the collision shape
+                if (drawCollisionShape) {
+
+                    drawCollisionShapeOfCollider(collider, mMapDebugItemWithColor[DebugItem::COLLISION_SHAPE]);
+                }
             }
-
-			// If we need to draw the collider broad-phase AABB
-			if (drawColliderBroadphaseAABB) {
-
-				drawAABB(world.mCollisionDetection.mBroadPhaseSystem.getFatAABB(collider->getBroadPhaseId()), mMapDebugItemWithColor[DebugItem::COLLIDER_BROADPHASE_AABB]);
-			}
-
-			// If we need to draw the collision shape
-			if (drawCollisionShape) {
-
-				drawCollisionShapeOfCollider(collider, mMapDebugItemWithColor[DebugItem::COLLISION_SHAPE]);
-			}
-		}
+        }
     }
 }
 

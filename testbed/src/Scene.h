@@ -128,16 +128,25 @@ class Scene : public rp3d::EventListener {
         bool mIsShadowMappingEnabled;
 
         /// True if contact points are displayed
-        bool mIsContactPointsDisplayed;
+        bool mAreContactPointsDisplayed;
 
-        /// True if the AABBs of the physics objects are displayed
-        bool mIsAABBsDisplayed;
+        /// True if contact normals are displayed
+        bool mAreContactNormalsDisplayed;
+
+        /// True if the broad phase AABBs of the physics objects are displayed
+        bool mAreBroadPhaseAABBsDisplayed;
+
+        /// True if the AABBs of the colliders are displayed
+        bool mAreCollidersAABBsDisplayed;
+
+        /// True if the AABBs of the colliders are displayed
+        bool mAreCollisionShapesDisplayed;
 
         /// True if we render shapes in wireframe mode
         bool mIsWireframeEnabled;
 
-        /// Contact points
-        std::vector<SceneContactPoint> mContactPoints;
+        /// Snapshots Contact points (computed with PhysicsWorld::testCollision() or PhysicsWorld::raycast() methods)
+        std::vector<SceneContactPoint> mSnapshotsContactPoints;
 
         // -------------------- Methods -------------------- //
 
@@ -222,10 +231,19 @@ class Scene : public rp3d::EventListener {
         void virtual setIsShadowMappingEnabled(bool isShadowMappingEnabled);
 
         /// Display/Hide the contact points
-        void virtual setIsContactPointsDisplayed(bool display);
+        void virtual setAreContactPointsDisplayed(bool display);
+
+        /// Display/Hide the contact normals
+        void setAreContactNormalsDisplayed(bool display);
 
         /// Display/Hide the AABBs
-        void setIsAABBsDisplayed(bool display);
+        void setAreBroadPhaseAABBsDisplayed(bool display);
+
+        /// Display/Hide the colliders AABBs
+        void setAreCollidersAABBsDisplayed(bool display);
+
+        /// Display/Hide the collision shapes
+        void setAreCollisionShapesDisplayed(bool display);
 
         /// Return true if wireframe rendering is enabled
         bool getIsWireframeEnabled() const;
@@ -233,13 +251,11 @@ class Scene : public rp3d::EventListener {
         /// Enable/disbale wireframe rendering
         void setIsWireframeEnabled(bool isEnabled);
 
+        /// Enable/disable debug rendering
+        virtual void setIsDebugRendererEnabled(bool isEnabled)=0;
+
         /// Update the engine settings
         virtual void updateEngineSettings() = 0;
-
-        /// Called when some contacts occur
-        virtual void onContact(const rp3d::CollisionCallback::CallbackData& callbackData) override;
-
-        virtual void onTrigger(const rp3d::OverlapCallback::CallbackData& callbackData) override;
 };
 
 // Called when a keyboard event occurs
@@ -254,7 +270,7 @@ inline void Scene::reshape(int width, int height) {
 
 // Reset the scene
 inline void Scene::reset() {
-    mContactPoints.clear();
+    mSnapshotsContactPoints.clear();
 }
 
 // Return a reference to the camera
@@ -297,13 +313,28 @@ inline void Scene::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
 }
 
 // Display/Hide the contact points
-inline void Scene::setIsContactPointsDisplayed(bool display) {
-    mIsContactPointsDisplayed = display;
+inline void Scene::setAreContactPointsDisplayed(bool display) {
+    mAreContactPointsDisplayed = display;
 }
 
-// Display/Hide the AABBs
-inline void Scene::setIsAABBsDisplayed(bool display) {
-    mIsAABBsDisplayed = display;
+// Display/Hide the contact normals
+inline void Scene::setAreContactNormalsDisplayed(bool display) {
+    mAreContactNormalsDisplayed = display;
+}
+
+// Display/Hide the broad phase AABBs
+inline void Scene::setAreBroadPhaseAABBsDisplayed(bool display) {
+    mAreBroadPhaseAABBsDisplayed = display;
+}
+
+// Display/Hide the colliders AABBs
+inline void Scene::setAreCollidersAABBsDisplayed(bool display) {
+    mAreCollidersAABBsDisplayed = display;
+}
+
+// Display/Hide the collision shapes
+inline void Scene::setAreCollisionShapesDisplayed(bool display) {
+    mAreCollisionShapesDisplayed = display;
 }
 
 // Return true if wireframe rendering is enabled
@@ -311,7 +342,7 @@ inline bool Scene::getIsWireframeEnabled() const {
     return mIsWireframeEnabled;
 }
 
-// Enable/disbale wireframe rendering
+// Enable/disable wireframe rendering
 inline void Scene::setIsWireframeEnabled(bool isEnabled) {
     mIsWireframeEnabled = isEnabled;
 }

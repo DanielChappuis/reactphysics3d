@@ -138,10 +138,10 @@ class SceneDemo : public Scene {
         void drawTextureQuad();
 
         /// Update the contact points
-        void updateContactPoints();
+        void updateSnapshotContactPoints();
 
         /// Render the contact points
-        void renderContactPoints(openglframework::Shader& shader,
+        void renderSnapshotsContactPoints(openglframework::Shader& shader,
                                  const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Update VBO with vertices and indices of debug info
@@ -149,9 +149,6 @@ class SceneDemo : public Scene {
 
         /// Render Debug Infos
         void renderDebugInfos(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
-
-        /// Render the AABBs
-        void renderAABBs(const openglframework::Matrix4& worldToCameraMatrix);
 
         /// Remove all contact points
         void removeAllVisualContactPoints();
@@ -184,6 +181,9 @@ class SceneDemo : public Scene {
 
         /// Enabled/Disable the shadow mapping
         virtual void setIsShadowMappingEnabled(bool isShadowMappingEnabled) override;
+
+        /// Enable/disable debug rendering
+        virtual void setIsDebugRendererEnabled(bool isEnabled) override;
 };
 
 // Enabled/Disable the shadow mapping
@@ -194,6 +194,11 @@ inline void SceneDemo::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
     if (mIsShadowMappingEnabled && !mIsShadowMappingInitialized) {
         createShadowMapFBOAndTexture();
     }
+}
+
+// Enable/disable debug rendering
+inline void SceneDemo::setIsDebugRendererEnabled(bool isEnabled) {
+    mPhysicsWorld->setIsDebugRenderingEnabled(isEnabled);
 }
 
 #endif

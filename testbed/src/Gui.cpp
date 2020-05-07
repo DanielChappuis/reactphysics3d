@@ -400,18 +400,54 @@ void Gui::createSettingsPanel() {
     mRenderingPanel->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 0, 5));
 
     // Display/Hide contact points
+    CheckBox* checkboxDebugRendererEnabled = new CheckBox(mRenderingPanel, "Debug rendering");
+    checkboxDebugRendererEnabled->setChecked(mApp->mIsDebugRendererEnabled);
+
+    // Display/Hide contact points
     CheckBox* checkboxContactPoints = new CheckBox(mRenderingPanel, "Contact points");
-    checkboxContactPoints->setChecked(mApp->mIsContactPointsDisplayed);
+    checkboxContactPoints->setChecked(mApp->mAreContactPointsDisplayed);
+    checkboxContactPoints->setEnabled(false);
     checkboxContactPoints->setCallback([&](bool value) {
-        mApp->mIsContactPointsDisplayed = value;
+        mApp->mAreContactPointsDisplayed = value;
     });
 
+    // Display/Hide contact normals
+    CheckBox* checkboxContactNormals = new CheckBox(mRenderingPanel, "Contact normals");
+    checkboxContactNormals->setChecked(mApp->mAreContactNormalsDisplayed);
+    checkboxContactNormals->setEnabled(false);
+    checkboxContactNormals->setCallback([&](bool value) {
+        mApp->mAreContactNormalsDisplayed = value;
+    });
 
-    // Display/Hide the AABBs
-    CheckBox* checkboxAABBs = new CheckBox(mRenderingPanel, "AABBs");
-    checkboxAABBs->setChecked(mApp->mIsAABBsDisplayed);
-    checkboxAABBs->setCallback([&](bool value) {
-        mApp->mIsAABBsDisplayed = value;
+    // Display/Hide the Broad-phase AABBs
+    CheckBox* checkboxBroadPhaseAABBs = new CheckBox(mRenderingPanel, "Broad phase AABBs");
+    checkboxBroadPhaseAABBs->setChecked(mApp->mAreBroadPhaseAABBsDisplayed);
+    checkboxBroadPhaseAABBs->setEnabled(false);
+    checkboxBroadPhaseAABBs->setCallback([&](bool value) {
+        mApp->mAreBroadPhaseAABBsDisplayed = value;
+    });
+
+    // Display/Hide the colliders AABBs
+    CheckBox* checkboxColliderAABBs = new CheckBox(mRenderingPanel, "Colliders AABBs");
+    checkboxColliderAABBs->setChecked(mApp->mAreCollidersAABBsDisplayed);
+    checkboxColliderAABBs->setEnabled(false);
+    checkboxColliderAABBs->setCallback([&](bool value) {
+        mApp->mAreCollidersAABBsDisplayed = value;
+    });
+
+    // Display/Hide the collision shapes
+    CheckBox* checkboxCollisionShapes = new CheckBox(mRenderingPanel, "Collision shapes");
+    checkboxCollisionShapes->setChecked(mApp->mAreCollisionShapesDisplayed);
+    checkboxCollisionShapes->setEnabled(false);
+    checkboxCollisionShapes->setCallback([&](bool value) {
+        mApp->mAreCollisionShapesDisplayed = value;
+    });
+
+    // Enable/Disable wireframe mode
+    CheckBox* checkboxWireframe = new CheckBox(mRenderingPanel, "Objects Wireframe");
+    checkboxWireframe->setChecked(mApp->mAreObjectsWireframeEnabled);
+    checkboxWireframe->setCallback([&](bool value) {
+        mApp->mAreObjectsWireframeEnabled = value;
     });
 
     // Enabled/Disable VSync
@@ -428,11 +464,15 @@ void Gui::createSettingsPanel() {
         mApp->mIsShadowMappingEnabled = value;
     });
 
-    // Enable/Disable wireframe mode
-    CheckBox* checkboxWireframe = new CheckBox(mRenderingPanel, "Wireframe");
-    checkboxWireframe->setChecked(mApp->mIsWireframeEnabled);
-    checkboxWireframe->setCallback([&](bool value) {
-        mApp->mIsWireframeEnabled = value;
+    checkboxDebugRendererEnabled->setCallback([&, checkboxContactPoints, checkboxContactNormals,
+                                               checkboxBroadPhaseAABBs, checkboxColliderAABBs,
+                                               checkboxCollisionShapes](bool value) {
+        mApp->mIsDebugRendererEnabled = value;
+        checkboxContactPoints->setEnabled(value);
+        checkboxContactNormals->setEnabled(value);
+        checkboxBroadPhaseAABBs->setEnabled(value);
+        checkboxColliderAABBs->setEnabled(value);
+        checkboxCollisionShapes->setEnabled(value);
     });
 
     mPhysicsPanel->setVisible(true);

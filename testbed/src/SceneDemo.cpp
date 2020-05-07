@@ -127,8 +127,14 @@ SceneDemo::~SceneDemo() {
 // Update the scene
 void SceneDemo::update() {
 
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, mAreContactPointsDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, mAreContactNormalsDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, mAreBroadPhaseAABBsDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, mAreCollidersAABBsDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, mAreCollisionShapesDisplayed);
+
     // Update the contact points
-    updateContactPoints();
+    updateSnapshotContactPoints();
 
 	// Update the position and orientation of the physics objects
 	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
@@ -143,7 +149,7 @@ void SceneDemo::update() {
 void SceneDemo::updatePhysics() {
 
     // Clear contacts points
-    mContactPoints.clear();
+    mSnapshotsContactPoints.clear();
 
     if (mIsPhysicsWorldSimulated) {
 
@@ -269,15 +275,8 @@ void SceneDemo::render() {
     // Render the objects of the scene
     renderSinglePass(mPhongShader, worldToCameraMatrix);
 
-    // Render the contact points
-    if (mIsContactPointsDisplayed) {
-        renderContactPoints(mPhongShader, worldToCameraMatrix);
-    }
-
-    // Render the AABBs
-    if (mIsAABBsDisplayed) {
-        renderAABBs(worldToCameraMatrix);
-    }
+    // Render the snapshots contact points
+    renderSnapshotsContactPoints(mPhongShader, worldToCameraMatrix);
 
     // Render the debug infos
     if (mPhysicsWorld->getIsDebugRenderingEnabled()) {
@@ -456,27 +455,24 @@ void SceneDemo::drawTextureQuad() {
     mVAOQuad.unbind();
 }
 
-// Gather and create contact points
-void SceneDemo::updateContactPoints() {
+// Gather and create snapshots contact points
+void SceneDemo::updateSnapshotContactPoints() {
 
     // Remove the previous contact points
     removeAllVisualContactPoints();
 
-    if (mIsContactPointsDisplayed) {
+    // For each contact point
+    std::vector<SceneContactPoint>::const_iterator it;
+    for (it = mSnapshotsContactPoints.begin(); it != mSnapshotsContactPoints.end(); ++it) {
 
-        // For each contact point
-        std::vector<SceneContactPoint>::const_iterator it;
-        for (it = mContactPoints.begin(); it != mContactPoints.end(); ++it) {
-
-            // Create a visual contact point for rendering
-            VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath, it->point + it->normal, it->color);
-            mVisualContactPoints.push_back(point);
-        }
+        // Create a visual contact point for rendering
+        VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath, it->point + it->normal, it->color);
+        mVisualContactPoints.push_back(point);
     }
 }
 
 // Render the contact points
-void SceneDemo::renderContactPoints(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+void SceneDemo::renderSnapshotsContactPoints(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Render all the contact points
     for (std::vector<VisualContactPoint*>::iterator it = mVisualContactPoints.begin();
@@ -604,30 +600,6 @@ void SceneDemo::renderDebugInfos(openglframework::Shader& shader, const openglfr
 
     // Disable wireframe mode
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-// Render the AABBs
-void SceneDemo::renderAABBs(const openglframework::Matrix4& worldToCameraMatrix) {
-
-    // For each physics object of the scene
-    for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
-
-       // For each collider of the object
-       for (uint i=0; i < (*it)->getCollisionBody()->getNbColliders(); i++) {
-
-           rp3d::Collider* collider = (*it)->getCollisionBody()->getCollider(i);
-
-           // Get the broad-phase AABB corresponding to the collider
-           rp3d::AABB aabb = mPhysicsWorld->getWorldAABB(collider);
-
-           openglframework::Vector3 aabbCenter(aabb.getCenter().x, aabb.getCenter().y, aabb.getCenter().z);
-           openglframework::Vector3 aabbMin(aabb.getMin().x, aabb.getMin().y, aabb.getMin().z);
-           openglframework::Vector3 aabbMax(aabb.getMax().x, aabb.getMax().y, aabb.getMax().z);
-
-           // Render the AABB
-           AABB::render(aabbCenter, aabbMax - aabbMin, Color::green(), mColorShader, worldToCameraMatrix);
-       }
-    }
 }
 
 void SceneDemo::removeAllVisualContactPoints() {

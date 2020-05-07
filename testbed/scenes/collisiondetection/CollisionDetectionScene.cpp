@@ -35,11 +35,12 @@ using namespace collisiondetectionscene;
 // Constructor
 CollisionDetectionScene::CollisionDetectionScene(const std::string& name, EngineSettings& settings)
        : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
-         mContactManager(mPhongShader, mMeshFolderPath, mContactPoints),
+         mContactManager(mPhongShader, mMeshFolderPath, mSnapshotsContactPoints),
          mAreNormalsDisplayed(false) {
 
     mSelectedShapeIndex = 0;
-    mIsContactPointsDisplayed = true;
+    mAreContactPointsDisplayed = true;
+    mAreContactNormalsDisplayed = false;
     mIsWireframeEnabled = true;
 
     // Compute the radius and the center of the scene
@@ -218,7 +219,10 @@ CollisionDetectionScene::~CollisionDetectionScene() {
 // Take a step for the simulation
 void CollisionDetectionScene::update() {
 
-    mContactPoints.clear();
+    // Compute debug rendering primitives
+    mPhysicsWorld->getDebugRenderer().reset();
+    mPhysicsWorld->getDebugRenderer().computeDebugRenderingPrimitives(*mPhysicsWorld);
+    mSnapshotsContactPoints.clear();
 
     mPhysicsWorld->testCollision(mContactManager);
 

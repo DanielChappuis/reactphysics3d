@@ -71,24 +71,22 @@ class DebugRenderer : public EventListener {
 
 		/// Enumeration with debug item to renderer
 		enum class DebugItem {
+
+            /// Display the AABB for each collider
 			COLLIDER_AABB				= 1 << 0,
+
+            /// Display the fat AABB of the broad phase collision detection for each collider
 			COLLIDER_BROADPHASE_AABB	= 1 << 1,
+
+            /// Display the collision shape of each collider
 			COLLISION_SHAPE				= 1 << 2,
+
+            /// Display the contact points
 			CONTACT_POINT				= 1 << 3,
+
+            /// Display the contact normals
             CONTACT_NORMAL				= 1 << 4,
         };
-
-        /// Struture that represents a point of the DebugRenderer
-		struct DebugPoint {
-			
-			/// Constructor
-			DebugPoint(const Vector3& point, uint32 color) :point(point), color(color) {
-
-			}
-
-			Vector3 point;
-			uint32 color;
-		};
 
 		/// Struture that represents a line of the DebugRenderer
 		struct DebugLine {
@@ -99,9 +97,16 @@ class DebugRenderer : public EventListener {
 
 			}
 
+            /// First point of the line
 			Vector3 point1;
+
+            /// Color of the first point
             uint32 color1;
+
+            /// Second point of the line
             Vector3 point2;
+
+            /// Color of the second point
             uint32 color2;
 		};
 
@@ -114,11 +119,22 @@ class DebugRenderer : public EventListener {
 
 			}
 
-			Vector3 point1;
+            /// First point of the triangle
+            Vector3 point1;
+
+            /// Color of the first point
             uint32 color1;
+
+            /// Second point of the triangle
             Vector3 point2;
+
+            /// Color of the second point
             uint32 color2;
+
+            /// Third point of the triangle
             Vector3 point3;
+
+            /// Color of the third point
             uint32 color3;
 		};
 
@@ -196,15 +212,6 @@ class DebugRenderer : public EventListener {
 
         /// Destructor
         ~DebugRenderer();
-
-		/// Return the number of points
-		uint32 getNbPoints() const;
-
-		/// Return a reference to the list of points
-		const List<DebugPoint>& getPoints() const;
-
-		/// Return a pointer to the array of points
-		const DebugPoint* getPointsArray() const;
 
 		/// Return the number of lines
 		uint32 getNbLines() const;
