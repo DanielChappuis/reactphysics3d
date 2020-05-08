@@ -107,12 +107,12 @@ void SliderJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDa
     decimal upperLimitError = mUpperLimit - uDotSliderAxis;
     bool oldIsLowerLimitViolated = mIsLowerLimitViolated;
     mIsLowerLimitViolated = lowerLimitError <= 0;
-    if (mIsLowerLimitViolated != oldIsLowerLimitViolated) {
+    if (!mIsLowerLimitViolated || mIsLowerLimitViolated != oldIsLowerLimitViolated) {
         mImpulseLowerLimit = 0.0;
     }
     bool oldIsUpperLimitViolated = mIsUpperLimitViolated;
     mIsUpperLimitViolated = upperLimitError <= 0;
-    if (mIsUpperLimitViolated != oldIsUpperLimitViolated) {
+    if (!mIsUpperLimitViolated || mIsUpperLimitViolated != oldIsUpperLimitViolated) {
         mImpulseUpperLimit = 0.0;
     }
 
