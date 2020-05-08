@@ -24,6 +24,7 @@
  - The EventListener class now has a onTrigger() method that is called when a trigger collider is colling with another collider.
  - In the EventListener, the onContact() and onTrigger() method now reports the type of event (start, stay, exit) for each contact. This way the user can know whether it's a new contact or not or when two colliders are not in contact anymore. 
  - A DebugRenderer class has been added in order to display debug info (colliders, AABBs, contacts, ...) using graphics primities (lines, triangles).
+ - A RigidBody::applyForceAtLocalPosition() method has been added to apply a force at a given position of the rigid body in local-space.
 
 ### Fixed
 
@@ -60,6 +61,7 @@
  - Now, the local inertia tensor of a rigid body has to be set using a Vector3 instead of a Matrix3x3. You only need to provide the diagonal values of the matrix
  - The RigidBody::recomputeMassInformation() method has been renamed to RigidBody::updateMassPropertiesFromColliders.
  - Now, you need to manually call the RigidBody::recomputeMassInformation() method after adding colliders to a rigid body to recompute its inertia tensor, center of mass and mass
+ - The RigidBody::applyForce() method has been renamed to RigidBody::applyForceAtWorldPosition()
  - The rendering in the testbed application has been improved
  - The old Logger class has been renamed to DefaultLogger
  - The Logger class is now an abstract class that you can inherit from in order to receive log events from the library

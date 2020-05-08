@@ -127,6 +127,38 @@ decimal RigidBody::getMass() const {
     return mWorld.mRigidBodyComponents.getMass(mEntity);
 }
 
+// Apply an external force to the body at a given point (in local-space coordinates).
+/// If the point is not at the center of mass of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The force to apply on the body
+ * @param point The point where the force is applied (in local-space coordinates)
+ */
+void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& point) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    const Vector3& externalForce = mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, externalForce + force);
+
+    // Add the torque
+    const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    const Vector3 worldPoint = mWorld.mTransformComponents.getTransform(mEntity) * point;
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + (worldPoint - centerOfMassWorld).cross(force));
+}
+
 // Apply an external force to the body at a given point (in world-space coordinates).
 /// If the point is not at the center of mass of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
@@ -138,7 +170,7 @@ decimal RigidBody::getMass() const {
  * @param force The force to apply on the body
  * @param point The point where the force is applied (in world-space coordinates)
  */
-void RigidBody::applyForce(const Vector3& force, const Vector3& point) {
+void RigidBody::applyForceAtWorldPosition(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;

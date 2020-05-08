@@ -156,8 +156,11 @@ class RigidBody : public CollisionBody {
         /// Apply an external force to the body at its center of mass.
         void applyForceToCenterOfMass(const Vector3& force);
 
+        /// Apply an external force to the body at a given point (in local-space coordinates).
+        void applyForceAtLocalPosition(const Vector3& force, const Vector3& point);
+
         /// Apply an external force to the body at a given point (in world-space coordinates).
-        void applyForce(const Vector3& force, const Vector3& point);
+        void applyForceAtWorldPosition(const Vector3& force, const Vector3& point);
 
         /// Apply an external torque to the body.
         void applyTorque(const Vector3& torque);
