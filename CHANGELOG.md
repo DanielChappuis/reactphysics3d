@@ -28,6 +28,7 @@
 ### Fixed
 
  - Issues [#125](https://github.com/DanielChappuis/reactphysics3d/issues/125) and [#106](https://github.com/DanielChappuis/reactphysics3d/issues/106) have been fixed.
+ - Issue [#141](https://github.com/DanielChappuis/reactphysics3d/issues/141) with limits of hinge and slider joints has been fixed.
 
 ### Changed
 
