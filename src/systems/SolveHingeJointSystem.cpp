@@ -234,13 +234,13 @@ void SolveHingeJointSystem::initBeforeSolve() {
         bool oldIsLowerLimitViolated = mHingeJointComponents.mIsLowerLimitViolated[i];
         bool isLowerLimitViolated = lowerLimitError <= 0;
         mHingeJointComponents.mIsLowerLimitViolated[i] = isLowerLimitViolated;
-        if (isLowerLimitViolated != oldIsLowerLimitViolated) {
+        if (!isLowerLimitViolated || isLowerLimitViolated != oldIsLowerLimitViolated) {
             mHingeJointComponents.mImpulseLowerLimit[i] = decimal(0.0);
         }
         bool oldIsUpperLimitViolated = mHingeJointComponents.mIsUpperLimitViolated[i];
         bool isUpperLimitViolated = upperLimitError <= 0;
         mHingeJointComponents.mIsUpperLimitViolated[i] = isUpperLimitViolated;
-        if (isUpperLimitViolated != oldIsUpperLimitViolated) {
+        if (!isUpperLimitViolated || isUpperLimitViolated != oldIsUpperLimitViolated) {
             mHingeJointComponents.mImpulseUpperLimit[i] = decimal(0.0);
         }
 

@@ -136,12 +136,12 @@ void SolveSliderJointSystem::initBeforeSolve() {
         decimal upperLimitError = mSliderJointComponents.mUpperLimit[i] - uDotSliderAxis;
         bool oldIsLowerLimitViolated = mSliderJointComponents.mIsLowerLimitViolated[i];
         mSliderJointComponents.mIsLowerLimitViolated[i] = lowerLimitError <= 0;
-        if (mSliderJointComponents.mIsLowerLimitViolated[i] != oldIsLowerLimitViolated) {
+        if (!mSliderJointComponents.mIsLowerLimitViolated[i] || mSliderJointComponents.mIsLowerLimitViolated[i] != oldIsLowerLimitViolated) {
             mSliderJointComponents.mImpulseLowerLimit[i] = decimal(0.0);
         }
         bool oldIsUpperLimitViolated = mSliderJointComponents.mIsUpperLimitViolated[i];
         mSliderJointComponents.mIsUpperLimitViolated[i] = upperLimitError <= 0;
-        if (mSliderJointComponents.mIsUpperLimitViolated[i] != oldIsUpperLimitViolated) {
+        if (!mSliderJointComponents.mIsUpperLimitViolated[i] || mSliderJointComponents.mIsUpperLimitViolated[i] != oldIsUpperLimitViolated) {
             mSliderJointComponents.mImpulseUpperLimit[i] = decimal(0.0);
         }
 
