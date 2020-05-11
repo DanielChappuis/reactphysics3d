@@ -85,7 +85,8 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
         mName = ss.str();
     }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
     assert(profiler != nullptr);
     mProfiler = profiler;
@@ -121,7 +122,8 @@ PhysicsWorld::~PhysicsWorld() {
         destroyCollisionBody(mCollisionBodies[i]);
     }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
     // Print the profiling report into the destinations
     mProfiler->printReport();
@@ -175,7 +177,8 @@ CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
     // Add the collision body to the world
     mCollisionBodies.add(collisionBody);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
     collisionBody->setProfiler(mProfiler);
 
@@ -313,7 +316,8 @@ AABB PhysicsWorld::getWorldAABB(const Collider* collider) const {
  */
 void PhysicsWorld::update(decimal timeStep) {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
     // Increment the frame counter of the profiler
     mProfiler->incrementFrameCounter();
 #endif
@@ -462,7 +466,8 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
     // Add the rigid body to the physics world
     mRigidBodies.add(rigidBody);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
     rigidBody->setProfiler(mProfiler);
 #endif
 

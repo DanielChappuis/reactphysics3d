@@ -82,7 +82,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         MemoryAllocator& mAllocator;
         const Vector3& mMeshScale;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -110,7 +110,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
             return mIsHit;
         }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler) {
@@ -196,7 +196,7 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Return the string representation of the shape
         virtual std::string to_string() const override;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Set the profiler
         virtual void setProfiler(Profiler* profiler) override;
@@ -250,7 +250,7 @@ inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId)
     mTriangleTestCallback.testTriangle(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]));
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void ConcaveMeshShape::setProfiler(Profiler* profiler) {

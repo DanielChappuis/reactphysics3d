@@ -79,7 +79,7 @@ class CollisionShape {
         /// List of the colliders associated with this shape
         List<Collider*> mColliders;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -152,7 +152,7 @@ class CollisionShape {
         /// Return the string representation of the shape
         virtual std::string to_string() const=0;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
         virtual void setProfiler(Profiler* profiler);
@@ -199,7 +199,7 @@ inline void CollisionShape::removeCollider(Collider* collider) {
     mColliders.remove(collider);
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void CollisionShape::setProfiler(Profiler* profiler) {

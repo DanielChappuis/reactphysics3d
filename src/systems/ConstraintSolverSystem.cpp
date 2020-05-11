@@ -47,7 +47,8 @@ ConstraintSolverSystem::ConstraintSolverSystem(PhysicsWorld& world, Islands& isl
                    mSolveHingeJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, hingeJointComponents),
                    mSolveSliderJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, sliderJointComponents) {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	mProfiler = nullptr;
 

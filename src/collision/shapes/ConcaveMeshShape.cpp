@@ -182,7 +182,8 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     // Create the callback object that will compute ray casting against triangles
     ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, collider, raycastInfo, scaledRay, mScale, allocator);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	// Set the profiler
 	raycastCallback.setProfiler(mProfiler);
@@ -249,7 +250,8 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
         TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]), mAllocator);
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
 		
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 		// Set the profiler to the triangle shape
 		triangleShape.setProfiler(mProfiler);

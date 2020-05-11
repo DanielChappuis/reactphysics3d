@@ -105,7 +105,7 @@ class CollisionDispatch {
         /// use between two types of collision shapes.
         NarrowPhaseAlgorithmType selectAlgorithm(int type1, int type2);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
     /// Pointer to the profiler
     Profiler* mProfiler;
@@ -163,7 +163,7 @@ class CollisionDispatch {
         NarrowPhaseAlgorithmType selectNarrowPhaseAlgorithm(const CollisionShapeType& shape1Type,
                                                             const CollisionShapeType& shape2Type) const;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
         void setProfiler(Profiler* profiler);
@@ -202,7 +202,7 @@ inline ConvexPolyhedronVsConvexPolyhedronAlgorithm* CollisionDispatch::getConvex
     return mConvexPolyhedronVsConvexPolyhedronAlgorithm;
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void CollisionDispatch::setProfiler(Profiler* profiler) {

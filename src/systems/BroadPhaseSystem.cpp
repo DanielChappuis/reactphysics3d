@@ -42,7 +42,8 @@ BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection,
                      mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
                      mCollisionDetection(collisionDetection) {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	mProfiler = nullptr;
 

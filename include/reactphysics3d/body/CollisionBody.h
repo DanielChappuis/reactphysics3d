@@ -62,7 +62,7 @@ class CollisionBody {
         /// Reference to the world the body belongs to
         PhysicsWorld& mWorld;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -157,7 +157,7 @@ class CollisionBody {
         /// Return the body local-space coordinates of a vector given in the world-space coordinates
         Vector3 getLocalVector(const Vector3& worldVector) const;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		virtual void setProfiler(Profiler* profiler);
@@ -190,7 +190,7 @@ inline Entity CollisionBody::getEntity() const {
     return mEntity;
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void CollisionBody::setProfiler(Profiler* profiler) {

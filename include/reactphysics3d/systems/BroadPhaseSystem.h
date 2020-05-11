@@ -131,7 +131,7 @@ class BroadPhaseSystem {
         /// Reference to the collision detection object
         CollisionDetectionSystem& mCollisionDetection;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -198,7 +198,7 @@ class BroadPhaseSystem {
         /// Ray casting method
         void raycast(const Ray& ray, RaycastTest& raycastTest, unsigned short raycastWithCategoryMaskBits) const;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
@@ -225,7 +225,7 @@ inline Collider* BroadPhaseSystem::getColliderForBroadPhaseId(int broadPhaseId) 
     return static_cast<Collider*>(mDynamicAABBTree.getNodeDataPointer(broadPhaseId));
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void BroadPhaseSystem::setProfiler(Profiler* profiler) {

@@ -53,7 +53,8 @@ ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, PhysicsWo
                mBodyComponents(bodyComponents), mRigidBodyComponents(rigidBodyComponents),
                mColliderComponents(colliderComponents), mIsSplitImpulseActive(true) {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
         mProfiler = nullptr;
 #endif
 

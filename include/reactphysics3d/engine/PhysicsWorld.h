@@ -229,7 +229,7 @@ class PhysicsWorld {
         /// Name of the physics world
         std::string mName;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Real-time hierarchical profiler
         Profiler* mProfiler;
@@ -461,7 +461,7 @@ class PhysicsWorld {
         /// Return a reference to the Debug Renderer of the world
         DebugRenderer& getDebugRenderer();
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Return a reference to the profiler
         Profiler* getProfiler();
@@ -584,7 +584,7 @@ inline const std::string& PhysicsWorld::getName() const {
     return mName;
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Return a pointer to the profiler
 /**

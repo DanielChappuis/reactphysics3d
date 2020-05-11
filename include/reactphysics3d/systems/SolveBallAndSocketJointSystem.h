@@ -74,7 +74,7 @@ class SolveBallAndSocketJointSystem {
         /// True if warm starting of the solver is active
         bool mIsWarmStartingActive;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Pointer to the profiler
         Profiler* mProfiler;
@@ -111,7 +111,7 @@ class SolveBallAndSocketJointSystem {
         /// Set to true to enable warm starting
         void setIsWarmStartingActive(bool isWarmStartingActive);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Set the profiler
         void setProfiler(Profiler* profiler);
@@ -120,7 +120,7 @@ class SolveBallAndSocketJointSystem {
 
 };
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {

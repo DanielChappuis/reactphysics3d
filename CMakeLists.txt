@@ -1,79 +1,46 @@
 # Minimum cmake version required
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8)
 
 # Project configuration
-PROJECT(REACTPHYSICS3D LANGUAGES CXX)
+project(REACTPHYSICS3D LANGUAGES CXX)
 
 # In order to install libraries into correct locations on all platforms.
 include(GNUInstallDirs)
 
-# Build type
-IF (NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE "Release")
-ENDIF()
-
-# Where to build the library
-SET(LIBRARY_OUTPUT_PATH "lib")
-
-# Where to build the executables
-SET(OUR_EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
+# Set default build type
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
 # CMake modules path
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 
 # Enable testing
-ENABLE_TESTING()
+enable_testing()
 
 # Options
-OPTION(RP3D_COMPILE_TESTBED "Select this if you want to build the testbed application" OFF)
-OPTION(RP3D_COMPILE_TESTS "Select this if you want to build the tests" OFF)
-OPTION(RP3D_PROFILING_ENABLED "Select this if you want to compile with enabled profiling" OFF)
-OPTION(RP3D_LOGS_ENABLED "Select this if you want to compile with logs enabled during execution" OFF)
-OPTION(RP3D_CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage calculation" OFF)
-OPTION(RP3D_DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating
-                                 values" OFF)
+option(RP3D_COMPILE_TESTBED "Select this if you want to build the testbed application with demos" OFF)
+option(RP3D_COMPILE_TESTS "Select this if you want to build the unit tests" OFF)
+option(RP3D_PROFILING_ENABLED "Select this if you want to compile for performanace profiling" OFF)
+option(RP3D_CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage calculation" OFF)
+option(RP3D_DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating values" OFF)
 
-# Warning Compiler flags
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-
-IF(RP3D_CODE_COVERAGE_ENABLED)
-    IF(CMAKE_COMPILER_IS_GNUCXX)
+if(RP3D_CODE_COVERAGE_ENABLED)
+    if(CMAKE_COMPILER_IS_GNUCXX)
         INCLUDE(CodeCoverage)
         SETUP_TARGET_FOR_COVERAGE(${PROJECT_NAME}_coverage tests coverage)
-    ENDIF()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
-ENDIF()
-
-# C++11 flags
-IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-	include(CheckCXXCompilerFlag)
-	CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-	IF(COMPILER_SUPPORTS_CXX11)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-	ELSE()
-		message("The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
-	ENDIF()
-ENDIF()
-
-# Use libc++ with Clang
-#IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-#    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-#ENDIF()
-
-IF(RP3D_PROFILING_ENABLED)
-    ADD_DEFINITIONS(-DIS_PROFILING_ACTIVE)
-ENDIF()
-
-IF(RP3D_LOGS_ENABLED)
-    ADD_DEFINITIONS(-DIS_LOGGING_ACTIVE)
-ENDIF()
-
-IF(RP3D_DOUBLE_PRECISION_ENABLED)
-    ADD_DEFINITIONS(-DIS_DOUBLE_PRECISION_ENABLED)
-ENDIF()
+    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+endif()
 
 # Headers filen1s
-SET (REACTPHYSICS3D_HEADERS
+set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/configuration.h"
     "include/reactphysics3d/decimal.h"
     "include/reactphysics3d/reactphysics3d.h"
@@ -185,7 +152,7 @@ SET (REACTPHYSICS3D_HEADERS
 )
 
 # Source files
-SET (REACTPHYSICS3D_SOURCES
+set (REACTPHYSICS3D_SOURCES
     "src/body/CollisionBody.cpp"
     "src/body/RigidBody.cpp"
     "src/collision/broadphase/DynamicAABBTree.cpp"
@@ -276,38 +243,53 @@ SET (REACTPHYSICS3D_SOURCES
 )
 
 # Create the library
-ADD_LIBRARY(reactphysics3d ${REACTPHYSICS3D_HEADERS} ${REACTPHYSICS3D_SOURCES})
+add_library(reactphysics3d ${REACTPHYSICS3D_HEADERS} ${REACTPHYSICS3D_SOURCES})
+
+# C++11 compiler features
+target_compile_features(reactphysics3d PUBLIC cxx_std_11)
+set_target_properties(reactphysics3d PROPERTIES CXX_EXTENSIONS OFF)
+
+# Compile with warning messages
+target_compile_options(reactphysics3d PRIVATE -Wall)
 
 # Headers
-TARGET_INCLUDE_DIRECTORIES(reactphysics3d PUBLIC
+target_include_directories(reactphysics3d PUBLIC
               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
               $<INSTALL_INTERFACE:include>
 )
 
 # If we need to compile the testbed application
-IF(RP3D_COMPILE_TESTBED)
+if(RP3D_COMPILE_TESTBED)
    add_subdirectory(testbed/)
-ENDIF()
+endif()
 
 # If we need to compile the tests
-IF(RP3D_COMPILE_TESTS)
+if(RP3D_COMPILE_TESTS)
    add_subdirectory(test/)
-ENDIF()
+endif()
 
-#SET_TARGET_PROPERTIES(reactphysics3d PROPERTIES PUBLIC_HEADER "${REACTPHYSICS3D_HEADERS}")
+# Enable profiling if necessary
+if(RP3D_PROFILING_ENABLED)
+    target_compile_definitions(reactphysics3d PUBLIC IS_RP3D_PROFILING_ENABLED)
+endif()
+
+# Enable double precision if necessary
+if(RP3D_DOUBLE_PRECISION_ENABLED)
+    target_compile_definitions(reactphysics3d PUBLIC IS_RP3D_DOUBLE_PRECISION_ENABLED)
+endif()
 
 # Version number and soname for the library
-SET_TARGET_PROPERTIES(reactphysics3d  PROPERTIES
+set_target_properties(reactphysics3d  PROPERTIES
           VERSION "0.7.1" 
           SOVERSION "0.7" 
 )
 
 # Install target (install library only, not headers)
-INSTALL(TARGETS reactphysics3d
+install(TARGETS reactphysics3d
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 # Install the headers separately (because INSTALL(TARGETS ... PUBLIC_HEADER DESTINATION ...) does not support subfolders
-INSTALL(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

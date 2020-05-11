@@ -161,7 +161,7 @@ class DynamicAABBTree {
         /// The fat AABB is the initial AABB inflated by a given percentage of its size.
         decimal mFatAABBInflatePercentage;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -254,7 +254,7 @@ class DynamicAABBTree {
         /// Clear all the nodes and reset the tree
         void reset();
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
@@ -316,7 +316,7 @@ inline int32 DynamicAABBTree::addObject(const AABB& aabb, void* data) {
     return nodeId;
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void DynamicAABBTree::setProfiler(Profiler* profiler) {

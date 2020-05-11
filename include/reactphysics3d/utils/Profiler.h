@@ -27,7 +27,8 @@
 #define REACTPHYSICS3D_PROFILER_H
 
 // If profiling is enabled
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 // Libraries
 #include <reactphysics3d/configuration.h>

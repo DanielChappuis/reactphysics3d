@@ -70,7 +70,7 @@ class NarrowPhaseAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -94,7 +94,7 @@ class NarrowPhaseAlgorithm {
         /// Deleted assignment operator
         NarrowPhaseAlgorithm& operator=(const NarrowPhaseAlgorithm& algorithm) = delete;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
@@ -103,7 +103,7 @@ class NarrowPhaseAlgorithm {
 
 };
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void NarrowPhaseAlgorithm::setProfiler(Profiler* profiler) {

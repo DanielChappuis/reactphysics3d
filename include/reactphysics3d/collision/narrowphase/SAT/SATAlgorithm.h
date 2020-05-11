@@ -78,7 +78,7 @@ class SATAlgorithm {
         /// Memory allocator
         MemoryAllocator& mMemoryAllocator;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -173,7 +173,7 @@ class SATAlgorithm {
         /// Test collision between two convex meshes
         bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems) const;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
@@ -182,7 +182,7 @@ class SATAlgorithm {
 
 };
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void SATAlgorithm::setProfiler(Profiler* profiler) {

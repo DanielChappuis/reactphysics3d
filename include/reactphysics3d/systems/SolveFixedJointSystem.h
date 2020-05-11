@@ -73,7 +73,7 @@ class SolveFixedJointSystem {
         /// True if warm starting of the solver is active
         bool mIsWarmStartingActive;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Pointer to the profiler
         Profiler* mProfiler;
@@ -108,7 +108,7 @@ class SolveFixedJointSystem {
         /// Set to true to enable warm starting
         void setIsWarmStartingActive(bool isWarmStartingActive);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Set the profiler
         void setProfiler(Profiler* profiler);
@@ -117,7 +117,7 @@ class SolveFixedJointSystem {
 
 };
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void SolveFixedJointSystem::setProfiler(Profiler* profiler) {

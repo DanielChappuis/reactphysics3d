@@ -50,7 +50,8 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
     GJKAlgorithm gjkAlgorithm;
     SATAlgorithm satAlgorithm(clipWithPreviousAxisIfStillColliding, memoryAllocator);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	gjkAlgorithm.setProfiler(mProfiler);
 	satAlgorithm.setProfiler(mProfiler);

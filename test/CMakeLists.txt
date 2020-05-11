@@ -1,11 +1,11 @@
 # Minimum cmake version required
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8)
 
 # Project configuration
-PROJECT(TESTS)
+project(TESTS)
 
 # Header files
-SET (RP3D_TESTS_HEADERS
+set (RP3D_TESTS_HEADERS
     "Test.h"
     "TestSuite.h"
     "tests/collision/TestAABB.h"
@@ -30,20 +30,20 @@ SET (RP3D_TESTS_HEADERS
 )
 
 # Source files
-SET (RP3D_TESTS_SOURCES
+set (RP3D_TESTS_SOURCES
     "main.cpp"
     "Test.cpp"
     "TestSuite.cpp"
 )
 
 # Create the tests executable
-ADD_EXECUTABLE(tests ${RP3D_TESTS_HEADERS} ${RP3D_TESTS_SOURCES})
+add_executable(tests ${RP3D_TESTS_HEADERS} ${RP3D_TESTS_SOURCES})
 
 # Headers
-TARGET_INCLUDE_DIRECTORIES(reactphysics3d PUBLIC
+target_include_directories(reactphysics3d PUBLIC
               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-TARGET_LINK_LIBRARIES(tests reactphysics3d)
+target_link_libraries(tests reactphysics3d)
 
-ADD_TEST(Test tests)
+add_test(Test tests)

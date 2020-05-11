@@ -194,7 +194,7 @@ class OverlappingPairs {
         /// Reference to the collision dispatch
         CollisionDispatch& mCollisionDispatch;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Pointer to the profiler
         Profiler* mProfiler;
@@ -297,7 +297,7 @@ class OverlappingPairs {
         /// Set to true if the two colliders of the pair were already colliding the previous frame
         void setCollidingInPreviousFrame(uint64 pairId, bool wereCollidingInPreviousFrame);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Set the profiler
         void setProfiler(Profiler* profiler);
@@ -407,7 +407,7 @@ inline void OverlappingPairs::setCollidingInPreviousFrame(uint64 pairId, bool we
     mCollidingInPreviousFrame[mMapPairIdToPairIndex[pairId]] = wereCollidingInPreviousFrame;
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void OverlappingPairs::setProfiler(Profiler* profiler) {

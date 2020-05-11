@@ -65,7 +65,7 @@ class GJKAlgorithm {
 
         // -------------------- Attributes -------------------- //
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -100,7 +100,7 @@ class GJKAlgorithm {
         void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
                            uint batchNbItems, List<GJKResult>& gjkResults);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
@@ -109,7 +109,7 @@ class GJKAlgorithm {
 
 };
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void GJKAlgorithm::setProfiler(Profiler* profiler) {

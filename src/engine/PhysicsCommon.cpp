@@ -104,7 +104,8 @@ void PhysicsCommon::release() {
     }
 
 // If profiling is enabled
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
     // Destroy the profilers
     for (auto it = mProfilers.begin(); it != mProfilers.end(); ++it) {
@@ -120,7 +121,8 @@ PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSetting
 
     Profiler* profiler = nullptr;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
     profiler = createProfiler();
 
@@ -373,7 +375,8 @@ void PhysicsCommon::destroyDefaultLogger(DefaultLogger* logger) {
 }
 
 // If profiling is enabled
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 // Create and return a new profiler
 /// Note that you need to use a different profiler for each PhysicsWorld.

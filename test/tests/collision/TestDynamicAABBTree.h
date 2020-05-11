@@ -97,7 +97,8 @@ class TestDynamicAABBTree : public Test {
 
         PhysicsCommon mPhysicsCommon;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
         Profiler* mProfiler;
 #endif
 
@@ -108,7 +109,8 @@ class TestDynamicAABBTree : public Test {
         /// Constructor
         TestDynamicAABBTree(const std::string& name): Test(name)  {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
             mProfiler = new Profiler();
 #endif
 
@@ -117,7 +119,8 @@ class TestDynamicAABBTree : public Test {
         /// Constructor
         ~TestDynamicAABBTree() {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
             delete mProfiler;
 #endif
 
@@ -142,7 +145,8 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
             tree.setProfiler(mProfiler);
 #endif
 			
@@ -191,7 +195,8 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
             tree.setProfiler(mProfiler);
 #endif
 
@@ -386,7 +391,8 @@ class TestDynamicAABBTree : public Test {
 
             // Dynamic AABB Tree
             DynamicAABBTree tree(mAllocator);
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
             tree.setProfiler(mProfiler);
 #endif
 

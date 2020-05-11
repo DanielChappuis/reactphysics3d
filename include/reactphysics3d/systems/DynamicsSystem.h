@@ -69,7 +69,7 @@ class DynamicsSystem {
         /// Reference to the world gravity vector
         Vector3& mGravity;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Pointer to the profiler
         Profiler* mProfiler;
@@ -87,7 +87,7 @@ class DynamicsSystem {
         /// Destructor
         ~DynamicsSystem() = default;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Set the profiler
         void setProfiler(Profiler* profiler);
@@ -111,7 +111,7 @@ class DynamicsSystem {
 
 };
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void DynamicsSystem::setProfiler(Profiler* profiler) {

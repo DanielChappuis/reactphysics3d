@@ -36,7 +36,8 @@ using namespace reactphysics3d;
 CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type, MemoryAllocator &allocator)
                : mType(type), mName(name), mId(0), mColliders(allocator) {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
         mProfiler = nullptr;
 #endif
 

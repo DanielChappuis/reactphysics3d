@@ -65,7 +65,7 @@ class Collider {
         /// Pointer to user data
         void* mUserData;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -160,7 +160,7 @@ class Collider {
         /// Set whether the collider is a trigger
         void setIsTrigger(bool isTrigger) const;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);

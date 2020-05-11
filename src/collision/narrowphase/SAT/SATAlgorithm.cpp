@@ -47,7 +47,8 @@ const decimal SATAlgorithm::SEPARATING_AXIS_ABSOLUTE_TOLERANCE = decimal(0.0005)
 SATAlgorithm::SATAlgorithm(bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator)
              : mClipWithPreviousAxisIfStillColliding(clipWithPreviousAxisIfStillColliding), mMemoryAllocator(memoryAllocator) {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
         mProfiler = nullptr;
 #endif
 

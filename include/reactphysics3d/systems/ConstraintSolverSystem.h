@@ -173,7 +173,7 @@ class ConstraintSolverSystem {
         /// Solver for the SliderJoint constraints
         SolveSliderJointSystem mSolveSliderJointSystem;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -209,7 +209,7 @@ class ConstraintSolverSystem {
         /// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
         void setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
@@ -218,7 +218,7 @@ class ConstraintSolverSystem {
 
 };
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void ConstraintSolverSystem::setProfiler(Profiler* profiler) {

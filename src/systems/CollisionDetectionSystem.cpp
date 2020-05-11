@@ -69,7 +69,8 @@ CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, Collider
                      mContactPoints2(mMemoryManager.getPoolAllocator()), mPreviousContactPoints(&mContactPoints1),
                      mCurrentContactPoints(&mContactPoints2), mMapBodyToContactPairs(mMemoryManager.getSingleFrameAllocator()) {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	mProfiler = nullptr;
     mCollisionDispatch.setProfiler(mProfiler);
@@ -412,7 +413,8 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairInde
         TriangleShape* triangleShape = new (allocator.allocate(sizeof(TriangleShape)))
                                        TriangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], allocator);
 
-    #ifdef IS_PROFILING_ACTIVE
+    #ifdef IS_RP3D_PROFILING_ENABLED
+
 
         // Set the profiler to the triangle shape
         triangleShape->setProfiler(mProfiler);

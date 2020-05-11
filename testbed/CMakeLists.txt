@@ -1,28 +1,22 @@
 # Minimum cmake version required
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8)
 
 # Project configuration
-PROJECT(Testbed)
+project(Testbed)
 
-# Where to build the executables
-SET(EXECUTABLE_OUTPUT_PATH "${OUR_EXECUTABLE_OUTPUT_PATH}/testbed")
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${EXECUTABLE_OUTPUT_PATH})
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
-
-ADD_SUBDIRECTORY(nanogui/)
+add_subdirectory(nanogui/)
 
 # Copy the shaders used for the demo into the build directory
-FILE(COPY "shaders/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/shaders/")
+file(COPY "shaders/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
 
 # Copy the meshes used for the demo into the build directory
-FILE(COPY "meshes/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/meshes/")
+file(COPY "meshes/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/meshes/")
 
 # Headers
-INCLUDE_DIRECTORIES("src/" "nanogui/include/" "opengl-framework/src/" "common/" "scenes/" ${NANOGUI_EXTRA_INCS})
+include_directories("src/" "nanogui/include/" "opengl-framework/src/" "common/" "scenes/" ${NANOGUI_EXTRA_INCS})
 
 # OpenGLFramework source files
-SET(OPENGLFRAMEWORK_SOURCES
+set(OPENGLFRAMEWORK_SOURCES
     opengl-framework/src/maths/Color.h
     opengl-framework/src/maths/Matrix3.h
     opengl-framework/src/maths/Matrix4.h
@@ -56,7 +50,7 @@ SET(OPENGLFRAMEWORK_SOURCES
 )
 
 # Testbed source files
-SET(TESTBED_SOURCES
+set(TESTBED_SOURCES
     src/Main.cpp
     src/TestbedApplication.h
     src/TestbedApplication.cpp
@@ -71,7 +65,7 @@ SET(TESTBED_SOURCES
 )
 
 # Common source files
-SET(COMMON_SOURCES
+set(COMMON_SOURCES
     common/Box.h
     common/Box.cpp
     common/Sphere.h
@@ -99,7 +93,7 @@ SET(COMMON_SOURCES
 )
 
 # Examples scenes source files
-SET(SCENES_SOURCES
+set(SCENES_SOURCES
     scenes/cubes/CubesScene.h
     scenes/cubes/CubesScene.cpp
     scenes/joints/JointsScene.h
@@ -121,20 +115,20 @@ SET(SCENES_SOURCES
 )
 
 # Add .user file to set debug path in Visual Studio
-SET(USER_FILE testbed.vcxproj.user)
-SET(VS_USERFILE_WORKING_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
-SET(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
-CONFIGURE_FILE(VisualStudioUserTemplate.user ${USER_FILE} @ONLY)
+set(USER_FILE testbed.vcxproj.user)
+set(VS_USERFILE_WORKING_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
+set(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
+configure_file(VisualStudioUserTemplate.user ${USER_FILE} @ONLY)
 
 # Compile definitions
-ADD_DEFINITIONS(${NANOGUI_EXTRA_DEFS})
+add_definitions(${NANOGUI_EXTRA_DEFS})
 
 # Create the executable
-ADD_EXECUTABLE(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${OPENGLFRAMEWORK_SOURCES})
+add_executable(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${OPENGLFRAMEWORK_SOURCES})
 
 # Enable C++11 features
 set_property(TARGET testbed PROPERTY CXX_STANDARD 11)
 set_property(TARGET testbed PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Link with libraries
-TARGET_LINK_LIBRARIES(testbed reactphysics3d nanogui ${NANOGUI_EXTRA_LIBS})
+target_link_libraries(testbed reactphysics3d nanogui ${NANOGUI_EXTRA_LIBS})

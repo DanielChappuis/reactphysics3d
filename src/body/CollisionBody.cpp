@@ -43,7 +43,8 @@ using namespace reactphysics3d;
 CollisionBody::CollisionBody(PhysicsWorld& world, Entity entity)
               : mEntity(entity), mWorld(world)  {
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
         mProfiler = nullptr;
 #endif
 
@@ -92,7 +93,8 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
     // Assign the collider with the collision shape
     collisionShape->addCollider(collider);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	// Set the profiler
     collider->setProfiler(mProfiler);

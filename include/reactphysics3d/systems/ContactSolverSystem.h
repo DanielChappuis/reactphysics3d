@@ -330,7 +330,7 @@ class ContactSolverSystem {
         /// True if the split impulse position correction is active
         bool mIsSplitImpulseActive;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
 		Profiler* mProfiler;
@@ -391,7 +391,7 @@ class ContactSolverSystem {
         /// Activate or Deactivate the split impulses for contacts
         void setIsSplitImpulseActive(bool isActive);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
@@ -409,7 +409,7 @@ inline void ContactSolverSystem::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void ContactSolverSystem::setProfiler(Profiler* profiler) {

@@ -183,7 +183,7 @@ class RigidBody : public CollisionBody {
         /// Remove a collider from the body
         virtual void removeCollider(Collider* collider) override;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler) override;

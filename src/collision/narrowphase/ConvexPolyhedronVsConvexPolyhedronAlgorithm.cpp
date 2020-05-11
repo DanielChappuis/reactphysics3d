@@ -42,7 +42,8 @@ bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoB
     // Run the SAT algorithm to find the separating axis and compute contact point
     SATAlgorithm satAlgorithm(clipWithPreviousAxisIfStillColliding, memoryAllocator);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	satAlgorithm.setProfiler(mProfiler);
 

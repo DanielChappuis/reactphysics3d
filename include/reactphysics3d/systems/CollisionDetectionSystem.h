@@ -166,7 +166,7 @@ class CollisionDetectionSystem {
         /// Map a body entity to the list of contact pairs in which it is involved
         Map<Entity, List<uint>> mMapBodyToContactPairs;
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
     /// Pointer to the profiler
     Profiler* mProfiler;
@@ -361,7 +361,7 @@ class CollisionDetectionSystem {
         /// Return the world event listener
         EventListener* getWorldEventListener();
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
 		void setProfiler(Profiler* profiler);
@@ -440,7 +440,7 @@ inline void CollisionDetectionSystem::updateColliders(decimal timeStep) {
     mBroadPhaseSystem.updateColliders(timeStep);
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
 inline void CollisionDetectionSystem::setProfiler(Profiler* profiler) {

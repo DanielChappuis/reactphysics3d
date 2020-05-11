@@ -247,7 +247,8 @@ void Collider::setIsTrigger(bool isTrigger) const {
    mBody->mWorld.mCollidersComponents.setIsTrigger(mEntity, isTrigger);
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 // Set the profiler
 void Collider::setProfiler(Profiler* profiler) {

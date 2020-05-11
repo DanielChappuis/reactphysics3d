@@ -256,7 +256,8 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
         TriangleShape triangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], allocator);
         triangleShape.setRaycastTestType(getRaycastTestType());
 
-    #ifdef IS_PROFILING_ACTIVE
+    #ifdef IS_RP3D_PROFILING_ENABLED
+
 
         // Set the profiler to the triangle shape
         triangleShape.setProfiler(mProfiler);

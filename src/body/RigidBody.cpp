@@ -582,7 +582,8 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
     // Assign the collider with the collision shape
     collisionShape->addCollider(collider);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	// Set the profiler
     collider->setProfiler(mProfiler);
@@ -905,7 +906,8 @@ void RigidBody::setIsActive(bool isActive) {
     CollisionBody::setIsActive(isActive);
 }
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 // Set the profiler
 void RigidBody::setProfiler(Profiler* profiler) {
