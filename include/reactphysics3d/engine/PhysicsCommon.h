@@ -83,20 +83,30 @@ class PhysicsCommon {
         /// Set of triangle meshes
         Set<TriangleMesh*> mTriangleMeshes;
 
-#ifdef IS_LOGGING_ACTIVE
+        /// Pointer to the current logger
+        static Logger* mLogger;
 
-        /// Set of loggers
-        Set<DefaultLogger*> mLoggers;
-
-#endif
-
-        /// Set of loggers
+        /// Set of profilers
         Set<Profiler*> mProfilers;
+
+        /// Set of default loggers
+        Set<DefaultLogger*> mDefaultLoggers;
 
         // -------------------- Methods -------------------- //
 
         /// Destroy and release everything that has been allocated
         void release();
+
+// If profiling is enabled
+#ifdef IS_PROFILING_ACTIVE
+
+        /// Create and return a new profiler
+        Profiler* createProfiler();
+
+        /// Destroy a profiler
+        void destroyProfiler(Profiler* profiler);
+
+#endif
 
     public :
 
@@ -115,8 +125,7 @@ class PhysicsCommon {
         //        the method parameters with the "@param" keyword for Doxygen
 
         /// Create and return an instance of PhysicsWorld
-        PhysicsWorld* createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings = PhysicsWorld::WorldSettings(),
-                                         Logger* logger = nullptr, Profiler* profiler = nullptr);
+        PhysicsWorld* createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings = PhysicsWorld::WorldSettings());
 
         /// Destroy an instance of PhysicsWorld
         void destroyPhysicsWorld(PhysicsWorld* world);
@@ -172,29 +181,32 @@ class PhysicsCommon {
         /// Destroy a triangle mesh
         void destroyTriangleMesh(TriangleMesh* triangleMesh);
 
-// If logging is enabled
-#ifdef IS_LOGGING_ACTIVE
-
         /// Create and return a new default logger
         DefaultLogger* createDefaultLogger();
 
         /// Destroy a default logger
         void destroyDefaultLogger(DefaultLogger* logger);
 
-#endif
+        /// Return the current logger
+        static Logger* getLogger();
 
-// If profiling is enabled
-#ifdef IS_PROFILING_ACTIVE
-
-        /// Create and return a new profiler
-        Profiler* createProfiler();
-
-        /// Destroy a profiler
-        void destroyProfiler(Profiler* profiler);
-
-#endif
+        /// Set the logger
+        static void setLogger(Logger* logger);
 
 };
+
+// Return the current logger
+inline Logger* PhysicsCommon::getLogger() {
+    return mLogger;
+}
+
+// Set the logger
+inline void PhysicsCommon::setLogger(Logger* logger) {
+    mLogger = logger;
+}
+
+// Use this macro to log something
+#define RP3D_LOG(physicsWorldName, level, category, message, filename, lineNumber) if (reactphysics3d::PhysicsCommon::getLogger() != nullptr) PhysicsCommon::getLogger()->log(level, physicsWorldName, category, message, filename, lineNumber)
 
 }
 

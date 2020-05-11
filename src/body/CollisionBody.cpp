@@ -25,6 +25,7 @@
 
  // Libraries
 #include <reactphysics3d/body/CollisionBody.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
 #include <reactphysics3d/collision/ContactManifold.h>
 #include <reactphysics3d/collision/RaycastInfo.h>
@@ -41,10 +42,6 @@ using namespace reactphysics3d;
  */
 CollisionBody::CollisionBody(PhysicsWorld& world, Entity entity)
               : mEntity(entity), mWorld(world)  {
-
-#ifdef IS_LOGGING_ACTIVE
-        mLogger = nullptr;
-#endif
 
 #ifdef IS_PROFILING_ACTIVE
         mProfiler = nullptr;
@@ -102,13 +99,6 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
 
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-
-    // Set the logger
-    collider->setLogger(mLogger);
-
-#endif
-
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
     collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
@@ -116,10 +106,10 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addCollider(collider, aabb);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " added to body",  __FILE__, __LINE__);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(collider->getBroadPhaseId()) + ":  collisionShape=" +
              collider->getCollisionShape()->to_string(),  __FILE__, __LINE__);
 
@@ -170,7 +160,7 @@ Collider* CollisionBody::getCollider(uint colliderIndex) {
  */
 void CollisionBody::removeCollider(Collider* collider) {
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " removed from body",  __FILE__, __LINE__);
 
     // Remove the collider from the broad-phase
@@ -281,7 +271,7 @@ void CollisionBody::setIsActive(bool isActive) {
         }
     }
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set isActive=" +
              (isActive ? "true" : "false"),  __FILE__, __LINE__);
 }
@@ -398,7 +388,7 @@ void CollisionBody::setTransform(const Transform& transform) {
     // Update the broad-phase state of the body
     updateBroadPhaseState(0);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set transform=" + transform.to_string(),  __FILE__, __LINE__);
 }
 

@@ -24,6 +24,7 @@
 ********************************************************************************/
 
 // Libraries
+#include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
 #include <reactphysics3d/constraint/BallAndSocketJoint.h>
 #include <reactphysics3d/constraint/SliderJoint.h>
@@ -47,10 +48,9 @@ uint PhysicsWorld::mNbWorlds = 0;
 /**
  * @param gravity Gravity vector in the world (in meters per second squared)
  * @param worldSettings The settings of the world
- * @param logger Pointer to the logger
  * @param profiler Pointer to the profiler
  */
-PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings, Logger* logger, Profiler* profiler)
+PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings, Profiler* profiler)
               : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()), mDebugRenderer(mMemoryManager.getHeapAllocator()),
                 mCollisionBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
                 mTransformComponents(mMemoryManager.getHeapAllocator()), mCollidersComponents(mMemoryManager.getHeapAllocator()),
@@ -98,21 +98,14 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
 
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-
-    assert(logger != nullptr);
-    mLogger = logger;
-
-#endif
-
     mNbWorlds++;
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: Physics world " + mName + " has been created",  __FILE__, __LINE__);
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: Initial world settings: " + worldSettings.to_string(),  __FILE__, __LINE__);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: Physics world " + mName + " has been created",  __FILE__, __LINE__);
 
 }
@@ -120,7 +113,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
 // Destructor
 PhysicsWorld::~PhysicsWorld() {
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);
 
     // Destroy all the collision bodies that have not been removed
@@ -152,7 +145,7 @@ PhysicsWorld::~PhysicsWorld() {
     assert(mJointsComponents.getNbComponents() == 0);
     assert(mRigidBodies.size() == 0);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);
 }
 
@@ -188,11 +181,7 @@ CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
 
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-   collisionBody->setLogger(mLogger);
-#endif
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(entity.id) + ": New collision body created",  __FILE__, __LINE__);
 
     // Return the pointer to the rigid body
@@ -205,7 +194,7 @@ CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
  */
 void PhysicsWorld::destroyCollisionBody(CollisionBody* collisionBody) {
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(collisionBody->getEntity().id) + ": collision body destroyed",  __FILE__, __LINE__);
 
     // Remove all the collision shapes of the body
@@ -477,11 +466,7 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
     rigidBody->setProfiler(mProfiler);
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-   rigidBody->setLogger(mLogger);
-#endif
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(entity.id) + ": New collision body created",  __FILE__, __LINE__);
 
     // Return the pointer to the rigid body
@@ -494,7 +479,7 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
  */
 void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body destroyed",  __FILE__, __LINE__);
 
     // Remove all the collision shapes of the body
@@ -634,9 +619,9 @@ Joint* PhysicsWorld::createJoint(const JointInfo& jointInfo) {
         mCollisionDetection.addNoCollisionPair(jointInfo.body1->getEntity(), jointInfo.body2->getEntity());
     }
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Joint,
              "Joint " + std::to_string(newJoint->getEntity().id) + ": New joint created",  __FILE__, __LINE__);
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Joint,
              "Joint " + std::to_string(newJoint->getEntity().id) + ": " + newJoint->to_string(),  __FILE__, __LINE__);
 
     // Add the joint into the joint list of the bodies involved in the joint
@@ -654,7 +639,7 @@ void PhysicsWorld::destroyJoint(Joint* joint) {
 
     assert(joint != nullptr);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Joint,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Joint,
              "Joint " + std::to_string(joint->getEntity().id) + ": joint destroyed",  __FILE__, __LINE__);
 
     // If the collision between the two bodies of the constraint was disabled
@@ -702,17 +687,30 @@ void PhysicsWorld::destroyJoint(Joint* joint) {
     mMemoryManager.release(MemoryManager::AllocationType::Pool, joint, nbBytes);
 }
 
+
+// Set the number of iterations for the velocity constraint solver
+/**
+ * @param nbIterations Number of iterations for the velocity solver
+ */
+void PhysicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
+
+    mNbVelocitySolverIterations = nbIterations;
+
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
+             "Physics World: Set nb iterations velocity solver to " + std::to_string(nbIterations),  __FILE__, __LINE__);
+}
+
 // Add the joint to the list of joints of the two bodies involved in the joint
 void PhysicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
 
     mRigidBodyComponents.addJointToBody(body1, joint);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(body1.id) + ": Joint " + std::to_string(joint.id) + " added to body",  __FILE__, __LINE__);
 
     mRigidBodyComponents.addJointToBody(body2, joint);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(body2.id) + ": Joint " + std::to_string(joint.id) + " added to body",  __FILE__, __LINE__);
 }
 
@@ -939,6 +937,84 @@ void PhysicsWorld::enableSleeping(bool isSleepingEnabled) {
         }
     }
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: isSleepingEnabled=" + (isSleepingEnabled ? std::string("true") : std::string("false")) ,  __FILE__, __LINE__);
+}
+
+// Set the number of iterations for the position constraint solver
+/**
+ * @param nbIterations Number of iterations for the position solver
+ */
+void PhysicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
+
+    mNbPositionSolverIterations = nbIterations;
+
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
+             "Physics World: Set nb iterations position solver to " + std::to_string(nbIterations),  __FILE__, __LINE__);
+}
+
+// Set the gravity vector of the world
+/**
+ * @param gravity The gravity vector (in meter per seconds squared)
+ */
+void PhysicsWorld::setGravity(Vector3& gravity) {
+
+    mConfig.gravity = gravity;
+
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
+             "Physics World: Set gravity vector to " + gravity.to_string(),  __FILE__, __LINE__);
+}
+
+// Set the sleep linear velocity.
+/// When the velocity of a body becomes smaller than the sleep linear/angular
+/// velocity for a given amount of time, the body starts sleeping and does not need
+/// to be simulated anymore.
+/**
+ * @param sleepLinearVelocity The sleep linear velocity (in meters per second)
+ */
+void PhysicsWorld::setSleepLinearVelocity(decimal sleepLinearVelocity) {
+    assert(sleepLinearVelocity >= decimal(0.0));
+    mSleepLinearVelocity = sleepLinearVelocity;
+
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
+             "Physics World: sleepLinearVelocity= " + std::to_string(sleepLinearVelocity),  __FILE__, __LINE__);
+}
+
+// Set the sleep angular velocity.
+/// When the velocity of a body becomes smaller than the sleep linear/angular
+/// velocity for a given amount of time, the body starts sleeping and does not need
+/// to be simulated anymore.
+/**
+ * @param sleepAngularVelocity The sleep angular velocity (in radian per second)
+ */
+void PhysicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity) {
+    assert(sleepAngularVelocity >= decimal(0.0));
+    mSleepAngularVelocity = sleepAngularVelocity;
+
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
+             "Physics World: sleepAngularVelocity= " + std::to_string(sleepAngularVelocity),  __FILE__, __LINE__);
+}
+
+// Set the time a body is required to stay still before sleeping
+/**
+ * @param timeBeforeSleep Time a body is required to stay still before sleeping (in seconds)
+ */
+void PhysicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
+    assert(timeBeforeSleep >= decimal(0.0));
+    mTimeBeforeSleep = timeBeforeSleep;
+
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
+             "Physics World: timeBeforeSleep= " + std::to_string(timeBeforeSleep),  __FILE__, __LINE__);
+}
+
+// Enable/Disable the gravity
+/**
+ * @param isGravityEnabled True if you want to enable the gravity in the world
+ *                         and false otherwise
+ */
+void PhysicsWorld::setIsGravityEnabled(bool isGravityEnabled) {
+    mIsGravityEnabled = isGravityEnabled;
+
+    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
+             "Physics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")),  __FILE__, __LINE__);
 }

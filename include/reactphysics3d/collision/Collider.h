@@ -72,12 +72,6 @@ class Collider {
 
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-
-        /// Logger
-        Logger* mLogger;
-#endif
-
 		// -------------------- Methods -------------------- //
 
         /// Notify the collider that the size of the collision shape has been
@@ -173,12 +167,6 @@ class Collider {
 
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-
-        /// Set the logger
-        void setLogger(Logger* logger);
-#endif
-
         // -------------------- Friendship -------------------- //
 
         friend class OverlappingPair;
@@ -244,32 +232,6 @@ inline bool Collider::testAABBOverlap(const AABB& worldAABB) const {
 inline Material& Collider::getMaterial() {
     return mMaterial;
 }
-
-// Set a new material for this rigid body
-/**
- * @param material The material you want to set to the body
- */
-inline void Collider::setMaterial(const Material& material) {
-
-    mMaterial = material;
-
-#ifdef IS_LOGGING_ACTIVE
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
-             "Collider " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string(),  __FILE__, __LINE__);
-#endif
-
-}
-
-#ifdef IS_LOGGING_ACTIVE
-
-// Set the logger
-inline void Collider::setLogger(Logger* logger) {
-
-   mLogger = logger;
-}
-
-#endif
 
 }
 

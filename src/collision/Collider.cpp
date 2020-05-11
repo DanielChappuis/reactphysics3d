@@ -29,6 +29,7 @@
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <reactphysics3d/memory/MemoryManager.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
 
 using namespace reactphysics3d;
 
@@ -78,7 +79,7 @@ void Collider::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
 
     int broadPhaseId = mBody->mWorld.mCollidersComponents.getBroadPhaseId(mEntity);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
+    RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(broadPhaseId) + ": Set collisionCategoryBits=" +
              std::to_string(collisionCategoryBits),  __FILE__, __LINE__);
 }
@@ -97,7 +98,7 @@ void Collider::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
 
     int broadPhaseId = mBody->mWorld.mCollidersComponents.getBroadPhaseId(mEntity);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
+    RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
              "Collider" + std::to_string(broadPhaseId) + ": Set collideWithMaskBits=" +
              std::to_string(collideWithMaskBits),  __FILE__, __LINE__);
 }
@@ -118,7 +119,7 @@ void Collider::setLocalToBodyTransform(const Transform& transform) {
 
     mBody->mWorld.mCollisionDetection.updateCollider(mEntity, 0);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Collider,
+    RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(getBroadPhaseId()) + ": Set localToBodyTransform=" +
              transform.to_string(),  __FILE__, __LINE__);
 }
@@ -213,6 +214,18 @@ unsigned short Collider::getCollideWithMaskBits() const {
 // Notify the collider that the size of the collision shape has been changed by the user
 void Collider::setHasCollisionShapeChangedSize(bool hasCollisionShapeChangedSize) {
     mBody->mWorld.mCollidersComponents.setHasCollisionShapeChangedSize(mEntity, hasCollisionShapeChangedSize);
+}
+
+// Set a new material for this rigid body
+/**
+ * @param material The material you want to set to the body
+ */
+void Collider::setMaterial(const Material& material) {
+
+    mMaterial = material;
+
+    RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
+             "Collider " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string(),  __FILE__, __LINE__);
 }
 
 // Return the local to world transform

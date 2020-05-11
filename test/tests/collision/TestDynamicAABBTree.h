@@ -109,8 +109,18 @@ class TestDynamicAABBTree : public Test {
         TestDynamicAABBTree(const std::string& name): Test(name)  {
 
 #ifdef IS_PROFILING_ACTIVE
-            mProfiler = mPhysicsCommon.createProfiler();
+            mProfiler = new Profiler();
 #endif
+
+        }
+
+        /// Constructor
+        ~TestDynamicAABBTree() {
+
+#ifdef IS_PROFILING_ACTIVE
+            delete mProfiler;
+#endif
+
         }
 
         bool isOverlapping(int nodeId, const List<int>& overlappingNodes) const {

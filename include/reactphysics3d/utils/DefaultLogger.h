@@ -26,9 +26,6 @@
 #ifndef REACTPHYSICS3D_DEFAULT_LOGGER_H
 #define REACTPHYSICS3D_DEFAULT_LOGGER_H
 
-// If logging is enabled
-#ifdef IS_LOGGING_ACTIVE
-
 // Libraries
 #include <reactphysics3d/utils/Logger.h>
 #include <reactphysics3d/containers/List.h>
@@ -81,7 +78,7 @@ class DefaultLogger : public Logger {
                 }
 
                 /// Format a log message
-                virtual std::string format(const time_t& time, const std::string& message, Level level, Category category,
+                virtual std::string format(const time_t& time, const std::string& physicsWorldName, const std::string& message, Level level, Category category,
                                            const char* filename, int lineNumber) = 0;
         };
 
@@ -116,12 +113,15 @@ class DefaultLogger : public Logger {
                 }
 
                 /// Format a log message
-                virtual std::string format(const time_t& time, const std::string& message,
+                virtual std::string format(const time_t& time, const std::string& physicsWorldName, const std::string& message,
                                            Level level, Category category, const char* filename, int lineNumber) override {
                     std::stringstream ss;
 
                     // Time
                     ss << std::put_time(std::localtime(&time), "%X") << " ";
+
+                    // World
+                    ss << "World:" << physicsWorldName << std::endl;
 
                     // Level
                     ss << getLevelName(level) << " ";
@@ -204,8 +204,12 @@ class DefaultLogger : public Logger {
                       "} "
                       ".time { "
                          "margin-right: 20px; "
-                         "width: 10%; "
+                         "width: 5%; "
                       "} "
+                      ".world-name { "
+                         "margin-right: 20px; "
+                         "width: 5%; "
+                      "}"
                       ".level { "
                          "margin-right: 20px; "
                          "width: 10%; "
@@ -266,7 +270,7 @@ class DefaultLogger : public Logger {
                 }
 
                 /// Format a log message
-                virtual std::string format(const time_t& time, const std::string& message, Level level,
+                virtual std::string format(const time_t& time, const std::string& physicsWorldName, const std::string& message, Level level,
                                            Category category, const char* filename, int lineNumber) override {
 
                     std::stringstream ss;
@@ -276,6 +280,11 @@ class DefaultLogger : public Logger {
                     // Time
                     ss << "<div class='time'>";
                     ss << std::put_time(std::localtime(&time), "%X");
+                    ss << "</div>";
+
+                    // Message
+                    ss << "<div class='world-name'>";
+                    ss << physicsWorldName;
                     ss << "</div>";
 
                     // Level
@@ -329,7 +338,7 @@ class DefaultLogger : public Logger {
                 }
 
                 /// Write a message into the output stream
-                virtual void write(const time_t& time, const std::string& message, Level level, Category category, const char* filename, int lineNumber) = 0;
+                virtual void write(const time_t& time, const std::string& physicsWorldName, const std::string& message, Level level, Category category, const char* filename, int lineNumber) = 0;
 
                 /// Return the size in bytes of the type
                 virtual size_t getSizeBytes() const=0;
@@ -373,11 +382,11 @@ class DefaultLogger : public Logger {
                 }
 
                 /// Write a message into the output stream
-                virtual void write(const time_t& time, const std::string& message, Level level, Category category,
+                virtual void write(const time_t& time, const std::string& physicsWorldName, const std::string& message, Level level, Category category,
                                    const char* filename, int lineNumber) override {
 
                     if (static_cast<int>(level) <= static_cast<int>(maxLevelFlag)) {
-                        mFileStream << formatter->format(time, message, level, category, filename, lineNumber) << std::endl << std::flush;
+                        mFileStream << formatter->format(time, physicsWorldName, message, level, category, filename, lineNumber) << std::endl << std::flush;
                     }
                 }
 
@@ -413,11 +422,11 @@ class DefaultLogger : public Logger {
                 }
 
                 /// Write a message into the output stream
-                virtual void write(const time_t& time, const std::string& message, Level level, Category category,
+                virtual void write(const time_t& time, const std::string& physicsWorldName, const std::string& message, Level level, Category category,
                                    const char* filename, int lineNumber) override {
 
                     if (static_cast<int>(level) <= static_cast<int>(maxLevelFlag)) {
-                        mOutputStream << formatter->format(time, message, level, category, filename, lineNumber) << std::endl << std::flush;
+                        mOutputStream << formatter->format(time, physicsWorldName, message, level, category, filename, lineNumber) << std::endl << std::flush;
                     }
                 }
 
@@ -469,7 +478,7 @@ class DefaultLogger : public Logger {
         void removeAllDestinations();
 
         /// Log something
-        virtual void log(Level level, Category category, const std::string& message, const char* filename, int lineNumber) override;
+        virtual void log(Level level, const std::string& physicsWorldName, Category category, const std::string& message, const char* filename, int lineNumber) override;
 
         // ---------- Friendship ---------- //
 
@@ -489,7 +498,5 @@ namespace std {
     }
   };
 }
-
-#endif
 
 #endif

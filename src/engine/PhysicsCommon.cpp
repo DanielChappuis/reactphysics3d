@@ -28,6 +28,9 @@
 
 using namespace reactphysics3d;
 
+// Static variables
+Logger* PhysicsCommon::mLogger = nullptr;
+
 /// Constructor
 PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
               : mMemoryManager(baseMemoryAllocator),
@@ -36,10 +39,7 @@ PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
                 mConvexMeshShapes(mMemoryManager.getHeapAllocator()), mConcaveMeshShapes(mMemoryManager.getHeapAllocator()),
                 mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mPolyhedronMeshes(mMemoryManager.getHeapAllocator()),
                 mTriangleMeshes(mMemoryManager.getHeapAllocator()),
-#ifdef IS_LOGGING_ACTIVE
-                mLoggers(mMemoryManager.getHeapAllocator()),
-#endif
-                mProfilers(mMemoryManager.getHeapAllocator()) {
+                mProfilers(mMemoryManager.getHeapAllocator()), mDefaultLoggers(mMemoryManager.getHeapAllocator()) {
 
 }
 
@@ -98,15 +98,10 @@ void PhysicsCommon::release() {
         destroyTriangleMesh(*it);
     }
 
-// If logging is enabled
-#ifdef IS_LOGGING_ACTIVE
-
-    // Destroy the loggers
-    for (auto it = mLoggers.begin(); it != mLoggers.end(); ++it) {
+    // Destroy the default loggers
+    for (auto it = mDefaultLoggers.begin(); it != mDefaultLoggers.end(); ++it) {
         destroyDefaultLogger(*it);
     }
-
-#endif
 
 // If profiling is enabled
 #ifdef IS_PROFILING_ACTIVE
@@ -121,39 +116,20 @@ void PhysicsCommon::release() {
 }
 
 // Create and return an instance of PhysicsWorld
-PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings, Logger* logger, Profiler* profiler) {
+PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings) {
+
+    Profiler* profiler = nullptr;
 
 #ifdef IS_PROFILING_ACTIVE
 
-    // If the user has not provided its own profiler, we create one
-    if (profiler == nullptr) {
+    profiler = createProfiler();
 
-        profiler = createProfiler();
-
-        // Add a destination file for the profiling data
-        profiler->addFileDestination("rp3d_profiling_" + worldSettings.worldName + ".txt", Profiler::Format::Text);
-    }
+    // Add a destination file for the profiling data
+    profiler->addFileDestination("rp3d_profiling_" + worldSettings.worldName + ".txt", Profiler::Format::Text);
 
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-
-    // If the user has not provided its own logger, we create one
-    if (logger == nullptr) {
-
-       DefaultLogger* defaultLogger = createDefaultLogger();
-
-        // Add a log destination file
-        uint logLevel = static_cast<uint>(Logger::Level::Information) | static_cast<uint>(Logger::Level::Warning) |
-                static_cast<uint>(Logger::Level::Error);
-        defaultLogger->addFileDestination("rp3d_log_" + worldSettings.worldName + ".html", logLevel, DefaultLogger::Format::HTML);
-
-        logger = defaultLogger;
-    }
-
-#endif
-
-    PhysicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(PhysicsWorld))) PhysicsWorld(mMemoryManager, worldSettings, logger, profiler);
+    PhysicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(PhysicsWorld))) PhysicsWorld(mMemoryManager, worldSettings, profiler);
 
     mPhysicsWorlds.add(world);
 
@@ -374,15 +350,12 @@ void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
    mTriangleMeshes.remove(triangleMesh);
 }
 
-// If logging is enabled
-#ifdef IS_LOGGING_ACTIVE
-
 // Create and return a new logger
 DefaultLogger* PhysicsCommon::createDefaultLogger() {
 
     DefaultLogger* logger = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(DefaultLogger))) DefaultLogger(mMemoryManager.getHeapAllocator());
 
-    mLoggers.add(logger);
+    mDefaultLoggers.add(logger);
 
     return logger;
 }
@@ -396,10 +369,8 @@ void PhysicsCommon::destroyDefaultLogger(DefaultLogger* logger) {
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, logger, sizeof(DefaultLogger));
 
-   mLoggers.remove(logger);
+   mDefaultLoggers.remove(logger);
 }
-
-#endif
 
 // If profiling is enabled
 #ifdef IS_PROFILING_ACTIVE

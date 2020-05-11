@@ -235,12 +235,6 @@ class PhysicsWorld {
         Profiler* mProfiler;
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-
-        /// Logger
-        Logger* mLogger;
-#endif
-
         /// Total number of worlds
         static uint mNbWorlds;
 
@@ -287,8 +281,7 @@ class PhysicsWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings = WorldSettings(),
-                      Logger* logger = nullptr, Profiler* profiler = nullptr);
+        PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings = WorldSettings(), Profiler* profiler = nullptr);
 
         /// Notify the world if a body is disabled (slepping or inactive) or not
         void setBodyDisabled(Entity entity, bool isDisabled);
@@ -412,7 +405,7 @@ class PhysicsWorld {
         bool isGravityEnabled() const;
 
         /// Enable/Disable the gravity
-        void setIsGratityEnabled(bool isGravityEnabled);
+        void setIsGravityEnabled(bool isGravityEnabled);
 
         /// Return true if the sleeping technique is enabled
         bool isSleepingEnabled() const;
@@ -472,13 +465,6 @@ class PhysicsWorld {
 
         /// Return a reference to the profiler
         Profiler* getProfiler();
-
-#endif
-
-#ifdef IS_LOGGING_ACTIVE
-
-        /// Return a reference to the logger
-        Logger* getLogger();
 
 #endif
 
@@ -610,18 +596,6 @@ inline Profiler* PhysicsWorld::getProfiler() {
 
 #endif
 
-#ifdef IS_LOGGING_ACTIVE
-
-// Return a pointer to the logger
-/**
- * @return A pointer to the logger
- */
-inline Logger* PhysicsWorld::getLogger() {
-    return mLogger;
-}
-
-#endif
-
 // Get the number of iterations for the velocity constraint solver
 /**
  * @return The number of iterations of the velocity constraint solver
@@ -630,36 +604,12 @@ inline uint PhysicsWorld::getNbIterationsVelocitySolver() const {
     return mNbVelocitySolverIterations;
 }
 
-// Set the number of iterations for the velocity constraint solver
-/**
- * @param nbIterations Number of iterations for the velocity solver
- */
-inline void PhysicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
-
-    mNbVelocitySolverIterations = nbIterations;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Set nb iterations velocity solver to " + std::to_string(nbIterations),  __FILE__, __LINE__);
-}
-
 // Get the number of iterations for the position constraint solver
 /**
  * @return The number of iterations of the position constraint solver
  */
 inline uint PhysicsWorld::getNbIterationsPositionSolver() const {
     return mNbPositionSolverIterations;
-}
-
-// Set the number of iterations for the position constraint solver
-/**
- * @param nbIterations Number of iterations for the position solver
- */
-inline void PhysicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
-
-    mNbPositionSolverIterations = nbIterations;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Set nb iterations position solver to " + std::to_string(nbIterations),  __FILE__, __LINE__);
 }
 
 // Set the position correction technique used for contacts
@@ -698,36 +648,12 @@ inline Vector3 PhysicsWorld::getGravity() const {
     return mConfig.gravity;
 }
 
-// Set the gravity vector of the world
-/**
- * @param gravity The gravity vector (in meter per seconds squared)
- */
-inline void PhysicsWorld::setGravity(Vector3& gravity) {
-
-    mConfig.gravity = gravity;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: Set gravity vector to " + gravity.to_string(),  __FILE__, __LINE__);
-}
-
 // Return if the gravity is enaled
 /**
  * @return True if the gravity is enabled in the world
  */
 inline bool PhysicsWorld::isGravityEnabled() const {
     return mIsGravityEnabled;
-}
-
-// Enable/Disable the gravity
-/**
- * @param isGravityEnabled True if you want to enable the gravity in the world
- *                         and false otherwise
- */
-inline void PhysicsWorld::setIsGratityEnabled(bool isGravityEnabled) {
-    mIsGravityEnabled = isGravityEnabled;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")),  __FILE__, __LINE__);
 }
 
 // Return true if the sleeping technique is enabled
@@ -746,21 +672,6 @@ inline decimal PhysicsWorld::getSleepLinearVelocity() const {
     return mSleepLinearVelocity;
 }
 
-// Set the sleep linear velocity.
-/// When the velocity of a body becomes smaller than the sleep linear/angular
-/// velocity for a given amount of time, the body starts sleeping and does not need
-/// to be simulated anymore.
-/**
- * @param sleepLinearVelocity The sleep linear velocity (in meters per second)
- */
-inline void PhysicsWorld::setSleepLinearVelocity(decimal sleepLinearVelocity) {
-    assert(sleepLinearVelocity >= decimal(0.0));
-    mSleepLinearVelocity = sleepLinearVelocity;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: sleepLinearVelocity= " + std::to_string(sleepLinearVelocity),  __FILE__, __LINE__);
-}
-
 // Return the current sleep angular velocity
 /**
  * @return The sleep angular velocity (in radian per second)
@@ -769,39 +680,12 @@ inline decimal PhysicsWorld::getSleepAngularVelocity() const {
     return mSleepAngularVelocity;
 }
 
-// Set the sleep angular velocity.
-/// When the velocity of a body becomes smaller than the sleep linear/angular
-/// velocity for a given amount of time, the body starts sleeping and does not need
-/// to be simulated anymore.
-/**
- * @param sleepAngularVelocity The sleep angular velocity (in radian per second)
- */
-inline void PhysicsWorld::setSleepAngularVelocity(decimal sleepAngularVelocity) {
-    assert(sleepAngularVelocity >= decimal(0.0));
-    mSleepAngularVelocity = sleepAngularVelocity;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: sleepAngularVelocity= " + std::to_string(sleepAngularVelocity),  __FILE__, __LINE__);
-}
-
 // Return the time a body is required to stay still before sleeping
 /**
  * @return Time a body is required to stay still before sleeping (in seconds)
  */
 inline decimal PhysicsWorld::getTimeBeforeSleep() const {
     return mTimeBeforeSleep;
-}
-
-// Set the time a body is required to stay still before sleeping
-/**
- * @param timeBeforeSleep Time a body is required to stay still before sleeping (in seconds)
- */
-inline void PhysicsWorld::setTimeBeforeSleep(decimal timeBeforeSleep) {
-    assert(timeBeforeSleep >= decimal(0.0));
-    mTimeBeforeSleep = timeBeforeSleep;
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::World,
-             "Physics World: timeBeforeSleep= " + std::to_string(timeBeforeSleep),  __FILE__, __LINE__);
 }
 
 // Set an event listener object to receive events callbacks.

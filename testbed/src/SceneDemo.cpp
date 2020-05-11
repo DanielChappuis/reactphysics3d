@@ -618,7 +618,7 @@ void SceneDemo::updateEngineSettings() {
     if (mIsPhysicsWorldSimulated) {
 
         // Update the physics engine parameters
-        mPhysicsWorld->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
+        mPhysicsWorld->setIsGravityEnabled(mEngineSettings.isGravityEnabled);
         rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
                          mEngineSettings.gravity.z);
         mPhysicsWorld->setGravity(gravity);

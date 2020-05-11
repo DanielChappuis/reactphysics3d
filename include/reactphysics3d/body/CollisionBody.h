@@ -62,12 +62,6 @@ class CollisionBody {
         /// Reference to the world the body belongs to
         PhysicsWorld& mWorld;
 
-#ifdef IS_LOGGING_ACTIVE
-
-        /// Logger
-        Logger* mLogger;
-#endif
-
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Pointer to the profiler
@@ -163,12 +157,6 @@ class CollisionBody {
         /// Return the body local-space coordinates of a vector given in the world-space coordinates
         Vector3 getLocalVector(const Vector3& worldVector) const;
 
-#ifdef IS_LOGGING_ACTIVE
-
-        /// Set the logger
-        void setLogger(Logger* logger);
-#endif
-
 #ifdef IS_PROFILING_ACTIVE
 
 		/// Set the profiler
@@ -201,15 +189,6 @@ inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
 inline Entity CollisionBody::getEntity() const {
     return mEntity;
 }
-
-#ifdef IS_LOGGING_ACTIVE
-
-// Set the logger
-inline void CollisionBody::setLogger(Logger* logger) {
-    mLogger = logger;
-}
-
-#endif
 
 #ifdef IS_PROFILING_ACTIVE
 

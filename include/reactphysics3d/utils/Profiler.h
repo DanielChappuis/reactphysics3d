@@ -310,15 +310,16 @@ class Profiler {
 		/// Destroy the profiler (release the memory)
 		void destroy();
 
+
+    public :
+
+        // -------------------- Methods -------------------- //
+
         /// Constructor
         Profiler();
 
         /// Destructor
         ~Profiler();
-
-    public :
-
-        // -------------------- Methods -------------------- //
 
         /// Method called when we want to start profiling a block of code.
         void startProfilingBlock(const char *name);

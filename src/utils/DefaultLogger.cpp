@@ -23,8 +23,6 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifdef IS_LOGGING_ACTIVE
-
 // Libraries
 #include <reactphysics3d/utils/DefaultLogger.h>
 #include <reactphysics3d/memory/MemoryManager.h>
@@ -94,7 +92,7 @@ void DefaultLogger::removeAllDestinations() {
 }
 
 // Log something
-void DefaultLogger::log(Level level, Category category, const std::string& message, const char* filename, int lineNumber) {
+void DefaultLogger::log(Level level, const std::string& physicsWorldName, Category category, const std::string& message, const char* filename, int lineNumber) {
 
     // Get current time
     auto now = std::chrono::system_clock::now();
@@ -105,10 +103,8 @@ void DefaultLogger::log(Level level, Category category, const std::string& messa
     // For each destination
     for (auto it = mDestinations.begin(); it != mDestinations.end(); ++it) {
 
-        (*it)->write(time, message, level, category, filename, lineNumber);
+        (*it)->write(time, physicsWorldName, message, level, category, filename, lineNumber);
     }
 
     mMutex.unlock();
 }
-
-#endif

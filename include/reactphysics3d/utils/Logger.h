@@ -26,9 +26,6 @@
 #ifndef REACTPHYSICS3D_LOGGER_H
 #define REACTPHYSICS3D_LOGGER_H
 
-// If logging is enabled
-#ifdef IS_LOGGING_ACTIVE
-
 // Libraries
 #include <reactphysics3d/containers/List.h>
 #include <reactphysics3d/containers/Map.h>
@@ -91,7 +88,7 @@ class Logger {
         virtual ~Logger() = default;
 
         /// Log something
-        virtual void log(Level level, Category category, const std::string& message, const char* filename, int lineNumber)=0;
+        virtual void log(Level level, const std::string& physicsWorldName, Category category, const std::string& message, const char* filename, int lineNumber)=0;
 
         // ---------- Friendship ---------- //
 
@@ -99,16 +96,5 @@ class Logger {
 };
 
 }
-
-// Use this macro to log something
-#define RP3D_LOG(logger, level, category, message, filename, lineNumber) logger->log(level, category, message, filename, lineNumber)
-
-// If the logging is not enabled
-#else
-
-// Empty macro in case logs are not enabled
-#define RP3D_LOG(logger, level, category, message, filename, lineNumber)
-
-#endif
 
 #endif
