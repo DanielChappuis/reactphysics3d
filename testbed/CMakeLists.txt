@@ -4,16 +4,35 @@ cmake_minimum_required(VERSION 3.8)
 # Project configuration
 project(Testbed)
 
-add_subdirectory(nanogui/)
+# Disable building extras of nanogui we won't need (pure C++ project)
+set(NANOGUI_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
+set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
+set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
+
+# ---- Make sure to recursively clone all the git submodules for external libraries (nanogui) --- #
+find_package(Git QUIET)
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    # Update submodules as needed
+    option(CLONE_GIT_SUBMODULES "Check submodules during build" ON)
+    if(CLONE_GIT_SUBMODULES)
+        message(STATUS "Git Submodules update")
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+        endif()
+    endif()
+endif()
+
+# Add the configurations from nanogui
+add_subdirectory(extern/nanogui)
 
 # Copy the shaders used for the demo into the build directory
 file(COPY "shaders/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/shaders/")
 
 # Copy the meshes used for the demo into the build directory
 file(COPY "meshes/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/meshes/")
-
-# Headers
-include_directories("src/" "nanogui/include/" "opengl-framework/src/" "common/" "scenes/" ${NANOGUI_EXTRA_INCS})
 
 # OpenGLFramework source files
 set(OPENGLFRAMEWORK_SOURCES
@@ -120,15 +139,29 @@ set(VS_USERFILE_WORKING_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
 set(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
 configure_file(VisualStudioUserTemplate.user ${USER_FILE} @ONLY)
 
-# Compile definitions
-add_definitions(${NANOGUI_EXTRA_DEFS})
-
 # Create the executable
 add_executable(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${OPENGLFRAMEWORK_SOURCES})
 
-# Enable C++11 features
-set_property(TARGET testbed PROPERTY CXX_STANDARD 11)
-set_property(TARGET testbed PROPERTY CXX_STANDARD_REQUIRED ON)
+# Headers
+target_include_directories(testbed PRIVATE
+              $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+              $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/opengl-framework/src>
+              $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
+              $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/scenes>
+              $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/extern/nanogui/include>
+)
+foreach(p ${NANOGUI_EXTRA_INCS})
+    target_include_directories(testbed PRIVATE $<1:${p}>)
+endforeach()
+
+
+# Compile definitions
+target_compile_definitions(testbed PRIVATE ${NANOGUI_EXTRA_DEFS})
+
+# C++17 compiler features
+target_compile_features(testbed PUBLIC cxx_std_17)
+set_target_properties(testbed PROPERTIES CXX_EXTENSIONS OFF)
 
 # Link with libraries
 target_link_libraries(testbed reactphysics3d nanogui ${NANOGUI_EXTRA_LIBS})
+

@@ -53,9 +53,9 @@ int main(int argc, char** argv) {
 
         // Create and start the testbed application
         nanogui::ref<TestbedApplication> application = new TestbedApplication(isFullscreen, windowWidth, windowHeight);
-        application->setVisible(true);
+        application->set_visible(true);
 
-        nanogui::mainloop();
+        nanogui::mainloop(10);
     }
 
     nanogui::shutdown();
