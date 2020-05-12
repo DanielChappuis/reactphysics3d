@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 # Project configuration
-project(REACTPHYSICS3D LANGUAGES CXX)
+project(ReactPhysics3D VERSION 0.7.1 LANGUAGES CXX)
 
 # In order to install libraries into correct locations on all platforms.
 include(GNUInstallDirs)
@@ -245,6 +245,10 @@ set (REACTPHYSICS3D_SOURCES
 # Create the library
 add_library(reactphysics3d ${REACTPHYSICS3D_HEADERS} ${REACTPHYSICS3D_SOURCES})
 
+# Creates an Alias Target, such that "ReactPhysics3D::reactphysics3d" can be used
+# to refer to "reactphysics3d" in subsequent commands
+add_library(ReactPhysics3D::reactphysics3d ALIAS reactphysics3d)
+
 # C++11 compiler features
 target_compile_features(reactphysics3d PUBLIC cxx_std_11)
 set_target_properties(reactphysics3d PROPERTIES CXX_EXTENSIONS OFF)
@@ -252,7 +256,7 @@ set_target_properties(reactphysics3d PROPERTIES CXX_EXTENSIONS OFF)
 # Compile with warning messages
 target_compile_options(reactphysics3d PRIVATE -Wall)
 
-# Headers
+# Library headers
 target_include_directories(reactphysics3d PUBLIC
               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
               $<INSTALL_INTERFACE:include>
@@ -286,10 +290,43 @@ set_target_properties(reactphysics3d  PROPERTIES
 
 # Install target (install library only, not headers)
 install(TARGETS reactphysics3d
+        EXPORT reactphysics3d-targets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# Install the headers separately (because INSTALL(TARGETS ... PUBLIC_HEADER DESTINATION ...) does not support subfolders
+# Install the headers separately (because INSTALL(TARGETS ... PUBLIC_HEADER DESTINATION ...) does
+# not support subfolders
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# This is required so that the exported target has the name JSONUtils and not jsonutils
+set_target_properties(reactphysics3d PROPERTIES EXPORT_NAME ReactPhysics3D)
+
+# Give CMake access to the version number of the library so that the user is able to use the find_package() function
+# with a given version number to select the version of the library he/she wants to use. This will create a
+# "ReactPhysics3DConfigVersion.cmake" file that will later be copied into the install destination folder (see below)
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/ReactPhysics3DConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+# When the user runs "make install", this will export the targets into
+# a "ReactPhysics3DConfig.cmake" file in the install destination
+install(EXPORT reactphysics3d-targets
+    FILE
+        ReactPhysics3DConfig.cmake
+    NAMESPACE
+        ReactPhysics3D::
+    DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/ReactPhysics3D
+)
+
+# When the user runs "make install", this will copy the "ReactPhysics3DConfigVersion.cmake" file
+# we have previously created into the install destination
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/ReactPhysics3DConfigVersion.cmake
+    DESTINATION lib/cmake/ReactPhysics3D
+)
