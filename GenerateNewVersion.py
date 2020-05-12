@@ -35,6 +35,11 @@ file.write(newVersion + "\n")
 file.close()
 print("Version number has been updated in VERSION file")        
 
+# Update the RP3D version number in the CMakeLists.txt file 
+findReplaceText("./", r'(ReactPhysics3D[ \t]+VERSION[ \t]+)[\d\.]+', r'\g<1>' + newVersion, "CMakeLists.txt")
+findReplaceText("./", r'([ \t]VERSION[ \t]+)"[\d\.]+"', r'\g<1>"' + newVersion + '"', "CMakeLists.txt")
+print("Version number has been updated in CMakeLists.txt file")        
+
 # Update the RP3D version number in the documentation/API/Doxyfile file 
 findReplaceText("documentation/API/", r'(PROJECT_NUMBER[ \t]+=[ \t]+)"[\d\.]+"', r'\g<1>"' + newVersion + '"', "Doxyfile")
 print("Version number has been updated in documentation/API/Doxyfile file")        
@@ -59,3 +64,5 @@ print("Copyright date has been updated in LICENSE file")
 findReplaceText("src/", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "*.h")
 findReplaceText("src/", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "*.cpp")
 print("Copyright date in license has been updated in all source code files")        
+
+print("WARNING: Do not forget to manually update the SOVERSION number in the CMakeLists.txt file")        
