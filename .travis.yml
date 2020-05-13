@@ -9,6 +9,7 @@ matrix:
   # ----- Linux / GCC -----
   include:
     - os: linux
+      name: "Linux / GCC (Debug)"
       addons:
         apt:
           sources:
@@ -19,6 +20,7 @@ matrix:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
 
     - os: linux
+      name: "Linux / GCC (Release)"
       addons:
         apt:
           sources:
