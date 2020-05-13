@@ -335,7 +335,7 @@ namespace std {
 
     size_t operator()(const reactphysics3d::DebugRenderer::DebugItem& debugItem) const {
 
-        return std::hash<reactphysics3d::uint32>{}(static_cast<uint>(debugItem));
+        return std::hash<reactphysics3d::uint32>{}(static_cast<unsigned int>(debugItem));
     }
   };
 }
