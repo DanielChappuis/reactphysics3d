@@ -256,11 +256,11 @@ script:
     - if [ "${VALGRIND}" == "True" ]; then
         valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 test/tests;
       fi
-    - make install
-    - mkdir helloworld_build_directory
-    - cd helloworld_build_directory
-    - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../helloworld
-    - make -j2
+      #- make install
+      #- mkdir helloworld_build_directory
+      #- cd helloworld_build_directory
+      #- cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../helloworld
+      #- make -j2
 
 after_success:
  
