@@ -99,7 +99,7 @@ matrix:
     - os: osx
       osx_image: xcode11
       env:
-       - MATRIX_EVAL="brew install gcc8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+       - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
 
     #- os: osx
     # osx_image: xcode9.3
