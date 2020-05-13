@@ -9,7 +9,7 @@ matrix:
   # ----- Linux / GCC -----
   include:
     - os: linux
-      name: "Linux / GCC (Debug)"
+      name: "Linux / GCC (Debug)"
       addons:
         apt:
           sources:
@@ -20,7 +20,7 @@ matrix:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
 
     - os: linux
-      name: "Linux / GCC (Release)"
+      name: "Linux / GCC (Release)"
       addons:
         apt:
           sources:
@@ -42,7 +42,7 @@ matrix:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
 
     - os: linux
-      name: "Linux / GCC (Release, Double Precision)"
+      name: "Linux / GCC (Release, Double Precision)"
       addons:
         apt:
           sources:
@@ -52,7 +52,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
     - os: linux
-      name: "Linux / GCC (Debug, Profiler)"
+      name: "Linux / GCC (Debug, Profiler)"
       addons:
         apt:
           sources:
@@ -62,7 +62,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" Profiler="True"
     - os: linux
-      name: "Linux / GCC (Release, Profiler)"
+      name: "Linux / GCC (Release, Profiler)"
       addons:
         apt:
           sources:
@@ -72,7 +72,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" Profiler="True"
     - os: linux
-      name: "Linux / GCC (Release, Code Coverage)"
+      name: "Linux / GCC (Release, Code Coverage)"
       addons:
         apt:
           sources:
@@ -83,7 +83,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" CODE_COVERAGE="True"
     - os: linux
-      name: "Linux / GCC (Debug, Valgrind)"
+      name: "Linux / GCC (Debug, Valgrind)"
       addons:
         apt:
           sources:
@@ -96,39 +96,39 @@ matrix:
 
     # ----- OS X / GCC -----
     - os: osx
-      name: "OS X / GCC (Debug)"
+      name: "OS X / GCC (Debug)"
       osx_image: xcode11
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
     - os: osx
-      name: "OS X / GCC (Release)"
+      name: "OS X / GCC (Release)"
       osx_image: xcode11
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
     - os: osx
-      name: "OS X / GCC (Debug, Double Precision)"
+      name: "OS X / GCC (Debug, Double Precision)"
       osx_image: xcode11
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
     - os: osx
-      name: "OS X / GCC (Release, Double Precision)"
+      name: "OS X / GCC (Release, Double Precision)"
       osx_image: xcode11
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
     - os: osx
-      name: "OS X / GCC (Debug, Profiler)"
+      name: "OS X / GCC (Debug, Profiler)"
       osx_image: xcode11
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" PROFILER="True"
     - os: osx
-      name: "OS X / GCC (Release, Profiler)"
+      name: "OS X / GCC (Release, Profiler)"
       osx_image: xcode11
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" PROFILER="True"
 
     # ----- Linux / Clang -----
     - os: linux
-      name: "Linux / Clang (Debug)"
+      name: "Linux / Clang (Debug)"
       addons:
         apt:
           sources:
@@ -141,7 +141,7 @@ matrix:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
 
     - os: linux
-      name: "Linux / Clang (Release)"
+      name: "Linux / Clang (Release)"
       addons:
         apt:
           sources:
@@ -154,7 +154,7 @@ matrix:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
 
     - os: linux
-      name: "Linux / Clang (Debug, Double Precision)"
+      name: "Linux / Clang (Debug, Double Precision)"
       addons:
         apt:
           sources:
@@ -167,7 +167,7 @@ matrix:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
 
     - os: linux
-      name: "Linux / Clang (Release, Double Precision)"
+      name: "Linux / Clang (Release, Double Precision)"
       addons:
         apt:
           sources:
@@ -179,7 +179,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
     - os: linux
-      name: "Linux / Clang (Debug, Double Precision, Profiler)"
+      name: "Linux / Clang (Debug, Double Precision, Profiler)"
       addons:
         apt:
           sources:
@@ -191,7 +191,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True" PROFILER="True"
     - os: linux
-      name: "Linux / Clang (Release, Double Precision, Profiler)"
+      name: "Linux / Clang (Release, Double Precision, Profiler)"
       addons:
         apt:
           sources:
@@ -205,13 +205,13 @@ matrix:
 
     # ----- OS X / Clang -----
     - os: osx
-      name: "OS X / Clang (Debug)"
+      name: "OS X / Clang (Debug)"
       osx_image: xcode11
       env:
         - BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
 
     - os: osx
-      name: "OS X / Clang (Release)"
+      name: "OS X / Clang (Release)"
       osx_image: xcode11
       env:
         - BUILD_TYPE="Release" DOUBLE_PRECISION="False"
@@ -223,19 +223,19 @@ matrix:
         - BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
 
     - os: osx
-      name: "OS X / Clang (Release, Double Precision)"
+      name: "OS X / Clang (Release, Double Precision)"
       osx_image: xcode11
       env:
         - BUILD_TYPE="Release" DOUBLE_PRECISION="True"
 
     - os: osx
-      name: "OS X / Clang (Debug, Profiler)"
+      name: "OS X / Clang (Debug, Profiler)"
       osx_image: xcode11
       env:
         - BUILD_TYPE="Debug" DOUBLE_PRECISION="False" PROFILER="True"
 
     - os: osx
-      name: "OS X / Clang (Release, Profiler)"
+      name: "OS X / Clang (Release, Profiler)"
       osx_image: xcode11
       env:
         - BUILD_TYPE="Release" DOUBLE_PRECISION="False" PROFILER="True"
@@ -256,11 +256,6 @@ script:
     - if [ "${VALGRIND}" == "True" ]; then
         valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 test/tests;
       fi
-      #- make install
-      #- mkdir helloworld_build_directory
-      #- cd helloworld_build_directory
-      #- cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../helloworld
-      #- make -j2
 
 after_success:
  
