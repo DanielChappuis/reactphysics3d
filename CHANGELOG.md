@@ -1,6 +1,6 @@
 # Changelog
 
-## Develop
+## Version 0.8.0
 
 ### Added
 
@@ -25,10 +25,12 @@
  - In the EventListener, the onContact() and onTrigger() method now reports the type of event (start, stay, exit) for each contact. This way the user can know whether it's a new contact or not or when two colliders are not in contact anymore. 
  - A DebugRenderer class has been added in order to display debug info (colliders, AABBs, contacts, ...) using graphics primities (lines, triangles).
  - A RigidBody::applyForceAtLocalPosition() method has been added to apply a force at a given position of the rigid body in local-space.
+ - The CMakeLists.txt file of the library has been refactored to use modern CMake. The targets are now exported when you install the library so that you can import the library with the find_package(ReactPhysics3D) function in your own CMakeLists.txt file
+ - A Hello World project has been added to show a very simple project that uses the ReactPhysics3D library
 
 ### Fixed
 
- - Issues [#125](https://github.com/DanielChappuis/reactphysics3d/issues/125) and [#106](https://github.com/DanielChappuis/reactphysics3d/issues/106) have been fixed.
+ - Issues [#125](https://github.com/DanielChappuis/reactphysics3d/issues/125) and [#106](https://github.com/DanielChappuis/reactphysics3d/issues/106) with CMake install of the library have been fixed
  - Issue [#141](https://github.com/DanielChappuis/reactphysics3d/issues/141) with limits of hinge and slider joints has been fixed.
 
 ### Changed
