@@ -14,9 +14,9 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
 
     - os: linux
       addons:
@@ -24,9 +24,9 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
 
     - os: linux
       addons:
@@ -34,9 +34,9 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
 
     - os: linux
       addons:
@@ -44,47 +44,47 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" Profiler="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" Profiler="True"
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False" Profiler="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" Profiler="True"
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
             - lcov
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Release" DOUBLE_PRECISION="False" CODE_COVERAGE="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" CODE_COVERAGE="True"
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-7
+            - g++-8
             - valgrind
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" VALGRIND="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" VALGRIND="True"
 
    
     # This is commented until Travis fixes this issue with GCC install in OSX: https://github.com/travis-ci/travis-ci/issues/8826
