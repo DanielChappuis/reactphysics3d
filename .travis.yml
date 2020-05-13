@@ -94,13 +94,13 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" VALGRIND="True"
 
-   
     # This is commented until Travis fixes this issue with GCC install in OSX: https://github.com/travis-ci/travis-ci/issues/8826
     # ----- OS X / GCC -----
     - os: osx
-    - osx_image: xcode11
-    - env:
+      osx_image: xcode11
+      env:
        - MATRIX_EVAL="brew update && brew install gcc && CC=gcc-7 && CXX=g++-7" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+
     #- os: osx
     # osx_image: xcode9.3
     #  env:
