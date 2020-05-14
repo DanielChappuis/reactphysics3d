@@ -115,10 +115,12 @@ matrix:
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
     - os: osx
+      name: "OS X / GCC (Debug, Profiler)"
       osx_image: xcode11
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" PROFILER="True"
     - os: osx
+      name: "OS X / GCC (Release, Profiler)"
       osx_image: xcode11
       env:
        - MATRIX_EVAL="brew install gcc@8 && CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" PROFILER="True"
