@@ -256,6 +256,7 @@ script:
     - if [ "${VALGRIND}" == "True" ]; then
         valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 test/tests;
       fi
+    - make install
     - cd ../
     - mkdir build_helloworld
     - cd build_helloworld
