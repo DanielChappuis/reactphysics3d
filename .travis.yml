@@ -17,7 +17,7 @@ matrix:
           packages:
             - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Debug DOUBLE_PRECISION=False"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Debug && DOUBLE_PRECISION=False"
 
     - os: linux
       name: "Linux / GCC (Release)"
@@ -28,7 +28,7 @@ matrix:
           packages:
             - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Release && DOUBLE_PRECISION=False"
 
     - os: linux
       name: "Linux / GCC (Debug, Double Precision)"
@@ -39,7 +39,7 @@ matrix:
           packages:
             - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Debug && DOUBLE_PRECISION=True"
 
     - os: linux
       name: "Linux / GCC (Release, Double Precision)"
@@ -50,7 +50,7 @@ matrix:
           packages:
             - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Release && DOUBLE_PRECISION=True"
     - os: linux
       name: "Linux / GCC (Debug, Profiler)"
       addons:
@@ -60,7 +60,7 @@ matrix:
           packages:
             - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" Profiler="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Debug && DOUBLE_PRECISION=False && Profiler=True"
     - os: linux
       name: "Linux / GCC (Release, Profiler)"
       addons:
@@ -70,7 +70,7 @@ matrix:
           packages:
             - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" Profiler="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Release && DOUBLE_PRECISION=False && Profiler="True"
     - os: linux
       name: "Linux / GCC (Release, Code Coverage)"
       addons:
@@ -81,7 +81,7 @@ matrix:
             - g++-8
             - lcov
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" CODE_COVERAGE="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Release && DOUBLE_PRECISION=False && CODE_COVERAGE=True"
     - os: linux
       name: "Linux / GCC (Debug, Valgrind)"
       addons:
@@ -92,7 +92,7 @@ matrix:
             - g++-8
             - valgrind
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" VALGRIND="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && BUILD_TYPE=Debug && DOUBLE_PRECISION=False && VALGRIND=True"
 
     # ----- OS X / GCC -----
     - os: osx
