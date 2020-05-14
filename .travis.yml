@@ -72,7 +72,7 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" Profiler="True"
     - os: linux
-      name: "Linux / GCC (Release, Code Coverage)"
+      name: "Linux / GCC (Debug, Code Coverage)"
       addons:
         apt:
           sources:
@@ -81,7 +81,7 @@ matrix:
             - g++-8
             - lcov
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Release" DOUBLE_PRECISION="False" CODE_COVERAGE="True"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False" CODE_COVERAGE="True"
     - os: linux
       name: "Linux / GCC (Debug, Valgrind)"
       addons:
