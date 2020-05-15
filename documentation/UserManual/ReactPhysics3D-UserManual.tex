@@ -1000,8 +1000,8 @@ int indices[3 * nbTriangles] = ...;
 rp3d::TriangleVertexArray* triangleArray =
 new rp3d::TriangleVertexArray(nbVertices, vertices, 3 * sizeof(float), nbTriangles,
 indices, 3 * sizeof(int),
-rp3d::TriangleVertexArray::VERTEX_FLOAT_TYPE,
-rp3d::TriangleVertexArray::INDEX_INTEGER_TYPE);
+rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
   \end{lstlisting}
 
   \vspace{0.6cm}
@@ -1111,7 +1111,7 @@ maxHeight, heightValues, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
     \begin{lstlisting}
 // Create the sphere collision shape
 rp3d::decimal radius = rp3d::decimal(3.0)
-const rp3d::BoxShape shape(radius);
+rp3d::SphereShape shape(radius);
 
 // Transform of the collision shape
 // Place the shape at the origin of the body local-space
