@@ -8,7 +8,7 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{listings}
-\usepackage{url}
+\usepackage[obeyspaces,spaces]{url}
 \usepackage{hyperref}
 \usepackage[dvipsnames]{xcolor}
 \hypersetup{
@@ -42,6 +42,23 @@
   tabsize=2
 }
 \lstset{style=customcpp}
+
+% Customized style to display c++ source code
+\lstdefinestyle{customcmake}{
+  backgroundcolor=\color{gray!15},
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=single,
+  xleftmargin=\parindent,
+  language=bash,
+  showstringspaces=false,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\bfseries\color{purple},
+  commentstyle=\bfseries\color{gray},
+  identifierstyle=\bfseries\color{black},
+  stringstyle=\bfseries\color{blue},
+  tabsize=2
+}
 
 \input{title}
 
@@ -80,7 +97,8 @@
     \item No external libraries (do not use STL containers)
     \item Documentation (user manual and Doxygen API)
     \item Testbed application with demos
-    \item Integrated Profiler
+    \item Integrated profiler
+    \item Debugging renderer
     \item Logs
     \item Unit tests
    \end{itemize}
@@ -89,71 +107,142 @@
 
     The ReactPhysics3D library is released under the open-source ZLib license. For more information, read the "LICENSE" file.
 
-    \section{Building the library}
+    \section{Building and installing the library}
     \label{sec:building}
 
-    You should use the CMake software to generate the makefiles or the
-    project files for your IDE. CMake can be downloaded at
-    \url{http://www.cmake.org} or using your package-management program
-    (apt, yum, \dots) on Linux. Then, you will be able to compile the library to create the static library
-    file. In order to use ReactPhysics3D in your application, you can link your program with this static library.
-    If you have never used cmake before, you should read the page \url{http://www.cmake.org/cmake/help/runningcmake.html} as
+    First, you need to clone the code repository on your system with the following command: \\
+
+    \texttt{git clone https://github.com/DanielChappuis/reactphysics3d.git} \\
+
+    Note that the \emph{git} versioning software needs to be installed on your system. \\
+
+    Then, you will need to build (compile) the library and install it on your system in order to use it in your project.
+    The best way is to use CMake for that. CMake will generate the necessary files on your platform (Windows, OS X or Linux) to build
+    the library. \\
+
+    CMake can be downloaded at \url{http://www.cmake.org} or using your package-management program (apt, yum, \dots) on Linux.
+    If you have never used CMake before, you should read the page \url{http://www.cmake.org/cmake/help/runningcmake.html} as
     it contains a lot of useful information. \\
 
-    It is also possible to compile the testbed application using CMake. This application contains different
-    physics demo scenes. 
+    The remaining of this section will describe how to build and install the library with CMake. \\
 
-    \subsection{CMake using the command line (Linux and Mac OS X)}
+    \subsection{Configure and generate the native tool files}
 
-    Now, we will see how to build the ReactPhysics3D library using the CMake tool with the command line.
-    First, create a folder where you want to build the library. Then go into that folder and run
-    the \texttt{ccmake} command: \\
+    Now we need to configure CMake to tell it what you want to build. Maybe you simply want to build the library in \emph{debug} or \emph{release}
+    mode or maybe you also want to build the unit tests or the testbed application with demos. At the end of this step, CMake will generate the
+    native build tool files on your platform that you will use to build the library. For instance, it can generate a Visual Studio solution on Windows,
+    a XCode project on OS X or files for the \emph{make} command on OS X or Linux.
+
+    \subsubsection{Configure and generate with the command line (Linux and Mac OS X)}
+
+    First, we will see how to configure CMake and generate the native build tool files using the CMake tool with the command line.
+    First, you need to create a folder where you want to build the library. Then go into that folder and run the following \texttt{ccmake} command: \\
 
     \texttt{ccmake \textless path\_to\_library\_source\textgreater} \\
 
     \begin{sloppypar}
     where \texttt{\textless path\_to\_library\_source\textgreater} must be replaced
-    by the path to the \texttt{reactphysics3d-0.7.0/} folder. It is the folder that
-    contains the \texttt{CMakeLists.txt} file. Running this command will launch the CMake command line interface.
-    Hit the 'c' key to configure the project. There, you can also change some predefined variables (see section \ref{sec:cmakevariables} for more details)
-    and then, hit the 'c' key again. Once you have set all the values as you like, you can hit the 'g' key to generate the makefiles in the build directory
-    that you have created before and exit. \\
-
-    Now that you have generated the makefiles, you can compile the code to build the static library in the
-    \texttt{/lib} folder with the following command in your build directory: \\
-
+    by the path to the \path{reactphysics3d/} folder of the repository you have cloned. It is the folder that
+    contains the \texttt{CMakeLists.txt} file of ReactPhysics3D. Running this command will launch the CMake command line interface.
+    Hit the 'c' key to configure the project. There, you can also change some predefined options (see section \ref{sec:cmakevariables} for more details)
+    and then, hit the 'c' key again to configure the build. Once you have set all the values as you like, you can hit the 'g' key to generate the
+    native build tool files in the build directory that you have created before. Finally, you can exit the CMake interface. \\
     \end{sloppypar}
 
-    \texttt{make}
+    \subsubsection{Configure and generate using the CMake graphical interface (Linux, Mac OS X and Windows)}
 
-    Finally, you can use the following command to install the static library and headers on your system: \\
-
-    \texttt{make install}
-
-    \subsection{CMake using the graphical interface (Linux, Mac OS X and Windows)}
-
-     You can also use the graphical user interface of CMake. To do this,
+     If your prefer, you can use the graphical user interface of CMake instead. To do this,
      run the \texttt{cmake-gui} program. First, the program will ask you for the
-     source folder. You need to select the \texttt{reactphysics3d-0.7.0/} folder. You will also have to select a folder where you want to
-     build the library and the testbed application. Select any empty folder that
-     is on your system. Then, you can click on \texttt{Configure}. CMake will ask you to choose an IDE that is on
-     your system. For instance, you can select Visual Studio, Qt Creator, XCode, ... Then, you
-     can change the compilation options. See section \ref{sec:cmakevariables} to see what are the possible options.
-     Once this is done, click on \texttt{Configure} again and finally on \texttt{Generate}. \\
+     source folder. You need to select the \path{reactphysics3d/} folder of the repository you have cloned. You will also have to select a
+     folder where you want to
+     build the library. Select any empty folder that is on your system. Then, you can click on \texttt{Configure}. CMake will ask you to
+     choose an IDE that is on your system that will be used to compile the library. For instance, you can select Visual Studio,
+     Qt Creator, XCode, ... Then, click on the \emph{Finish} button. Then, you can change the compilation options. See
+     section \ref{sec:cmakevariables} to see what are the possible options.
+     Once this is done, click on \texttt{Configure} again and finally on \texttt{Generate} as you can see in the following picture. \\
 
-     Now, if you go into the folder you have chosen to build the
-     library, you should be able to open the project file that corresponds to your IDE and compile
-     the library. \\
+    \begin{figure}[!ht]
+        \centering
+	\includegraphics[scale=0.7]{CMakeWin.png}
+        \label{fig:cmakewin}
+    \end{figure}
 
-     \subsection{CMake Variables}
+     Now, if you go into the folder you have chosen to build the library, you should find the native build tool files that you will use to build
+     the library on your platform.
+
+     \subsection{Bulding the library}
+
+     Now, that you have generated the native build tool files on your system, you will need to build (compile) the library.
+
+     \subsubsection{Bulding the library using \emph{make} on the command line (Linux, Mac OS X)}
+
+     On Linux or Mac OS X, you can compile the library on the command line using the \emph{make} command. Go into the directory where you have generated the
+     native build tool files and run the following command: \\
+
+     \texttt{make} \\
+
+     The library will start compiling. 
+
+     \subsubsection{Bulding the library with Visual Studio (Windows)}
+
+     If you have generated the native build tool files in the previous step on Windows, you should have obtained a Visual Studio solution of ReactPhysics3D.
+     Now, you can open the Visual Studio solution (.sln file). Once Visual Studio is open, you first need to change the compilation mode to \emph{Release}
+     at the top instead of \emph{Debug}. Then, right click on the \emph{reactphysics} project in the Solution
+     Explorer and click on \emph{Build} in order to compile the library (see the following picture).
+
+    \begin{figure}[!ht]
+        \centering
+        \includegraphics[scale=0.5]{VSBuild.png}
+        \label{fig:vsbuild}
+    \end{figure}
+
+    The library will start compiling.
+
+     \subsection{Installing the library}
+
+     Now that you have compiled the library, you can install it on your system in order to put the compiled library file, the include files and the exported
+     CMake targets in a standard location on your system so that it can be easily imported into your project.
+    
+     \subsubsection{Installing the library using the \emph{make} on the command line (Linux, Mac OS X)}
+
+     On Linux or Mac OS X, you can use the \emph{make} command to install the library. You simply need to run the following command: \\
+
+     \texttt{sudo make install} \\
+
+     The library is now installed on your system. For instance, On Linux Ubuntu, the library may have been installed in the \path{/usr/local/lib/} folder
+     and the include files in the \path{/usr/local/include/} folder.
+
+     \subsubsection{Installing the library on Windows with Visual Studio}
+
+     In order to install the library on your system using Visual Studio, you need to open Visual Studio with administrator rights. This is needed in order
+     to have the correct rights to write the files in the \path{C:\Program Files (x86)\} folder on your computer for instance. To do that, type
+     \emph{Visual Studio} in the Start Menu, when Visual Studio has been found, right click on it and click on \emph{Run as administrator}. This will open
+     Visual Studio with administrator rights. \\
+     
+     Then, you need to open the Visual Studio solution (.sln file) of ReactPhysics3D that has been generated
+     previously with CMake. To do that, click on \emph{File} in the top menu of Visual Studio, then on \emph{Open} and \emph{Project/Solution...}. Then,
+     you need to select the ReactPhysics3D Visual Studio solution (.sln file) on your system. Once the solution is open, you first need to change the mode
+     at the top to \emph{Release} instead of \emph{Debug}. Then, right click on the \emph{INSTALL}
+     project in the Solution Explorer menu and click on \emph{Build} (see the following picture). This will install the ReactPhysics3D library in a
+     standard location on your system like \path{C:\Program Files (x86)\ReactPhysics3D\} for instance.
+
+    \begin{figure}
+        \centering
+        \includegraphics[scale=0.5]{VSInstall.png}
+        \label{fig:vsinstall}
+    \end{figure}
+
+    \vspace{5.0cm}
+
+     \subsection{CMake Options}
      \label{sec:cmakevariables}
 
-     You can find bellow the different CMake variables that you can set before generating the makefiles:
+     You can find bellow the different CMake options that you can set before building the library:
 
        \begin{description}
          \item[CMAKE\_BUILD\_TYPE] If this variable is set to \texttt{Debug}, the library will be compiled in debugging mode.
                                                     This mode should be used during development stage to know where things might crash.
-                                                    In debugging mode, the library might run a bit slow due to all the debugging information.
+                                                    In debugging mode, the library might run a bit slow due to all the debugging information and asserts.
                                                     However, if this variable is set to \texttt{Release}, no debugging information is stored
                                                     and therefore, it will run much faster. This mode must be used when you compile the final
                                                     release of your application.
@@ -170,41 +259,93 @@
                                                       library takes time during its execution. This variable must be set to \texttt{OFF} when you compile
 						      the final release of your application. You can find more information about the profiler in section \ref{sec:profiler}.
 
-         \item[RP3D\_LOGS\_ENABLED] Set this variable to \texttt{ON} if you want to enable the internal logger of ReactPhysics3D. Logs can be useful for debugging the application.
-		              You can find more information about the logger in section \ref{sec:logger}.
-
           \item[RP3D\_DOUBLE\_PRECISION\_ENABLED] If this variable is \texttt{ON}, the library will be compiled with double floating point precision.
                                                                     Otherwise, the library will be compiled with single precision.
        \end{description}
 
-
     \section{Using ReactPhysics3D in your application}
 
-    In order to use ReactPhysics3D in your own application, first build
-    and install the static library and headers as described above.
-    Then, in your code, you have to include
-    the ReactPhysics3D header file with the line: \\
+    If you have built and installed the ReactPhysics3D on your system with CMake as explained in the section \ref{sec:building}, it is easy to import the
+    library in your project. You probably already have a \emph{CMakeLists.txt} file for your project. Therefore, to import the ReactPhysics3D
+    library, you simply need to add the following line in the \emph{CMakeLists.txt} file of your project.
+
+    \lstset{style=customcmake}
+
+    \vspace{0.6cm}
 
     \begin{lstlisting}
-// Include the ReactPhysics3D header file
-#include "reactphysics3d.h"
+    	find_package(ReactPhysics3D REQUIRED)
+    \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    This will tell CMake to find the installed ReactPhysics3D library on your system and import the library file and headers so that you can
+    link it to your project. Note that if you are working on Windows, you might need to use the following code in your \emph{CMakeLists.txt} file
+    before calling the previous function. This will help CMake to find the installed ReactPhysics3D library on Windows. 
+
+    \vspace{0.6cm}
+
+    \begin{lstlisting}
+	if(WIN32)
+	  list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")
+	endif()
+    \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Then, you need to tell CMake that your project (executable) depends on ReactPhysics3D with the following line in your \emph{CMakeLists.txt} file: 
+
+    \vspace{0.6cm}
+
+    \begin{lstlisting}
+	target_link_libraries(helloworld ReactPhysics3D::ReactPhysics3D)
+    \end{lstlisting}
+
+    \vspace{0.6cm}
+
+   The ReactPhyscis3D repository contains a folder with an \emph{Hello World} project \href{https://github.com/DanielChappuis/reactphysics3d/tree/master/helloworld}{here}. In this folder, you can find a \emph{CMakeLists.txt} and a \emph{Main.cpp} file that show how to import and use the ReactPhysics3D library in a simple project. \\
+
+   Here is the example \emph{CMakeLists.txt} file of the \emph{Hello World} project:
+   
+    \vspace{0.6cm}
+
+    \begin{lstlisting}
+	# Minimum cmake version required
+	cmake_minimum_required(VERSION 3.8)
+
+	# Help CMake to find the installed library on Windows
+	if(WIN32)
+	  list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")
+	endif()
+
+	# Import the ReactPhysics3D library 
+	find_package(ReactPhysics3D REQUIRED)
+
+	# Project
+	project(HelloWorld)
+
+	# Create the executable
+	add_executable(helloworld Main.cpp)
+
+	# Link with the ReactPhysics3D library
+	target_link_libraries(helloworld ReactPhysics3D::ReactPhysics3D)
+    \end{lstlisting}
+
+    \lstset{style=customcpp}
+
+    \vspace{0.6cm}
+   
+    Then in your C++ source file, you need to include the main ReactPhysics3D header file with the following line: \\
+
+    \begin{lstlisting}
+// Include the main ReactPhysics3D header file
+#include <reactphysics3d/reactphysics3d.h>
   \end{lstlisting}
 
     \vspace{0.6cm}
 
-    Note that the \texttt{reactphysics3d.h} header file can be found in the
-    \texttt{src/} folder of the library. Do not forget to add the
-    \texttt{src/} folder in your include directories in order that the
-    \texttt{reactphysics3d.h} file is accessible in your code. \\
-
-    Do not forget to also link your application with the ReactPhysics3D
-    static library.  \\
-
-    Then, you should be able to compile your application using the
-    ReactPhysics3D library. \\
-
-    All the classes of the library are available in the \texttt{reactphysics3d} namespace or its shorter alias
-    \texttt{rp3d}. Therefore, you need to include this namespace into your code with the following declaration: \\
+    Also note that all the classes of the library are available in the \texttt{reactphysics3d} namespace or its shorter alias
+    \texttt{rp3d}. Therefore, you can use this namespace in your code with the following declaration: \\
 
     \begin{lstlisting}
 // Use the ReactPhysics3D namespace
@@ -213,44 +354,109 @@ using namespace reactphysics3d;
 
     \vspace{0.6cm}
 
-    You can also take a look at the examples and the API documentation to get a better idea of how to use the
-    ReactPhysics3D library.
-   
-   \subsection{Memory allocation}
+    Here is the \emph{Main.cpp} file of \emph{Hello World} project: \\
 
-   When using the ReactPhysics3D library, you will probably have to allocate new objects but the library will also allocate some objects for you. ReactPhysics3D uses a simple rule:
-   all the memory that is allocated by yourself (using the C++ \emph{new} operator for instance) will have to be destroyed by you (with the corresponding \emph{delete} operator). However, if you
-   receive a pointer to an object from a call to a ReactPhysics3D method, you have not allocated memory for this object by yourself and therefore, you are not responsible to destroy it. ReactPhysics3D
+    \begin{lstlisting}
+	// Libraries
+	#include <reactphysics3d/reactphysics3d.h>
+	#include <iostream>
+
+	// ReactPhysics3D namespace
+	using namespace reactphysics3d;
+
+	// Main function
+	int main(int argc, char** argv) {
+
+	    // First you need to create the PhysicsCommon object. This is a factory module
+	    // that you can use to create physics world and other objects. It is also responsible
+	    // for logging and memory management
+	    PhysicsCommon physicsCommon;
+
+	    // Create a physics world
+	    PhysicsWorld* world = physicsCommon.createPhysicsWorld();
+
+	    // Create a rigid body in the world
+	    Vector3 position(0, 20, 0);
+	    Quaternion orientation = Quaternion::identity();
+	    Transform transform(position, orientation);
+	    RigidBody* body = world->createRigidBody(transform);
+
+	    const decimal timeStep = 1.0f / 60.0f;
+
+	    // Step the simulation a few steps
+	    for (int i=0; i < 20; i++) {
+
+	        world->update(timeStep);
+
+	        // Ge the updated position of the body
+	        const Transform& transform = body->getTransform();
+	        const Vector3& position = transform.getPosition();
+
+	        // Display the position of the body
+	        std::cout << "Body Position: (" << position.x << ", " << position.y << ", " << position.z << ")" << std::endl;
+	    }
+
+	    return 0;
+	}
+    \end{lstlisting}
+   
+   \section{The PhysicsCommon object}
+     \label{sec:collisionworld}
+
+   The first thing you need to do when you want to use ReactPhysics3D is to instanciate the \emph{PhysicsCommon} class.
+   This main object will then be used as a factory to instanciate one or multiple physics worlds and other objects. This class is also
+   responsible for the memory management of the library. All the memory allocations are centralized into this \emph{PhysicsCommon} object.
+   This class also contains the logger for the different events that can occur. \\
+
+   In order to use ReactPhysics3D, you have to create an instance of the \emph{PhysicsCommon} class: \\
+
+   \begin{lstlisting}
+    // First you need to create the PhysicsCommon object. 
+    PhysicsCommon physicsCommon;
+   \end{lstlisting}
+
+    \vspace{0.6cm}
+
+   Then, you can use this object to instanciate a physics world for instance: \\
+
+   \begin{lstlisting}
+    // Create a physics world
+    PhysicsWorld* w = physicsCommon.createPhysicsWorld();
+   \end{lstlisting}
+
+    \vspace{0.6cm}
+
+   When you will need to add a body into your world, you will probably need to create a collider with a given type of collision shape. 
+   Again, you will need to use the \emph{PhysicsCommon} object to instantiate a collision shape as in the following example: \\
+
+   \begin{lstlisting}
+    // Instanciate a sphere collision shape
+    SphereShape* sphereShape = physicsCommon.createSphereShape(radius);
+   \end{lstlisting}
+
+   \vspace{0.6cm}
+
+   As you can see, the \emph{PhysicsCommon} object is the first thing you will need to instantiate in order to use ReactPhycsi3D in your code.
+
+   \section{Memory Management}
+
+   When using the ReactPhysics3D library, you will probably have to allocate new objects but the library will also allocate some objects for you.
+   ReactPhysics3D uses a simple rule: all the memory that is allocated by yourself (using the C++ \emph{new} operator for instance) will have to be
+   destroyed by you (with the corresponding \emph{delete} operator). However, if you receive a pointer to an object from a call to a
+   ReactPhysics3D method, you have not allocated memory for this object by yourself and therefore, you are not responsible to destroy it. ReactPhysics3D
    will have to destroy it. \\
 
-   For instance, if you create a sphere collision shape with the following code: \\
-
-    \begin{lstlisting}
-// Here memory is allocated by yourself
-rp3d::SphereShape* sphereShape = new SphereShape(radius);
-    \end{lstlisting}
-    
-    \vspace{0.6cm}
-
-    In this example, you have allocated memory for the collision shape and therefore, you have to destroy this object at the end as follows: \\
-
-    \begin{lstlisting}
-delete sphereShape;
-    \end{lstlisting}
-    
-    \vspace{0.6cm}
-
-    However, when you create a RigidBody with the following code: \\
+   For instance, when you create a RigidBody with the following code: \\
 
     \begin{lstlisting}
 // Here memory is allocated by the ReactPhysics3D library
-RigidBody* body = dynamicsWorld.createRigidBody(transform);
+RigidBody* body = physicsWorld.createRigidBody(transform);
     \end{lstlisting}
     
     \vspace{0.6cm}
 
-    Here, the ReactPhysics3D library has allocated the memory for the rigid body and has returned a pointer so that you can use it. Because you have not allocated memory by yourself here, you must not
-    destroy the rigid body. The library is responsible to do it. \\
+    Here, the ReactPhysics3D library has allocated the memory for the rigid body and has returned a pointer so that you can use it. Because you have
+    not allocated memory by yourself here, you must not delete the rigid body. The library is responsible to do it. \\
 
    \section{The Collision World}
      \label{sec:collisionworld}
@@ -1673,7 +1879,7 @@ bool isHit = proxyShape->raycast(ray, raycastInfo);
     \section{Testbed application}
     \label{sec:testbed}
 
-    \begin{figure}[h]
+    \begin{figure}[!ht]
         \centering
         \includegraphics{testbed.png}
         \label{fig:testbed}

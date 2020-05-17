@@ -4,6 +4,11 @@
 # Minimum cmake version required
 cmake_minimum_required(VERSION 3.8)
 
+# Help CMake to find the installed library on Windows
+if(WIN32)
+  list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")
+endif()
+
 # Import the ReactPhysics3D library that you have installed on your computer using
 # the "make install" command
 find_package(ReactPhysics3D REQUIRED)
