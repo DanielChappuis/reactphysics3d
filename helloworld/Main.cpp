@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 
         world->update(timeStep);
 
-        // Ge the updated position of the body
+        // Get the updated position of the body
         const Transform& transform = body->getTransform();
         const Vector3& position = transform.getPosition();
 
