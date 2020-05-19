@@ -229,6 +229,9 @@ void DynamicsWorld::updateBodiesState() {
 
             // Update the broad-phase state of the body
             bodies[b]->updateBroadPhaseState();
+
+            // Notify the event listener that the body has been updated
+            if (mEventListener != nullptr) { mEventListener->rigidBodyUpdated(bodies[b]); }
         }
     }
 }

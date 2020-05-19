@@ -66,6 +66,11 @@ class EventListener {
         /// engine will do several internal simulation steps. This method is
         /// called at the end of each internal simulation step.
         virtual void endInternalTick() {}
+
+	/// Called every time a RigidBody is updated as part of the
+	/// DynamicsWorld::update() step. The pointer provided as a parameter
+	/// to this function is the RigidBody that has been updated.
+	virtual void rigidBodyUpdated(const RigidBody* body) {}
 };
 
 }
