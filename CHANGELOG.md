@@ -67,6 +67,7 @@
  - The rendering in the testbed application has been improved
  - The old Logger class has been renamed to DefaultLogger
  - The Logger class is now an abstract class that you can inherit from in order to receive log events from the library
+ - User manual and API documentation have been updated
 
 ### Removed
 

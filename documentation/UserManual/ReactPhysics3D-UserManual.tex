@@ -736,10 +736,11 @@ world->destroyCollisionBody(body);
     \section{Rigid Body}
     \label{sec:rigidbody}
 
-    Once the dynamics world has been created, you can create rigid bodies into the world. A rigid body represents an object that you want to simulate in the world.
-    It has a mass, a position, an orientation and one or several collision shapes. The dynamics world will compute collisions between the bodies and will update its position
-    and orientation accordingly at each time step. You can also create joints between the bodies in the world. In ReactPhysics3D, the \texttt{RigidBody} class
-    (which inherits from the \texttt{CollisionBody} class) is used to describe a rigid body.
+    Once the physics world has been created, you can add rigid bodies into it. A rigid body is an object that will be simulated using the laws of physics.
+    It has a mass, a position, an orientation and one or several colliders. It will react to forces and collisions. The physics world will compute contacts
+    between the bodies and will update their positions and orientations accordingly at each time step. You can also create joints between bodies to link
+    them in different configurations. In ReactPhysics3D, the \texttt{RigidBody} class (which inherits from the \texttt{CollisionBody} class) is used to
+    describe a rigid body.
 
     \subsection{Creating a Rigid Body}
 
@@ -747,50 +748,47 @@ world->destroyCollisionBody(body);
     position and orientation of the body in the world. You need to create an instance of the \texttt{Transform} class with a vector describing the
     initial position and a quaternion for the initial orientation of the body. \\
 
-    You have to call the \texttt{DynamicsWorld::createRigidBody()} method to create a rigid body in the world previously created. This method will return a pointer to the
-    instance of the \texttt{RigidBody} object that has been created internally. You will then be able to use that pointer to get or set values of the body. \\
+    You have to call the \texttt{PhysicsWorld::createRigidBody()} method to create a rigid body in the world. This method will return a pointer to the
+    instance of the \texttt{RigidBody} object that has been created internally. You will then be able to use that pointer to get or set values to the body. \\
 
     You can see in the following code how to create a rigid body in your world: \\
 
     \begin{lstlisting}
 // Initial position and orientation of the rigid body
-rp3d::Vector3 initPosition(0.0, 3.0, 0.0);
-rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
-rp3d::Transform transform(initPosition, initOrientation);
+Vector3 position(0.0, 3.0, 0.0);
+Quaternion orientation = rp3d::Quaternion::identity();
+Transform transform(position, orientation);
 
 // Create a rigid body in the world
-rp3d::RigidBody* body;
-body = dynamicsWorld.createRigidBody(transform);
+RigidBody* body;
+body = world->createRigidBody(transform);
     \end{lstlisting}
 
     \vspace{0.6cm}
 
-    Once your rigid body has been created in the world, you need to add one or several collision shapes to it. Take a look at section \ref{sec:collisionshapes} to learn
-    about the different collision shapes and how to create them. \\
+    Once your rigid body has been created in the world, you will probably want to add one or colliders to it as described in section \ref{sec:collider}.
 
-    \subsection{Customizing a Rigid Body}
+    \subsection{Type of a Rigid Body (static, kinematic or dynamic)}
 
-    Once a rigid body has been created, you can change some of its properties.
+    There are three types of bodies: \emph{static}, \emph{kinematic} and \emph{dynamic}. A \emph{static} body has infinite mass, zero velocity but
+    its position can be changed manually. Moreover, a static body does not collide with other static or kinematic bodies. On the other side, a
+    \emph{kinematic} body has infinite mass, its velocity can be changed manually and its position is computed by the physics engine. A kinematic
+    body does not collide with other static or kinematic bodies. Finally, A \emph{dynamic} body has non-zero mass, non-zero velocity determined
+    by forces and its position is determined by the physics engine. Moreover, a dynamic body can collide with other dynamic, static or
+    kinematic bodies. \\
 
-    \subsubsection{Type of a Rigid Body (static, kinematic or dynamic)}
+    For instance, you can use a \emph{static} body for the floor, a \emph{kinematic} body for a moving platform and a \emph{dynamic} body for a
+    rock that could fall on the floor. \\
 
-    \begin{sloppypar}
-        There are three types of bodies: \emph{static}, \emph{kinematic} and \emph{dynamic}. A \emph{static} body has infinite mass, zero velocity but its position can be
-        changed manually. Moreover, a static body does not collide with other static or kinematic bodies. On the other side, a \emph{kinematic} body has infinite mass, its velocity can be
-        changed manually and its position is computed by the physics engine. A kinematic body does not collide with other static or kinematic bodies. Finally, A \emph{dynamic} body
-        has non-zero mass, non-zero velocity determined by forces and its position is determined by the physics engine. Moreover, a dynamic body can collide with other dynamic, static or
-        kinematic bodies. \\
-    \end{sloppypar}
-
-    When you create a new body in the world, it is of dynamic type by default. You can change the type of the body using the \texttt{CollisionBody::setType()}
+    When you create a new body in the world, it is of dynamic type by default. You can change the type of the body using the \texttt{RigidBody::setType()}
     method as follows:\\
 
     \begin{lstlisting}
-// Change the type of the body to Kinematic
-body->setType(KINEMATIC);
+// Change the type of the body to kinematic
+body->setType(BodyType::KINEMATIC);
   \end{lstlisting}
 
-    \subsubsection{Gravity}
+    \subsection{Gravity}
 
     By default, all the rigid bodies with react to the gravity force of the world. If you do not want the gravity to be applied to a given body, you can disable
     it using the \texttt{RigidBody::enableGravity()} method as in the following example: \\
@@ -800,38 +798,8 @@ body->setType(KINEMATIC);
 rigidBody->enableGravity(false);
   \end{lstlisting}
 
-    \subsubsection{Material of a Rigid Body}
 
-    The material of a rigid body is used to describe the physical properties it is made of. This is represented by the \texttt{Material} class. Each body that
-    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::\allowbreak getMaterial()} method. Then, you will be able to change some
-    properties. \\
-
-    For instance, you can change the bounciness of the rigid body. The bounciness is a value between 0 and 1. The value 1 is used for a very bouncy object and the value 0 means that
-    the body will not be bouncy at all. To change the bounciness of the material, you can use the \texttt{Material::\allowbreak setBounciness()} method. \\
-
-    You are also able to change the friction coefficient of the body. This value needs to be between 0 and 1. If the value is 0, no friction will be applied when the body is in contact with
-    another body. However, if the value is 1, the friction force will be high. You can change the friction coefficient of the material with the
-    \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
-
-    You can use the material to add rolling resistance to a rigid body. Rolling resistance can be used to stop
-    a rolling object on a flat surface for instance. You should use this only with SphereShape or
-    CapsuleShape collision shapes. By default, rolling resistance is zero but you can
-    set a positive value using the \texttt{Material::\allowbreak setRollingResistance()} method to increase resistance. \\
-
-    Here is how to get the material of a rigid body and how to modify some of its properties: \\
-
-    \begin{lstlisting}
-// Get the current material of the body
-rp3d::Material& material = rigidBody->getMaterial();
-
-// Change the bounciness of the body
-material.setBounciness(rp3d::decimal(0.4));
-
-// Change the friction coefficient of the body
-material.setFrictionCoefficient(rp3d::decimal(0.2));
-  \end{lstlisting}
-
-    \subsubsection{Velocity Damping}
+    \subsection{Velocity Damping}
 
     \begin{sloppypar}
       Damping is the effect of reducing the velocity of the rigid body during the simulation to simulate effects like air friction for instance. By default, no damping
@@ -840,7 +808,7 @@ material.setFrictionCoefficient(rp3d::decimal(0.2));
       value has to be positive and a value of zero means no damping at all.
     \end{sloppypar}
 
-    \subsubsection{Sleeping}
+    \subsection{Sleeping}
     \label{sec:rigidbodysleeping}
 
     As described in section \ref{sec:sleeping}, the sleeping technique is used to disable the simulation of resting bodies. By default, the bodies are allowed to sleep
@@ -851,49 +819,50 @@ material.setFrictionCoefficient(rp3d::decimal(0.2));
 rigidBody->setIsAllowedToSleep(false);
  \end{lstlisting}
 
-    \subsubsection{Applying Force or Torque to a Rigid Body}
+    \subsection{Applying Force or Torque to a Rigid Body}
 
-    During the simulation, you can apply a force or a torque to a given rigid body. This force can be applied to the center of mass of the rigid body by using the
-    \texttt{RigidBody::\allowbreak applyForceToCenter()} method. You need to specify the force vector (in Newton) as a parameter. If the force is applied to the center of mass, no
-    torque will be created and only the linear motion of the body will be affected. \\
+    During the simulation, you can apply a force or a torque to a given rigid body. This force can be applied to the center of mass of the rigid body
+    by using the \texttt{RigidBody::\allowbreak applyForceToCenterOfMass()} method. You need to specify the force vector (in Newton) as a parameter. If
+    the force is applied to the center of mass, no torque will be created and only the linear motion of the body will be affected. \\
 
     \begin{lstlisting}
 // Force vector (in Newton)
-rp3d::Vector3 force(2.0, 0.0, 0.0);
+Vector3 force(2.0, 0.0, 0.0);
 
 // Apply a force to the center of the body
-rigidBody->applyForceToCenter(force);
-  \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    \begin{sloppypar}
-        You can also apply a force to any given point (in world-space) using the \texttt{RigidBody::applyForce()} method. You need to specify the force vector (in Newton) and the point
-        (in world-space) where to apply the given force. Note that if the point is not the center of mass of the body, applying a force will generate some torque and therefore, the
-        angular motion of the body will be affected as well. \\
-    \end{sloppypar}
-
-    \begin{lstlisting}
-// Force vector (in Newton)
-rp3d::Vector3 force(2.0, 0.0, 0.0);
-
-// Point where the force is applied
-rp3d::Vector3 point(4.0, 5.0, 6.0);
-
-// Apply a force to the body
-rigidBody->applyForce(force, point);
+rigidBody->applyForceToCenterOfMass(force);
   \end{lstlisting}
 
     \vspace{0.6cm}
 
      \begin{sloppypar}
-        It is also possible to apply a torque to a given body using the \texttt{RigidBody::applyTorque()} method. You simply need to specify the torque vector (in Newton $\cdot$ meter) as
-        in the following example: \\
+    You can also apply a force to any given point in world-space using the \texttt{RigidBody::applyForceAtWorldPosition()} method or in
+    local-space with the \texttt{RigidBody::applyForceAtLocalPosition()} method. You need to specify the force vector (in Newton) and the point
+    where to apply the given force. Note that if the point is not the center of mass of the body, applying a force will generate some torque and
+    therefore, the angular motion of the body will be affected as well. \\
+     \end{sloppypar}
+
+    \begin{lstlisting}
+// Force vector (in Newton)
+Vector3 force(2.0, 0.0, 0.0);
+
+// Point where the force is applied
+Vector3 point(4.0, 5.0, 6.0);
+
+// Apply a force to the body
+rigidBody->applyForceAtLocalPosition(force, point);
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+     \begin{sloppypar}
+        It is also possible to apply a torque to a given body using the \texttt{RigidBody::applyTorque()} method. You simply need to specify
+	the torque vector (in Newton $\cdot$ meter) as in the following example: \\
      \end{sloppypar}
 
     \begin{lstlisting}
 // Torque vector
-rp3d::Vector3 torque(0.0, 3.0, 0.0);
+Vector3 torque(0.0, 3.0, 0.0);
 
 // Apply a torque to the body
 rigidBody->applyTorque(torque);
@@ -901,20 +870,20 @@ rigidBody->applyTorque(torque);
 
     \vspace{0.6cm}
 
-    Note that when you call the previous methods, the specified force/torque will be added to the total force/torque applied to the rigid body and that at the end of each call to the
-    \texttt{DynamicsWorld::update()}, the total force/torque of all the rigid bodies will be reset to zero. Therefore, you need to call the previous methods during several frames
-    if you want the force/torque to be applied during a certain amount of time.
+    Note that when you call the previous methods, the specified force/torque will be added to the total force/torque applied to the rigid body and that
+    at the end of each call to the \texttt{PhysicsWorld::update()}, the total force/torque of all the rigid bodies will be reset to zero.
+    Therefore, you need to call the previous methods during several frames if you want the force/torque to be applied during a certain amount of time.
 
     \subsection{Updating a Rigid Body}
 
-    When you call the \texttt{DynamicsWorld::update()} method, the collisions between the bodies are computed and the joints are evaluated. Then, the bodies positions
-    and orientations are updated accordingly. After calling this method, you can retrieve the updated position and orientation of each body to render it. To do that, you simply need to use the
-    \texttt{RigidBody::getTransform()} method to get the updated transform. This transform represents the current local-to-world-space transformation
-    of the body. \\
+    When you call the \texttt{PhysicsWorld::update()} method, the bodies positions and orientations are updated to satisfy the contacts and joints
+    constraint between the bodies. After calling this method, you can retrieve the updated position and orientation of each body to render it.
+    To do that, you simply need to use the \texttt{RigidBody::getTransform()} method to get the updated transform. This transform represents the
+    current local-to-world-space transform of the body. \\
 
-    As described in section \ref{sec:updatingphysicsworld}, at the end of a frame, there might still be some remaining time in the time accumulator. Therefore, you should not use the updated
-    transform directly for rendering but you need to perform some interpolation between the updated transform and the one from the previous frame to get a smooth real-time simulation.
-    First, you need to compute the interpolation factor as folows: \\
+    As described in section \ref{sec:updatingphysicsworld}, at the end of a frame, there might still be some remaining time in the time accumulator.
+    Therefore, you should not use the updated transform directly for rendering but you need to perform some interpolation between the updated transform
+    and the one from the previous frame to get a smooth real-time simulation.  First, you need to compute the interpolation factor as folows: \\
 
     \begin{lstlisting}
 // Compute the time interpolation factor
@@ -927,7 +896,7 @@ decimal factor = accumulator / timeStep;
 
     \begin{lstlisting}
 // Compute the interpolated transform of the rigid body
-rp3d::Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
+Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -955,8 +924,8 @@ accumulator += mDeltaTime;
 // one or several physics steps
 while (accumulator >= timeStep) {
 
-    // Update the Dynamics world with a constant time step
-    dynamicsWorld->update(timeStep);
+    // Update the physics world with a constant time step
+    physicsWorld->update(timeStep);
 
     // Decrease the accumulated time
     accumulator -= timeStep;
@@ -966,10 +935,10 @@ while (accumulator >= timeStep) {
 decimal factor = accumulator / timeStep;
 
 // Get the updated transform of the body
-rp3d::Transform currTransform = body->getTransform();
+Transform currTransform = body->getTransform();
 
 // Compute the interpolated transform of the rigid body
-rp3d::Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
+Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
 
 // Now you can render your body using the interpolated transform here
 
@@ -980,8 +949,8 @@ prevTransform = currTranform;
 
     \vspace{0.6cm}
 
-    If you need the array with the corresponding $4 \times 4$ OpenGL transformation matrix for rendering, you can use the \texttt{Transform::getOpenGLMatrix()} method as in the
-    following code: \\
+    If you need the array with the corresponding $4 \times 4$ OpenGL transformation matrix for rendering, you can use
+    the \texttt{Transform::getOpenGLMatrix()} method as in the following code: \\
 
     \begin{lstlisting}
 // Get the OpenGL matrix array of the transform
@@ -996,35 +965,56 @@ transform.getOpenGLMatrix(matrix);
     \subsection{Destroying a Rigid Body}
 
     \begin{sloppypar}
-    It is really simple to destroy a rigid body. You simply need to use the \texttt{DynamicsWorld::destroyRigidBody()} method. You need to use the pointer to the body you
-    want to destroy as a parameter. Note that after calling that method, the pointer will not be valid anymore and therefore, you should not use it. Note that you must
-    destroy all the rigid bodies at the end of the simulation before you destroy the world. When you destroy a rigid body that was part of a joint, that joint will be
-    automatically destroyed as well. \\
+    It is really simple to destroy a rigid body when you don't need it. You simply need to use the \texttt{PhysicsWorld::destroyRigidBody()} method. You
+    need to use the pointer to the body you want to destroy as a parameter. Note that after calling that method, the pointer will not be valid anymore and
+    therefore, you should not use it. When you destroy a rigid body that was part of a joint, that joint will be automatically destroyed as well. \\
     \end{sloppypar}
 
     Here is how to destroy a rigid body: \\
 
     \begin{lstlisting}
-// Here, world is an instance of the DynamicsWorld class
+// Here, world is an instance of the PhysicsWorld class
 // and body is a RigidBody* pointer
 
 // Destroy the rigid body
-world.destroyRigidBody(body);
+world->destroyRigidBody(body);
   \end{lstlisting}
 
     \section{Collider}
     \label{sec:collider}
 
+    A body can only collide against an other body if it has at least one collider. A collider (class \texttt{Collider}) describes the collision shape
+    of the body. A body can have multiple colliders attached to it. When adding a collider to a body, you need to specify its collision
+    shape (box, sphere, capsule, \dots) and its transform relative to the origin of the body. \\
+
+    Before adding a collider to a body, you need to create a collision shape. A collision shape can be instantiated by calling a method of the
+    main \texttt{PhysicsCommon} object. The following example shows how instantiate a collision shape (a sphere shape) from the \texttt{PhysicsCommon}
+    object and use it to create a new collider to a rigid body. \\
+
+    \begin{lstlisting}
+// Instantiate a sphere collision shape
+float radius = 3.0f;
+SphereShape* sphereShape = physicsCommon.createSphereCollisionShape(radius);
+
+// Relative transform of the collider relative to the body origin
+Transform transform = Transform::identity();
+
+// Add the collider to the rigid body
+Collider* collider;
+collider = body->addCollider(&shape, transform);
+
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Note that a given collision shape instance can be shared between multiple colliders. The next section the different types of collision shapes that
+    are available in ReactPhysics3D.
+
     \subsection{Collision Shapes}
     \label{sec:collisionshapes}
 
-    Once you have created a collision body or a rigid body in the world, you need to add one or more collision shapes into it so that it is able to collide with other bodies.
-    This section describes all the collision shapes available in the ReactPhysics3D library and how to use them. \\
-
-    The collision shapes are also the way to represent the mass of a Rigid Body. Whenever you add a collision shape to a rigid body, you need to specify the mass of the shape.
-    Then the rigid body will recompute its total mass, its center of mass and its inertia tensor taking into account all its collision shapes. Therefore, you do not have to compute
-    those things by yourself. However, if needed, you can also specify your own center of mass or inertia tensor. Note that the inertia tensor is a $3 \times 3$ matrix describing
-    how the mass is distributed inside the rigid body which will be used to calculate its rotation. The inertia tensor depends on the mass and the shape of the body. \\
+    As we have just seen, the collision shape is used to describe the shape of a collider. They are many types of collision shapes that you can use. They
+    all inherit from the \texttt{CollisionShape} class.
 
     \subsubsection{Box Shape}
 
@@ -1291,54 +1281,12 @@ maxHeight, heightValues, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
   Therefore, if you create a \texttt{HeightFieldShape} with a minimum height of 100 and a maximum height of 500, the
   maximum coordinates of the shape on the Y axis will be 200 and the minimum coordinates will be -200.
 
-    \subsection{Adding a Collision Shape to a body - The Proxy Shape concept}
+    \subsection{Mass, Center of Mass, Inertia Tensor}
+    \label{sec:collidermass}
 
-    \begin{sloppypar}
-    Now that you know how to create a collision shape, we will see how to add it to a given body. \\
-
-    First note that when you add a collision shape to a body, the shape will not be copied internally. You only give a
-    pointer to the shape in parameter. The shape must exist during the whole lifetime of the body. This way, you can
-    create a collision shape and reuse it for multiple bodies. You are also responsible to destroy the shape at the
-    end when the bodies are not used anymore. \\
-
-   In order to add a collision shape to a body, you need to use the \texttt{CollisionBody::addCollisionShape()} method for a collision body and the
-   \texttt{RigidBody::addCollisionShape()} method for a rigid body. You will have to provide the collision shape transform in parameter. This is the
-   transformation mapping the local-space of the collision shape to the local-space of the body. For a rigid body, you will also have to provide the
-   mass of the shape you want to add. As explained before, this is used to automatically compute the center of mass, total mass and inertia tensor of the body. \\
-
-   The \texttt{addCollisionShape()} method returns a pointer to a proxy shape. A proxy shape is what links a given collision shape to the body it has been added.
-   You can use the returned proxy shape to get or set parameters of the given collision shape in that particular body. This concept is also called \emph{fixture} in some
-   other physics engines. In ReactPhysics3D, a proxy shape is represented by the \texttt{ProxyShape} class. \\
-
-    The following example shows how to add a sphere collision shape with a given mass to a rigid body and also how to remove it from the body using the Proxy Shape pointer. \\
-    \end{sloppypar}
-
-    \begin{lstlisting}
-// Create the sphere collision shape
-rp3d::decimal radius = rp3d::decimal(3.0)
-rp3d::SphereShape shape(radius);
-
-// Transform of the collision shape
-// Place the shape at the origin of the body local-space
-rp3d::Transform transform = rp3::Transform::identity();
-
-// Mass of the collision shape (in kilograms)
-rp3d::decimal mass = rp3d::decimal(4.0);
-
-// Add the collision shape to the rigid body
-rp3d::ProxyShape* proxyShape;
-proxyShape = body->addCollisionShape(&shape, transform, mass);
-
-// If you want to remove the collision shape from the body
-// at some point, you need to use the proxy shape
-body->removeCollisionShape(proxyShape);
-  \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    As you can see, you can use the \texttt{removeCollisionShape()} method to remove a collision shape from a body by using the proxy shape. Note that
-    after removing a collision shape, the corresponding proxy shape pointer will not be valid anymore. It is not necessary to manually remove all the collision shapes from
-    a body at the end of your application. They will automatically be removed when you destroy the body.
+    Note that the inertia tensor
+    is a $3 \times 3$ matrix describing how the mass is distributed inside the rigid body which will be used to calculate its rotation. The inertia
+    tensor depends on the mass and the shape of the body.
 
     \subsection{Collision filtering}
     \label{sec:collisionfiltering}
@@ -1400,6 +1348,37 @@ proxyShapeBody4->setCollideWithMaskBits(CATEGORY2);
 
     In the same way, you can perform this filtering for ray casting (described in section \ref{sec:raycasting}). For instance, you can perform a ray cast test
     against a given subset of categories of collision shapes only.
+
+    \subsection{Material of a Rigid Body}
+
+    The material of a rigid body is used to describe the physical properties it is made of. This is represented by the \texttt{Material} class. Each body that
+    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::\allowbreak getMaterial()} method. Then, you will be able to change some
+    properties. \\
+
+    For instance, you can change the bounciness of the rigid body. The bounciness is a value between 0 and 1. The value 1 is used for a very bouncy object and the value 0 means that
+    the body will not be bouncy at all. To change the bounciness of the material, you can use the \texttt{Material::\allowbreak setBounciness()} method. \\
+
+    You are also able to change the friction coefficient of the body. This value needs to be between 0 and 1. If the value is 0, no friction will be applied when the body is in contact with
+    another body. However, if the value is 1, the friction force will be high. You can change the friction coefficient of the material with the
+    \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
+
+    You can use the material to add rolling resistance to a rigid body. Rolling resistance can be used to stop
+    a rolling object on a flat surface for instance. You should use this only with SphereShape or
+    CapsuleShape collision shapes. By default, rolling resistance is zero but you can
+    set a positive value using the \texttt{Material::\allowbreak setRollingResistance()} method to increase resistance. \\
+
+    Here is how to get the material of a rigid body and how to modify some of its properties: \\
+
+    \begin{lstlisting}
+// Get the current material of the body
+rp3d::Material& material = rigidBody->getMaterial();
+
+// Change the bounciness of the body
+material.setBounciness(rp3d::decimal(0.4));
+
+// Change the friction coefficient of the body
+material.setFrictionCoefficient(rp3d::decimal(0.2));
+  \end{lstlisting}
 
     \section{Joints}
 
