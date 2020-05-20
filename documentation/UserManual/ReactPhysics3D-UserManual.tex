@@ -962,6 +962,49 @@ transform.getOpenGLMatrix(matrix);
 
     A nice article to read about this time interpolation is the one from Glenn Fiedler at \url{https://gafferongames.com/post/fix_your_timestep/}.
 
+    \subsection{Mass, Center of Mass, Inertia Tensor}
+    \label{sec:rigidbodymass}
+
+    The mass, center of mass and inertia tensor of a rigid body are important parameters for the physics simulation.
+
+    \subsubsection{Mass}
+
+    The \texttt{RigidBody} has a mass value (in kilograms) which is 1 kilogram by default. There are two ways to set the mass of a rigid body. First, you
+    can set it directly using the \texttt{RigidBody::setMass()} method. Secondly, it is also possible to compute this mass
+    automatically using the mass of the colliders of the rigid body. As described in section \ref{sec:material}, the material of each collider has a 
+    mass density value. This value is 1 by default. You change change the mass density value of the colliders of a rigid body and then use the
+    \texttt{RigidBody::updateMassFromColliders()} method to automatically compute the mass of the rigid body using the mass density and shape of
+    its colliders.
+
+    \subsubsection{Center of mass}
+
+    The center of mass of a \texttt{RigidBody} is the mean location of the distribution of mass of the body in space. By default the center of mass
+    of the rigid body is its origin. There are two ways to set the center of mass of a rigid body. First, you can set it directly using the
+    \texttt{RigidBody::setLocalCenterOfMass()} method. Secondly, as for the mass, the center of mass can also be computed automatically using the
+    mass, shape and transform of all the colliders of the rigid body. As described in section \ref{sec:material}, the material of each collider has a
+    mass density value. This value is 1 by default. You can set the mass density value of the colliders and then use the
+    \texttt{RigidBody::updateLocalCenterOfMassFromColliders()} method to automatically compute the center of mass of the rigid body.
+
+    \subsubsection{Inertia Tensor}
+
+    \begin{sloppypar}
+    The inertia tensor of a \texttt{RigidBody} is a $3 \times 3$ matrix describing how the mass is distributed inside the rigid body which is
+    used to calculate its rotation. The inertia tensor depends on the mass and the shape of the body. There are two ways to set the inertia tensor of
+    a rigid body. First, you can set it directly using the \texttt{RigidBody::setLocalInertiaTensor()} method. Note that this will set the inertia tensor
+    of the body in local-space coordinates which is usually a diagonal matrix. This method takes a \texttt{Vector3} with the three diagonal entries of the
+    matrix. Secondly, the local inertia tensor can be computed automatically using the mass density, shape and transform of all the colliders of the body.
+    As described in section \ref{sec:material}, the material of each collider has a mass density value which is 1 by default. You can set the mass density
+    value of the colliders and then use the \texttt{RigidBody::updateLocalInertiaTensorFromColliders()} method to automatically compute the local inertia
+    tensor of the body. 
+    \end{sloppypar}
+
+    \vspace{0.6cm}
+
+    \begin{sloppypar}
+    Note that it is also possible to automatically compute the mass, center of mass and inertia tensor of a rigid body at the same time using the
+    \texttt{RigidBody::updateMassPropertiesFromColliders()}.
+    \end{sloppypar}
+
     \subsection{Destroying a Rigid Body}
 
     \begin{sloppypar}
@@ -1007,14 +1050,14 @@ collider = body->addCollider(&shape, transform);
 
     \vspace{0.6cm}
 
-    Note that a given collision shape instance can be shared between multiple colliders. The next section the different types of collision shapes that
-    are available in ReactPhysics3D.
+    Note that a given collision shape instance can be shared between multiple colliders. The next section presents the different types of collision
+    shapes that are available in ReactPhysics3D.
 
     \subsection{Collision Shapes}
     \label{sec:collisionshapes}
 
-    As we have just seen, the collision shape is used to describe the shape of a collider. They are many types of collision shapes that you can use. They
-    all inherit from the \texttt{CollisionShape} class.
+    As we have just seen, a collision shape is used to describe the shape of a collider for collision detection. They are many types of
+    collision shapes that you can use. They all inherit from the \texttt{CollisionShape} class.
 
     \subsubsection{Box Shape}
 
@@ -1024,18 +1067,19 @@ collider = body->addCollider(&shape, transform);
         \label{fig:boxshape}
     \end{figure}
 
-    The \texttt{BoxShape} class describes a box collision shape. The box is aligned with the shape local X, Y and Z axis.
-    In order to create a box shape, you only need to specify the three half extents dimensions of the box in the three X, Y and Z directions. \\
+    The \texttt{BoxShape} class describes a box collision shape centered at the origin of the collider. The box is aligned with the shape
+    local X, Y and Z axis.  In order to create a box shape, you only need to specify the three half extents dimensions of the box in the three X, Y and
+    Z directions. \\
 
-    For instance, if you want to create a box shape with dimensions of 4 meters, 6 meters and 10 meters along the X, Y and Z axis respectively, you need to use the
-    following code: \\
+    For instance, if you want to create a box shape with dimensions of 4 meters, 6 meters and 10 meters along the X, Y and Z axis respectively, you
+    need to use the following code: \\
 
     \begin{lstlisting}
 // Half extents of the box in the x, y and z directions
-const rp3d::Vector3 halfExtents(2.0, 3.0, 5.0);
+const Vector3 halfExtents(2.0, 3.0, 5.0);
 
 // Create the box shape
-const rp3d::BoxShape boxShape(halfExtents);
+BoxShape* boxShape = phycsicsCommon.createBoxShape(halfExtents);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -1048,13 +1092,14 @@ const rp3d::BoxShape boxShape(halfExtents);
         \label{fig:sphereshape}
     \end{figure}
 
-    The \texttt{SphereShape} class describes a sphere collision shape centered at the origin of the shape local space. You only need to specify the radius of the sphere to create it. \\
+    The \texttt{SphereShape} class describes a sphere collision shape centered at the origin of the collider. You only need to specify the
+    radius of the sphere to create it. \\
 
     For instance, if you want to create a sphere shape with a radius of 2 meters, you need to use the following code: \\
 
     \begin{lstlisting}
 // Create the sphere shape with a radius of 2m
-const rp3d::SphereShape sphereShape(2.0);
+SphereShape* sphereShape = physicsCommon.createSphereShape(2.0);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -1067,15 +1112,15 @@ const rp3d::SphereShape sphereShape(2.0);
         \label{fig:capsuleshape}
     \end{figure}
 
-    The \texttt{CapsuleShape} class describes a capsule collision shape around the local Y axis and centered at the origin of the shape local-space. It is the convex hull of two
-    spheres. It can also be seen as an elongated sphere. In order to create it, you only need to specify the radius of the two spheres and the height of the
-    capsule (distance between the centers of the two spheres).  \\
+    The \texttt{CapsuleShape} class describes a capsule collision shape around the local Y axis and centered at the origin of the collider.
+    It is the convex hull of two spheres. It can also be seen as an elongated sphere. In order to create it, you only need to specify the
+    radius of the two spheres and the height of the capsule (distance between the centers of the two spheres).  \\
 
     For instance, if you want to create a capsule shape with a radius of 1 meter and the height of 2 meters, you need to use the following code: \\
 
     \begin{lstlisting}
 // Create the capsule shape
-const rp3d::CapsuleShape capsuleShape(1.0, 2.0);
+CapsuleShape* capsuleShape = physicsCommon.createCapsuleShape(1.0, 2.0);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -1088,13 +1133,15 @@ const rp3d::CapsuleShape capsuleShape(1.0, 2.0);
         \label{fig:convexshape}
     \end{figure}
 
-    The \texttt{ConvexMeshShape} class can be used to describe the shape of a convex mesh. In order to create a convex mesh shape, you first need to create an array of \texttt{PolygonFace} to describe each face
-    of your mesh. You also need to have an array with the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a \texttt{PolygonVertexArray} with your
-    vertices coordinates and indices array. You also need to specify your array of \texttt{PolygonFace}. Then, you have to create a \texttt{PolyhedronMesh} with your \texttt{PolygonVertexArray}.
-    Once this is done, you can create the \texttt{ConvexMeshShape} by passing your \texttt{PolyhedronMesh} in paramater. \\
+    The \texttt{ConvexMeshShape} class can be used to describe the shape of a convex mesh centered at the origin of the collider. In order to create a
+    convex mesh shape, you first need to create an array of \texttt{PolygonFace} to describe each face of your mesh. You also need to have an array with
+    the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a \texttt{PolygonVertexArray} with
+    your vertices coordinates and indices array. You also need to specify your array of \texttt{PolygonFace}. Then, you have to create a
+    \texttt{PolyhedronMesh} with your \texttt{PolygonVertexArray}. Once this is done, you can create the \texttt{ConvexMeshShape} by passing your
+    \texttt{PolyhedronMesh} in paramater. \\
 
-    The following example shows how to create a convex mesh shape. In this example, we create a cube as a convex mesh shape. Of course, this is only for the example.
-    If you really need a cube collision shape, you should use the \texttt{BoxShape} instead. \\
+    The following example shows how to create a convex mesh shape. In this example, we create a cube as a convex mesh shape. Of course, this is only
+    for the example.  If you really need a cube collision shape, you should use the \texttt{BoxShape} instead. \\
 
     \begin{lstlisting}
 // Array with the vertices coordinates of the convex mesh
@@ -1118,8 +1165,8 @@ indices[16]=2; indices[17]=3; indices[18]=7; indices[19]=6;
 indices[20]=0; indices[21]=4; indices[22]=7; indices[23]=3;
 
 // Description of the six faces of the convex mesh
-polygonFaces = new rp3d::PolygonVertexArray::PolygonFace[6];
-rp3d::PolygonVertexArray::PolygonFace* face = polygonFaces;
+polygonFaces = new PolygonVertexArray::PolygonFace[6];
+PolygonVertexArray::PolygonFace* face = polygonFaces;
 for (int f = 0; f < 6; f++) {
 
     // First vertex of the face in the indices array
@@ -1132,35 +1179,36 @@ for (int f = 0; f < 6; f++) {
 }
 
 // Create the polygon vertex array
-polygonVertexArray = new rp3d::PolygonVertexArray(8, vertices, 3 x sizeof(float),
+PolygonaVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 x sizeof(float),
 indices, sizeof(int), 6, polygonFaces,
-rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 // Create the polyhedron mesh
-polyhedronMesh = new rp3d::PolyhedronMesh(polygonVertexArray);
+PolyhedronMesh* polyhedronMesh = physicsCommon.createPolyhedronMesh(polygonVertexArray);
 
 // Create the convex mesh collision shape
-convexMeshShape = new rp3d::ConvexMeshShape(polyhedronMesh);
+ConvexMeshShape* convexMeshShape = physicsCommon.createConvexMeshShape(polyhedronMesh);
   \end{lstlisting}
 
     \vspace{0.6cm}
 
-    Note that the vertex coordinates and indices array are not copied and therefore, you need to make sure that they exist until the collision shape exists. This is also true for
-    the all the \texttt{PolygonFace}, the \texttt{PolygonVertexArray} and the \texttt{PolyhedronMesh}. \\
+    Note that the vertex coordinates and indices array are not copied and therefore, you need to make sure that they exist until the collision shape
+    exists. This is also true for the all the \texttt{PolygonFace}, the \texttt{PolygonVertexArray} and the \texttt{PolyhedronMesh}. \\
 
-    You need to make sure that the mesh you provide is indeed convex. Secondly, you should provide the simplest possible convex mesh. It means that you need to avoid
-    coplanar faces in your convex mesh shape. Coplanar faces have to be merged together. Remember that convex meshes are not limited to triangular faces, you can
-    create faces with more than three vertices. \\
+    You need to make sure that the mesh you provide is indeed convex. Secondly, you should provide the simplest possible convex mesh. It means
+    that you need to avoid coplanar faces in your convex mesh shape. Coplanar faces have to be merged together. Remember that convex meshes are
+    not limited to triangular faces, you can create faces with more than three vertices. \\
 
-    When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in counter clockwise order
-    as seen from the outside of your convex mesh. \\
+    When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in
+    counter clockwise order as seen from the outside of your convex mesh. \\
 
     You also need to make sure that the origin of your mesh is inside the convex mesh. A mesh with an origin outside the
     convex mesh is not currently supported by the library. \\
 
-    You can also specify a scaling factor in the constructor when you create a \texttt{Convex\allowbreak MeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
-    when used in the collision shape. \\
+    You can also specify a scaling factor in the constructor when you create a \texttt{Convex\allowbreak MeshShape}. All the vertices of your mesh
+    will be scaled from the origin by this factor when used in the collision shape. It means that you can use the same \texttt{PolyhedronMesh} for
+    multiple \texttt{ConvexMeshShape} with a different scaling factor each time. \\
 
     Note that collision detection with a \texttt{ConvexMeshShape} is more expensive than with a \texttt{SphereShape} or a \texttt{CapsuleShape}. \\
 
@@ -1192,11 +1240,11 @@ const int nbVertices = 8;
 const int nbTriangles = 12;
 float vertices[3 * nbVertices] = ...;
 int indices[3 * nbTriangles] = ...;
-rp3d::TriangleVertexArray* triangleArray =
-new rp3d::TriangleVertexArray(nbVertices, vertices, 3 * sizeof(float), nbTriangles,
+TriangleVertexArray* triangleArray =
+new TriangleVertexArray(nbVertices, vertices, 3 * sizeof(float), nbTriangles,
 indices, 3 * sizeof(int),
-rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
   \end{lstlisting}
 
   \vspace{0.6cm}
@@ -1205,13 +1253,13 @@ rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
   into it as a subpart. Once this is done, we can create the actual \texttt{ConcaveMeshShape}. \\
 
   \begin{lstlisting}
-rp3d::TriangleMesh triangleMesh;
+TriangleMesh triangleMesh* = physicsCommon.createTriangleMesh();
 
 // Add the triangle vertex array to the triangle mesh
-triangleMesh.addSubpart(triangleArray);
+triangleMesh->addSubpart(triangleArray);
 
 // Create the concave mesh shape
-ConcaveMeshShape* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
+ConcaveMeshShape* concaveMesh = physicsCommon.createConcaveMeshShape(triangleMesh);
   \end{lstlisting}
 
   \vspace{0.6cm}
@@ -1222,8 +1270,11 @@ ConcaveMeshShape* concaveMesh = new rp3d::ConcaveMeshShape(&triangleMesh);
   When you specify the vertices for each triangle face of your mesh, be careful with the order of the vertices. They must be specified in counter clockwise order
   as seen from the outside of your mesh. \\
 
-  You can also specify a scaling factor in the constructor when you create a \texttt{Concave\allowbreak MeshShape}. All the vertices of your mesh will be scaled from the origin by this factor
-  when used in the collision shape. \\
+  \begin{sloppypar}
+  You can also specify a scaling factor in the \texttt{PhysicsCommon::createConcaveMeshShape()} when you create a \texttt{Concave\allowbreak MeshShape}.
+  All the vertices of your mesh will be scaled from the origin by this factor when used in the collision shape. It means that you can use the same
+  \texttt{TriangleMesh} for multiple \texttt{ConcaveMeshShape} with a different scaling factor each time. \\
+  \end{sloppypar}
 
   In the previous example, the vertex normals that are needed for collision detection are automatically computed. However, if you want to specify your own
   vertex normals, you can do it by using another constructor for the \texttt{TriangleVertexArray}. \\
@@ -1264,7 +1315,7 @@ float maxHeight = 500;
 float heightValues[nbRows * nbColumns] = ...;
 
 // Create the heightfield collision shape
-rp3d::HeightFieldShape = new rp3d::HeightFieldShape(nbColumns, nbRows, minHeight,
+HeightFieldShape* heightFieldShape = physicsCommon.createHeightFieldShape(nbColumns, nbRows, minHeight,
 maxHeight, heightValues, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
   \end{lstlisting}
 
@@ -1274,30 +1325,23 @@ maxHeight, heightValues, rp3d::HeightFieldShape::HEIGHT_FLOAT_TYPE);
   they exist during the lifetime of the \texttt{HeightField\allowbreak Shape} and you must not forget to release their memory when you
   destroy the collision shape or at the end of your application. \\
 
-  You can also specify a scaling factor in the constructor when you create a \texttt{Height\allowbreak FieldShape}. All the vertices of your mesh will be scaled from the origin by this factor
-  when used in the collision shape. \\
+  You can also specify a scaling factor in the \texttt{PhysicsCommon::createHeightShape()} method  when you create a \texttt{Height\allowbreak FieldShape}.
+  All the vertices of your mesh will be scaled from the origin by this factor when used in the collision shape. \\
 
   When creating a \texttt{HeightFieldShape}, the origin of the shape will be at the center of its bounding volume.
   Therefore, if you create a \texttt{HeightFieldShape} with a minimum height of 100 and a maximum height of 500, the
   maximum coordinates of the shape on the Y axis will be 200 and the minimum coordinates will be -200.
 
-    \subsection{Mass, Center of Mass, Inertia Tensor}
-    \label{sec:collidermass}
-
-    Note that the inertia tensor
-    is a $3 \times 3$ matrix describing how the mass is distributed inside the rigid body which will be used to calculate its rotation. The inertia
-    tensor depends on the mass and the shape of the body.
-
     \subsection{Collision filtering}
     \label{sec:collisionfiltering}
 
-    By default all the collision shapes of all your bodies are able to collide with each other in the world. However, sometimes we want a body to collide only with a given
-    group of bodies and not with other bodies. This is called collision filtering. The idea is to group the collision shapes of bodies into categories. Then we can specify
-    for each collision shape against which categories it will be able to collide. \\
+    By default all the colliders of the bodies are able to collide with each other in the world. However, sometimes we want a body to collide only
+    with a given group of bodies and not with other bodies. This is called collision filtering. The idea is to group the colliders of bodies into
+    categories. Then we can specify for each collider against which categories of colliders it will be able to collide. \\
 
-    ReactPhysics3D uses bits mask to represent categories. The first thing to do is to assign a category to the collision shapes of your body. To do this, you need to
-    call the \texttt{ProxyShape::setCollisionCategoryBits()} method on the corresponding proxy shape as in the following example. Here we consider that we have four bodies
-    where each one has a single collision shape. \\
+    ReactPhysics3D uses bits masks to represent categories. The first thing to do is to assign a category to the colliders of your body. To do
+    this, you need to call the \texttt{Collider::setCollisionCategoryBits()} method on the corresponding collider as in the following example. Here
+    we consider that we have four bodies where each one has a single collider. \\
 
     \begin{lstlisting}
 // Enumeration for categories
@@ -1308,59 +1352,71 @@ enum Category {
 };
 
 
-// Set the collision category for each proxy shape of
+// Set the collision category for each collider of
 // each of the four bodies
-proxyShapeBody1->setCollisionCategoryBits(CATEGORY1);
-proxyShapeBody2->setCollisionCategoryBits(CATEGORY2);
-proxyShapeBody3->setCollisionCategoryBits(CATEGORY3);
-proxyShapeBody4->setCollisionCategoryBits(CATEGORY3);
+colliderBody1->setCollisionCategoryBits(CATEGORY1);
+colliderBody2->setCollisionCategoryBits(CATEGORY2);
+colliderBody3->setCollisionCategoryBits(CATEGORY3);
+colliderBody4->setCollisionCategoryBits(CATEGORY3);
   \end{lstlisting}
 
     \vspace{0.6cm}
 
-    As you can see, the collision shape of body 1 will be part of the category 1, the collision shape of body 2 will be part of the category 2 and the collision shapes of bodies 3 and 4 will be
-    part of the category 3. \\
+    As you can see, the collider of body 1 will be part of the category 1, the collider of body 2 will be part of the category 2 and the colliders of
+    bodies 3 and 4 will be part of the category 3. \\
 
     \begin{sloppypar}
-    Now, for each collision shape, we need to specify with which categories the shape is allowed to collide with. To do this, you need to use the \texttt{ProxyShape::setCollideWithMaskBits()}
-    method of the proxy shape. Note that you can specify one or more categories using the bitwise OR operator. The following example shows how to specify with which categories the
-    shapes can collide. \\
+    Now, for each collider, we need to specify with which categories it is allowed to collide with. To do this, you need to use the 
+    \texttt{Collider::setCollideWithMaskBits()} method. Note that you can specify one or more categories using the bitwise OR operator. The
+    following example shows how to specify with which categories the collider can collide. \\
     \end{sloppypar}
 
     \begin{lstlisting}
-// For each shape, we specify with which categories it
+// For each collider, we specify with which categories it
 // is allowed to collide
-proxyShapeBody1->setCollideWithMaskBits(CATEGORY3);
-proxyShapeBody2->setCollideWithMaskBits(CATEGORY1 | CATEGORY3);
-proxyShapeBody3->setCollideWithMaskBits(CATEGORY2);
-proxyShapeBody4->setCollideWithMaskBits(CATEGORY2);
+colliderBody1->setCollideWithMaskBits(CATEGORY3);
+colliderBody2->setCollideWithMaskBits(CATEGORY1 | CATEGORY3);
+colliderBody3->setCollideWithMaskBits(CATEGORY2);
+colliderBody4->setCollideWithMaskBits(CATEGORY2);
   \end{lstlisting}
 
     \vspace{0.6cm}
 
-    As you can see, we specify that the body 1 will be allowed to collide with bodies from the categorie 3. We also indicate that the body 2 will be allowed to collide with bodies from the
-    category 1 and 3 (using the bitwise OR operator). Finally, we specify that bodies 3 and 4 will be allowed to collide against bodies of the category 2. \\
+    As you can see, we specify that the body 1 will be allowed to collide with bodies from the categorie 3. We also indicate that the body 2 will be
+    allowed to collide with bodies from the category 1 and 3 (using the bitwise OR operator). Finally, we specify that bodies 3 and 4 will be allowed
+    to collide against bodies of the category 2. \\
 
-    A collision shape is able to collide with another only if you have specify that the category mask of the first shape is part of the \emph{collide with} mask of the second shape. It
-    is also important to understand that this condition must be satisfied in both directions. For instance in the previous example, the body 1 (of category 1) says that it wants to collide
-    against bodies of the category 3 (for instance against body 3). However, body 1 and body 3 will not be able to collide because the body 3 does not say that it wants to collide
-    with bodies from category 1. Therefore, in the previous example, the body 2 is allowed to collide against bodies 3 and 4 but no other collision is allowed. \\
+    A collider is able to collide with another only if you have specify that the category mask of the first collider is part of the
+    \emph{collide with} mask of the second collider. It is also important to understand that this condition must be satisfied in both directions. For
+    instance in the previous example, the body 1 (of category 1) says that it wants to collide against bodies of the category 3 (for instance against
+    body 3). However, body 1 and body 3 will not be able to collide because the body 3 does not say that it wants to collide
+    with bodies from category 1. Therefore, in the previous example, the body 2 is allowed to collide against bodies 3 and 4 but no other collision
+    is allowed. \\
 
     In the same way, you can perform this filtering for ray casting (described in section \ref{sec:raycasting}). For instance, you can perform a ray cast test
     against a given subset of categories of collision shapes only.
 
-    \subsection{Material of a Rigid Body}
+    \subsection{Material}
+    \label{sec:material}
 
     The material of a rigid body is used to describe the physical properties it is made of. This is represented by the \texttt{Material} class. Each body that
-    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::\allowbreak getMaterial()} method. Then, you will be able to change some
-    properties. \\
+    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::\allowbreak getMaterial()} method. \\
 
-    For instance, you can change the bounciness of the rigid body. The bounciness is a value between 0 and 1. The value 1 is used for a very bouncy object and the value 0 means that
-    the body will not be bouncy at all. To change the bounciness of the material, you can use the \texttt{Material::\allowbreak setBounciness()} method. \\
+    You can use the material to set those physical properties. \\
 
-    You are also able to change the friction coefficient of the body. This value needs to be between 0 and 1. If the value is 0, no friction will be applied when the body is in contact with
-    another body. However, if the value is 1, the friction force will be high. You can change the friction coefficient of the material with the
-    \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
+    For instance, you can change the bounciness of the rigid body. The bounciness is a value between 0 and 1. The value 1 is used for a very bouncy
+    object and the value 0 means that the body will not be bouncy at all. To change the bounciness of the material, you can use the
+    \texttt{Material::\allowbreak setBounciness()} method. \\
+
+    \begin{sloppypar}
+    It is also possible to set the mass density of the collider which has a default value of 1. As described in section \label{sec:rigidbodymass}, the
+    mass density of a collider can be used to automatically compute the mass, center of mass and inertia tensor of a rigid body. In order to change the
+    mass density of a collider, you need to use the \texttt{Material::setMassDensity()} method. \\
+    \end{sloppypar}
+
+    You are also able to change the friction coefficient of the body. This value needs to be between 0 and 1. If the value is 0, no friction will be
+    applied when the body is in contact with another body. However, if the value is 1, the friction force will be high. You can change the
+    friction coefficient of the material with the \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
 
     You can use the material to add rolling resistance to a rigid body. Rolling resistance can be used to stop
     a rolling object on a flat surface for instance. You should use this only with SphereShape or
@@ -1371,13 +1427,13 @@ proxyShapeBody4->setCollideWithMaskBits(CATEGORY2);
 
     \begin{lstlisting}
 // Get the current material of the body
-rp3d::Material& material = rigidBody->getMaterial();
+Material& material = rigidBody->getMaterial();
 
 // Change the bounciness of the body
-material.setBounciness(rp3d::decimal(0.4));
+material.setBounciness(0.4);
 
 // Change the friction coefficient of the body
-material.setFrictionCoefficient(rp3d::decimal(0.2));
+material.setFrictionCoefficient(0.2);
   \end{lstlisting}
 
     \section{Joints}
