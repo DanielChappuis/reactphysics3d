@@ -90,10 +90,10 @@ class CollisionCallback {
                 const Vector3& getWorldNormal() const;
 
                 /// Return the contact point on the first collider in the local-space of the first collider
-                const Vector3& getLocalPointOnShape1() const;
+                const Vector3& getLocalPointOnCollider1() const;
 
                 /// Return the contact point on the second collider in the local-space of the second collider
-                const Vector3& getLocalPointOnShape2() const;
+                const Vector3& getLocalPointOnCollider2() const;
 
                 // -------------------- Friendship -------------------- //
 
@@ -288,7 +288,7 @@ inline const Vector3& CollisionCallback::ContactPoint::getWorldNormal() const {
 /**
  * @return The contact point in the local-space of the first collider (from body1) in contact
  */
-inline const Vector3& CollisionCallback::ContactPoint::getLocalPointOnShape1() const {
+inline const Vector3& CollisionCallback::ContactPoint::getLocalPointOnCollider1() const {
    return mContactPoint.getLocalPointOnShape1();
 }
 
@@ -296,7 +296,7 @@ inline const Vector3& CollisionCallback::ContactPoint::getLocalPointOnShape1() c
 /**
  * @return The contact point in the local-space of the second collider (from body2) in contact
  */
-inline const Vector3& CollisionCallback::ContactPoint::getLocalPointOnShape2() const {
+inline const Vector3& CollisionCallback::ContactPoint::getLocalPointOnCollider2() const {
    return mContactPoint.getLocalPointOnShape2();
 }
 

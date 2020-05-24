@@ -33,7 +33,8 @@
 using namespace openglframework;
 
 int SceneDemo::shadowMapTextureLevel = 0;
-openglframework::Color SceneDemo::mObjectColorDemo = Color(0.76f, 0.67f, 0.47f, 1.0f);
+//openglframework::Color SceneDemo::mObjectColorDemo = Color(0.76f, 0.67f, 0.47f, 1.0f);
+openglframework::Color SceneDemo::mObjectColorDemo = Color(0.35f, 0.65f, 0.78f, 1.0f);
 openglframework::Color SceneDemo::mFloorColorDemo = Color(0.47f, 0.48f, 0.49f, 1.0f);
 openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.25f, 0.25f, 1.0f);
 openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.59f, 0.88f, 1.0f);
@@ -101,7 +102,6 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, bool isP
 
 // Destructor
 SceneDemo::~SceneDemo() {
-
 
     for (int i = 0; i < NB_SHADOW_MAPS; i++) {
         mShadowMapTexture[i].destroy();

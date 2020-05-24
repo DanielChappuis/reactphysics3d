@@ -202,7 +202,7 @@ class WorldCollisionCallback : public CollisionCallback
 
                     ContactPoint contactPoint = contactPair.getContactPoint(c);
 
-                    CollisionPointData collisionPoint(contactPoint.getLocalPointOnShape1(), contactPoint.getLocalPointOnShape2(), contactPoint.getPenetrationDepth());
+                    CollisionPointData collisionPoint(contactPoint.getLocalPointOnCollider1(), contactPoint.getLocalPointOnCollider2(), contactPoint.getPenetrationDepth());
                     contactPairData.contactPoints.push_back(collisionPoint);
                 }
 

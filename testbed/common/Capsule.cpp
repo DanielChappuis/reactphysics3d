@@ -96,8 +96,7 @@ Capsule::~Capsule() {
 }
 
 // Render the sphere at the correct position and with the correct orientation
-void Capsule::render(openglframework::Shader& shader,
-                     const openglframework::Matrix4& worldToCameraMatrix) {
+void Capsule::render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Bind the shader
     shader.bind();

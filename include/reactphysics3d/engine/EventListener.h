@@ -44,13 +44,6 @@ class EventListener : public CollisionCallback {
 
     public :
 
-        enum class ErrorType {
-            Warning,
-            InvalidParameter,
-            InvalidOperation,
-            InternalError
-        };
-
         // ---------- Methods ---------- //
 
         /// Constructor

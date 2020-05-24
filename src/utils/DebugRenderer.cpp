@@ -458,7 +458,7 @@ void DebugRenderer::onContact(const CollisionCallback::CallbackData& callbackDat
 
                     CollisionCallback::ContactPoint contactPoint = contactPair.getContactPoint(c);
 
-                    Vector3 point = contactPair.getCollider1()->getLocalToWorldTransform() * contactPoint.getLocalPointOnShape1();
+                    Vector3 point = contactPair.getCollider1()->getLocalToWorldTransform() * contactPoint.getLocalPointOnCollider1();
 
                     if (getIsDebugItemDisplayed(DebugItem::CONTACT_POINT)) {
 
