@@ -164,9 +164,6 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
 
     // ---------- Create the triangular mesh ---------- //
 
-    // Position
-    rp3d::decimal mass = 1.0;
-
     // Create a convex mesh and a corresponding rigid in the physics world
     mSandbox = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "sandbox.obj");
 

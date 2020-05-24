@@ -215,7 +215,6 @@ void JointsScene::createBallAndSocketJoints() {
 
     rp3d::Vector3 positionBox(0, 15, 5);
     openglframework::Vector3 boxDimension(1, 1, 1);
-    const float boxMass = 0.5f;
 
     for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
 

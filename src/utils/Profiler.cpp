@@ -292,7 +292,6 @@ void Profiler::printRecursiveNodeReport(ProfileNodeIterator* iterator,
     for (int i=0; i<spacing; i++) outputStream << " ";
     outputStream << "| Profiling : " << iterator->getCurrentParentName() <<
                     " (total running time : " << parentTime << " ms) ---" << std::endl;
-    long double totalTime = 0.0L;
 
     // Recurse over the children of the current node
     int nbChildren = 0;
@@ -307,7 +306,6 @@ void Profiler::printRecursiveNodeReport(ProfileNodeIterator* iterator,
                         fraction << " % | " << (currentTotalTime / (long double) (nbFrames)) <<
                         " ms/frame (" << iterator->getCurrentNbTotalCalls() << " calls)" <<
                         std::endl;
-        totalTime += currentTotalTime;
     }
 
     if (parentTime < accumulatedTime) {

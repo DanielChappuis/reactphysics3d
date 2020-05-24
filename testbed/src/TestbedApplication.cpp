@@ -301,9 +301,11 @@ void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GL
                               const GLchar* message, const void* userParam ) {
 
     if (type == GL_DEBUG_TYPE_ERROR) {
+        /*
         fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
                    ("** GL ERROR **" ),
                     type, severity, message );
+         */
     }
 }
 

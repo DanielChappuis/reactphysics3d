@@ -1329,7 +1329,7 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
     }
     nbReducedPoints = 3;
 
-    // Compute the 4th point by choosing the triangle that add the most
+    // Compute the 4th point by choosing the triangle that adds the most
     // triangle area to the previous triangle and has opposite sign area (opposite winding)
 
     decimal largestArea = decimal(0.0); // Largest area (positive or negative)

@@ -401,8 +401,6 @@ void RigidBody::computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, de
 /// mass that has been set with the RigidBody::setInertiaTensorLocal() method.
 void RigidBody::updateLocalInertiaTensorFromColliders() {
 
-    const Vector3 centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
-
     // Compute the local-space inertia tensor
     Vector3 inertiaTensorLocal;
     decimal totalMass;

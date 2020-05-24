@@ -496,9 +496,6 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
         Vector3& v1 = mRigidBodyComponents.mConstrainedLinearVelocities[componentIndexBody1];
         Vector3& v2 = mRigidBodyComponents.mConstrainedLinearVelocities[componentIndexBody2];
 
-        Vector3& w1 = mRigidBodyComponents.mConstrainedAngularVelocities[componentIndexBody1];
-        Vector3& w2 = mRigidBodyComponents.mConstrainedAngularVelocities[componentIndexBody2];
-
         decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
         decimal inverseMassBody2 = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
 
@@ -510,6 +507,9 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
         // --------------- Limits Constraints --------------- //
 
         if (mSliderJointComponents.mIsLimitEnabled[i]) {
+
+            Vector3& w1 = mRigidBodyComponents.mConstrainedAngularVelocities[componentIndexBody1];
+            Vector3& w2 = mRigidBodyComponents.mConstrainedAngularVelocities[componentIndexBody2];
 
             const decimal inverseMassMatrixLimit = mSliderJointComponents.mInverseMassMatrixLimit[i];
 
@@ -786,9 +786,6 @@ void SolveSliderJointSystem::solvePositionConstraint() {
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
-        Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
-        Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
-
         Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
         Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
 
@@ -860,6 +857,9 @@ void SolveSliderJointSystem::solvePositionConstraint() {
         // --------------- Limits Constraints --------------- //
 
         if (mSliderJointComponents.mIsLimitEnabled[i]) {
+
+            Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
+            Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
 
             const Vector3& r2CrossSliderAxis = mSliderJointComponents.mR2CrossSliderAxis[i];
             const Vector3& r1PlusUCrossSliderAxis = mSliderJointComponents.mR1PlusUCrossSliderAxis[i];
