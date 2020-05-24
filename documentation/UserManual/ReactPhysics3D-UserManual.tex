@@ -280,14 +280,16 @@ find_package(ReactPhysics3D REQUIRED)
     \vspace{0.6cm}
 
     This will tell CMake to find the installed ReactPhysics3D library on your system and import the library file and headers so that you can
-    link it to your project. Note that if you are working on Windows, you might need to use the following code in your \path{CMakeLists.txt} file
-    before calling the previous function. This will help CMake to find the installed ReactPhysics3D library on Windows. 
+    link it to your project. Note that if you are working on Windows or Mac OS X, you might need to use the following code in your \path{CMakeLists.txt} file
+    before calling the previous function. This will help CMake to find the installed ReactPhysics3D library on Windows or Mac OS X. 
 
     \vspace{0.6cm}
 
     \begin{lstlisting}
 if(WIN32)
   list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")
+elseif(APPLE)
+  list(APPEND CMAKE_PREFIX_PATH "/usr/local/lib/cmake/ReactPhysics3D")
 endif()
     \end{lstlisting}
 
@@ -313,9 +315,11 @@ target_link_libraries(helloworld ReactPhysics3D::ReactPhysics3D)
 # Minimum cmake version required
 cmake_minimum_required(VERSION 3.8)
 
-# Help CMake to find the installed library on Windows
+# Help CMake to find the installed library on Windows or Mac OS X
 if(WIN32)
   list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")
+elseif(APPLE)
+  list(APPEND CMAKE_PREFIX_PATH "/usr/local/lib/cmake/ReactPhysics3D")
 endif()
 
 # Import the ReactPhysics3D library 
