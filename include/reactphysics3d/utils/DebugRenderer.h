@@ -260,41 +260,67 @@ class DebugRenderer : public EventListener {
 };
 
 // Return the number of lines
+/**
+ * @return The number of lines in the array of lines to draw
+ */
 inline uint32 DebugRenderer::getNbLines() const {
 	return mLines.size();
 }
 
 // Return a reference to the list of lines
+/**
+ * @return The list of lines to draw
+ */
 inline const List<DebugRenderer::DebugLine>& DebugRenderer::getLines() const {
 	return mLines;
 }
 
 // Return a pointer to the array of lines
+/**
+ * @return A pointer to the first element of the lines array to draw
+ */
 inline const DebugRenderer::DebugLine* DebugRenderer::getLinesArray() const {
 	return &(mLines[0]);
 }
 
 // Return the number of triangles
+/**
+ * @return The number of triangles in the array of triangles to draw
+ */
 inline uint32 DebugRenderer::getNbTriangles() const {
 	return mTriangles.size();
 }
 
 // Return a reference to the list of triangles
+/**
+ * @return The list of triangles to draw
+ */
 inline const List<DebugRenderer::DebugTriangle>& DebugRenderer::getTriangles() const {
 	return mTriangles;
 }
 
 // Return a pointer to the array of triangles
+/**
+ * @return A pointer to the first element of the triangles array to draw
+ */
 inline const DebugRenderer::DebugTriangle* DebugRenderer::getTrianglesArray() const {
 	return &(mTriangles[0]);
 }
 
 // Return whether a debug item is displayed or not
+/**
+ * @param item A debug item
+ * @return True if the given debug item is being displayed and false otherwise
+ */
 inline bool DebugRenderer::getIsDebugItemDisplayed(DebugItem item) const {
 	return mDisplayedDebugItems & static_cast<uint32>(item);
 }
 
 // Set whether a debug info is displayed or not
+/**
+ * @param item A debug item to draw
+ * @param isDisplayed True if the given debug item has to be displayed and false otherwise
+ */
 inline void DebugRenderer::setIsDebugItemDisplayed(DebugItem item, bool isDisplayed) {
 	const uint32 itemFlag = static_cast<uint32>(item);
 	uint32 resetBit = ~(itemFlag);
@@ -305,11 +331,17 @@ inline void DebugRenderer::setIsDebugItemDisplayed(DebugItem item, bool isDispla
 }
 
 // Get the contact point sphere radius
+/**
+ * @return The radius of the sphere used to display a contact point
+ */
 inline decimal DebugRenderer::getContactPointSphereRadius() const {
     return mContactPointSphereRadius;
 }
 
 // Set the contact point sphere radius
+/**
+ * @param radius The radius of the sphere used to display a contact point
+ */
 inline void DebugRenderer::setContactPointSphereRadius(decimal radius) {
     assert(radius > decimal(0.0));
     mContactPointSphereRadius = radius;
@@ -317,11 +349,17 @@ inline void DebugRenderer::setContactPointSphereRadius(decimal radius) {
 
 
 // Return the length of contact normal
+/**
+ * @return The length of the contact normal to display
+ */
 inline decimal DebugRenderer::getContactNormalLength() const {
     return mContactNormalLength;
 }
 
 // Return the length of contact normal
+/**
+ * @param contactNormalLength The length of the contact normal to display
+ */
 inline void DebugRenderer::setContactNormalLength(decimal contactNormalLength) {
     mContactNormalLength = contactNormalLength;
 }

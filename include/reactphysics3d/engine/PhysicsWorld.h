@@ -78,7 +78,7 @@ class PhysicsWorld {
             /// Name of the world
             std::string worldName;
 
-            /// Gravity vector of the world
+            /// Gravity force vector of the world (in Newtons)
             Vector3 gravity;
 
             /// Distance threshold for two contact points for a valid persistent contact (in meters)
@@ -567,6 +567,9 @@ inline void PhysicsWorld::testOverlap(CollisionBody* body, OverlapCallback& over
 /// Use this method if you are not interested in contacts but if you simply want to know
 /// which bodies overlap. If you want to get the contacts, you need to use the
 /// testCollision() method instead.
+/**
+ * @param overlapCallback Pointer to the callback class to report overlap
+ */
 inline void PhysicsWorld::testOverlap(OverlapCallback& overlapCallback) {
     mCollisionDetection.testOverlap(overlapCallback);
 }
@@ -700,6 +703,9 @@ inline void PhysicsWorld::setEventListener(EventListener* eventListener) {
 
 // Return the number of CollisionBody in the physics world
 /// Note that even if a RigidBody is also a collision body, this method does not return the rigid bodies
+/**
+ * @return The number of collision bodies in the physics world
+ */
 inline uint PhysicsWorld::getNbCollisionBodies() const {
    return mCollisionBodies.size();
 }
@@ -733,6 +739,9 @@ inline CollisionBody* PhysicsWorld::getCollisionBody(uint index) {
 }
 
 // Return the number of RigidBody in the physics world
+/**
+ * @return The number of rigid bodies in the physics world
+ */
 inline uint PhysicsWorld::getNbRigidBodies() const {
    return mRigidBodies.size();
 }
@@ -766,16 +775,25 @@ inline RigidBody* PhysicsWorld::getRigidBody(uint index) {
 }
 
 // Return true if the debug rendering is enabled
+/**
+ * @return True if the debug rendering is enabled and false otherwise
+ */
 inline bool PhysicsWorld::getIsDebugRenderingEnabled() const {
     return mIsDebugRenderingEnabled;
 }
 
 // Set to true if debug rendering is enabled
+/**
+ * @param isEnabled True if you want to enable the debug rendering and false otherwise
+ */
 inline void PhysicsWorld::setIsDebugRenderingEnabled(bool isEnabled) {
     mIsDebugRenderingEnabled = isEnabled;
 }
 
 // Return a reference to the Debug Renderer of the world
+/**
+ * @return A reference to the DebugRenderer object of the world
+ */
 inline DebugRenderer& PhysicsWorld::getDebugRenderer() {
     return mDebugRenderer;
 }

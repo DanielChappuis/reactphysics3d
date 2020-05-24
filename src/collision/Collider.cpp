@@ -103,7 +103,10 @@ void Collider::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
              std::to_string(collideWithMaskBits),  __FILE__, __LINE__);
 }
 
-// Set the local to parent body transform
+// Set the local to  body transform
+/**
+ * @param transform The transform from local-space of the collider into the local-space of the body
+ */
 void Collider::setLocalToBodyTransform(const Transform& transform) {
 
     mBody->mWorld.mCollidersComponents.setLocalToBodyTransform(mEntity, transform);
@@ -137,7 +140,7 @@ const AABB Collider::getWorldAABB() const {
 
 // Return a pointer to the collision shape
 /**
- * @return Pointer to the internal collision shape
+ * @return Pointer to the collision shape
  */
 CollisionShape* Collider::getCollisionShape() {
     return mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
@@ -145,7 +148,7 @@ CollisionShape* Collider::getCollisionShape() {
 
 // Return a const pointer to the collision shape
 /**
- * @return Pointer to the internal collision shape
+ * @return Pointer to the collision shape
  */
 const CollisionShape* Collider::getCollisionShape() const {
     return mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
@@ -158,8 +161,8 @@ int Collider::getBroadPhaseId() const {
 
 // Return the local to parent body transform
 /**
- * @return The transformation that transforms the local-space of the collision shape
- *         to the local-space of the parent body
+ * @return The transformation that transforms the local-space of the collider
+ *         to the local-space of the body
  */
 const Transform& Collider::getLocalToBodyTransform() const {
     return mBody->mWorld.mCollidersComponents.getLocalToBodyTransform(mEntity);
@@ -238,11 +241,17 @@ const Transform Collider::getLocalToWorldTransform() const {
 }
 
 // Return true if the collider is a trigger
+/**
+ * @return True if this collider is a trigger and false otherwise
+ */
 bool Collider::getIsTrigger() const {
    return mBody->mWorld.mCollidersComponents.getIsTrigger(mEntity);
 }
 
 // Set whether the collider is a trigger
+/**
+ * @param isTrigger True if you want to set this collider as a trigger and false otherwise
+ */
 void Collider::setIsTrigger(bool isTrigger) const {
    mBody->mWorld.mCollidersComponents.setIsTrigger(mEntity, isTrigger);
 }

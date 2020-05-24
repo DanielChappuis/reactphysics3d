@@ -44,6 +44,9 @@ RigidBody::RigidBody(PhysicsWorld& world, Entity entity) : CollisionBody(world, 
 }
 
 // Return the type of the body
+/**
+ * @return The type of rigid body (static, kinematic or dynamic)
+ */
 BodyType RigidBody::getType() const {
     return mWorld.mRigidBodyComponents.getBodyType(mEntity);
 }
@@ -136,7 +139,7 @@ decimal RigidBody::getMass() const {
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
- * @param force The force to apply on the body
+ * @param force The force to apply on the body (in Newtons)
  * @param point The point where the force is applied (in local-space coordinates)
  */
 void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& point) {
@@ -168,7 +171,7 @@ void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& p
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
- * @param force The force to apply on the body
+ * @param force The force to apply on the body (in Newtons)
  * @param point The point where the force is applied (in world-space coordinates)
  */
 void RigidBody::applyForceAtWorldPosition(const Vector3& force, const Vector3& point) {
@@ -192,6 +195,9 @@ void RigidBody::applyForceAtWorldPosition(const Vector3& force, const Vector3& p
 }
 
 // Return the local inertia tensor of the body (in body coordinates)
+/**
+ * @return A vector with the three values of the diagonal 3x3 matrix of the local-space inertia tensor
+ */
 const Vector3& RigidBody::getLocalInertiaTensor() const {
 
     return mWorld.mRigidBodyComponents.getLocalInertiaTensor(mEntity);
@@ -200,8 +206,7 @@ const Vector3& RigidBody::getLocalInertiaTensor() const {
 // Set the local inertia tensor of the body (in local-space coordinates)
 /// Note that an inertia tensor with a zero value on its diagonal is interpreted as infinite inertia.
 /**
- * @param inertiaTensorLocal The 3x3 inertia tensor matrix of the body in local-space
- *                           coordinates
+ * @param inertiaTensorLocal A vector with the three values of the diagonal 3x3 matrix of the local-space inertia tensor
  */
 void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
 
@@ -223,7 +228,7 @@ void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
- * @param force The external force to apply on the center of mass of the body
+ * @param force The external force to apply on the center of mass of the body (in Newtons)
  */
 void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
@@ -281,6 +286,9 @@ void RigidBody::setLocalCenterOfMass(const Vector3& centerOfMass) {
 }
 
 // Return the center of mass of the body (in local-space coordinates)
+/**
+ * @return The local-space position of the center of mass of the body
+ */
 const Vector3& RigidBody::getLocalCenterOfMass() const {
     return mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
 }
@@ -550,7 +558,7 @@ void RigidBody::setMass(decimal mass) {
 /// returned collider to get and set information about the corresponding
 /// collision shape for that body.
 /**
- * @param collisionShape The collision shape of the new collider
+ * @param collisionShape A pointer to the collision shape of the new collider
  * @param transform The transformation of the collider that transforms the
  *        local-space of the collider into the local-space of the body
  * @return A pointer to the collider that has been created

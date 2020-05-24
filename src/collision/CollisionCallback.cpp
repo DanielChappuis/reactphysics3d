@@ -75,7 +75,7 @@ CollisionCallback::ContactPair::EventType CollisionCallback::ContactPair::getEve
     return EventType::ContactStart;
 }
 
-// CollisionCallbackInfo Constructor
+// Constructor
 CollisionCallback::CallbackData::CallbackData(List<reactphysics3d::ContactPair>* contactPairs, List<ContactManifold>* manifolds,
                                               List<reactphysics3d::ContactPoint>* contactPoints, List<reactphysics3d::ContactPair>& lostContactPairs, PhysicsWorld& world)
                       :mContactPairs(contactPairs), mContactManifolds(manifolds), mContactPoints(contactPoints), mLostContactPairs(lostContactPairs),
