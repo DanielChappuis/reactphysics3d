@@ -775,7 +775,6 @@ void PhysicsWorld::createIslands() {
             // Add the body into the island
             mIslands.bodyEntities[islandIndex].add(bodyToVisitEntity);
 
-            // TODO : Do not use pointer to rigid body here (maybe move getType() into a component)
             RigidBody* rigidBodyToVisit = static_cast<RigidBody*>(mCollisionBodyComponents.getBody(bodyToVisitEntity));
 
             // Awake the body if it is sleeping
@@ -1023,3 +1022,76 @@ void PhysicsWorld::setIsGravityEnabled(bool isGravityEnabled) {
     RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")),  __FILE__, __LINE__);
 }
+
+// Return a constant pointer to a given CollisionBody of the world
+/**
+ * @param index Index of a CollisionBody in the world
+ * @return Constant pointer to a given CollisionBody
+ */
+const CollisionBody* PhysicsWorld::getCollisionBody(uint index) const {
+
+    if (index >= getNbCollisionBodies()) {
+
+        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::World,
+                 "Error when getting collision body: index is out of bounds",  __FILE__, __LINE__);
+    }
+
+    assert(index < mCollisionBodies.size());
+
+    return mCollisionBodies[index];
+}
+
+// Return a pointer to a given CollisionBody of the world
+/**
+ * @param index Index of a CollisionBody in the world
+ * @return Pointer to a given CollisionBody
+ */
+CollisionBody* PhysicsWorld::getCollisionBody(uint index) {
+
+    if (index >= getNbCollisionBodies()) {
+
+        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::World,
+                 "Error when getting collision body: index is out of bounds",  __FILE__, __LINE__);
+    }
+
+    assert(index < mCollisionBodies.size());
+
+    return mCollisionBodies[index];
+}
+
+// Return a constant pointer to a given RigidBody of the world
+/**
+ * @param index Index of a RigidBody in the world
+ * @return Constant pointer to a given RigidBody
+ */
+const RigidBody* PhysicsWorld::getRigidBody(uint index) const {
+
+    if (index >= getNbRigidBodies()) {
+
+        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::World,
+                 "Error when getting rigid body: index is out of bounds",  __FILE__, __LINE__);
+    }
+
+    assert(index < mRigidBodies.size());
+
+    return mRigidBodies[index];
+}
+
+// Return a pointer to a given RigidBody of the world
+/**
+ * @param index Index of a RigidBody in the world
+ * @return Pointer to a given RigidBody
+ */
+RigidBody* PhysicsWorld::getRigidBody(uint index) {
+
+    if (index >= getNbRigidBodies()) {
+
+        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::World,
+                 "Error when getting rigid body: index is out of bounds",  __FILE__, __LINE__);
+    }
+
+    assert(index < mRigidBodies.size());
+
+    return mRigidBodies[index];
+}
+

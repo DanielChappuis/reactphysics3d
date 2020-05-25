@@ -710,68 +710,12 @@ inline uint PhysicsWorld::getNbCollisionBodies() const {
    return mCollisionBodies.size();
 }
 
-// Return a constant pointer to a given CollisionBody of the world
-/**
- * @param index Index of a CollisionBody in the world
- * @return Constant pointer to a given CollisionBody
- */
-inline const CollisionBody* PhysicsWorld::getCollisionBody(uint index) const {
-
-    assert(index < mCollisionBodies.size());
-
-    // TODO : Report error here if index is not within bounds
-
-    return mCollisionBodies[index];
-}
-
-// Return a pointer to a given CollisionBody of the world
-/**
- * @param index Index of a CollisionBody in the world
- * @return Pointer to a given CollisionBody
- */
-inline CollisionBody* PhysicsWorld::getCollisionBody(uint index) {
-
-    assert(index < mCollisionBodies.size());
-
-    // TODO : Report error here if index is not within bounds
-
-    return mCollisionBodies[index];
-}
-
 // Return the number of RigidBody in the physics world
 /**
  * @return The number of rigid bodies in the physics world
  */
 inline uint PhysicsWorld::getNbRigidBodies() const {
    return mRigidBodies.size();
-}
-
-
-// Return a constant pointer to a given RigidBody of the world
-/**
- * @param index Index of a RigidBody in the world
- * @return Constant pointer to a given RigidBody
- */
-inline const RigidBody* PhysicsWorld::getRigidBody(uint index) const {
-    assert(index < mRigidBodies.size());
-
-    // TODO : Report error here if index is not within bounds
-
-    return mRigidBodies[index];
-}
-
-// Return a pointer to a given RigidBody of the world
-/**
- * @param index Index of a RigidBody in the world
- * @return Pointer to a given RigidBody
- */
-inline RigidBody* PhysicsWorld::getRigidBody(uint index) {
-
-    assert(index < mRigidBodies.size());
-
-    // TODO : Report error here if index is not within bounds
-
-    return mRigidBodies[index];
 }
 
 // Return true if the debug rendering is enabled

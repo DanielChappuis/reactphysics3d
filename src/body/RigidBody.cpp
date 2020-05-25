@@ -531,7 +531,11 @@ void RigidBody::setMass(decimal mass) {
 
     mWorld.mRigidBodyComponents.setMass(mEntity, mass);
 
-    // TODO : Report error if mass is negative
+    if (mass < decimal(0.0)) {
+
+        RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Error, Logger::Category::Body,
+                 "Error when setting the mass of a rigid body: the mass must be a positive value",  __FILE__, __LINE__);
+    }
 
     if (mWorld.mRigidBodyComponents.getMass(mEntity) > decimal(0.0)) {
         mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mass);

@@ -823,7 +823,6 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
         // Now, we will clip the shapes along this axis to find the contact points
 
         assert(minPenetrationDepth > decimal(0.0));
-        assert((isMinPenetrationFaceNormal && minFaceIndex >= 0) || !isMinPenetrationFaceNormal);
 
         // If the minimum separating axis is a face normal
         if (isMinPenetrationFaceNormal) {

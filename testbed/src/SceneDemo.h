@@ -87,10 +87,8 @@ class SceneDemo : public Scene {
 		/// Constant color shader
 		openglframework::Shader mColorShader;
 
-        // TODO : Delete this
         openglframework::Shader mQuadShader;
 
-        // TODO : Delete this
         openglframework::VertexArrayObject mVAOQuad;
 
         openglframework::VertexBufferObject mVBOQuad;
@@ -134,7 +132,6 @@ class SceneDemo : public Scene {
         /// Create a the VAO and VBOs to render the debug infos
         void createDebugVBO();
 
-        /// TODO : Delete this
         void drawTextureQuad();
 
         /// Update the contact points

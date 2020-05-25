@@ -71,13 +71,12 @@ bool Collider::testPointInside(const Vector3& worldPoint) {
  */
 void Collider::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
 
-    // TODO : Here we should probably remove all overlapping pairs with this shape in the
-    //        broad-phase and add the shape in the "has moved" shape list so it is reevaluated
-    //        with the new mask bits
-
     mBody->mWorld.mCollidersComponents.setCollisionCategoryBits(mEntity, collisionCategoryBits);
 
     int broadPhaseId = mBody->mWorld.mCollidersComponents.getBroadPhaseId(mEntity);
+
+    // Ask the broad-phase collision detection to test this collider next frame
+    mBody->mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(this);
 
     RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(broadPhaseId) + ": Set collisionCategoryBits=" +
@@ -90,13 +89,12 @@ void Collider::setCollisionCategoryBits(unsigned short collisionCategoryBits) {
  */
 void Collider::setCollideWithMaskBits(unsigned short collideWithMaskBits) {
 
-    // TODO : Here we should probably remove all overlapping pairs with this shape in the
-    //        broad-phase and add the shape in the "has moved" shape list so it is reevaluated
-    //        with the new mask bits
-
     mBody->mWorld.mCollidersComponents.setCollideWithMaskBits(mEntity, collideWithMaskBits);
 
     int broadPhaseId = mBody->mWorld.mCollidersComponents.getBroadPhaseId(mEntity);
+
+    // Ask the broad-phase collision detection to test this collider next frame
+    mBody->mWorld.mCollisionDetection.askForBroadPhaseCollisionCheck(this);
 
     RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
              "Collider" + std::to_string(broadPhaseId) + ": Set collideWithMaskBits=" +

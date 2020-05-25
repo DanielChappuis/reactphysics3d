@@ -165,12 +165,10 @@ void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbIte
     startIndex = std::min(startIndex, mCollidersComponents.getNbEnabledComponents());
     uint32 endIndex = std::min(startIndex + nbItems, mCollidersComponents.getNbEnabledComponents());
     nbItems = endIndex - startIndex;
-    assert(nbItems >= 0);
 
     // For each collider component to update
     for (uint32 i = startIndex; i < startIndex + nbItems; i++) {
 
-        // TODO : Can we remove this test
         const int32 broadPhaseId = mCollidersComponents.mBroadPhaseIds[i];
         if (broadPhaseId != -1) {
 

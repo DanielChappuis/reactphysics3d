@@ -137,7 +137,7 @@ inline decimal CapsuleShape::getRadius() const {
  * @param radius The radius of the capsule (in meters)
  */
 inline void CapsuleShape::setRadius(decimal radius) {
-    // TODO : Throw a library error here if radius is not larger than zero
+
     assert(radius > decimal(0.0));
     mMargin = radius;
 
@@ -160,7 +160,6 @@ inline decimal CapsuleShape::getHeight() const {
  */
 inline void CapsuleShape::setHeight(decimal height) {
 
-    // TODO : Throw a library error here if radius is not larger than zero
     assert(height > decimal(0.0));
     mHalfHeight = height * decimal(0.5);
 

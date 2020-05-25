@@ -2,6 +2,9 @@
 
 ## Version 0.8.0
 
+Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
+do not hesitate to take a look at the user manual.
+
 ### Added
 
  - It is now possible to change the size of a BoxShape using the BoxShape::setHalfExtents() method

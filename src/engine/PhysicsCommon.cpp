@@ -167,6 +167,12 @@ void PhysicsCommon::destroyPhysicsWorld(PhysicsWorld* world) {
  */
 SphereShape* PhysicsCommon::createSphereShape(const decimal radius) {
 
+    if (radius <= decimal(0.0)) {
+
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
+                 "Error when creating a SphereShape: radius must be a positive value",  __FILE__, __LINE__);
+    }
+
     SphereShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(SphereShape))) SphereShape(radius, mMemoryManager.getHeapAllocator());
     mSphereShapes.add(shape);
 
@@ -182,7 +188,7 @@ void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
     // If the shape is still part of some colliders
     if (sphereShape->mColliders.size() > 0) {
 
-        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
                  "Error when destroying the SphereShape because it is still used by some colliders",  __FILE__, __LINE__);
     }
 
@@ -202,6 +208,11 @@ void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
  */
 BoxShape* PhysicsCommon::createBoxShape(const Vector3& halfExtents) {
 
+    if (halfExtents.x <= decimal(0.0) || halfExtents.y <= decimal(0.0) || halfExtents.z <= decimal(0.0)) {
+
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
+                 "Error when creating a BoxShape: the half extents must be positive values",  __FILE__, __LINE__);
+    }
     BoxShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(BoxShape))) BoxShape(halfExtents, mMemoryManager.getHeapAllocator());
 
     mBoxShapes.add(shape);
@@ -218,7 +229,7 @@ void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
     // If the shape is still part of some colliders
     if (boxShape->mColliders.size() > 0) {
 
-        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
                  "Error when destroying the BoxShape because it is still used by some colliders",  __FILE__, __LINE__);
     }
 
@@ -239,6 +250,18 @@ void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
  */
 CapsuleShape* PhysicsCommon::createCapsuleShape(decimal radius, decimal height) {
 
+    if (radius <= decimal(0.0)) {
+
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
+                 "Error when creating a CapsuleShape: radius must be a positive value",  __FILE__, __LINE__);
+    }
+
+    if (height <= decimal(0.0)) {
+
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
+                 "Error when creating a CapsuleShape: height must be a positive value",  __FILE__, __LINE__);
+    }
+
     CapsuleShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(CapsuleShape))) CapsuleShape(radius, height, mMemoryManager.getHeapAllocator());
 
     mCapsuleShapes.add(shape);
@@ -255,7 +278,7 @@ void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
     // If the shape is still part of some colliders
     if (capsuleShape->mColliders.size() > 0) {
 
-        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
                  "Error when destroying the CapsuleShape because it is still used by some colliders",  __FILE__, __LINE__);
     }
 
@@ -292,7 +315,7 @@ void PhysicsCommon::destroyConvexMeshShape(ConvexMeshShape* convexMeshShape) {
     // If the shape is still part of some colliders
     if (convexMeshShape->mColliders.size() > 0) {
 
-        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
                  "Error when destroying the ConvexMeshShape because it is still used by some colliders",  __FILE__, __LINE__);
     }
 
@@ -338,7 +361,7 @@ void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) 
     // If the shape is still part of some colliders
     if (heightFieldShape->mColliders.size() > 0) {
 
-        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
                  "Error when destroying the HeightFieldShape because it is still used by some colliders",  __FILE__, __LINE__);
     }
 
@@ -375,7 +398,7 @@ void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) 
     // If the shape is still part of some colliders
     if (concaveMeshShape->mColliders.size() > 0) {
 
-        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
                  "Error when destroying the ConcaveMeshShape because it is still used by some colliders",  __FILE__, __LINE__);
     }
 

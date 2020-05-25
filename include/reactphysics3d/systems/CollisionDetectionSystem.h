@@ -319,7 +319,7 @@ class CollisionDetectionSystem {
         void removeNoCollisionPair(Entity body1Entity, Entity body2Entity);
 
         /// Ask for a collision shape to be tested again during broad-phase.
-        void askForBroadPhaseCollisionCheck(Collider* shape);
+        void askForBroadPhaseCollisionCheck(Collider* collider);
 
         /// Notify that the overlapping pairs where a given collider is involved need to be tested for overlap
         void notifyOverlappingPairsToTestOverlap(Collider* collider);
@@ -411,10 +411,10 @@ inline void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, 
 // Ask for a collision shape to be tested again during broad-phase.
 /// We simply put the shape in the list of collision shape that have moved in the
 /// previous frame so that it is tested for collision again in the broad-phase.
-inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* shape) {
+inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* collider) {
 
-    if (shape->getBroadPhaseId() != -1) {
-        mBroadPhaseSystem.addMovedCollider(shape->getBroadPhaseId(), shape);
+    if (collider->getBroadPhaseId() != -1) {
+        mBroadPhaseSystem.addMovedCollider(collider->getBroadPhaseId(), collider);
     }
 }
 

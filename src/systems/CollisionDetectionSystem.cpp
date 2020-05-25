@@ -1598,8 +1598,6 @@ void CollisionDetectionSystem::filterOverlappingPairs(Entity bodyEntity, List<ui
 // Filter the overlapping pairs to keep only the pairs where two given bodies are involved
 void CollisionDetectionSystem::filterOverlappingPairs(Entity body1Entity, Entity body2Entity, List<uint64>& convexPairs, List<uint64>& concavePairs) const {
 
-    // TODO : Do not go through all the overlapping pairs here but get all the involded overlapping pairs directly from the bodies
-
     // For each possible collision pair of bodies
     for (uint i=0; i < mOverlappingPairs.getNbPairs(); i++) {
 

@@ -39,7 +39,7 @@ using namespace reactphysics3d;
  */
 CapsuleShape::CapsuleShape(decimal radius, decimal height, MemoryAllocator& allocator)
             : ConvexShape(CollisionShapeName::CAPSULE, CollisionShapeType::CAPSULE, allocator, radius), mHalfHeight(height * decimal(0.5)) {
-    // TODO : Throw a library error here if radius or height is not larger than zero
+
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
 }

@@ -296,11 +296,9 @@ class ContactSolverSystem {
         decimal& mRestitutionVelocityThreshold;
 
         /// Contact constraints
-        // TODO : Use List<> here
         ContactManifoldSolver* mContactConstraints;
 
         /// Contact points
-        // TODO : Use List<> here
         ContactPointSolver* mContactPoints;
 
         /// Number of contact point constraints

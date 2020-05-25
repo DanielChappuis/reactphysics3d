@@ -196,7 +196,7 @@ void TriangleVertexArray::computeVerticesNormals() {
  */
 void TriangleVertexArray::getTriangleVerticesIndices(uint triangleIndex, uint* outVerticesIndices) const {
 
-    assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
+    assert(triangleIndex < mNbTriangles);
 
     const uchar* triangleIndicesPointer = mIndicesStart + triangleIndex * mIndicesStride;
     const void* startTriangleIndices = static_cast<const void*>(triangleIndicesPointer);
@@ -224,7 +224,7 @@ void TriangleVertexArray::getTriangleVerticesIndices(uint triangleIndex, uint* o
  */
 void TriangleVertexArray::getTriangleVertices(uint triangleIndex, Vector3* outTriangleVertices) const {
 
-    assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
+    assert(triangleIndex < mNbTriangles);
 
     // Get the three vertex index of the three vertices of the triangle
     uint verticesIndices[3];
@@ -262,7 +262,7 @@ void TriangleVertexArray::getTriangleVertices(uint triangleIndex, Vector3* outTr
  */
 void TriangleVertexArray::getTriangleVerticesNormals(uint triangleIndex, Vector3* outTriangleVerticesNormals) const {
 
-    assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
+    assert(triangleIndex < mNbTriangles);
 
     // Get the three vertex index of the three vertices of the triangle
     uint verticesIndices[3];
