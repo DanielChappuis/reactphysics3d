@@ -48,12 +48,13 @@ class Logger {
         enum class Level {Error = 1, Warning = 2, Information = 4};
 
         /// Log categories
-        enum class Category {World, Body, Joint, Collider};
+        enum class Category {PhysicCommon, World, Body, Joint, Collider};
 
         /// Return the name of a category
         static std::string getCategoryName(Category category) {
 
             switch(category) {
+                case Category::PhysicCommon: return "PhysicsCommon";
                 case Category::World: return "World";
                 case Category::Body: return "Body";
                 case Category::Joint: return "Joint";
