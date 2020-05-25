@@ -179,9 +179,12 @@ SphereShape* PhysicsCommon::createSphereShape(const decimal radius) {
  */
 void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
 
-    // TODO Test if collision shape is still part of some colliders, if so throw error
+    // If the shape is still part of some colliders
+    if (sphereShape->mColliders.size() > 0) {
 
-    assert(sphereShape->mColliders.size() == 0);
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+                 "Error when destroying the SphereShape because it is still used by some colliders",  __FILE__, __LINE__);
+    }
 
    // Call the destructor of the shape
    sphereShape->~SphereShape();
@@ -212,9 +215,12 @@ BoxShape* PhysicsCommon::createBoxShape(const Vector3& halfExtents) {
  */
 void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
 
-    // TODO Test if collision shape is still part of some colliders, if so throw error
+    // If the shape is still part of some colliders
+    if (boxShape->mColliders.size() > 0) {
 
-    assert(boxShape->mColliders.size() == 0);
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+                 "Error when destroying the BoxShape because it is still used by some colliders",  __FILE__, __LINE__);
+    }
 
    // Call the destructor of the shape
    boxShape->~BoxShape();
@@ -246,9 +252,12 @@ CapsuleShape* PhysicsCommon::createCapsuleShape(decimal radius, decimal height) 
  */
 void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
 
-    // TODO Test if collision shape is still part of some colliders, if so throw error
+    // If the shape is still part of some colliders
+    if (capsuleShape->mColliders.size() > 0) {
 
-    assert(capsuleShape->mColliders.size() == 0);
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+                 "Error when destroying the CapsuleShape because it is still used by some colliders",  __FILE__, __LINE__);
+    }
 
    // Call the destructor of the shape
    capsuleShape->~CapsuleShape();
@@ -280,9 +289,12 @@ ConvexMeshShape* PhysicsCommon::createConvexMeshShape(PolyhedronMesh* polyhedron
  */
 void PhysicsCommon::destroyConvexMeshShape(ConvexMeshShape* convexMeshShape) {
 
-    // TODO Test if collision shape is still part of some colliders, if so throw error
+    // If the shape is still part of some colliders
+    if (convexMeshShape->mColliders.size() > 0) {
 
-    assert(convexMeshShape->mColliders.size() == 0);
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+                 "Error when destroying the ConvexMeshShape because it is still used by some colliders",  __FILE__, __LINE__);
+    }
 
    // Call the destructor of the shape
    convexMeshShape->~ConvexMeshShape();
@@ -323,9 +335,12 @@ HeightFieldShape* PhysicsCommon::createHeightFieldShape(int nbGridColumns, int n
  */
 void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) {
 
-   // TODO Test if collision shape is still part of some colliders, if so throw error
+    // If the shape is still part of some colliders
+    if (heightFieldShape->mColliders.size() > 0) {
 
-   assert(heightFieldShape->mColliders.size() == 0);
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+                 "Error when destroying the HeightFieldShape because it is still used by some colliders",  __FILE__, __LINE__);
+    }
 
    // Call the destructor of the shape
    heightFieldShape->~HeightFieldShape();
@@ -357,9 +372,12 @@ ConcaveMeshShape* PhysicsCommon::createConcaveMeshShape(TriangleMesh* triangleMe
  */
 void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
 
-   // TODO Test if collision shape is still part of some colliders, if so throw error
+    // If the shape is still part of some colliders
+    if (concaveMeshShape->mColliders.size() > 0) {
 
-   assert(concaveMeshShape->mColliders.size() == 0);
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::World,
+                 "Error when destroying the ConcaveMeshShape because it is still used by some colliders",  __FILE__, __LINE__);
+    }
 
    // Call the destructor of the shape
    concaveMeshShape->~ConcaveMeshShape();
