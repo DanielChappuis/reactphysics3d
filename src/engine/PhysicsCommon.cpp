@@ -32,6 +32,9 @@ using namespace reactphysics3d;
 Logger* PhysicsCommon::mLogger = nullptr;
 
 /// Constructor
+/**
+ * @param baseMemoryAllocator Pointer to a user custom memory allocator
+ */
 PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
               : mMemoryManager(baseMemoryAllocator),
                 mPhysicsWorlds(mMemoryManager.getHeapAllocator()), mSphereShapes(mMemoryManager.getHeapAllocator()),
@@ -117,6 +120,10 @@ void PhysicsCommon::release() {
 }
 
 // Create and return an instance of PhysicsWorld
+/**
+ * @param worldSettings The settings of the physics world
+ * @return A pointer to the created physics world
+ */
 PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings) {
 
     Profiler* profiler = nullptr;
@@ -139,6 +146,9 @@ PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSetting
 }
 
 // Destroy an instance of PhysicsWorld
+/**
+ * @param world A pointer to the physics world to destroy
+ */
 void PhysicsCommon::destroyPhysicsWorld(PhysicsWorld* world) {
 
    // Call the destructor of the world
@@ -151,6 +161,10 @@ void PhysicsCommon::destroyPhysicsWorld(PhysicsWorld* world) {
 }
 
 // Create and return a sphere collision shape
+/**
+ * @param radius The radius of the sphere collision shape
+ * @return A pointer to the created sphere shape
+ */
 SphereShape* PhysicsCommon::createSphereShape(const decimal radius) {
 
     SphereShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(SphereShape))) SphereShape(radius, mMemoryManager.getHeapAllocator());
@@ -160,6 +174,9 @@ SphereShape* PhysicsCommon::createSphereShape(const decimal radius) {
 }
 
 // Destroy a sphere collision shape
+/**
+ * @param sphereShape A pointer to the sphere collision shape to destroy
+ */
 void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
 
     // TODO Test if collision shape is still part of some colliders, if so throw error
@@ -176,9 +193,13 @@ void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
 }
 
 // Create and return a box collision shape
-BoxShape* PhysicsCommon::createBoxShape(const Vector3& extent) {
+/**
+ * @param halfExtents A vector with the three half-extents of the box shape
+ * @return A pointer to the created box shape
+ */
+BoxShape* PhysicsCommon::createBoxShape(const Vector3& halfExtents) {
 
-    BoxShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(BoxShape))) BoxShape(extent, mMemoryManager.getHeapAllocator());
+    BoxShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(BoxShape))) BoxShape(halfExtents, mMemoryManager.getHeapAllocator());
 
     mBoxShapes.add(shape);
 
@@ -186,6 +207,9 @@ BoxShape* PhysicsCommon::createBoxShape(const Vector3& extent) {
 }
 
 // Destroy a box collision shape
+/**
+ * @param boxShape A pointer to the box shape to destroy
+ */
 void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
 
     // TODO Test if collision shape is still part of some colliders, if so throw error
@@ -202,6 +226,11 @@ void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
 }
 
 // Create and return a capsule shape
+/**
+ * @param radius The radius of the sphere of the capsule shape
+ * @param height The height of the capsule shape (distance betwen the two spheres centers)
+ * @return boxShape A pointer to the created capsule shape
+ */
 CapsuleShape* PhysicsCommon::createCapsuleShape(decimal radius, decimal height) {
 
     CapsuleShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(CapsuleShape))) CapsuleShape(radius, height, mMemoryManager.getHeapAllocator());
@@ -212,6 +241,9 @@ CapsuleShape* PhysicsCommon::createCapsuleShape(decimal radius, decimal height) 
 }
 
 // Destroy a capsule collision shape
+/**
+ * @param capsuleShape A pointer to the capsule shape to destroy
+ */
 void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
 
     // TODO Test if collision shape is still part of some colliders, if so throw error
@@ -228,6 +260,11 @@ void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
 }
 
 // Create and return a convex mesh shape
+/**
+ * @param polyhedronMesh A pointer to the polyhedron mesh used to create the convex shape
+ * @param scaling Scaling factor to scale the polyhedron mesh if necessary
+ * @return A pointer to the created convex mesh shape
+ */
 ConvexMeshShape* PhysicsCommon::createConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling) {
 
     ConvexMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConvexMeshShape))) ConvexMeshShape(polyhedronMesh, mMemoryManager.getHeapAllocator(), scaling);
@@ -238,6 +275,9 @@ ConvexMeshShape* PhysicsCommon::createConvexMeshShape(PolyhedronMesh* polyhedron
 }
 
 // Destroy a convex mesh shape
+/**
+ * @param convexMeshShape A pointer to the convex mesh shape to destroy
+ */
 void PhysicsCommon::destroyConvexMeshShape(ConvexMeshShape* convexMeshShape) {
 
     // TODO Test if collision shape is still part of some colliders, if so throw error
@@ -254,6 +294,17 @@ void PhysicsCommon::destroyConvexMeshShape(ConvexMeshShape* convexMeshShape) {
 }
 
 // Create and return a height-field shape
+/**
+ * @param nbGridColumns Number of columns in the grid of the height field
+ * @param nbGridRows Number of rows in the grid of the height field
+ * @param minHeight Minimum height value of the height field
+ * @param maxHeight Maximum height value of the height field
+ * @param heightFieldData Pointer to the first height value data (note that values are shared and not copied)
+ * @param dataType Data type for the height values (int, float, double)
+ * @param upAxis Integer representing the up axis direction (0 for x, 1 for y and 2 for z)
+ * @param integerHeightScale Scaling factor used to scale the height values (only when height values type is integer)
+ * @return A pointer to the created height field shape
+ */
 HeightFieldShape* PhysicsCommon::createHeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                                          const void* heightFieldData, HeightFieldShape::HeightDataType dataType,
                                          int upAxis, decimal integerHeightScale, const Vector3& scaling) {
@@ -267,6 +318,9 @@ HeightFieldShape* PhysicsCommon::createHeightFieldShape(int nbGridColumns, int n
 }
 
 // Destroy a height-field shape
+/**
+ * @param heightFieldShape A pointer to the height field shape to destroy
+ */
 void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) {
 
    // TODO Test if collision shape is still part of some colliders, if so throw error
@@ -283,6 +337,11 @@ void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) 
 }
 
 // Create and return a concave mesh shape
+/**
+ * @param triangleMesh A pointer to the triangle mesh to use to create the concave mesh shape
+ * @param scaling An optional scaling factor to scale the triangle mesh
+ * @return A pointer to the created concave mesh shape
+ */
 ConcaveMeshShape* PhysicsCommon::createConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling) {
 
     ConcaveMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConcaveMeshShape))) ConcaveMeshShape(triangleMesh, mMemoryManager.getHeapAllocator(), scaling);
@@ -293,6 +352,9 @@ ConcaveMeshShape* PhysicsCommon::createConcaveMeshShape(TriangleMesh* triangleMe
 }
 
 // Destroy a concave mesh shape
+/**
+ * @param concaveMeshShape A pointer to the concave mesh shape to destroy
+ */
 void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
 
    // TODO Test if collision shape is still part of some colliders, if so throw error
@@ -309,6 +371,10 @@ void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) 
 }
 
 // Create a polyhedron mesh
+/**
+ * @param polygonVertexArray A pointer to the polygon vertex array to use to create the polyhedron mesh
+ * @return A pointer to the created polyhedron mesh
+ */
 PolyhedronMesh* PhysicsCommon::createPolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
 
     PolyhedronMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(PolyhedronMesh))) PolyhedronMesh(polygonVertexArray, mMemoryManager.getHeapAllocator());
@@ -319,6 +385,9 @@ PolyhedronMesh* PhysicsCommon::createPolyhedronMesh(PolygonVertexArray* polygonV
 }
 
 // Destroy a polyhedron mesh
+/**
+ * @param polyhedronMesh A pointer to the polyhedron mesh to destroy
+ */
 void PhysicsCommon::destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
 
    // Call the destructor of the shape
@@ -331,6 +400,9 @@ void PhysicsCommon::destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
 }
 
 // Create a triangle mesh
+/**
+ * @return A pointer to the created triangle mesh
+ */
 TriangleMesh* PhysicsCommon::createTriangleMesh() {
 
     TriangleMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(TriangleMesh))) TriangleMesh(mMemoryManager.getHeapAllocator());
@@ -341,6 +413,9 @@ TriangleMesh* PhysicsCommon::createTriangleMesh() {
 }
 
 // Destroy a triangle mesh
+/**
+ * @param A pointer to the triangle mesh to destroy
+ */
 void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
 
    // Call the destructor of the shape
@@ -353,6 +428,9 @@ void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
 }
 
 // Create and return a new logger
+/**
+ * @return A pointer to the created default logger
+ */
 DefaultLogger* PhysicsCommon::createDefaultLogger() {
 
     DefaultLogger* logger = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(DefaultLogger))) DefaultLogger(mMemoryManager.getHeapAllocator());
@@ -363,6 +441,9 @@ DefaultLogger* PhysicsCommon::createDefaultLogger() {
 }
 
 // Destroy a logger
+/**
+ * @param A pointer to the default logger to destroy
+ */
 void PhysicsCommon::destroyDefaultLogger(DefaultLogger* logger) {
 
    // Call the destructor of the logger

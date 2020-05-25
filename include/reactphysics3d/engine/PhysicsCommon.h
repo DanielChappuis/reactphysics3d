@@ -113,16 +113,10 @@ class PhysicsCommon {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        /**
-         * @param baseMemoryAllocator Pointer to a user custom memory allocator
-         */
         PhysicsCommon(MemoryAllocator* baseMemoryAllocator = nullptr);
 
         /// Destructor
         ~PhysicsCommon();
-
-        // TODO : Add better code documentation for all methods in this class (document
-        //        the method parameters with the "@param" keyword for Doxygen
 
         /// Create and return an instance of PhysicsWorld
         PhysicsWorld* createPhysicsWorld(const PhysicsWorld::WorldSettings& worldSettings = PhysicsWorld::WorldSettings());
@@ -196,11 +190,17 @@ class PhysicsCommon {
 };
 
 // Return the current logger
+/**
+ * @return A pointer to the current logger
+ */
 inline Logger* PhysicsCommon::getLogger() {
     return mLogger;
 }
 
 // Set the logger
+/**
+ * @param logger A pointer to the logger to use
+ */
 inline void PhysicsCommon::setLogger(Logger* logger) {
     mLogger = logger;
 }
