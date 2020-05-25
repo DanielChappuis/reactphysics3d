@@ -29,6 +29,7 @@
 // Libraries
 #include <reactphysics3d/memory/MemoryAllocator.h>
 #include <reactphysics3d/configuration.h>
+#include <mutex>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -52,6 +53,9 @@ class SingleFrameAllocator : public MemoryAllocator {
         size_t INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES = 1048576; // 1Mb
 
         // -------------------- Attributes -------------------- //
+
+        /// Mutex
+        std::mutex mMutex;
 
         /// Reference to the base memory allocator
         MemoryAllocator& mBaseAllocator;
@@ -83,7 +87,7 @@ class SingleFrameAllocator : public MemoryAllocator {
         virtual ~SingleFrameAllocator() override;
 
         /// Assignment operator
-        SingleFrameAllocator& operator=(SingleFrameAllocator& allocator) = default;
+        SingleFrameAllocator& operator=(SingleFrameAllocator& allocator) = delete;
 
         /// Allocate memory of a given size (in bytes)
         virtual void* allocate(size_t size) override;

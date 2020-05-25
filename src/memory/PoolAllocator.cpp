@@ -100,6 +100,9 @@ PoolAllocator::~PoolAllocator() {
 // allocated memory.
 void* PoolAllocator::allocate(size_t size) {
 
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
+
     assert(size > 0);
 
     // We cannot allocate zero bytes
@@ -174,6 +177,9 @@ void* PoolAllocator::allocate(size_t size) {
 
 // Release previously allocated memory.
 void PoolAllocator::release(void* pointer, size_t size) {
+
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
 
     assert(size > 0);
 

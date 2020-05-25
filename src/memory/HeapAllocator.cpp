@@ -107,6 +107,9 @@ void HeapAllocator::splitMemoryUnit(MemoryUnitHeader* unit, size_t size) {
 // allocated memory.
 void* HeapAllocator::allocate(size_t size) {
 
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
+
     assert(size > 0);
 
     // We cannot allocate zero bytes
@@ -175,6 +178,9 @@ void* HeapAllocator::allocate(size_t size) {
 
 // Release previously allocated memory.
 void HeapAllocator::release(void* pointer, size_t size) {
+
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
 
     assert(size > 0);
 

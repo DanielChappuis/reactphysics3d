@@ -30,6 +30,7 @@
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/memory/MemoryAllocator.h>
 #include <cassert>
+#include <mutex>
 #include <reactphysics3d/containers/Map.h>
 
 /// ReactPhysics3D namespace
@@ -88,6 +89,9 @@ class HeapAllocator : public MemoryAllocator {
 
         // -------------------- Attributes -------------------- //
 
+        // Mutex
+        std::mutex mMutex;
+
         /// Base memory allocator
         MemoryAllocator& mBaseAllocator;
 
@@ -117,6 +121,9 @@ class HeapAllocator : public MemoryAllocator {
         // Merge two contiguous memory units that are not allocated.
         void mergeUnits(MemoryUnitHeader* unit1, MemoryUnitHeader* unit2);
 
+        /// Reserve more memory for the allocator
+        void reserve(size_t sizeToAllocate);
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -128,7 +135,7 @@ class HeapAllocator : public MemoryAllocator {
         virtual ~HeapAllocator() override;
 
         /// Assignment operator
-        HeapAllocator& operator=(HeapAllocator& allocator) = default;
+        HeapAllocator& operator=(HeapAllocator& allocator) = delete;
 
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
@@ -136,9 +143,6 @@ class HeapAllocator : public MemoryAllocator {
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size) override;
-
-        /// Reserve more memory for the allocator
-        void reserve(size_t sizeToAllocate);
 };
 
 }

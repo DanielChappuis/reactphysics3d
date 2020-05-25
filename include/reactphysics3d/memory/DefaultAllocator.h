@@ -52,12 +52,12 @@ class DefaultAllocator : public MemoryAllocator {
         /// allocated memory.
         virtual void* allocate(size_t size) override {
 
-            return malloc(size);
+            return std::malloc(size);
         }
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size) override {
-            free(pointer);
+            std::free(pointer);
         }
 };
 
