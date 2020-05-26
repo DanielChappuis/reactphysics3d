@@ -210,7 +210,16 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
     }
 
     // We compute the contact normal as the barycentric interpolation of the three vertices normals
-    return (u * mVerticesNormals[0] + v * mVerticesNormals[1] + w * mVerticesNormals[2]).getUnit();
+    Vector3 interpolatedNormal = u * mVerticesNormals[0] + v * mVerticesNormals[1] + w * mVerticesNormals[2];
+
+    // If the interpolated normal is degenerated
+    if (interpolatedNormal.lengthSquare() < MACHINE_EPSILON) {
+
+        // Return the original normal
+        return mNormal;
+    }
+
+    return interpolatedNormal.getUnit();
 }
 
 // Update the AABB of a body using its collision shape
