@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -104,7 +104,7 @@ constexpr decimal PI_TIMES_2 = decimal(6.28318530);
 constexpr decimal DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE = decimal(0.08);
 
 /// Current version of ReactPhysics3D
-const std::string RP3D_VERSION = std::string("0.7.1");
+const std::string RP3D_VERSION = std::string("0.8.0");
 
 }
 

@@ -49,19 +49,19 @@ findReplaceText("documentation/UserManual/", r'(Version:[\s]+)[\d\.]+', r'\g<1>'
 print("Version number has been updated in documentation/UserManual/title.tex file")        
 
 # Update the RP3D version number in the src/configuration.h file
-findReplaceText("src/", r'(RP3D_VERSION[ \t]+=[ \t]+std::string\()"[\d\.]+"', r'\g<1>"' + newVersion + '"', "configuration.h")
-print("Version number has been updated in src/configuration.h file")        
+findReplaceText("include/reactphysics3d/", r'(RP3D_VERSION[ \t]+=[ \t]+std::string\()"[\d\.]+"', r'\g<1>"' + newVersion + '"', "configuration.h")
+print("Version number has been updated in include/reactphysics3d/configuration.h file")        
 
 # Update the RP3D version number in the src/reactphysics3d.h file
-findReplaceText("src/", r'(\* Version[ \t]+)[\d\.]+', r'\g<1>' + newVersion, "reactphysics3d.h")
-print("Version number has been updated in src/reactphysics3d.h file")        
+findReplaceText("include/reactphysics3d/", r'(\* Version[ \t]+)[\d\.]+', r'\g<1>' + newVersion, "reactphysics3d.h")
+print("Version number has been updated in include/reactphysics3d/reactphysics3d.h file")        
 
 # Update the copyright date in LICENSE file
 findReplaceText("./", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "LICENSE")
 print("Copyright date has been updated in LICENSE file")        
 
 # Update the copyright date of the license in every source code files
-findReplaceText("src/", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "*.h")
+findReplaceText("include/", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "*.h")
 findReplaceText("src/", '(Copyright ' + re.escape("(c)") + r' 2010-)[\d]+', r'\g<1>' + str(date.today().year), "*.cpp")
 print("Copyright date in license has been updated in all source code files")        
 
