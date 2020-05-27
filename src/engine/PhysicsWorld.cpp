@@ -161,6 +161,13 @@ CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
     // Create a new entity for the body
     Entity entity = mEntityManager.createEntity();
 
+    // Check that the transform is valid
+    if (!transform.isValid()) {
+        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::Body,
+                 "Error when creating a collision body: the init transform is not valid",  __FILE__, __LINE__);
+    }
+    assert(transform.isValid());
+
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
 
     // Create the collision body
@@ -446,6 +453,13 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
 
     // Create a new entity for the body
     Entity entity = mEntityManager.createEntity();
+
+    // Check that the transform is valid
+    if (!transform.isValid()) {
+        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::Body,
+                 "Error when creating a rigid body: the init transform is not valid",  __FILE__, __LINE__);
+    }
+    assert(transform.isValid());
 
     mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
 

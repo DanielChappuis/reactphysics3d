@@ -101,6 +101,9 @@ class Transform {
         /// Return the identity transform
         static Transform identity();
 
+        /// Return true if it is a valid transform
+        bool isValid() const;
+
         /// Return the transformed vector
         Vector3 operator*(const Vector3& vector) const;
 
@@ -118,6 +121,7 @@ class Transform {
 
         /// Return the string representation
         std::string to_string() const;
+
 };
 
 // Constructor
@@ -193,6 +197,11 @@ inline Transform Transform::interpolateTransforms(const Transform& oldTransform,
 // Return the identity transform
 inline Transform Transform::identity() {
     return Transform(Vector3(0, 0, 0), Quaternion::identity());
+}
+
+// Return true if it is a valid transform
+inline bool Transform::isValid() const {
+    return mPosition.isFinite() && mOrientation.isValid();
 }
 
 // Return the transformed vector

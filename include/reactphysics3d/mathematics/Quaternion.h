@@ -133,9 +133,17 @@ struct Quaternion {
         /// Compute the rotation angle (in radians) and the rotation axis
         void getRotationAngleAxis(decimal& angle, Vector3& axis) const;
 
+        /// Return true if the values are not NAN OR INF
+        bool isFinite() const;
+
+        /// Return true if it is a unit quaternion
+        bool isUnit() const;
+
+        /// Return true if it is a valid quaternion
+        bool isValid() const;
+
         /// Compute the spherical linear interpolation between two quaternions
-        static Quaternion slerp(const Quaternion& quaternion1, const Quaternion& quaternion2,
-                                decimal t);
+        static Quaternion slerp(const Quaternion& quaternion1, const Quaternion& quaternion2, decimal t);
 
         /// Overloaded operator for the addition
         Quaternion operator+(const Quaternion& quaternion) const;
@@ -290,6 +298,22 @@ inline Quaternion Quaternion::getInverse() const {
 // Scalar product between two quaternions
 inline decimal Quaternion::dot(const Quaternion& quaternion) const {
     return (x*quaternion.x + y*quaternion.y + z*quaternion.z + w*quaternion.w);
+}
+
+// Return true if the values are not NAN OR INF
+inline bool Quaternion::isFinite() const {
+    return std::isfinite(x) && std::isfinite(y) && std::isfinite(z) && std::isfinite(w);
+}
+
+// Return true if it is a unit quaternion
+inline bool Quaternion::isUnit() const {
+    decimal length = std::sqrt(x*x + y*y + z*z + w*w);
+    return std::abs(length - decimal(1.0)) < MACHINE_EPSILON;
+}
+
+// Return true if it is a valid quaternion
+inline bool Quaternion::isValid() const {
+   return isFinite() && isUnit();
 }
 
 // Overloaded operator for the addition of two quaternions

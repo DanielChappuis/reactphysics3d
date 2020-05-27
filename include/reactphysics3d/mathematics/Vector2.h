@@ -85,6 +85,9 @@ struct Vector2 {
         /// Return true if the vector is unit and false otherwise
         bool isUnit() const;
 
+        /// Return true if the values are not NAN OR INF
+        bool isFinite() const;
+
         /// Return true if the current vector is the zero vector
         bool isZero() const;
 
@@ -228,6 +231,11 @@ inline int Vector2::getMaxAxis() const {
 // Return true if the vector is unit and false otherwise
 inline bool Vector2::isUnit() const {
     return approxEqual(lengthSquare(), 1.0);
+}
+
+// Return true if the values are not NAN OR INF
+inline bool Vector2::isFinite() const {
+    return std::isfinite(x) && std::isfinite(y);
 }
 
 // Return true if the vector is the zero vector

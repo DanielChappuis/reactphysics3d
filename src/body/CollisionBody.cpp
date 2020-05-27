@@ -72,6 +72,13 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
     // Create a new entity for the collider
     Entity colliderEntity = mWorld.mEntityManager.createEntity();
 
+    // Check that the transform is valid
+    if (!transform.isValid()) {
+        RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Error, Logger::Category::Collider,
+                 "Error when adding a collider: the init transform is not valid",  __FILE__, __LINE__);
+    }
+    assert(transform.isValid());
+
     // Create a new collider to attach the collision shape to the body
     Collider* collider = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
                                       sizeof(Collider))) Collider(colliderEntity, this, mWorld.mMemoryManager);
