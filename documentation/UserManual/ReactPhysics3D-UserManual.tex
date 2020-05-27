@@ -1016,7 +1016,8 @@ transform.getOpenGLMatrix(matrix);
 
     \begin{sloppypar}
     The inertia tensor of a \texttt{RigidBody} is a $3 \times 3$ matrix describing how the mass is distributed inside the rigid body which is
-    used to calculate its rotation. The inertia tensor depends on the mass and the shape of the body. There are two ways to set the inertia tensor of
+    used to calculate its rotation. The inertia tensor depends on the mass and the shape of the body. By default the local inertia tensor of a rigid body
+    is the identity matrix. There are two ways to set the inertia tensor of
     a rigid body. First, you can set it directly using the \texttt{RigidBody::setLocalInertiaTensor()} method. Note that this will set the inertia tensor
     of the body in local-space coordinates which is usually a diagonal matrix. This method takes a \texttt{Vector3} with the three diagonal entries of the
     matrix. Secondly, the local inertia tensor can be computed automatically using the mass density, shape and transform of all the colliders of the body.
