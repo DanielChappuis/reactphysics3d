@@ -31,6 +31,8 @@
 #include <cctype>
 #include <map>
 #include <algorithm>
+#include <unordered_map>
+#include <tuple>
 
 using namespace openglframework;
 using namespace std;
@@ -112,6 +114,7 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
     std::vector<uint> normalsIndices;
     std::vector<uint> uvsIndices;
 
+
     // ---------- Collect the data from the file ---------- //
 
     // For each line of the file
@@ -142,7 +145,7 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
             line = buffer;
             found1 = (int)line.find("/");
             bool isFaceQuad = false;
-            int foundNext = (int)line.substr(found1+1).find("/");
+            found2 = (int)line.substr(found1+1).find("/");
 
             // If the face definition is of the form "f v1 v2 v3 v4"
             if(found1 == string::npos) {
@@ -150,11 +153,21 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
                 if (nbVertices == 4) isFaceQuad = true;
             }
             // If the face definition is of the form "f v1// v2// v3// v4//"
-            else if (foundNext == 0) {
+            else if (found2 == 0 && (int)line.substr(found1+found2+1).find(" ") == 0) {
                 int nbVertices = sscanf(buffer.c_str(), "%*s %d// %d// %d// %d//", &id1, &id2, &id3, &id4);
                 if (nbVertices == 4) isFaceQuad = true;
             }
-            else {  // If the face definition contains vertices and texture coordinates
+            else {  // If the face definition contains vertices and (texture coordinates or normals)
+
+				tId1 = -1;
+				tId2 = -1;
+				tId3 = -1;
+				tId4 = -1;
+
+				nId1 = -1;
+				nId2 = -1;
+				nId3 = -1;
+				nId4 = -1;
 
                 //get the part of the string until the second index
                 tmp = line.substr(found1+1);
@@ -166,6 +179,7 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
                 if(found2 == string::npos) {
                     int n = sscanf(buffer.c_str(), "%*s %d/%d %d/%d %d/%d %d/%d", &id1, &tId1, &id2, &tId2, &id3, &tId3, &id4, &tId4);
                     if (n == 8) isFaceQuad = true;
+
                     uvsIndices.push_back(tId1-1);
                     uvsIndices.push_back(tId2-1);
                     uvsIndices.push_back(tId3-1);
@@ -174,8 +188,11 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
                 else {
                     tmp = line.substr(found1+1);
                     found2 = (int)tmp.find("/");
+					if (found2 > 1000) {
+						int test = 2;
+					}
 
-                    // If the face definition is of the form "f vert1/normal1 vert2/normal2 ..."
+                    // If the face definition is of the form "f vert1//normal1 vert2//normal2 ..."
                     if(found2 == 0) {
                         int n = sscanf(buffer.c_str(), "%*s %d//%d %d//%d %d//%d %d//%d", &id1, &nId1, &id2, &nId2, &id3, &nId3, &id4, &nId4);
                         if (n == 8) isFaceQuad = true;
@@ -213,39 +230,84 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
     // Destroy the current mesh
     meshToCreate.destroy();
 
+	// This is used to create duplicate vertices if a vertex with index "i" from a face does not
+	// have same texture coordinates or normals as a previous vertex with index "i".
+	unordered_map<tuple<int, int, int>, uint> mapVertNormTexToVertexIndex;
+
     // Mesh data
     vector<std::vector<uint> > meshIndices;
+    vector<Vector3> meshVertices;
     vector<Vector3> meshNormals;
-    if (!normals.empty()) meshNormals = vector<Vector3>(vertices.size(), Vector3(0, 0, 0));
+    //if (!normals.empty()) meshNormals = vector<Vector3>(vertices.size(), Vector3(0, 0, 0));
     vector<Vector2> meshUVs;
-    if (!uvs.empty()) meshUVs = vector<Vector2>(vertices.size(), Vector2(0, 0));
+    //if (!uvs.empty()) meshUVs = vector<Vector2>(vertices.size(), Vector2(0, 0));
 
     // We cannot load mesh with several parts for the moment
     uint meshPart = 0;
+
+	const bool hasNormals = !normalsIndices.empty() && !normals.empty();
+	const bool hasUvs = !uvsIndices.empty() && !uvs.empty();
 
     // Fill in the vertex indices
     // We also triangulate each quad face
     meshIndices.push_back(std::vector<uint>());
     for(size_t i = 0, j = 0; i < verticesIndices.size(); j++) {
 
-        // Get the current vertex IDs
-        uint i1 = verticesIndices[i];
-        uint i2 = verticesIndices[i+1];
-        uint i3 = verticesIndices[i+2];
+		// 3 if the current vertices form a triangle and 4 if they form a quad
+		const int nbVertices = isQuad[j] ? 4 : 3;
 
+		int newVerticesIndices[4] = { -1, -1, -1, -1 };
+
+		// For each vertex, we check if there is already a vertex with same UV and normals. 
+		for (int v = 0; v < nbVertices; v++) {
+
+			int normalIndex = hasNormals ? normalsIndices[i + v] : -1;
+			int uvIndex = hasUvs ? uvsIndices[i + v] : -1;
+
+			// If the vertex with same UV and normal doesn't exist yet in the map
+			tuple<int, int, int> key = std::make_tuple(verticesIndices[i+v], normalIndex, uvIndex);
+			auto itFound = mapVertNormTexToVertexIndex.find(key);
+			if (itFound == mapVertNormTexToVertexIndex.end()) {
+
+				// Create a new vertex 
+				newVerticesIndices[v]= meshVertices.size();
+				meshVertices.push_back(vertices[verticesIndices[i+v]]);
+				if (hasNormals) {
+					meshNormals.push_back(normals[normalsIndices[i+v]]);
+				}
+				if (hasUvs) {
+					meshUVs.push_back(uvs[uvsIndices[i+v]]);
+				}
+
+				mapVertNormTexToVertexIndex.insert(std::make_pair(key, newVerticesIndices[v]));
+			}
+			else {
+				// Get the vertex index to use
+				newVerticesIndices[v] = itFound->second;
+			}
+		}
+
+        // Get the current vertex IDs
+        uint i1 = newVerticesIndices[0];
+        uint i2 = newVerticesIndices[1];
+        uint i3 = newVerticesIndices[2];
+        uint i4 = newVerticesIndices[3];
+
+		/*
         // Add the vertex normal
-        if (!normalsIndices.empty() && !normals.empty()) {
+        if (hasNormals) {
             meshNormals[i1] = normals[normalsIndices[i]];
             meshNormals[i2] = normals[normalsIndices[i+1]];
             meshNormals[i3] = normals[normalsIndices[i+2]];
         }
 
         // Add the vertex UV texture coordinates
-        if (!uvsIndices.empty() && !uvs.empty()) {
+        if (hasUvs) {
             meshUVs[i1] = uvs[uvsIndices[i]];
             meshUVs[i2] = uvs[uvsIndices[i+1]];
             meshUVs[i3] = uvs[uvsIndices[i+2]];
         }
+		*/
 
         // If the current vertex not in a quad (it is part of a triangle)
         if (!isQuad[j]) {
@@ -259,11 +321,10 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
         }
         else {  // If the current vertex is in a quad
 
-            Vector3 v1 = vertices[i1];
-            Vector3 v2 = vertices[i2];
-            Vector3 v3 = vertices[i3];
-            uint i4 = verticesIndices[i+3];
-            Vector3 v4 = vertices[i4];
+            Vector3 v1 = meshVertices[i1];
+            Vector3 v2 = meshVertices[i2];
+            Vector3 v3 = meshVertices[i3];
+            Vector3 v4 = meshVertices[i4];
 
             Vector3 v13 = v3-v1;
             Vector3 v12 = v2-v1;
@@ -288,6 +349,7 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
                 meshIndices[meshPart].push_back(i4);
             }
 
+			/*
             // Add the vertex normal
             if (!normalsIndices.empty() && !normals.empty()) {
                 meshNormals[i4] = normals[normalsIndices[i]];
@@ -297,17 +359,18 @@ void MeshReaderWriter::loadOBJFile(const string &filename, Mesh& meshToCreate) {
             if (!uvsIndices.empty() && !uvs.empty()) {
                 meshUVs[i4] = uvs[uvsIndices[i]];
             }
+			*/
 
             i+=4;
         }
     }
 
-    assert(meshNormals.empty() || meshNormals.size() == vertices.size());
-    assert(meshUVs.empty() || meshUVs.size() == vertices.size());
+    assert(meshNormals.empty() || meshNormals.size() == meshVertices.size());
+    assert(meshUVs.empty() || meshUVs.size() == meshVertices.size());
 
     // Set the data to the mesh
     meshToCreate.setIndices(meshIndices);
-    meshToCreate.setVertices(vertices);
+    meshToCreate.setVertices(meshVertices);
     meshToCreate.setNormals(meshNormals);
     meshToCreate.setUVs(meshUVs);
 }

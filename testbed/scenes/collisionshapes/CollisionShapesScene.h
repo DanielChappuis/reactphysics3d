@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "SceneDemo.h"
 #include "Sphere.h"
 #include "Box.h"
@@ -42,11 +42,11 @@ namespace collisionshapesscene {
 
 // Constants
 const float SCENE_RADIUS = 30.0f;
-const int NB_BOXES = 5;
+const int NB_BOXES = 10;
 const int NB_SPHERES = 5;
 const int NB_CAPSULES = 5;
-const int NB_MESHES = 4;
-const int NB_COMPOUND_SHAPES = 3;
+const int NB_MESHES = 5;
+const int NB_COMPOUND_SHAPES = 5;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
 const float SPHERE_RADIUS = 1.5f;
 const float CONE_RADIUS = 2.0f;
@@ -57,12 +57,6 @@ const float CAPSULE_RADIUS = 1.0f;
 const float CAPSULE_HEIGHT = 1.0f;
 const float DUMBBELL_HEIGHT = 1.0f;
 const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);        // Floor dimensions in meters
-const float BOX_MASS = 1.0f;
-const float CONE_MASS = 1.0f;
-const float CYLINDER_MASS = 1.0f;
-const float CAPSULE_MASS = 1.0f;
-const float MESH_MASS = 1.0f;
-const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
 
 // Class CollisionShapesScene
 class CollisionShapesScene : public SceneDemo {
@@ -99,15 +93,7 @@ class CollisionShapesScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
-
-        /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() override;
 };
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> CollisionShapesScene::getContactPoints() {
-    return computeContactPointsOfWorld(getDynamicsWorld());
-}
 
 }
 

@@ -1,12 +1,97 @@
 # Changelog
 
+## Version 0.8.0
+
+Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
+do not hesitate to take a look at the user manual.
+
+### Added
+
+ - It is now possible to change the size of a BoxShape using the BoxShape::setHalfExtents() method
+ - It is now possible to change the radius of a SphereShape using the SphereShape::setRadius() method
+ - It is now possible to change the height and radius of a CapsuleShape using the CapsuleShape::setHeight() and CapsuleShape::setRadius() methods
+ - It is now possible to change the scale of a ConvexMeshShape using the ConvexMeshShape::setScale() method
+ - It is now possible to change the scale of a ConcaveMeshShape using the ConcaveMeshShape::setScale() method
+ - It is now possible to change the scale of a HeightFieldShape using the HeightFieldShape::setScale() method
+ - A method PhysicsWorld::getCollisionBody(uint index) has been added on a physics world to retrieve a given CollisionBody
+ - A method PhysicsWorld::getRigidBody(uint index) has been added on a physics world to retrieve a given RigidBody
+ - A RigidBody::getLocalCenterOfMass() method has been added to retrieve the current local-space center of mass of a rigid body
+ - Add PhysicsCommon class that needs to be instanciated at the beginning and is used as a factory for other objects of the library (see the user manual)
+ - The RigidBody::updateLocalCenterOfMassFromColliders() method has been added to compute and set the center of mass of a body using its colliders
+ - The RigidBody::updateLocalInertiaTensorFromColliders() method has been added to compute and set the local inertia tensor of a body using its colliders
+ - The RigidBody::getLocalInertiaTensor() method has been added to retrieve the local-space inertia tensor of a rigid body
+ - The RigidBody::updateMassFromColliders() method has been added to compute and set the mass of a body using its colliders
+ - A Material nows has a mass density parameter that can be set using the Material::setMassDensity() method. The mass density is used to compute the mass of a collider when computing the mass of a rigid body
+ - A Collider can now be a trigger. This collider will be used to only report collisions with another collider but no collision response will be applied. You can use the Collider::setIsTrigger() method for this.
+ - The EventListener class now has a onTrigger() method that is called when a trigger collider is colling with another collider
+ - In the EventListener, the onContact() and onTrigger() method now reports the type of event (start, stay, exit) for each contact. This way the user can know whether it's a new contact or not or when two colliders are not in contact anymore 
+ - A DebugRenderer class has been added in order to display debug info (colliders, AABBs, contacts, ...) in your simulation using graphics primitives (lines, triangles).
+ - A RigidBody::applyForceAtLocalPosition() method has been added to apply a force at a given position of the rigid body in local-space
+ - A default logger can be instanciated using the PhysicsCommon::createDefaultLogger() method
+ - The CMakeLists.txt file of the library has been refactored to use modern CMake. The targets are now exported when you install the library so that you can import the library with the find_package(ReactPhysics3D) function in your own CMakeLists.txt file
+ - A Hello World project has been added to show a very simple project that shows how to compile and use the ReactPhysics3D library
+
+### Fixed
+
+ - Issues [#125](https://github.com/DanielChappuis/reactphysics3d/issues/125) and [#106](https://github.com/DanielChappuis/reactphysics3d/issues/106) with CMake install of the library have been fixed
+ - Issue [#141](https://github.com/DanielChappuis/reactphysics3d/issues/141) with limits of hinge and slider joints has been fixed
+ - Issue [#117](https://github.com/DanielChappuis/reactphysics3d/issues/117) in documentation has been fixed
+ - Issue [#131](https://github.com/DanielChappuis/reactphysics3d/issues/131) in documentation has been fixed
+ - Issue [#139](https://github.com/DanielChappuis/reactphysics3d/issues/139) in API documentation has been fixed
+ - Issue [#122](https://github.com/DanielChappuis/reactphysics3d/issues/122) in logger has been fixed
+
+### Changed
+
+ - The CollisionWorld::testCollision() methods do not have the 'categoryMaskBits' parameter anymore
+ - The CollisionWorld::testOverlap() methods do not have the 'categoryMaskBits' parameter anymore
+ - Many methods in the EventListener class have changed. Check the user manual for more information
+ - The way to retrieve contacts has changed. Check the user manual for more information
+ - DynamicsWorld and CollisionWorld classes have been merged into a single class called PhysicsWorld
+ - The ProxyShape class has been renamed into Collider
+ - The Material is now part of the Collider instead of the RigidBody. Therefore, it is now possible to have a RigidBody with multiple
+   colliders and a different material for each Collider
+ - The Logger has to be set using the PhysicsCommon::setLogger() method
+ - The Box::getExtent() method has been renamed to Box::getHalfExtents()
+ - An instance of the BoxShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createBoxShape() method
+ - An instance of the SphereShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createSphereShape() method
+ - An instance of the CapsuleShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createCapsuleShape() method
+ - An instance of the ConvexMeshShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createConvexMeshShape() method
+ - An instance of the HeightFieldShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createHeightFieldShape() method
+ - An instance of the ConcaveMeshShape class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createConcaveMeshShape() method
+ - An instance of the PolyhedronMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createPolyhedronMesh() method
+ - An instance of the TriangleMesh class cannot be instanciated directly anymore. You need to use the PhysicsCommon::createTriangleMesh() method
+ - The ProxyShape class has been renamed to Collider. The CollisionBody::addCollider(), RigidBody::addCollider() methods have to be used to create and add a collider to a body. Then methods CollisionBody::removeCollider(), RigidBody::removeCollider() need to be used to remove a collider from a body.
+ - The RigidBody::addCollider() method (previously addProxyShape() method) does not take a "mass" parameter anymore
+ - The RigidBody::setCenterOfMassLocal() method has been renamed to RigidBody::setLocalCenterOfMass()
+ - The RigidBody::setInertiaTensorLocal() method has been renamed to RigidBody::setLocalInertiaTensor()
+ - Now, the local inertia tensor of a rigid body has to be set using a Vector3 instead of a Matrix3x3. You only need to provide the three diagonal values of the matrix
+ - The RigidBody::recomputeMassInformation() method has been renamed to RigidBody::updateMassPropertiesFromColliders.
+ - Now, you need to manually call the RigidBody::updateMassPropertiesFromColliders() method after adding colliders to a rigid body to recompute its inertia tensor, center of mass and mass. There are other methods that you can use form that (see the user manual)
+ - The RigidBody::applyForce() method has been renamed to RigidBody::applyForceAtWorldPosition()
+ - The rendering in the testbed application has been improved
+ - Many of the data inside the library have been refactored for better caching and easier parallelization in the future
+ - The old Logger class has been renamed to DefaultLogger
+ - The Logger class is now an abstract class that you can inherit from in order to receive log events from the library
+ - User manual and API documentation have been updated
+
+### Removed
+
+ - The method DynamicsWorld::getContactsList() has been removed. You need to use the EventListener class to retrieve contacts now (see the user manual).
+ - The DynamicsWorld::getNbJoints() method has been removed.
+ - The EventListener::beginInternalTick() method has been removed (because internal ticks do not exist anymore).
+ - The EventListener::endInternalTick() method has been removed (because internal ticks do not exist anymore).
+ - The RigidBody::getJointsList() method has been removed.
+ - It is not possible anymore to set custom pool and stack frame allocators. Only the base allocator can be customized when creating a PhysicsCommon instance.
+ - The RigidBody::setInverseInertiaTensorLocal() method has been removed. The RigidBody::setInertiaTensorLocal() has to be used instead.
+ - The RigidBody::getInverseInertiaTensorWorld() method has been removed.
+ - The Collider::getMass() method has been removed.
+
 ## Version 0.7.1 (July 01, 2019)
 
 ### Added
 
  - Make possible for the user to get vertices, normals and triangle indices of a ConcaveMeshShape
  - Make possible for the user to get vertices and height values of the HeightFieldShape
- - Make possible for the user to use a custom single frame and pool memory allocator
 
 ### Fixed
 
@@ -26,6 +111,16 @@
  - Bug [#85](https://github.com/DanielChappuis/reactphysics3d/issues/85) has been fixed.
  - Bug [#79](https://github.com/DanielChappuis/reactphysics3d/issues/79) has been fixed.
  - Bug: the free() method was called in PoolAllocator instead of release() method of base allocator.
+
+### Removed
+
+ - The CollisionWorld::setCollisionDispatch() method has been removed. In order to use a custom collision
+   algorithm, you must not get the collision dispatch object with the
+   CollisionWorld::getCollisionDispatch() method and set a collision algorithm to this object.
+ - The methods CollisionBody::getProxyShapesList() has been remove. You can now use the
+   CollisionBody::getNbProxyShapes() method to know the number of proxy-shapes of a body and the
+   CollisionBody::getProxyShape(uint proxyShapeIndex) method to get a given proxy-shape of the body.
+ - The CollisionWorld::testAABBOverlap() methods have been removed.
 
 ## Version 0.7.0 (May 1, 2018)
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "TriangleVertexArray.h"
-#include "mathematics/Vector3.h"
+#include <reactphysics3d/collision/TriangleVertexArray.h>
+#include <reactphysics3d/mathematics/Vector3.h>
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -196,7 +196,7 @@ void TriangleVertexArray::computeVerticesNormals() {
  */
 void TriangleVertexArray::getTriangleVerticesIndices(uint triangleIndex, uint* outVerticesIndices) const {
 
-    assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
+    assert(triangleIndex < mNbTriangles);
 
     const uchar* triangleIndicesPointer = mIndicesStart + triangleIndex * mIndicesStride;
     const void* startTriangleIndices = static_cast<const void*>(triangleIndicesPointer);
@@ -224,7 +224,7 @@ void TriangleVertexArray::getTriangleVerticesIndices(uint triangleIndex, uint* o
  */
 void TriangleVertexArray::getTriangleVertices(uint triangleIndex, Vector3* outTriangleVertices) const {
 
-    assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
+    assert(triangleIndex < mNbTriangles);
 
     // Get the three vertex index of the three vertices of the triangle
     uint verticesIndices[3];
@@ -262,7 +262,7 @@ void TriangleVertexArray::getTriangleVertices(uint triangleIndex, Vector3* outTr
  */
 void TriangleVertexArray::getTriangleVerticesNormals(uint triangleIndex, Vector3* outTriangleVerticesNormals) const {
 
-    assert(triangleIndex >= 0 && triangleIndex < mNbTriangles);
+    assert(triangleIndex < mNbTriangles);
 
     // Get the three vertex index of the three vertices of the triangle
     uint verticesIndices[3];

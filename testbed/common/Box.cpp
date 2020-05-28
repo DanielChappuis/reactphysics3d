@@ -38,9 +38,9 @@ openglframework::VertexArrayObject Box::mVAO;
 int Box::totalNbBoxes = 0;
 
 // Constructor
-Box::Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* world,
+Box::Box(bool createRigidBody, const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world,
          const std::string& meshFolderPath)
-    : PhysicsObject(meshFolderPath + "cube.obj") {
+    : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -56,65 +56,24 @@ Box::Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* w
     // Create the collision shape for the rigid body (box shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mBoxShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
-    //mBoxShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
+    mBoxShape = mPhysicsCommon.createBoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body in the dynamics world
-    mBody = world->createCollisionBody(mPreviousTransform);
+    if (createRigidBody) {
 
-    // Add the collision shape to the body
-    mProxyShape = mBody->addCollisionShape(mBoxShape, rp3d::Transform::identity());
-
-    // If the Vertex Buffer object has not been created yet
-    if (totalNbBoxes == 0) {
-
-        // Create the Vertex Buffer
-        createVBOAndVAO();
+        // Create a rigid body in the physics world
+        rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
+        mCollider = body->addCollider(mBoxShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
+        mBody = body;
     }
+    else {
 
-    totalNbBoxes++;
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-}
-
-// Constructor
-Box::Box(const openglframework::Vector3& size, float mass, reactphysics3d::DynamicsWorld* world,
-         const std::string& meshFolderPath)
-    : PhysicsObject(meshFolderPath + "cube.obj") {
-
-    // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "cube.obj", *this);
-
-    // Calculate the normals of the mesh
-    calculateNormals();
-
-    // Initialize the size of the box
-    mSize[0] = size.x * 0.5f;
-    mSize[1] = size.y * 0.5f;
-    mSize[2] = size.z * 0.5f;
-
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4(mSize[0], 0, 0, 0,
-                                              0, mSize[1], 0, 0,
-                                              0, 0, mSize[2], 0,
-                                              0, 0, 0, 1);
-
-    // Create the collision shape for the rigid body (box shape)
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mBoxShape = new rp3d::BoxShape(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body in the dynamics world
-    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
-
-    // Add the collision shape to the body
-    mProxyShape = body->addCollisionShape(mBoxShape, rp3d::Transform::identity(), mass);
-
-    mBody = body;
+        // Create a body in the physics world
+        mBody = world->createCollisionBody(mPreviousTransform);
+        mCollider = mBody->addCollider(mBoxShape, rp3d::Transform::identity());
+    }
 
     // If the Vertex Buffer object has not been created yet
     if (totalNbBoxes == 0) {
@@ -138,7 +97,7 @@ Box::~Box() {
         mVBONormals.destroy();
         mVAO.destroy();
     }
-    delete mBoxShape;
+    mPhysicsCommon.destroyBoxShape(mBoxShape);
     totalNbBoxes--;
 }
 
@@ -160,9 +119,10 @@ void Box::render(openglframework::Shader& shader, const openglframework::Matrix4
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    openglframework::Color currentColor = mBody->isSleeping() ? mSleepingColor : mColor;
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
+    openglframework::Color currentColor = rigidBody != nullptr && rigidBody->isSleeping() ? mSleepingColor : mColor;
     openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-    shader.setVector4Uniform("vertexColor", color, false);
+    shader.setVector4Uniform("globalVertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();
@@ -200,8 +160,7 @@ void Box::render(openglframework::Shader& shader, const openglframework::Matrix4
 }
 
 // Create the Vertex Buffer Objects used to render to box with OpenGL.
-/// We create two VBOs (one for vertices and one for indices) to render all the boxes
-/// in the simulation.
+/// We create two VBOs (one for vertices and one for indices) to render the box
 void Box::createVBOAndVAO() {
 
     // Create the VBO for the vertices data
@@ -227,7 +186,7 @@ void Box::createVBOAndVAO() {
         mVBOTextureCoords.unbind();
     }
 
-    // Create th VBO for the indices data
+    // Create the VBO for the indices data
     mVBOIndices.create();
     mVBOIndices.bind();
     size_t sizeIndices = mIndices[0].size() * sizeof(unsigned int);

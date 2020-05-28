@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "mathematics_functions.h"
-#include "Vector3.h"
-#include "Vector2.h"
+#include <reactphysics3d/mathematics/mathematics_functions.h>
+#include <reactphysics3d/mathematics/Vector3.h>
+#include <reactphysics3d/mathematics/Vector2.h>
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -404,4 +404,12 @@ bool reactphysics3d::isPrimeNumber(int number) {
     return number == 2;
 }
 
+// Return an unique integer from two integer numbers (pairing function)
+/// Here we assume that the two parameter numbers are sorted such that
+/// number1 = max(number1, number2)
+/// http://szudzik.com/ElegantPairing.pdf
+uint64 reactphysics3d::pairNumbers(uint32 number1, uint32 number2) {
+    assert(number1 == std::max(number1, number2));
+    return number1 * number1 + number1 + number2;
+}
 

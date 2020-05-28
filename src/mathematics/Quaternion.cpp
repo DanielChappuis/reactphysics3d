@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "Quaternion.h"
-#include "Vector3.h"
-#include "Matrix3x3.h"
+#include <reactphysics3d/mathematics/Quaternion.h>
+#include <reactphysics3d/mathematics/Vector3.h>
+#include <reactphysics3d/mathematics/Matrix3x3.h>
 #include <cassert>
 
 // Namespace

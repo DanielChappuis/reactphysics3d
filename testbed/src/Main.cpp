@@ -35,12 +35,27 @@ int main(int argc, char** argv) {
     nanogui::init();
 
     {
-        // Create and start the testbed application
         bool isFullscreen = false;
-        nanogui::ref<TestbedApplication> application = new TestbedApplication(isFullscreen);
-        application->setVisible(true);
 
-        nanogui::mainloop();
+		// Get the primary monitor
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+		// Window size
+		int windowWidth = mode->width;
+		int windowHeight = mode->height;
+
+		if (!isFullscreen) {
+
+			windowWidth *= 0.9;
+			windowHeight *= 0.9;
+		}
+
+        // Create and start the testbed application
+        nanogui::ref<TestbedApplication> application = new TestbedApplication(isFullscreen, windowWidth, windowHeight);
+        application->set_visible(true);
+
+        nanogui::mainloop(10);
     }
 
     nanogui::shutdown();

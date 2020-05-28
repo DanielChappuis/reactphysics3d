@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,8 +24,8 @@
 ********************************************************************************/
 
 // Libraries
-#include "AABB.h"
-#include "configuration.h"
+#include <reactphysics3d/collision/shapes/AABB.h>
+#include <reactphysics3d/configuration.h>
 #include <cassert>
 
 using namespace reactphysics3d;

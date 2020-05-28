@@ -101,7 +101,8 @@ void VisualContactPoint::render(openglframework::Shader& shader, const openglfra
 
 	// Set the vertex color
 	openglframework::Vector4 color(mColor.r, mColor.g, mColor.b, mColor.a);
-	shader.setVector4Uniform("vertexColor", color, false);
+    shader.setIntUniform("isGlobalVertexColorEnabled", 1, false);
+    shader.setVector4Uniform("globalVertexColor", color, false);
 
     mVBOVertices.bind();
 
@@ -172,7 +173,8 @@ void VisualContactPoint::renderContactNormalLine(openglframework::Shader& shader
 
 	// Set the vertex color
 	openglframework::Vector4 color(0, 1, 0, 1);
-	shader.setVector4Uniform("vertexColor", color, false);
+    shader.setIntUniform("isGlobalVertexColorEnabled", 1, false);
+    shader.setVector4Uniform("globalVertexColor", color, false);
 
 	// Get the location of shader attribute variables
 	GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");

@@ -83,8 +83,11 @@ class TestbedApplication : public Screen {
         /// Update time (in seconds)
         double mFrameTime;
 
-        /// Physics update time (in seconds)
-        double mPhysicsTime;
+        /// Total physics update time (in seconds)
+        double mTotalPhysicsTime;
+
+        /// Time of a single physics step (in seconds)
+        double mPhysicsStepTime;
 
         /// Width and height of the window
         int mWidth, mHeight;
@@ -101,16 +104,28 @@ class TestbedApplication : public Screen {
         bool mIsShadowMappingEnabled;
 
         /// True if contact points are displayed
-        bool mIsContactPointsDisplayed;
+        bool mAreContactPointsDisplayed;
 
-        /// True if the AABBs of physics objects are displayed
-        bool mIsAABBsDisplayed;
+        /// True if contact normals are displayed
+        bool mAreContactNormalsDisplayed;
+
+        /// True if the broad phase AABBs are displayed
+        bool mAreBroadPhaseAABBsDisplayed;
+
+        /// True if the AABBs of the colliders are displayed
+        bool mAreCollidersAABBsDisplayed;
+
+        /// True if the collision shapes are displayed
+        bool mAreCollisionShapesDisplayed;
 
         /// True if the wireframe rendering is enabled
-        bool mIsWireframeEnabled;
+        bool mAreObjectsWireframeEnabled;
 
         /// True if vsync is enabled
         bool mIsVSyncEnabled;
+
+        /// True if the debug renderer is enabled
+        bool mIsDebugRendererEnabled;
 
         // -------------------- Methods -------------------- //
 
@@ -128,9 +143,6 @@ class TestbedApplication : public Screen {
 
         /// Update the simulation by taking a single physics step
         void updateSinglePhysicsStep();
-
-        /// Check the OpenGL errors
-        static void checkOpenGLErrorsInternal(const char* file, int line);
 
         /// Compute the FPS
         void computeFPS();
@@ -164,28 +176,28 @@ class TestbedApplication : public Screen {
         // -------------------- Methods -------------------- //
 
         /// Private constructor (for the singleton class)
-        TestbedApplication(bool isFullscreen);
+        TestbedApplication(bool isFullscreen, int windowWidth, int windowHeight);
 
         /// Destructor
         virtual ~TestbedApplication() override;
 
         /// Render the content of the application
-        virtual void drawContents() override;
+        virtual void draw_contents() override;
 
         /// Window resize event handler
-        virtual bool resizeEvent(const Vector2i& size) override;
+        virtual bool resize_event(const Vector2i& size) override;
 
         /// Default keyboard event handler
-        virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
+        virtual bool keyboard_event(int key, int scancode, int action, int modifiers) override;
 
         /// Handle a mouse button event (default implementation: propagate to children)
-        virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override;
+        virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
 
         /// Handle a mouse motion event (default implementation: propagate to children)
-        virtual bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
+        virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
 
         /// Handle a mouse scroll event (default implementation: propagate to children)
-        virtual bool scrollEvent(const Vector2i &p, const Vector2f &rel) override;
+        virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
 
         /// Initialize the application
         void init();
@@ -198,6 +210,10 @@ class TestbedApplication : public Screen {
 
         /// Notify that the engine settings have changed
         void notifyEngineSetttingsChanged();
+
+        /// Called when an OpenGL Error occurs
+        static void GLAPIENTRY onOpenGLError(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+                              const GLchar* message, const void* userParam );
 
         // -------------------- Friendship -------------------- //
 

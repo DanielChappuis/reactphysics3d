@@ -27,7 +27,7 @@
 #define TEST_AABB_H
 
 // Libraries
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -177,6 +177,18 @@ class TestAABB : public Test {
 
             rp3d_test(approxEqual(mAABB1.getVolume(), 8000));
             rp3d_test(approxEqual(mAABB2.getVolume(), 2880));
+
+            // -------- Test applyScale() -------- //
+
+            AABB aabb7(Vector3(1,2,3), Vector3(5, 6, 7));
+            aabb7.applyScale(Vector3(1, 2, 3));
+
+            rp3d_test(approxEqual(aabb7.getMin().x, 1));
+            rp3d_test(approxEqual(aabb7.getMin().y, 4));
+            rp3d_test(approxEqual(aabb7.getMin().z, 9));
+            rp3d_test(approxEqual(aabb7.getMax().x, 5));
+            rp3d_test(approxEqual(aabb7.getMax().y, 12));
+            rp3d_test(approxEqual(aabb7.getMax().z, 21));
         }
 
         void testMergeMethods() {

@@ -95,6 +95,11 @@ class Shader {
         // to set it, an assert will occur)
         void setIntUniform(const std::string& variableName, int value, bool errorIfMissing = true) const;
 
+		// Set an array of int uniform values to this shader (be careful if the uniform is not
+		// used in the shader, the compiler will remove it, then when you will try
+		// to set it, an assert will occur)
+		void setIntArrayUniform(const std::string& variableName, GLint* values, int nbValues, bool errorIfMissing = true) const;
+
         // Set a vector 2 uniform value to this shader (be careful if the uniform is not
         // used in the shader, the compiler will remove it, then when you will try
         // to set it, an assert will occur)
@@ -159,7 +164,7 @@ inline GLint Shader::getUniformLocation(const std::string& variableName, bool er
         std::cerr << "Error in vertex shader " << mFilenameVertexShader << " or in fragment shader"
                   << mFilenameFragmentShader << " : No Uniform variable : " << variableName
                   << std::endl;
-        throw std::logic_error("Error in Shader");
+        //throw std::logic_error("Error in Shader");
     }
 
     return location;
@@ -171,7 +176,7 @@ inline GLint Shader::getAttribLocation(const std::string& variableName, bool err
     GLint location = glGetAttribLocation(mProgramObjectID, variableName.c_str());
     if (location == -1 && errorIfMissing) {
         std::cerr << "Error in vertex shader " << mFilenameVertexShader << " or in fragment shader"
-                  << mFilenameFragmentShader << " : No Uniform variable : " << variableName
+                  << mFilenameFragmentShader << " : No variable : " << variableName
                   << std::endl;
         throw std::logic_error("Error in Shader");
     }
@@ -209,6 +214,16 @@ inline void Shader::setIntUniform(const std::string& variableName, int value, bo
     }
 }
 
+// Set an array of int uniform values to this shader (be careful if the uniform is not
+// used in the shader, the compiler will remove it, then when you will try
+// to set it, an assert will occur)
+inline void Shader::setIntArrayUniform(const std::string& variableName, GLint* values, int nbValues, bool errorIfMissing) const {
+    assert(mProgramObjectID != 0);
+    GLint location = getUniformLocation(variableName, errorIfMissing);
+    if (location != -1) {
+        glUniform1iv(location, nbValues, values);
+    }
+}
 // Set a vector 2 uniform value to this shader (be careful if the uniform is not
 // used in the shader, the compiler will remove it, then when you will try
 // to set it, an assert will occur)

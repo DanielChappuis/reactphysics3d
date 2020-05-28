@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,14 +24,14 @@
 ********************************************************************************/
 
 // Libraries
-#include "decimal.h"
-#include "RaycastInfo.h"
-#include "ProxyShape.h"
+#include <reactphysics3d/decimal.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/collision/Collider.h>
 
 using namespace reactphysics3d;
 
-// Ray cast test against a proxy shape
-decimal RaycastTest::raycastAgainstShape(ProxyShape* shape, const Ray& ray) {
+// Ray cast test against a collider
+decimal RaycastTest::raycastAgainstShape(Collider* shape, const Ray& ray) {
 
     // Ray casting test against the collision shape
     RaycastInfo raycastInfo;

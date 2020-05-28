@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,19 +24,19 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConcaveMeshShape.h"
-#include "memory/MemoryManager.h"
-#include "collision/RaycastInfo.h"
-#include "collision/TriangleMesh.h"
-#include "utils/Profiler.h"
-#include "collision/TriangleVertexArray.h"
+#include <reactphysics3d/collision/shapes/ConcaveMeshShape.h>
+#include <reactphysics3d/memory/MemoryManager.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/collision/TriangleMesh.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/collision/TriangleVertexArray.h>
 
 using namespace reactphysics3d;
 
 // Constructor
-ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling)
-                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH), mDynamicAABBTree(MemoryManager::getBaseAllocator()),
-                   mScaling(scaling) {
+ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, const Vector3& scaling)
+                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH, allocator, scaling), mDynamicAABBTree(allocator) {
+
     mTriangleMesh = triangleMesh;
     mRaycastTestType = TriangleRaycastSide::FRONT;
 
@@ -63,17 +63,6 @@ void ConcaveMeshShape::initBVHTree() {
             // Get the triangle vertices
             triangleVertexArray->getTriangleVertices(triangleIndex, trianglePoints);
 
-            // Apply the scaling factor to the vertices
-            trianglePoints[0].x *= mScaling.x;
-            trianglePoints[0].y *= mScaling.y;
-            trianglePoints[0].z *= mScaling.z;
-            trianglePoints[1].x *= mScaling.x;
-            trianglePoints[1].y *= mScaling.y;
-            trianglePoints[1].z *= mScaling.z;
-            trianglePoints[2].x *= mScaling.x;
-            trianglePoints[2].y *= mScaling.y;
-            trianglePoints[2].z *= mScaling.z;
-
             // Create the AABB for the triangle
             AABB aabb = AABB::createAABBForTriangle(trianglePoints);
 
@@ -84,8 +73,7 @@ void ConcaveMeshShape::initBVHTree() {
 }
 
 // Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex,
-                                           Vector3* outTriangleVertices) const {
+void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const {
 
     // Get the triangle vertex array of the current sub-part
     TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
@@ -94,15 +82,15 @@ void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex,
     triangleVertexArray->getTriangleVertices(triangleIndex, outTriangleVertices);
 
     // Apply the scaling factor to the vertices
-    outTriangleVertices[0].x *= mScaling.x;
-    outTriangleVertices[0].y *= mScaling.y;
-    outTriangleVertices[0].z *= mScaling.z;
-    outTriangleVertices[1].x *= mScaling.x;
-    outTriangleVertices[1].y *= mScaling.y;
-    outTriangleVertices[1].z *= mScaling.z;
-    outTriangleVertices[2].x *= mScaling.x;
-    outTriangleVertices[2].y *= mScaling.y;
-    outTriangleVertices[2].z *= mScaling.z;
+    outTriangleVertices[0].x *= mScale.x;
+    outTriangleVertices[0].y *= mScale.y;
+    outTriangleVertices[0].z *= mScale.z;
+    outTriangleVertices[1].x *= mScale.x;
+    outTriangleVertices[1].y *= mScale.y;
+    outTriangleVertices[1].z *= mScale.z;
+    outTriangleVertices[2].x *= mScale.x;
+    outTriangleVertices[2].y *= mScale.y;
+    outTriangleVertices[2].z *= mScale.z;
 }
 
 // Return the three vertex normals (in the array outVerticesNormals) of a triangle
@@ -138,27 +126,64 @@ uint ConcaveMeshShape::getNbTriangles(uint subPart) const
 	return mTriangleMesh->getSubpart(subPart)->getNbTriangles();
 }
 
-// Use a callback method on all triangles of the concave shape inside a given AABB
-void ConcaveMeshShape::testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const {
+// Compute all the triangles of the mesh that are overlapping with the AABB in parameter
+void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
+                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+                                                   MemoryAllocator& allocator) const {
 
-    ConvexTriangleAABBOverlapCallback overlapCallback(callback, *this, mDynamicAABBTree);
+    RP3D_PROFILE("ConcaveMeshShape::computeOverlappingTriangles()", mProfiler);
 
-    // Ask the Dynamic AABB Tree to report all the triangles that are overlapping
-    // with the AABB of the convex shape.
-    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(localAABB, overlapCallback);
+    // Scale the input AABB with the inverse scale of the concave mesh (because
+    // we store the vertices without scale inside the dynamic AABB tree
+    AABB aabb(localAABB);
+    aabb.applyScale(Vector3(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z));
+
+    // Compute the nodes of the internal AABB tree that are overlapping with the AABB
+    List<int> overlappingNodes(allocator);
+    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
+
+    const uint nbOverlappingNodes = overlappingNodes.size();
+
+    // Add space in the list of triangles vertices/normals for the new triangles
+    triangleVertices.addWithoutInit(nbOverlappingNodes * 3);
+    triangleVerticesNormals.addWithoutInit(nbOverlappingNodes * 3);
+
+    // For each overlapping node
+    for (uint i=0; i < nbOverlappingNodes; i++) {
+
+        int nodeId = overlappingNodes[i];
+
+        // Get the node data (triangle index and mesh subpart index)
+        int32* data = mDynamicAABBTree.getNodeDataInt(nodeId);
+
+        // Get the triangle vertices for this node from the concave mesh shape
+        getTriangleVertices(data[0], data[1], &(triangleVertices[i * 3]));
+
+        // Get the vertices normals of the triangle
+        getTriangleVerticesNormals(data[0], data[1], &(triangleVerticesNormals[i * 3]));
+
+        // Compute the triangle shape ID
+        shapeIds.add(computeTriangleShapeId(data[0], data[1]));
+    }
 }
 
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     RP3D_PROFILE("ConcaveMeshShape::raycast()", mProfiler);
 
-    // Create the callback object that will compute ray casting against triangles
-    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, proxyShape, raycastInfo, ray, allocator);
+    // Apply the concave mesh inverse scale factor because the mesh is stored without scaling
+    // inside the dynamic AABB tree
+    const Vector3 inverseScale(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z);
+    Ray scaledRay(ray.point1 * inverseScale, ray.point2 * inverseScale, ray.maxFraction);
 
-#ifdef IS_PROFILING_ACTIVE
+    // Create the callback object that will compute ray casting against triangles
+    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, collider, raycastInfo, scaledRay, mScale, allocator);
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	// Set the profiler
 	raycastCallback.setProfiler(mProfiler);
@@ -168,7 +193,7 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
     // Ask the Dynamic AABB Tree to report all AABB nodes that are hit by the ray.
     // The raycastCallback object will then compute ray casting against the triangles
     // in the hit AABBs.
-    mDynamicAABBTree.raycast(ray, raycastCallback);
+    mDynamicAABBTree.raycast(scaledRay, raycastCallback);
 
     raycastCallback.raycastTriangles();
 
@@ -177,6 +202,8 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxySh
 
 // Compute the shape Id for a given triangle of the mesh
 uint ConcaveMeshShape::computeTriangleShapeId(uint subPart, uint triangleIndex) const {
+
+    RP3D_PROFILE("ConcaveMeshShape::computeTriangleShapeId()", mProfiler);
 
     uint shapeId = 0;
 
@@ -223,7 +250,8 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
         TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]), mAllocator);
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
 		
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 		// Set the profiler to the triangle shape
 		triangleShape.setProfiler(mProfiler);
@@ -232,7 +260,7 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
 
         // Ray casting test against the collision shape
         RaycastInfo raycastInfo;
-        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape, mAllocator);
+        bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mCollider, mAllocator);
 
         // If the ray hit the collision shape
         if (isTriangleHit && raycastInfo.hitFraction <= smallestHitFraction) {
@@ -240,9 +268,9 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
             assert(raycastInfo.hitFraction >= decimal(0.0));
 
             mRaycastInfo.body = raycastInfo.body;
-            mRaycastInfo.proxyShape = raycastInfo.proxyShape;
+            mRaycastInfo.collider = raycastInfo.collider;
             mRaycastInfo.hitFraction = raycastInfo.hitFraction;
-            mRaycastInfo.worldPoint = raycastInfo.worldPoint;
+            mRaycastInfo.worldPoint = raycastInfo.worldPoint * mMeshScale;
             mRaycastInfo.worldNormal = raycastInfo.worldNormal;
             mRaycastInfo.meshSubpart = data[0];
             mRaycastInfo.triangleIndex = data[1];
@@ -250,7 +278,6 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
             smallestHitFraction = raycastInfo.hitFraction;
             mIsHit = true;
         }
-
     }
 }
 

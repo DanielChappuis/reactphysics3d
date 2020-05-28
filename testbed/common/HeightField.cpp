@@ -28,13 +28,14 @@
 #include "PerlinNoise.h"
 
 // Constructor
-HeightField::HeightField(rp3d::CollisionWorld* world)
-           : mVBOVertices(GL_ARRAY_BUFFER),
+HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
+           : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
     // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4::identity();
+    //mScalingMatrix = openglframework::Matrix4::identity();
+    mScalingMatrix = openglframework::Matrix4(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1);
 
     // Generate the height field
     generateHeightField();
@@ -44,52 +45,24 @@ HeightField::HeightField(rp3d::CollisionWorld* world)
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
-                                               mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    mBody = world->createCollisionBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = mBody->addCollisionShape(mHeightFieldShape, rp3d::Transform::identity());
-
-    // Create the VBOs and VAO
-    createVBOAndVAO();
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-}
-
-// Constructor
-HeightField::HeightField(float mass, rp3d::DynamicsWorld* dynamicsWorld)
-           : mVBOVertices(GL_ARRAY_BUFFER),
-             mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-             mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4::identity();
-
-    // Generate the height field
-    generateHeightField();
-
-    // Generate the graphics mesh
-    generateGraphicsMesh();
-
-    // Create the collision shape for the rigid body (convex mesh shape) and
-    // do not forget to delete it at the end
-    mHeightFieldShape = new rp3d::HeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
+    mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
                                                    mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
+    mHeightFieldShape->setScale(rp3d::Vector3(2, 2, 2));
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
+    // Create a body
+    if (createRigidBody) {
+        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+        mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
+        mBody = body;
+    }
+    else {
+        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
+        mCollider = mBody->addCollider(mHeightFieldShape, rp3d::Transform::identity());
+    }
 
-    // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = body->addCollisionShape(mHeightFieldShape, rp3d::Transform::identity(), mass);
-
-    mBody = body;
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -110,7 +83,7 @@ HeightField::~HeightField() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    delete mHeightFieldShape;
+    mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
 }
 
 // Render the sphere at the correct position and with the correct orientation
@@ -132,9 +105,10 @@ void HeightField::render(openglframework::Shader& shader,
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    openglframework::Color currentColor = mBody->isSleeping() ? mSleepingColor : mColor;
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
+    openglframework::Color currentColor = rigidBody != nullptr && rigidBody->isSleeping() ? mSleepingColor : mColor;
     openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-    shader.setVector4Uniform("vertexColor", color, false);
+    shader.setVector4Uniform("globalVertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();

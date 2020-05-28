@@ -28,12 +28,13 @@
 
 // Libraries
 #include "Test.h"
-#include "collision/shapes/BoxShape.h"
-#include "collision/shapes/SphereShape.h"
-#include "collision/shapes/CapsuleShape.h"
-#include "collision/shapes/ConvexMeshShape.h"
-#include "engine/CollisionWorld.h"
-#include "collision/PolygonVertexArray.h"
+#include <reactphysics3d/collision/shapes/BoxShape.h>
+#include <reactphysics3d/collision/shapes/SphereShape.h>
+#include <reactphysics3d/collision/shapes/CapsuleShape.h>
+#include <reactphysics3d/collision/shapes/ConvexMeshShape.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
+#include <reactphysics3d/collision/PolygonVertexArray.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -48,8 +49,11 @@ class TestPointInside : public Test {
 
         // ---------- Atributes ---------- //
 
+        // Physics common
+        PhysicsCommon mPhysicsCommon;
+
         // Physics world
-        CollisionWorld* mWorld;
+        PhysicsWorld* mWorld;
 
         // Bodies
         CollisionBody* mBoxBody;
@@ -79,11 +83,11 @@ class TestPointInside : public Test {
         Transform mLocalShapeToWorld;
         Transform mLocalShape2ToWorld;
 
-        // Proxy Shapes
-        ProxyShape* mBoxProxyShape;
-        ProxyShape* mSphereProxyShape;
-        ProxyShape* mCapsuleProxyShape;
-        ProxyShape* mConvexMeshProxyShape;
+        // Colliders
+        Collider* mBoxCollider;
+        Collider* mSphereCollider;
+        Collider* mCapsuleCollider;
+        Collider* mConvexMeshCollider;
 
     public :
 
@@ -93,7 +97,7 @@ class TestPointInside : public Test {
         TestPointInside(const std::string& name) : Test(name) {
 
             // Create the world
-            mWorld = new CollisionWorld();
+            mWorld = mPhysicsCommon.createPhysicsWorld();
 
             // Body transform
             Vector3 position(-3, 2, 7);
@@ -120,14 +124,14 @@ class TestPointInside : public Test {
             mLocalShapeToWorld = mBodyTransform * mShapeTransform;
 
             // Create collision shapes
-            mBoxShape = new BoxShape(Vector3(2, 3, 4));
-            mBoxProxyShape = mBoxBody->addCollisionShape(mBoxShape, mShapeTransform);
+            mBoxShape = mPhysicsCommon.createBoxShape(Vector3(2, 3, 4));
+            mBoxCollider = mBoxBody->addCollider(mBoxShape, mShapeTransform);
 
-            mSphereShape = new SphereShape(3);
-            mSphereProxyShape = mSphereBody->addCollisionShape(mSphereShape, mShapeTransform);
+            mSphereShape = mPhysicsCommon.createSphereShape(3);
+            mSphereCollider = mSphereBody->addCollider(mSphereShape, mShapeTransform);
 
-            mCapsuleShape = new CapsuleShape(3, 10);
-            mCapsuleProxyShape = mCapsuleBody->addCollisionShape(mCapsuleShape, mShapeTransform);
+            mCapsuleShape = mPhysicsCommon.createCapsuleShape(3, 10);
+            mCapsuleCollider = mCapsuleBody->addCollider(mCapsuleShape, mShapeTransform);
 
             mConvexMeshCubeVertices[0] = Vector3(-2, -3, 4);
             mConvexMeshCubeVertices[1] = Vector3(2, -3, 4);
@@ -156,30 +160,30 @@ class TestPointInside : public Test {
                     &(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
                     PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            mConvexMeshPolyhedronMesh = new PolyhedronMesh(mConvexMeshPolygonVertexArray);
-            mConvexMeshShape = new ConvexMeshShape(mConvexMeshPolyhedronMesh);
+            mConvexMeshPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMeshPolygonVertexArray);
+            mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMeshPolyhedronMesh);
             Transform convexMeshTransform(Vector3(10, 0, 0), Quaternion::identity());
-            mConvexMeshProxyShape = mConvexMeshBody->addCollisionShape(mConvexMeshShape, mShapeTransform);
+            mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);
 
             // Compound shape is a capsule and a sphere
             Vector3 positionShape2(Vector3(4, 2, -3));
             Quaternion orientationShape2 = Quaternion::fromEulerAngles(-3 * PI / 8, 1.5 * PI/ 3, PI / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
-            mCompoundBody->addCollisionShape(mCapsuleShape, mShapeTransform);
-            mCompoundBody->addCollisionShape(mSphereShape, shapeTransform2);
+            mCompoundBody->addCollider(mCapsuleShape, mShapeTransform);
+            mCompoundBody->addCollider(mSphereShape, shapeTransform2);
         }
 
         /// Destructor
         virtual ~TestPointInside() {
-            delete mWorld;
-            delete mBoxShape;
-            delete mSphereShape;
-            delete mCapsuleShape;
-            delete mConvexMeshShape;
+            mPhysicsCommon.destroyPhysicsWorld(mWorld);
+            mPhysicsCommon.destroyBoxShape(mBoxShape);
+            mPhysicsCommon.destroySphereShape(mSphereShape);
+            mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
+            mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape);
+            mPhysicsCommon.destroyPolyhedronMesh(mConvexMeshPolyhedronMesh);
             delete[] mConvexMeshPolygonFaces;
             delete mConvexMeshPolygonVertexArray;
-            delete mConvexMeshPolyhedronMesh;
         }
 
         /// Run the tests
@@ -191,7 +195,7 @@ class TestPointInside : public Test {
             testCompound();
         }
 
-        /// Test the ProxyBoxShape::testPointInside() and
+        /// Test the testPointInside() and
         /// CollisionBody::testPointInside() methods
         void testBox() {
 
@@ -221,34 +225,34 @@ class TestPointInside : public Test {
             rp3d_test(!mBoxBody->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
             rp3d_test(!mBoxBody->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
 
-            // Tests with ProxyBoxShape
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.9)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.9)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -2.9, -3.9)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.9, 2.9, 3.9)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, -2, -1.5)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, -2.5)));
-            rp3d_test(mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 3.5)));
+            // Tests with Collider
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.9)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.9)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -2.9, -3.9)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(1.9, 2.9, 3.9)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, -2, -1.5)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, -2.5)));
+            rp3d_test(mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 3.5)));
 
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 0, 0)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.1, 0, 0)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -4.1)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 4.1)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.1, -3.1, -4.1)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.1, 3.1, 4.1)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-10, -2, -1.5)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
-            rp3d_test(!mBoxProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 0, 0)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(2.1, 0, 0)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -4.1)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 4.1)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(-2.1, -3.1, -4.1)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(2.1, 3.1, 4.1)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(-10, -2, -1.5)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
+            rp3d_test(!mBoxCollider->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
         }
 
-        /// Test the ProxySphereShape::testPointInside() and
+        /// Test the Collider::testPointInside() and
         /// CollisionBody::testPointInside() methods
         void testSphere() {
 
@@ -274,30 +278,30 @@ class TestPointInside : public Test {
             rp3d_test(!mSphereBody->testPointInside(mLocalShapeToWorld * Vector3(-2, 2, -1.5)));
             rp3d_test(!mSphereBody->testPointInside(mLocalShapeToWorld * Vector3(1.5, -2, 2.5)));
 
-            // Tests with ProxySphereShape
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.9, 0, 0)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.9, 0, 0)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 2.9)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 2.9)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, -2, -1.5)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, -1.5)));
-            rp3d_test(mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 1.5)));
+            // Tests with Collider
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(2.9, 0, 0)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(-2.9, 0, 0)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 2.9)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 2.9)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, -2, -1.5)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, -1.5)));
+            rp3d_test(mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 1.5)));
 
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.1)));
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2, -2, -2)));
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2, 2, -1.5)));
-            rp3d_test(!mSphereProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.5, -2, 2.5)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.1)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(-2, -2, -2)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(-2, 2, -1.5)));
+            rp3d_test(!mSphereCollider->testPointInside(mLocalShapeToWorld * Vector3(1.5, -2, 2.5)));
         }
 
-        /// Test the ProxyCapsuleShape::testPointInside() and
+        /// Test the Collider::testPointInside() and
         /// CollisionBody::testPointInside() methods
         void testCapsule() {
 
@@ -348,55 +352,55 @@ class TestPointInside : public Test {
             rp3d_test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, 2.6)));
             rp3d_test(!mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, -2.7)));
 
-            // Tests with ProxyCapsuleShape
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -6.9, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 6.9, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 1.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -1.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, 0, 0.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, 0, -0.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 1.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, -1.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.9, 5, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 5, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, 5, 0.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, 5, -0.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 1.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, -1.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.9, -5, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -5, 0)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, -5, 0.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0.9, -5, -0.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -4, -0.9)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, 0.4)));
-            rp3d_test(mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.3, 1, 1.5)));
+            // Tests with Collider
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -6.9, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 6.9, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 1.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -1.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0.9, 0, 0.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0.9, 0, -0.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 1.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 5, -1.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(1.9, 5, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 5, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0.9, 5, 0.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0.9, 5, -0.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 1.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -5, -1.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(1.9, -5, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -5, 0)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0.9, -5, 0.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0.9, -5, -0.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(-1.7, -4, -0.9)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, 0.4)));
+            rp3d_test(mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(1.3, 1, 1.5)));
 
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -13.1, 0)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 13.1, 0)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.1)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 3.1)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 5, -3.1)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, 5, 0)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 5, 0)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.5, 5, 2.6)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.5, 5, -2.7)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 3.1)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -5, -3.1)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(3.1, -5, 0)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-3.1, -5, 0)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, 2.6)));
-            rp3d_test(!mCapsuleProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, -2.7)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -13.1, 0)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 13.1, 0)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.1)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.1)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(3.1, 0, 0)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 0, 0)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 3.1)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 5, -3.1)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(3.1, 5, 0)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(-3.1, 5, 0)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(2.5, 5, 2.6)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(2.5, 5, -2.7)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 3.1)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -5, -3.1)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(3.1, -5, 0)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(-3.1, -5, 0)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, 2.6)));
+            rp3d_test(!mCapsuleCollider->testPointInside(mLocalShapeToWorld * Vector3(2.5, -5, -2.7)));
         }
 
-        /// Test the ProxyConvexMeshShape::testPointInside() and
+        /// Test the Collider::testPointInside() and
         /// CollisionBody::testPointInside() methods
         void testConvexMesh() {
 
@@ -426,31 +430,31 @@ class TestPointInside : public Test {
             rp3d_test(!mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
             rp3d_test(!mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
 
-            // Tests with ProxyConvexMeshShape
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.9)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.9)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -2.9, -3.9)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1.9, 2.9, 3.9)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, -2, -1.5)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, -2.5)));
-            rp3d_test(mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 3.5)));
+            // Tests with Collider
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -2.9, 0)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 2.9, 0)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -3.9)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 3.9)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(-1.9, -2.9, -3.9)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(1.9, 2.9, 3.9)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, -2, -1.5)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, 2, -2.5)));
+            rp3d_test(mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 3.5)));
 
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 0, 0)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.1, 0, 0)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -4.1)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 4.1)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-2.1, -3.1, -4.1)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(2.1, 3.1, 4.1)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-10, -2, -1.5)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
-            rp3d_test(!mConvexMeshProxyShape->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(-2.1, 0, 0)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(2.1, 0, 0)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, -3.1, 0)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 3.1, 0)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, -4.1)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 4.1)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(-2.1, -3.1, -4.1)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(2.1, 3.1, 4.1)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(-10, -2, -1.5)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(-1, 4, -2.5)));
+            rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
         }
 
         /// Test the CollisionBody::testPointInside() method

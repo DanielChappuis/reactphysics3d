@@ -34,9 +34,9 @@ openglframework::VertexArrayObject Sphere::mVAO;
 int Sphere::totalNbSpheres = 0;
 
 // Constructor
-Sphere::Sphere(float radius, rp3d::CollisionWorld* world,
+Sphere::Sphere(bool createRigidBody, float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world,
                const std::string& meshFolderPath)
-       : PhysicsObject(meshFolderPath + "sphere.obj"), mRadius(radius) {
+       : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -47,52 +47,24 @@ Sphere::Sphere(float radius, rp3d::CollisionWorld* world,
     // Create the collision shape for the rigid body (sphere shape)
     // ReactPhysics3D will clone this object to create an internal one. Therefore,
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mCollisionShape = new rp3d::SphereShape(mRadius);
-    //mCollisionShape->setLocalScaling(rp3d::Vector3(2, 2, 2));
+    mCollisionShape = mPhysicsCommon.createSphereShape(mRadius);
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    mBody = world->createCollisionBody(mPreviousTransform);
+    if (createRigidBody) {
 
-    // Add a collision shape to the body and specify the mass of the shape
-    mProxyShape = mBody->addCollisionShape(mCollisionShape, rp3d::Transform::identity());
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-
-    // Create the VBOs and VAO
-    if (totalNbSpheres == 0) {
-        createVBOAndVAO();
+        // Create a rigid body corresponding to the sphere in the physics world
+        rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
+        mCollider = body->addCollider(mCollisionShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
+        mBody = body;
     }
+    else {
 
-    totalNbSpheres++;
-}
-
-// Constructor
-Sphere::Sphere(float radius, float mass, reactphysics3d::DynamicsWorld* world,
-               const std::string& meshFolderPath)
-       : PhysicsObject(meshFolderPath + "sphere.obj"), mRadius(radius) {
-
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
-                                              0, mRadius, 0, 0,
-                                              0, 0, mRadius, 0,
-                                              0, 0, 0, 1);
-
-    // Create the collision shape for the rigid body (sphere shape)
-    // ReactPhysics3D will clone this object to create an internal one. Therefore,
-    // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
-    mCollisionShape = new rp3d::SphereShape(mRadius);
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the shape
-    mProxyShape = body->addCollisionShape(mCollisionShape, rp3d::Transform::identity(), mass);
-
-    mBody = body;
+        // Create a body corresponding to the sphere in the physics world
+        mBody = world->createCollisionBody(mPreviousTransform);
+        mCollider = mBody->addCollider(mCollisionShape, rp3d::Transform::identity());
+    }
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -118,7 +90,7 @@ Sphere::~Sphere() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-    delete mCollisionShape;
+    mPhysicsCommon.destroySphereShape(mCollisionShape);
     totalNbSpheres--;
 }
 
@@ -140,9 +112,10 @@ void Sphere::render(openglframework::Shader& shader, const openglframework::Matr
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    openglframework::Color currentColor = mBody->isSleeping() ? mSleepingColor : mColor;
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
+    openglframework::Color currentColor = rigidBody != nullptr && rigidBody->isSleeping() ? mSleepingColor : mColor;
     openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-    shader.setVector4Uniform("vertexColor", color, false);
+    shader.setVector4Uniform("globalVertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();

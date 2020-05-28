@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConvexPolyhedronVsConvexPolyhedronAlgorithm.h"
-#include "GJK/GJKAlgorithm.h"
-#include "SAT/SATAlgorithm.h"
-#include "collision/NarrowPhaseInfo.h"
+#include <reactphysics3d/collision/narrowphase/ConvexPolyhedronVsConvexPolyhedronAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/GJK/GJKAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/SAT/SATAlgorithm.h>
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -35,25 +35,30 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two convex polyhedra
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfo* narrowPhaseInfo, bool reportContacts,
-                                                                MemoryAllocator& memoryAllocator) {
+bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
+                                                                uint batchStartIndex, uint batchNbItems,
+                                                                bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator) {
 
     // Run the SAT algorithm to find the separating axis and compute contact point
-    SATAlgorithm satAlgorithm(memoryAllocator);
+    SATAlgorithm satAlgorithm(clipWithPreviousAxisIfStillColliding, memoryAllocator);
 
-#ifdef IS_PROFILING_ACTIVE
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	satAlgorithm.setProfiler(mProfiler);
 
 #endif
 
-    // Get the last frame collision info
-    LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfo->getLastFrameCollisionInfo();
+    bool isCollisionFound = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfoBatch, batchStartIndex, batchNbItems);
 
-    bool isColliding = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfo, reportContacts);
+    for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
-    lastFrameCollisionInfo->wasUsingSAT = true;
-    lastFrameCollisionInfo->wasUsingGJK = false;
+        // Get the last frame collision info
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
 
-    return isColliding;
+        lastFrameCollisionInfo->wasUsingSAT = true;
+        lastFrameCollisionInfo->wasUsingGJK = false;
+    }
+
+    return isCollisionFound;
 }

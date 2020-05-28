@@ -28,8 +28,8 @@
 
 // Libraries
 #include "Test.h"
-#include "containers/Set.h"
-#include "memory/DefaultAllocator.h"
+#include <reactphysics3d/containers/Set.h>
+#include <reactphysics3d/memory/DefaultAllocator.h>
 
 // Key to test map with always same hash values
 namespace reactphysics3d {
@@ -90,6 +90,7 @@ class TestSet : public Test {
             testEquality();
             testAssignment();
             testIterators();
+            testConverters();
         }
 
         void testConstructors() {
@@ -149,12 +150,20 @@ class TestSet : public Test {
             // ----- Test add() ----- //
 
             Set<int> set1(mAllocator);
-            set1.add(10);
-            set1.add(80);
-            set1.add(130);
+            bool add1 = set1.add(10);
+            bool add2 = set1.add(80);
+            bool add3 = set1.add(130);
+            rp3d_test(add1);
+            rp3d_test(add2);
+            rp3d_test(add3);
             rp3d_test(set1.contains(10));
             rp3d_test(set1.contains(80));
             rp3d_test(set1.contains(130));
+            rp3d_test(set1.size() == 3);
+
+            bool add4 = set1.add(80);
+            rp3d_test(!add4);
+            rp3d_test(set1.contains(80));
             rp3d_test(set1.size() == 3);
 
             Set<int> set2(mAllocator, 15);
@@ -168,7 +177,8 @@ class TestSet : public Test {
             rp3d_test(isValid);
 
             set1.remove(10);
-            set1.add(10);
+            bool add = set1.add(10);
+            rp3d_test(add);
             rp3d_test(set1.size() == 3);
             rp3d_test(set1.contains(10));
 
@@ -409,6 +419,31 @@ class TestSet : public Test {
                 size++;
             }
             rp3d_test(set1.size() == size);
+        }
+
+        void testConverters() {
+
+            Set<int> set1(mAllocator);
+
+            rp3d_test(set1.begin() == set1.end());
+
+            set1.add(1);
+            set1.add(2);
+            set1.add(3);
+            set1.add(4);
+
+            List<int> list1 = set1.toList(mAllocator);
+            rp3d_test(list1.size() == 4);
+            rp3d_test(list1.find(1) != list1.end());
+            rp3d_test(list1.find(2) != list1.end());
+            rp3d_test(list1.find(3) != list1.end());
+            rp3d_test(list1.find(4) != list1.end());
+            rp3d_test(list1.find(5) == list1.end());
+            rp3d_test(list1.find(6) == list1.end());
+
+            Set<int> set2(mAllocator);
+            List<int> list2 = set2.toList(mAllocator);
+            rp3d_test(list2.size() == 0);
         }
  };
 

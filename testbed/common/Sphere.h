@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "PhysicsObject.h"
 
 // Class Sphere
@@ -43,13 +43,10 @@ class Sphere : public PhysicsObject {
 
         /// Collision shape
         rp3d::SphereShape* mCollisionShape;
-        rp3d::ProxyShape* mProxyShape;
+        rp3d::Collider* mCollider;
 
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
-
-        /// Previous transform (for interpolation)
-        rp3d::Transform mPreviousTransform;
 
         /// Vertex Buffer Object for the vertices data
         static openglframework::VertexBufferObject mVBOVertices;
@@ -79,24 +76,29 @@ class Sphere : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Sphere(float radius, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
-
-        /// Constructor
-        Sphere(float radius, float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshFolderPath);
+        Sphere(bool createRigidBody, float radius, rp3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world, const std::string& meshFolderPath);
 
         /// Destructor
-        ~Sphere();
+        virtual ~Sphere() override;
 
         /// Render the sphere at the correct position and with the correct orientation
         void virtual render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
 };
 
 // Update the transform matrix of the object
 inline void Sphere::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* Sphere::getCollider() {
+    return mCollider;
 }
 
 #endif

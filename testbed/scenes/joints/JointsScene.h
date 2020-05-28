@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "Box.h"
 #include "SceneDemo.h"
 
@@ -38,8 +38,6 @@ namespace jointsscene {
 const float SCENE_RADIUS = 30.0f;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);    // Floor dimensions in meters
-const float BOX_MASS = 1.0f;                                // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                            // Floor mass in kilograms
 const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-And-Socket chain boxes
 const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes
 
@@ -125,15 +123,7 @@ class JointsScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
-
-        /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() override;
 };
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> JointsScene::getContactPoints() {
-    return computeContactPointsOfWorld(getDynamicsWorld());
-}
 
 }
 

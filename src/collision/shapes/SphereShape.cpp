@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,20 +24,20 @@
 ********************************************************************************/
 
 // Libraries
-#include "SphereShape.h"
-#include "collision/ProxyShape.h"
-#include "configuration.h"
-#include "collision/RaycastInfo.h"
+#include <reactphysics3d/collision/shapes/SphereShape.h>
+#include <reactphysics3d/collision/Collider.h>
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
 #include <cassert>
 
 using namespace reactphysics3d;
 
 // Constructor
 /**
- * @param radius Radius of the sphere (in meters)
+ * @param radius Radius of the sphere
  */
-SphereShape::SphereShape(decimal radius)
-            : ConvexShape(CollisionShapeName::SPHERE, CollisionShapeType::SPHERE, radius) {
+SphereShape::SphereShape(decimal radius, MemoryAllocator& allocator)
+            : ConvexShape(CollisionShapeName::SPHERE, CollisionShapeType::SPHERE, allocator, radius) {
     assert(radius > decimal(0.0));
 }
 
@@ -49,6 +49,8 @@ SphereShape::SphereShape(decimal radius)
  */
 void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
+    RP3D_PROFILE("SphereShape::computeAABB()", mProfiler);
+
     // Get the local extents in x,y and z direction
     Vector3 extents(mMargin, mMargin, mMargin);
 
@@ -58,7 +60,7 @@ void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
 }
 
 // Raycast method with feedback information
-bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     const Vector3 m = ray.point1;
     decimal c = m.dot(m) - mMargin * mMargin;
@@ -91,8 +93,8 @@ bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* 
 
         // Compute the intersection information
         t /= raySquareLength;
-        raycastInfo.body = proxyShape->getBody();
-        raycastInfo.proxyShape = proxyShape;
+        raycastInfo.body = collider->getBody();
+        raycastInfo.collider = collider;
         raycastInfo.hitFraction = t;
         raycastInfo.worldPoint = ray.point1 + t * rayDirection;
         raycastInfo.worldNormal = raycastInfo.worldPoint;

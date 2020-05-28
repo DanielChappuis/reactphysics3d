@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "Box.h"
 #include "Sphere.h"
 #include "ConvexMesh.h"
@@ -56,12 +56,6 @@ const float CAPSULE_RADIUS = 1.0f;
 const float CAPSULE_HEIGHT = 1.0f;
 const float DUMBBELL_HEIGHT = 1.0f;
 const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);        // Floor dimensions in meters
-const float BOX_MASS = 1.0f;
-const float CONE_MASS = 1.0f;
-const float CYLINDER_MASS = 1.0f;
-const float CAPSULE_MASS = 1.0f;
-const float MESH_MASS = 1.0f;
-const float FLOOR_MASS = 100.0f;
 
 // Class HeightFieldScene
 class HeightFieldScene : public SceneDemo {
@@ -98,15 +92,7 @@ class HeightFieldScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override ;
-
-        /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() override ;
 };
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> HeightFieldScene::getContactPoints() {
-    return computeContactPointsOfWorld(getDynamicsWorld());
-}
 
 }
 

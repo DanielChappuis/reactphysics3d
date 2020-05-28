@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,15 +24,15 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConvexShape.h"
-#include "mathematics/Vector3.h"
+#include <reactphysics3d/collision/shapes/ConvexShape.h>
+#include <reactphysics3d/mathematics/Vector3.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-ConvexShape::ConvexShape(CollisionShapeName name, CollisionShapeType type, decimal margin)
-            : CollisionShape(name, type), mMargin(margin) {
+ConvexShape::ConvexShape(CollisionShapeName name, CollisionShapeType type, MemoryAllocator& allocator, decimal margin)
+            : CollisionShape(name, type, allocator), mMargin(margin) {
 
 }
 

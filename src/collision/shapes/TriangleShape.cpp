@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,12 +24,12 @@
 ********************************************************************************/
 
 // Libraries
-#include "TriangleShape.h"
-#include "collision/ProxyShape.h"
-#include "mathematics/mathematics_functions.h"
-#include "collision/RaycastInfo.h"
-#include "utils/Profiler.h"
-#include "configuration.h"
+#include <reactphysics3d/collision/shapes/TriangleShape.h>
+#include <reactphysics3d/collision/Collider.h>
+#include <reactphysics3d/mathematics/mathematics_functions.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/configuration.h>
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -47,7 +47,7 @@ using namespace reactphysics3d;
  */
 TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId,
                              MemoryAllocator& allocator)
-    : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE), mFaces{HalfEdgeStructure::Face(allocator), HalfEdgeStructure::Face(allocator)} {
+    : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, allocator), mFaces{HalfEdgeStructure::Face(allocator), HalfEdgeStructure::Face(allocator)} {
 
     mPoints[0] = vertices[0];
     mPoints[1] = vertices[1];
@@ -230,6 +230,8 @@ Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3&
  */
 void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
 
+    RP3D_PROFILE("TriangleShape::computeAABB()", mProfiler);
+
     const Vector3 worldPoint1 = transform * mPoints[0];
     const Vector3 worldPoint2 = transform * mPoints[1];
     const Vector3 worldPoint3 = transform * mPoints[2];
@@ -244,7 +246,7 @@ void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
 // Raycast method with feedback information
 /// This method use the line vs triangle raycasting technique described in
 /// Real-time Collision Detection by Christer Ericson.
-bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     RP3D_PROFILE("TriangleShape::raycast()", mProfiler);
 
@@ -305,8 +307,8 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape
     Vector3 localHitNormal = (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]);
     if (localHitNormal.dot(pq) > decimal(0.0)) localHitNormal = -localHitNormal;
 
-    raycastInfo.body = proxyShape->getBody();
-    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.body = collider->getBody();
+    raycastInfo.collider = collider;
     raycastInfo.worldPoint = localHitPoint;
     raycastInfo.hitFraction = hitFraction;
     raycastInfo.worldNormal = localHitNormal;

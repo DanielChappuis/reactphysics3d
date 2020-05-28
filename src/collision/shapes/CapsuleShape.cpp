@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,10 +24,10 @@
 ********************************************************************************/
 
 // Libraries
-#include "CapsuleShape.h"
-#include "collision/ProxyShape.h"
-#include "configuration.h"
-#include "collision/RaycastInfo.h"
+#include <reactphysics3d/collision/shapes/CapsuleShape.h>
+#include <reactphysics3d/collision/Collider.h>
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
 #include <cassert>
 
 using namespace reactphysics3d;
@@ -37,40 +37,37 @@ using namespace reactphysics3d;
  * @param radius The radius of the capsule (in meters)
  * @param height The height of the capsule (in meters)
  */
-CapsuleShape::CapsuleShape(decimal radius, decimal height)
-            : ConvexShape(CollisionShapeName::CAPSULE, CollisionShapeType::CAPSULE, radius), mHalfHeight(height * decimal(0.5)) {
+CapsuleShape::CapsuleShape(decimal radius, decimal height, MemoryAllocator& allocator)
+            : ConvexShape(CollisionShapeName::CAPSULE, CollisionShapeType::CAPSULE, allocator, radius), mHalfHeight(height * decimal(0.5)) {
+
     assert(radius > decimal(0.0));
     assert(height > decimal(0.0));
 }
 
 // Return the local inertia tensor of the capsule
 /**
- * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
- *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-void CapsuleShape::computeLocalInertiaTensor(Matrix3x3& tensor, decimal mass) const {
+Vector3 CapsuleShape::getLocalInertiaTensor(decimal mass) const {
 
 	// The inertia tensor formula for a capsule can be found in : Game Engine Gems, Volume 1
 	
-    decimal height = mHalfHeight + mHalfHeight;
-    decimal radiusSquare = mMargin * mMargin;
-	decimal heightSquare = height * height;
-	decimal radiusSquareDouble = radiusSquare + radiusSquare;
-    decimal factor1 = decimal(2.0) * mMargin / (decimal(4.0) * mMargin + decimal(3.0) * height);
-    decimal factor2 = decimal(3.0) * height / (decimal(4.0) * mMargin + decimal(3.0) * height);
-	decimal sum1 = decimal(0.4) * radiusSquareDouble;
-    decimal sum2 = decimal(0.75) * height * mMargin + decimal(0.5) * heightSquare;
-	decimal sum3 = decimal(0.25) * radiusSquare + decimal(1.0 / 12.0) * heightSquare;
-	decimal IxxAndzz = factor1 * mass * (sum1 + sum2) + factor2 * mass * sum3;
-	decimal Iyy = factor1 * mass * sum1 + factor2 * mass * decimal(0.25) * radiusSquareDouble;
-    tensor.setAllValues(IxxAndzz, 0.0, 0.0,
-                        0.0, Iyy, 0.0,
-                        0.0, 0.0, IxxAndzz);
+    const decimal height = mHalfHeight + mHalfHeight;
+    const decimal radiusSquare = mMargin * mMargin;
+    const decimal heightSquare = height * height;
+    const decimal radiusSquareDouble = radiusSquare + radiusSquare;
+    const decimal factor1 = decimal(2.0) * mMargin / (decimal(4.0) * mMargin + decimal(3.0) * height);
+    const decimal factor2 = decimal(3.0) * height / (decimal(4.0) * mMargin + decimal(3.0) * height);
+    const decimal sum1 = decimal(0.4) * radiusSquareDouble;
+    const decimal sum2 = decimal(0.75) * height * mMargin + decimal(0.5) * heightSquare;
+    const decimal sum3 = decimal(0.25) * radiusSquare + decimal(1.0 / 12.0) * heightSquare;
+    const decimal IxxAndzz = factor1 * mass * (sum1 + sum2) + factor2 * mass * sum3;
+    const decimal Iyy = factor1 * mass * sum1 + factor2 * mass * decimal(0.25) * radiusSquareDouble;
+    return Vector3(IxxAndzz, Iyy, IxxAndzz);
 }
 
 // Return true if a point is inside the collision shape
-bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyShape) const {
+bool CapsuleShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
 
     const decimal diffYCenterSphere1 = localPoint.y - mHalfHeight;
     const decimal diffYCenterSphere2 = localPoint.y + mHalfHeight;
@@ -86,7 +83,7 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, ProxyShape* proxyS
 }
 
 // Raycast method with feedback information
-bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     const Vector3 n = ray.point2 - ray.point1;
 
@@ -129,8 +126,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
             Vector3 hitLocalPoint;
             decimal hitFraction;
             if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
-                raycastInfo.body = proxyShape->getBody();
-                raycastInfo.proxyShape = proxyShape;
+                raycastInfo.body = collider->getBody();
+                raycastInfo.collider = collider;
                 raycastInfo.hitFraction = hitFraction;
                 raycastInfo.worldPoint = hitLocalPoint;
                 Vector3 normalDirection = hitLocalPoint - p;
@@ -147,8 +144,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
             Vector3 hitLocalPoint;
             decimal hitFraction;
             if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
-                raycastInfo.body = proxyShape->getBody();
-                raycastInfo.proxyShape = proxyShape;
+                raycastInfo.body = collider->getBody();
+                raycastInfo.collider = collider;
                 raycastInfo.hitFraction = hitFraction;
                 raycastInfo.worldPoint = hitLocalPoint;
                 Vector3 normalDirection = hitLocalPoint - q;
@@ -180,8 +177,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
         Vector3 hitLocalPoint;
         decimal hitFraction;
         if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
-            raycastInfo.body = proxyShape->getBody();
-            raycastInfo.proxyShape = proxyShape;
+            raycastInfo.body = collider->getBody();
+            raycastInfo.collider = collider;
             raycastInfo.hitFraction = hitFraction;
             raycastInfo.worldPoint = hitLocalPoint;
             Vector3 normalDirection = hitLocalPoint - p;
@@ -198,8 +195,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
         Vector3 hitLocalPoint;
         decimal hitFraction;
         if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
-            raycastInfo.body = proxyShape->getBody();
-            raycastInfo.proxyShape = proxyShape;
+            raycastInfo.body = collider->getBody();
+            raycastInfo.collider = collider;
             raycastInfo.hitFraction = hitFraction;
             raycastInfo.worldPoint = hitLocalPoint;
             Vector3 normalDirection = hitLocalPoint - q;
@@ -219,8 +216,8 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape*
 
     // Compute the hit information
     Vector3 localHitPoint = ray.point1 + t * n;
-    raycastInfo.body = proxyShape->getBody();
-    raycastInfo.proxyShape = proxyShape;
+    raycastInfo.body = collider->getBody();
+    raycastInfo.collider = collider;
     raycastInfo.hitFraction = t;
     raycastInfo.worldPoint = localHitPoint;
     Vector3 v = localHitPoint - p;

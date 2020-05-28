@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,20 +24,35 @@
 ********************************************************************************/
 
 // Libraries
-#include "ContactPoint.h"
-#include "collision/ProxyShape.h"
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/Collider.h>
 
 using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, const WorldSettings& worldSettings)
+ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, decimal persistentContactDistanceThreshold)
              : mNormal(contactInfo->normal),
                mPenetrationDepth(contactInfo->penetrationDepth),
                mLocalPointOnShape1(contactInfo->localPoint1),
                mLocalPointOnShape2(contactInfo->localPoint2),
                mIsRestingContact(false), mIsObsolete(false), mNext(nullptr), mPrevious(nullptr),
-               mWorldSettings(worldSettings) {
+               mPersistentContactDistanceThreshold(persistentContactDistanceThreshold) {
+
+    assert(mPenetrationDepth > decimal(0.0));
+    assert(mNormal.lengthSquare() > decimal(0.8));
+
+    mIsObsolete = false;
+}
+
+// Constructor
+ContactPoint::ContactPoint(const ContactPointInfo& contactInfo, decimal persistentContactDistanceThreshold)
+             : mNormal(contactInfo.normal),
+               mPenetrationDepth(contactInfo.penetrationDepth),
+               mLocalPointOnShape1(contactInfo.localPoint1),
+               mLocalPointOnShape2(contactInfo.localPoint2),
+               mIsRestingContact(false), mPenetrationImpulse(0), mIsObsolete(false),
+               mPersistentContactDistanceThreshold(persistentContactDistanceThreshold) {
 
     assert(mPenetrationDepth > decimal(0.0));
     assert(mNormal.lengthSquare() > decimal(0.8));

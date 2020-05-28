@@ -27,13 +27,15 @@
 #include "ConcaveMesh.h"
 
 // Constructor
-ConcaveMesh::ConcaveMesh(rp3d::CollisionWorld* world, const std::string& meshPath)
-           : PhysicsObject(meshPath), mVBOVertices(GL_ARRAY_BUFFER),
+ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
+           : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4::identity();
+
+    mPhysicsTriangleMesh = mPhysicsCommon.createTriangleMesh();
 
     // For each subpart of the mesh
     for (unsigned int i=0; i<getNbParts(); i++) {
@@ -46,63 +48,26 @@ ConcaveMesh::ConcaveMesh(rp3d::CollisionWorld* world, const std::string& meshPat
                                               rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
         // Add the triangle vertex array of the subpart to the triangle mesh
-        mPhysicsTriangleMesh.addSubpart(vertexArray);
+        mPhysicsTriangleMesh->addSubpart(vertexArray);
     }
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
+    mConcaveShape = mPhysicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh);
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    mBody = world->createCollisionBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = mBody->addCollisionShape(mConcaveShape, rp3d::Transform::identity());
-
-    // Create the VBOs and VAO
-    createVBOAndVAO();
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
-}
-
-// Constructor
-ConcaveMesh::ConcaveMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath)
-           : PhysicsObject(meshPath), mVBOVertices(GL_ARRAY_BUFFER),
-             mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-             mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
-
-    // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4::identity();
-
-    // For each subpart of the mesh
-    for (unsigned int i=0; i<getNbParts(); i++) {
-
-        // Vertex and Indices array for the triangle mesh (data in shared and not copied)
-        rp3d::TriangleVertexArray* vertexArray =
-                new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                              getNbFaces(i), &(mIndices[i][0]), 3 * sizeof(int),
-                                              rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-
-        // Add the triangle vertex array of the subpart to the triangle mesh
-        mPhysicsTriangleMesh.addSubpart(vertexArray);
+    // Create the body
+    if (createRigidBody) {
+        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+        mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity());
+        body->updateMassPropertiesFromColliders();
+        mBody = body;
     }
-
-    // Create the collision shape for the rigid body (convex mesh shape) and
-    // do not forget to delete it at the end
-    mConcaveShape = new rp3d::ConcaveMeshShape(&mPhysicsTriangleMesh);
-
-    mPreviousTransform = rp3d::Transform::identity();
-
-    // Create a rigid body corresponding to the sphere in the dynamics world
-    rp3d::RigidBody* body = dynamicsWorld->createRigidBody(mPreviousTransform);
-
-    // Add a collision shape to the body and specify the mass of the collision shape
-    mProxyShape = body->addCollisionShape(mConcaveShape, rp3d::Transform::identity(), mass);
-
-    mBody = body;
+    else {
+        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
+        mCollider = mBody->addCollider(mConcaveShape, rp3d::Transform::identity());
+    }
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -114,8 +79,8 @@ ConcaveMesh::ConcaveMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const s
 ConcaveMesh::~ConcaveMesh() {
 
     // Destroy the triangle mesh data for the physics engine
-    for (unsigned int i=0; i<mPhysicsTriangleMesh.getNbSubparts(); i++) {
-        delete mPhysicsTriangleMesh.getSubpart(i);
+    for (unsigned int i=0; i<mPhysicsTriangleMesh->getNbSubparts(); i++) {
+        delete mPhysicsTriangleMesh->getSubpart(i);
     }
 
     // Destroy the mesh
@@ -128,7 +93,7 @@ ConcaveMesh::~ConcaveMesh() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    delete mConcaveShape;
+    mPhysicsCommon.destroyConcaveMeshShape(mConcaveShape);
 }
 
 // Render the sphere at the correct position and with the correct orientation
@@ -150,9 +115,10 @@ void ConcaveMesh::render(openglframework::Shader& shader,
     shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
     // Set the vertex color
-    openglframework::Color currentColor = mBody->isSleeping() ? mSleepingColor : mColor;
+    rp3d::RigidBody* rigidBody = dynamic_cast<rp3d::RigidBody*>(mBody);
+    openglframework::Color currentColor = rigidBody != nullptr && rigidBody->isSleeping() ? mSleepingColor : mColor;
     openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-    shader.setVector4Uniform("vertexColor", color, false);
+    shader.setVector4Uniform("globalVertexColor", color, false);
 
     // Bind the VAO
     mVAO.bind();

@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "Box.h"
 #include "SceneDemo.h"
 
@@ -36,11 +36,9 @@ namespace cubesscene {
 
 // Constants
 const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
-const int NB_CUBES = 30;                                    // Number of boxes in the scene
+const int NB_CUBES = 40;                                    // Number of boxes in the scene
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(50, 1, 50);   // Floor dimensions in meters
-const float BOX_MASS = 1.0f;                               // Box mass in kilograms
-const float FLOOR_MASS = 100.0f;                           // Floor mass in kilograms
 
 // Class CubesScene
 class CubesScene : public SceneDemo {
@@ -55,6 +53,8 @@ class CubesScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
+        uint iter;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -67,15 +67,7 @@ class CubesScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
-
-        /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() override;
 };
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> CubesScene::getContactPoints() {
-    return computeContactPointsOfWorld(getDynamicsWorld());
-}
 
 }
 

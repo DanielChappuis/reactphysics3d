@@ -28,33 +28,14 @@
 
 // Libraries
 #include "Test.h"
-#include "collision/broadphase/DynamicAABBTree.h"
-#include "memory/MemoryManager.h"
-#include "utils/Profiler.h"
+#include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>
+#include <reactphysics3d/memory/MemoryManager.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
+#include <reactphysics3d/utils/Profiler.h>
+#include <vector>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
-
-class TestOverlapCallback : public DynamicAABBTreeOverlapCallback {
-
-    public :
-
-        std::vector<int> mOverlapNodes;
-
-        // Called when a overlapping node has been found during the call to
-        // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
-        virtual void notifyOverlappingNode(int nodeId) override {
-            mOverlapNodes.push_back(nodeId);
-        }
-
-        void reset() {
-            mOverlapNodes.clear();
-        }
-
-        bool isOverlapping(int nodeId) const {
-            return std::find(mOverlapNodes.begin(), mOverlapNodes.end(), nodeId) != mOverlapNodes.end();
-        }
-};
 
 class DynamicTreeRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
@@ -77,6 +58,29 @@ class DynamicTreeRaycastCallback : public DynamicAABBTreeRaycastCallback {
         }
 };
 
+class DefaultTestTreeAllocator : public MemoryAllocator {
+
+    public:
+
+        /// Destructor
+        virtual ~DefaultTestTreeAllocator() override = default;
+
+        /// Assignment operator
+        DefaultTestTreeAllocator& operator=(DefaultTestTreeAllocator& allocator) = default;
+
+        /// Allocate memory of a given size (in bytes) and return a pointer to the
+        /// allocated memory.
+        virtual void* allocate(size_t size) override {
+
+            return malloc(size);
+        }
+
+        /// Release previously allocated memory.
+        virtual void release(void* pointer, size_t size) override {
+            free(pointer);
+        }
+};
+
 // Class TestDynamicAABBTree
 /**
  * Unit test for the dynamic AABB tree
@@ -87,8 +91,16 @@ class TestDynamicAABBTree : public Test {
 
         // ---------- Atributes ---------- //
 
-        TestOverlapCallback mOverlapCallback;
+        DefaultTestTreeAllocator mAllocator;
+
         DynamicTreeRaycastCallback mRaycastCallback;
+
+        PhysicsCommon mPhysicsCommon;
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+        Profiler* mProfiler;
+#endif
 
     public :
 
@@ -97,7 +109,25 @@ class TestDynamicAABBTree : public Test {
         /// Constructor
         TestDynamicAABBTree(const std::string& name): Test(name)  {
 
+#ifdef IS_RP3D_PROFILING_ENABLED
 
+            mProfiler = new Profiler();
+#endif
+
+        }
+
+        /// Constructor
+        ~TestDynamicAABBTree() {
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+            delete mProfiler;
+#endif
+
+        }
+
+        bool isOverlapping(int nodeId, const List<int>& overlappingNodes) const {
+            return std::find(overlappingNodes.begin(), overlappingNodes.end(), nodeId) != overlappingNodes.end();
         }
 
         /// Run the tests
@@ -114,14 +144,12 @@ class TestDynamicAABBTree : public Test {
             // ------------ Create tree ---------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
-			
-#ifdef IS_PROFILING_ACTIVE
-			/// Pointer to the profiler
-			Profiler* profiler = new Profiler();
-			tree.setProfiler(profiler);
-#endif
+            DynamicAABBTree tree(mAllocator);
+#ifdef IS_RP3D_PROFILING_ENABLED
 
+            tree.setProfiler(mProfiler);
+#endif
+			
             int object1Data = 56;
             int object2Data = 23;
             int object3Data = 13;
@@ -159,10 +187,6 @@ class TestDynamicAABBTree : public Test {
             rp3d_test(*(int*)(tree.getNodeDataPointer(object2Id)) == object2Data);
             rp3d_test(*(int*)(tree.getNodeDataPointer(object3Id)) == object3Data);
             rp3d_test(*(int*)(tree.getNodeDataPointer(object4Id)) == object4Data);
-
-#ifdef IS_PROFILING_ACTIVE
-			delete profiler;
-#endif
         }
 
         void testOverlapping() {
@@ -170,12 +194,10 @@ class TestDynamicAABBTree : public Test {
             // ------------- Create tree ----------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
+            DynamicAABBTree tree(mAllocator);
+#ifdef IS_RP3D_PROFILING_ENABLED
 
-#ifdef IS_PROFILING_ACTIVE
-			/// Pointer to the profiler
-			Profiler* profiler = new Profiler();
-			tree.setProfiler(profiler);
+            tree.setProfiler(mProfiler);
 #endif
 
             int object1Data = 56;
@@ -201,167 +223,166 @@ class TestDynamicAABBTree : public Test {
 
             // ---------- Tests ---------- //
 
+            List<int> overlappingNodes(mAllocator);
+
             // AABB overlapping nothing
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping everything
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), mOverlapCallback);
-            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), overlappingNodes);
+            rp3d_test(isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 1 and 3
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), mOverlapCallback);
-            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), overlappingNodes);
+            rp3d_test(isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 3 and 4
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 2
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // ---- Update the object AABBs with the initial AABBs (no reinsertion) ----- //
 
-            tree.updateObject(object1Id, aabb1, Vector3::zero(), false);
-            tree.updateObject(object2Id, aabb2, Vector3::zero(), false);
-            tree.updateObject(object3Id, aabb3, Vector3::zero(), false);
-            tree.updateObject(object4Id, aabb4, Vector3::zero(), false);
+            tree.updateObject(object1Id, aabb1);
+            tree.updateObject(object2Id, aabb2);
+            tree.updateObject(object3Id, aabb3);
+            tree.updateObject(object4Id, aabb4);
 
             // AABB overlapping nothing
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping everything
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), mOverlapCallback);
-            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), overlappingNodes);
+            rp3d_test(isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 1 and 3
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), mOverlapCallback);
-            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), overlappingNodes);
+            rp3d_test(isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 3 and 4
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 2
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // ---- Update the object AABBs with the initial AABBs (with reinsertion) ----- //
 
-            tree.updateObject(object1Id, aabb1, Vector3::zero(), true);
-            tree.updateObject(object2Id, aabb2, Vector3::zero(), true);
-            tree.updateObject(object3Id, aabb3, Vector3::zero(), true);
-            tree.updateObject(object4Id, aabb4, Vector3::zero(), true);
+            tree.updateObject(object1Id, aabb1);
+            tree.updateObject(object2Id, aabb2);
+            tree.updateObject(object3Id, aabb3);
+            tree.updateObject(object4Id, aabb4);
 
             // AABB overlapping nothing
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-10, 12, -4), Vector3(10, 50, 4)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping everything
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), mOverlapCallback);
-            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-15, -15, -4), Vector3(15, 15, 4)), overlappingNodes);
+            rp3d_test(isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 1 and 3
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), mOverlapCallback);
-            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-4, 2, -4), Vector3(-1, 7, 4)), overlappingNodes);
+            rp3d_test(isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 3 and 4
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-6, -5, -2), Vector3(2, 2, 0)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping object 2
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(5, -10, -2), Vector3(7, 10, 9)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // ---- Move objects 2 and 3 ----- //
 
             AABB newAABB2(Vector3(-7, 10, -3), Vector3(1, 13, 3));
-            tree.updateObject(object2Id, newAABB2, Vector3::zero());
+            tree.updateObject(object2Id, newAABB2);
 
             AABB newAABB3(Vector3(7, -6, -3), Vector3(9, 1, 3));
-            tree.updateObject(object3Id, newAABB3, Vector3::zero());
+            tree.updateObject(object3Id, newAABB3);
 
             // AABB overlapping object 3
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(6, -10, -2), Vector3(8, 5, 3)), mOverlapCallback);
-            rp3d_test(!mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(6, -10, -2), Vector3(8, 5, 3)), overlappingNodes);
+            rp3d_test(!isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
             // AABB overlapping objects 1, 2
-            mOverlapCallback.reset();
-            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-8, 5, -3), Vector3(-2, 11, 3)), mOverlapCallback);
-            rp3d_test(mOverlapCallback.isOverlapping(object1Id));
-            rp3d_test(mOverlapCallback.isOverlapping(object2Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object3Id));
-            rp3d_test(!mOverlapCallback.isOverlapping(object4Id));
+            overlappingNodes.clear();
+            tree.reportAllShapesOverlappingWithAABB(AABB(Vector3(-8, 5, -3), Vector3(-2, 11, 3)), overlappingNodes);
+            rp3d_test(isOverlapping(object1Id, overlappingNodes));
+            rp3d_test(isOverlapping(object2Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object3Id, overlappingNodes));
+            rp3d_test(!isOverlapping(object4Id, overlappingNodes));
 
-#ifdef IS_PROFILING_ACTIVE
-			delete profiler;
-#endif
         }
 
         void testRaycast() {
@@ -369,12 +390,10 @@ class TestDynamicAABBTree : public Test {
             // ------------- Create tree ----------- //
 
             // Dynamic AABB Tree
-            DynamicAABBTree tree(MemoryManager::getBaseAllocator());
+            DynamicAABBTree tree(mAllocator);
+#ifdef IS_RP3D_PROFILING_ENABLED
 
-#ifdef IS_PROFILING_ACTIVE
-			/// Pointer to the profiler
-			Profiler* profiler = new Profiler();
-			tree.setProfiler(profiler);
+            tree.setProfiler(mProfiler);
 #endif
 
             int object1Data = 56;
@@ -438,10 +457,10 @@ class TestDynamicAABBTree : public Test {
 
             // ---- Update the object AABBs with the initial AABBs (no reinsertion) ----- //
 
-            tree.updateObject(object1Id, aabb1, Vector3::zero(), false);
-            tree.updateObject(object2Id, aabb2, Vector3::zero(), false);
-            tree.updateObject(object3Id, aabb3, Vector3::zero(), false);
-            tree.updateObject(object4Id, aabb4, Vector3::zero(), false);
+            tree.updateObject(object1Id, aabb1);
+            tree.updateObject(object2Id, aabb2);
+            tree.updateObject(object3Id, aabb3);
+            tree.updateObject(object4Id, aabb4);
 
             // Ray with no hits
             mRaycastCallback.reset();
@@ -477,10 +496,10 @@ class TestDynamicAABBTree : public Test {
 
             // ---- Update the object AABBs with the initial AABBs (with reinsertion) ----- //
 
-            tree.updateObject(object1Id, aabb1, Vector3::zero(), true);
-            tree.updateObject(object2Id, aabb2, Vector3::zero(), true);
-            tree.updateObject(object3Id, aabb3, Vector3::zero(), true);
-            tree.updateObject(object4Id, aabb4, Vector3::zero(), true);
+            tree.updateObject(object1Id, aabb1);
+            tree.updateObject(object2Id, aabb2);
+            tree.updateObject(object3Id, aabb3);
+            tree.updateObject(object4Id, aabb4);
 
             // Ray with no hits
             mRaycastCallback.reset();
@@ -517,10 +536,10 @@ class TestDynamicAABBTree : public Test {
             // ---- Move objects 2 and 3 ----- //
 
             AABB newAABB2(Vector3(-7, 10, -3), Vector3(1, 13, 3));
-            tree.updateObject(object2Id, newAABB2, Vector3::zero());
+            tree.updateObject(object2Id, newAABB2);
 
             AABB newAABB3(Vector3(7, -6, -3), Vector3(9, 1, 3));
-            tree.updateObject(object3Id, newAABB3, Vector3::zero());
+            tree.updateObject(object3Id, newAABB3);
 
             // Ray that hits object 1, 2
             Ray ray5(Vector3(-4, -5, 0), Vector3(-4, 12, 0));
@@ -540,9 +559,6 @@ class TestDynamicAABBTree : public Test {
             rp3d_test(mRaycastCallback.isHit(object3Id));
             rp3d_test(mRaycastCallback.isHit(object4Id));
 
-#ifdef IS_PROFILING_ACTIVE
-			delete profiler;
-#endif
         }
  };
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,9 +24,9 @@
 ********************************************************************************/
 
 // Libraries
-#include "HeightFieldShape.h"
-#include "collision/RaycastInfo.h"
-#include "utils/Profiler.h"
+#include <reactphysics3d/collision/shapes/HeightFieldShape.h>
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/utils/Profiler.h>
 
 using namespace reactphysics3d;
 
@@ -42,12 +42,12 @@ using namespace reactphysics3d;
  * @param integerHeightScale Scaling factor used to scale the height values (only when height values type is integer)
  */
 HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
-                                   const void* heightFieldData, HeightDataType dataType, int upAxis,
+                                   const void* heightFieldData, HeightDataType dataType, MemoryAllocator& allocator, int upAxis,
                                    decimal integerHeightScale, const Vector3& scaling)
-                 : ConcaveShape(CollisionShapeName::HEIGHTFIELD), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
+                 : ConcaveShape(CollisionShapeName::HEIGHTFIELD, allocator, scaling), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
                    mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
-                   mHeightDataType(dataType), mScaling(scaling) {
+                   mHeightDataType(dataType) {
 
     assert(nbGridColumns >= 2);
     assert(nbGridRows >= 2);
@@ -83,19 +83,23 @@ HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal mi
  * @param max The maximum bounds of the shape in local-space coordinates
  */
 void HeightFieldShape::getLocalBounds(Vector3& min, Vector3& max) const {
-    min = mAABB.getMin() * mScaling;
-    max = mAABB.getMax() * mScaling;
+    min = mAABB.getMin() * mScale;
+    max = mAABB.getMax() * mScale;
 }
 
 // Test collision with the triangles of the height field shape. The idea is to use the AABB
 // of the body when need to test and see against which triangles of the height-field we need
 // to test for collision. We compute the sub-grid points that are inside the other body's AABB
 // and then for each rectangle in the sub-grid we generate two triangles that we use to test collision.
-void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& localAABB) const {
+void HeightFieldShape::computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
+                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+                                                   MemoryAllocator& allocator) const {
+
+    RP3D_PROFILE("HeightFieldShape::computeOverlappingTriangles()", mProfiler);
 
    // Compute the non-scaled AABB
-   Vector3 inverseScaling(decimal(1.0) / mScaling.x, decimal(1.0) / mScaling.y, decimal(1.0) / mScaling.z);
-   AABB aabb(localAABB.getMin() * inverseScaling, localAABB.getMax() * inverseScaling);
+   Vector3 inverseScale(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z);
+   AABB aabb(localAABB.getMin() * inverseScale, localAABB.getMax() * inverseScale);
 
    // Compute the integer grid coordinates inside the area we need to test for collision
    int minGridCoords[3];
@@ -141,7 +145,9 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
            const Vector3 p4 = getVertexAt(i + 1, j + 1);
 
            // Generate the first triangle for the current grid rectangle
-           Vector3 trianglePoints[3] = {p1, p2, p3};
+           triangleVertices.add(p1);
+           triangleVertices.add(p2);
+           triangleVertices.add(p3);
 
            // Compute the triangle normal
            Vector3 triangle1Normal = (p2 - p1).cross(p3 - p1).getUnit();
@@ -153,15 +159,17 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
            // and compute the angle of incident edges with asin(). Maybe we could also precompute the
            // vertices normal at the HeightFieldShape constructor but it will require extra memory to
            // store them.
-           Vector3 verticesNormals1[3] = {triangle1Normal, triangle1Normal, triangle1Normal};
+           triangleVerticesNormals.add(triangle1Normal);
+           triangleVerticesNormals.add(triangle1Normal);
+           triangleVerticesNormals.add(triangle1Normal);
 
-           // Test collision against the first triangle
-           callback.testTriangle(trianglePoints, verticesNormals1, computeTriangleShapeId(i, j, 0));
+           // Compute the shape ID
+           shapeIds.add(computeTriangleShapeId(i, j, 0));
 
            // Generate the second triangle for the current grid rectangle
-           trianglePoints[0] = p3;
-           trianglePoints[1] = p2;
-           trianglePoints[2] = p4;
+           triangleVertices.add(p3);
+           triangleVertices.add(p2);
+           triangleVertices.add(p4);
 
            // Compute the triangle normal
            Vector3 triangle2Normal = (p2 - p3).cross(p4 - p3).getUnit();
@@ -173,10 +181,12 @@ void HeightFieldShape::testAllTriangles(TriangleCallback& callback, const AABB& 
            // and compute the angle of incident edges with asin(). Maybe we could also precompute the
            // vertices normal at the HeightFieldShape constructor but it will require extra memory to
            // store them.
-           Vector3 verticesNormals2[3] = {triangle2Normal, triangle2Normal, triangle2Normal};
+           triangleVerticesNormals.add(triangle2Normal);
+           triangleVerticesNormals.add(triangle2Normal);
+           triangleVerticesNormals.add(triangle2Normal);
 
-           // Test collision against the second triangle
-           callback.testTriangle(trianglePoints, verticesNormals2, computeTriangleShapeId(i, j, 1));
+           // Compute the shape ID
+           shapeIds.add(computeTriangleShapeId(i, j, 1));
        }
    }
 }
@@ -214,29 +224,69 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
 // Raycast method with feedback information
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
-bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, ProxyShape* proxyShape, MemoryAllocator& allocator) const {
+bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
     // TODO : Implement raycasting without using an AABB for the ray
     //        but using a dynamic AABB tree or octree instead
 
     RP3D_PROFILE("HeightFieldShape::raycast()", mProfiler);
 
-    TriangleOverlapCallback triangleCallback(ray, proxyShape, raycastInfo, *this, allocator);
-
-#ifdef IS_PROFILING_ACTIVE
-
-	// Set the profiler
-	triangleCallback.setProfiler(mProfiler);
-
-#endif
-
     // Compute the AABB for the ray
     const Vector3 rayEnd = ray.point1 + ray.maxFraction * (ray.point2 - ray.point1);
     const AABB rayAABB(Vector3::min(ray.point1, rayEnd), Vector3::max(ray.point1, rayEnd));
 
-    testAllTriangles(triangleCallback, rayAABB);
+    // Compute the triangles overlapping with the ray AABB
+    List<Vector3> triangleVertices(allocator);
+    List<Vector3> triangleVerticesNormals(allocator);
+    List<uint> shapeIds(allocator);
+    computeOverlappingTriangles(rayAABB, triangleVertices, triangleVerticesNormals, shapeIds, allocator);
 
-    return triangleCallback.getIsHit();
+    assert(triangleVertices.size() == triangleVerticesNormals.size());
+    assert(shapeIds.size() == triangleVertices.size() / 3);
+    assert(triangleVertices.size() % 3 == 0);
+    assert(triangleVerticesNormals.size() % 3 == 0);
+
+    bool isHit = false;
+    decimal smallestHitFraction = ray.maxFraction;
+
+    // For each overlapping triangle
+    for (uint i=0; i < shapeIds.size(); i++)
+    {
+        // Create a triangle collision shape
+        TriangleShape triangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], allocator);
+        triangleShape.setRaycastTestType(getRaycastTestType());
+
+    #ifdef IS_RP3D_PROFILING_ENABLED
+
+
+        // Set the profiler to the triangle shape
+        triangleShape.setProfiler(mProfiler);
+
+    #endif
+
+        // Ray casting test against the collision shape
+        RaycastInfo triangleRaycastInfo;
+        bool isTriangleHit = triangleShape.raycast(ray, triangleRaycastInfo, collider, allocator);
+
+        // If the ray hit the collision shape
+        if (isTriangleHit && triangleRaycastInfo.hitFraction <= smallestHitFraction) {
+
+            assert(triangleRaycastInfo.hitFraction >= decimal(0.0));
+
+            raycastInfo.body = triangleRaycastInfo.body;
+            raycastInfo.collider = triangleRaycastInfo.collider;
+            raycastInfo.hitFraction = triangleRaycastInfo.hitFraction;
+            raycastInfo.worldPoint = triangleRaycastInfo.worldPoint;
+            raycastInfo.worldNormal = triangleRaycastInfo.worldNormal;
+            raycastInfo.meshSubpart = -1;
+            raycastInfo.triangleIndex = -1;
+
+            smallestHitFraction = triangleRaycastInfo.hitFraction;
+            isHit = true;
+        }
+    }
+
+    return isHit;
 }
 
 // Return the vertex (local-coordinates) of the height field at a given (x,y) position
@@ -261,43 +311,7 @@ Vector3 HeightFieldShape::getVertexAt(int x, int y) const {
 
     assert(mAABB.contains(vertex));
 
-    return vertex * mScaling;
-}
-
-// Raycast test between a ray and a triangle of the heightfield
-void TriangleOverlapCallback::testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId) {
-
-    // Create a triangle collision shape
-    TriangleShape triangleShape(trianglePoints, verticesNormals, shapeId, mAllocator);
-    triangleShape.setRaycastTestType(mHeightFieldShape.getRaycastTestType());
-
-#ifdef IS_PROFILING_ACTIVE
-
-	// Set the profiler to the triangle shape
-	triangleShape.setProfiler(mProfiler);
-
-#endif
-
-    // Ray casting test against the collision shape
-    RaycastInfo raycastInfo;
-    bool isTriangleHit = triangleShape.raycast(mRay, raycastInfo, mProxyShape, mAllocator);
-
-    // If the ray hit the collision shape
-    if (isTriangleHit && raycastInfo.hitFraction <= mSmallestHitFraction) {
-
-        assert(raycastInfo.hitFraction >= decimal(0.0));
-
-        mRaycastInfo.body = raycastInfo.body;
-        mRaycastInfo.proxyShape = raycastInfo.proxyShape;
-        mRaycastInfo.hitFraction = raycastInfo.hitFraction;
-        mRaycastInfo.worldPoint = raycastInfo.worldPoint;
-        mRaycastInfo.worldNormal = raycastInfo.worldNormal;
-        mRaycastInfo.meshSubpart = -1;
-        mRaycastInfo.triangleIndex = -1;
-
-        mSmallestHitFraction = raycastInfo.hitFraction;
-        mIsHit = true;
-    }
+    return vertex * mScale;
 }
 
 // Return the string representation of the shape

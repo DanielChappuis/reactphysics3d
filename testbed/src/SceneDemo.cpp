@@ -27,45 +27,58 @@
 #include "SceneDemo.h"
 #include <GLFW/glfw3.h>
 #include "AABB.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifold.h"
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/ContactManifold.h>
 
 using namespace openglframework;
 
 int SceneDemo::shadowMapTextureLevel = 0;
-openglframework::Color SceneDemo::mGreyColorDemo = Color(0.70f, 0.70f, 0.7f, 1.0f);
-openglframework::Color SceneDemo::mYellowColorDemo = Color(0.9f, 0.88f, 0.145f, 1.0f);
-openglframework::Color SceneDemo::mBlueColorDemo = Color(0, 0.66f, 0.95f, 1.0f);
-openglframework::Color SceneDemo::mOrangeColorDemo = Color(0.9f, 0.35f, 0, 1.0f);
-openglframework::Color SceneDemo::mPinkColorDemo = Color(0.83f, 0.48f, 0.64f, 1.0f);
-openglframework::Color SceneDemo::mRedColorDemo = Color(0.95f, 0, 0, 1.0f);
-int SceneDemo::mNbDemoColors = 4;
-openglframework::Color SceneDemo::mDemoColors[] = {SceneDemo::mYellowColorDemo, SceneDemo::mBlueColorDemo,
-                                                   SceneDemo::mOrangeColorDemo, SceneDemo::mPinkColorDemo};
+//openglframework::Color SceneDemo::mObjectColorDemo = Color(0.76f, 0.67f, 0.47f, 1.0f);
+openglframework::Color SceneDemo::mObjectColorDemo = Color(0.35f, 0.65f, 0.78f, 1.0f);
+openglframework::Color SceneDemo::mFloorColorDemo = Color(0.47f, 0.48f, 0.49f, 1.0f);
+openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.25f, 0.25f, 1.0f);
+openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.59f, 0.88f, 1.0f);
 
 // Constructor
-SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, float sceneRadius, bool isShadowMappingEnabled)
+SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, bool isPhysicsWorldSimulated, float sceneRadius, bool isShadowMappingEnabled)
           : Scene(name, settings, isShadowMappingEnabled), mIsShadowMappingInitialized(false),
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
 					 mColorShader("shaders/color.vert", "shaders/color.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
-                     mVBOQuad(GL_ARRAY_BUFFER), mMeshFolderPath("meshes/"),
-                     mPhysicsWorld(nullptr) {
+                     mVBOQuad(GL_ARRAY_BUFFER), mDebugVBOLinesVertices(GL_ARRAY_BUFFER), mDebugVBOTrianglesVertices(GL_ARRAY_BUFFER),
+                     mMeshFolderPath("meshes/"), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated) {
 
     shadowMapTextureLevel++;
 
-    // Move the light0
-    mLight0.translateWorld(Vector3(-2, 35, 40));
+    // Move the lights
+	float lightsRadius = 30.0f;
+	float lightsHeight = 20.0f;
+    mLight0.translateWorld(Vector3(0 * lightsRadius, lightsHeight, 1 * lightsRadius));
+    mLight1.translateWorld(Vector3(0.95f * lightsRadius, lightsHeight, -0.3f * lightsRadius));
+    mLight2.translateWorld(Vector3(-0.58f * lightsRadius, lightsHeight, -0.81f * lightsRadius));
 
-    // Camera at light0 postion for the shadow map
-    mShadowMapLightCamera.translateWorld(mLight0.getOrigin());
-    mShadowMapLightCamera.rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
-    mShadowMapLightCamera.rotateWorld(Vector3(0, 1, 0), PI / 8.0f);
+	// Set the lights colors
+	mLight0.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
+	mLight1.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
+	mLight2.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
 
-    mShadowMapLightCamera.setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
-    mShadowMapLightCamera.setFieldOfView(80.0f);
-    mShadowMapLightCamera.setSceneRadius(100);
+	mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
+	mShadowMapLightCameras[0].rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
+
+	mShadowMapLightCameras[1].translateWorld(mLight1.getOrigin());
+	mShadowMapLightCameras[1].rotateLocal(Vector3(0, 1, 0), -5.0f * PI/3.7f);
+	mShadowMapLightCameras[1].rotateLocal(Vector3(1, 0, 0), -PI/4.0f);
+
+	mShadowMapLightCameras[2].translateWorld(mLight2.getOrigin());
+	mShadowMapLightCameras[2].rotateLocal(Vector3(0, 1, 0), 5 * PI/4.0f);
+	mShadowMapLightCameras[2].rotateLocal(Vector3(1, 0 , 0), -PI/4.0f);
+
+	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+		mShadowMapLightCameras[i].setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+		mShadowMapLightCameras[i].setFieldOfView(100.0f);
+		mShadowMapLightCameras[i].setSceneRadius(100);
+	}
 
     mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
                                       0.0, 0.5, 0.0, 0.5,
@@ -79,6 +92,8 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, float sc
 
     createQuadVBO();
 
+    createDebugVBO();
+
     // Init rendering for the AABBs
     AABB::init();
 
@@ -87,18 +102,21 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, float sc
 
 // Destructor
 SceneDemo::~SceneDemo() {
-	
-    mShadowMapTexture.destroy();
-    mFBOShadowMap.destroy();
+
+    for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+        mShadowMapTexture[i].destroy();
+        mFBOShadowMap[i].destroy();
+    }
+
     mVBOQuad.destroy();
 
-	mDepthShader.destroy();
-	mPhongShader.destroy();
-	mQuadShader.destroy();
-	mColorShader.destroy();
+    mDepthShader.destroy();
+    mPhongShader.destroy();
+    mQuadShader.destroy();
+    mColorShader.destroy();
 
     // Destroy the contact points
-    removeAllContactPoints();
+    removeAllVisualContactPoints();
 
     // Destroy rendering data for the AABB
     AABB::destroy();
@@ -109,8 +127,14 @@ SceneDemo::~SceneDemo() {
 // Update the scene
 void SceneDemo::update() {
 
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT, mAreContactPointsDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL, mAreContactNormalsDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, mAreBroadPhaseAABBsDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, mAreCollidersAABBsDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, mAreCollisionShapesDisplayed);
+
     // Update the contact points
-    updateContactPoints();
+    updateSnapshotContactPoints();
 
 	// Update the position and orientation of the physics objects
 	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
@@ -124,25 +148,34 @@ void SceneDemo::update() {
 // Can be called several times per frame
 void SceneDemo::updatePhysics() {
 
-    if (getDynamicsWorld() != nullptr) {
+    // Clear contacts points
+    mSnapshotsContactPoints.clear();
+
+    if (mIsPhysicsWorldSimulated) {
 
         // Take a simulation step
-        getDynamicsWorld()->update(mEngineSettings.timeStep);
+        mPhysicsWorld->update(mEngineSettings.timeStep);
     }
 }
 
 // Render the scene (in multiple passes for shadow mapping)
 void SceneDemo::render() {
 
-    const Color& diffCol = mLight0.getDiffuseColor();
+    // Update the VBO for the debug infos
+    updateDebugVBO();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    // ---------- Render the scene to generate the shadow map (first pass) ----------- //
+	Matrix4 shadowMapProjMatrix[NB_SHADOW_MAPS];
+	openglframework::Matrix4 worldToLightCameraMatrix[NB_SHADOW_MAPS];
+	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
 
-    const Matrix4 shadowMapProjMatrix = mShadowMapLightCamera.getProjectionMatrix();
-    const openglframework::Matrix4 worldToLightCameraMatrix = mShadowMapLightCamera.getTransformMatrix().getInverse();
+		shadowMapProjMatrix[i] = mShadowMapLightCameras[i].getProjectionMatrix();
+		worldToLightCameraMatrix[i] = mShadowMapLightCameras[i].getTransformMatrix().getInverse();
+	}
+
+    // ---------- Render the scene to generate the shadow map (first pass) ----------- //
 
     // If Shadow Mapping is enabled
     if (mIsShadowMappingEnabled) {
@@ -150,30 +183,34 @@ void SceneDemo::render() {
         // Culling switching, rendering only backface, this is done to avoid self-shadowing
         glCullFace(GL_BACK);
 
-        mFBOShadowMap.bind();
+		// For each shadow map
+		for (int i = 0; i < NB_SHADOW_MAPS; i++) {
 
-        // Bind the shader
-        mDepthShader.bind();
+			mFBOShadowMap[i].bind();
 
-        // Set the variables of the shader
-        mDepthShader.setMatrix4x4Uniform("projectionMatrix", shadowMapProjMatrix);
+			// Bind the shader
+			mDepthShader.bind();
 
-        // Set the viewport to render into the shadow map texture
-        glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+			// Set the variables of the shader
+			mDepthShader.setMatrix4x4Uniform("projectionMatrix", shadowMapProjMatrix[i]);
 
-        // Clear previous frame values
-        glClear(GL_DEPTH_BUFFER_BIT);
+			// Set the viewport to render into the shadow map texture
+			glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
 
-        // Disable color rendering, we only want to write to the Z-Buffer
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+			// Clear previous frame values
+			glClear(GL_DEPTH_BUFFER_BIT);
 
-        // Render the objects of the scene
-        renderSinglePass(mDepthShader, worldToLightCameraMatrix);
+			// Disable color rendering, we only want to write to the Z-Buffer
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-        // Unbind the shader
-        mDepthShader.unbind();
+			// Render the objects of the scene
+			renderSinglePass(mDepthShader, worldToLightCameraMatrix[i]);
 
-        mFBOShadowMap.unbind();
+			// Unbind the shader
+			mDepthShader.unbind();
+
+			mFBOShadowMap[i].unbind();
+		}
 
         glDisable(GL_POLYGON_OFFSET_FILL);
     }
@@ -187,17 +224,36 @@ void SceneDemo::render() {
 
     mPhongShader.bind();
 
-    if (mIsShadowMappingEnabled) mShadowMapTexture.bind();
-    const GLuint textureUnit = 0;
+	// Is shadow mapping is enabled
+	GLint textureUnits[NB_SHADOW_MAPS];
+	if (mIsShadowMappingEnabled) {
+
+		for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+			mShadowMapTexture[i].bind();
+		}
+		for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+			textureUnits[i] = mShadowMapTexture[i].getUnit();
+		}
+	}
 
     // Set the variables of the phong shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
-    mPhongShader.setMatrix4x4Uniform("shadowMapProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix);
-    mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix);
+    mPhongShader.setMatrix4x4Uniform("shadowMapLight0ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[0]);
+    mPhongShader.setMatrix4x4Uniform("shadowMapLight1ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[1]);
+    mPhongShader.setMatrix4x4Uniform("shadowMapLight2ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[2]);
+    mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix[0]);
+    mPhongShader.setMatrix4x4Uniform("worldToLight1CameraMatrix", worldToLightCameraMatrix[1]);
+    mPhongShader.setMatrix4x4Uniform("worldToLight2CameraMatrix", worldToLightCameraMatrix[2]);
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.4f, 0.4f, 0.4f));
-    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(diffCol.r, diffCol.g, diffCol.b));
-    mPhongShader.setIntUniform("shadowMapSampler", textureUnit);
+    mPhongShader.setVector3Uniform("light1PosCameraSpace", worldToCameraMatrix * mLight1.getOrigin());
+    mPhongShader.setVector3Uniform("light2PosCameraSpace", worldToCameraMatrix * mLight2.getOrigin());
+    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
+    mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(mLight0.getDiffuseColor().r, mLight0.getDiffuseColor().g, mLight0.getDiffuseColor().b));
+    mPhongShader.setVector3Uniform("light1DiffuseColor", Vector3(mLight1.getDiffuseColor().r, mLight1.getDiffuseColor().g, mLight1.getDiffuseColor().b));
+    mPhongShader.setVector3Uniform("light2DiffuseColor", Vector3(mLight2.getDiffuseColor().r, mLight2.getDiffuseColor().g, mLight2.getDiffuseColor().b));
+    mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
+    mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
+    mPhongShader.setIntUniform("shadowMapSampler2", textureUnits[2]);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
     mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 	mPhongShader.unbind();
@@ -219,17 +275,22 @@ void SceneDemo::render() {
     // Render the objects of the scene
     renderSinglePass(mPhongShader, worldToCameraMatrix);
 
-    // Render the contact points
-    if (mIsContactPointsDisplayed) {
-        renderContactPoints(mPhongShader, worldToCameraMatrix);
+    // Render the snapshots contact points
+    renderSnapshotsContactPoints(mPhongShader, worldToCameraMatrix);
+
+    // Render the debug infos
+    if (mPhysicsWorld->getIsDebugRenderingEnabled()) {
+        renderDebugInfos(mColorShader, worldToCameraMatrix);
     }
 
-    // Render the AABBs
-    if (mIsAABBsDisplayed) {
-        renderAABBs(worldToCameraMatrix);
-    }
+	// Is shadow mapping is enabled
+	if (mIsShadowMappingEnabled) {
 
-    if (mIsShadowMappingEnabled) mShadowMapTexture.unbind();
+		for (int i = 0; i < NB_SHADOW_MAPS; i++) {
+			mShadowMapTexture[i].unbind();
+		}
+	}
+
     mPhongShader.unbind();
 
    //drawTextureQuad();
@@ -261,20 +322,33 @@ void SceneDemo::renderSinglePass(openglframework::Shader& shader, const openglfr
 // Create the Shadow map FBO and texture
 void SceneDemo::createShadowMapFBOAndTexture() {
 
-    // Create the texture for the depth values
-    mShadowMapTexture.create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT,
-                             GL_UNSIGNED_BYTE, GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, NULL);
+	// For each shadow map
+	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
 
-    // Create the FBO for the shadow map
-    mFBOShadowMap.create(0, 0, false);
-    mFBOShadowMap.bind();
+		// Create the texture for the depth values
+		mShadowMapTexture[i].create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT,
+			GL_UNSIGNED_BYTE, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, NULL);
 
-    // Tell OpenGL that we won't bind a color texture with the currently binded FBO
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
+		mShadowMapTexture[i].setUnit(i);
 
-    mFBOShadowMap.attachTexture(GL_DEPTH_ATTACHMENT, mShadowMapTexture.getID());
-    mFBOShadowMap.unbind();
+		// Make sure that texture lookups outside the texture coords range will not
+		// treated as beeing in shadow
+		glBindTexture(GL_TEXTURE_2D, mShadowMapTexture[i].getID());
+		GLfloat border[] = { 1.0f, 0.0f, 0.0f, 0.0f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		// Create the FBO for the shadow map
+		mFBOShadowMap[i].create(0, 0, false);
+		mFBOShadowMap[i].bind();
+
+		// Tell OpenGL that we won't bind a color texture with the currently binded FBO
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+
+		mFBOShadowMap[i].attachTexture(GL_DEPTH_ATTACHMENT, mShadowMapTexture[i].getID());
+		mFBOShadowMap[i].unbind();
+	}
 
     mIsShadowMappingInitialized = true;
 }
@@ -302,6 +376,44 @@ void SceneDemo::createQuadVBO() {
     mVAOQuad.unbind();
 }
 
+// Create a the VAO and VBOs to render the debug infos
+void SceneDemo::createDebugVBO() {
+
+    // ----- Lines ----- //
+
+    // Create the VBO for the vertices data
+    mDebugVBOLinesVertices.create();
+
+    // Create the VAO for both VBOs
+    mDebugLinesVAO.create();
+    mDebugLinesVAO.bind();
+
+    // Bind the VBO of vertices
+    mDebugVBOLinesVertices.bind();
+
+    // Unbind the VAO
+    mDebugLinesVAO.unbind();
+
+    mDebugVBOLinesVertices.unbind();
+
+    // ----- Triangles ----- //
+
+    // Create the VBO for the vertices data
+    mDebugVBOTrianglesVertices.create();
+
+    // Create the VAO for both VBOs
+    mDebugTrianglesVAO.create();
+    mDebugTrianglesVAO.bind();
+
+    // Bind the VBO of vertices
+    mDebugVBOTrianglesVertices.bind();
+
+    // Unbind the VAO
+    mDebugTrianglesVAO.unbind();
+
+    mDebugVBOTrianglesVertices.unbind();
+}
+
 void SceneDemo::drawTextureQuad() {
 
     glViewport(mViewportX, mViewportY, mViewportWidth, mViewportHeight);
@@ -310,11 +422,13 @@ void SceneDemo::drawTextureQuad() {
     // Clear previous frame values
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    const GLuint textureUnit = 0;
+
+	const int SHADOW_MAP_TEXTURE_TO_DRAW = 0;
+    const GLuint textureUnit = SHADOW_MAP_TEXTURE_TO_DRAW;
 
     mVAOQuad.bind();
     mQuadShader.bind();
-    mShadowMapTexture.bind();
+    mShadowMapTexture[SHADOW_MAP_TEXTURE_TO_DRAW].bind();
     mQuadShader.setIntUniform("textureSampler", textureUnit);
     mVBOQuad.bind();
 
@@ -336,125 +450,183 @@ void SceneDemo::drawTextureQuad() {
     glDisableVertexAttribArray(vertexPositionLoc);
 
     mVBOQuad.unbind();
-    mShadowMapTexture.unbind();
+    mShadowMapTexture[SHADOW_MAP_TEXTURE_TO_DRAW].unbind();
     mQuadShader.unbind();
     mVAOQuad.unbind();
 }
 
-// Gather and create contact points
-void SceneDemo::updateContactPoints() {
+// Gather and create snapshots contact points
+void SceneDemo::updateSnapshotContactPoints() {
 
     // Remove the previous contact points
-    removeAllContactPoints();
+    removeAllVisualContactPoints();
 
-    if (mIsContactPointsDisplayed) {
+    // For each contact point
+    std::vector<SceneContactPoint>::const_iterator it;
+    for (it = mSnapshotsContactPoints.begin(); it != mSnapshotsContactPoints.end(); ++it) {
 
-        // Get the current contact points of the scene
-        std::vector<ContactPoint> contactPoints = getContactPoints();
-
-        // For each contact point
-        std::vector<ContactPoint>::const_iterator it;
-        for (it = contactPoints.begin(); it != contactPoints.end(); ++it) {
-
-            // Create a visual contact point for rendering
-            VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath, it->point + it->normal, it->color);
-            mContactPoints.push_back(point);
-        }
+        // Create a visual contact point for rendering
+        VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath, it->point + it->normal, it->color);
+        mVisualContactPoints.push_back(point);
     }
 }
 
 // Render the contact points
-void SceneDemo::renderContactPoints(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+void SceneDemo::renderSnapshotsContactPoints(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Render all the contact points
-    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-         it != mContactPoints.end(); ++it) {
+    for (std::vector<VisualContactPoint*>::iterator it = mVisualContactPoints.begin();
+         it != mVisualContactPoints.end(); ++it) {
         (*it)->render(mColorShader, worldToCameraMatrix);
     }
 }
 
-// Render the AABBs
-void SceneDemo::renderAABBs(const openglframework::Matrix4& worldToCameraMatrix) {
+// Update VBO with vertices and indices of debug info
+void SceneDemo::updateDebugVBO() {
 
-    // For each physics object of the scene
-    for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+    rp3d::DebugRenderer& debugRenderer = mPhysicsWorld->getDebugRenderer();
 
-       // For each proxy shape of the object
-       rp3d::ProxyShape* proxyShape = (*it)->getCollisionBody()->getProxyShapesList();
-       while (proxyShape != nullptr) {
+    if (mPhysicsWorld->getIsDebugRenderingEnabled()) {
 
-           // Get the broad-phase AABB corresponding to the proxy shape
-           rp3d::AABB aabb = mPhysicsWorld->getWorldAABB(proxyShape);
+        // ----- Lines ---- //
 
-           openglframework::Vector3 aabbCenter(aabb.getCenter().x, aabb.getCenter().y, aabb.getCenter().z);
-           openglframework::Vector3 aabbMin(aabb.getMin().x, aabb.getMin().y, aabb.getMin().z);
-           openglframework::Vector3 aabbMax(aabb.getMax().x, aabb.getMax().y, aabb.getMax().z);
+        const uint nbLines = debugRenderer.getNbLines();
 
-           // Render the AABB
-           AABB::render(aabbCenter, aabbMax - aabbMin, Color::green(), mColorShader, worldToCameraMatrix);
+        if (nbLines > 0) {
 
-           proxyShape = proxyShape->getNext();
-       }
-    }
-}
-
-void SceneDemo::removeAllContactPoints() {
-
-    // Destroy all the visual contact points
-    for (std::vector<VisualContactPoint*>::iterator it = mContactPoints.begin();
-         it != mContactPoints.end(); ++it) {
-        delete (*it);
-    }
-    mContactPoints.clear();
-}
-
-// Return all the contact points of the scene
-std::vector<ContactPoint> SceneDemo::computeContactPointsOfWorld(rp3d::DynamicsWorld* world) {
-
-    std::vector<ContactPoint> contactPoints;
-
-    // Get the list of contact manifolds from the world
-    rp3d::List<const rp3d::ContactManifold*> manifolds = world->getContactsList();
-
-    // For each contact manifold
-    rp3d::List<const rp3d::ContactManifold*>::Iterator it;
-    for (it = manifolds.begin(); it != manifolds.end(); ++it) {
-
-        const rp3d::ContactManifold* manifold = *it;
-
-        // For each contact point of the manifold
-        rp3d::ContactPoint* contactPoint = manifold->getContactPoints();
-        while (contactPoint != nullptr) {
-
-            rp3d::Vector3 point = manifold->getShape1()->getLocalToWorldTransform() * contactPoint->getLocalPointOnShape1();
-			rp3d::Vector3 normalWorld = contactPoint->getNormal();
-			openglframework::Vector3 normal = openglframework::Vector3(normalWorld.x, normalWorld.y, normalWorld.z);
-            ContactPoint contact(openglframework::Vector3(point.x, point.y, point.z), normal, openglframework::Color::red());
-            contactPoints.push_back(contact);
-
-            contactPoint = contactPoint->getNext();
+            // Vertices
+            mDebugVBOLinesVertices.bind();
+            GLsizei sizeVertices = static_cast<GLsizei>(nbLines * sizeof(rp3d::DebugRenderer::DebugLine));
+            mDebugVBOLinesVertices.copyDataIntoVBO(sizeVertices, debugRenderer.getLinesArray(), GL_STREAM_DRAW);
+            mDebugVBOLinesVertices.unbind();
         }
 
+        // ----- Triangles ---- //
+
+        const uint nbTriangles = debugRenderer.getNbTriangles();
+
+        if (nbTriangles > 0) {
+
+            // Vertices
+            mDebugVBOTrianglesVertices.bind();
+            GLsizei sizeVertices = static_cast<GLsizei>(nbTriangles * sizeof(rp3d::DebugRenderer::DebugTriangle));
+            mDebugVBOTrianglesVertices.copyDataIntoVBO(sizeVertices, debugRenderer.getTrianglesArray(), GL_STREAM_DRAW);
+            mDebugVBOTrianglesVertices.unbind();
+        }
+    }
+}
+
+// Render Debug Infos
+void SceneDemo::renderDebugInfos(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+
+    rp3d::DebugRenderer& debugRenderer = mPhysicsWorld->getDebugRenderer();
+
+    // Render in wireframe mode
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    // Bind the shader
+    shader.bind();
+
+    // Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
+    // model-view matrix)
+    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix;
+    const openglframework::Matrix3 normalMatrix = localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
+    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
+
+    // Set the model to camera matrix
+    shader.setMatrix4x4Uniform("localToWorldMatrix", openglframework::Matrix4::identity());
+    shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
+
+    shader.setIntUniform("isGlobalVertexColorEnabled", 0, false);
+
+    // Get the location of shader attribute variables
+    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+    GLint vertexColorLoc = shader.getAttribLocation("vertexColor");
+
+    // Lines
+    if (debugRenderer.getNbLines() > 0) {
+
+        // Bind the VAO
+        mDebugLinesVAO.bind();
+
+        mDebugVBOLinesVertices.bind();
+
+        glEnableVertexAttribArray(vertexPositionLoc);
+        glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(rp3d::Vector3) + sizeof(rp3d::uint32), (char*)nullptr);
+
+        glEnableVertexAttribArray(vertexColorLoc);
+        glVertexAttribIPointer(vertexColorLoc, 3, GL_UNSIGNED_INT, sizeof(rp3d::Vector3) + sizeof(rp3d::uint32), (void*)sizeof(rp3d::Vector3));
+
+        // Draw the lines geometry
+        glDrawArrays(GL_LINES, 0, debugRenderer.getNbLines() * 2);
+
+        glDisableVertexAttribArray(vertexPositionLoc);
+        glDisableVertexAttribArray(vertexColorLoc);
+
+        mDebugVBOLinesVertices.unbind();
+
+        // Unbind the VAO
+        mDebugLinesVAO.unbind();
     }
 
-    return contactPoints;
+    // Triangles
+    if (debugRenderer.getNbTriangles() > 0) {
+
+        // Bind the VAO
+        mDebugTrianglesVAO.bind();
+
+        mDebugVBOTrianglesVertices.bind();
+
+        glEnableVertexAttribArray(vertexPositionLoc);
+        glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(rp3d::Vector3) + sizeof(rp3d::uint32), (char*)nullptr);
+
+        glEnableVertexAttribArray(vertexColorLoc);
+        glVertexAttribIPointer(vertexColorLoc, 3, GL_UNSIGNED_INT, sizeof(rp3d::Vector3) + sizeof(rp3d::uint32), (void*)sizeof(rp3d::Vector3));
+
+        // Draw the triangles geometry
+        glDrawArrays(GL_TRIANGLES, 0, debugRenderer.getNbTriangles() * 3);
+
+        glDisableVertexAttribArray(vertexPositionLoc);
+        glDisableVertexAttribArray(vertexColorLoc);
+
+        mDebugVBOTrianglesVertices.unbind();
+
+        // Unbind the VAO
+        mDebugTrianglesVAO.unbind();
+    }
+
+    // Unbind the shader
+    shader.unbind();
+
+    // Disable wireframe mode
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void SceneDemo::removeAllVisualContactPoints() {
+
+    // Destroy all the visual contact points
+    for (std::vector<VisualContactPoint*>::iterator it = mVisualContactPoints.begin();
+         it != mVisualContactPoints.end(); ++it) {
+        delete (*it);
+    }
+    mVisualContactPoints.clear();
 }
 
 // Update the engine settings
 void SceneDemo::updateEngineSettings() {
 
-    if (getDynamicsWorld() != nullptr) {
+    if (mIsPhysicsWorldSimulated) {
 
         // Update the physics engine parameters
-        getDynamicsWorld()->setIsGratityEnabled(mEngineSettings.isGravityEnabled);
+        mPhysicsWorld->setIsGravityEnabled(mEngineSettings.isGravityEnabled);
         rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
                          mEngineSettings.gravity.z);
-        getDynamicsWorld()->setGravity(gravity);
-        getDynamicsWorld()->enableSleeping(mEngineSettings.isSleepingEnabled);
-        getDynamicsWorld()->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
-        getDynamicsWorld()->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
-        getDynamicsWorld()->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
-        getDynamicsWorld()->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
-        getDynamicsWorld()->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
+        mPhysicsWorld->setGravity(gravity);
+        mPhysicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
+        mPhysicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
+        mPhysicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
+        mPhysicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
+        mPhysicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
+        mPhysicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
     }
 }

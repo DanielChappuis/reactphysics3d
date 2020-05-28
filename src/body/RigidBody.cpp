@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,11 +24,11 @@
 ********************************************************************************/
 
 // Libraries
-#include "RigidBody.h"
-#include "constraint/Joint.h"
-#include "collision/shapes/CollisionShape.h"
-#include "engine/DynamicsWorld.h"
-#include "utils/Profiler.h"
+#include <reactphysics3d/body/RigidBody.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
+#include <reactphysics3d/collision/shapes/CollisionShape.h>
+#include <reactphysics3d/engine/PhysicsWorld.h>
+#include <reactphysics3d/utils/Profiler.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
@@ -39,32 +39,26 @@ using namespace reactphysics3d;
 * @param world The world where the body has been added
 * @param id The ID of the body
 */
-RigidBody::RigidBody(const Transform& transform, CollisionWorld& world, bodyindex id)
-          : CollisionBody(transform, world, id), mArrayIndex(0), mInitMass(decimal(1.0)),
-            mCenterOfMassLocal(0, 0, 0), mCenterOfMassWorld(transform.getPosition()),
-            mIsGravityEnabled(true), mMaterial(world.mConfig), mLinearDamping(decimal(0.0)), mAngularDamping(decimal(0.0)),
-            mJointsList(nullptr), mIsCenterOfMassSetByUser(false), mIsInertiaTensorSetByUser(false) {
+RigidBody::RigidBody(PhysicsWorld& world, Entity entity) : CollisionBody(world, entity) {
 
-    // Compute the inverse mass
-    mMassInverse = decimal(1.0) / mInitMass;
-
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
 }
 
-// Destructor
-RigidBody::~RigidBody() {
-    assert(mJointsList == nullptr);
+// Return the type of the body
+/**
+ * @return The type of rigid body (static, kinematic or dynamic)
+ */
+BodyType RigidBody::getType() const {
+    return mWorld.mRigidBodyComponents.getBodyType(mEntity);
 }
 
 // Set the type of the body
 /// The type of the body can either STATIC, KINEMATIC or DYNAMIC as described bellow:
-/// STATIC : A static body has infinite mass, zero velocity but the position can be
+/// STATIC : A static body is simulated as if it has infinite mass, zero velocity but its position can be
 ///          changed manually. A static body does not collide with other static or kinematic bodies.
-/// KINEMATIC : A kinematic body has infinite mass, the velocity can be changed manually and its
+/// KINEMATIC : A kinematic body is simulated as if it has infinite mass, its velocity can be changed manually and its
 ///             position is computed by the physics engine. A kinematic body does not collide with
 ///             other static or kinematic bodies.
-/// DYNAMIC : A dynamic body has non-zero mass, non-zero velocity determined by forces and its
+/// DYNAMIC : A dynamic body has non-zero mass, its velocity is determined by forces and its
 ///           position is determined by the physics engine. A dynamic body can collide with other
 ///           dynamic, static or kinematic bodies.
 /**
@@ -72,267 +66,574 @@ RigidBody::~RigidBody() {
  */
 void RigidBody::setType(BodyType type) {
 
-    if (mType == type) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == type) return;
 
-    CollisionBody::setType(type);
-
-    // Recompute the total mass, center of mass and inertia tensor
-    recomputeMassInformation();
+    mWorld.mRigidBodyComponents.setBodyType(mEntity, type);
 
     // If it is a static body
-    if (mType == BodyType::STATIC) {
+    if (type == BodyType::STATIC) {
 
         // Reset the velocity to zero
-        mLinearVelocity.setToZero();
-        mAngularVelocity.setToZero();
+        mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
     }
 
     // If it is a static or a kinematic body
-    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
+    if (type == BodyType::STATIC || type == BodyType::KINEMATIC) {
 
         // Reset the inverse mass and inverse inertia tensor to zero
-        mMassInverse = decimal(0.0);
-        mInertiaTensorLocalInverse.setToZero();
-        mInertiaTensorInverseWorld.setToZero();
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0));
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Vector3::zero());
     }
     else {  // If it is a dynamic body
-        mMassInverse = decimal(1.0) / mInitMass;
 
-        if (mIsInertiaTensorSetByUser) {
-            mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
+        const decimal mass = mWorld.mRigidBodyComponents.getMass(mEntity);
+
+        if (mass > decimal(0.0)) {
+            mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mass) ;
         }
-    }
+        else {
+            mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+        }
 
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
+        // Compute the inverse local inertia tensor
+        const Vector3& inertiaTensorLocal = mWorld.mRigidBodyComponents.getLocalInertiaTensor(mEntity);
+        Vector3 inverseInertiaTensorLocal(inertiaTensorLocal.x != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.x : 0,
+                                          inertiaTensorLocal.y != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.y : 0,
+                                          inertiaTensorLocal.z != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.z : 0);
+        mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
+    }
 
     // Awake the body
     setIsSleeping(false);
 
-    // Remove all the contacts with this body
-    resetContactManifoldsList();
+    // Update the active status of currently overlapping pairs
+    updateOverlappingPairs();
 
     // Ask the broad-phase to test again the collision shapes of the body for collision
     // detection (as if the body has moved)
     askForBroadPhaseCollisionCheck();
 
     // Reset the force and torque on the body
-    mExternalForce.setToZero();
-    mExternalTorque.setToZero();
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3::zero());
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set type=" +
+             (type == BodyType::STATIC ? "Static" : (type == BodyType::DYNAMIC ? "Dynamic" : "Kinematic")),  __FILE__, __LINE__);
+}
+
+// Method that return the mass of the body
+/**
+ * @return The mass (in kilograms) of the body
+ */
+decimal RigidBody::getMass() const {
+    return mWorld.mRigidBodyComponents.getMass(mEntity);
+}
+
+// Apply an external force to the body at a given point (in local-space coordinates).
+/// If the point is not at the center of mass of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The force to apply on the body (in Newtons)
+ * @param point The point where the force is applied (in local-space coordinates)
+ */
+void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& point) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    const Vector3& externalForce = mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, externalForce + force);
+
+    // Add the torque
+    const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    const Vector3 worldPoint = mWorld.mTransformComponents.getTransform(mEntity) * point;
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + (worldPoint - centerOfMassWorld).cross(force));
+}
+
+// Apply an external force to the body at a given point (in world-space coordinates).
+/// If the point is not at the center of mass of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The force to apply on the body (in Newtons)
+ * @param point The point where the force is applied (in world-space coordinates)
+ */
+void RigidBody::applyForceAtWorldPosition(const Vector3& force, const Vector3& point) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
+        setIsSleeping(false);
+    }
+
+    // Add the force
+    const Vector3& externalForce = mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, externalForce + force);
+
+    // Add the torque
+    const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + (point - centerOfMassWorld).cross(force));
+}
+
+// Return the local inertia tensor of the body (in body coordinates)
+/**
+ * @return A vector with the three values of the diagonal 3x3 matrix of the local-space inertia tensor
+ */
+const Vector3& RigidBody::getLocalInertiaTensor() const {
+
+    return mWorld.mRigidBodyComponents.getLocalInertiaTensor(mEntity);
 }
 
 // Set the local inertia tensor of the body (in local-space coordinates)
-/// If the inertia tensor is set with this method, it will not be computed
-/// using the collision shapes of the body.
+/// Note that an inertia tensor with a zero value on its diagonal is interpreted as infinite inertia.
 /**
- * @param inertiaTensorLocal The 3x3 inertia tensor matrix of the body in local-space
- *                           coordinates
+ * @param inertiaTensorLocal A vector with the three values of the diagonal 3x3 matrix of the local-space inertia tensor
  */
-void RigidBody::setInertiaTensorLocal(const Matrix3x3& inertiaTensorLocal) {
+void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
 
-    mUserInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
-    mIsInertiaTensorSetByUser = true;
-
-    if (mType != BodyType::DYNAMIC) return;
+    mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
 
     // Compute the inverse local inertia tensor
-    mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
+    Vector3 inverseInertiaTensorLocal(inertiaTensorLocal.x != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.x : 0,
+                                      inertiaTensorLocal.y != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.y : 0,
+                                      inertiaTensorLocal.z != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.z : 0);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
 
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string());
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string(),  __FILE__, __LINE__);
 }
 
-// Set the inverse local inertia tensor of the body (in local-space coordinates)
-/// If the inverse inertia tensor is set with this method, it will not be computed
-/// using the collision shapes of the body.
+// Apply an external force to the body at its center of mass.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
- * @param inverseInertiaTensorLocal The 3x3 inverse inertia tensor matrix of the body in local-space
- *                           		coordinates
+ * @param force The external force to apply on the center of mass of the body (in Newtons)
  */
-void RigidBody::setInverseInertiaTensorLocal(const Matrix3x3& inverseInertiaTensorLocal) {
+void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
-    mUserInertiaTensorLocalInverse = inverseInertiaTensorLocal;
-    mIsInertiaTensorSetByUser = true;
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
 
-    if (mType != BodyType::DYNAMIC) return;
+    // Awake the body if it was sleeping
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
+        setIsSleeping(false);
+    }
 
-    // Compute the inverse local inertia tensor
-    mInertiaTensorLocalInverse = mUserInertiaTensorLocalInverse;
-
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set inverseInertiaTensorLocal=" + inverseInertiaTensorLocal.to_string());
+    // Add the force
+    const Vector3& externalForce = mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, externalForce + force);
 }
 
-// Set the local center of mass of the body (in local-space coordinates)
-/// If you set the center of mass with the method, it will not be computed
-/// automatically using collision shapes.
+// Return the linear velocity damping factor
 /**
- * @param centerOfMassLocal The center of mass of the body in local-space
- *                          coordinates
+ * @return The linear damping factor of this body
  */
-void RigidBody::setCenterOfMassLocal(const Vector3& centerOfMassLocal) {
+decimal RigidBody::getLinearDamping() const {
+    return mWorld.mRigidBodyComponents.getLinearDamping(mEntity);
+}
 
-    if (mType != BodyType::DYNAMIC) return;
+// Return the angular velocity damping factor
+/**
+ * @return The angular damping factor of this body
+ */
+decimal RigidBody::getAngularDamping() const {
+    return mWorld.mRigidBodyComponents.getAngularDamping(mEntity);
+}
 
-    mIsCenterOfMassSetByUser = true;
+// Set the center of mass of the body (in local-space coordinates)
+/// This method does not move the rigid body in the world.
+/**
+ * @param centerOfMass The center of mass of the body in local-space coordinates
+ */
+void RigidBody::setLocalCenterOfMass(const Vector3& centerOfMass) {
 
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
-    mCenterOfMassLocal = centerOfMassLocal;
+    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMass);
 
     // Compute the center of mass in world-space coordinates
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * centerOfMass);
 
     // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string());
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMass.to_string(),  __FILE__, __LINE__);
+}
+
+// Return the center of mass of the body (in local-space coordinates)
+/**
+ * @return The local-space position of the center of mass of the body
+ */
+const Vector3& RigidBody::getLocalCenterOfMass() const {
+    return mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+}
+
+// Compute and set the local-space center of mass of the body using its colliders
+/// This method uses the shape, mass density and transforms of the colliders to set
+/// the center of mass of the body. Note that calling this method will overwrite the
+/// mass that has been previously set with the RigidBody::setCenterOfMass() method. Moreover, this method
+/// does not use the mass set by the user with the RigidBody::setMass() method to compute the center
+/// of mass but only the mass density and volume of the colliders.
+void RigidBody::updateLocalCenterOfMassFromColliders() {
+
+    const Vector3 oldCenterOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+
+    Vector3 centerOfMassLocal = computeCenterOfMass();
+
+    const Vector3 centerOfMassWorld = mWorld.mTransformComponents.getTransform(mEntity) * centerOfMassLocal;
+
+    // Set the center of mass
+    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, centerOfMassWorld);
+
+    // Update the linear velocity of the center of mass
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMassWorld);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string(),  __FILE__, __LINE__);
+}
+
+// Compute and return the local-space center of mass of the body using its colliders
+Vector3 RigidBody::computeCenterOfMass() const {
+
+    decimal totalMass = decimal(0.0);
+    Vector3 centerOfMassLocal(0, 0, 0);
+
+    // Compute the local center of mass
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
+
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+
+        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
+        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+
+        const decimal colliderMass = colliderVolume * colliderMassDensity;
+
+        totalMass += colliderMass;
+        centerOfMassLocal += colliderMass * mWorld.mCollidersComponents.getLocalToBodyTransform(colliderEntities[i]).getPosition();
+    }
+
+    if (totalMass > decimal(0.0)) {
+        centerOfMassLocal /= totalMass;
+    }
+
+    return centerOfMassLocal;
+}
+
+// Compute the local-space inertia tensor and total mass of the body using its colliders
+void RigidBody::computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, decimal& totalMass) const {
+
+    inertiaTensorLocal.setToZero();
+    totalMass = decimal(0.0);
+
+    Matrix3x3 tempLocalInertiaTensor = Matrix3x3::zero();
+
+    const Vector3 centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+
+    // Compute the inertia tensor using all the colliders
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
+
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+
+        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
+        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+        const decimal colliderMass = colliderVolume * colliderMassDensity;
+
+        totalMass += colliderMass;
+
+        // Get the inertia tensor of the collider in its local-space
+        Vector3 shapeLocalInertiaTensor = collider->getCollisionShape()->getLocalInertiaTensor(colliderMass);
+
+        // Convert the collider inertia tensor into the local-space of the body
+        const Transform& shapeTransform = collider->getLocalToBodyTransform();
+        Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
+        Matrix3x3 rotationMatrixTranspose = rotationMatrix.getTranspose();
+        rotationMatrixTranspose[0] *= shapeLocalInertiaTensor.x;
+        rotationMatrixTranspose[1] *= shapeLocalInertiaTensor.y;
+        rotationMatrixTranspose[2] *= shapeLocalInertiaTensor.z;
+        Matrix3x3 inertiaTensor = rotationMatrix * rotationMatrixTranspose;
+
+        // Use the parallel axis theorem to convert the inertia tensor w.r.t the collider
+        // center into a inertia tensor w.r.t to the body origin.
+        Vector3 offset = shapeTransform.getPosition() - centerOfMassLocal;
+        decimal offsetSquare = offset.lengthSquare();
+        Matrix3x3 offsetMatrix;
+        offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
+        offsetMatrix[1].setAllValues(decimal(0.0), offsetSquare, decimal(0.0));
+        offsetMatrix[2].setAllValues(decimal(0.0), decimal(0.0), offsetSquare);
+        offsetMatrix[0] += offset * (-offset.x);
+        offsetMatrix[1] += offset * (-offset.y);
+        offsetMatrix[2] += offset * (-offset.z);
+        offsetMatrix *= colliderMass;
+
+        tempLocalInertiaTensor += inertiaTensor + offsetMatrix;
+    }
+
+    // Get the diagonal value of the computed local inertia tensor
+    inertiaTensorLocal.setAllValues(tempLocalInertiaTensor[0][0], tempLocalInertiaTensor[1][1], tempLocalInertiaTensor[2][2]);
+}
+
+// Compute and set the local-space inertia tensor of the body using its colliders
+/// This method uses the shape, mass density and transforms of the colliders to set
+/// the local-space inertia tensor of the body. Note that calling this method will overwrite the
+/// mass that has been set with the RigidBody::setInertiaTensorLocal() method.
+void RigidBody::updateLocalInertiaTensorFromColliders() {
+
+    // Compute the local-space inertia tensor
+    Vector3 inertiaTensorLocal;
+    decimal totalMass;
+    computeMassAndInertiaTensorLocal(inertiaTensorLocal, totalMass);
+
+    mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
+
+    // Compute the inverse local inertia tensor
+    Vector3 inverseInertiaTensorLocal(inertiaTensorLocal.x != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.x : 0,
+                                      inertiaTensorLocal.y != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.y : 0,
+                                      inertiaTensorLocal.z != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.z : 0);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string(),  __FILE__, __LINE__);
+}
+
+// Compute and set the mass of the body using its colliders
+/// This method uses the shape, mass density and transforms of the colliders to set
+/// the total mass of the body. Note that calling this method will overwrite the
+/// mass that has been set with the RigidBody::setMass() method
+void RigidBody::updateMassFromColliders() {
+
+    decimal totalMass = decimal(0.0);
+
+    // Compute the total mass of the body
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+
+        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
+        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+
+        const decimal colliderMass = colliderVolume * colliderMassDensity;
+
+        totalMass += colliderMass;
+    }
+
+    // Set the mass
+    mWorld.mRigidBodyComponents.setMass(mEntity, totalMass);
+
+    // Compute the inverse mass
+    if (totalMass > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / totalMass);
+    }
+    else {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+    }
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(totalMass),  __FILE__, __LINE__);
+}
+
+// Compute and set the center of mass, the mass and the local-space inertia tensor of the body using its colliders
+/// This method uses the shape, mass density and transform of the colliders of the body to set
+/// the total mass, the center of mass and the local inertia tensor of the body.
+/// Note that calling this method will overwrite the
+/// mass that has been set with the RigidBody::setMass(), the center of mass that has been
+/// set with RigidBody::setCenterOfMass() and the local inertia tensor that has been set with
+/// RigidBody::setInertiaTensorLocal().
+void RigidBody::updateMassPropertiesFromColliders() {
+
+    const Vector3 oldCenterOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+
+    // Compute the local center of mass
+    Vector3 centerOfMassLocal = computeCenterOfMass();
+
+    const Vector3 centerOfMassWorld = mWorld.mTransformComponents.getTransform(mEntity) * centerOfMassLocal;
+
+    // Set the center of mass
+    mWorld.mRigidBodyComponents.setCenterOfMassLocal(mEntity, centerOfMassLocal);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, centerOfMassWorld);
+
+    // Update the linear velocity of the center of mass
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMassWorld);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set centerOfMassLocal=" + centerOfMassLocal.to_string(),  __FILE__, __LINE__);
+
+    // Compute the mass and local-space inertia tensor
+    Vector3 inertiaTensorLocal;
+    decimal totalMass;
+    computeMassAndInertiaTensorLocal(inertiaTensorLocal, totalMass);
+
+    mWorld.mRigidBodyComponents.setLocalInertiaTensor(mEntity, inertiaTensorLocal);
+
+    // Compute the inverse local inertia tensor
+    Vector3 inverseInertiaTensorLocal(inertiaTensorLocal.x != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.x : 0,
+                                      inertiaTensorLocal.y != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.y : 0,
+                                      inertiaTensorLocal.z != decimal(0.0) ? decimal(1.0) / inertiaTensorLocal.z : 0);
+    mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string(),  __FILE__, __LINE__);
+
+    // Set the mass
+    mWorld.mRigidBodyComponents.setMass(mEntity, totalMass);
+
+    // Compute the inverse mass
+    if (totalMass > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / totalMass);
+    }
+    else {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
+    }
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(totalMass),  __FILE__, __LINE__);
 }
 
 // Set the mass of the rigid body
+/// Note that a mass of zero is interpreted as infinite mass.
 /**
  * @param mass The mass (in kilograms) of the body
  */
 void RigidBody::setMass(decimal mass) {
 
-    if (mType != BodyType::DYNAMIC) return;
+    mWorld.mRigidBodyComponents.setMass(mEntity, mass);
 
-    mInitMass = mass;
+    if (mass < decimal(0.0)) {
 
-    if (mInitMass > decimal(0.0)) {
-        mMassInverse = decimal(1.0) / mInitMass;
+        RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Error, Logger::Category::Body,
+                 "Error when setting the mass of a rigid body: the mass must be a positive value",  __FILE__, __LINE__);
+    }
+
+    if (mWorld.mRigidBodyComponents.getMass(mEntity) > decimal(0.0)) {
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(1.0) / mass);
     }
     else {
-        mInitMass = decimal(1.0);
-        mMassInverse = decimal(1.0);
-    }
+        mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0.0));
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set mass=" + std::to_string(mass));
-}
+        if (mWorld.mRigidBodyComponents.getMass(mEntity) < decimal(0.0)) {
 
-// Remove a joint from the joints list
-void RigidBody::removeJointFromJointsList(MemoryManager& memoryManager, const Joint* joint) {
-
-    assert(joint != nullptr);
-    assert(mJointsList != nullptr);
-
-    // Remove the joint from the linked list of the joints of the first body
-    if (mJointsList->joint == joint) {   // If the first element is the one to remove
-        JointListElement* elementToRemove = mJointsList;
-        mJointsList = elementToRemove->next;
-        elementToRemove->~JointListElement();
-        memoryManager.release(MemoryManager::AllocationType::Pool,
-                              elementToRemove, sizeof(JointListElement));
-    }
-    else {  // If the element to remove is not the first one in the list
-        JointListElement* currentElement = mJointsList;
-        while (currentElement->next != nullptr) {
-            if (currentElement->next->joint == joint) {
-                JointListElement* elementToRemove = currentElement->next;
-                currentElement->next = elementToRemove->next;
-                elementToRemove->~JointListElement();
-                memoryManager.release(MemoryManager::AllocationType::Pool,
-                                      elementToRemove, sizeof(JointListElement));
-                break;
-            }
-            currentElement = currentElement->next;
+            RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Error, Logger::Category::Body,
+                     "Error when setting mass of body " + std::to_string(mEntity.id) + ": mass cannot be negative",  __FILE__, __LINE__);
         }
     }
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set mass=" + std::to_string(mass),  __FILE__, __LINE__);
 }
 
-// Add a collision shape to the body.
-/// When you add a collision shape to the body, an internal copy of this
-/// collision shape will be created internally. Therefore, you can delete it
-/// right after calling this method or use it later to add it to another body.
-/// This method will return a pointer to a new proxy shape. A proxy shape is
-/// an object that links a collision shape and a given body. You can use the
-/// returned proxy shape to get and set information about the corresponding
+
+// Create a new collider and add it to the body
+/// This method will return a pointer to a new collider. A collider is
+/// an object with a collision shape that is attached to a body. It is possible to
+/// attach multiple colliders to a given body. You can use the
+/// returned collider to get and set information about the corresponding
 /// collision shape for that body.
 /**
- * @param collisionShape The collision shape you want to add to the body
- * @param transform The transformation of the collision shape that transforms the
- *        local-space of the collision shape into the local-space of the body
- * @param mass Mass (in kilograms) of the collision shape you want to add
- * @return A pointer to the proxy shape that has been created to link the body to
- *         the new collision shape you have added.
+ * @param collisionShape A pointer to the collision shape of the new collider
+ * @param transform The transformation of the collider that transforms the
+ *        local-space of the collider into the local-space of the body
+ * @return A pointer to the collider that has been created
  */
-ProxyShape* RigidBody::addCollisionShape(CollisionShape* collisionShape,
-                                         const Transform& transform,
-                                         decimal mass) {
+Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform& transform) {
 
-    // Create a new proxy collision shape to attach the collision shape to the body
-    ProxyShape* proxyShape = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                      sizeof(ProxyShape))) ProxyShape(this, collisionShape,
-                                                                      transform, mass, mWorld.mMemoryManager);
+    // Create a new entity for the collider
+    Entity colliderEntity = mWorld.mEntityManager.createEntity();
 
-#ifdef IS_PROFILING_ACTIVE
+    // Check that the transform is valid
+    if (!transform.isValid()) {
+        RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Error, Logger::Category::Collider,
+                 "Error when adding a collider: the init transform is not valid",  __FILE__, __LINE__);
+    }
+    assert(transform.isValid());
+
+    // Create a new collider for the body
+    Collider* collider = new (mWorld.mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
+                                      sizeof(Collider))) Collider(colliderEntity, this, mWorld.mMemoryManager);
+
+    // Add the collider component to the entity of the body
+    Vector3 localBoundsMin;
+    Vector3 localBoundsMax;
+    // TODO : Maybe this method can directly returns an AABB
+    collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
+    const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
+    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, AABB(localBoundsMin, localBoundsMax),
+                                                            transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform);
+    bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
+    mWorld.mCollidersComponents.addComponent(colliderEntity, isSleeping, colliderComponent);
+
+    mWorld.mCollisionBodyComponents.addColliderToBody(mEntity, colliderEntity);
+
+    // Assign the collider with the collision shape
+    collisionShape->addCollider(collider);
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 	// Set the profiler
-	proxyShape->setProfiler(mProfiler);
+    collider->setProfiler(mProfiler);
 
 #endif
-
-#ifdef IS_LOGGING_ACTIVE
-
-    // Set the logger
-    proxyShape->setLogger(mLogger);
-
-#endif
-
-    // Add it to the list of proxy collision shapes of the body
-    if (mProxyCollisionShapes == nullptr) {
-        mProxyCollisionShapes = proxyShape;
-    }
-    else {
-        proxyShape->mNext = mProxyCollisionShapes;
-        mProxyCollisionShapes = proxyShape;
-    }
 
     // Compute the world-space AABB of the new collision shape
     AABB aabb;
-    collisionShape->computeAABB(aabb, mTransform * transform);
+    collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
-    mWorld.mCollisionDetection.addProxyCollisionShape(proxyShape, aabb);
+    mWorld.mCollisionDetection.addCollider(collider, aabb);
 
-    mNbCollisionShapes++;
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " added to body",  __FILE__, __LINE__);
 
-    // Recompute the center of mass, total mass and inertia tensor of the body with the new
-    // collision shape
-    recomputeMassInformation();
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
+             "Collider " + std::to_string(collider->getBroadPhaseId()) + ":  collisionShape=" +
+             collider->getCollisionShape()->to_string(),  __FILE__, __LINE__);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Proxy shape " + std::to_string(proxyShape->getBroadPhaseId()) + " added to body");
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::ProxyShape,
-             "ProxyShape " + std::to_string(proxyShape->getBroadPhaseId()) + ":  collisionShape=" +
-             proxyShape->getCollisionShape()->to_string());
-
-    // Return a pointer to the proxy collision shape
-    return proxyShape;
+    // Return a pointer to the collider
+    return collider;
 }
 
-// Remove a collision shape from the body
-/// To remove a collision shape, you need to specify the pointer to the proxy
-/// shape that has been returned when you have added the collision shape to the
-/// body
+// Remove a collider from the body
+/// To remove a collider, you need to specify its pointer.
 /**
- * @param proxyShape The pointer of the proxy shape you want to remove
+ * @param collider The pointer of the collider you want to remove
  */
-void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
+void RigidBody::removeCollider(Collider* collider) {
 
     // Remove the collision shape
-    CollisionBody::removeCollisionShape(proxyShape);
-
-    // Recompute the total mass, center of mass and inertia tensor
-    recomputeMassInformation();
+    CollisionBody::removeCollider(collider);
 }
 
 // Set the variable to know if the gravity is applied to this rigid body
@@ -340,11 +641,11 @@ void RigidBody::removeCollisionShape(const ProxyShape* proxyShape) {
  * @param isEnabled True if you want the gravity to be applied to this body
  */
 void RigidBody::enableGravity(bool isEnabled) {
-    mIsGravityEnabled = isEnabled;
+    mWorld.mRigidBodyComponents.setIsGravityEnabled(mEntity, isEnabled);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set isGravityEnabled=" +
-             (mIsGravityEnabled ? "true" : "false"));
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set isGravityEnabled=" +
+             (isEnabled ? "true" : "false"),  __FILE__, __LINE__);
 }
 
 // Set the linear damping factor. This is the ratio of the linear velocity
@@ -354,10 +655,19 @@ void RigidBody::enableGravity(bool isEnabled) {
  */
 void RigidBody::setLinearDamping(decimal linearDamping) {
     assert(linearDamping >= decimal(0.0));
-    mLinearDamping = linearDamping;
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set linearDamping=" + std::to_string(mLinearDamping));
+    if (linearDamping >= decimal(0.0)) {
+
+        mWorld.mRigidBodyComponents.setLinearDamping(mEntity, linearDamping);
+
+        RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+                 "Body " + std::to_string(mEntity.id) + ": Set linearDamping=" + std::to_string(linearDamping),  __FILE__, __LINE__);
+    }
+    else {
+
+        RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Error, Logger::Category::Body,
+                 "Error when setting the linear damping of body " + std::to_string(mEntity.id) + ": linear damping cannot be negative",  __FILE__, __LINE__);
+    }
 }
 
 // Set the angular damping factor. This is the ratio of the angular velocity
@@ -367,21 +677,18 @@ void RigidBody::setLinearDamping(decimal linearDamping) {
  */
 void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
-    mAngularDamping = angularDamping;
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set angularDamping=" + std::to_string(mAngularDamping));
-}
+    if (angularDamping >= decimal(0.0)) {
 
-// Set a new material for this rigid body
-/**
- * @param material The material you want to set to the body
- */
-void RigidBody::setMaterial(const Material& material) {
-    mMaterial = material;
+        mWorld.mRigidBodyComponents.setAngularDamping(mEntity, angularDamping);
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set Material" + mMaterial.to_string());
+        RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+                 "Body " + std::to_string(mEntity.id) + ": Set angularDamping=" + std::to_string(angularDamping),  __FILE__, __LINE__);
+    }
+    else {
+        RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Error, Logger::Category::Body,
+                 "Error when setting the angular damping of body " + std::to_string(mEntity.id) + ": angular damping cannot be negative",  __FILE__, __LINE__);
+    }
 }
 
 // Set the linear velocity of the rigid body.
@@ -391,18 +698,18 @@ void RigidBody::setMaterial(const Material& material) {
 void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == BodyType::STATIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
 
     // Update the linear velocity of the current body state
-    mLinearVelocity = linearVelocity;
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
     // If the linear velocity is not zero, awake the body
-    if (mLinearVelocity.lengthSquare() > decimal(0.0)) {
+    if (linearVelocity.lengthSquare() > decimal(0.0)) {
         setIsSleeping(false);
     }
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set linearVelocity=" + mLinearVelocity.to_string());
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set linearVelocity=" + linearVelocity.to_string(),  __FILE__, __LINE__);
 }
 
 // Set the angular velocity.
@@ -412,18 +719,18 @@ void RigidBody::setLinearVelocity(const Vector3& linearVelocity) {
 void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
 
     // If it is a static body, we do nothing
-    if (mType == BodyType::STATIC) return;
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
 
     // Set the angular velocity
-    mAngularVelocity = angularVelocity;
+    mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, angularVelocity);
 
     // If the velocity is not zero, awake the body
-    if (mAngularVelocity.lengthSquare() > decimal(0.0)) {
+    if (angularVelocity.lengthSquare() > decimal(0.0)) {
         setIsSleeping(false);
     }
 
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set angularVelocity=" + mAngularVelocity.to_string());
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set angularVelocity=" + angularVelocity.to_string(),  __FILE__, __LINE__);
 }
 
 // Set the current position and orientation
@@ -433,152 +740,204 @@ void RigidBody::setAngularVelocity(const Vector3& angularVelocity) {
  */
 void RigidBody::setTransform(const Transform& transform) {
 
-    // Update the transform of the body
-    mTransform = transform;
-
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
+    const Vector3 oldCenterOfMass = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
 
     // Compute the new center of mass in world-space coordinates
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
+    const Vector3& centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
+    mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, transform * centerOfMassLocal);
 
     // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
+    const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
+    linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
+    mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
+    CollisionBody::setTransform(transform);
 
-    // Update the broad-phase state of the body
-    updateBroadPhaseState();
-
-    RP3D_LOG(mLogger, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(mID) + ": Set transform=" + mTransform.to_string());
+    // Awake the body if it is sleeping
+    setIsSleeping(false);
 }
 
-// Recompute the center of mass, total mass and inertia tensor of the body using all
-// the collision shapes attached to the body.
-void RigidBody::recomputeMassInformation() {
+// Return the linear velocity
+/**
+ * @return The linear velocity vector of the body
+ */
+Vector3 RigidBody::getLinearVelocity() const {
+    return mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
+}
 
-    mInitMass = decimal(0.0);
-    mMassInverse = decimal(0.0);
-    if (!mIsInertiaTensorSetByUser) mInertiaTensorLocalInverse.setToZero();
-    if (!mIsInertiaTensorSetByUser) mInertiaTensorInverseWorld.setToZero();
-    if (!mIsCenterOfMassSetByUser) mCenterOfMassLocal.setToZero();
-    Matrix3x3 inertiaTensorLocal;
-    inertiaTensorLocal.setToZero();
+// Return the angular velocity of the body
+/**
+ * @return The angular velocity vector of the body
+ */
+Vector3 RigidBody::getAngularVelocity() const {
+    return mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+}
 
-    // If it is a STATIC or a KINEMATIC body
-    if (mType == BodyType::STATIC || mType == BodyType::KINEMATIC) {
-        mCenterOfMassWorld = mTransform.getPosition();
+// Return true if the gravity needs to be applied to this rigid body
+/**
+ * @return True if the gravity is applied to the body
+ */
+bool RigidBody::isGravityEnabled() const {
+    return mWorld.mRigidBodyComponents.getIsGravityEnabled(mEntity);
+}
+
+// Apply an external torque to the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied torques and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param torque The external torque to apply on the body
+ */
+void RigidBody::applyTorque(const Vector3& torque) {
+
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+
+    // Awake the body if it was sleeping
+    if (mWorld.mRigidBodyComponents.getIsSleeping(mEntity)) {
+        setIsSleeping(false);
+    }
+
+    // Add the torque
+    const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + torque);
+}
+
+// Set the variable to know whether or not the body is sleeping
+void RigidBody::setIsSleeping(bool isSleeping) {
+
+    bool isBodySleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
+
+    if (isBodySleeping == isSleeping) return;
+
+    // If the body is not active, do nothing (it is sleeping)
+    if (!mWorld.mCollisionBodyComponents.getIsActive(mEntity)) {
+        assert(isBodySleeping);
         return;
     }
 
-    assert(mType == BodyType::DYNAMIC);
-
-    // Compute the total mass of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
-        mInitMass += shape->getMass();
-
-        if (!mIsCenterOfMassSetByUser) {
-            mCenterOfMassLocal += shape->getLocalToBodyTransform().getPosition() * shape->getMass();
-        }
-    }
-
-    if (mInitMass > decimal(0.0)) {
-        mMassInverse = decimal(1.0) / mInitMass;
+    if (isSleeping) {
+        mWorld.mRigidBodyComponents.setSleepTime(mEntity, decimal(0.0));
     }
     else {
-        mCenterOfMassWorld = mTransform.getPosition();
-        return;
-    }
-
-    // Compute the center of mass
-    const Vector3 oldCenterOfMass = mCenterOfMassWorld;
-
-    if (!mIsCenterOfMassSetByUser) {
-        mCenterOfMassLocal *= mMassInverse;
-    }
-
-    mCenterOfMassWorld = mTransform * mCenterOfMassLocal;
-
-    if (!mIsInertiaTensorSetByUser) {
-
-        // Compute the inertia tensor using all the collision shapes
-        for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
-
-            // Get the inertia tensor of the collision shape in its local-space
-            Matrix3x3 inertiaTensor;
-            shape->getCollisionShape()->computeLocalInertiaTensor(inertiaTensor, shape->getMass());
-
-            // Convert the collision shape inertia tensor into the local-space of the body
-            const Transform& shapeTransform = shape->getLocalToBodyTransform();
-            Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
-            inertiaTensor = rotationMatrix * inertiaTensor * rotationMatrix.getTranspose();
-
-            // Use the parallel axis theorem to convert the inertia tensor w.r.t the collision shape
-            // center into a inertia tensor w.r.t to the body origin.
-            Vector3 offset = shapeTransform.getPosition() - mCenterOfMassLocal;
-            decimal offsetSquare = offset.lengthSquare();
-            Matrix3x3 offsetMatrix;
-            offsetMatrix[0].setAllValues(offsetSquare, decimal(0.0), decimal(0.0));
-            offsetMatrix[1].setAllValues(decimal(0.0), offsetSquare, decimal(0.0));
-            offsetMatrix[2].setAllValues(decimal(0.0), decimal(0.0), offsetSquare);
-            offsetMatrix[0] += offset * (-offset.x);
-            offsetMatrix[1] += offset * (-offset.y);
-            offsetMatrix[2] += offset * (-offset.z);
-            offsetMatrix *= shape->getMass();
-
-            inertiaTensorLocal += inertiaTensor + offsetMatrix;
+        if (isBodySleeping) {
+            mWorld.mRigidBodyComponents.setSleepTime(mEntity, decimal(0.0));
         }
-
-        // Compute the local inverse inertia tensor
-        mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
     }
 
-    // Update the world inverse inertia tensor
-    updateInertiaTensorInverseWorld();
+    mWorld.mRigidBodyComponents.setIsSleeping(mEntity, isSleeping);
 
-    // Update the linear velocity of the center of mass
-    mLinearVelocity += mAngularVelocity.cross(mCenterOfMassWorld - oldCenterOfMass);
+    // Notify all the components
+    mWorld.setBodyDisabled(mEntity, isSleeping);
+
+    // Update the currently overlapping pairs
+    updateOverlappingPairs();
+
+    if (isSleeping) {
+
+        mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3::zero());
+    }
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+         "Body " + std::to_string(mEntity.id) + ": Set isSleeping=" +
+         (isSleeping ? "true" : "false"),  __FILE__, __LINE__);
 }
 
-// Update the broad-phase state for this body (because it has moved for instance)
-void RigidBody::updateBroadPhaseState() const {
+// Update whether the current overlapping pairs where this body is involed are active or not
+void RigidBody::updateOverlappingPairs() {
 
-    RP3D_PROFILE("RigidBody::updateBroadPhaseState()", mProfiler);
+    // For each collider of the body
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
 
-    DynamicsWorld& world = static_cast<DynamicsWorld&>(mWorld);
-    const Vector3 displacement = world.mTimeStep * mLinearVelocity;
+        // Get the currently overlapping pairs for this collider
+        List<uint64> overlappingPairs = mWorld.mCollidersComponents.getOverlappingPairs(colliderEntities[i]);
 
-    // For all the proxy collision shapes of the body
-    for (ProxyShape* shape = mProxyCollisionShapes; shape != nullptr; shape = shape->mNext) {
+        for (uint j=0; j < overlappingPairs.size(); j++) {
 
-        // If the proxy-shape shape is still part of the broad-phase
-        if (shape->getBroadPhaseId() != -1) {
-
-            // Recompute the world-space AABB of the collision shape
-            AABB aabb;
-            shape->getCollisionShape()->computeAABB(aabb, mTransform * shape->getLocalToBodyTransform());
-
-            // Update the broad-phase state for the proxy collision shape
-            mWorld.mCollisionDetection.updateProxyCollisionShape(shape, aabb, displacement);
+            mWorld.mCollisionDetection.mOverlappingPairs.updateOverlappingPairIsActive(overlappingPairs[j]);
         }
     }
 }
 
-#ifdef IS_PROFILING_ACTIVE
+/// Return the inverse of the inertia tensor in world coordinates.
+const Matrix3x3 RigidBody::getWorldInertiaTensorInverse(PhysicsWorld& world, Entity bodyEntity) {
+
+    Matrix3x3 orientation = world.mTransformComponents.getTransform(bodyEntity).getOrientation().getMatrix();
+    const Vector3& inverseInertiaLocalTensor = world.mRigidBodyComponents.getInertiaTensorLocalInverse(bodyEntity);
+    Matrix3x3 orientationTranspose = orientation.getTranspose();
+    orientationTranspose[0] *= inverseInertiaLocalTensor.x;
+    orientationTranspose[1] *= inverseInertiaLocalTensor.y;
+    orientationTranspose[2] *= inverseInertiaLocalTensor.z;
+    return orientation * orientationTranspose;
+}
+
+// Set whether or not the body is allowed to go to sleep
+/**
+ * @param isAllowedToSleep True if the body is allowed to sleep
+ */
+void RigidBody::setIsAllowedToSleep(bool isAllowedToSleep) {
+
+    mWorld.mRigidBodyComponents.setIsAllowedToSleep(mEntity, isAllowedToSleep);
+
+    if (!isAllowedToSleep) setIsSleeping(false);
+
+    RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+             "Body " + std::to_string(mEntity.id) + ": Set isAllowedToSleep=" +
+             (isAllowedToSleep ? "true" : "false"),  __FILE__, __LINE__);
+}
+
+// Return whether or not the body is allowed to sleep
+/**
+ * @return True if the body is allowed to sleep and false otherwise
+ */
+bool RigidBody::isAllowedToSleep() const {
+    return mWorld.mRigidBodyComponents.getIsAllowedToSleep(mEntity);
+}
+
+// Return whether or not the body is sleeping
+/**
+ * @return True if the body is currently sleeping and false otherwise
+ */
+bool RigidBody::isSleeping() const {
+    return mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
+}
+
+// Set whether or not the body is active
+/**
+ * @param isActive True if you want to activate the body
+ */
+void RigidBody::setIsActive(bool isActive) {
+
+    // If the state does not change
+    if (mWorld.mCollisionBodyComponents.getIsActive(mEntity) == isActive) return;
+
+    setIsSleeping(!isActive);
+
+    CollisionBody::setIsActive(isActive);
+}
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
 
 // Set the profiler
 void RigidBody::setProfiler(Profiler* profiler) {
 
 	CollisionBody::setProfiler(profiler);
 
-	// Set the profiler for each proxy shape
-	ProxyShape* proxyShape = getProxyShapesList();
-	while (proxyShape != nullptr) {
+    // Set the profiler for each collider
+    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint i=0; i < colliderEntities.size(); i++) {
 
-		proxyShape->setProfiler(profiler);
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
-		proxyShape = proxyShape->getNext();
+        collider->setProfiler(profiler);
 	}
 }
 

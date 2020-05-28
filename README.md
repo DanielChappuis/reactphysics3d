@@ -31,7 +31,8 @@ ReactPhysics3D has the following features:
  - No external libraries (do not use STL containers)
  - Documentation (user manual and Doxygen API)
  - Testbed application with demos
- - Integrated Profiler
+ - Integrated profiler
+ - Debugging renderer
  - Logs
  - Unit tests
 

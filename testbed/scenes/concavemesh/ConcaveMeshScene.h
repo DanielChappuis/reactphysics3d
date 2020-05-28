@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "Box.h"
 #include "SceneDemo.h"
 #include "ConcaveMesh.h"
@@ -56,11 +56,6 @@ const float CYLINDER_HEIGHT = 5.0f;
 const float CAPSULE_RADIUS = 1.0f;
 const float CAPSULE_HEIGHT = 1.0f;
 const float DUMBBELL_HEIGHT = 1.0f;
-const float BOX_MASS = 1.0f;
-const float CONE_MASS = 1.0f;
-const float CYLINDER_MASS = 1.0f;
-const float CAPSULE_MASS = 1.0f;
-const float MESH_MASS = 1.0f;
 
 // Class TriangleMeshScene
 class ConcaveMeshScene : public SceneDemo {
@@ -96,15 +91,7 @@ class ConcaveMeshScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
-
-        /// Return all the contact points of the scene
-        virtual std::vector<ContactPoint> getContactPoints() override;
 };
-
-// Return all the contact points of the scene
-inline std::vector<ContactPoint> ConcaveMeshScene::getContactPoints() {
-    return computeContactPointsOfWorld(getDynamicsWorld());
-}
 
 }
 

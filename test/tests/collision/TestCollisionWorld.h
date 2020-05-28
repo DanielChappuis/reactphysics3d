@@ -27,11 +27,12 @@
 #define TEST_COLLISION_WORLD_H
 
 // Libraries
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "Test.h"
-#include "constraint/ContactPoint.h"
-#include "collision/ContactManifold.h"
+#include <reactphysics3d/constraint/ContactPoint.h>
+#include <reactphysics3d/collision/ContactManifold.h>
 #include <map>
+#include <vector>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -64,12 +65,12 @@ struct CollisionPointData {
 	}
 };
 
-// Contact manifold collision data
-struct CollisionManifoldData {
+// Contact pair collision data
+struct ContactPairData {
 
 	std::vector<CollisionPointData> contactPoints;
 
-	int getNbContactPoints() const {
+    uint getNbContactPoints() const {
 		return contactPoints.size();
 	}
 
@@ -89,23 +90,23 @@ struct CollisionManifoldData {
 
 };
 
-// Collision data between two proxy shapes
+// Collision data between two colliders
 struct CollisionData {
 
-	std::pair<const ProxyShape*, const ProxyShape*> proxyShapes;
+    std::pair<const Collider*, const Collider*> colliders;
 	std::pair<CollisionBody*, CollisionBody*> bodies;
-	std::vector<CollisionManifoldData> contactManifolds;
+    std::vector<ContactPairData> contactPairs;
 
-	int getNbContactManifolds() const {
-		return contactManifolds.size();
+    int getNbContactPairs() const {
+        return contactPairs.size();
 	}
 
 	int getTotalNbContactPoints() const {
 		
 		int nbPoints = 0;
 
-		std::vector<CollisionManifoldData>::const_iterator it;
-		for (it = contactManifolds.begin(); it != contactManifolds.end(); ++it) {
+        std::vector<ContactPairData>::const_iterator it;
+        for (it = contactPairs.begin(); it != contactPairs.end(); ++it) {
 
 			nbPoints += it->getNbContactPoints();
 		}
@@ -123,8 +124,8 @@ struct CollisionData {
 
 	bool hasContactPointSimilarTo(const Vector3& localPointBody1, const Vector3& localPointBody2, decimal penetrationDepth, decimal epsilon = 0.001) const {
 
-		std::vector<CollisionManifoldData>::const_iterator it;
-		for (it = contactManifolds.cbegin(); it != contactManifolds.cend(); ++it) {
+        std::vector<ContactPairData>::const_iterator it;
+        for (it = contactPairs.cbegin(); it != contactPairs.cend(); ++it) {
 
 			if (it->hasContactPointSimilarTo(localPointBody1, localPointBody2, penetrationDepth)) {
 				return true;
@@ -141,9 +142,9 @@ class WorldCollisionCallback : public CollisionCallback
 {
 	private:
 
-		std::map<std::pair<const ProxyShape*, const ProxyShape*>, CollisionData> mCollisionDatas;
+		std::map<std::pair<const Collider*, const Collider*>, CollisionData> mCollisionDatas;
 
-		std::pair<const ProxyShape*, const ProxyShape*> getCollisionKeyPair(std::pair<const ProxyShape*, const ProxyShape*> pair) const {
+		std::pair<const Collider*, const Collider*> getCollisionKeyPair(std::pair<const Collider*, const Collider*> pair) const {
 			
 			if (pair.first > pair.second) {
 				return std::make_pair(pair.second, pair.first);
@@ -168,12 +169,12 @@ class WorldCollisionCallback : public CollisionCallback
 			return mCollisionDatas.size() > 0;
 		}
 
-		bool areProxyShapesColliding(const ProxyShape* proxyShape1, const ProxyShape* proxyShape2) {
-			return mCollisionDatas.find(getCollisionKeyPair(std::make_pair(proxyShape1, proxyShape2))) != mCollisionDatas.end();
+        bool areCollidersColliding(const Collider* collider1, const Collider* collider2) {
+            return mCollisionDatas.find(getCollisionKeyPair(std::make_pair(collider1, collider2))) != mCollisionDatas.end();
 		}
 
-		const CollisionData* getCollisionData(const ProxyShape* proxyShape1, const ProxyShape* proxyShape2) const {
-			std::map<std::pair<const ProxyShape*, const ProxyShape*>, CollisionData>::const_iterator it = mCollisionDatas.find(getCollisionKeyPair(std::make_pair(proxyShape1, proxyShape2)));
+        const CollisionData* getCollisionData(const Collider* collider1, const Collider* collider2) const {
+            std::map<std::pair<const Collider*, const Collider*>, CollisionData>::const_iterator it = mCollisionDatas.find(getCollisionKeyPair(std::make_pair(collider1, collider2)));
 			if (it != mCollisionDatas.end()) {
 					return &(it->second);
 			}
@@ -182,34 +183,33 @@ class WorldCollisionCallback : public CollisionCallback
 			}
 		}
 
-        // This method will be called for each contact
-        virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override {
+        // This method is called when some contacts occur
+        virtual void onContact(const CallbackData& callbackData) override {
 
-			CollisionData collisionData;
-			collisionData.bodies = std::make_pair(collisionCallbackInfo.body1, collisionCallbackInfo.body2);
-			collisionData.proxyShapes = std::make_pair(collisionCallbackInfo.proxyShape1, collisionCallbackInfo.proxyShape2);
+            CollisionData collisionData;
 
-			ContactManifoldListElement* element = collisionCallbackInfo.contactManifoldElements;
-			while (element != nullptr) {
+            // For each contact pair
+            for (uint p=0; p < callbackData.getNbContactPairs(); p++) {
 
-				ContactManifold* contactManifold = element->getContactManifold();
+                ContactPairData contactPairData;
+                ContactPair contactPair = callbackData.getContactPair(p);
 
-				CollisionManifoldData collisionManifold;
+                collisionData.bodies = std::make_pair(contactPair.getBody1(), contactPair.getBody2());
+                collisionData.colliders = std::make_pair(contactPair.getCollider1(), contactPair.getCollider2());
 
-				ContactPoint* contactPoint = contactManifold->getContactPoints();
-				while (contactPoint != nullptr) {
+                // For each contact point
+                for (uint c=0; c < contactPair.getNbContactPoints(); c++) {
 
-                    CollisionPointData collisionPoint(contactPoint->getLocalPointOnShape1(), contactPoint->getLocalPointOnShape2(), contactPoint->getPenetrationDepth());
-					collisionManifold.contactPoints.push_back(collisionPoint);
+                    ContactPoint contactPoint = contactPair.getContactPoint(c);
 
-					contactPoint = contactPoint->getNext();
-				}
+                    CollisionPointData collisionPoint(contactPoint.getLocalPointOnCollider1(), contactPoint.getLocalPointOnCollider2(), contactPoint.getPenetrationDepth());
+                    contactPairData.contactPoints.push_back(collisionPoint);
+                }
 
-				collisionData.contactManifolds.push_back(collisionManifold);
-				mCollisionDatas.insert(std::make_pair(getCollisionKeyPair(collisionData.proxyShapes), collisionData));
+                collisionData.contactPairs.push_back(contactPairData);
+            }
 
-				element = element->getNext();
-			}
+            mCollisionDatas.insert(std::make_pair(getCollisionKeyPair(collisionData.colliders), collisionData));
         }
 };
 
@@ -218,30 +218,40 @@ class WorldOverlapCallback : public OverlapCallback {
 
 	private:
 
-		std::vector<CollisionBody*> mOverlapBodies;
+        std::vector<std::pair<CollisionBody*, CollisionBody*>> mOverlapBodies;
 
 	public:
 
 		/// Destructor
-		virtual ~WorldOverlapCallback() {
+        virtual ~WorldOverlapCallback() override {
 			reset();
 		}
 
 		/// This method will be called for each reported overlapping bodies
-		virtual void notifyOverlap(CollisionBody* collisionBody) override {
-			mOverlapBodies.push_back(collisionBody);
+        virtual void onOverlap(CallbackData& callbackData) override {
+
+            // For each overlapping pair
+            for (uint i=0; i < callbackData.getNbOverlappingPairs(); i++) {
+
+                OverlapPair overlapPair = callbackData.getOverlappingPair(i);
+                mOverlapBodies.push_back(std::make_pair(overlapPair.getBody1(), overlapPair.getBody2()));
+            }
 		}
 
 		void reset() {
 			mOverlapBodies.clear();
 		}
 
-		bool hasOverlap() const {
-			return !mOverlapBodies.empty();
-		}
+        bool hasOverlapWithBody(CollisionBody* collisionBody) const {
 
-		std::vector<CollisionBody*>& getOverlapBodies() {
-			return mOverlapBodies;
+            for (uint i=0; i < mOverlapBodies.size(); i++) {
+
+                if (mOverlapBodies[i].first == collisionBody || mOverlapBodies[i].second == collisionBody) {
+                    return true;
+                }
+            }
+
+            return false;
 		}
 };
 
@@ -255,8 +265,10 @@ class TestCollisionWorld : public Test {
 
         // ---------- Atributes ---------- //
 
+        PhysicsCommon mPhysicsCommon;
+
         // Physics world
-        CollisionWorld* mWorld;
+        PhysicsWorld* mWorld;
 
         // Bodies
         CollisionBody* mBoxBody1;
@@ -280,16 +292,16 @@ class TestCollisionWorld : public Test {
 		ConvexMeshShape* mConvexMeshShape2;
         ConcaveMeshShape* mConcaveMeshShape;
 
-        // Proxy shapes
-        ProxyShape* mBoxProxyShape1;
-		ProxyShape* mBoxProxyShape2;
-        ProxyShape* mSphereProxyShape1;
-        ProxyShape* mSphereProxyShape2;
-		ProxyShape* mCapsuleProxyShape1;
-		ProxyShape* mCapsuleProxyShape2;
-		ProxyShape* mConvexMeshProxyShape1;
-		ProxyShape* mConvexMeshProxyShape2;
-        ProxyShape* mConcaveMeshProxyShape;
+        // Colliders
+        Collider* mBoxCollider1;
+        Collider* mBoxCollider2;
+        Collider* mSphereCollider1;
+        Collider* mSphereCollider2;
+        Collider* mCapsuleCollider1;
+        Collider* mCapsuleCollider2;
+        Collider* mConvexMeshCollider1;
+        Collider* mConvexMeshCollider2;
+        Collider* mConcaveMeshCollider;
 
 		PolygonVertexArray* mConvexMesh1PolygonVertexArray;
 		PolygonVertexArray* mConvexMesh2PolygonVertexArray;
@@ -320,40 +332,40 @@ class TestCollisionWorld : public Test {
         TestCollisionWorld(const std::string& name) : Test(name) {
 
             // Create the collision world
-            mWorld = new CollisionWorld();
+            mWorld = mPhysicsCommon.createPhysicsWorld();
 
             // ---------- Boxes ---------- //
             Transform boxTransform1(Vector3(-20, 20, 0), Quaternion::identity());
             mBoxBody1 = mWorld->createCollisionBody(boxTransform1);
-            mBoxShape1 = new BoxShape(Vector3(3, 3, 3));
-            mBoxProxyShape1 = mBoxBody1->addCollisionShape(mBoxShape1, Transform::identity());
+            mBoxShape1 = mPhysicsCommon.createBoxShape(Vector3(3, 3, 3));
+            mBoxCollider1 = mBoxBody1->addCollider(mBoxShape1, Transform::identity());
 
 			Transform boxTransform2(Vector3(-10, 20, 0), Quaternion::identity());
 			mBoxBody2 = mWorld->createCollisionBody(boxTransform2);
-			mBoxShape2 = new BoxShape(Vector3(4, 2, 8));
-            mBoxProxyShape2 = mBoxBody2->addCollisionShape(mBoxShape2, Transform::identity());
+            mBoxShape2 = mPhysicsCommon.createBoxShape(Vector3(4, 2, 8));
+            mBoxCollider2 = mBoxBody2->addCollider(mBoxShape2, Transform::identity());
 
 			// ---------- Spheres ---------- //
-            mSphereShape1 = new SphereShape(3.0);
+            mSphereShape1 = mPhysicsCommon.createSphereShape(3.0);
             Transform sphereTransform1(Vector3(10, 20, 0), Quaternion::identity());
             mSphereBody1 = mWorld->createCollisionBody(sphereTransform1);
-            mSphereProxyShape1 = mSphereBody1->addCollisionShape(mSphereShape1, Transform::identity());
+            mSphereCollider1 = mSphereBody1->addCollider(mSphereShape1, Transform::identity());
 
-			mSphereShape2 = new SphereShape(5.0);
+            mSphereShape2 = mPhysicsCommon.createSphereShape(5.0);
 			Transform sphereTransform2(Vector3(20, 20, 0), Quaternion::identity());
 			mSphereBody2 = mWorld->createCollisionBody(sphereTransform2);
-			mSphereProxyShape2 = mSphereBody2->addCollisionShape(mSphereShape2, Transform::identity());
+            mSphereCollider2 = mSphereBody2->addCollider(mSphereShape2, Transform::identity());
 
 			// ---------- Capsules ---------- //
-            mCapsuleShape1 = new CapsuleShape(2, 6);
+            mCapsuleShape1 = mPhysicsCommon.createCapsuleShape(2, 6);
             Transform capsuleTransform1(Vector3(-10, 0, 0), Quaternion::identity());
             mCapsuleBody1 = mWorld->createCollisionBody(capsuleTransform1);
-            mCapsuleProxyShape1 = mCapsuleBody1->addCollisionShape(mCapsuleShape1, Transform::identity());
+            mCapsuleCollider1 = mCapsuleBody1->addCollider(mCapsuleShape1, Transform::identity());
 
-			mCapsuleShape2 = new CapsuleShape(3, 4);
+            mCapsuleShape2 = mPhysicsCommon.createCapsuleShape(3, 4);
 			Transform capsuleTransform2(Vector3(-20, 0, 0), Quaternion::identity());
 			mCapsuleBody2 = mWorld->createCollisionBody(capsuleTransform2);
-			mCapsuleProxyShape2 = mCapsuleBody2->addCollisionShape(mCapsuleShape2, Transform::identity());
+            mCapsuleCollider2 = mCapsuleBody2->addCollider(mCapsuleShape2, Transform::identity());
 
 			// ---------- Convex Meshes ---------- //
 			mConvexMesh1CubeVertices[0] = Vector3(-3, -3, 3);
@@ -383,11 +395,11 @@ class TestCollisionWorld : public Test {
 					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-			mConvexMesh1PolyhedronMesh = new rp3d::PolyhedronMesh(mConvexMesh1PolygonVertexArray);
-			mConvexMeshShape1 = new rp3d::ConvexMeshShape(mConvexMesh1PolyhedronMesh);
+            mConvexMesh1PolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMesh1PolygonVertexArray);
+            mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1PolyhedronMesh);
             Transform convexMeshTransform1(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshBody1 = mWorld->createCollisionBody(convexMeshTransform1);
-            mConvexMeshProxyShape1 = mConvexMeshBody1->addCollisionShape(mConvexMeshShape1, Transform::identity());
+            mConvexMeshCollider1 = mConvexMeshBody1->addCollider(mConvexMeshShape1, Transform::identity());
 
 			mConvexMesh2CubeVertices[0] = Vector3(-4, -2, 8);
 			mConvexMesh2CubeVertices[1] = Vector3(4, -2, 8);
@@ -402,11 +414,11 @@ class TestCollisionWorld : public Test {
 					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-			mConvexMesh2PolyhedronMesh = new rp3d::PolyhedronMesh(mConvexMesh2PolygonVertexArray);
-			mConvexMeshShape2 = new rp3d::ConvexMeshShape(mConvexMesh2PolyhedronMesh);
+            mConvexMesh2PolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMesh2PolygonVertexArray);
+            mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2PolyhedronMesh);
             Transform convexMeshTransform2(Vector3(20, 0, 0), Quaternion::identity());
             mConvexMeshBody2 = mWorld->createCollisionBody(convexMeshTransform2);
-            mConvexMeshProxyShape2 = mConvexMeshBody2->addCollisionShape(mConvexMeshShape2, Transform::identity());
+            mConvexMeshCollider2 = mConvexMeshBody2->addCollider(mConvexMeshShape2, Transform::identity());
 
 			// ---------- Concave Meshes ---------- //
 			for (int i = 0; i < 6; i++) {
@@ -439,38 +451,43 @@ class TestCollisionWorld : public Test {
 
 			// Add the triangle vertex array of the subpart to the triangle mesh
             Transform concaveMeshTransform(Vector3(0, -20, 0), Quaternion::identity());
-            mConcaveTriangleMesh = new TriangleMesh();
+            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh();
             mConcaveTriangleMesh->addSubpart(mConcaveMeshTriangleVertexArray);
-            mConcaveMeshShape = new rp3d::ConcaveMeshShape(mConcaveTriangleMesh);
+            mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshBody = mWorld->createCollisionBody(concaveMeshTransform);
-            mConcaveMeshProxyShape = mConcaveMeshBody->addCollisionShape(mConcaveMeshShape, rp3d::Transform::identity());
+            mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, rp3d::Transform::identity());
         }
 
         /// Destructor
         virtual ~TestCollisionWorld() {
 
-            delete mBoxShape1;
-            delete mBoxShape2;
+            mPhysicsCommon.destroyPhysicsWorld(mWorld);
 
-			delete mSphereShape1;
-			delete mSphereShape2;
+            mPhysicsCommon.destroyBoxShape(mBoxShape1);
+            mPhysicsCommon.destroyBoxShape(mBoxShape2);
 
-			delete mCapsuleShape1;
-			delete mCapsuleShape2;
+            mPhysicsCommon.destroySphereShape(mSphereShape1);
+            mPhysicsCommon.destroySphereShape(mSphereShape2);
 
-			delete mConvexMeshShape1;
-			delete mConvexMeshShape2;
-			delete mConvexMesh1PolyhedronMesh;
-			delete mConvexMesh2PolyhedronMesh;
+            mPhysicsCommon.destroyCapsuleShape(mCapsuleShape1);
+            mPhysicsCommon.destroyCapsuleShape(mCapsuleShape2);
+
+            mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape1);
+            mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape2);
+
+            mPhysicsCommon.destroyPolyhedronMesh(mConvexMesh1PolyhedronMesh);
+            mPhysicsCommon.destroyPolyhedronMesh(mConvexMesh2PolyhedronMesh);
+
 			delete mConvexMesh1PolygonVertexArray;
 			delete mConvexMesh2PolygonVertexArray;
             delete[] mConvexMeshPolygonFaces;
 
-            delete mConcaveMeshShape;
-            delete mConcaveTriangleMesh;
+            mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
+
+            mPhysicsCommon.destroyTriangleMesh(mConcaveTriangleMesh);
+
             delete mConcaveMeshTriangleVertexArray;
 
-			delete mWorld;
         }
 
         /// Run the tests
@@ -478,7 +495,6 @@ class TestCollisionWorld : public Test {
 
 			testNoCollisions();
 			testNoOverlap();
-			testNoAABBOverlap();
 
 			testSphereVsSphereCollision();
 			testSphereVsBoxCollision();
@@ -507,51 +523,51 @@ class TestCollisionWorld : public Test {
 			// ---------- Global test ---------- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			// ---------- Single body test ---------- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody2, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody2, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody2, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody2, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			// Two bodies test
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody1, mBoxBody2, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mBoxBody2, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mSphereBody2, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mSphereBody2, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody1, mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mSphereBody1, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody1, mSphereBody2, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mSphereBody2, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody2, mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody2, mSphereBody1, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody2, mSphereBody2, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody2, mSphereBody2, mCollisionCallback);
             rp3d_test(!mCollisionCallback.hasContacts());
 		}
 
@@ -563,20 +579,20 @@ class TestCollisionWorld : public Test {
 			// ---------- Single body test ---------- //
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
-            rp3d_test(!mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mBoxBody1, mOverlapCallback);
+            rp3d_test(!mOverlapCallback.hasOverlapWithBody(mBoxBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mBoxBody2, &mOverlapCallback);
-            rp3d_test(!mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mBoxBody2, mOverlapCallback);
+            rp3d_test(!mOverlapCallback.hasOverlapWithBody(mBoxBody2));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(!mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(!mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody2, &mOverlapCallback);
-            rp3d_test(!mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mSphereBody2, mOverlapCallback);
+            rp3d_test(!mOverlapCallback.hasOverlapWithBody(mSphereBody2));
 
 			// Two bodies test
 
@@ -586,21 +602,6 @@ class TestCollisionWorld : public Test {
             rp3d_test(!mWorld->testOverlap(mBoxBody1, mSphereBody2));
             rp3d_test(!mWorld->testOverlap(mBoxBody2, mSphereBody1));
             rp3d_test(!mWorld->testOverlap(mBoxBody2, mSphereBody2));
-		}
-
-		void testNoAABBOverlap() {
-
-			// All the shapes of the world are not touching when they are created.
-			// Here we test that at the beginning, there is no AABB overlap at all.
-
-			// Two bodies test
-
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody1, mBoxBody2));
-            rp3d_test(!mWorld->testAABBOverlap(mSphereBody1, mSphereBody2));
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody1, mSphereBody1));
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody1, mSphereBody2));
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody2, mSphereBody1));
-            rp3d_test(!mWorld->testAABBOverlap(mBoxBody2, mSphereBody2));
 		}
 
 		void testSphereVsSphereCollision() {
@@ -615,33 +616,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mSphereBody2->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mSphereBody2));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody2, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mSphereBody2, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody2));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mSphereProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mSphereCollider2));
 
 			// Get collision data
-			const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mSphereProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mSphereCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -654,18 +651,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mSphereProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mSphereCollider2));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mSphereProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mSphereCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -675,18 +672,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody2, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mSphereProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mSphereCollider2));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mSphereProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mSphereCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -696,18 +693,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mSphereBody2, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mSphereBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mSphereProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mSphereCollider2));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mSphereProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mSphereCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -735,33 +732,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mBoxBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mBoxBody1));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mBoxBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mBoxBody1));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -774,18 +767,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -795,18 +788,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -816,18 +809,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -845,33 +838,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mBoxBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mBoxBody1));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mBoxBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mBoxBody1));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = std::sqrt(4.5f) * Vector3(1, -1, 0);
@@ -884,18 +873,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -905,18 +894,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -926,18 +915,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -955,33 +944,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mBoxBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mBoxBody1));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mBoxBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mBoxBody1));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = std::sqrt(9.0f / 3.0f) * Vector3(1, -1, -1);
@@ -994,18 +979,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1015,18 +1000,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1036,18 +1021,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mBoxProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mBoxCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mBoxProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mBoxCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1075,33 +1060,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mCapsuleBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mCapsuleBody1));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mCapsuleBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody1));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			Vector3 localBody1Point(0, -3, 0);
@@ -1114,18 +1095,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1135,18 +1116,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1156,18 +1137,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1185,33 +1166,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mCapsuleBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mCapsuleBody1));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mCapsuleBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody1));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = Vector3(3, 0, 0);
@@ -1224,18 +1201,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1245,18 +1222,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1266,18 +1243,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mCapsuleCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1305,33 +1282,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mConvexMeshBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mConvexMeshBody1));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConvexMeshBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConvexMeshBody1));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			Vector3 localBody1Point(3, 0, 0);
@@ -1344,18 +1317,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1365,18 +1338,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1386,18 +1359,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1415,33 +1388,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mConvexMeshBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mConvexMeshBody1));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConvexMeshBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConvexMeshBody1));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = std::sqrt(4.5f) * Vector3(1, -1, 0);
@@ -1454,18 +1423,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1475,18 +1444,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1496,18 +1465,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1525,33 +1494,29 @@ class TestCollisionWorld : public Test {
 			mSphereBody1->setTransform(transform1);
 			mConvexMeshBody1->setTransform(transform2);
 
-			// ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mConvexMeshBody1));
+			mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
 			mOverlapCallback.reset();
-			mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-			mOverlapCallback.reset();
-			mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConvexMeshBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConvexMeshBody1));
 
 			// ----- Test global collision test ----- // 
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
 			localBody1Point = std::sqrt(9.0f / 3.0f) * Vector3(1, -1, -1);
@@ -1564,18 +1529,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 1 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1585,18 +1550,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against body 2 only ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1606,18 +1571,18 @@ class TestCollisionWorld : public Test {
 			// ----- Test collision against selected body 1 and 2 ----- //
 
 			mCollisionCallback.reset();
-			mWorld->testCollision(mSphereBody1, mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConvexMeshProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConvexMeshCollider1));
 
 			// Get collision data
-			collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConvexMeshProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConvexMeshCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
 			// True if the bodies are swapped in the collision callback response
-			swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
 			// Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1645,33 +1610,29 @@ class TestCollisionWorld : public Test {
             mSphereBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mSphereBody1, mConcaveMeshBody));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mSphereBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mSphereBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mSphereBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mConcaveMeshBody, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConcaveMeshBody, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConcaveMeshBody));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConcaveMeshProxyShape);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point(0, -3, 0);
@@ -1684,18 +1645,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mSphereBody1, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1705,18 +1666,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConcaveMeshBody, &mCollisionCallback);
+            mWorld->testCollision(mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1726,18 +1687,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mSphereBody1, mConcaveMeshBody, &mCollisionCallback);
+            mWorld->testCollision(mSphereBody1, mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mSphereProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mSphereCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mSphereProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mSphereCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mSphereBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mSphereBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -1765,33 +1726,29 @@ class TestCollisionWorld : public Test {
             mBoxBody1->setTransform(transform1);
             mBoxBody2->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mBoxBody1, mBoxBody2));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mBoxBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mBoxBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mBoxBody2, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mBoxBody2, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mBoxBody2));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mBoxProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mBoxCollider2));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mBoxProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mBoxCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -1822,18 +1779,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mBoxProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mBoxCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mBoxProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mBoxCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1851,18 +1808,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody2, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mBoxProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mBoxCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mBoxProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mBoxCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1881,18 +1838,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody1, mBoxBody2, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mBoxBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mBoxProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mBoxCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mBoxProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mBoxCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -1929,33 +1886,29 @@ class TestCollisionWorld : public Test {
             mBoxBody1->setTransform(transform1);
             mConvexMeshBody2->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mBoxBody1, mConvexMeshBody2));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mBoxBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mBoxBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mConvexMeshBody2, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConvexMeshBody2, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConvexMeshBody2));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConvexMeshProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -1986,18 +1939,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2015,18 +1968,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConvexMeshBody2, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2045,18 +1998,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody1, mConvexMeshBody2, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mConvexMeshBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2093,33 +2046,29 @@ class TestCollisionWorld : public Test {
             mConvexMeshBody1->setTransform(transform1);
             mConvexMeshBody2->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mConvexMeshBody1, mConvexMeshBody2));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mConvexMeshBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConvexMeshBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mConvexMeshBody2, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConvexMeshBody2, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConvexMeshBody2));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConvexMeshProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(-3, -2, -2);
@@ -2150,18 +2099,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2179,18 +2128,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConvexMeshBody2, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2209,18 +2158,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConvexMeshBody1, mConvexMeshBody2, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mConvexMeshBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConvexMeshProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConvexMeshCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConvexMeshProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConvexMeshCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2257,33 +2206,29 @@ class TestCollisionWorld : public Test {
             mBoxBody1->setTransform(transform1);
             mCapsuleBody1->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mBoxBody1, mCapsuleBody1));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mBoxBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mBoxBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mCapsuleBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody1));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mCapsuleCollider1));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mCapsuleProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(3, 1, 0);
@@ -2295,18 +2240,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2316,18 +2261,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2337,18 +2282,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody1, mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mBoxBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mBoxBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2376,33 +2321,29 @@ class TestCollisionWorld : public Test {
             mConvexMeshBody1->setTransform(transform1);
             mCapsuleBody1->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mConvexMeshBody1, mCapsuleBody1));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mConvexMeshBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConvexMeshBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mCapsuleBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody1));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mCapsuleCollider1));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mCapsuleProxyShape1);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point1(3, 1, 0);
@@ -2414,18 +2355,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2435,18 +2376,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2456,18 +2397,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConvexMeshBody1, mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mCapsuleProxyShape1));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mCapsuleCollider1));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mCapsuleProxyShape1);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mCapsuleCollider1);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mConvexMeshBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mConvexMeshBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point1 : localBody1Point1,
@@ -2495,85 +2436,81 @@ class TestCollisionWorld : public Test {
             mBoxBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mBoxBody1, mConcaveMeshBody));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mBoxBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mBoxBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mBoxBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mConcaveMeshBody, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConcaveMeshBody, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConcaveMeshBody));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
-            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
-                rp3d_test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
+                rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody1, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
-            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
-                rp3d_test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
+                rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConcaveMeshBody, &mCollisionCallback);
+            mWorld->testCollision(mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
-            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
-                rp3d_test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
+                rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mBoxBody1, mConcaveMeshBody, &mCollisionCallback);
+            mWorld->testCollision(mBoxBody1, mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mBoxProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mBoxCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mBoxProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // Test contact points
-            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
-                rp3d_test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
+                rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 
             // Reset the init transforms
@@ -2597,85 +2534,81 @@ class TestCollisionWorld : public Test {
             mConvexMeshBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mConvexMeshBody1, mConcaveMeshBody));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mConvexMeshBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConvexMeshBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mConvexMeshBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mConcaveMeshBody, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConcaveMeshBody, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConcaveMeshBody));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
-            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
-                rp3d_test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
+                rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConvexMeshBody1, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
-            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
-                rp3d_test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
+                rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConcaveMeshBody, &mCollisionCallback);
+            mWorld->testCollision(mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
-            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
-                rp3d_test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
+                rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConvexMeshBody1, mConcaveMeshBody, &mCollisionCallback);
+            mWorld->testCollision(mConvexMeshBody1, mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mConvexMeshProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mConvexMeshCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mConvexMeshProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mConvexMeshCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             // Test contact points
-            for (size_t i=0; i<collisionData->contactManifolds[0].contactPoints.size(); i++) {
-                rp3d_test(approxEqual(collisionData->contactManifolds[0].contactPoints[i].penetrationDepth, 1.0f));
+            for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
+                rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
             }
 
             // Reset the init transforms
@@ -2699,33 +2632,29 @@ class TestCollisionWorld : public Test {
             mCapsuleBody1->setTransform(transform1);
             mCapsuleBody2->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mCapsuleBody1, mCapsuleBody2));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mCapsuleBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mCapsuleBody2, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mCapsuleBody2, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody2));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point(2, 3, 0);
@@ -2738,18 +2667,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2759,18 +2688,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody2, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2780,18 +2709,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody1, mCapsuleBody2, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCapsuleBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2809,33 +2738,29 @@ class TestCollisionWorld : public Test {
             mCapsuleBody1->setTransform(transform1);
             mCapsuleBody2->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mCapsuleBody1, mCapsuleBody2));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mCapsuleBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mCapsuleBody2, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mCapsuleBody2, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody2));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             localBody1Point = Vector3(0, 5, 0);
@@ -2848,18 +2773,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2869,18 +2794,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody2, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2890,18 +2815,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody1, mCapsuleBody2, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCapsuleBody2, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mCapsuleProxyShape2));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mCapsuleCollider2));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mCapsuleProxyShape2);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mCapsuleCollider2);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2929,33 +2854,29 @@ class TestCollisionWorld : public Test {
             mCapsuleBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
 
-            // ----- Test AABB overlap ----- //
-
-            rp3d_test(mWorld->testAABBOverlap(mCapsuleBody1, mConcaveMeshBody));
+            mOverlapCallback.reset();
+            mWorld->testOverlap(mCapsuleBody1, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mCapsuleBody1));
 
             mOverlapCallback.reset();
-            mWorld->testOverlap(mCapsuleBody1, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
-
-            mOverlapCallback.reset();
-            mWorld->testOverlap(mConcaveMeshBody, &mOverlapCallback);
-            rp3d_test(mOverlapCallback.hasOverlap());
+            mWorld->testOverlap(mConcaveMeshBody, mOverlapCallback);
+            rp3d_test(mOverlapCallback.hasOverlapWithBody(mConcaveMeshBody));
 
             // ----- Test global collision test ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(&mCollisionCallback);
+            mWorld->testCollision(mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            const CollisionData* collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            bool swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            bool swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             Vector3 localBody1Point(0, -5, 0);
@@ -2968,18 +2889,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 1 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody1, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -2989,18 +2910,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against body 2 only ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mConcaveMeshBody, &mCollisionCallback);
+            mWorld->testCollision(mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,
@@ -3010,18 +2931,18 @@ class TestCollisionWorld : public Test {
             // ----- Test collision against selected body 1 and 2 ----- //
 
             mCollisionCallback.reset();
-            mWorld->testCollision(mCapsuleBody1, mConcaveMeshBody, &mCollisionCallback);
+            mWorld->testCollision(mCapsuleBody1, mConcaveMeshBody, mCollisionCallback);
 
-            rp3d_test(mCollisionCallback.areProxyShapesColliding(mCapsuleProxyShape1, mConcaveMeshProxyShape));
+            rp3d_test(mCollisionCallback.areCollidersColliding(mCapsuleCollider1, mConcaveMeshCollider));
 
             // Get collision data
-            collisionData = mCollisionCallback.getCollisionData(mCapsuleProxyShape1, mConcaveMeshProxyShape);
+            collisionData = mCollisionCallback.getCollisionData(mCapsuleCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            rp3d_test(collisionData->getNbContactManifolds() == 1);
+            rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 1);
 
             // True if the bodies are swapped in the collision callback response
-            swappedBodiesCollisionData = collisionData->getBody1()->getId() != mCapsuleBody1->getId();
+            swappedBodiesCollisionData = collisionData->getBody1()->getEntity() != mCapsuleBody1->getEntity();
 
             // Test contact points
             rp3d_test(collisionData->hasContactPointSimilarTo(swappedBodiesCollisionData ? localBody2Point : localBody1Point,

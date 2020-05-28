@@ -27,12 +27,18 @@
 
 // Uniform variables
 uniform vec3 lightAmbientColor;             // Lights ambient color
-uniform vec3 light0PosCameraSpace;          // Camera-space position of the light
+uniform vec3 light0PosCameraSpace;			// Camera-space position of the light 0
+uniform vec3 light1PosCameraSpace;			// Camera-space position of the light 1
+uniform vec3 light2PosCameraSpace;			// Camera-space position of the light 2
 uniform vec3 light0DiffuseColor;            // Light 0 diffuse color
+uniform vec3 light1DiffuseColor;            // Light 1 diffuse color
+uniform vec3 light2DiffuseColor;            // Light 2 diffuse color
 uniform sampler2D textureSampler;           // Texture
-uniform sampler2D shadowMapSampler;         // Shadow map texture sampler
+uniform sampler2D shadowMapSampler0;      // Shadow map texture sampler
+uniform sampler2D shadowMapSampler1;      // Shadow map texture sampler
+uniform sampler2D shadowMapSampler2;      // Shadow map texture sampler
 uniform bool isTexture;                     // True if we need to use the texture
-uniform vec4 vertexColor;                   // Vertex color
+uniform vec4 globalVertexColor;                   // Vertex color
 uniform bool isShadowEnabled;               // True if shadow mapping is enabled
 uniform vec2 shadowMapDimension;            // Shadow map dimension
 
@@ -40,7 +46,7 @@ uniform vec2 shadowMapDimension;            // Shadow map dimension
 in vec3 vertexPosCameraSpace;          // Camera-space position of the vertex
 in vec3 vertexNormalCameraSpace;       // Vertex normal in camera-space
 in vec2 texCoords;                     // Texture coordinates
-in vec4 shadowMapCoords;                // Shadow map texture coords
+in vec4 shadowMapCoords[3];            // Shadow map texture coords
 
 // Out variable
 out vec4 color;                        // Output color
@@ -54,50 +60,62 @@ float textureLookupPCF(sampler2D map, vec2 texCoords, vec2 offset)
 
 void main() {
 
-    // Compute the ambient term
-    vec3 ambient = lightAmbientColor;
+	// Compute the ambient term
+	vec3 ambient = lightAmbientColor;
 
-    // Get the texture color
-    vec3 textureColor = vertexColor.rgb;
-    if (isTexture) textureColor = texture(textureSampler, texCoords).rgb;
+	// Get the texture color
+        vec3 textureColor = globalVertexColor.rgb;
+	if (isTexture) textureColor = texture(textureSampler, texCoords).rgb;
 
-    // Compute the surface normal vector
-    vec3 N = normalize(vertexNormalCameraSpace);
+	// Compute the surface normal vector
+	vec3 N = normalize(vertexNormalCameraSpace);
 
-    // Compute the diffuse term of light 0
-    vec3 L0 = normalize(light0PosCameraSpace - vertexPosCameraSpace);
-    float diffuseFactor = max(dot(N, L0), 0.0);
-    vec3 diffuse = light0DiffuseColor * diffuseFactor * textureColor;
+	color = vec4(ambient, 1);
 
-    // Compute shadow factor
-    float shadow = 1.0;
-    if (isShadowEnabled) {
-        shadow = 0.0;
-        float bias = 0.0003;
-        float shadowBias = -0.000;
-        vec4 shadowMapUV = shadowMapCoords;
-        shadowMapUV.z -= shadowBias;
-        vec4 shadowMapCoordsOverW = shadowMapUV / shadowMapUV.w;
+	vec3 lightPosCameraSpace[3];
+	lightPosCameraSpace[0] = light0PosCameraSpace;
+	lightPosCameraSpace[1] = light1PosCameraSpace;
+	lightPosCameraSpace[2] = light2PosCameraSpace;
+	vec3 lightDiffuseColor[3];
+	lightDiffuseColor[0] = light0DiffuseColor;
+	lightDiffuseColor[1] = light1DiffuseColor;
+	lightDiffuseColor[2] = light2DiffuseColor;
 
-        // PCF Shadow Mapping
-        for (float i=-1; i<=1; i++) {
-            for (float j=-1; j<=1; j++) {
-                float distInShadowMap = textureLookupPCF(shadowMapSampler, shadowMapCoordsOverW.xy, vec2(i, j)) + bias;
-                if (shadowMapCoords.w > 0) {
-                    shadow += distInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
-                }
-            }
-        }
-        shadow /= 9.0;
 
-        /*
-        float distanceInShadowMap = texture(shadowMapSampler, shadowMapCoordsOverW.xy).r + bias;
-        if (shadowMapCoords.w > 0) {
-            shadow = distanceInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
-        }
-        */
-    }
+	// For each light source
+	for (int l=0; l < 3; l++) {
 
-    // Compute the final color
-    color = vec4(ambient + shadow * diffuse, 1.0);
+                // Compute the diffuse term of light 0
+		vec3 L0 = normalize(lightPosCameraSpace[l] - vertexPosCameraSpace);
+		float diffuseFactor = max(dot(N, L0), 0.0);
+		vec3 diffuse = lightDiffuseColor[l] * diffuseFactor * textureColor;
+
+		// Compute shadow factor
+		float shadow = 1.0;
+		if (isShadowEnabled) {
+			shadow = 0.0;
+			float bias = 0.0003;
+			float shadowBias = -0.000;
+			vec4 shadowMapUV = shadowMapCoords[l];
+			shadowMapUV.z -= shadowBias;
+			vec4 shadowMapCoordsOverW = shadowMapUV / shadowMapUV.w;
+
+			// PCF Shadow Mapping
+			for (float i=-1; i<=1; i++) {
+				for (float j=-1; j<=1; j++) {
+                                        float distInShadowMap0 = textureLookupPCF(shadowMapSampler0, shadowMapCoordsOverW.xy, vec2(i, j)) + bias;
+                                        float distInShadowMap1 = textureLookupPCF(shadowMapSampler1, shadowMapCoordsOverW.xy, vec2(i, j)) + bias;
+                                        float distInShadowMap2 = textureLookupPCF(shadowMapSampler2, shadowMapCoordsOverW.xy, vec2(i, j)) + bias;
+                                        float distInShadowMap = l == 0 ? distInShadowMap0 : (l == 1 ? distInShadowMap1 : distInShadowMap2);
+                                        if (shadowMapCoords[l].w > 0) {
+						shadow += distInShadowMap < shadowMapCoordsOverW.z ? 0.5 : 1.0;
+					}
+				}
+			}
+			shadow /= 9.0;
+		}
+
+		// Compute the final color
+		color += vec4(shadow * diffuse, 0.0);
+	}
 }

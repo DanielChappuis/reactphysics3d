@@ -28,8 +28,8 @@
 
 // Libraries
 #include "Test.h"
-#include "containers/List.h"
-#include "memory/DefaultAllocator.h"
+#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/memory/DefaultAllocator.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -375,6 +375,11 @@ class TestList : public Test {
             List<int>::Iterator itEnd = list1.end();
             List<int>::Iterator it = list1.begin();
 
+            rp3d_test(itBegin < itEnd);
+            rp3d_test(itBegin <= itEnd);
+            rp3d_test(itEnd > itBegin);
+            rp3d_test(itEnd >= itBegin);
+
             rp3d_test(itBegin == it);
             rp3d_test(*it == 5);
             rp3d_test(*(it++) == 5);
@@ -398,7 +403,21 @@ class TestList : public Test {
             for (auto it = list1.begin(); it != list1.end(); ++it) {
                 list2.add(*it);
             }
+
             rp3d_test(list1 == list2);
+
+            it = itBegin;
+            rp3d_test(*(it + 2) == 8);
+            it += 2;
+            rp3d_test(*it == 8);
+            rp3d_test(*(it - 2) == 5);
+            it -= 2;
+            rp3d_test(*it == 5);
+            rp3d_test((itEnd - itBegin) == 4);
+
+            it = itBegin;
+            *it = 19;
+            rp3d_test(*it == 19);
         }
 
  };

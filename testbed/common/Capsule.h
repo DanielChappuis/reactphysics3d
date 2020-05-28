@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "PhysicsObject.h"
 
 // Class Sphere
@@ -49,10 +49,7 @@ class Capsule : public PhysicsObject {
 
         /// Collision shape
         rp3d::CapsuleShape* mCapsuleShape;
-        rp3d::ProxyShape* mProxyShape;
-
-		/// Previous transform (for interpolation)
-		rp3d::Transform mPreviousTransform;
+        rp3d::Collider* mCollider;
 
 		/// Vertex Buffer Object for the vertices data
 		static openglframework::VertexBufferObject mVBOVertices;
@@ -82,25 +79,30 @@ class Capsule : public PhysicsObject {
 		// -------------------- Methods -------------------- //
 
 		/// Constructor
-        Capsule(float radius, float height, rp3d::CollisionWorld* world, const std::string& meshFolderPath);
-
-		/// Constructor
-        Capsule(float radius, float height, float mass, rp3d::DynamicsWorld* dynamicsWorld,
-				const std::string& meshFolderPath);
+        Capsule(bool createRigidBody, float radius, float height, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+                const std::string& meshFolderPath);
 
 		/// Destructor
-		~Capsule();
+        virtual ~Capsule() override;
 
 		/// Render the sphere at the correct position and with the correct orientation
         virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
 };
 
 // Update the transform matrix of the object
 inline void Capsule::updateTransform(float interpolationFactor) {
 	mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* Capsule::getCollider() {
+    return mCollider;
 }
 
 #endif

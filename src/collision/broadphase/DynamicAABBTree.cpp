@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,19 +24,19 @@
 ********************************************************************************/
 
 // Libraries
-#include "DynamicAABBTree.h"
-#include "BroadPhaseAlgorithm.h"
-#include "containers/Stack.h"
-#include "utils/Profiler.h"
+#include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>
+#include <reactphysics3d/systems/BroadPhaseSystem.h>
+#include <reactphysics3d/containers/Stack.h>
+#include <reactphysics3d/utils/Profiler.h>
 
 using namespace reactphysics3d;
 
 // Initialization of static variables
-const int TreeNode::NULL_TREE_NODE = -1;
+const int32 TreeNode::NULL_TREE_NODE = -1;
 
 // Constructor
-DynamicAABBTree::DynamicAABBTree(MemoryAllocator& allocator, decimal extraAABBGap)
-                : mAllocator(allocator), mExtraAABBGap(extraAABBGap) {
+DynamicAABBTree::DynamicAABBTree(MemoryAllocator& allocator, decimal fatAABBInflatePercentage)
+                : mAllocator(allocator), mFatAABBInflatePercentage(fatAABBInflatePercentage) {
 
     init();
 }
@@ -45,7 +45,7 @@ DynamicAABBTree::DynamicAABBTree(MemoryAllocator& allocator, decimal extraAABBGa
 DynamicAABBTree::~DynamicAABBTree() {
 
     // Free the allocated memory for the nodes
-    mAllocator.release(mNodes, mNbAllocatedNodes * sizeof(TreeNode));
+    mAllocator.release(mNodes, static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode));
 }
 
 // Initialize the tree
@@ -56,12 +56,12 @@ void DynamicAABBTree::init() {
     mNbAllocatedNodes = 8;
 
     // Allocate memory for the nodes of the tree
-    mNodes = static_cast<TreeNode*>(mAllocator.allocate(mNbAllocatedNodes * sizeof(TreeNode)));
+    mNodes = static_cast<TreeNode*>(mAllocator.allocate(static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode)));
     assert(mNodes);
-    std::memset(mNodes, 0, mNbAllocatedNodes * sizeof(TreeNode));
+    std::memset(mNodes, 0, static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode));
 
     // Initialize the allocated nodes
-    for (int i=0; i<mNbAllocatedNodes - 1; i++) {
+    for (int32 i=0; i<mNbAllocatedNodes - 1; i++) {
         mNodes[i].nextNodeID = i + 1;
         mNodes[i].height = -1;
     }
@@ -74,14 +74,14 @@ void DynamicAABBTree::init() {
 void DynamicAABBTree::reset() {
 
     // Free the allocated memory for the nodes
-    mAllocator.release(mNodes, mNbAllocatedNodes * sizeof(TreeNode));
+    mAllocator.release(mNodes, static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode));
 
     // Initialize the tree
     init();
 }
 
 // Allocate and return a new node in the tree
-int DynamicAABBTree::allocateNode() {
+int32 DynamicAABBTree::allocateNode() {
 
     // If there is no more allocated node to use
     if (mFreeNodeID == TreeNode::NULL_TREE_NODE) {
@@ -89,16 +89,16 @@ int DynamicAABBTree::allocateNode() {
         assert(mNbNodes == mNbAllocatedNodes);
 
         // Allocate more nodes in the tree
-        uint oldNbAllocatedNodes = mNbAllocatedNodes;
+        int32 oldNbAllocatedNodes = mNbAllocatedNodes;
         mNbAllocatedNodes *= 2;
         TreeNode* oldNodes = mNodes;
-        mNodes = static_cast<TreeNode*>(mAllocator.allocate(mNbAllocatedNodes * sizeof(TreeNode)));
+        mNodes = static_cast<TreeNode*>(mAllocator.allocate(static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode)));
         assert(mNodes);
-        memcpy(mNodes, oldNodes, mNbNodes * sizeof(TreeNode));
-        mAllocator.release(oldNodes, oldNbAllocatedNodes * sizeof(TreeNode));
+        memcpy(mNodes, oldNodes, static_cast<size_t>(mNbNodes) * sizeof(TreeNode));
+        mAllocator.release(oldNodes, static_cast<size_t>(oldNbAllocatedNodes) * sizeof(TreeNode));
 
         // Initialize the allocated nodes
-        for (int i=mNbNodes; i<mNbAllocatedNodes - 1; i++) {
+        for (int32 i=mNbNodes; i<mNbAllocatedNodes - 1; i++) {
             mNodes[i].nextNodeID = i + 1;
             mNodes[i].height = -1;
         }
@@ -108,7 +108,7 @@ int DynamicAABBTree::allocateNode() {
     }
 
     // Get the next free node
-    int freeNodeID = mFreeNodeID;
+    int32 freeNodeID = mFreeNodeID;
     mFreeNodeID = mNodes[freeNodeID].nextNodeID;
     mNodes[freeNodeID].parentID = TreeNode::NULL_TREE_NODE;
     mNodes[freeNodeID].height = 0;
@@ -130,13 +130,13 @@ void DynamicAABBTree::releaseNode(int nodeID) {
 }
 
 // Internally add an object into the tree
-int DynamicAABBTree::addObjectInternal(const AABB& aabb) {
+int32 DynamicAABBTree::addObjectInternal(const AABB& aabb) {
 
     // Get the next available node (or allocate new ones if necessary)
-    int nodeID = allocateNode();
+    int32 nodeID = allocateNode();
 
-    // Create the fat aabb to use in the tree
-    const Vector3 gap(mExtraAABBGap, mExtraAABBGap, mExtraAABBGap);
+    // Create the fat aabb to use in the tree (inflate the aabb by a constant percentage of its size)
+    const Vector3 gap(aabb.getExtent() * mFatAABBInflatePercentage * decimal(0.5f));
     mNodes[nodeID].aabb.setMin(aabb.getMin() - gap);
     mNodes[nodeID].aabb.setMax(aabb.getMax() + gap);
 
@@ -154,7 +154,7 @@ int DynamicAABBTree::addObjectInternal(const AABB& aabb) {
 }
 
 // Remove an object from the tree
-void DynamicAABBTree::removeObject(int nodeID) {
+void DynamicAABBTree::removeObject(int32 nodeID) {
 
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
@@ -167,11 +167,11 @@ void DynamicAABBTree::removeObject(int nodeID) {
 // Update the dynamic tree after an object has moved.
 /// If the new AABB of the object that has moved is still inside its fat AABB, then
 /// nothing is done. Otherwise, the corresponding node is removed and reinserted into the tree.
-/// The method returns true if the object has been reinserted into the tree. The "displacement"
-/// argument is the linear velocity of the AABB multiplied by the elapsed time between two
-/// frames. If the "forceReinsert" parameter is true, we force a removal and reinsertion of the node
-/// (this can be useful if the shape AABB has become much smaller than the previous one for instance).
-bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector3& displacement, bool forceReinsert) {
+/// The method returns true if the object has been reinserted into the tree.
+/// If the "forceReInsert" parameter is true, we force the existing AABB to take the size
+/// of the "newAABB" parameter even if it is larger than "newAABB". This can be used to shrink the
+/// AABB in the tree for instance if the corresponding collision shape has been shrunk.
+bool DynamicAABBTree::updateObject(int32 nodeID, const AABB& newAABB, bool forceReinsert) {
 
     RP3D_PROFILE("DynamicAABBTree::updateObject()", mProfiler);
 
@@ -187,31 +187,11 @@ bool DynamicAABBTree::updateObject(int nodeID, const AABB& newAABB, const Vector
     // If the new AABB is outside the fat AABB, we remove the corresponding node
     removeLeafNode(nodeID);
 
-    // Compute the fat AABB by inflating the AABB with a constant gap
+    // Compute the fat AABB by inflating the AABB with by a constant percentage of the size of the AABB
     mNodes[nodeID].aabb = newAABB;
-    const Vector3 gap(mExtraAABBGap, mExtraAABBGap, mExtraAABBGap);
+    const Vector3 gap(newAABB.getExtent() * mFatAABBInflatePercentage * decimal(0.5f));
     mNodes[nodeID].aabb.mMinCoordinates -= gap;
     mNodes[nodeID].aabb.mMaxCoordinates += gap;
-
-    // Inflate the fat AABB in direction of the linear motion of the AABB
-    if (displacement.x < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.x;
-    }
-    else {
-      mNodes[nodeID].aabb.mMaxCoordinates.x += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.x;
-    }
-    if (displacement.y < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.y;
-    }
-    else {
-      mNodes[nodeID].aabb.mMaxCoordinates.y += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.y;
-    }
-    if (displacement.z < decimal(0.0)) {
-      mNodes[nodeID].aabb.mMinCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.z;
-    }
-    else {
-      mNodes[nodeID].aabb.mMaxCoordinates.z += DYNAMIC_TREE_AABB_LIN_GAP_MULTIPLIER *displacement.z;
-    }
 
     assert(mNodes[nodeID].aabb.contains(newAABB));
 
@@ -425,7 +405,7 @@ void DynamicAABBTree::removeLeafNode(int nodeID) {
 // Balance the sub-tree of a given node using left or right rotations.
 /// The rotation schemes are described in the book "Introduction to Game Physics
 /// with Box2D" by Ian Parberry. This method returns the new root node ID.
-int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
+int32 DynamicAABBTree::balanceSubTreeAtNode(int32 nodeID) {
 
     assert(nodeID != TreeNode::NULL_TREE_NODE);
 
@@ -593,19 +573,72 @@ int DynamicAABBTree::balanceSubTreeAtNode(int nodeID) {
     return nodeID;
 }
 
-/// Report all shapes overlapping with the AABB given in parameter.
-void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
-                                                         DynamicAABBTreeOverlapCallback& callback) const {
+/// Take a list of shapes to be tested for broad-phase overlap and return a list of pair of overlapping shapes
+void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const List<int32>& nodesToTest, size_t startIndex,
+                                                           size_t endIndex, List<Pair<int32, int32>>& outOverlappingNodes) const {
+
+    RP3D_PROFILE("DynamicAABBTree::reportAllShapesOverlappingWithAABB()", mProfiler);
 
     // Create a stack with the nodes to visit
-    Stack<int, 64> stack(mAllocator);
+    Stack<int32> stack(mAllocator, 64);
+
+    // For each shape to be tested for overlap
+    for (uint i=startIndex; i < endIndex; i++) {
+
+        assert(nodesToTest[i] != -1);
+
+        stack.push(mRootNodeID);
+
+        const AABB& shapeAABB = getFatAABB(nodesToTest[i]);
+
+        // While there are still nodes to visit
+        while(stack.size() > 0) {
+
+            // Get the next node ID to visit
+            const int32 nodeIDToVisit = stack.pop();
+
+            // Skip it if it is a null node
+            if (nodeIDToVisit == TreeNode::NULL_TREE_NODE) continue;
+
+            // Get the corresponding node
+            const TreeNode* nodeToVisit = mNodes + nodeIDToVisit;
+
+            // If the AABB in parameter overlaps with the AABB of the node to visit
+            if (shapeAABB.testCollision(nodeToVisit->aabb)) {
+
+                // If the node is a leaf
+                if (nodeToVisit->isLeaf()) {
+
+                    // Add the node in the list of overlapping nodes
+                    outOverlappingNodes.add(Pair<int32, int32>(nodesToTest[i], nodeIDToVisit));
+                }
+                else {  // If the node is not a leaf
+
+                    // We need to visit its children
+                    stack.push(nodeToVisit->children[0]);
+                    stack.push(nodeToVisit->children[1]);
+                }
+            }
+        }
+
+        stack.clear();
+    }
+}
+
+// Report all shapes overlapping with the AABB given in parameter.
+void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int32>& overlappingNodes) const {
+
+    RP3D_PROFILE("DynamicAABBTree::reportAllShapesOverlappingWithAABB()", mProfiler);
+
+    // Create a stack with the nodes to visit
+    Stack<int32> stack(mAllocator, 64);
     stack.push(mRootNodeID);
 
     // While there are still nodes to visit
-    while(stack.getNbElements() > 0) {
+    while(stack.size() > 0) {
 
         // Get the next node ID to visit
-        int nodeIDToVisit = stack.pop();
+        const int32 nodeIDToVisit = stack.pop();
 
         // Skip it if it is a null node
         if (nodeIDToVisit == TreeNode::NULL_TREE_NODE) continue;
@@ -620,7 +653,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
             if (nodeToVisit->isLeaf()) {
 
                 // Notify the broad-phase about a new potential overlapping pair
-                callback.notifyOverlappingNode(nodeIDToVisit);
+                overlappingNodes.add(nodeIDToVisit);
             }
             else {  // If the node is not a leaf
 
@@ -633,21 +666,21 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb,
 }
 
 // Ray casting method
-void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &callback) const {
+void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& callback) const {
 
     RP3D_PROFILE("DynamicAABBTree::raycast()", mProfiler);
 
     decimal maxFraction = ray.maxFraction;
 
-    Stack<int, 128> stack(mAllocator);
+    Stack<int32> stack(mAllocator, 128);
     stack.push(mRootNodeID);
 
-    // Walk through the tree from the root looking for proxy shapes
+    // Walk through the tree from the root looking for colliders
     // that overlap with the ray AABB
-    while (stack.getNbElements() > 0) {
+    while (stack.size() > 0) {
 
         // Get the next node in the stack
-        int nodeID = stack.pop();
+        int32 nodeID = stack.pop();
 
         // If it is a null node, skip it
         if (nodeID == TreeNode::NULL_TREE_NODE) continue;
@@ -683,7 +716,7 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback &ca
             }
 
             // If the user returned a negative fraction, we continue
-            // the raycasting as if the proxy shape did not exist
+            // the raycasting as if the collider did not exist
         }
         else {  // If the node has children
 
@@ -702,8 +735,8 @@ void DynamicAABBTree::check() const {
     // Recursively check each node
     checkNode(mRootNodeID);
 
-    int nbFreeNodes = 0;
-    int freeNodeID = mFreeNodeID;
+    int32 nbFreeNodes = 0;
+    int32 freeNodeID = mFreeNodeID;
 
     // Check the free nodes
     while(freeNodeID != TreeNode::NULL_TREE_NODE) {
@@ -716,7 +749,7 @@ void DynamicAABBTree::check() const {
 }
 
 // Check if the node structure is valid (for debugging purpose)
-void DynamicAABBTree::checkNode(int nodeID) const {
+void DynamicAABBTree::checkNode(int32 nodeID) const {
 
     if (nodeID == TreeNode::NULL_TREE_NODE) return;
 
@@ -728,8 +761,8 @@ void DynamicAABBTree::checkNode(int nodeID) const {
     // Get the children nodes
     TreeNode* pNode = mNodes + nodeID;
     assert(!pNode->isLeaf());
-    int leftChild = pNode->children[0];
-    int rightChild = pNode->children[1];
+    int32 leftChild = pNode->children[0];
+    int32 rightChild = pNode->children[1];
 
     assert(pNode->height >= 0);
     assert(pNode->aabb.getVolume() > 0);
@@ -774,7 +807,7 @@ int DynamicAABBTree::computeHeight() {
 }
 
 // Compute the height of a given node in the tree
-int DynamicAABBTree::computeHeight(int nodeID) {
+int DynamicAABBTree::computeHeight(int32 nodeID) {
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     TreeNode* node = mNodes + nodeID;
 

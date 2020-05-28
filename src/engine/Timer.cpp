@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include "Timer.h"
+#include <reactphysics3d/engine/Timer.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;

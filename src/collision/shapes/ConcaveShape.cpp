@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,14 +24,30 @@
 ********************************************************************************/
 
 // Libraries
-#include "ConcaveShape.h"
-
+#include <reactphysics3d/collision/shapes/ConcaveShape.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-ConcaveShape::ConcaveShape(CollisionShapeName name)
-             : CollisionShape(name, CollisionShapeType::CONCAVE_SHAPE), mRaycastTestType(TriangleRaycastSide::FRONT) {
+ConcaveShape::ConcaveShape(CollisionShapeName name, MemoryAllocator& allocator, const Vector3& scaling)
+             : CollisionShape(name, CollisionShapeType::CONCAVE_SHAPE, allocator), mRaycastTestType(TriangleRaycastSide::FRONT),
+               mScale(scaling) {
 
+}
+
+// Compute and return the volume of the collision shape
+/// Note that we approximate the volume of a concave shape with the volume of its AABB
+decimal ConcaveShape::getVolume() const {
+    Vector3 minBounds, maxBounds;
+
+    // Compute the local bounds
+    getLocalBounds(minBounds, maxBounds);
+
+    const decimal lengthX = maxBounds.x - minBounds.x;
+    const decimal lengthY = maxBounds.y - minBounds.y;
+    const decimal lengthZ = maxBounds.z - minBounds.z;
+
+    // Approximate the volume of the concave shape as the volume of its AABB
+    return lengthX * lengthY * lengthZ;
 }

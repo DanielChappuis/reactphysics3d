@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2019 Daniel Chappuis                                       *
+* Copyright (c) 2010-2020 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -24,21 +24,20 @@
 ********************************************************************************/
 
 // Libraries
-#include "Material.h"
+#include <reactphysics3d/engine/Material.h>
 
 using namespace reactphysics3d;
 
 // Constructor
-Material::Material(const WorldSettings& worldSettings)
-         : mFrictionCoefficient(worldSettings.defaultFrictionCoefficient),
-           mRollingResistance(worldSettings.defaultRollingRestistance),
-           mBounciness(worldSettings.defaultBounciness) {
+Material::Material(decimal frictionCoefficient, decimal rollingResistance, decimal bounciness, decimal massDensity)
+         : mFrictionCoefficient(frictionCoefficient), mRollingResistance(rollingResistance), mBounciness(bounciness),
+           mMassDensity(massDensity) {
 
 }
 
 // Copy-constructor
 Material::Material(const Material& material)
-         : mFrictionCoefficient(material.mFrictionCoefficient),
-           mRollingResistance(material.mRollingResistance), mBounciness(material.mBounciness) {
+         : mFrictionCoefficient(material.mFrictionCoefficient), mRollingResistance(material.mRollingResistance),
+           mBounciness(material.mBounciness) {
 
 }

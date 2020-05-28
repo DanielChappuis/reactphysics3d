@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "PhysicsObject.h"
 
 // Class ConcaveMesh
@@ -38,12 +38,9 @@ class ConcaveMesh : public PhysicsObject {
 
         // -------------------- Attributes -------------------- //
 
-        /// Previous transform (for interpolation)
-        rp3d::Transform mPreviousTransform;
-
         /// Collision shape
         rp3d::ConcaveMeshShape* mConcaveShape;
-        rp3d::ProxyShape* mProxyShape;
+        rp3d::Collider* mCollider;
 
         /// Scaling matrix
         openglframework::Matrix4 mScalingMatrix;
@@ -64,7 +61,7 @@ class ConcaveMesh : public PhysicsObject {
         openglframework::VertexArrayObject mVAO;
 
         /// Structure with pointer to the shared mesh data (vertices, indices, ...)
-        rp3d::TriangleMesh mPhysicsTriangleMesh;
+        rp3d::TriangleMesh* mPhysicsTriangleMesh;
 
         // -------------------- Methods -------------------- //
 
@@ -76,13 +73,10 @@ class ConcaveMesh : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMesh(rp3d::CollisionWorld* world, const std::string& meshPath);
-
-        /// Constructor
-        ConcaveMesh(float mass, rp3d::DynamicsWorld* dynamicsWorld, const std::string& meshPath);
+        ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath);
 
         /// Destructor
-        ~ConcaveMesh();
+        virtual ~ConcaveMesh() override;
 
         /// Render the mesh at the correct position and with the correct orientation
         void render(openglframework::Shader& shader,
@@ -90,11 +84,20 @@ class ConcaveMesh : public PhysicsObject {
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
+
 };
 
 // Update the transform matrix of the object
 inline void ConcaveMesh::updateTransform(float interpolationFactor) {
     mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* ConcaveMesh::getCollider() {
+    return mCollider;
 }
 
 #endif

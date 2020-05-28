@@ -28,7 +28,7 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 #include "PhysicsObject.h"
 
 // Class Box
@@ -42,7 +42,7 @@ class Box : public PhysicsObject {
 		float mSize[3];
 
         rp3d::BoxShape* mBoxShape;
-        rp3d::ProxyShape* mProxyShape;
+        rp3d::Collider* mCollider;
 
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
@@ -75,24 +75,30 @@ class Box : public PhysicsObject {
 		// -------------------- Methods -------------------- //
 
 		/// Constructor
-        Box(const openglframework::Vector3& size, reactphysics3d::CollisionWorld* world, const std::string& meshFolderPath);
-
-		/// Constructor
-        Box(const openglframework::Vector3& size, float mass, reactphysics3d::DynamicsWorld *world, const std::string& meshFolderPath);
+        Box(bool createRigidBody, const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon,
+            reactphysics3d::PhysicsWorld* world, const std::string& meshFolderPath);
 
 		/// Destructor
-		~Box();
+        virtual ~Box() override;
 
 		/// Render the cube at the correct position and with the correct orientation
         virtual void render(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) override;
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor) override;
+
+        /// Return the collider
+        rp3d::Collider* getCollider();
 };
 
 // Update the transform matrix of the object
 inline void Box::updateTransform(float interpolationFactor) {
 	mTransformMatrix = computeTransform(interpolationFactor, mScalingMatrix);
+}
+
+// Return the collider
+inline rp3d::Collider* Box::getCollider() {
+   return mCollider;
 }
 
 

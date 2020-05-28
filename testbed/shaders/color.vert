@@ -32,6 +32,10 @@ uniform mat4 projectionMatrix;          // Projection matrix
 
 // In variables
 in vec4 vertexPosition;
+in uint vertexColor;
+
+// Out variables
+out vec4 vertexColorOut;
 
 void main() {
 
@@ -40,4 +44,7 @@ void main() {
 
     // Compute the clip-space vertex coordinates
     gl_Position = projectionMatrix * positionCameraSpace;
+
+    // Transfer the vertex color to the fragment shader
+    vertexColorOut = vec4((vertexColor & 0xFF0000u) >> 16, (vertexColor & 0x00FF00u) >> 8, vertexColor & 0x0000FFu, 0xFF);
 }

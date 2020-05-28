@@ -28,12 +28,15 @@
 
 // Libraries
 #include "openglframework.h"
-#include "reactphysics3d.h"
+#include <reactphysics3d/reactphysics3d.h>
 
 // Class PhysicsObject
 class PhysicsObject : public openglframework::Mesh {
 
     protected:
+
+        /// Reference to the physics common object
+        rp3d::PhysicsCommon& mPhysicsCommon;
 
         /// Body used to simulate the dynamics of the box
         rp3d::CollisionBody* mBody;
@@ -54,10 +57,10 @@ class PhysicsObject : public openglframework::Mesh {
     public:
 
         /// Constructor
-        PhysicsObject();
+        PhysicsObject(rp3d::PhysicsCommon& physicsCommon);
 
         /// Constructor
-        PhysicsObject(const std::string& meshPath);
+        PhysicsObject(rp3d::PhysicsCommon& physicsCommon, const std::string& meshPath);
 
         /// Update the transform matrix of the object
         virtual void updateTransform(float interpolationFactor)=0;

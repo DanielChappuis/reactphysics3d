@@ -69,7 +69,8 @@ class Gui {
         // Profiling panel
         Label* mFPSLabel;
         Label* mFrameTimeLabel;
-        Label* mPhysicsTimeLabel;
+        Label* mTotalPhysicsTimeLabel;
+        Label* mPhysicsStepTimeLabel;
 
         std::vector<CheckBox*> mCheckboxesScenes;
 
@@ -86,8 +87,11 @@ class Gui {
         /// Cached update time
         static double mCachedUpdateTime;
 
-        // Cached update physics time
-        static double mCachedPhysicsUpdateTime;
+        // Cached total update physics time
+        static double mCachedTotalPhysicsUpdateTime;
+
+        // Cached update single physics step time
+        static double mCachedPhysicsStepTime;
 
         // -------------------- Methods -------------------- //
 

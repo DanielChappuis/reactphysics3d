@@ -36,12 +36,14 @@ double Gui::mScrollY = 0.0;
 double Gui::mTimeSinceLastProfilingDisplay = 0;
 double Gui::mCachedFPS = 0;
 double Gui::mCachedUpdateTime = 0;
-double Gui::mCachedPhysicsUpdateTime = 0;
+double Gui::mCachedTotalPhysicsUpdateTime = 0;
+double Gui::mCachedPhysicsStepTime = 0;
 
 // Constructor
 Gui::Gui(TestbedApplication* app)
     : mApp(app), mSimulationPanel(nullptr), mSettingsPanel(nullptr), mPhysicsPanel(nullptr),
-      mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mPhysicsTimeLabel(nullptr)
+      mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mTotalPhysicsTimeLabel(nullptr),
+      mPhysicsStepTimeLabel(nullptr)
 {
 
 }
@@ -64,8 +66,8 @@ void Gui::init() {
     // Create the Profiling panel
     createProfilingPanel();
 
-    mApp->setVisible(true);
-    mApp->performLayout();
+    mApp->set_visible(true);
+    mApp->perform_layout();
 
     mTimeSinceLastProfilingDisplay = glfwGetTime();
 }
@@ -78,49 +80,53 @@ void Gui::update() {
         mTimeSinceLastProfilingDisplay = mApp->mCurrentTime;
         mCachedFPS = mApp->mFPS;
         mCachedUpdateTime = mApp->mFrameTime;
-        mCachedPhysicsUpdateTime = mApp->mPhysicsTime;
+        mCachedTotalPhysicsUpdateTime = mApp->mTotalPhysicsTime;
+        mCachedPhysicsStepTime = mApp->mPhysicsStepTime;
     }
 
     // Framerate (FPS)
-    mFPSLabel->setCaption(std::string("FPS : ") + floatToString(mCachedFPS, 0));
+    mFPSLabel->set_caption(std::string("FPS : ") + floatToString(mCachedFPS, 0));
 
     // Frame time
-    mFrameTimeLabel->setCaption(std::string("Frame time : ") + floatToString(mCachedUpdateTime * 1000.0, 1) + std::string(" ms"));
+    mFrameTimeLabel->set_caption(std::string("Frame time : ") + floatToString(mCachedUpdateTime * 1000.0, 1) + std::string(" ms"));
 
-    // Physics time
-    mPhysicsTimeLabel->setCaption(std::string("Physics time : ") + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"));
+    // Total Physics time
+    mTotalPhysicsTimeLabel->set_caption(std::string("Total physics time : ") + floatToString(mCachedTotalPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"));
+
+    // Physics step time
+    mPhysicsStepTimeLabel->set_caption(std::string("Physics step time : ") + floatToString(mCachedPhysicsStepTime * 1000.0, 1) + std::string(" ms"));
 }
 
 void Gui::createSimulationPanel() {
 
     mSimulationPanel = new Window(mApp, "Simulation");
-    mSimulationPanel->setPosition(Vector2i(15, 15));
-    mSimulationPanel->setLayout(new GroupLayout(10, 5, 10 , 20));
-    mSimulationPanel->setId("SimulationPanel");
-    mSimulationPanel->setFixedWidth(220);
+    mSimulationPanel->set_position(Vector2i(15, 15));
+    mSimulationPanel->set_layout(new GroupLayout(10, 5, 10 , 20));
+    //mSimulationPanel->setId("SimulationPanel");
+    mSimulationPanel->set_fixed_width(220);
 
     // Scenes/Physics/Rendering buttons
     new Label(mSimulationPanel, "Controls","sans-bold");
     Widget* panelControls = new Widget(mSimulationPanel);
-    panelControls->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
-    ToolButton* buttonPlay = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_PLAY);
-    buttonPlay->setFlags(Button::NormalButton);
-    buttonPlay->setCallback([&] {
+    panelControls->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
+    ToolButton* buttonPlay = new ToolButton(panelControls, FA_PLAY);
+    buttonPlay->set_flags(Button::NormalButton);
+    buttonPlay->set_callback([&] {
         mApp->playSimulation();
     });
-    ToolButton* buttonPause = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_PAUS);
-    buttonPause->setFlags(Button::NormalButton);
-    buttonPause->setCallback([&] {
+    ToolButton* buttonPause = new ToolButton(panelControls, FA_PAUSE);
+    buttonPause->set_flags(Button::NormalButton);
+    buttonPause->set_callback([&] {
         mApp->pauseSimulation();
     });
-    ToolButton* buttonPlayStep = new ToolButton(panelControls, ENTYPO_ICON_CONTROLLER_NEXT);
-    buttonPlayStep->setFlags(Button::NormalButton);
-    buttonPlayStep->setCallback([&] {
+    ToolButton* buttonPlayStep = new ToolButton(panelControls, FA_STEP_FORWARD);
+    buttonPlayStep->set_flags(Button::NormalButton);
+    buttonPlayStep->set_callback([&] {
         mApp->toggleTakeSinglePhysicsStep();
     });
-    ToolButton* buttonRestart = new ToolButton(panelControls, ENTYPO_ICON_CCW);
-    buttonRestart->setFlags(Button::NormalButton);
-    buttonRestart->setCallback([&] {
+    ToolButton* buttonRestart = new ToolButton(panelControls, FA_REDO);
+    buttonRestart->set_flags(Button::NormalButton);
+    buttonRestart->set_callback([&] {
         mApp->restartSimulation();
     });
 
@@ -132,8 +138,8 @@ void Gui::createSimulationPanel() {
     }
     new Label(mSimulationPanel, "Scene","sans-bold");
     ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
-    comboBoxScenes->setFixedWidth(150);
-    comboBoxScenes->setCallback([&, scenes](int index) {
+    comboBoxScenes->set_fixed_width(150);
+    comboBoxScenes->set_callback([&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });
 }
@@ -141,63 +147,63 @@ void Gui::createSimulationPanel() {
 void Gui::createSettingsPanel() {
 
     mSettingsPanel = new Window(mApp, "Settings");
-    mSettingsPanel->setPosition(Vector2i(15, 180));
-    mSettingsPanel->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Middle, 10, 5));
-    mSettingsPanel->setId("SettingsPanel");
-    mSettingsPanel->setFixedWidth(220);
+    mSettingsPanel->set_position(Vector2i(15, 180));
+    mSettingsPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle, 10, 5));
+    //mSettingsPanel->setId("SettingsPanel");
+    mSettingsPanel->set_fixed_width(220);
 
     // Scenes/Physics/Rendering buttons
     Widget* buttonsPanel = new Widget(mSettingsPanel);
-    buttonsPanel->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 5, 5));
+    buttonsPanel->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 5, 5));
     Button* buttonPhysics = new Button(buttonsPanel, "Physics");
-    buttonPhysics->setFlags(Button::RadioButton);
-    buttonPhysics->setPushed(true);
-    buttonPhysics->setChangeCallback([&](bool state) {
-        mPhysicsPanel->setVisible(true);
-        mRenderingPanel->setVisible(false);
-        mApp->performLayout();
+    buttonPhysics->set_flags(Button::RadioButton);
+    buttonPhysics->set_pushed(true);
+    buttonPhysics->set_change_callback([&](bool state) {
+        mPhysicsPanel->set_visible(true);
+        mRenderingPanel->set_visible(false);
+        mApp->perform_layout();
     });
     Button* buttonRendering = new Button(buttonsPanel, "Rendering");
-    buttonRendering->setFlags(Button::RadioButton);
-    buttonRendering->setChangeCallback([&](bool state) {
-        mRenderingPanel->setVisible(true);
-        mPhysicsPanel->setVisible(false);
-        mApp->performLayout();
+    buttonRendering->set_flags(Button::RadioButton);
+    buttonRendering->set_change_callback([&](bool state) {
+        mRenderingPanel->set_visible(true);
+        mPhysicsPanel->set_visible(false);
+        mApp->perform_layout();
     });
 
     // ---------- Physics Panel ----------
     mPhysicsPanel = new Widget(mSettingsPanel);
-    mPhysicsPanel->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 0, 5));
+    mPhysicsPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 0, 5));
 
     // Enable/Disable sleeping
     CheckBox* checkboxSleeping = new CheckBox(mPhysicsPanel, "Sleeping enabled");
-    checkboxSleeping->setChecked(mApp->mEngineSettings.isSleepingEnabled);
-    checkboxSleeping->setCallback([&](bool value) {
+    checkboxSleeping->set_checked(mApp->mEngineSettings.isSleepingEnabled);
+    checkboxSleeping->set_callback([&](bool value) {
         mApp->mEngineSettings.isSleepingEnabled = value;
         mApp->notifyEngineSetttingsChanged();
     });
 
     // Enabled/Disable Gravity
     CheckBox* checkboxGravity = new CheckBox(mPhysicsPanel, "Gravity enabled");
-    checkboxGravity->setChecked(mApp->mEngineSettings.isGravityEnabled);
-    checkboxGravity->setCallback([&](bool value) {
+    checkboxGravity->set_checked(mApp->mEngineSettings.isGravityEnabled);
+    checkboxGravity->set_callback([&](bool value) {
         mApp->mEngineSettings.isGravityEnabled = value;
         mApp->notifyEngineSetttingsChanged();
     });
 
     // Timestep
     Widget* panelTimeStep = new Widget(mPhysicsPanel);
-    panelTimeStep->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
+    panelTimeStep->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelTimeStep = new Label(panelTimeStep, "Time step","sans-bold");
-    labelTimeStep->setFixedWidth(120);
+    labelTimeStep->set_fixed_width(120);
     TextBox* textboxTimeStep = new TextBox(panelTimeStep);
-    textboxTimeStep->setFixedSize(Vector2i(70, 25));
-    textboxTimeStep->setEditable(true);
+    textboxTimeStep->set_fixed_size(Vector2i(70, 25));
+    textboxTimeStep->set_editable(true);
     std::ostringstream out;
     out << std::setprecision(1) << std::fixed << (mApp->mEngineSettings.timeStep * 1000);
-    textboxTimeStep->setValue(out.str());
-    textboxTimeStep->setUnits("ms");
-    textboxTimeStep->setCallback([&, textboxTimeStep](const std::string &str) {
+    textboxTimeStep->set_value(out.str());
+    textboxTimeStep->set_units("ms");
+    textboxTimeStep->set_callback([&, textboxTimeStep](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -209,7 +215,7 @@ void Gui::createSettingsPanel() {
 
             mApp->mEngineSettings.timeStep = finalValue / 1000.0f;
             mApp->notifyEngineSetttingsChanged();
-            textboxTimeStep->setValue(out.str());
+            textboxTimeStep->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -217,20 +223,20 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxTimeStep->setFontSize(16);
-    textboxTimeStep->setAlignment(TextBox::Alignment::Right);
+    textboxTimeStep->set_font_size(16);
+    textboxTimeStep->set_alignment(TextBox::Alignment::Right);
 
     // Velocity solver iterations
     Widget* panelVelocityIterations = new Widget(mPhysicsPanel);
-    panelVelocityIterations->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
+    panelVelocityIterations->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelVelocityIterations = new Label(panelVelocityIterations, "Velocity solver","sans-bold");
-    labelVelocityIterations->setFixedWidth(120);
+    labelVelocityIterations->set_fixed_width(120);
     TextBox* textboxVelocityIterations = new TextBox(panelVelocityIterations);
-    textboxVelocityIterations->setFixedSize(Vector2i(70, 25));
-    textboxVelocityIterations->setEditable(true);
-    textboxVelocityIterations->setValue(std::to_string(mApp->mEngineSettings.nbVelocitySolverIterations));
-    textboxVelocityIterations->setUnits("iter");
-    textboxVelocityIterations->setCallback([&, textboxVelocityIterations](const std::string &str) {
+    textboxVelocityIterations->set_fixed_size(Vector2i(70, 25));
+    textboxVelocityIterations->set_editable(true);
+    textboxVelocityIterations->set_value(std::to_string(mApp->mEngineSettings.nbVelocitySolverIterations));
+    textboxVelocityIterations->set_units("iter");
+    textboxVelocityIterations->set_callback([&, textboxVelocityIterations](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -241,7 +247,7 @@ void Gui::createSettingsPanel() {
 
             mApp->mEngineSettings.nbVelocitySolverIterations = value;
             mApp->notifyEngineSetttingsChanged();
-            textboxVelocityIterations->setValue(out.str());
+            textboxVelocityIterations->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -249,20 +255,20 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxVelocityIterations->setFontSize(16);
-    textboxVelocityIterations->setAlignment(TextBox::Alignment::Right);
+    textboxVelocityIterations->set_font_size(16);
+    textboxVelocityIterations->set_alignment(TextBox::Alignment::Right);
 
     // Position solver iterations
     Widget* panelPositionIterations = new Widget(mPhysicsPanel);
-    panelPositionIterations->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
+    panelPositionIterations->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelPositionIterations = new Label(panelPositionIterations, "Position solver","sans-bold");
-    labelPositionIterations->setFixedWidth(120);
+    labelPositionIterations->set_fixed_width(120);
     TextBox* textboxPositionIterations = new TextBox(panelPositionIterations);
-    textboxPositionIterations->setFixedSize(Vector2i(70, 25));
-    textboxPositionIterations->setEditable(true);
-    textboxPositionIterations->setValue(std::to_string(mApp->mEngineSettings.nbPositionSolverIterations));
-    textboxPositionIterations->setUnits("iter");
-    textboxPositionIterations->setCallback([&, textboxPositionIterations](const std::string &str) {
+    textboxPositionIterations->set_fixed_size(Vector2i(70, 25));
+    textboxPositionIterations->set_editable(true);
+    textboxPositionIterations->set_value(std::to_string(mApp->mEngineSettings.nbPositionSolverIterations));
+    textboxPositionIterations->set_units("iter");
+    textboxPositionIterations->set_callback([&, textboxPositionIterations](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -273,7 +279,7 @@ void Gui::createSettingsPanel() {
 
             mApp->mEngineSettings.nbPositionSolverIterations = value;
             mApp->notifyEngineSetttingsChanged();
-            textboxPositionIterations->setValue(out.str());
+            textboxPositionIterations->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -281,22 +287,22 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxPositionIterations->setFontSize(16);
-    textboxPositionIterations->setAlignment(TextBox::Alignment::Right);
+    textboxPositionIterations->set_font_size(16);
+    textboxPositionIterations->set_alignment(TextBox::Alignment::Right);
 
     // Time before sleep
     Widget* panelTimeSleep = new Widget(mPhysicsPanel);
-    panelTimeSleep->setLayout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
+    panelTimeSleep->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelTimeSleep = new Label(panelTimeSleep, "Time before sleep","sans-bold");
-    labelTimeSleep->setFixedWidth(120);
+    labelTimeSleep->set_fixed_width(120);
     out.str("");
     out << std::setprecision(0) << std::fixed << (mApp->mEngineSettings.timeBeforeSleep * 1000);
     TextBox* textboxTimeSleep = new TextBox(panelTimeSleep);
-    textboxTimeSleep->setFixedSize(Vector2i(70, 25));
-    textboxTimeSleep->setEditable(true);
-    textboxTimeSleep->setValue(out.str());
-    textboxTimeSleep->setUnits("ms");
-    textboxTimeSleep->setCallback([&, textboxTimeSleep](const std::string &str) {
+    textboxTimeSleep->set_fixed_size(Vector2i(70, 25));
+    textboxTimeSleep->set_editable(true);
+    textboxTimeSleep->set_value(out.str());
+    textboxTimeSleep->set_units("ms");
+    textboxTimeSleep->set_callback([&, textboxTimeSleep](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -308,7 +314,7 @@ void Gui::createSettingsPanel() {
 
             mApp->mEngineSettings.timeBeforeSleep = finalValue / 1000.0f;
             mApp->notifyEngineSetttingsChanged();
-            textboxTimeSleep->setValue(out.str());
+            textboxTimeSleep->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -316,22 +322,22 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxTimeSleep->setFontSize(16);
-    textboxTimeSleep->setAlignment(TextBox::Alignment::Right);
+    textboxTimeSleep->set_font_size(16);
+    textboxTimeSleep->set_alignment(TextBox::Alignment::Right);
 
     // Sleep linear velocity
     Widget* panelSleepLinearVel = new Widget(mPhysicsPanel);
-    panelSleepLinearVel->setLayout(new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 0, 5));
+    panelSleepLinearVel->set_layout(new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 0, 5));
     Label* labelSleepLinearVel = new Label(panelSleepLinearVel, "Sleep linear velocity","sans-bold");
-    labelSleepLinearVel->setFixedWidth(120);
+    labelSleepLinearVel->set_fixed_width(120);
     out.str("");
     out << std::setprecision(2) << std::fixed << (mApp->mEngineSettings.sleepLinearVelocity);
     TextBox* textboxSleepLinearVel = new TextBox(panelSleepLinearVel);
-    textboxSleepLinearVel->setFixedSize(Vector2i(70, 25));
-    textboxSleepLinearVel->setEditable(true);
-    textboxSleepLinearVel->setValue(out.str());
-    textboxSleepLinearVel->setUnits("m/s");
-    textboxSleepLinearVel->setCallback([&, textboxSleepLinearVel](const std::string &str) {
+    textboxSleepLinearVel->set_fixed_size(Vector2i(70, 25));
+    textboxSleepLinearVel->set_editable(true);
+    textboxSleepLinearVel->set_value(out.str());
+    textboxSleepLinearVel->set_units("m/s");
+    textboxSleepLinearVel->set_callback([&, textboxSleepLinearVel](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -343,7 +349,7 @@ void Gui::createSettingsPanel() {
 
             mApp->mEngineSettings.sleepLinearVelocity = finalValue;
             mApp->notifyEngineSetttingsChanged();
-            textboxSleepLinearVel->setValue(out.str());
+            textboxSleepLinearVel->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -351,22 +357,22 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxSleepLinearVel->setFontSize(16);
-    textboxSleepLinearVel->setAlignment(TextBox::Alignment::Right);
+    textboxSleepLinearVel->set_font_size(16);
+    textboxSleepLinearVel->set_alignment(TextBox::Alignment::Right);
 
     // Sleep angular velocity
     Widget* panelSleepAngularVel = new Widget(mPhysicsPanel);
-    panelSleepAngularVel->setLayout(new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 0, 5));
+    panelSleepAngularVel->set_layout(new GridLayout(Orientation::Horizontal, 2, Alignment::Middle, 0, 5));
     Label* labelSleepAngularVel = new Label(panelSleepAngularVel, "Sleep angular velocity","sans-bold");
-    labelSleepAngularVel->setFixedWidth(120);
+    labelSleepAngularVel->set_fixed_width(120);
     out.str("");
     out << std::setprecision(2) << std::fixed << (mApp->mEngineSettings.sleepAngularVelocity);
     TextBox* textboxSleepAngularVel = new TextBox(panelSleepAngularVel);
-    textboxSleepAngularVel->setFixedSize(Vector2i(70, 25));
-    textboxSleepAngularVel->setEditable(true);
-    textboxSleepAngularVel->setValue(out.str());
-    textboxSleepAngularVel->setUnits("rad/s");
-    textboxSleepAngularVel->setCallback([&, textboxSleepAngularVel](const std::string &str) {
+    textboxSleepAngularVel->set_fixed_size(Vector2i(70, 25));
+    textboxSleepAngularVel->set_editable(true);
+    textboxSleepAngularVel->set_value(out.str());
+    textboxSleepAngularVel->set_units("rad/s");
+    textboxSleepAngularVel->set_callback([&, textboxSleepAngularVel](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -378,7 +384,7 @@ void Gui::createSettingsPanel() {
 
             mApp->mEngineSettings.sleepAngularVelocity = finalValue;
             mApp->notifyEngineSetttingsChanged();
-            textboxSleepAngularVel->setValue(out.str());
+            textboxSleepAngularVel->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -386,60 +392,100 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxSleepAngularVel->setFontSize(16);
-    textboxSleepAngularVel->setAlignment(TextBox::Alignment::Right);
+    textboxSleepAngularVel->set_font_size(16);
+    textboxSleepAngularVel->set_alignment(TextBox::Alignment::Right);
 
     // ---------- Rendering Panel ----------
     mRenderingPanel = new Widget(mSettingsPanel);
-    mRenderingPanel->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 0, 5));
+    mRenderingPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 0, 5));
+
+    // Display/Hide contact points
+    CheckBox* checkboxDebugRendererEnabled = new CheckBox(mRenderingPanel, "Debug rendering");
+    checkboxDebugRendererEnabled->set_checked(mApp->mIsDebugRendererEnabled);
 
     // Display/Hide contact points
     CheckBox* checkboxContactPoints = new CheckBox(mRenderingPanel, "Contact points");
-    checkboxContactPoints->setChecked(mApp->mIsContactPointsDisplayed);
-    checkboxContactPoints->setCallback([&](bool value) {
-        mApp->mIsContactPointsDisplayed = value;
+    checkboxContactPoints->set_checked(mApp->mAreContactPointsDisplayed);
+    checkboxContactPoints->set_enabled(false);
+    checkboxContactPoints->set_callback([&](bool value) {
+        mApp->mAreContactPointsDisplayed = value;
     });
 
+    // Display/Hide contact normals
+    CheckBox* checkboxContactNormals = new CheckBox(mRenderingPanel, "Contact normals");
+    checkboxContactNormals->set_checked(mApp->mAreContactNormalsDisplayed);
+    checkboxContactNormals->set_enabled(false);
+    checkboxContactNormals->set_callback([&](bool value) {
+        mApp->mAreContactNormalsDisplayed = value;
+    });
 
-    // Display/Hide the AABBs
-    CheckBox* checkboxAABBs = new CheckBox(mRenderingPanel, "AABBs");
-    checkboxAABBs->setChecked(mApp->mIsAABBsDisplayed);
-    checkboxAABBs->setCallback([&](bool value) {
-        mApp->mIsAABBsDisplayed = value;
+    // Display/Hide the Broad-phase AABBs
+    CheckBox* checkboxBroadPhaseAABBs = new CheckBox(mRenderingPanel, "Broad phase AABBs");
+    checkboxBroadPhaseAABBs->set_checked(mApp->mAreBroadPhaseAABBsDisplayed);
+    checkboxBroadPhaseAABBs->set_enabled(false);
+    checkboxBroadPhaseAABBs->set_callback([&](bool value) {
+        mApp->mAreBroadPhaseAABBsDisplayed = value;
+    });
+
+    // Display/Hide the colliders AABBs
+    CheckBox* checkboxColliderAABBs = new CheckBox(mRenderingPanel, "Colliders AABBs");
+    checkboxColliderAABBs->set_checked(mApp->mAreCollidersAABBsDisplayed);
+    checkboxColliderAABBs->set_enabled(false);
+    checkboxColliderAABBs->set_callback([&](bool value) {
+        mApp->mAreCollidersAABBsDisplayed = value;
+    });
+
+    // Display/Hide the collision shapes
+    CheckBox* checkboxCollisionShapes = new CheckBox(mRenderingPanel, "Collision shapes");
+    checkboxCollisionShapes->set_checked(mApp->mAreCollisionShapesDisplayed);
+    checkboxCollisionShapes->set_enabled(false);
+    checkboxCollisionShapes->set_callback([&](bool value) {
+        mApp->mAreCollisionShapesDisplayed = value;
+    });
+
+    // Enable/Disable wireframe mode
+    CheckBox* checkboxWireframe = new CheckBox(mRenderingPanel, "Objects Wireframe");
+    checkboxWireframe->set_checked(mApp->mAreObjectsWireframeEnabled);
+    checkboxWireframe->set_callback([&](bool value) {
+        mApp->mAreObjectsWireframeEnabled = value;
     });
 
     // Enabled/Disable VSync
     CheckBox* checkboxVSync = new CheckBox(mRenderingPanel, "V-Sync");
-    checkboxVSync->setChecked(mApp->mIsVSyncEnabled);
-    checkboxVSync->setCallback([&](bool value) {
+    checkboxVSync->set_checked(mApp->mIsVSyncEnabled);
+    checkboxVSync->set_callback([&](bool value) {
         mApp->enableVSync(value);
     });
 
     // Enabled/Disable Shadows
     CheckBox* checkboxShadows = new CheckBox(mRenderingPanel, "Shadows");
-    checkboxShadows->setChecked(mApp->mIsShadowMappingEnabled);
-    checkboxShadows->setCallback([&](bool value) {
+    checkboxShadows->set_checked(mApp->mIsShadowMappingEnabled);
+    checkboxShadows->set_callback([&](bool value) {
         mApp->mIsShadowMappingEnabled = value;
     });
 
-    // Enable/Disable wireframe mode
-    CheckBox* checkboxWireframe = new CheckBox(mRenderingPanel, "Wireframe");
-    checkboxWireframe->setChecked(mApp->mIsWireframeEnabled);
-    checkboxWireframe->setCallback([&](bool value) {
-        mApp->mIsWireframeEnabled = value;
+    checkboxDebugRendererEnabled->set_callback([&, checkboxContactPoints, checkboxContactNormals,
+                                               checkboxBroadPhaseAABBs, checkboxColliderAABBs,
+                                               checkboxCollisionShapes](bool value) {
+        mApp->mIsDebugRendererEnabled = value;
+        checkboxContactPoints->set_enabled(value);
+        checkboxContactNormals->set_enabled(value);
+        checkboxBroadPhaseAABBs->set_enabled(value);
+        checkboxColliderAABBs->set_enabled(value);
+        checkboxCollisionShapes->set_enabled(value);
     });
 
-    mPhysicsPanel->setVisible(true);
-    mRenderingPanel->setVisible(false);
+    mPhysicsPanel->set_visible(true);
+    mRenderingPanel->set_visible(false);
 }
 
 void Gui::createProfilingPanel() {
 
     Widget* profilingPanel = new Window(mApp, "Profiling");
-    profilingPanel->setPosition(Vector2i(15, 525));
-    profilingPanel->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 10, 5));
-    profilingPanel->setId("SettingsPanel");
-    profilingPanel->setFixedWidth(220);
+    profilingPanel->set_position(Vector2i(15, 525));
+    profilingPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 10, 5));
+    //profilingPanel->setId("SettingsPanel");
+    profilingPanel->set_fixed_width(220);
 
     // Framerate (FPS)
     mFPSLabel = new Label(profilingPanel, std::string("FPS : ") + floatToString(mCachedFPS, 0),"sans-bold");
@@ -447,9 +493,12 @@ void Gui::createProfilingPanel() {
     // Update time
     mFrameTimeLabel = new Label(profilingPanel, std::string("Frame time : ") + floatToString(mCachedUpdateTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
 
-    // Update time
-    mPhysicsTimeLabel = new Label(profilingPanel, std::string("Physics time : ") + floatToString(mCachedPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
+    // Total physics time
+    mTotalPhysicsTimeLabel = new Label(profilingPanel, std::string("Total physics time : ") + floatToString(mCachedTotalPhysicsUpdateTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
 
-    profilingPanel->setVisible(true);
+    // Physics step time
+    mPhysicsStepTimeLabel = new Label(profilingPanel, std::string("Physics step time : ") + floatToString(mCachedPhysicsStepTime * 1000.0, 1) + std::string(" ms"),"sans-bold");
+
+    profilingPanel->set_visible(true);
 }
 
