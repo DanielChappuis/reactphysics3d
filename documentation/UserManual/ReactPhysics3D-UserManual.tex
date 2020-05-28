@@ -163,7 +163,7 @@
 
     \begin{figure}[!ht]
         \centering
-	\includegraphics[scale=0.7]{CMakeWin.png}
+	\includegraphics[scale=0.6]{CMakeWin.png}
         \label{fig:cmakewin}
     \end{figure}
 
@@ -192,7 +192,7 @@
 
     \begin{figure}[!ht]
         \centering
-        \includegraphics[scale=0.5]{VSBuild.png}
+        \includegraphics[scale=0.6]{VSBuild.png}
         \label{fig:vsbuild}
     \end{figure}
 
@@ -228,7 +228,7 @@
 
     \begin{figure}
         \centering
-        \includegraphics[scale=0.5]{VSInstall.png}
+        \includegraphics[scale=0.6]{VSInstall.png}
         \label{fig:vsinstall}
     \end{figure}
 
@@ -371,9 +371,10 @@ using namespace reactphysics3d;
 // Main function
 int main(int argc, char** argv) {
 
-    // First you need to create the PhysicsCommon object. This is a factory module
-    // that you can use to create physics world and other objects. It is also responsible
-    // for logging and memory management
+    // First you need to create the PhysicsCommon object.
+    // This is a factory module that you can use to create physics
+    // world and other objects. It is also responsible for
+    // logging and memory management
     PhysicsCommon physicsCommon;
 
     // Create a physics world
@@ -397,7 +398,8 @@ int main(int argc, char** argv) {
         const Vector3& position = transform.getPosition();
 
         // Display the position of the body
-        std::cout << "Body Position: (" << position.x << ", " << position.y << ", " << position.z << ")" << std::endl;
+        std::cout << "Body Position: (" << position.x << ", " <<
+	    position.y << ", " << position.z << ")" << std::endl;
     }
 
     return 0;
@@ -922,7 +924,8 @@ float factor = accumulator / timeStep;
 
     \begin{lstlisting}
 // Compute the interpolated transform of the rigid body
-Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
+Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform,
+                                                          currTransform, factor);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -964,7 +967,8 @@ decimal factor = accumulator / timeStep;
 Transform currTransform = body->getTransform();
 
 // Compute the interpolated transform of the rigid body
-Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
+Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform,
+                                                           currTransform, factor);
 
 // Now you can render your body using the interpolated transform here
 
@@ -1351,7 +1355,8 @@ float maxHeight = 500;
 float heightValues[nbRows * nbColumns] = ...;
 
 // Create the heightfield collision shape
-HeightFieldShape* heightFieldShape = physicsCommon.createHeightFieldShape(nbColumns, nbRows, minHeight,
+HeightFieldShape* heightFieldShape = physicsCommon.createHeightFieldShape(nbColumns,
+  							           nbRows, minHeight,
 maxHeight, heightValues, HeightFieldShape::HEIGHT_FLOAT_TYPE);
   \end{lstlisting}
 
@@ -1984,7 +1989,7 @@ bool isHit = collider->raycast(ray, raycastInfo);
 
     \begin{figure}[!ht]
         \centering
-	\includegraphics[scale=0.27]{testbed.png}
+	  \includegraphics[scale=0.5]{testbed.png}
         \label{fig:testbed}
     \end{figure}
 
@@ -2188,7 +2193,8 @@ DefaultLogger* logger = physicsCommon.createDefaultLogger();
 uint logLevel = static_cast<uint>(static_cast<uint>(Logger::Level::Warning) | static_cast<uint>(Logger::Level::Error);
 
 // Output the logs into an HTML file
-logger->addFileDestination("rp3d_log_" + name + ".html", logLevel, DefaultLogger::Format::HTML);
+logger->addFileDestination("rp3d_log_" + name + ".html", logLevel,
+                           DefaultLogger::Format::HTML);
 
 // Set the logger
 physicsCommon.setLogger(logger);
@@ -2207,7 +2213,7 @@ physicsCommon.setLogger(logger);
 
   \begin{figure}[!ht]
       \centering
-      \includegraphics[scale=0.25]{DebugRendering.png}
+      \includegraphics[scale=0.45]{DebugRendering.png}
        \label{fig:debugrendering}
   \end{figure}
 
