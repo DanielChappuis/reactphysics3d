@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.8.0
+## Version 0.8.0 (May 31, 2020)
 
 Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
 do not hesitate to take a look at the user manual.
