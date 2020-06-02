@@ -315,7 +315,7 @@ target_link_libraries(helloworld ReactPhysics3D::ReactPhysics3D)
 # Minimum cmake version required
 cmake_minimum_required(VERSION 3.8)
 
-# Help CMake to find the installed library on Windows or Mac OS X
+# Help CMake to find the installed library on Windows or Mac OS X
 if(WIN32)
   list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")
 elseif(APPLE)
@@ -2093,6 +2093,13 @@ world->setEventListener(&listener);
     \end{sloppypar}
 
     \begin{sloppypar}
+    As you know, rigid bodies can sleep. During that time, no contacts will be reported using the \texttt{EventListener::onContact()} method. Therefore,
+    If you stop receiving contact notifications for a rigid body, it does not necessarily mean that there is no contacts anymore but it could mean that the
+    body has fallen asleep. You need to use the \texttt{getEventType()} method to know if the body is not colliding anymore (when you receive an event of type
+    \texttt{ContactExit}). \\
+    \end{sloppypar}
+
+    \begin{sloppypar}
     In the following example, you can see how to override the \texttt{EventListener::onContact()} method to get the current contact points of the physics
     world: \\
     \end{sloppypar}
@@ -2148,7 +2155,14 @@ class YourEventListener : public EventListener {
     The overlapping pair also has a \texttt{getEventType()} method that gives information about the type of overlapping event for the pair. It can be
     \texttt{OverlapStart} if the two bodies of the pair where not overlapping in the previous call to \texttt{PhysicsWorld::update()} and are now
     overlapping. It can be \texttt{OverlapStay}, if the two bodies where overlapping in the previous frame and are still overlapping or it can be
-    \texttt{OverlapExit} if the two bodies where overlapping in the previous frame but are not overlapping anymore. 
+    \texttt{OverlapExit} if the two bodies where overlapping in the previous frame but are not overlapping anymore. \\
+    \end{sloppypar}
+
+    \begin{sloppypar}
+    As you know, rigid bodies can sleep. During that time, no overlap will be reported using the \texttt{EventListener::onTrigger()} method. Therefore,
+    If you stop receiving trigger overlap notifications for a rigid body, it does not necessarily mean that there is no overlap anymore but it could mean
+    that the body has fallen asleep. You need to use the \texttt{getEventType()} method to know if the body is not overlapping anymore (when you receive an
+    event of type \texttt{OverlapExit}). \\
     \end{sloppypar}
 
     Note that the \texttt{onTrigger()} method is only called for colliders that you have set as triggers using the \texttt{Collider::setIsTrigger()} method.
