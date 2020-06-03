@@ -30,6 +30,7 @@ matrix:
         - ./configure
         - sudo make install
         - cmake --version
+        - cd ../
       addons:
         apt:
           sources:
