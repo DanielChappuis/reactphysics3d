@@ -54,6 +54,10 @@ matrix:
     - os: linux
       arch: arm64
       name: "Linux / GCC (Release)"
+      before_install:
+        - sudo apt remove cmake
+        - sudo pip install cmake --upgrade
+        - cmake --version
       addons:
         apt:
           sources:
