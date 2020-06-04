@@ -305,7 +305,7 @@ script:
         cd build_helloworld;
         cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../helloworld/;
         make -j2;
-        ./helloworld
+        ./helloworld;
       fi
 
 
