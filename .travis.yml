@@ -6,8 +6,15 @@ install:
 
 matrix:
 
-  # ----- Linux / GCC -----
   include:
+
+    # ----- Windows / Visual Studio -----
+    - os: windows
+      name: "Windows / Visual Studio (Debug)"
+      env:
+        - BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+
+    # ----- Linux / GCC -----
     - os: linux
       name: "Linux / GCC (Debug)"
       addons:
@@ -15,9 +22,9 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-8
+            - g++-8.1
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+        - MATRIX_EVAL="CC=gcc-8.1 && CXX=g++-8.1" BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
 
     - os: linux
       arch: arm64
@@ -282,12 +289,6 @@ matrix:
       env:
         - BUILD_TYPE="Release" DOUBLE_PRECISION="False" PROFILER="True"
 
-    # ----- Windows / Visual Studio -----
-    - os: windows
-      name: "Windows / Visual Studio (Debug)"
-      env:
-        - BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
-
 before_install:
   - eval "${MATRIX_EVAL}"
 
@@ -300,7 +301,8 @@ script:
     - mkdir build_rp3d
     - cd build_rp3d
     - cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} —DRP3D_DOUBLE_PRECISION_ENABLED=${DOUBLE_PRECISION} -DRP3D_COMPILE_TESTS=True -DRP3D_PROFILING_ENABLED=${PROFILER} -DRP3D_CODE_COVERAGE_ENABLED=${CODE_COVERAGE} ../
-    - make -j2 && make test ARGS="-V"
+    - make -j2
+    - make test ARGS="-V"
     - if [ "${VALGRIND}" == "True" ]; then
         valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 test/tests;
       fi
