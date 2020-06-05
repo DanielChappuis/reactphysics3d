@@ -282,6 +282,12 @@ matrix:
       env:
         - BUILD_TYPE="Release" DOUBLE_PRECISION="False" PROFILER="True"
 
+    # ----- Windows / Visual Studio -----
+    - os: windows
+      name: "Windows / Visual Studio (Debug)"
+      env:
+        - BUILD_TYPE="Debug" DOUBLE_PRECISION="False"
+
 before_install:
   - eval "${MATRIX_EVAL}"
 
