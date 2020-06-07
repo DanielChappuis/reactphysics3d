@@ -91,8 +91,7 @@ bool Scene::mapMouseCoordinatesToSphere(double xMouse, double yMouse,
 }
 
 // Called when a mouse button event occurs
-bool Scene::mouseButtonEvent(int button, bool down, int mods,
-                             double mousePosX, double mousePosY) {
+bool Scene::mouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY) {
 
     // If the mouse button is pressed
     if (down) {

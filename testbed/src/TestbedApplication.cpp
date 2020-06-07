@@ -110,7 +110,7 @@ void TestbedApplication::createScenes() {
     mScenes.push_back(cubeStackScene);
 
     // Joints scene
-    JointsScene* jointsScene = new JointsScene("Joints", mEngineSettings);
+    JointsScene* jointsScene = new JointsScene("HingeJoint - Bridge", mEngineSettings);
     mScenes.push_back(jointsScene);
 
     // Collision shapes scene
@@ -353,6 +353,19 @@ bool TestbedApplication::keyboard_event(int key, int scancode, int action, int m
     // Close application on escape key
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
+        return true;
+    }
+
+    // Close application on escape key
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+
+        if (mTimer.isRunning()) {
+            pauseSimulation();
+        }
+        else {
+           playSimulation();
+        }
+
         return true;
     }
 

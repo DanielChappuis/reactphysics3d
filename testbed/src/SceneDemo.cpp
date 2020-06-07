@@ -47,7 +47,8 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, bool isP
 					 mColorShader("shaders/color.vert", "shaders/color.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
                      mVBOQuad(GL_ARRAY_BUFFER), mDebugVBOLinesVertices(GL_ARRAY_BUFFER), mDebugVBOTrianglesVertices(GL_ARRAY_BUFFER),
-                     mMeshFolderPath("meshes/"), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated) {
+                     mMeshFolderPath("meshes/"), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated),
+                    mIsMovingBody(false), mMovingBody(nullptr) {
 
     shadowMapTextureLevel++;
 
@@ -610,6 +611,75 @@ void SceneDemo::removeAllVisualContactPoints() {
         delete (*it);
     }
     mVisualContactPoints.clear();
+}
+
+// Called when the user is moving a body with the mouse
+void SceneDemo::moveBodyWithMouse(double mousePosX, double mousePosY) {
+
+    if (!mIsMovingBody) {
+
+        // Find the body and the position of the mouse on that body (with raycasting)
+        openglframework::Vector4 screenPoint1((mousePosX / mWindowWidth) * 2.0 - 1.0, ((mWindowHeight - mousePosY) / mWindowHeight) * 2.0 - 1.0, -1, 1);
+        openglframework::Vector4 screenPoint2((mousePosX / mWindowWidth) * 2.0 - 1.0, ((mWindowHeight - mousePosY) / mWindowHeight) * 2.0 - 1.0, 1, 1);
+        openglframework::Vector4 worldP1 = (mCamera.getTransformMatrix() * mCamera.getProjectionMatrix().getInverse()) * screenPoint1;
+        openglframework::Vector4 worldP2 = (mCamera.getTransformMatrix() * mCamera.getProjectionMatrix().getInverse()) * screenPoint2;
+        openglframework::Vector3 cameraPos = mCamera.getOrigin();
+        rp3d::Vector3 worldPoint1(worldP1.x, worldP1.y, worldP1.z);
+        rp3d::Vector3 worldPoint2(worldP2.x, worldP2.y, worldP2.z);
+        rp3d::Ray ray(worldPoint1, worldPoint2);
+        mPhysicsWorld->raycast(ray, this);
+    }
+
+    if (mMovingBody != nullptr) {
+        openglframework::Vector4 previousScreenPos(mLastMouseX / mWindowWidth, (mWindowHeight - mLastMouseY) / mWindowHeight, 0, 0);
+        openglframework::Vector4 currentScreenPos(mousePosX / mWindowWidth, (mWindowHeight - mousePosY) / mWindowHeight, 0, 0);
+        openglframework::Vector4 forceScreen = currentScreenPos - previousScreenPos;
+        openglframework::Vector4 f = mCamera.getTransformMatrix() * forceScreen * MOUSE_MOVE_BODY_FORCE;
+        rp3d::Vector3 force(f.x, f.y, f.z);
+        mMovingBody->applyForceAtLocalPosition(force, mMovingBodyLocalPoint);
+    }
+
+    mLastMouseX = mousePosX;
+    mLastMouseY = mousePosY;
+    mIsMovingBody = true;
+}
+
+// Called when a mouse button event occurs
+bool SceneDemo::mouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY) {
+
+    // Left mouse click with CTRL key pressed on keyboard (moving a body)
+    if (down && (mods & GLFW_MOD_CONTROL)) {
+
+        moveBodyWithMouse(mousePosX, mousePosY);
+        return true;
+    }
+
+    mIsMovingBody = false;
+    mMovingBody = nullptr;
+
+    return Scene::mouseButtonEvent(button, down, mods, mousePosX, mousePosY);
+}
+
+// Called when a mouse motion event occurs
+bool SceneDemo::mouseMotionEvent(double xMouse, double yMouse, int leftButtonState, int rightButtonState, int middleButtonState, int altKeyState) {
+
+    if (mIsMovingBody) {
+        moveBodyWithMouse(xMouse, yMouse);
+        return true;
+    }
+
+    return Scene::mouseMotionEvent(xMouse, yMouse, leftButtonState, rightButtonState, middleButtonState, altKeyState);
+}
+
+// Called when a raycast hit occurs (used to move a body with the mouse)
+rp3d::decimal SceneDemo::notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) {
+
+    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(raycastInfo.body);
+    mMovingBody = body;
+    const rp3d::Transform localToWorldTransform = raycastInfo.collider->getLocalToWorldTransform();
+    mMovingBodyLocalPoint = localToWorldTransform.getInverse() * raycastInfo.worldPoint;
+
+    return raycastInfo.hitFraction;
 }
 
 // Update the engine settings

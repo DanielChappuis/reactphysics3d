@@ -35,11 +35,12 @@
 // Constants
 const int SHADOWMAP_WIDTH = 2048;
 const int SHADOWMAP_HEIGHT = 2048;
+const float MOUSE_MOVE_BODY_FORCE = 100000.0f;
 
 // Class SceneDemo
 // Abstract class that represents a 3D scene for the ReactPhysics3D examples.
 // This scene has a single light source with shadow mapping.
-class SceneDemo : public Scene {
+class SceneDemo : public Scene, rp3d::RaycastCallback {
 
     protected:
 
@@ -121,6 +122,15 @@ class SceneDemo : public Scene {
         /// True if we need to step the physics simulation each frame
         bool mIsPhysicsWorldSimulated;
 
+        /// True if the user is currently moving a body with the mouse
+        bool mIsMovingBody;
+
+        /// Local-space point on the body use to move it with the mouse
+        rp3d::Vector3 mMovingBodyLocalPoint;
+
+        /// Pointer to the body that is currently moved with the mouse by the user
+        rp3d::RigidBody* mMovingBody;
+
         // -------------------- Methods -------------------- //
 
         /// Create the Shadow map FBO and texture
@@ -149,6 +159,9 @@ class SceneDemo : public Scene {
 
         /// Remove all contact points
         void removeAllVisualContactPoints();
+
+        /// Called when the user is moving a body with the mouse
+        void moveBodyWithMouse(double mousePosX, double mousePosY);
 
     public:
 
@@ -181,6 +194,16 @@ class SceneDemo : public Scene {
 
         /// Enable/disable debug rendering
         virtual void setIsDebugRendererEnabled(bool isEnabled) override;
+
+        /// Called when a mouse button event occurs
+        virtual bool mouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY) override;
+
+        /// Called when a mouse motion event occurs
+        virtual bool mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
+                                      int rightButtonState, int middleButtonState, int altKeyState) override;
+
+        /// Called when a raycast hit occurs (used to move a body with the mouse)
+        virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) override;
 };
 
 // Enabled/Disable the shadow mapping

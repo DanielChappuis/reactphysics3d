@@ -199,8 +199,7 @@ class Scene : public rp3d::EventListener {
         virtual bool keyboardEvent(int key, int scancode, int action, int mods);
 
         /// Called when a mouse button event occurs
-        virtual bool mouseButtonEvent(int button, bool down, int mods,
-                                      double mousePosX, double mousePosY);
+        virtual bool mouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY);
 
         /// Called when a mouse motion event occurs
         virtual bool mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,

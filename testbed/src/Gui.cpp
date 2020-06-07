@@ -139,6 +139,7 @@ void Gui::createSimulationPanel() {
     new Label(mSimulationPanel, "Scene","sans-bold");
     ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
     comboBoxScenes->set_fixed_width(150);
+    comboBoxScenes->popup()->child_at(0)->set_fixed_height(800);
     comboBoxScenes->set_callback([&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });
