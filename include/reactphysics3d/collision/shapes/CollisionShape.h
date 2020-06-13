@@ -164,7 +164,7 @@ class CollisionShape {
         friend class Collider;
         friend class CollisionBody;
         friend class RigidBody;
-        friend class PhyscisWorld;
+        friend class PhysicsWorld;
         friend class BroadPhaseSystem;
 };
 
