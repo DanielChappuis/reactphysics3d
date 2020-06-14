@@ -39,7 +39,7 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
     // Polygon faces descriptions for the polyhedron
     mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
     rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
-    for (uint f=0; f < getNbFaces(0); f++) {
+    for (unsigned int f=0; f < getNbFaces(0); f++) {
 
 		for (int v = 0; v < 3; v++) {
 			

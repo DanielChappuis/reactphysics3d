@@ -91,9 +91,16 @@ void TestbedApplication::init() {
 
     mTimer.start();
 
-    // Enable OpenGL error reporting
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(onOpenGLError, 0);
+    int glMajorVersion, glMinorVersion;
+    glGetIntegerv(GL_MAJOR_VERSION, &glMajorVersion);
+    glGetIntegerv(GL_MINOR_VERSION, &glMinorVersion);
+
+    if (glMajorVersion > 4 || (glMajorVersion == 4 && glMinorVersion >= 3)) {
+
+        // Enable OpenGL error reporting
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(onOpenGLError, 0);
+    }
 
     mIsInitialized = true;
 }

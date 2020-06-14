@@ -53,7 +53,7 @@ class CubesScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
-        uint iter;
+        unsigned int iter;
 
     public:
 

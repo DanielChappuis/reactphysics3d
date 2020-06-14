@@ -138,9 +138,9 @@ inline void Camera::setSceneRadius(float radius) {
 }
 
 // Set the clipping planes
-inline void Camera::setClippingPlanes(float near, float far) {
-    mNearPlane = near;
-    mFarPlane = far;
+inline void Camera::setClippingPlanes(float nearDistance, float farDistance) {
+    mNearPlane = nearDistance;
+    mFarPlane = farDistance;
     updateProjectionMatrix();
 }
 

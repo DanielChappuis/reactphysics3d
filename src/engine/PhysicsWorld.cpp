@@ -130,10 +130,6 @@ PhysicsWorld::~PhysicsWorld() {
 
 #endif
 
-    assert(mCollisionBodies.size() == 0);
-    assert(mCollisionBodyComponents.getNbComponents() == 0);
-    assert(mTransformComponents.getNbComponents() == 0);
-    assert(mCollidersComponents.getNbComponents() == 0);
     // Destroy all the joints that have not been removed
     for (uint32 i=0; i < mJointsComponents.getNbComponents(); i++) {
         destroyJoint(mJointsComponents.mJoints[i]);
@@ -146,6 +142,10 @@ PhysicsWorld::~PhysicsWorld() {
 
     assert(mJointsComponents.getNbComponents() == 0);
     assert(mRigidBodies.size() == 0);
+    assert(mCollisionBodies.size() == 0);
+    assert(mCollisionBodyComponents.getNbComponents() == 0);
+    assert(mTransformComponents.getNbComponents() == 0);
+    assert(mCollidersComponents.getNbComponents() == 0);
 
     RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);

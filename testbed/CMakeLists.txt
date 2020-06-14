@@ -11,19 +11,29 @@ set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
 
 # ---- Make sure to recursively clone all the git submodules for external libraries (nanogui) --- #
 find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    # Update submodules as needed
-    option(CLONE_GIT_SUBMODULES "Check submodules during build" ON)
-    if(CLONE_GIT_SUBMODULES)
-        message(STATUS "Git Submodules update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
+if(GIT_FOUND)
+    if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
+    	# Update submodules as needed
+    	option(CLONE_GIT_SUBMODULES "Check submodules during build" ON)
+    	if(CLONE_GIT_SUBMODULES)
+        	message(STATUS "Git Submodules update")
+		message(STATUS "Working directory ${CMAKE_CURRENT_SOURCE_DIR}")
+        	execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                        	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        	RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        	if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            	    message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+        	endif()
+    	endif()
+    else()
+  	message(FATAL_ERROR "This is not a Git repository. In order to build the testbed application, you need to clone the ReactPhysics3D repository.")
     endif()
+else()
+  message(FATAL_ERROR "Git has not been found on your system. This is necessary to build the testbed application because git submodules command is used to get the testbed dependencies (nanogui library). You need to fill in the GIT_EXECUTABLE CMake variable with the path to the Git executable on your system to continue.")
 endif()
+
+# Ask Nanogui not to build shared libraries
+SET(NANOGUI_BUILD_SHARED OFF CACHE BOOL "Build Nanogui with static libraries" FORCE)
 
 # Add the configurations from nanogui
 add_subdirectory(extern/nanogui)
@@ -132,12 +142,6 @@ set(SCENES_SOURCES
     scenes/pile/PileScene.h
     scenes/pile/PileScene.cpp
 )
-
-# Add .user file to set debug path in Visual Studio
-set(USER_FILE testbed.vcxproj.user)
-set(VS_USERFILE_WORKING_DIRECTORY_DEBUG ${EXECUTABLE_OUTPUT_PATH})
-set(OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${USER_FILE})
-configure_file(VisualStudioUserTemplate.user ${USER_FILE} @ONLY)
 
 # Create the executable
 add_executable(testbed ${TESTBED_SOURCES} ${SCENES_SOURCES} ${COMMON_SOURCES} ${OPENGLFRAMEWORK_SOURCES})

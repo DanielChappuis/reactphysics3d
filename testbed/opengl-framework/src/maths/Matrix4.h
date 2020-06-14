@@ -436,21 +436,21 @@ inline Matrix4 Matrix4::rotationMatrix(const Vector3& axis, float angle) {
 }
 
 // Return a 4x4 perspective projection matrix
-inline Matrix4 Matrix4::perspectiveProjectionMatrix(float near, float far, int width, int height,
+inline Matrix4 Matrix4::perspectiveProjectionMatrix(float nearDistance, float farDistance, int width, int height,
                                                     float fieldOfView) {
 
     // Compute the aspect ratio
     float aspect = float(width) / float(height);
 
-    float top = near * tan((fieldOfView / 2.0f) * (float(PI) / 180.0f));
+    float top = nearDistance * tan((fieldOfView / 2.0f) * (float(PI) / 180.0f));
     float bottom = -top;
     float left = bottom * aspect;
     float right = top * aspect;
 
-    float fx = 2.0f * near / (right - left);
-    float fy = 2.0f * near / (top - bottom);
-    float fz = -(far + near) / (far - near);
-    float fw = -2.0f * far * near / (far - near);
+    float fx = 2.0f * nearDistance / (right - left);
+    float fy = 2.0f * nearDistance / (top - bottom);
+    float fz = -(farDistance + nearDistance) / (farDistance - nearDistance);
+    float fw = -2.0f * farDistance * nearDistance / (farDistance - nearDistance);
 
     // Compute the projection matrix
     return Matrix4(fx, 0, 0, 0,
@@ -460,7 +460,7 @@ inline Matrix4 Matrix4::perspectiveProjectionMatrix(float near, float far, int w
 }
 
 // Return a 4x4 orthographic projection matrix
-inline Matrix4 Matrix4::orthoProjectionMatrix(float near, float far, int width, int height) {
+inline Matrix4 Matrix4::orthoProjectionMatrix(float nearDistance, float farDistance, int width, int height) {
 
     // Compute the aspect ratio
     float aspect = float(width) / float(height);
@@ -472,8 +472,8 @@ inline Matrix4 Matrix4::orthoProjectionMatrix(float near, float far, int width, 
 
     float fx = 2.0f / (right - left);
     float fy = 2.0f / (top - bottom);
-    float fz = -2.0f / (far - near);
-    float fw = -(far + near) / (far - near);
+    float fz = -2.0f / (farDistance - nearDistance);
+    float fw = -(farDistance + nearDistance) / (farDistance - nearDistance);
 
     // Compute the projection matrix
     return Matrix4(fx, 0, 0, 0,
