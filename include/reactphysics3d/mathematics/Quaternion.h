@@ -307,8 +307,9 @@ inline bool Quaternion::isFinite() const {
 
 // Return true if it is a unit quaternion
 inline bool Quaternion::isUnit() const {
-    decimal length = std::sqrt(x*x + y*y + z*z + w*w);
-    return std::abs(length - decimal(1.0)) < MACHINE_EPSILON;
+    const decimal length = std::sqrt(x*x + y*y + z*z + w*w);
+    const decimal tolerance = 1e-5f;
+    return std::abs(length - decimal(1.0)) < tolerance;
 }
 
 // Return true if it is a valid quaternion
