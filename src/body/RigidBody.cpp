@@ -139,7 +139,7 @@ decimal RigidBody::getMass() const {
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
- * @param force The force to apply on the body (in Newtons)
+ * @param force The force (in world-space) to apply on the body (in Newtons)
  * @param point The point where the force is applied (in local-space coordinates)
  */
 void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& point) {
@@ -171,7 +171,7 @@ void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& p
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
- * @param force The force to apply on the body (in Newtons)
+ * @param force The force (in world-space) to apply on the body (in Newtons)
  * @param point The point where the force is applied (in world-space coordinates)
  */
 void RigidBody::applyForceAtWorldPosition(const Vector3& force, const Vector3& point) {
@@ -228,7 +228,7 @@ void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
- * @param force The external force to apply on the center of mass of the body (in Newtons)
+ * @param force The external force (in world-space) to apply on the center of mass of the body (in Newtons)
  */
 void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
 
