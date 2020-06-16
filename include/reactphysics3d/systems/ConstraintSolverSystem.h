@@ -203,12 +203,6 @@ class ConstraintSolverSystem {
         /// Solve the position constraints
         void solvePositionConstraints();
 
-        /// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
-        bool getIsNonLinearGaussSeidelPositionCorrectionActive() const;
-
-        /// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
-        void setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive);
-
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler

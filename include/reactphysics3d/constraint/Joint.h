@@ -62,7 +62,7 @@ struct JointInfo {
         JointType type;
 
         /// Position correction technique used for the constraint (used for joints).
-        /// By default, the BAUMGARTE technique is used
+        /// By default, the NON_LINEAR_GAUSS_SEIDEL technique is used
         JointsPositionCorrectionTechnique positionCorrectionTechnique;
 
         /// True if the two bodies of the joint are allowed to collide with each other

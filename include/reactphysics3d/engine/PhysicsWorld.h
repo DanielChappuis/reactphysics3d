@@ -377,9 +377,6 @@ class PhysicsWorld {
         /// Set the position correction technique used for contacts
         void setContactsPositionCorrectionTechnique(ContactsPositionCorrectionTechnique technique);
 
-        /// Set the position correction technique used for joints
-        void setJointsPositionCorrectionTechnique(JointsPositionCorrectionTechnique technique);
-
         /// Create a rigid body into the physics world.
         RigidBody* createRigidBody(const Transform& transform);
 
@@ -626,20 +623,6 @@ inline void PhysicsWorld::setContactsPositionCorrectionTechnique(
     }
     else {
         mContactSolverSystem.setIsSplitImpulseActive(true);
-    }
-}
-
-// Set the position correction technique used for joints
-/**
- * @param technique Technique used for the joins position correction (Baumgarte or Non Linear Gauss Seidel)
- */
-inline void PhysicsWorld::setJointsPositionCorrectionTechnique(
-                              JointsPositionCorrectionTechnique technique) {
-    if (technique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-        mConstraintSolverSystem.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
-    }
-    else {
-        mConstraintSolverSystem.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
     }
 }
 
