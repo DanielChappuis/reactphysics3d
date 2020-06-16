@@ -165,6 +165,12 @@ class RigidBody : public CollisionBody {
         /// Apply an external torque to the body.
         void applyTorque(const Vector3& torque);
 
+        /// Reset the accumulated force to zero
+        void resetForce();
+
+        /// Reset the accumulated torque to zero
+        void resetTorque();
+
         /// Return whether or not the body is allowed to sleep
         bool isAllowedToSleep() const;
 

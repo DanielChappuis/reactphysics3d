@@ -1,5 +1,21 @@
 # Changelog
 
+## Release candidate
+
+Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
+do not hesitate to take a look at the user manual.
+
+### Added
+
+ - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has beend added
+ - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has beend added
+
+### Changed
+
+### Removed
+
+### Fixed
+
 ## Version 0.8.0 (May 31, 2020)
 
 Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and

@@ -806,6 +806,26 @@ void RigidBody::applyTorque(const Vector3& torque) {
     mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + torque);
 }
 
+// Reset the accumulated force to zero
+void RigidBody::resetForce() {
+
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+
+    // Set the external force to zero
+    mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3(0, 0, 0));
+}
+
+// Reset the accumulated torque to zero
+void RigidBody::resetTorque() {
+
+    // If it is not a dynamic body, we do nothing
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
+
+    // Set the external torque to zero
+    mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3(0, 0, 0));
+}
+
 // Set the variable to know whether or not the body is sleeping
 void RigidBody::setIsSleeping(bool isSleeping) {
 
