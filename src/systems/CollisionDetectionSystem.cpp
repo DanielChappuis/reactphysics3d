@@ -379,11 +379,13 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairInde
         convexToConcaveTransform = shape2LocalToWorldTransform.getInverse() * shape1LocalToWorldTransform;
     }
     else {  // Collision shape 2 is convex, collision shape 1 is concave
-        convexShape = static_cast<ConvexShape*>(mCollidersComponents.mCollisionShapes[collider1Index]);
-        concaveShape = static_cast<ConcaveShape*>(mCollidersComponents.mCollisionShapes[collider2Index]);
+        convexShape = static_cast<ConvexShape*>(mCollidersComponents.mCollisionShapes[collider2Index]);
+        concaveShape = static_cast<ConcaveShape*>(mCollidersComponents.mCollisionShapes[collider1Index]);
         convexToConcaveTransform = shape1LocalToWorldTransform.getInverse() * shape2LocalToWorldTransform;
     }
 
+    assert(convexShape->isConvex());
+    assert(!concaveShape->isConvex());
     assert(mOverlappingPairs.mNarrowPhaseAlgorithmType[pairIndex] != NarrowPhaseAlgorithmType::None);
 
     // Compute the convex shape AABB in the local-space of the convex shape
