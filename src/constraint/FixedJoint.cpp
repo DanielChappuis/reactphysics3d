@@ -32,15 +32,30 @@
 using namespace reactphysics3d;
 
 // Constructor
-FixedJoint::FixedJoint(Entity entity, PhysicsWorld &world, const FixedJointInfo& jointInfo)
+FixedJoint::FixedJoint(Entity entity, PhysicsWorld& world, const FixedJointInfo& jointInfo)
            : Joint(entity, world) {
 
-    // Compute the local-space anchor point for each body
+
+    Vector3 anchorPointBody1LocalSpace;
+    Vector3 anchorPointBody2LocalSpace;
+
     const Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
     const Transform& transform2 = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
 
-    mWorld.mFixedJointsComponents.setLocalAnchorPointBody1(mEntity, transform1.getInverse() * jointInfo.anchorPointWorldSpace);
-    mWorld.mFixedJointsComponents.setLocalAnchorPointBody2(mEntity, transform2.getInverse() * jointInfo.anchorPointWorldSpace);
+    if (jointInfo.isUsingLocalSpaceAnchors) {
+
+        anchorPointBody1LocalSpace = jointInfo.anchorPointBody1LocalSpace;
+        anchorPointBody2LocalSpace = jointInfo.anchorPointBody2LocalSpace;
+    }
+    else {
+
+        // Compute the local-space anchor point for each body
+        anchorPointBody1LocalSpace = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
+        anchorPointBody2LocalSpace = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
+    }
+
+    mWorld.mFixedJointsComponents.setLocalAnchorPointBody1(mEntity, anchorPointBody1LocalSpace);
+    mWorld.mFixedJointsComponents.setLocalAnchorPointBody2(mEntity, anchorPointBody2LocalSpace);
 
 	// Store inverse of initial rotation from body 1 to body 2 in body 1 space:
 	//

@@ -141,7 +141,6 @@ class PhysicsWorld {
                 defaultSleepAngularVelocity = decimal(3.0) * (PI / decimal(180.0));
                 nbMaxContactManifolds = 3;
                 cosAngleSimilarContactManifold = decimal(0.95);
-
             }
 
             ~WorldSettings() = default;

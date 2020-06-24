@@ -9,12 +9,15 @@ do not hesitate to take a look at the user manual.
 
  - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has beend added
  - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has beend added
+ - Constructors with local-space anchor/axis have been added to BallAndSocketJointInfo, HingeJointInfo, FixedJointInfo and SliderJointInfo classes
 
 ### Changed
 
 ### Removed
 
 ### Fixed
+
+- Issue with concave vs convex shape collision detection has been fixed
 
 ## Version 0.8.0 (May 31, 2020)
 

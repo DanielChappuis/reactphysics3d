@@ -38,13 +38,27 @@ const decimal BallAndSocketJoint::BETA = decimal(0.2);
 BallAndSocketJoint::BallAndSocketJoint(Entity entity, PhysicsWorld& world, const BallAndSocketJointInfo& jointInfo)
                    : Joint(entity, world) {
 
-    // Get the transforms of the two bodies
-    const Transform& body1Transform = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
-    const Transform& body2Transform = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
+    Vector3 anchorPointBody1LocalSpace;
+    Vector3 anchorPointBody2LocalSpace;
+
+    if (jointInfo.isUsingLocalSpaceAnchors) {
+
+        anchorPointBody1LocalSpace = jointInfo.anchorPointBody1LocalSpace;
+        anchorPointBody2LocalSpace = jointInfo.anchorPointBody2LocalSpace;
+    }
+    else {
+
+        // Get the transforms of the two bodies
+        const Transform& body1Transform = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
+        const Transform& body2Transform = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
+
+        anchorPointBody1LocalSpace = body1Transform.getInverse() * jointInfo.anchorPointWorldSpace;
+        anchorPointBody2LocalSpace = body2Transform.getInverse() * jointInfo.anchorPointWorldSpace;
+    }
 
     // Compute the local-space anchor point for each body
-    mWorld.mBallAndSocketJointsComponents.setLocalAnchorPointBody1(entity, body1Transform.getInverse() * jointInfo.anchorPointWorldSpace);
-    mWorld.mBallAndSocketJointsComponents.setLocalAnchorPointBody2(entity, body2Transform.getInverse() * jointInfo.anchorPointWorldSpace);
+    mWorld.mBallAndSocketJointsComponents.setLocalAnchorPointBody1(entity, anchorPointBody1LocalSpace);
+    mWorld.mBallAndSocketJointsComponents.setLocalAnchorPointBody2(entity, anchorPointBody2LocalSpace);
 }
 
 

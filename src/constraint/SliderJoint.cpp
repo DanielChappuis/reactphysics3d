@@ -35,20 +35,47 @@ using namespace reactphysics3d;
 const decimal SliderJoint::BETA = decimal(0.2);
 
 // Constructor
-SliderJoint::SliderJoint(Entity entity, PhysicsWorld &world, const SliderJointInfo& jointInfo)
+SliderJoint::SliderJoint(Entity entity, PhysicsWorld& world, const SliderJointInfo& jointInfo)
             : Joint(entity, world) {
 
     assert(mWorld.mSliderJointsComponents.getUpperLimit(mEntity) >= decimal(0.0));
     assert(mWorld.mSliderJointsComponents.getLowerLimit(mEntity) <= decimal(0.0));
     assert(mWorld.mSliderJointsComponents.getMaxMotorForce(mEntity) >= decimal(0.0));
 
-    // Compute the local-space anchor point for each body
+    Vector3 anchorPointBody1Local;
+    Vector3 anchorPointBody2Local;
+    Vector3 sliderLocalAxisBody1;
+    Vector3 sliderLocalAxisBody2;
+
     const Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
     const Transform& transform2 = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
-    mWorld.mSliderJointsComponents.setLocalAnchorPointBody1(mEntity, transform1.getInverse() * jointInfo.anchorPointWorldSpace);
-    mWorld.mSliderJointsComponents.setLocalAnchorPointBody2(mEntity, transform2.getInverse() * jointInfo.anchorPointWorldSpace);
 
-	// Store inverse of initial rotation from body 1 to body 2 in body 1 space:
+    if (jointInfo.isUsingLocalSpaceAnchors) {
+
+        anchorPointBody1Local = jointInfo.anchorPointBody1LocalSpace;
+        anchorPointBody2Local = jointInfo.anchorPointBody2LocalSpace;
+
+        sliderLocalAxisBody1 = jointInfo.sliderAxisBody1Local;
+    }
+    else {
+
+        // Compute the local-space anchor point for each body
+        anchorPointBody1Local = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
+        anchorPointBody2Local = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
+
+        // Compute the slider axis in local-space of body 1
+        // TODO : Do not compute the inverse here, it has already been computed above
+        sliderLocalAxisBody1 = transform1.getOrientation().getInverse() *
+                           jointInfo.sliderAxisWorldSpace;
+        sliderLocalAxisBody1.normalize();
+    }
+
+    mWorld.mSliderJointsComponents.setLocalAnchorPointBody1(mEntity, anchorPointBody1Local);
+    mWorld.mSliderJointsComponents.setLocalAnchorPointBody2(mEntity, anchorPointBody2Local);
+
+    mWorld.mSliderJointsComponents.setSliderAxisBody1(mEntity, sliderLocalAxisBody1);
+
+    // Store inverse of initial rotation from body 1 to body 2 in body 1 space:
 	//
 	// q20 = q10 r0 
 	// <=> r0 = q10^-1 q20 
@@ -61,13 +88,6 @@ SliderJoint::SliderJoint(Entity entity, PhysicsWorld &world, const SliderJointIn
 	// r0 = initial rotation rotation from body 1 to body 2
     // TODO : Do not compute the inverse here, it has already been computed above
     mWorld.mSliderJointsComponents.setInitOrientationDifferenceInv(mEntity, transform2.getOrientation().getInverse() * transform1.getOrientation());
-
-    // Compute the slider axis in local-space of body 1
-    // TODO : Do not compute the inverse here, it has already been computed above
-    Vector3 sliderAxisBody1 = transform1.getOrientation().getInverse() *
-                       jointInfo.sliderAxisWorldSpace;
-    sliderAxisBody1.normalize();
-    mWorld.mSliderJointsComponents.setSliderAxisBody1(mEntity, sliderAxisBody1);
 }
 
 // Enable/Disable the limits of the joint

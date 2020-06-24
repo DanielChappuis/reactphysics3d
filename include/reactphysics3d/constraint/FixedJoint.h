@@ -43,8 +43,17 @@ struct FixedJointInfo : public JointInfo {
 
         // -------------------- Attributes -------------------- //
 
+        /// True if this object has been constructed using local-space anchors
+        bool isUsingLocalSpaceAnchors;
+
         /// Anchor point (in world-space coordinates)
         Vector3 anchorPointWorldSpace;
+
+        /// Anchor point on body 1 (in local-space coordinates)
+        Vector3 anchorPointBody1LocalSpace;
+
+        /// Anchor point on body 2 (in local-space coordinates)
+        Vector3 anchorPointBody2LocalSpace;
 
         /// Constructor
         /**
@@ -56,7 +65,23 @@ struct FixedJointInfo : public JointInfo {
         FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                        const Vector3& initAnchorPointWorldSpace)
                        : JointInfo(rigidBody1, rigidBody2, JointType::FIXEDJOINT),
+                         isUsingLocalSpaceAnchors(false),
                          anchorPointWorldSpace(initAnchorPointWorldSpace){}
+
+        /// Constructor
+        /**
+         * @param rigidBody1 Pointer to the first body of the joint
+         * @param rigidBody2 Pointer to the second body of the joint
+         * @param anchorPointBody1LocalSpace The anchor point on body 1 in local-space coordinates
+         * @param anchorPointBody2LocalSpace The anchor point on body 2 in local-space coordinates
+         */
+        FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                               const Vector3& anchorPointBody1LocalSpace,
+                               const Vector3& anchorPointBody2LocalSpace)
+                              : JointInfo(rigidBody1, rigidBody2, JointType::FIXEDJOINT),
+                                isUsingLocalSpaceAnchors(true),
+                                anchorPointBody1LocalSpace(anchorPointBody1LocalSpace),
+                                anchorPointBody2LocalSpace(anchorPointBody2LocalSpace) {}
 };
 
 // Class FixedJoint
