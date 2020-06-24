@@ -828,10 +828,10 @@ decimal SolveHingeJointSystem::computeNormalizedAngle(decimal angle) const {
     angle = std::fmod(angle, PI_TIMES_2);
 
     // Convert it into the range [-pi; pi]
-    if (angle < -PI) {
+    if (angle < -PI_RP3D) {
         return angle + PI_TIMES_2;
     }
-    else if (angle > PI) {
+    else if (angle > PI_RP3D) {
         return angle - PI_TIMES_2;
     }
     else {

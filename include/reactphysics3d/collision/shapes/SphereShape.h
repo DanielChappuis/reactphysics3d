@@ -181,7 +181,7 @@ inline Vector3 SphereShape::getLocalInertiaTensor(decimal mass) const {
 
 // Compute and return the volume of the collision shape
 inline decimal SphereShape::getVolume() const {
-    return decimal(4.0) / decimal(3.0) * reactphysics3d::PI * mMargin * mMargin * mMargin;
+    return decimal(4.0) / decimal(3.0) * reactphysics3d::PI_RP3D * mMargin * mMargin * mMargin;
 }
 
 // Return true if a point is inside the collision shape

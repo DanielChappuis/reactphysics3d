@@ -192,7 +192,7 @@ inline void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
 // Compute and return the volume of the collision shape
 inline decimal CapsuleShape::getVolume() const {
-    return reactphysics3d::PI * mMargin * mMargin * (decimal(4.0) * mMargin / decimal(3.0) + decimal(2.0) * mHalfHeight);
+    return reactphysics3d::PI_RP3D * mMargin * mMargin * (decimal(4.0) * mMargin / decimal(3.0) + decimal(2.0) * mHalfHeight);
 }
 
 // Return true if the collision shape is a polyhedron

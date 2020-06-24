@@ -138,7 +138,7 @@ class PhysicsWorld {
                 defaultPositionSolverNbIterations = 5;
                 defaultTimeBeforeSleep = 1.0f;
                 defaultSleepLinearVelocity = decimal(0.02);
-                defaultSleepAngularVelocity = decimal(3.0) * (PI / decimal(180.0));
+                defaultSleepAngularVelocity = decimal(3.0) * (PI_RP3D / decimal(180.0));
                 nbMaxContactManifolds = 3;
                 cosAngleSimilarContactManifold = decimal(0.95);
             }

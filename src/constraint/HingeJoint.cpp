@@ -65,8 +65,8 @@ HingeJoint::HingeJoint(Entity entity, PhysicsWorld &world, const HingeJointInfo&
 
     const decimal lowerLimit = mWorld.mHingeJointsComponents.getLowerLimit(mEntity);
     const decimal upperLimit = mWorld.mHingeJointsComponents.getUpperLimit(mEntity);
-    assert(lowerLimit <= decimal(0) && lowerLimit >= decimal(-2.0) * PI);
-    assert(upperLimit >= decimal(0) && upperLimit <= decimal(2.0) * PI);
+    assert(lowerLimit <= decimal(0) && lowerLimit >= decimal(-2.0) * PI_RP3D);
+    assert(upperLimit >= decimal(0) && upperLimit <= decimal(2.0) * PI_RP3D);
 
     mWorld.mHingeJointsComponents.setLocalAnchorPointBody1(mEntity, anchorPointBody1Local);
     mWorld.mHingeJointsComponents.setLocalAnchorPointBody2(mEntity, anchorPointBody2Local);
@@ -120,7 +120,7 @@ void HingeJoint::setMinAngleLimit(decimal lowerLimit) {
 
     const decimal limit = mWorld.mHingeJointsComponents.getLowerLimit(mEntity);
 
-    assert(limit <= decimal(0.0) && limit >= decimal(-2.0) * PI);
+    assert(limit <= decimal(0.0) && limit >= decimal(-2.0) * PI_RP3D);
 
     if (lowerLimit != limit) {
 
@@ -139,7 +139,7 @@ void HingeJoint::setMaxAngleLimit(decimal upperLimit) {
 
     const decimal limit = mWorld.mHingeJointsComponents.getUpperLimit(mEntity);
 
-    assert(limit >= decimal(0) && limit <= decimal(2.0) * PI);
+    assert(limit >= decimal(0) && limit <= decimal(2.0) * PI_RP3D);
 
     if (upperLimit != limit) {
 
