@@ -141,6 +141,8 @@ set(SCENES_SOURCES
     scenes/cubestack/CubeStackScene.cpp
     scenes/pile/PileScene.h
     scenes/pile/PileScene.cpp
+    scenes/boxtower/BoxTowerScene.h
+    scenes/boxtower/BoxTowerScene.cpp
 )
 
 # Create the executable
