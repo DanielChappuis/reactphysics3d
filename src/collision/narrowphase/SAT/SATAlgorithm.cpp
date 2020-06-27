@@ -657,18 +657,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                                 Vector3 closestPointPolyhedron1EdgeLocalSpace = polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge;
 
                                 // Compute the world normal
-                                // We use the direction from the centroid to the edge of the shape that is not a triangle
-                                // to avoid possible degeneracies when axis direction is orthogonal to triangle normal
-                                Vector3 normal;
-                                if (isShape1Triangle) {
-                                   normal = polyhedron2->getCentroid() - closestPointPolyhedron2Edge;
-                                }
-                                else {
-                                   normal = polyhedron1ToPolyhedron2.getOrientation() * ((polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge) - polyhedron1->getCentroid());
-                                }
-
-                                //Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
-                                Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * normal.getUnit();
+                                Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * separatingAxisPolyhedron2Space;
 
                                 // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
                                 TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfoBatch.collisionShapes1[batchIndex], narrowPhaseInfoBatch.collisionShapes2[batchIndex],
@@ -794,7 +783,15 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                         break;
                     }
 
-                    if (penetrationDepth < minPenetrationDepth) {
+                    // If the current minimum penetration depth is along a face normal axis (isMinPenetrationFaceNormal=true) and we have found a new
+                    // smaller pentration depth along an edge-edge cross-product axis we want to favor the face normal axis because contact manifolds between
+                    // faces have more contact points and therefore more stable than the single contact point of an edge-edge collision. It means that if the new minimum
+                    // penetration depth from the edge-edge contact is only a little bit smaller than the current minPenetrationDepth (from a face contact), we favor
+                    // the face contact and do not generate an edge-edge contact. However, if the new penetration depth from the edge-edge contact is really smaller than
+                    // the current one, we generate an edge-edge contact.
+                    // To do this, we use a relative and absolute bias to increase a little bit the new penetration depth from the edge-edge contact during the comparison test
+                    if ((isMinPenetrationFaceNormal && penetrationDepth1 * SEPARATING_AXIS_RELATIVE_TOLERANCE + SEPARATING_AXIS_ABSOLUTE_TOLERANCE < minPenetrationDepth) ||
+                        (!isMinPenetrationFaceNormal && penetrationDepth < minPenetrationDepth)) {
 
                         minPenetrationDepth = penetrationDepth;
                         isMinPenetrationFaceNormalPolyhedron1 = false;
@@ -862,17 +859,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 Vector3 closestPointPolyhedron1EdgeLocalSpace = polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge;
 
                 // Compute the world normal
-                // We use the direction from the centroid to the edge of the shape that is not a triangle
-                // to avoid possible degeneracies when axis direction is orthogonal to triangle normal
-                Vector3 normal;
-                if (isShape1Triangle) {
-                   normal = polyhedron2->getCentroid() - closestPointPolyhedron2Edge;
-                }
-                else {
-                   normal = polyhedron1ToPolyhedron2.getOrientation() * ((polyhedron2ToPolyhedron1 * closestPointPolyhedron1Edge) - polyhedron1->getCentroid());
-                }
-                //Vector3 normalWorld = narrowPhaseInfo->shape2ToWorldTransform.getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
-                Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * normal.getUnit();
+                Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * minEdgeVsEdgeSeparatingAxisPolyhedron2Space;
 
                 // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
                 TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfoBatch.collisionShapes1[batchIndex], narrowPhaseInfoBatch.collisionShapes2[batchIndex],
