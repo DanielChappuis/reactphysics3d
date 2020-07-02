@@ -759,6 +759,9 @@ void PhysicsWorld::createIslands() {
     // Create a stack for the bodies to visit during the Depth First Search
     Stack<Entity> bodyEntityIndicesToVisit(mMemoryManager.getSingleFrameAllocator());
 
+    // List of static bodies added to the current island (used to reset the isAlreadyInIsland variable of static bodies)
+    List<Entity> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator());
+
     uint nbTotalManifolds = 0;
 
     // For each rigid body component
@@ -795,7 +798,13 @@ void PhysicsWorld::createIslands() {
             rigidBodyToVisit->setIsSleeping(false);
 
             // If the current body is static, we do not want to perform the DFS search across that body
-            if (rigidBodyToVisit->getType() == BodyType::STATIC) continue;
+            if (rigidBodyToVisit->getType() == BodyType::STATIC) {
+
+                staticBodiesAddedToIsland.add(bodyToVisitEntity);
+
+                // Go to the next body
+                continue;
+            }
 
             // If the body is involved in contacts with other bodies
             auto itBodyContactPairs = mCollisionDetection.mMapBodyToContactPairs.find(bodyToVisitEntity);
@@ -863,12 +872,13 @@ void PhysicsWorld::createIslands() {
 
         // Reset the isAlreadyIsland variable of the static bodies so that they
         // can also be included in the other islands
-        for (uint j=0; j < mRigidBodyComponents.getNbEnabledComponents(); j++) {
+        for (uint j=0; j < staticBodiesAddedToIsland.size(); j++) {
 
-            if (mRigidBodyComponents.mBodyTypes[j] == BodyType::STATIC) {
-                mRigidBodyComponents.mIsAlreadyInIsland[j] = false;
-            }
+            assert(mRigidBodyComponents.getBodyType(staticBodiesAddedToIsland[j]) == BodyType::STATIC);
+            mRigidBodyComponents.setIsAlreadyInIsland(staticBodiesAddedToIsland[j], false);
         }
+
+        staticBodiesAddedToIsland.clear();
     }
 
     mCollisionDetection.mMapBodyToContactPairs.clear(true);
