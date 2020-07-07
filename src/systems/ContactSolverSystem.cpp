@@ -113,7 +113,7 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
 
     RP3D_PROFILE("ContactSolver::initializeForIsland()", mProfiler);
 
-    assert(mIslands.bodyEntities[islandIndex].size() > 0);
+    assert(mIslands.nbBodiesInIsland[islandIndex] > 0);
     assert(mIslands.nbContactManifolds[islandIndex] > 0);
 
     // For each contact manifold of the island

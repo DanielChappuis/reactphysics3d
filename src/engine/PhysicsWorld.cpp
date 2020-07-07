@@ -756,11 +756,14 @@ void PhysicsWorld::createIslands() {
         mJointsComponents.mIsAlreadyInIsland[i] = false;
     }
 
+    // Reserve memory for the islands
+    mIslands.reserveMemory();
+
     // Create a stack for the bodies to visit during the Depth First Search
-    Stack<Entity> bodyEntityIndicesToVisit(mMemoryManager.getSingleFrameAllocator());
+    Stack<uint32> bodyEntityIndicesToVisit(mMemoryManager.getSingleFrameAllocator(), mIslands.getNbMaxBodiesInIslandPreviousFrame());
 
     // List of static bodies added to the current island (used to reset the isAlreadyInIsland variable of static bodies)
-    List<Entity> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator());
+    List<uint32> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator());
 
     uint nbTotalManifolds = 0;
 
@@ -778,7 +781,7 @@ void PhysicsWorld::createIslands() {
 
         // Add the body into the stack of bodies to visit
         mRigidBodyComponents.mIsAlreadyInIsland[b] = true;
-        bodyEntityIndicesToVisit.push(mRigidBodyComponents.mBodiesEntities[b]);
+        bodyEntityIndicesToVisit.push(b);
 
         // Create the new island
         uint32 islandIndex = mIslands.addIsland(nbTotalManifolds);
@@ -787,20 +790,26 @@ void PhysicsWorld::createIslands() {
         while (bodyEntityIndicesToVisit.size() > 0) {
 
             // Get the next body to visit from the stack
-            const Entity bodyToVisitEntity = bodyEntityIndicesToVisit.pop();
+            const uint32 bodyToVisitIndex = bodyEntityIndicesToVisit.pop();
+
+            // Get the body entity
+            const Entity bodyToVisitEntity = mRigidBodyComponents.mBodiesEntities[bodyToVisitIndex];
 
             // Add the body into the island
-            mIslands.bodyEntities[islandIndex].add(bodyToVisitEntity);
+            mIslands.addBodyToIsland(bodyToVisitEntity);
 
-            RigidBody* rigidBodyToVisit = static_cast<RigidBody*>(mCollisionBodyComponents.getBody(bodyToVisitEntity));
+            RigidBody* rigidBodyToVisit = mRigidBodyComponents.mRigidBodies[bodyToVisitIndex];
 
-            // Awake the body if it is sleeping
+            // Awake the body if it is sleeping (note that this called might change the body index in the mRigidBodyComponents array)
             rigidBodyToVisit->setIsSleeping(false);
 
             // If the current body is static, we do not want to perform the DFS search across that body
             if (rigidBodyToVisit->getType() == BodyType::STATIC) {
 
-                staticBodiesAddedToIsland.add(bodyToVisitEntity);
+                // Get the new body index in the mRigidBodyComponents (this index might have changed due to the call to rigidBodyToVisite->setIsSleeping(false))
+                const uint32 newBodyIndex = mRigidBodyComponents.getEntityIndex(bodyToVisitEntity);
+
+                staticBodiesAddedToIsland.add(newBodyIndex);
 
                 // Go to the next body
                 continue;
@@ -831,13 +840,14 @@ void PhysicsWorld::createIslands() {
                         pair.isAlreadyInIsland = true;
 
                         const Entity otherBodyEntity = pair.body1Entity == bodyToVisitEntity ? pair.body2Entity : pair.body1Entity;
+                        const uint32 otherBodyIndex = mRigidBodyComponents.getEntityIndex(otherBodyEntity);
 
                         // Check if the other body has already been added to the island
-                        if (mRigidBodyComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
+                        if (mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex]) continue;
 
                         // Insert the other body into the stack of bodies to visit
-                        bodyEntityIndicesToVisit.push(otherBodyEntity);
-                        mRigidBodyComponents.setIsAlreadyInIsland(otherBodyEntity, true);
+                        bodyEntityIndicesToVisit.push(otherBodyIndex);
+                        mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex] = true;
                     }
                     else {
 
@@ -861,12 +871,14 @@ void PhysicsWorld::createIslands() {
                 const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
                 const Entity otherBodyEntity = body1Entity == bodyToVisitEntity ? body2Entity : body1Entity;
 
+                const uint32 otherBodyIndex = mRigidBodyComponents.getEntityIndex(otherBodyEntity);
+
                 // Check if the other body has already been added to the island
-                if (mRigidBodyComponents.getIsAlreadyInIsland(otherBodyEntity)) continue;
+                if (mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex]) continue;
 
                 // Insert the other body into the stack of bodies to visit
-                bodyEntityIndicesToVisit.push(otherBodyEntity);
-                mRigidBodyComponents.setIsAlreadyInIsland(otherBodyEntity, true);
+                bodyEntityIndicesToVisit.push(otherBodyIndex);
+                mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex] = true;
             }
         }
 
@@ -874,8 +886,8 @@ void PhysicsWorld::createIslands() {
         // can also be included in the other islands
         for (uint j=0; j < staticBodiesAddedToIsland.size(); j++) {
 
-            assert(mRigidBodyComponents.getBodyType(staticBodiesAddedToIsland[j]) == BodyType::STATIC);
-            mRigidBodyComponents.setIsAlreadyInIsland(staticBodiesAddedToIsland[j], false);
+            assert(mRigidBodyComponents.mBodyTypes[staticBodiesAddedToIsland[j]] == BodyType::STATIC);
+            mRigidBodyComponents.mIsAlreadyInIsland[staticBodiesAddedToIsland[j]] = false;
         }
 
         staticBodiesAddedToIsland.clear();
@@ -900,30 +912,29 @@ void PhysicsWorld::updateSleepingBodies(decimal timeStep) {
         decimal minSleepTime = DECIMAL_LARGEST;
 
         // For each body of the island
-        for (uint b=0; b < mIslands.bodyEntities[i].size(); b++) {
+        for (uint b=0; b < mIslands.nbBodiesInIsland[i]; b++) {
 
-            const Entity bodyEntity = mIslands.bodyEntities[i][b];
+            const Entity bodyEntity = mIslands.bodyEntities[mIslands.startBodyEntitiesIndex[i] + b];
+            const uint32 bodyIndex = mRigidBodyComponents.getEntityIndex(bodyEntity);
 
             // Skip static bodies
-            if (mRigidBodyComponents.getBodyType(bodyEntity) == BodyType::STATIC) continue;
+            if (mRigidBodyComponents.mBodyTypes[bodyIndex] == BodyType::STATIC) continue;
 
             // If the body is velocity is large enough to stay awake
-            if (mRigidBodyComponents.getLinearVelocity(bodyEntity).lengthSquare() > sleepLinearVelocitySquare ||
-                mRigidBodyComponents.getAngularVelocity(bodyEntity).lengthSquare() > sleepAngularVelocitySquare ||
-                !mRigidBodyComponents.getIsAllowedToSleep(bodyEntity)) {
+            if (mRigidBodyComponents.mLinearVelocities[bodyIndex].lengthSquare() > sleepLinearVelocitySquare ||
+                mRigidBodyComponents.mAngularVelocities[bodyIndex].lengthSquare() > sleepAngularVelocitySquare ||
+                !mRigidBodyComponents.mIsAllowedToSleep[bodyIndex]) {
 
                 // Reset the sleep time of the body
-                mRigidBodyComponents.setSleepTime(bodyEntity, decimal(0.0));
+                mRigidBodyComponents.mSleepTimes[bodyIndex] = decimal(0.0);
                 minSleepTime = decimal(0.0);
             }
             else {  // If the body velocity is below the sleeping velocity threshold
 
                 // Increase the sleep time
-                decimal sleepTime = mRigidBodyComponents.getSleepTime(bodyEntity);
-                mRigidBodyComponents.setSleepTime(bodyEntity, sleepTime + timeStep);
-                sleepTime = mRigidBodyComponents.getSleepTime(bodyEntity);
-                if (sleepTime < minSleepTime) {
-                    minSleepTime = sleepTime;
+                mRigidBodyComponents.mSleepTimes[bodyIndex] += timeStep;
+                if (mRigidBodyComponents.mSleepTimes[bodyIndex] < minSleepTime) {
+                    minSleepTime = mRigidBodyComponents.mSleepTimes[bodyIndex];
                 }
             }
         }
@@ -934,9 +945,9 @@ void PhysicsWorld::updateSleepingBodies(decimal timeStep) {
         if (minSleepTime >= mTimeBeforeSleep) {
 
             // Put all the bodies of the island to sleep
-            for (uint b=0; b < mIslands.bodyEntities[i].size(); b++) {
+            for (uint b=0; b < mIslands.nbBodiesInIsland[i]; b++) {
 
-                const Entity bodyEntity = mIslands.bodyEntities[i][b];
+                const Entity bodyEntity = mIslands.bodyEntities[mIslands.startBodyEntitiesIndex[i] + b];
                 RigidBody* body = mRigidBodyComponents.getRigidBody(bodyEntity);
                 body->setIsSleeping(true);
             }
