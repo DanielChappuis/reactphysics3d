@@ -14,6 +14,8 @@ do not hesitate to take a look at the user manual.
 
 ### Changed
 
+ - The PhysicsWorld::setGravity() method now takes a const parameter
+
 ### Removed
 
 ### Fixed
