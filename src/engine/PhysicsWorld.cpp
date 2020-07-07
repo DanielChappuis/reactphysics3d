@@ -975,7 +975,7 @@ void PhysicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
 /**
  * @param gravity The gravity vector (in meter per seconds squared)
  */
-void PhysicsWorld::setGravity(Vector3& gravity) {
+void PhysicsWorld::setGravity(const Vector3& gravity) {
 
     mConfig.gravity = gravity;
 

@@ -395,7 +395,7 @@ class PhysicsWorld {
         Vector3 getGravity() const;
 
         /// Set the gravity vector of the world
-        void setGravity(Vector3& gravity);
+        void setGravity(const Vector3& gravity);
 
         /// Return if the gravity is on
         bool isGravityEnabled() const;
