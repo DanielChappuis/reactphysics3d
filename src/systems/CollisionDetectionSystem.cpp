@@ -520,6 +520,9 @@ void CollisionDetectionSystem::computeNarrowPhase() {
     // Swap the previous and current contacts lists
     swapPreviousAndCurrentContacts();
 
+    mPotentialContactManifolds.reserve(mPreviousContactManifolds->size());
+    mPotentialContactPoints.reserve(mPreviousContactPoints->size());
+
     // Test the narrow-phase collision detection on the batches to be tested
     testNarrowPhaseCollision(mNarrowPhaseInput, true, allocator);
 

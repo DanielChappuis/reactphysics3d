@@ -55,7 +55,7 @@ struct ContactManifoldInfo {
 
         /// Constructor
         ContactManifoldInfo(uint64 pairId, MemoryAllocator& allocator)
-               : potentialContactPointsIndices(allocator), pairId(pairId) {
+               : potentialContactPointsIndices(allocator, 4), pairId(pairId) {
 
         }
 

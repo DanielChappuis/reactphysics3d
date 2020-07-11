@@ -125,16 +125,16 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
 
         assert(externalManifold.nbContactPoints > 0);
 
+        const uint rigidBodyIndex1 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity1);
+        const uint rigidBodyIndex2 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity2);
+
         // Get the two bodies of the contact
-        RigidBody* body1 = static_cast<RigidBody*>(mBodyComponents.getBody(externalManifold.bodyEntity1));
-        RigidBody* body2 = static_cast<RigidBody*>(mBodyComponents.getBody(externalManifold.bodyEntity2));
+        RigidBody* body1 = mRigidBodyComponents.mRigidBodies[rigidBodyIndex1];
+        RigidBody* body2 = mRigidBodyComponents.mRigidBodies[rigidBodyIndex2];
         assert(body1 != nullptr);
         assert(body2 != nullptr);
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity1));
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity2));
-
-        const uint rigidBodyIndex1 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity1);
-        const uint rigidBodyIndex2 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity2);
 
         Collider* collider1 = mColliderComponents.getCollider(externalManifold.colliderEntity1);
         Collider* collider2 = mColliderComponents.getCollider(externalManifold.colliderEntity2);

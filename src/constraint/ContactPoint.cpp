@@ -36,7 +36,7 @@ ContactPoint::ContactPoint(const ContactPointInfo* contactInfo, decimal persiste
                mPenetrationDepth(contactInfo->penetrationDepth),
                mLocalPointOnShape1(contactInfo->localPoint1),
                mLocalPointOnShape2(contactInfo->localPoint2),
-               mIsRestingContact(false), mIsObsolete(false), mNext(nullptr), mPrevious(nullptr),
+               mIsRestingContact(false), mIsObsolete(false),
                mPersistentContactDistanceThreshold(persistentContactDistanceThreshold) {
 
     assert(mPenetrationDepth > decimal(0.0));
