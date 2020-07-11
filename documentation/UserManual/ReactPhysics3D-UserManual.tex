@@ -1201,7 +1201,7 @@ indices[16]=2; indices[17]=3; indices[18]=7; indices[19]=6;
 indices[20]=0; indices[21]=4; indices[22]=7; indices[23]=3;
 
 // Description of the six faces of the convex mesh
-polygonFaces = new PolygonVertexArray::PolygonFace[6];
+PolygonVertexArray::PolygonFace* polygonFaces = new PolygonVertexArray::PolygonFace[6];
 PolygonVertexArray::PolygonFace* face = polygonFaces;
 for (int f = 0; f < 6; f++) {
 
@@ -1215,7 +1215,7 @@ for (int f = 0; f < 6; f++) {
 }
 
 // Create the polygon vertex array
-PolygonaVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 x sizeof(float),
+PolygonVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 x sizeof(float),
 indices, sizeof(int), 6, polygonFaces,
 PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
