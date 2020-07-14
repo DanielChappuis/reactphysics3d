@@ -113,6 +113,9 @@ class Components {
         /// Return true if there is a component for a given entity
         bool hasComponent(Entity entity) const;
 
+        /// Return true if there is a component for a given entiy and if so set the entity index
+        bool hasComponentGetIndex(Entity entity, uint32& entityIndex) const;
+
         /// Return the number of components
         uint32 getNbComponents() const;
 
@@ -132,6 +135,19 @@ inline bool Components::getIsEntityDisabled(Entity entity) const {
 // Return true if there is a component for a given entity
 inline bool Components::hasComponent(Entity entity) const {
     return mMapEntityToComponentIndex.containsKey(entity);
+}
+
+// Return true if there is a component for a given entiy and if so set the entity index
+inline bool Components::hasComponentGetIndex(Entity entity, uint32& entityIndex) const {
+
+    auto it = mMapEntityToComponentIndex.find(entity);
+
+    if (it != mMapEntityToComponentIndex.end()) {
+        entityIndex = it->second;
+        return true;
+    }
+
+    return false;
 }
 
 // Return the number of components

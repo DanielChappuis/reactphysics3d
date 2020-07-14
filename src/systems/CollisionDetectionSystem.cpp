@@ -49,9 +49,10 @@ using namespace reactphysics3d;
 using namespace std;
 
 // Constructor
-CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, ColliderComponents& collidersComponents, TransformComponents& transformComponents,
-                                       CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents, MemoryManager& memoryManager)
-                   : mMemoryManager(memoryManager), mCollidersComponents(collidersComponents),
+CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, ColliderComponents& collidersComponents,  TransformComponents& transformComponents,
+                                                   CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
+                                                   MemoryManager& memoryManager)
+                   : mMemoryManager(memoryManager), mCollidersComponents(collidersComponents), mRigidBodyComponents(rigidBodyComponents),
                      mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()),
                      mOverlappingPairs(mMemoryManager.getPoolAllocator(), mMemoryManager.getSingleFrameAllocator(), mCollidersComponents,
@@ -67,7 +68,7 @@ CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, Collider
                      mContactManifolds2(mMemoryManager.getPoolAllocator()), mPreviousContactManifolds(&mContactManifolds1), mCurrentContactManifolds(&mContactManifolds2),
                      mContactPoints1(mMemoryManager.getPoolAllocator()),
                      mContactPoints2(mMemoryManager.getPoolAllocator()), mPreviousContactPoints(&mContactPoints1),
-                     mCurrentContactPoints(&mContactPoints2), mMapBodyToContactPairs(mMemoryManager.getSingleFrameAllocator()) {
+                     mCurrentContactPoints(&mContactPoints2) {
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -481,8 +482,7 @@ void CollisionDetectionSystem::processAllPotentialContacts(NarrowPhaseInput& nar
                                                      List<ContactPointInfo>& potentialContactPoints,
                                                      Map<uint64, uint>* mapPairIdToContactPairIndex,
                                                      List<ContactManifoldInfo>& potentialContactManifolds,
-                                                     List<ContactPair>* contactPairs,
-                                                     Map<Entity, List<uint>>& mapBodyToContactPairs) {
+                                                     List<ContactPair>* contactPairs) {
 
     assert(contactPairs->size() == 0);
     assert(mapPairIdToContactPairIndex->size() == 0);
@@ -497,17 +497,17 @@ void CollisionDetectionSystem::processAllPotentialContacts(NarrowPhaseInput& nar
 
     // Process the potential contacts
     processPotentialContacts(sphereVsSphereBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs, mapBodyToContactPairs);
+                             potentialContactManifolds, contactPairs);
     processPotentialContacts(sphereVsCapsuleBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs, mapBodyToContactPairs);
+                             potentialContactManifolds, contactPairs);
     processPotentialContacts(capsuleVsCapsuleBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs, mapBodyToContactPairs);
+                             potentialContactManifolds, contactPairs);
     processPotentialContacts(sphereVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                            potentialContactManifolds, contactPairs, mapBodyToContactPairs);
+                            potentialContactManifolds, contactPairs);
     processPotentialContacts(capsuleVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs, mapBodyToContactPairs);
+                             potentialContactManifolds, contactPairs);
     processPotentialContacts(convexPolyhedronVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs, mapBodyToContactPairs);
+                             potentialContactManifolds, contactPairs);
 }
 
 // Compute the narrow-phase collision detection
@@ -528,7 +528,7 @@ void CollisionDetectionSystem::computeNarrowPhase() {
 
     // Process all the potential contacts after narrow-phase collision
     processAllPotentialContacts(mNarrowPhaseInput, true, mPotentialContactPoints, mCurrentMapPairIdToContactPairIndex,
-                                mPotentialContactManifolds, mCurrentContactPairs, mMapBodyToContactPairs);
+                                mPotentialContactManifolds, mCurrentContactPairs);
 
     // Reduce the number of contact points in the manifolds
     reducePotentialContactManifolds(mCurrentContactPairs, mPotentialContactManifolds, mPotentialContactPoints);
@@ -662,18 +662,15 @@ bool CollisionDetectionSystem::computeNarrowPhaseCollisionSnapshot(NarrowPhaseIn
         List<ContactPair> lostContactPairs(allocator);                  // Not used during collision snapshots
         List<ContactManifold> contactManifolds(allocator);
         List<ContactPoint> contactPoints(allocator);
-        Map<Entity, List<uint>> mapBodyToContactPairs(allocator);
 
         // Process all the potential contacts after narrow-phase collision
-        processAllPotentialContacts(narrowPhaseInput, true, potentialContactPoints, &mapPairIdToContactPairIndex, potentialContactManifolds,
-                                    &contactPairs, mapBodyToContactPairs);
+        processAllPotentialContacts(narrowPhaseInput, true, potentialContactPoints, &mapPairIdToContactPairIndex, potentialContactManifolds, &contactPairs);
 
         // Reduce the number of contact points in the manifolds
         reducePotentialContactManifolds(&contactPairs, potentialContactManifolds, potentialContactPoints);
 
         // Create the actual contact manifolds and contact points
-        createSnapshotContacts(contactPairs, contactManifolds, contactPoints, potentialContactManifolds,
-                               potentialContactPoints);
+        createSnapshotContacts(contactPairs, contactManifolds, contactPoints, potentialContactManifolds, potentialContactPoints);
 
         // Report the contacts to the user
         reportContacts(callback, &contactPairs, &contactManifolds, &contactPoints, lostContactPairs);
@@ -727,6 +724,14 @@ void CollisionDetectionSystem::createContacts() {
         contactPair.contactManifoldsIndex = mCurrentContactManifolds->size();
         contactPair.nbContactManifolds = contactPair.potentialContactManifoldsIndices.size();
         contactPair.contactPointsIndex = mCurrentContactPoints->size();
+
+        // Add the associated contact pair to both bodies of the pair (used to create islands later)
+        if (mRigidBodyComponents.hasComponent(contactPair.body1Entity)) {
+           mRigidBodyComponents.addContacPair(contactPair.body1Entity, p);
+        }
+        if (mRigidBodyComponents.hasComponent(contactPair.body2Entity)) {
+           mRigidBodyComponents.addContacPair(contactPair.body2Entity, p);
+        }
 
         // For each potential contact manifold of the pair
         for (uint m=0; m < contactPair.potentialContactManifoldsIndices.size(); m++) {
@@ -985,8 +990,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                                                         List<ContactPointInfo>& potentialContactPoints,
                                                         Map<uint64, uint>* mapPairIdToContactPairIndex,
                                                         List<ContactManifoldInfo>& potentialContactManifolds,
-                                                        List<ContactPair>* contactPairs,
-                                                        Map<Entity, List<uint>>& mapBodyToContactPairs) {
+                                                        List<ContactPair>* contactPairs) {
 
     RP3D_PROFILE("CollisionDetectionSystem::processPotentialContacts()", mProfiler);
 
@@ -1035,25 +1039,6 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                 contactPairs->add(overlappingPairContact);
                 pairContact = &((*contactPairs)[newContactPairIndex]);
                 mapPairIdToContactPairIndex->add(Pair<uint64, uint>(pairId, newContactPairIndex));
-
-                auto itbodyContactPairs = mapBodyToContactPairs.find(body1Entity);
-                if (itbodyContactPairs != mapBodyToContactPairs.end()) {
-                    itbodyContactPairs->second.add(newContactPairIndex);
-                }
-                else {
-                    List<uint> contactPairs(mMemoryManager.getPoolAllocator(), 1);
-                    contactPairs.add(newContactPairIndex);
-                    mapBodyToContactPairs.add(Pair<Entity, List<uint>>(body1Entity, contactPairs));
-                }
-                itbodyContactPairs = mapBodyToContactPairs.find(body2Entity);
-                if (itbodyContactPairs != mapBodyToContactPairs.end()) {
-                    itbodyContactPairs->second.add(newContactPairIndex);
-                }
-                else {
-                    List<uint> contactPairs(mMemoryManager.getPoolAllocator(), 1);
-                    contactPairs.add(newContactPairIndex);
-                    mapBodyToContactPairs.add(Pair<Entity, List<uint>>(body2Entity, contactPairs));
-                }
             }
             else { // If a ContactPair already exists for this overlapping pair, we use this one
 

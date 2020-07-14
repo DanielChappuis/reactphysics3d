@@ -43,7 +43,7 @@ RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) +
-                                sizeof(bool) + sizeof(bool) + sizeof(List<Entity>)) {
+                                sizeof(bool) + sizeof(bool) + sizeof(List<Entity>) + sizeof(List<uint>)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -89,6 +89,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     bool* newIsGravityEnabled = reinterpret_cast<bool*>(newCentersOfMassWorld + nbComponentsToAllocate);
     bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newIsGravityEnabled + nbComponentsToAllocate);
     List<Entity>* newJoints = reinterpret_cast<List<Entity>*>(newIsAlreadyInIsland + nbComponentsToAllocate);
+    List<uint>* newContactPairs = reinterpret_cast<List<uint>*>(newJoints + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -121,6 +122,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newIsGravityEnabled, mIsGravityEnabled, mNbComponents * sizeof(bool));
         memcpy(newIsAlreadyInIsland, mIsAlreadyInIsland, mNbComponents * sizeof(bool));
         memcpy(newJoints, mJoints, mNbComponents * sizeof(List<Entity>));
+        memcpy(newContactPairs, mContactPairs, mNbComponents * sizeof(List<uint>));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -155,6 +157,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     mIsGravityEnabled = newIsGravityEnabled;
     mIsAlreadyInIsland = newIsAlreadyInIsland;
     mJoints = newJoints;
+    mContactPairs = newContactPairs;
 }
 
 // Add a component
@@ -191,6 +194,7 @@ void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     mIsGravityEnabled[index] = true;
     mIsAlreadyInIsland[index] = false;
     new (mJoints + index) List<Entity>(mMemoryAllocator);
+    new (mContactPairs + index) List<uint>(mMemoryAllocator);
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(bodyEntity, index));
@@ -235,6 +239,7 @@ void RigidBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex
     mIsGravityEnabled[destIndex] = mIsGravityEnabled[srcIndex];
     mIsAlreadyInIsland[destIndex] = mIsAlreadyInIsland[srcIndex];
     new (mJoints + destIndex) List<Entity>(mJoints[srcIndex]);
+    new (mContactPairs + destIndex) List<uint>(mContactPairs[srcIndex]);
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -278,6 +283,7 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     bool isGravityEnabled1 = mIsGravityEnabled[index1];
     bool isAlreadyInIsland1 = mIsAlreadyInIsland[index1];
     List<Entity> joints1 = mJoints[index1];
+    List<uint> contactPairs1 = mContactPairs[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -312,6 +318,7 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     mIsGravityEnabled[index2] = isGravityEnabled1;
     mIsAlreadyInIsland[index2] = isAlreadyInIsland1;
     new (mJoints + index2) List<Entity>(joints1);
+    new (mContactPairs + index2) List<uint>(contactPairs1);
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity1, index2));
@@ -347,4 +354,5 @@ void RigidBodyComponents::destroyComponent(uint32 index) {
     mCentersOfMassLocal[index].~Vector3();
     mCentersOfMassWorld[index].~Vector3();
     mJoints[index].~List<Entity>();
+    mContactPairs[index].~List<uint>();
 }

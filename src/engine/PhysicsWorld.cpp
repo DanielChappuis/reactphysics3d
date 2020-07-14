@@ -233,9 +233,9 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
     mCollisionBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
-    if (mRigidBodyComponents.hasComponent(bodyEntity)) {
-        mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
-    }
+    assert(mRigidBodyComponents.hasComponent(bodyEntity));
+
+    mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
     // For each collider of the body
     const List<Entity>& collidersEntities = mCollisionBodyComponents.getColliders(bodyEntity);
@@ -245,27 +245,23 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
     }
 
     // Disable the joints of the body if necessary
-    if (mRigidBodyComponents.hasComponent(bodyEntity)) {
+    // For each joint of the body
+    const List<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
+    for(uint32 i=0; i < joints.size(); i++) {
 
-        // For each joint of the body
-        const List<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
-        for(uint32 i=0; i < joints.size(); i++) {
+        const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
+        const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
 
-            const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
-            const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
+        // If both bodies of the joint are disabled
+        if (mRigidBodyComponents.getIsEntityDisabled(body1Entity) && mRigidBodyComponents.getIsEntityDisabled(body2Entity)) {
 
-            // If both bodies of the joint are disabled
-            if (mRigidBodyComponents.getIsEntityDisabled(body1Entity) &&
-                mRigidBodyComponents.getIsEntityDisabled(body2Entity)) {
+            // We disable the joint
+            setJointDisabled(joints[i], true);
+        }
+        else {
 
-                // We disable the joint
-                setJointDisabled(joints[i], true);
-            }
-            else {
-
-                // Enable the joint
-                setJointDisabled(joints[i], false);
-            }
+            // Enable the joint
+            setJointDisabled(joints[i], false);
         }
     }
 }
@@ -760,10 +756,10 @@ void PhysicsWorld::createIslands() {
     mIslands.reserveMemory();
 
     // Create a stack for the bodies to visit during the Depth First Search
-    Stack<uint32> bodyEntityIndicesToVisit(mMemoryManager.getSingleFrameAllocator(), mIslands.getNbMaxBodiesInIslandPreviousFrame());
+    Stack<Entity> bodyEntitiesToVisit(mMemoryManager.getSingleFrameAllocator(), mIslands.getNbMaxBodiesInIslandPreviousFrame());
 
     // List of static bodies added to the current island (used to reset the isAlreadyInIsland variable of static bodies)
-    List<uint32> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator());
+    List<Entity> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator());
 
     uint nbTotalManifolds = 0;
 
@@ -777,83 +773,75 @@ void PhysicsWorld::createIslands() {
         if (mRigidBodyComponents.mBodyTypes[b] == BodyType::STATIC) continue;
 
         // Reset the stack of bodies to visit
-        bodyEntityIndicesToVisit.clear();
+        bodyEntitiesToVisit.clear();
 
         // Add the body into the stack of bodies to visit
         mRigidBodyComponents.mIsAlreadyInIsland[b] = true;
-        bodyEntityIndicesToVisit.push(b);
+        bodyEntitiesToVisit.push(mRigidBodyComponents.mBodiesEntities[b]);
 
         // Create the new island
         uint32 islandIndex = mIslands.addIsland(nbTotalManifolds);
 
         // While there are still some bodies to visit in the stack
-        while (bodyEntityIndicesToVisit.size() > 0) {
-
-            // Get the next body to visit from the stack
-            const uint32 bodyToVisitIndex = bodyEntityIndicesToVisit.pop();
+        while (bodyEntitiesToVisit.size() > 0) {
 
             // Get the body entity
-            const Entity bodyToVisitEntity = mRigidBodyComponents.mBodiesEntities[bodyToVisitIndex];
+            const Entity bodyToVisitEntity = bodyEntitiesToVisit.pop();
 
             // Add the body into the island
             mIslands.addBodyToIsland(bodyToVisitEntity);
 
-            RigidBody* rigidBodyToVisit = mRigidBodyComponents.mRigidBodies[bodyToVisitIndex];
+            RigidBody* rigidBodyToVisit = mRigidBodyComponents.getRigidBody(bodyToVisitEntity);
 
             // Awake the body if it is sleeping (note that this called might change the body index in the mRigidBodyComponents array)
             rigidBodyToVisit->setIsSleeping(false);
 
-            // If the current body is static, we do not want to perform the DFS search across that body
-            if (rigidBodyToVisit->getType() == BodyType::STATIC) {
+            // Compute the body index in the array (Note that it could have changed because of the previous call to rigidBodyToVisit->setIsSleeping(false))
+            const uint32 bodyToVisitIndex = mRigidBodyComponents.getEntityIndex(bodyToVisitEntity);
 
-                // Get the new body index in the mRigidBodyComponents (this index might have changed due to the call to rigidBodyToVisite->setIsSleeping(false))
-                const uint32 newBodyIndex = mRigidBodyComponents.getEntityIndex(bodyToVisitEntity);
+            // If the currenbodyEntityIndicesToVisitt body is static, we do not want to perform the DFS search across that body
+            if (mRigidBodyComponents.mBodyTypes[bodyToVisitIndex] == BodyType::STATIC) {
 
-                staticBodiesAddedToIsland.add(newBodyIndex);
+                staticBodiesAddedToIsland.add(bodyToVisitEntity);
 
                 // Go to the next body
                 continue;
             }
 
             // If the body is involved in contacts with other bodies
-            auto itBodyContactPairs = mCollisionDetection.mMapBodyToContactPairs.find(bodyToVisitEntity);
-            if (itBodyContactPairs != mCollisionDetection.mMapBodyToContactPairs.end()) {
+            // For each contact pair in which the current body is involded
+            for (uint p=0; p < mRigidBodyComponents.mContactPairs[bodyToVisitIndex].size(); p++) {
 
-                // For each contact pair in which the current body is involded
-                List<uint>& contactPairs = itBodyContactPairs->second;
-                for (uint p=0; p < contactPairs.size(); p++) {
+                ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[mRigidBodyComponents.mContactPairs[bodyToVisitIndex][p]];
 
-                    ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[contactPairs[p]];
+                // Check if the current contact pair has already been added into an island
+                if (pair.isAlreadyInIsland) continue;
 
-                    // Check if the current contact pair has already been added into an island
-                    if (pair.isAlreadyInIsland) continue;
+                const Entity otherBodyEntity = pair.body1Entity == bodyToVisitEntity ? pair.body2Entity : pair.body1Entity;
 
-                    // If the colliding body is a RigidBody (and not a CollisionBody) and is not a trigger
-                    if (mRigidBodyComponents.hasComponent(pair.body1Entity) && mRigidBodyComponents.hasComponent(pair.body2Entity)
-                        && !mCollidersComponents.getIsTrigger(pair.collider1Entity) && !mCollidersComponents.getIsTrigger(pair.collider2Entity)) {
+                // If the colliding body is a RigidBody (and not a CollisionBody) and is not a trigger
+                uint32 otherBodyIndex;
+                if (mRigidBodyComponents.hasComponentGetIndex(otherBodyEntity, otherBodyIndex)
+                    && !mCollidersComponents.getIsTrigger(pair.collider1Entity) && !mCollidersComponents.getIsTrigger(pair.collider2Entity)) {
 
-                        assert(pair.potentialContactManifoldsIndices.size() > 0);
-                        nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
+                    assert(pair.potentialContactManifoldsIndices.size() > 0);
+                    nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
 
-                        // Add the contact manifold into the island
-                        mIslands.nbContactManifolds[islandIndex] += pair.potentialContactManifoldsIndices.size();
-                        pair.isAlreadyInIsland = true;
+                    // Add the contact manifold into the island
+                    mIslands.nbContactManifolds[islandIndex] += pair.potentialContactManifoldsIndices.size();
+                    pair.isAlreadyInIsland = true;
 
-                        const Entity otherBodyEntity = pair.body1Entity == bodyToVisitEntity ? pair.body2Entity : pair.body1Entity;
-                        const uint32 otherBodyIndex = mRigidBodyComponents.getEntityIndex(otherBodyEntity);
+                    // Check if the other body has already been added to the island
+                    if (mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex]) continue;
 
-                        // Check if the other body has already been added to the island
-                        if (mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex]) continue;
+                    // Insert the other body into the stack of bodies to visit
+                    bodyEntitiesToVisit.push(otherBodyEntity);
+                    mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex] = true;
+                }
+                else {
 
-                        // Insert the other body into the stack of bodies to visit
-                        bodyEntityIndicesToVisit.push(otherBodyIndex);
-                        mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex] = true;
-                    }
-                    else {
-
-                        // Add the contact pair index in the list of contact pairs that won't be part of islands
-                        pair.isAlreadyInIsland = true;
-                    }
+                    // Add the contact pair index in the list of contact pairs that won't be part of islands
+                    pair.isAlreadyInIsland = true;
                 }
             }
 
@@ -877,7 +865,7 @@ void PhysicsWorld::createIslands() {
                 if (mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex]) continue;
 
                 // Insert the other body into the stack of bodies to visit
-                bodyEntityIndicesToVisit.push(otherBodyIndex);
+                bodyEntitiesToVisit.push(otherBodyEntity);
                 mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex] = true;
             }
         }
@@ -886,14 +874,17 @@ void PhysicsWorld::createIslands() {
         // can also be included in the other islands
         for (uint j=0; j < staticBodiesAddedToIsland.size(); j++) {
 
-            assert(mRigidBodyComponents.mBodyTypes[staticBodiesAddedToIsland[j]] == BodyType::STATIC);
-            mRigidBodyComponents.mIsAlreadyInIsland[staticBodiesAddedToIsland[j]] = false;
+            assert(mRigidBodyComponents.getBodyType(staticBodiesAddedToIsland[j]) == BodyType::STATIC);
+            mRigidBodyComponents.setIsAlreadyInIsland(staticBodiesAddedToIsland[j], false);
         }
 
         staticBodiesAddedToIsland.clear();
     }
 
-    mCollisionDetection.mMapBodyToContactPairs.clear(true);
+    // Clear the associated contacts pairs of rigid bodies
+    for (uint b=0; b < mRigidBodyComponents.getNbEnabledComponents(); b++) {
+        mRigidBodyComponents.mContactPairs[b].clear();
+    }
 }
 
 // Put bodies to sleep if needed.

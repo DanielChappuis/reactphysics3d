@@ -145,6 +145,9 @@ class RigidBodyComponents : public Components {
         /// For each body, the list of joints entities the body is part of
         List<Entity>* mJoints;
 
+        /// For each body, the list of the indices of contact pairs in which the body is involved
+        List<uint>* mContactPairs;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -341,6 +344,9 @@ class RigidBodyComponents : public Components {
 
         /// Remove a joint from a body component
         void removeJointFromBody(Entity bodyEntity, Entity jointEntity);
+
+        /// A an associated contact pairs into the contact pairs array of the body
+        void addContacPair(Entity bodyEntity, uint contactPairIndex);
 
         // -------------------- Friendship -------------------- //
 
@@ -767,6 +773,13 @@ inline void RigidBodyComponents::removeJointFromBody(Entity bodyEntity, Entity j
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
     mJoints[mMapEntityToComponentIndex[bodyEntity]].remove(jointEntity);
+}
+
+// A an associated contact pairs into the contact pairs array of the body
+inline void RigidBodyComponents::addContacPair(Entity bodyEntity, uint contactPairIndex) {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+    mContactPairs[mMapEntityToComponentIndex[bodyEntity]].add(contactPairIndex);
 }
 
 }

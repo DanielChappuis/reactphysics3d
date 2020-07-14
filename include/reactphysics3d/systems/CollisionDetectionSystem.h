@@ -83,6 +83,9 @@ class CollisionDetectionSystem {
         /// Reference the collider components
         ColliderComponents& mCollidersComponents;
 
+        /// Reference to the rigid bodies components
+        RigidBodyComponents& mRigidBodyComponents;
+
         /// Collision Detection Dispatch configuration
         CollisionDispatch mCollisionDispatch;
 
@@ -163,9 +166,6 @@ class CollisionDetectionSystem {
         /// Pointer to the contact points of the current frame (either mContactPoints1 or mContactPoints2)
         List<ContactPoint>* mCurrentContactPoints;
 
-        /// Map a body entity to the list of contact pairs in which it is involved
-        Map<Entity, List<uint>> mMapBodyToContactPairs;
-
 #ifdef IS_RP3D_PROFILING_ENABLED
 
     /// Pointer to the profiler
@@ -224,14 +224,12 @@ class CollisionDetectionSystem {
         void processPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                       bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
                                       Map<uint64, uint>* mapPairIdToContactPairIndex,
-                                      List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs,
-                                      Map<Entity, List<uint>>& mapBodyToContactPairs);
+                                      List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs);
 
         /// Process the potential contacts after narrow-phase collision detection
         void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
                                          Map<uint64, uint>* mapPairIdToContactPairIndex,
-                                         List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs,
-                                         Map<Entity, List<uint>>& mapBodyToContactPairs);
+                                         List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs);
 
         /// Reduce the potential contact manifolds and contact points of the overlapping pair contacts
         void reducePotentialContactManifolds(List<ContactPair>* contactPairs, List<ContactManifoldInfo>& potentialContactManifolds,
