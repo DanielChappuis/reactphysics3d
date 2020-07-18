@@ -106,7 +106,7 @@ Quaternion::Quaternion(const Matrix3x3& matrix) {
             // Compute the quaternion
             x = decimal(0.5) * r;
             y = (matrix[0][1] + matrix[1][0]) * s;
-            z = (matrix[2][0] - matrix[0][2]) * s;
+            z = (matrix[2][0] + matrix[0][2]) * s;
             w = (matrix[2][1] - matrix[1][2]) * s;
         }
     }

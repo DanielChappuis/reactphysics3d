@@ -90,6 +90,21 @@ class TestQuaternion : public Test {
             rp3d_test(approxEqual(quaternion4.z, mQuaternion1.z));
             rp3d_test(approxEqual(quaternion4.w, mQuaternion1.w));
 
+            Matrix3x3 original(0.001743,-0.968608,0.248589,-0.614229,-0.197205,-0.764090,0.789126,-0.151359,-0.595290);
+            Matrix3x3 converted = Quaternion(original).getMatrix();
+            rp3d_test(approxEqual(original[0][0], converted[0][0], 0.0001));
+            rp3d_test(approxEqual(original[0][1], converted[0][1], 0.0001));
+            rp3d_test(approxEqual(original[0][2], converted[0][2], 0.0001));
+            rp3d_test(approxEqual(original[1][0], converted[1][0], 0.0001));
+            rp3d_test(approxEqual(original[1][1], converted[1][1], 0.0001));
+            rp3d_test(approxEqual(original[1][2], converted[1][2], 0.0001));
+            rp3d_test(approxEqual(original[2][0], converted[2][0], 0.0001));
+            rp3d_test(approxEqual(original[2][1], converted[2][1], 0.0001));
+            rp3d_test(approxEqual(original[2][2], converted[2][2], 0.0001));
+
+            std::cout << original.to_string() << std::endl;
+            std::cout << converted.to_string() << std::endl;
+
             // Test conversion from Euler angles to quaternion
 
             const decimal PI_OVER_2 = PI * decimal(0.5);
