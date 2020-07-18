@@ -62,13 +62,11 @@ CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, Collider
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator(), mOverlappingPairs), mPotentialContactPoints(mMemoryManager.getSingleFrameAllocator()),
                      mPotentialContactManifolds(mMemoryManager.getSingleFrameAllocator()), mContactPairs1(mMemoryManager.getPoolAllocator()),
                      mContactPairs2(mMemoryManager.getPoolAllocator()), mPreviousContactPairs(&mContactPairs1), mCurrentContactPairs(&mContactPairs2),
-                     mLostContactPairs(mMemoryManager.getSingleFrameAllocator()), mMapPairIdToContactPairIndex1(mMemoryManager.getPoolAllocator()),
-                     mMapPairIdToContactPairIndex2(mMemoryManager.getPoolAllocator()), mPreviousMapPairIdToContactPairIndex(&mMapPairIdToContactPairIndex1),
-                     mCurrentMapPairIdToContactPairIndex(&mMapPairIdToContactPairIndex2), mContactManifolds1(mMemoryManager.getPoolAllocator()),
-                     mContactManifolds2(mMemoryManager.getPoolAllocator()), mPreviousContactManifolds(&mContactManifolds1), mCurrentContactManifolds(&mContactManifolds2),
-                     mContactPoints1(mMemoryManager.getPoolAllocator()),
-                     mContactPoints2(mMemoryManager.getPoolAllocator()), mPreviousContactPoints(&mContactPoints1),
-                     mCurrentContactPoints(&mContactPoints2) {
+                     mLostContactPairs(mMemoryManager.getSingleFrameAllocator()), mPreviousMapPairIdToContactPairIndex(mMemoryManager.getHeapAllocator()),
+                     mContactManifolds1(mMemoryManager.getPoolAllocator()), mContactManifolds2(mMemoryManager.getPoolAllocator()),
+                     mPreviousContactManifolds(&mContactManifolds1), mCurrentContactManifolds(&mContactManifolds2),
+                     mContactPoints1(mMemoryManager.getPoolAllocator()), mContactPoints2(mMemoryManager.getPoolAllocator()),
+                     mPreviousContactPoints(&mContactPoints1), mCurrentContactPoints(&mContactPoints2) {
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -159,7 +157,7 @@ void CollisionDetectionSystem::addLostContactPair(uint64 overlappingPairIndex) {
 
     // Create a lost contact pair
     ContactPair lostContactPair(mOverlappingPairs.mPairIds[overlappingPairIndex], body1Entity, body2Entity, collider1Entity, collider2Entity, mLostContactPairs.size(),
-                                true, isTrigger, mMemoryManager.getHeapAllocator());
+                                true, isTrigger);
     mLostContactPairs.add(lostContactPair);
 }
 
@@ -480,12 +478,13 @@ bool CollisionDetectionSystem::testNarrowPhaseCollision(NarrowPhaseInput& narrow
 // Process the potential contacts after narrow-phase collision detection
 void CollisionDetectionSystem::processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo,
                                                      List<ContactPointInfo>& potentialContactPoints,
-                                                     Map<uint64, uint>* mapPairIdToContactPairIndex,
                                                      List<ContactManifoldInfo>& potentialContactManifolds,
                                                      List<ContactPair>* contactPairs) {
 
     assert(contactPairs->size() == 0);
     assert(mapPairIdToContactPairIndex->size() == 0);
+
+    Map<uint64, uint> mapPairIdToContactPairIndex(mMemoryManager.getHeapAllocator(), mPreviousMapPairIdToContactPairIndex.size());
 
     // get the narrow-phase batches to test for collision
     NarrowPhaseInfoBatch& sphereVsSphereBatch = narrowPhaseInput.getSphereVsSphereBatch();
@@ -496,18 +495,13 @@ void CollisionDetectionSystem::processAllPotentialContacts(NarrowPhaseInput& nar
     NarrowPhaseInfoBatch& convexPolyhedronVsConvexPolyhedronBatch = narrowPhaseInput.getConvexPolyhedronVsConvexPolyhedronBatch();
 
     // Process the potential contacts
-    processPotentialContacts(sphereVsSphereBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs);
-    processPotentialContacts(sphereVsCapsuleBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs);
-    processPotentialContacts(capsuleVsCapsuleBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs);
-    processPotentialContacts(sphereVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                            potentialContactManifolds, contactPairs);
-    processPotentialContacts(capsuleVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs);
-    processPotentialContacts(convexPolyhedronVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints, mapPairIdToContactPairIndex,
-                             potentialContactManifolds, contactPairs);
+    processPotentialContacts(sphereVsSphereBatch, updateLastFrameInfo, potentialContactPoints, potentialContactManifolds, mapPairIdToContactPairIndex, contactPairs);
+    processPotentialContacts(sphereVsCapsuleBatch, updateLastFrameInfo, potentialContactPoints, potentialContactManifolds, mapPairIdToContactPairIndex, contactPairs);
+    processPotentialContacts(capsuleVsCapsuleBatch, updateLastFrameInfo, potentialContactPoints, potentialContactManifolds, mapPairIdToContactPairIndex, contactPairs);
+    processPotentialContacts(sphereVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints, potentialContactManifolds, mapPairIdToContactPairIndex, contactPairs);
+    processPotentialContacts(capsuleVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints, potentialContactManifolds, mapPairIdToContactPairIndex, contactPairs);
+    processPotentialContacts(convexPolyhedronVsConvexPolyhedronBatch, updateLastFrameInfo, potentialContactPoints,
+                             potentialContactManifolds, mapPairIdToContactPairIndex, contactPairs);
 }
 
 // Compute the narrow-phase collision detection
@@ -527,7 +521,7 @@ void CollisionDetectionSystem::computeNarrowPhase() {
     testNarrowPhaseCollision(mNarrowPhaseInput, true, allocator);
 
     // Process all the potential contacts after narrow-phase collision
-    processAllPotentialContacts(mNarrowPhaseInput, true, mPotentialContactPoints, mCurrentMapPairIdToContactPairIndex,
+    processAllPotentialContacts(mNarrowPhaseInput, true, mPotentialContactPoints,
                                 mPotentialContactManifolds, mCurrentContactPairs);
 
     // Reduce the number of contact points in the manifolds
@@ -539,7 +533,19 @@ void CollisionDetectionSystem::computeNarrowPhase() {
     // Create the actual narrow-phase contacts
     createContacts();
 
+    // Compute the map from contact pairs ids to contact pair for the next frame
+    computeMapPreviousContactPairs();
+
     mNarrowPhaseInput.clear();
+}
+
+/// Compute the map from contact pairs ids to contact pair for the next frame
+void CollisionDetectionSystem::computeMapPreviousContactPairs() {
+
+    mPreviousMapPairIdToContactPairIndex.clear();
+    for (uint i=0; i < mCurrentContactPairs->size(); i++) {
+        mPreviousMapPairIdToContactPairIndex.add(Pair<uint64, uint>((*mCurrentContactPairs)[i].pairId, i));
+    }
 }
 
 // Compute the narrow-phase collision detection for the testOverlap() methods.
@@ -629,8 +635,7 @@ void CollisionDetectionSystem::computeOverlapSnapshotContactPairs(NarrowPhaseInf
                 const bool isTrigger = mCollidersComponents.mIsTrigger[collider1Index] || mCollidersComponents.mIsTrigger[collider2Index];
 
                 // Create a new contact pair
-                ContactPair contactPair(narrowPhaseInfoBatch.overlappingPairIds[i], body1Entity, body2Entity, collider1Entity, collider2Entity,
-                                        contactPairs.size(), isTrigger, false, mMemoryManager.getHeapAllocator());
+                ContactPair contactPair(narrowPhaseInfoBatch.overlappingPairIds[i], body1Entity, body2Entity, collider1Entity, collider2Entity, contactPairs.size(), isTrigger, false);
                 contactPairs.add(contactPair);
 
                 setOverlapContactPairId.add(narrowPhaseInfoBatch.overlappingPairIds[i]);
@@ -657,14 +662,13 @@ bool CollisionDetectionSystem::computeNarrowPhaseCollisionSnapshot(NarrowPhaseIn
 
         List<ContactPointInfo> potentialContactPoints(allocator);
         List<ContactManifoldInfo> potentialContactManifolds(allocator);
-        Map<uint64, uint> mapPairIdToContactPairIndex(allocator);
         List<ContactPair> contactPairs(allocator);
         List<ContactPair> lostContactPairs(allocator);                  // Not used during collision snapshots
         List<ContactManifold> contactManifolds(allocator);
         List<ContactPoint> contactPoints(allocator);
 
         // Process all the potential contacts after narrow-phase collision
-        processAllPotentialContacts(narrowPhaseInput, true, potentialContactPoints, &mapPairIdToContactPairIndex, potentialContactManifolds, &contactPairs);
+        processAllPotentialContacts(narrowPhaseInput, true, potentialContactPoints, potentialContactManifolds, &contactPairs);
 
         // Reduce the number of contact points in the manifolds
         reducePotentialContactManifolds(&contactPairs, potentialContactManifolds, potentialContactPoints);
@@ -687,24 +691,20 @@ void CollisionDetectionSystem::swapPreviousAndCurrentContacts() {
         mPreviousContactPairs = &mContactPairs2;
         mPreviousContactManifolds = &mContactManifolds2;
         mPreviousContactPoints = &mContactPoints2;
-        mPreviousMapPairIdToContactPairIndex = &mMapPairIdToContactPairIndex2;
 
         mCurrentContactPairs = &mContactPairs1;
         mCurrentContactManifolds = &mContactManifolds1;
         mCurrentContactPoints = &mContactPoints1;
-        mCurrentMapPairIdToContactPairIndex = &mMapPairIdToContactPairIndex1;
     }
     else {
 
         mPreviousContactPairs = &mContactPairs1;
         mPreviousContactManifolds = &mContactManifolds1;
         mPreviousContactPoints = &mContactPoints1;
-        mPreviousMapPairIdToContactPairIndex = &mMapPairIdToContactPairIndex1;
 
         mCurrentContactPairs = &mContactPairs2;
         mCurrentContactManifolds = &mContactManifolds2;
         mCurrentContactPoints = &mContactPoints2;
-        mCurrentMapPairIdToContactPairIndex = &mMapPairIdToContactPairIndex2;
     }
 }
 
@@ -722,7 +722,7 @@ void CollisionDetectionSystem::createContacts() {
         ContactPair& contactPair = (*mCurrentContactPairs)[p];
 
         contactPair.contactManifoldsIndex = mCurrentContactManifolds->size();
-        contactPair.nbContactManifolds = contactPair.potentialContactManifoldsIndices.size();
+        contactPair.nbContactManifolds = contactPair.nbPotentialContactManifolds;
         contactPair.contactPointsIndex = mCurrentContactPoints->size();
 
         // Add the associated contact pair to both bodies of the pair (used to create islands later)
@@ -734,13 +734,13 @@ void CollisionDetectionSystem::createContacts() {
         }
 
         // For each potential contact manifold of the pair
-        for (uint m=0; m < contactPair.potentialContactManifoldsIndices.size(); m++) {
+        for (uint m=0; m < contactPair.nbPotentialContactManifolds; m++) {
 
             ContactManifoldInfo& potentialManifold = mPotentialContactManifolds[contactPair.potentialContactManifoldsIndices[m]];
 
             // Start index and number of contact points for this manifold
             const uint contactPointsIndex = mCurrentContactPoints->size();
-            const int8 nbContactPoints = static_cast<int8>(potentialManifold.potentialContactPointsIndices.size());
+            const int8 nbContactPoints = static_cast<int8>(potentialManifold.nbPotentialContactPoints);
             contactPair.nbToTalContactPoints += nbContactPoints;
 
             // We create a new contact manifold
@@ -750,10 +750,10 @@ void CollisionDetectionSystem::createContacts() {
             // Add the contact manifold
             mCurrentContactManifolds->add(contactManifold);
 
-            assert(potentialManifold.potentialContactPointsIndices.size() > 0);
+            assert(potentialManifold.nbPotentialContactPoints > 0);
 
             // For each contact point of the manifold
-            for (uint c=0; c < potentialManifold.potentialContactPointsIndices.size(); c++) {
+            for (uint c=0; c < potentialManifold.nbPotentialContactPoints; c++) {
 
                 ContactPointInfo& potentialContactPoint = mPotentialContactPoints[potentialManifold.potentialContactPointsIndices[c]];
 
@@ -775,7 +775,6 @@ void CollisionDetectionSystem::createContacts() {
     mPreviousContactPoints->clear();
     mPreviousContactManifolds->clear();
     mPreviousContactPairs->clear();
-    mPreviousMapPairIdToContactPairIndex->clear();
 
     // Reset the potential contacts
     mPotentialContactPoints.clear(true);
@@ -817,20 +816,20 @@ void CollisionDetectionSystem::createSnapshotContacts(List<ContactPair>& contact
     for (uint p=0; p < contactPairs.size(); p++) {
 
         ContactPair& contactPair = contactPairs[p];
-        assert(contactPair.potentialContactManifoldsIndices.size() > 0);
+        assert(contactPair.nbPotentialContactManifolds > 0);
 
         contactPair.contactManifoldsIndex = contactManifolds.size();
-        contactPair.nbContactManifolds = contactPair.potentialContactManifoldsIndices.size();
+        contactPair.nbContactManifolds = contactPair.nbPotentialContactManifolds;
         contactPair.contactPointsIndex = contactPoints.size();
 
         // For each potential contact manifold of the pair
-        for (uint m=0; m < contactPair.potentialContactManifoldsIndices.size(); m++) {
+        for (uint m=0; m < contactPair.nbPotentialContactManifolds; m++) {
 
             ContactManifoldInfo& potentialManifold = potentialContactManifolds[contactPair.potentialContactManifoldsIndices[m]];
 
             // Start index and number of contact points for this manifold
             const uint contactPointsIndex = contactPoints.size();
-            const int8 nbContactPoints = static_cast<int8>(potentialManifold.potentialContactPointsIndices.size());
+            const uint8 nbContactPoints = potentialManifold.nbPotentialContactPoints;
             contactPair.nbToTalContactPoints += nbContactPoints;
 
             // We create a new contact manifold
@@ -840,10 +839,10 @@ void CollisionDetectionSystem::createSnapshotContacts(List<ContactPair>& contact
             // Add the contact manifold
             contactManifolds.add(contactManifold);
 
-            assert(potentialManifold.potentialContactPointsIndices.size() > 0);
+            assert(potentialManifold.nbPotentialContactPoints > 0);
 
             // For each contact point of the manifold
-            for (uint c=0; c < potentialManifold.potentialContactPointsIndices.size(); c++) {
+            for (uint c=0; c < potentialManifold.nbPotentialContactPoints; c++) {
 
                 ContactPointInfo& potentialContactPoint = potentialContactPoints[potentialManifold.potentialContactPointsIndices[c]];
 
@@ -866,10 +865,10 @@ void CollisionDetectionSystem::initContactsWithPreviousOnes() {
         ContactPair& currentContactPair = (*mCurrentContactPairs)[i];
 
         // Find the corresponding contact pair in the previous frame (if any)
-        auto itPrevContactPair = mPreviousMapPairIdToContactPairIndex->find(currentContactPair.pairId);
+        auto itPrevContactPair = mPreviousMapPairIdToContactPairIndex.find(currentContactPair.pairId);
 
         // If we have found a corresponding contact pair in the previous frame
-        if (itPrevContactPair != mPreviousMapPairIdToContactPairIndex->end()) {
+        if (itPrevContactPair != mPreviousMapPairIdToContactPairIndex.end()) {
 
             const uint previousContactPairIndex = itPrevContactPair->second;
             ContactPair& previousContactPair = (*mPreviousContactPairs)[previousContactPairIndex];
@@ -988,8 +987,8 @@ void CollisionDetectionSystem::raycast(RaycastCallback* raycastCallback,
 // Convert the potential contact into actual contacts
 void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, bool updateLastFrameInfo,
                                                         List<ContactPointInfo>& potentialContactPoints,
-                                                        Map<uint64, uint>* mapPairIdToContactPairIndex,
                                                         List<ContactManifoldInfo>& potentialContactManifolds,
+                                                        Map<uint64, uint>& mapPairIdToContactPairIndex,
                                                         List<ContactPair>* contactPairs) {
 
     RP3D_PROFILE("CollisionDetectionSystem::processPotentialContacts()", mProfiler);
@@ -1012,100 +1011,151 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
             mOverlappingPairs.mCollidingInCurrentFrame[pairIndex] = true;
 
-            // If there is not already a contact pair for this overlapping pair
-            auto it = mapPairIdToContactPairIndex->find(pairId);
-            ContactPair* pairContact = nullptr;
-            if (it == mapPairIdToContactPairIndex->end()) {
+            const Entity collider1Entity = narrowPhaseInfoBatch.colliderEntities1[i];
+            const Entity collider2Entity = narrowPhaseInfoBatch.colliderEntities2[i];
+
+            const uint32 collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
+            const uint32 collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
+
+            const Entity body1Entity = mCollidersComponents.mBodiesEntities[collider1Index];
+            const Entity body2Entity = mCollidersComponents.mBodiesEntities[collider2Index];
+
+            // If we have a convex vs convex collision (if we consider the base collision shapes of the colliders)
+            if (mCollidersComponents.mCollisionShapes[collider1Index]->isConvex() &&
+                mCollidersComponents.mCollisionShapes[collider2Index]->isConvex()) {
 
                 // Create a new ContactPair
-
-                const Entity collider1Entity = narrowPhaseInfoBatch.colliderEntities1[i];
-                const Entity collider2Entity = narrowPhaseInfoBatch.colliderEntities2[i];
-
-                const uint32 collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
-                const uint32 collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
-
-                const Entity body1Entity = mCollidersComponents.mBodiesEntities[collider1Index];
-                const Entity body2Entity = mCollidersComponents.mBodiesEntities[collider2Index];
 
                 const bool isTrigger = mCollidersComponents.mIsTrigger[collider1Index] || mCollidersComponents.mIsTrigger[collider2Index];
 
                 assert(!mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) || !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity));
 
                 const uint newContactPairIndex = contactPairs->size();
-                ContactPair overlappingPairContact(pairId, body1Entity, body2Entity,
-                                                   collider1Entity, collider2Entity,
-                                                   newContactPairIndex, mOverlappingPairs.getCollidingInPreviousFrame(pairId), isTrigger, mMemoryManager.getHeapAllocator());
-                contactPairs->add(overlappingPairContact);
-                pairContact = &((*contactPairs)[newContactPairIndex]);
-                mapPairIdToContactPairIndex->add(Pair<uint64, uint>(pairId, newContactPairIndex));
-            }
-            else { // If a ContactPair already exists for this overlapping pair, we use this one
 
-                assert(it->first == pairId);
+                contactPairs->emplace(pairId, body1Entity, body2Entity, collider1Entity, collider2Entity,
+                                      newContactPairIndex, mOverlappingPairs.getCollidingInPreviousFrame(pairId), isTrigger);
 
-                const uint pairContactIndex = it->second;
-                pairContact = &((*contactPairs)[pairContactIndex]);
-            }
+                ContactPair* pairContact = &((*contactPairs)[newContactPairIndex]);
 
-            assert(pairContact != nullptr);
+                // Create a new potential contact manifold for the overlapping pair
+                uint contactManifoldIndex = static_cast<uint>(potentialContactManifolds.size());
+                potentialContactManifolds.emplace(pairId);
+                ContactManifoldInfo& contactManifoldInfo = potentialContactManifolds[contactManifoldIndex];
 
-            // Add the potential contacts
-            for (uint j=0; j < narrowPhaseInfoBatch.contactPoints[i].size(); j++) {
+                const uint contactPointIndexStart = static_cast<uint>(potentialContactPoints.size());
 
-                const ContactPointInfo& contactPoint = *(narrowPhaseInfoBatch.contactPoints[i][j]);
+                // Add the potential contacts
+                for (uint j=0; j < narrowPhaseInfoBatch.contactPoints[i].size(); j++) {
 
-                // Add the contact point to the list of potential contact points
-                const uint contactPointIndex = static_cast<uint>(potentialContactPoints.size());
-
-                potentialContactPoints.add(contactPoint);
-
-                bool similarManifoldFound = false;
-
-                // For each contact manifold of the overlapping pair
-                for (uint m=0; m < pairContact->potentialContactManifoldsIndices.size(); m++) {
-
-                   uint contactManifoldIndex = pairContact->potentialContactManifoldsIndices[m];
-
-                   // Get the first contact point of the current manifold
-                   assert(potentialContactManifolds[contactManifoldIndex].potentialContactPointsIndices.size() > 0);
-                   const uint manifoldContactPointIndex = potentialContactManifolds[contactManifoldIndex].potentialContactPointsIndices[0];
-                   const ContactPointInfo& manifoldContactPoint = potentialContactPoints[manifoldContactPointIndex];
-
-                    // If we have found a corresponding manifold for the new contact point
-                    // (a manifold with a similar contact normal direction)
-                    if (manifoldContactPoint.normal.dot(contactPoint.normal) >= mWorld->mConfig.cosAngleSimilarContactManifold) {
+                    if (contactManifoldInfo.nbPotentialContactPoints < NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD) {
 
                         // Add the contact point to the manifold
-                        potentialContactManifolds[contactManifoldIndex].potentialContactPointsIndices.add(contactPointIndex);
+                        contactManifoldInfo.potentialContactPointsIndices[contactManifoldInfo.nbPotentialContactPoints] = contactPointIndexStart + j;
+                        contactManifoldInfo.nbPotentialContactPoints++;
 
-                        similarManifoldFound = true;
+                        // Add the contact point to the list of potential contact points
+                        const ContactPointInfo& contactPoint = *(narrowPhaseInfoBatch.contactPoints[i][j]);
 
-                        break;
+                        potentialContactPoints.add(contactPoint);
                     }
                 }
 
-                // If we have not found a manifold with a similar contact normal for the contact point
-                if (!similarManifoldFound) {
+                // Add the contact manifold to the overlapping pair contact
+                assert(overlappingPairContact.pairId == contactManifoldInfo.pairId);
+                pairContact->potentialContactManifoldsIndices[0] = contactManifoldIndex;
+                pairContact->nbPotentialContactManifolds = 1;
+            }
+            else {
 
-                    // Create a new contact manifold for the overlapping pair
-                    ContactManifoldInfo contactManifoldInfo(pairId, mMemoryManager.getPoolAllocator());
+                // If there is not already a contact pair for this overlapping pair
+                auto it = mapPairIdToContactPairIndex.find(pairId);
+                ContactPair* pairContact = nullptr;
+                if (it == mapPairIdToContactPairIndex.end()) {
 
-                    // Add the contact point to the manifold
-                    contactManifoldInfo.potentialContactPointsIndices.add(contactPointIndex);
+                    // Create a new ContactPair
 
-                    assert(pairContact != nullptr);
+                    const bool isTrigger = mCollidersComponents.mIsTrigger[collider1Index] || mCollidersComponents.mIsTrigger[collider2Index];
 
-                    // Add the potential contact manifold
-                    uint contactManifoldIndex = static_cast<uint>(potentialContactManifolds.size());
-                    potentialContactManifolds.add(contactManifoldInfo);
+                    assert(!mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) || !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity));
 
-                    // Add the contact manifold to the overlapping pair contact
-                    assert(pairContact->pairId == contactManifoldInfo.pairId);
-                    pairContact->potentialContactManifoldsIndices.add(contactManifoldIndex);
+                    const uint newContactPairIndex = contactPairs->size();
+                    contactPairs->emplace(pairId, body1Entity, body2Entity, collider1Entity, collider2Entity,
+                                                       newContactPairIndex, mOverlappingPairs.getCollidingInPreviousFrame(pairId), isTrigger);
+                    pairContact = &((*contactPairs)[newContactPairIndex]);
+                    mapPairIdToContactPairIndex.add(Pair<uint64, uint>(pairId, newContactPairIndex));
+
+                }
+                else { // If a ContactPair already exists for this overlapping pair, we use this one
+
+                    assert(it->first == pairId);
+
+                    const uint pairContactIndex = it->second;
+                    pairContact = &((*contactPairs)[pairContactIndex]);
                 }
 
-                assert(pairContact->potentialContactManifoldsIndices.size() > 0);
+                assert(pairContact != nullptr);
+
+                // Add the potential contacts
+                for (uint j=0; j < narrowPhaseInfoBatch.contactPoints[i].size(); j++) {
+
+                    const ContactPointInfo& contactPoint = *(narrowPhaseInfoBatch.contactPoints[i][j]);
+
+                    // Add the contact point to the list of potential contact points
+                    const uint contactPointIndex = static_cast<uint>(potentialContactPoints.size());
+
+                    potentialContactPoints.add(contactPoint);
+
+                    bool similarManifoldFound = false;
+
+                    // For each contact manifold of the overlapping pair
+                    for (uint m=0; m < pairContact->nbPotentialContactManifolds; m++) {
+
+                       uint contactManifoldIndex = pairContact->potentialContactManifoldsIndices[m];
+
+                       if (potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints < NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD) {
+
+                           // Get the first contact point of the current manifold
+                           assert(potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints > 0);
+                           const uint manifoldContactPointIndex = potentialContactManifolds[contactManifoldIndex].potentialContactPointsIndices[0];
+                           const ContactPointInfo& manifoldContactPoint = potentialContactPoints[manifoldContactPointIndex];
+
+                            // If we have found a corresponding manifold for the new contact point
+                            // (a manifold with a similar contact normal direction)
+                            if (manifoldContactPoint.normal.dot(contactPoint.normal) >= mWorld->mConfig.cosAngleSimilarContactManifold) {
+
+                                // Add the contact point to the manifold
+                                potentialContactManifolds[contactManifoldIndex].potentialContactPointsIndices[potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints] = contactPointIndex;
+                                potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints++;
+
+                                similarManifoldFound = true;
+
+                                break;
+                            }
+                       }
+                    }
+
+                    // If we have not found a manifold with a similar contact normal for the contact point
+                    if (!similarManifoldFound && pairContact->nbPotentialContactManifolds < NB_MAX_POTENTIAL_CONTACT_MANIFOLDS) {
+
+                        // Create a new potential contact manifold for the overlapping pair
+                        uint contactManifoldIndex = static_cast<uint>(potentialContactManifolds.size());
+                        potentialContactManifolds.emplace(pairId);
+                        ContactManifoldInfo& contactManifoldInfo = potentialContactManifolds[contactManifoldIndex];
+
+                        // Add the contact point to the manifold
+                        contactManifoldInfo.potentialContactPointsIndices[0] = contactPointIndex;
+                        contactManifoldInfo.nbPotentialContactPoints = 1;
+
+                        assert(pairContact != nullptr);
+
+                        // Add the contact manifold to the overlapping pair contact
+                        assert(pairContact->pairId == contactManifoldInfo.pairId);
+                        pairContact->potentialContactManifoldsIndices[pairContact->nbPotentialContactManifolds] = contactManifoldIndex;
+                        pairContact->nbPotentialContactManifolds++;
+                    }
+
+                    assert(pairContact->nbPotentialContactManifolds > 0);
+                }
             }
 
             narrowPhaseInfoBatch.resetContactPoints(i);
@@ -1126,12 +1176,12 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(List<ContactPair>
         ContactPair& contactPair = (*contactPairs)[i];
 
         // While there are too many manifolds in the contact pair
-        while(contactPair.potentialContactManifoldsIndices.size() > mWorld->mConfig.nbMaxContactManifolds) {
+        while(contactPair.nbPotentialContactManifolds > NB_MAX_CONTACT_MANIFOLDS) {
 
             // Look for a manifold with the smallest contact penetration depth.
             decimal minDepth = DECIMAL_LARGEST;
             int minDepthManifoldIndex = -1;
-            for (uint j=0; j < contactPair.potentialContactManifoldsIndices.size(); j++) {
+            for (uint j=0; j < contactPair.nbPotentialContactManifolds; j++) {
 
                 ContactManifoldInfo& manifold = potentialContactManifolds[contactPair.potentialContactManifoldsIndices[j]];
 
@@ -1146,7 +1196,7 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(List<ContactPair>
 
             // Remove the non optimal manifold
             assert(minDepthManifoldIndex >= 0);
-            contactPair.potentialContactManifoldsIndices.removeAt(minDepthManifoldIndex);
+            contactPair.removePotentialManifoldAtIndex(minDepthManifoldIndex);
         }
     }
 
@@ -1156,12 +1206,12 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(List<ContactPair>
         const ContactPair& pairContact = (*contactPairs)[i];
 
         // For each potential contact manifold
-        for (uint j=0; j < pairContact.potentialContactManifoldsIndices.size(); j++) {
+        for (uint j=0; j < pairContact.nbPotentialContactManifolds; j++) {
 
             ContactManifoldInfo& manifold = potentialContactManifolds[pairContact.potentialContactManifoldsIndices[j]];
 
             // If there are two many contact points in the manifold
-            if (manifold.potentialContactPointsIndices.size() > MAX_CONTACT_POINTS_IN_MANIFOLD) {
+            if (manifold.nbPotentialContactPoints > MAX_CONTACT_POINTS_IN_MANIFOLD) {
 
                 Entity collider1 = mOverlappingPairs.mColliders1[mOverlappingPairs.mMapPairIdToPairIndex[manifold.pairId]];
 
@@ -1171,7 +1221,7 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(List<ContactPair>
                 reduceContactPoints(manifold, shape1LocalToWorldTransoform, potentialContactPoints);
             }
 
-            assert(manifold.potentialContactPointsIndices.size() <= MAX_CONTACT_POINTS_IN_MANIFOLD);
+            assert(manifold.nbPotentialContactPoints <= MAX_CONTACT_POINTS_IN_MANIFOLD);
         }
     }
 }
@@ -1182,9 +1232,9 @@ decimal CollisionDetectionSystem::computePotentialManifoldLargestContactDepth(co
 
     decimal largestDepth = 0.0f;
 
-    assert(manifold.potentialContactPointsIndices.size() > 0);
+    assert(manifold.nbPotentialContactPoints > 0);
 
-    for (uint i=0; i < manifold.potentialContactPointsIndices.size(); i++) {
+    for (uint i=0; i < manifold.nbPotentialContactPoints; i++) {
         decimal depth = potentialContactPoints[manifold.potentialContactPointsIndices[i]].penetrationDepth;
 
         if (depth > largestDepth) {
@@ -1202,14 +1252,18 @@ decimal CollisionDetectionSystem::computePotentialManifoldLargestContactDepth(co
 void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold, const Transform& shape1ToWorldTransform,
                                              const List<ContactPointInfo>& potentialContactPoints) const {
 
-    assert(manifold.potentialContactPointsIndices.size() > MAX_CONTACT_POINTS_IN_MANIFOLD);
+    assert(manifold.nbPotentialContactPoints > MAX_CONTACT_POINTS_IN_MANIFOLD);
 
     // The following algorithm only works to reduce to a maximum of 4 contact points
     assert(MAX_CONTACT_POINTS_IN_MANIFOLD == 4);
 
     // List of the candidate contact points indices in the manifold. Every time that we have found a
     // point we want to keep, we will remove it from this list
-    List<uint> candidatePointsIndices(manifold.potentialContactPointsIndices);
+    uint candidatePointsIndices[NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD];
+    uint8 nbCandidatePoints = manifold.nbPotentialContactPoints;
+    for (uint8 i=0 ; i < manifold.nbPotentialContactPoints; i++) {
+        candidatePointsIndices[i] = manifold.potentialContactPointsIndices[i];
+    }
 
     int8 nbReducedPoints = 0;
 
@@ -1233,7 +1287,7 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
     const Vector3 searchDirection(1, 1, 1);
     decimal maxDotProduct = DECIMAL_SMALLEST;
     uint elementIndexToKeep = 0;
-    for (uint i=0; i < candidatePointsIndices.size(); i++) {
+    for (uint i=0; i < nbCandidatePoints; i++) {
 
         const ContactPointInfo& element = potentialContactPoints[candidatePointsIndices[i]];
         decimal dotProduct = searchDirection.dot(element.localPoint1);
@@ -1244,7 +1298,8 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
         }
     }
     pointsToKeepIndices[0] = candidatePointsIndices[elementIndexToKeep];
-    candidatePointsIndices.removeAt(elementIndexToKeep);
+    removeItemAtInArray(candidatePointsIndices, elementIndexToKeep, nbCandidatePoints);
+    //candidatePointsIndices.removeAt(elementIndexToKeep);
     assert(nbReducedPoints == 1);
 
     // Compute the second contact point we need to keep.
@@ -1252,7 +1307,7 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
 
     decimal maxDistance = decimal(0.0);
     elementIndexToKeep = 0;
-    for (uint i=0; i < candidatePointsIndices.size(); i++) {
+    for (uint i=0; i < nbCandidatePoints; i++) {
 
         const ContactPointInfo& element = potentialContactPoints[candidatePointsIndices[i]];
         const ContactPointInfo& pointToKeep0 = potentialContactPoints[pointsToKeepIndices[0]];
@@ -1268,7 +1323,7 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
 
     }
     pointsToKeepIndices[1] = candidatePointsIndices[elementIndexToKeep];
-    candidatePointsIndices.removeAt(elementIndexToKeep);
+    removeItemAtInArray(candidatePointsIndices, elementIndexToKeep, nbCandidatePoints);
     assert(nbReducedPoints == 2);
 
     // Compute the third contact point we need to keep.
@@ -1281,7 +1336,7 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
     decimal minArea = decimal(0.0);
     decimal maxArea = decimal(0.0);
     bool isPreviousAreaPositive = true;
-    for (uint i=0; i < candidatePointsIndices.size(); i++) {
+    for (uint i=0; i < nbCandidatePoints; i++) {
 
         const ContactPointInfo& element = potentialContactPoints[candidatePointsIndices[i]];
         const ContactPointInfo& pointToKeep0 = potentialContactPoints[pointsToKeepIndices[0]];
@@ -1310,12 +1365,12 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
     if (maxArea > (-minArea)) {
         isPreviousAreaPositive = true;
         pointsToKeepIndices[2] = candidatePointsIndices[thirdPointMaxAreaIndex];
-        candidatePointsIndices.removeAt(thirdPointMaxAreaIndex);
+        removeItemAtInArray(candidatePointsIndices, thirdPointMaxAreaIndex, nbCandidatePoints);
     }
     else {
         isPreviousAreaPositive = false;
         pointsToKeepIndices[2] = candidatePointsIndices[thirdPointMinAreaIndex];
-        candidatePointsIndices.removeAt(thirdPointMinAreaIndex);
+        removeItemAtInArray(candidatePointsIndices, thirdPointMinAreaIndex, nbCandidatePoints);
     }
     nbReducedPoints = 3;
 
@@ -1328,7 +1383,7 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
     decimal area;
 
     // For each remaining candidate points
-    for (uint i=0; i < candidatePointsIndices.size(); i++) {
+    for (uint i=0; i < nbCandidatePoints; i++) {
 
         const ContactPointInfo& element = potentialContactPoints[candidatePointsIndices[i]];
 
@@ -1365,14 +1420,22 @@ void CollisionDetectionSystem::reduceContactPoints(ContactManifoldInfo& manifold
         }
     }
     pointsToKeepIndices[3] = candidatePointsIndices[elementIndexToKeep];
-    candidatePointsIndices.removeAt(elementIndexToKeep);
+    removeItemAtInArray(candidatePointsIndices, elementIndexToKeep, nbCandidatePoints);
 
     // Only keep the four selected contact points in the manifold
-    manifold.potentialContactPointsIndices.clear();
-    manifold.potentialContactPointsIndices.add(pointsToKeepIndices[0]);
-    manifold.potentialContactPointsIndices.add(pointsToKeepIndices[1]);
-    manifold.potentialContactPointsIndices.add(pointsToKeepIndices[2]);
-    manifold.potentialContactPointsIndices.add(pointsToKeepIndices[3]);
+    manifold.potentialContactPointsIndices[0] = pointsToKeepIndices[0];
+    manifold.potentialContactPointsIndices[1] = pointsToKeepIndices[1];
+    manifold.potentialContactPointsIndices[2] = pointsToKeepIndices[2];
+    manifold.potentialContactPointsIndices[3] = pointsToKeepIndices[3];
+    manifold.nbPotentialContactPoints = 4;
+}
+
+// Remove an element in an array (and replace it by the last one in the array)
+void CollisionDetectionSystem::removeItemAtInArray(uint array[], uint8 index, uint8& arraySize) const {
+    assert(index < arraySize);
+    assert(arraySize > 0);
+    array[index] = array[arraySize - 1];
+    arraySize--;
 }
 
 // Report contacts and triggers

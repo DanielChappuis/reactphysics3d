@@ -76,9 +76,6 @@ struct ContactPointInfo {
             assert(contactNormal.lengthSquare() > decimal(0.8));
             assert(penDepth > decimal(0.0));
         }
-
-        /// Destructor
-        ~ContactPointInfo() = default;
 };
 
 }

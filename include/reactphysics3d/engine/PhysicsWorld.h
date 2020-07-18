@@ -116,9 +116,6 @@ class PhysicsWorld {
             /// might enter sleeping mode
             decimal defaultSleepAngularVelocity;
 
-            /// Maximum number of contact manifolds in an overlapping pair
-            uint nbMaxContactManifolds;
-
             /// This is used to test if two contact manifold are similar (same contact normal) in order to
             /// merge them. If the cosine of the angle between the normals of the two manifold are larger
             /// than the value bellow, the manifold are considered to be similar.
@@ -139,7 +136,6 @@ class PhysicsWorld {
                 defaultTimeBeforeSleep = 1.0f;
                 defaultSleepLinearVelocity = decimal(0.02);
                 defaultSleepAngularVelocity = decimal(3.0) * (PI_RP3D / decimal(180.0));
-                nbMaxContactManifolds = 3;
                 cosAngleSimilarContactManifold = decimal(0.95);
             }
 
@@ -163,7 +159,6 @@ class PhysicsWorld {
                 ss << "defaultTimeBeforeSleep=" << defaultTimeBeforeSleep << std::endl;
                 ss << "defaultSleepLinearVelocity=" << defaultSleepLinearVelocity << std::endl;
                 ss << "defaultSleepAngularVelocity=" << defaultSleepAngularVelocity << std::endl;
-                ss << "nbMaxContactManifolds=" << nbMaxContactManifolds << std::endl;
                 ss << "cosAngleSimilarContactManifold=" << cosAngleSimilarContactManifold << std::endl;
 
                 return ss.str();

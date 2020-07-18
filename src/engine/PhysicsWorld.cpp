@@ -824,11 +824,11 @@ void PhysicsWorld::createIslands() {
                 if (mRigidBodyComponents.hasComponentGetIndex(otherBodyEntity, otherBodyIndex)
                     && !mCollidersComponents.getIsTrigger(pair.collider1Entity) && !mCollidersComponents.getIsTrigger(pair.collider2Entity)) {
 
-                    assert(pair.potentialContactManifoldsIndices.size() > 0);
-                    nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
+                    assert(pair.nbPotentialContactManifolds > 0);
+                    nbTotalManifolds += pair.nbPotentialContactManifolds;
 
                     // Add the contact manifold into the island
-                    mIslands.nbContactManifolds[islandIndex] += pair.potentialContactManifoldsIndices.size();
+                    mIslands.nbContactManifolds[islandIndex] += pair.nbPotentialContactManifolds;
                     pair.isAlreadyInIsland = true;
 
                     // Check if the other body has already been added to the island

@@ -128,19 +128,9 @@ class CollisionDetectionSystem {
         /// List of lost contact pairs (contact pairs in contact in previous frame but not in the current one)
         List<ContactPair> mLostContactPairs;
 
-        /// First map of overlapping pair id to the index of the corresponding pair contact
-        Map<uint64, uint> mMapPairIdToContactPairIndex1;
-
-        /// Second map of overlapping pair id to the index of the corresponding pair contact
-        Map<uint64, uint> mMapPairIdToContactPairIndex2;
-
         /// Pointer to the map of overlappingPairId to the index of contact pair of the previous frame
         /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
-        Map<uint64, uint>* mPreviousMapPairIdToContactPairIndex;
-
-        /// Pointer to the map of overlappingPairId to the index of contact pair of the current frame
-        /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
-        Map<uint64, uint>* mCurrentMapPairIdToContactPairIndex;
+        Map<uint64, uint> mPreviousMapPairIdToContactPairIndex;
 
         /// First list with the contact manifolds
         List<ContactManifold> mContactManifolds1;
@@ -223,12 +213,11 @@ class CollisionDetectionSystem {
         /// Convert the potential contact into actual contacts
         void processPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
                                       bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
-                                      Map<uint64, uint>* mapPairIdToContactPairIndex,
-                                      List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs);
+                                      List<ContactManifoldInfo>& potentialContactManifolds,
+                                      Map<uint64, uint>& mapPairIdToContactPairIndex, List<ContactPair>* contactPairs);
 
         /// Process the potential contacts after narrow-phase collision detection
         void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
-                                         Map<uint64, uint>* mapPairIdToContactPairIndex,
                                          List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs);
 
         /// Reduce the potential contact manifolds and contact points of the overlapping pair contacts
@@ -237,6 +226,9 @@ class CollisionDetectionSystem {
 
         /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
         void createContacts();
+
+        /// Compute the map from contact pairs ids to contact pair for the next frame
+        void computeMapPreviousContactPairs();
 
         /// Compute the lost contact pairs (contact pairs in contact in the previous frame but not in the current one)
         void computeLostContactPairs();
@@ -276,6 +268,9 @@ class CollisionDetectionSystem {
 
         /// Filter the overlapping pairs to keep only the pairs where two given bodies are involved
         void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, List<uint64>& convexPairs, List<uint64>& concavePairs) const;
+
+        /// Remove an element in an array (and replace it by the last one in the array)
+        void removeItemAtInArray(uint array[], uint8 index, uint8& arraySize) const;
 
     public :
 

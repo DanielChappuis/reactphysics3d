@@ -294,6 +294,21 @@ class List {
             mSize++;
         }
 
+        /// Add an element into the list by constructing it directly into the list (in order to avoid a copy)
+        template<typename...Ts>
+        void emplace(Ts&&... args) {
+
+            // If we need to allocate more memory
+            if (mSize == mCapacity) {
+                reserve(mCapacity == 0 ? 1 : mCapacity * 2);
+            }
+
+            // Construct the element directly at its location in the array
+            new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(std::forward<Ts>(args)...);
+
+            mSize++;
+        }
+
         /// Add a given numbers of elements at the end of the list but do not init them
         void addWithoutInit(uint nbElements) {
 

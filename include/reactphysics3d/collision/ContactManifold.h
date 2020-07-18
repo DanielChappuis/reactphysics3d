@@ -58,7 +58,7 @@ class ContactManifold {
         // -------------------- Constants -------------------- //
 
         /// Maximum number of contact points in a reduced contact manifold
-        const int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
+        static constexpr int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
 
         // -------------------- Attributes -------------------- //
 
@@ -78,7 +78,7 @@ class ContactManifold {
         Entity colliderEntity2;
 
         /// Number of contacts in the cache
-        int8 nbContactPoints;
+        uint8 nbContactPoints;
 
         /// First friction vector of the contact manifold
         Vector3 frictionVector1;
@@ -107,16 +107,7 @@ class ContactManifold {
 
         /// Constructor
         ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity colliderEntity1, Entity colliderEntity2,
-                        uint contactPointsIndex, int8 nbContactPoints);
-
-        /// Destructor
-        ~ContactManifold();
-
-        /// Copy-constructor
-        ContactManifold(const ContactManifold& contactManifold) = default;
-
-        /// Assignment operator
-        ContactManifold& operator=(const ContactManifold& contactManifold) = default;
+                        uint contactPointsIndex, uint8 nbContactPoints);
 
         // -------------------- Friendship -------------------- //
 
