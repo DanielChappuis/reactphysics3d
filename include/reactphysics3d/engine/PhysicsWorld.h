@@ -301,6 +301,9 @@ class PhysicsWorld {
         /// Add the joint to the list of joints of the two bodies involved in the joint
         void addJointToBodies(Entity body1, Entity body2, Entity joint);
 
+        /// Update the world inverse inertia tensors of rigid bodies
+        void updateBodiesInverseWorldInertiaTensors();
+
         /// Destructor
         ~PhysicsWorld();
 

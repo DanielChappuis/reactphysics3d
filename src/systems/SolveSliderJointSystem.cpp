@@ -60,8 +60,8 @@ void SolveSliderJointSystem::initBeforeSolve() {
         assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
 
         // Get the inertia tensor of bodies
-        mSliderJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
-        mSliderJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
+        mSliderJointComponents.mI1[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body1Entity);
+        mSliderJointComponents.mI2[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body2Entity);
     }
 
     // For each joint
@@ -619,9 +619,14 @@ void SolveSliderJointSystem::solvePositionConstraint() {
         const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
-        // Recompute the inverse inertia tensors
-        mSliderJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
-        mSliderJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
+        // Recompute the world inverse inertia tensors
+        const Matrix3x3 orientation1 = mTransformComponents.getTransform(body1Entity).getOrientation().getMatrix();
+        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.getInertiaTensorLocalInverse(body1Entity),
+                                                    mSliderJointComponents.mI1[i]);
+
+        const Matrix3x3 orientation2 = mTransformComponents.getTransform(body2Entity).getOrientation().getMatrix();
+        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.getInertiaTensorLocalInverse(body2Entity),
+                                                    mSliderJointComponents.mI2[i]);
     }
 
     // For each joint component

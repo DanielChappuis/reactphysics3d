@@ -65,8 +65,8 @@ class RigidBody : public CollisionBody {
         /// Compute the local-space inertia tensor and total mass of the body using its colliders
         void computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, decimal& totalMass) const;
 
-        /// Return the inverse of the inertia tensor in world coordinates.
-        static const Matrix3x3 getWorldInertiaTensorInverse(PhysicsWorld& world, Entity bodyEntity);
+        /// Compute the inverse of the inertia tensor in world coordinates.
+        static void computeWorldInertiaTensorInverse(const Matrix3x3& orientation, const Vector3& inverseInertiaTensorLocal, Matrix3x3& outInverseInertiaTensorWorld);
 
     public :
 

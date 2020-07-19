@@ -60,8 +60,8 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
 
         // Get the inertia tensor of bodies
-        mBallAndSocketJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
-        mBallAndSocketJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
+        mBallAndSocketJointComponents.mI1[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body1Entity);
+        mBallAndSocketJointComponents.mI2[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body2Entity);
     }
 
     // For each joint
@@ -260,9 +260,14 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
         const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
-        // Recompute the inverse inertia tensors
-        mBallAndSocketJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
-        mBallAndSocketJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
+        // Recompute the world inverse inertia tensors
+        const Matrix3x3 orientation1 = mTransformComponents.getTransform(body1Entity).getOrientation().getMatrix();
+        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.getInertiaTensorLocalInverse(body1Entity),
+                                                    mBallAndSocketJointComponents.mI1[i]);
+
+        const Matrix3x3 orientation2 = mTransformComponents.getTransform(body2Entity).getOrientation().getMatrix();
+        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.getInertiaTensorLocalInverse(body2Entity),
+                                                    mBallAndSocketJointComponents.mI2[i]);
     }
 
     // For each joint component

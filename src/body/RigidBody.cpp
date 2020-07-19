@@ -886,16 +886,14 @@ void RigidBody::updateOverlappingPairs() {
     }
 }
 
-/// Return the inverse of the inertia tensor in world coordinates.
-const Matrix3x3 RigidBody::getWorldInertiaTensorInverse(PhysicsWorld& world, Entity bodyEntity) {
+/// Compute the inverse of the inertia tensor in world coordinates.
+void RigidBody::computeWorldInertiaTensorInverse(const Matrix3x3& orientation, const Vector3& inverseInertiaTensorLocal, Matrix3x3& outInverseInertiaTensorWorld) {
 
-    Matrix3x3 orientation = world.mTransformComponents.getTransform(bodyEntity).getOrientation().getMatrix();
-    const Vector3& inverseInertiaLocalTensor = world.mRigidBodyComponents.getInertiaTensorLocalInverse(bodyEntity);
     Matrix3x3 orientationTranspose = orientation.getTranspose();
-    orientationTranspose[0] *= inverseInertiaLocalTensor.x;
-    orientationTranspose[1] *= inverseInertiaLocalTensor.y;
-    orientationTranspose[2] *= inverseInertiaLocalTensor.z;
-    return orientation * orientationTranspose;
+    orientationTranspose[0] *= inverseInertiaTensorLocal.x;
+    orientationTranspose[1] *= inverseInertiaTensorLocal.y;
+    orientationTranspose[2] *= inverseInertiaTensorLocal.z;
+    outInverseInertiaTensorWorld = orientation * orientationTranspose;
 }
 
 // Set whether or not the body is allowed to go to sleep

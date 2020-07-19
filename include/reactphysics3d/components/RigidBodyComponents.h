@@ -109,8 +109,11 @@ class RigidBodyComponents : public Components {
         /// Array with the inertia tensor of each component
         Vector3* mLocalInertiaTensors;
 
-        /// Array with the inverse of the inertia tensor of each component
+        /// Array with the inverse of the local inertia tensor of each component
         Vector3* mInverseInertiaTensorsLocal;
+
+        /// Array with the inverse of the world inertia tensor of each component
+        Matrix3x3* mInverseInertiaTensorsWorld;
 
         /// Array with the constrained linear velocity of each component
         Vector3* mConstrainedLinearVelocities;
@@ -260,6 +263,9 @@ class RigidBodyComponents : public Components {
 
         /// Return the inverse local inertia tensor of an entity
         const Vector3& getInertiaTensorLocalInverse(Entity bodyEntity);
+
+        /// Return the inverse world inertia tensor of an entity
+        const Matrix3x3& getInertiaTensorWorldInverse(Entity bodyEntity);
 
         /// Set the external force of an entity
         void setExternalForce(Entity bodyEntity, const Vector3& externalForce);
@@ -521,6 +527,14 @@ inline const Vector3& RigidBodyComponents::getInertiaTensorLocalInverse(Entity b
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    return mInverseInertiaTensorsLocal[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the inverse world inertia tensor of an entity
+inline const Matrix3x3& RigidBodyComponents::getInertiaTensorWorldInverse(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]];
 }
 
 // Set the external force of an entity

@@ -341,6 +341,9 @@ void PhysicsWorld::update(decimal timeStep) {
     // Report the contacts to the user
     mCollisionDetection.reportContactsAndTriggers();
 
+    // Recompute the inverse inertia tensors of rigid bodies
+    updateBodiesInverseWorldInertiaTensors();
+
     // Disable the joints for pair of sleeping bodies
     disableJointsOfSleepingBodies();
 
@@ -379,6 +382,15 @@ void PhysicsWorld::update(decimal timeStep) {
     mMemoryManager.resetFrameAllocator();
 }
 
+// Update the world inverse inertia tensors of rigid bodies
+void PhysicsWorld::updateBodiesInverseWorldInertiaTensors() {
+
+    for (uint i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+        const Matrix3x3 orientation = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]).getOrientation().getMatrix();
+
+        RigidBody::computeWorldInertiaTensorInverse(orientation, mRigidBodyComponents.mInverseInertiaTensorsLocal[i], mRigidBodyComponents.mInverseInertiaTensorsWorld[i]);
+    }
+}
 
 // Solve the contacts and constraints
 void PhysicsWorld::solveContactsAndConstraints(decimal timeStep) {
