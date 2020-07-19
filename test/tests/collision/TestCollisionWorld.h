@@ -610,7 +610,7 @@ class TestCollisionWorld : public Test {
 			Transform initTransform2 = mSphereBody2->getTransform();
 
 			Transform transform1(Vector3(10, 20, 50), Quaternion::identity());
-			Transform transform2(Vector3(17, 20, 50), Quaternion::fromEulerAngles(rp3d::PI / 8.0f, rp3d::PI / 4.0f, rp3d::PI / 16.0f));
+            Transform transform2(Vector3(17, 20, 50), Quaternion::fromEulerAngles(rp3d::PI_RP3D / 8.0f, rp3d::PI_RP3D / 4.0f, rp3d::PI_RP3D / 16.0f));
 
 			// Move spheres to collide with each other
 			mSphereBody1->setTransform(transform1);
@@ -2200,7 +2200,7 @@ class TestCollisionWorld : public Test {
             *********************************************************************************/
 
             Transform transform1(Vector3(10, 20, 50), Quaternion::identity());
-            Transform transform2(Vector3(17, 21, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI * 0.5f));
+            Transform transform2(Vector3(17, 21, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D * 0.5f));
 
             // Move spheres to collide with each other
             mBoxBody1->setTransform(transform1);
@@ -2315,7 +2315,7 @@ class TestCollisionWorld : public Test {
             *********************************************************************************/
 
             Transform transform1(Vector3(10, 20, 50), Quaternion::identity());
-            Transform transform2(Vector3(17, 21, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI * 0.5f));
+            Transform transform2(Vector3(17, 21, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D * 0.5f));
 
             // Move spheres to collide with each other
             mConvexMeshBody1->setTransform(transform1);
@@ -2626,7 +2626,7 @@ class TestCollisionWorld : public Test {
             *********************************************************************************/
 
             Transform transform1(Vector3(10, 20, 50), Quaternion::identity());
-            Transform transform2(Vector3(16, 23, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI * 0.5f));
+            Transform transform2(Vector3(16, 23, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D * 0.5f));
 
             // Move spheres to collide with each other
             mCapsuleBody1->setTransform(transform1);
@@ -2732,7 +2732,7 @@ class TestCollisionWorld : public Test {
             *********************************************************************************/
 
             transform1 = Transform(Vector3(10, 20, 50), Quaternion::identity());
-            transform2 = Transform(Vector3(10, 27, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI * 0.5f));
+            transform2 = Transform(Vector3(10, 27, 50), Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D * 0.5f));
 
             // Move spheres to collide with each other
             mCapsuleBody1->setTransform(transform1);
