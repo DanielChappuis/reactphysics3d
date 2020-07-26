@@ -55,7 +55,7 @@
     #define RP3D_COMPILER_UNKNOWN
 #endif
 
-// Force inline macro
+// Force RP3D_FORCE_INLINE macro
 #if defined(RP3D_COMPILER_VISUAL_STUDIO)
     #define RP3D_FORCE_INLINE __forceinline
 #elif defined(RP3D_COMPILER_GCC) || defined(RP3D_COMPILER_CLANG)

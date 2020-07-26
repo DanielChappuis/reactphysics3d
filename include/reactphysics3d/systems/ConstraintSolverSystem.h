@@ -215,7 +215,7 @@ class ConstraintSolverSystem {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void ConstraintSolverSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void ConstraintSolverSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
     mSolveBallAndSocketJointSystem.setProfiler(profiler);
     mSolveFixedJointSystem.setProfiler(profiler);

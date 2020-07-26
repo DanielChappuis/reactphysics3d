@@ -112,7 +112,7 @@ class GJKAlgorithm {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void GJKAlgorithm::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void GJKAlgorithm::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 }
 

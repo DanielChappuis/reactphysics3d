@@ -313,21 +313,21 @@ class OverlappingPairs {
 };
 
 // Return the entity of the first collider
-inline Entity OverlappingPairs::getCollider1(uint64 pairId) const {
+RP3D_FORCE_INLINE Entity OverlappingPairs::getCollider1(uint64 pairId) const {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     assert(mMapPairIdToPairIndex[pairId] < mNbPairs);
     return mColliders1[mMapPairIdToPairIndex[pairId]];
 }
 
 // Return the entity of the second collider
-inline Entity OverlappingPairs::getCollider2(uint64 pairId) const {
+RP3D_FORCE_INLINE Entity OverlappingPairs::getCollider2(uint64 pairId) const {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     assert(mMapPairIdToPairIndex[pairId] < mNbPairs);
     return mColliders2[mMapPairIdToPairIndex[pairId]];
 }
 
 // Notify if a given pair is active or not
-inline void OverlappingPairs::setIsPairActive(uint64 pairId, bool isActive) {
+RP3D_FORCE_INLINE void OverlappingPairs::setIsPairActive(uint64 pairId, bool isActive) {
 
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     assert(mMapPairIdToPairIndex[pairId] < mNbPairs);
@@ -335,13 +335,13 @@ inline void OverlappingPairs::setIsPairActive(uint64 pairId, bool isActive) {
 }
 
 // Return the index of a given overlapping pair in the internal array
-inline uint64 OverlappingPairs::getPairIndex(uint64 pairId) const {
+RP3D_FORCE_INLINE uint64 OverlappingPairs::getPairIndex(uint64 pairId) const {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     return mMapPairIdToPairIndex[pairId];
 }
 
 // Return the last frame collision info for a given shape id or nullptr if none is found
-inline LastFrameCollisionInfo* OverlappingPairs::getLastFrameCollisionInfo(uint64 pairId, uint64 shapesId) {
+RP3D_FORCE_INLINE LastFrameCollisionInfo* OverlappingPairs::getLastFrameCollisionInfo(uint64 pairId, uint64 shapesId) {
 
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     const uint64 index = mMapPairIdToPairIndex[pairId];
@@ -356,7 +356,7 @@ inline LastFrameCollisionInfo* OverlappingPairs::getLastFrameCollisionInfo(uint6
 }
 
 // Return the pair of bodies index
-inline bodypair OverlappingPairs::computeBodiesIndexPair(Entity body1Entity, Entity body2Entity) {
+RP3D_FORCE_INLINE bodypair OverlappingPairs::computeBodiesIndexPair(Entity body1Entity, Entity body2Entity) {
 
     // Construct the pair of body index
     bodypair indexPair = body1Entity.id < body2Entity.id ?
@@ -367,44 +367,44 @@ inline bodypair OverlappingPairs::computeBodiesIndexPair(Entity body1Entity, Ent
 }
 
 // Return the number of pairs
-inline uint64 OverlappingPairs::getNbPairs() const {
+RP3D_FORCE_INLINE uint64 OverlappingPairs::getNbPairs() const {
     return mNbPairs;
 }
 
 // Return the number of convex vs convex pairs
-inline uint64 OverlappingPairs::getNbConvexVsConvexPairs() const {
+RP3D_FORCE_INLINE uint64 OverlappingPairs::getNbConvexVsConvexPairs() const {
    return mConcavePairsStartIndex;
 }
 
 // Return the number of convex vs concave pairs
-inline uint64 OverlappingPairs::getNbConvexVsConcavePairs() const {
+RP3D_FORCE_INLINE uint64 OverlappingPairs::getNbConvexVsConcavePairs() const {
    return mNbPairs - mConcavePairsStartIndex;
 }
 
 // Return the starting index of the convex vs concave pairs
-inline uint64 OverlappingPairs::getConvexVsConcavePairsStartIndex() const {
+RP3D_FORCE_INLINE uint64 OverlappingPairs::getConvexVsConcavePairsStartIndex() const {
    return mConcavePairsStartIndex;
 }
 
 // Return a reference to the temporary memory allocator
-inline MemoryAllocator& OverlappingPairs::getTemporaryAllocator() {
+RP3D_FORCE_INLINE MemoryAllocator& OverlappingPairs::getTemporaryAllocator() {
     return mTempMemoryAllocator;
 }
 
 // Set if we need to test a given pair for overlap
-inline void OverlappingPairs::setNeedToTestOverlap(uint64 pairId, bool needToTestOverlap) {
+RP3D_FORCE_INLINE void OverlappingPairs::setNeedToTestOverlap(uint64 pairId, bool needToTestOverlap) {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     mNeedToTestOverlap[mMapPairIdToPairIndex[pairId]] = needToTestOverlap;
 }
 
 // Return true if the two colliders of the pair were already colliding the previous frame
-inline bool OverlappingPairs::getCollidingInPreviousFrame(uint64 pairId) const {
+RP3D_FORCE_INLINE bool OverlappingPairs::getCollidingInPreviousFrame(uint64 pairId) const {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     return mCollidingInPreviousFrame[mMapPairIdToPairIndex[pairId]];
 }
 
 // Set to true if the two colliders of the pair were already colliding the previous frame
-inline void OverlappingPairs::setCollidingInPreviousFrame(uint64 pairId, bool wereCollidingInPreviousFrame) {
+RP3D_FORCE_INLINE void OverlappingPairs::setCollidingInPreviousFrame(uint64 pairId, bool wereCollidingInPreviousFrame) {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     mCollidingInPreviousFrame[mMapPairIdToPairIndex[pairId]] = wereCollidingInPreviousFrame;
 }
@@ -412,7 +412,7 @@ inline void OverlappingPairs::setCollidingInPreviousFrame(uint64 pairId, bool we
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void OverlappingPairs::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void OverlappingPairs::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 

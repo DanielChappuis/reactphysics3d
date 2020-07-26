@@ -43,43 +43,6 @@ NarrowPhaseInfoBatch::~NarrowPhaseInfoBatch() {
     clear();
 }
 
-// Add shapes to be tested during narrow-phase collision detection into the batch
-void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
-                                              CollisionShape* shape2, const Transform& shape1Transform, const Transform& shape2Transform,
-                                              bool needToReportContacts, MemoryAllocator& shapeAllocator) {
-
-    // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
-    // TODO OPTI : Can we better manage this
-    LastFrameCollisionInfo* lastFrameInfo = mOverlappingPairs.addLastFrameInfoIfNecessary(pairIndex, shape1->getId(), shape2->getId());
-
-    // Create a meta data object
-    narrowPhaseInfos.emplace(pairId, collider1, collider2, lastFrameInfo, shapeAllocator, shape1Transform, shape2Transform, shape1, shape2, needToReportContacts);
-}
-
-// Add a new contact point
-void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth, const Vector3& localPt1, const Vector3& localPt2) {
-
-    assert(penDepth > decimal(0.0));
-
-    if (narrowPhaseInfos[index].nbContactPoints < NB_MAX_CONTACT_POINTS_IN_NARROWPHASE_INFO) {
-
-        assert(contactNormal.length() > 0.8f);
-
-        // Add it into the array of contact points
-        narrowPhaseInfos[index].contactPoints[narrowPhaseInfos[index].nbContactPoints].normal = contactNormal;
-        narrowPhaseInfos[index].contactPoints[narrowPhaseInfos[index].nbContactPoints].penetrationDepth = penDepth;
-        narrowPhaseInfos[index].contactPoints[narrowPhaseInfos[index].nbContactPoints].localPoint1 = localPt1;
-        narrowPhaseInfos[index].contactPoints[narrowPhaseInfos[index].nbContactPoints].localPoint2 = localPt2;
-        narrowPhaseInfos[index].nbContactPoints++;
-    }
-}
-
-// Reset the remaining contact points
-void NarrowPhaseInfoBatch::resetContactPoints(uint index) {
-
-    narrowPhaseInfos[index].nbContactPoints = 0;
-}
-
 // Initialize the containers using cached capacity
 void NarrowPhaseInfoBatch::reserveMemory() {
 

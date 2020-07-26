@@ -114,7 +114,7 @@ class DynamicsSystem {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void DynamicsSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void DynamicsSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 

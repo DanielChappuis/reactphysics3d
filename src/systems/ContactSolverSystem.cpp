@@ -818,7 +818,7 @@ decimal ContactSolverSystem::computeMixedFrictionCoefficient(Collider* collider1
 }
 
 // Compute th mixed rolling resistance factor between two colliders
-inline decimal ContactSolverSystem::computeMixedRollingResistance(Collider* collider1, Collider* collider2) const {
+RP3D_FORCE_INLINE decimal ContactSolverSystem::computeMixedRollingResistance(Collider* collider1, Collider* collider2) const {
     return decimal(0.5f) * (collider1->getMaterial().getRollingResistance() + collider2->getMaterial().getRollingResistance());
 }
 

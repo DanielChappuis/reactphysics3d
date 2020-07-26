@@ -111,7 +111,7 @@ class Material {
 /**
  * @return Bounciness factor (between 0 and 1) where 1 is very bouncy
  */
-inline decimal Material::getBounciness() const {
+RP3D_FORCE_INLINE decimal Material::getBounciness() const {
     return mBounciness;
 }
 
@@ -121,7 +121,7 @@ inline decimal Material::getBounciness() const {
 /**
  * @param bounciness Bounciness factor (between 0 and 1) where 1 is very bouncy
  */
-inline void Material::setBounciness(decimal bounciness) {
+RP3D_FORCE_INLINE void Material::setBounciness(decimal bounciness) {
     assert(bounciness >= decimal(0.0) && bounciness <= decimal(1.0));
     mBounciness = bounciness;
 }
@@ -130,7 +130,7 @@ inline void Material::setBounciness(decimal bounciness) {
 /**
  * @return Friction coefficient (positive value)
  */
-inline decimal Material::getFrictionCoefficient() const {
+RP3D_FORCE_INLINE decimal Material::getFrictionCoefficient() const {
     return mFrictionCoefficient;
 }
 
@@ -140,7 +140,7 @@ inline decimal Material::getFrictionCoefficient() const {
 /**
  * @param frictionCoefficient Friction coefficient (positive value)
  */
-inline void Material::setFrictionCoefficient(decimal frictionCoefficient) {
+RP3D_FORCE_INLINE void Material::setFrictionCoefficient(decimal frictionCoefficient) {
     assert(frictionCoefficient >= decimal(0.0));
     mFrictionCoefficient = frictionCoefficient;
 }
@@ -151,7 +151,7 @@ inline void Material::setFrictionCoefficient(decimal frictionCoefficient) {
 /**
  * @return The rolling resistance factor (positive value)
  */
-inline decimal Material::getRollingResistance() const {
+RP3D_FORCE_INLINE decimal Material::getRollingResistance() const {
     return mRollingResistance;
 }
 
@@ -161,13 +161,13 @@ inline decimal Material::getRollingResistance() const {
 /**
  * @param rollingResistance The rolling resistance factor
  */
-inline void Material::setRollingResistance(decimal rollingResistance) {
+RP3D_FORCE_INLINE void Material::setRollingResistance(decimal rollingResistance) {
     assert(rollingResistance >= 0);
     mRollingResistance = rollingResistance;
 }
 
 // Return the mass density of the collider
-inline decimal Material::getMassDensity() const {
+RP3D_FORCE_INLINE decimal Material::getMassDensity() const {
    return mMassDensity;
 }
 
@@ -175,12 +175,12 @@ inline decimal Material::getMassDensity() const {
 /**
  * @param massDensity The mass density of the collider
  */
-inline void Material::setMassDensity(decimal massDensity) {
+RP3D_FORCE_INLINE void Material::setMassDensity(decimal massDensity) {
    mMassDensity = massDensity;
 }
 
 // Return a string representation for the material
-inline std::string Material::to_string() const {
+RP3D_FORCE_INLINE std::string Material::to_string() const {
 
     std::stringstream ss;
 
@@ -192,7 +192,7 @@ inline std::string Material::to_string() const {
 }
 
 // Overloaded assignment operator
-inline Material& Material::operator=(const Material& material) {
+RP3D_FORCE_INLINE Material& Material::operator=(const Material& material) {
 
     // Check for self-assignment
     if (this != &material) {

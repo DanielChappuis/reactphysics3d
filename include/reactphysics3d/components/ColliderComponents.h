@@ -213,7 +213,7 @@ class ColliderComponents : public Components {
 };
 
 // Return the body entity of a given collider
-inline Entity ColliderComponents::getBody(Entity colliderEntity) const {
+RP3D_FORCE_INLINE Entity ColliderComponents::getBody(Entity colliderEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -221,7 +221,7 @@ inline Entity ColliderComponents::getBody(Entity colliderEntity) const {
 }
 
 // Return a pointer to a given collider
-inline Collider *ColliderComponents::getCollider(Entity colliderEntity) const {
+RP3D_FORCE_INLINE Collider *ColliderComponents::getCollider(Entity colliderEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -229,7 +229,7 @@ inline Collider *ColliderComponents::getCollider(Entity colliderEntity) const {
 }
 
 // Return the local-to-body transform of a collider
-inline const Transform& ColliderComponents::getLocalToBodyTransform(Entity colliderEntity) const {
+RP3D_FORCE_INLINE const Transform& ColliderComponents::getLocalToBodyTransform(Entity colliderEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -237,7 +237,7 @@ inline const Transform& ColliderComponents::getLocalToBodyTransform(Entity colli
 }
 
 // Set the local-to-body transform of a collider
-inline void ColliderComponents::setLocalToBodyTransform(Entity colliderEntity, const Transform& transform) {
+RP3D_FORCE_INLINE void ColliderComponents::setLocalToBodyTransform(Entity colliderEntity, const Transform& transform) {
 
    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -245,7 +245,7 @@ inline void ColliderComponents::setLocalToBodyTransform(Entity colliderEntity, c
 }
 
 // Return a pointer to the collision shape of a collider
-inline CollisionShape* ColliderComponents::getCollisionShape(Entity colliderEntity) const {
+RP3D_FORCE_INLINE CollisionShape* ColliderComponents::getCollisionShape(Entity colliderEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -253,7 +253,7 @@ inline CollisionShape* ColliderComponents::getCollisionShape(Entity colliderEnti
 }
 
 // Return the broad-phase id of a given collider
-inline int32 ColliderComponents::getBroadPhaseId(Entity colliderEntity) const {
+RP3D_FORCE_INLINE int32 ColliderComponents::getBroadPhaseId(Entity colliderEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -261,7 +261,7 @@ inline int32 ColliderComponents::getBroadPhaseId(Entity colliderEntity) const {
 }
 
 // Set the broad-phase id of a given collider
-inline void ColliderComponents::setBroadPhaseId(Entity colliderEntity, int32 broadPhaseId) {
+RP3D_FORCE_INLINE void ColliderComponents::setBroadPhaseId(Entity colliderEntity, int32 broadPhaseId) {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -269,7 +269,7 @@ inline void ColliderComponents::setBroadPhaseId(Entity colliderEntity, int32 bro
 }
 
 // Return the collision category bits of a given collider
-inline unsigned short ColliderComponents::getCollisionCategoryBits(Entity colliderEntity) const {
+RP3D_FORCE_INLINE unsigned short ColliderComponents::getCollisionCategoryBits(Entity colliderEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -277,7 +277,7 @@ inline unsigned short ColliderComponents::getCollisionCategoryBits(Entity collid
 }
 
 // Return the "collide with" mask bits of a given collider
-inline unsigned short ColliderComponents::getCollideWithMaskBits(Entity colliderEntity) const {
+RP3D_FORCE_INLINE unsigned short ColliderComponents::getCollideWithMaskBits(Entity colliderEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -285,7 +285,7 @@ inline unsigned short ColliderComponents::getCollideWithMaskBits(Entity collider
 }
 
 // Set the collision category bits of a given collider
-inline void ColliderComponents::setCollisionCategoryBits(Entity colliderEntity, unsigned short collisionCategoryBits) {
+RP3D_FORCE_INLINE void ColliderComponents::setCollisionCategoryBits(Entity colliderEntity, unsigned short collisionCategoryBits) {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -293,7 +293,7 @@ inline void ColliderComponents::setCollisionCategoryBits(Entity colliderEntity, 
 }
 
 // Set the "collide with" mask bits of a given collider
-inline void ColliderComponents::setCollideWithMaskBits(Entity colliderEntity, unsigned short collideWithMaskBits) {
+RP3D_FORCE_INLINE void ColliderComponents::setCollideWithMaskBits(Entity colliderEntity, unsigned short collideWithMaskBits) {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -301,7 +301,7 @@ inline void ColliderComponents::setCollideWithMaskBits(Entity colliderEntity, un
 }
 
 // Return the local-to-world transform of a collider
-inline const Transform& ColliderComponents::getLocalToWorldTransform(Entity colliderEntity) const {
+RP3D_FORCE_INLINE const Transform& ColliderComponents::getLocalToWorldTransform(Entity colliderEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -309,7 +309,7 @@ inline const Transform& ColliderComponents::getLocalToWorldTransform(Entity coll
 }
 
 // Set the local-to-world transform of a collider
-inline void ColliderComponents::setLocalToWorldTransform(Entity colliderEntity, const Transform& transform) {
+RP3D_FORCE_INLINE void ColliderComponents::setLocalToWorldTransform(Entity colliderEntity, const Transform& transform) {
 
    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -317,7 +317,7 @@ inline void ColliderComponents::setLocalToWorldTransform(Entity colliderEntity, 
 }
 
 // Return a reference to the list of overlapping pairs for a given collider
-inline List<uint64>& ColliderComponents::getOverlappingPairs(Entity colliderEntity) {
+RP3D_FORCE_INLINE List<uint64>& ColliderComponents::getOverlappingPairs(Entity colliderEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -325,7 +325,7 @@ inline List<uint64>& ColliderComponents::getOverlappingPairs(Entity colliderEnti
 }
 
 // Return true if the size of collision shape of the collider has been changed by the user
-inline bool ColliderComponents::getHasCollisionShapeChangedSize(Entity colliderEntity) const {
+RP3D_FORCE_INLINE bool ColliderComponents::getHasCollisionShapeChangedSize(Entity colliderEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -333,7 +333,7 @@ inline bool ColliderComponents::getHasCollisionShapeChangedSize(Entity colliderE
 }
 
 // Return true if the size of collision shape of the collider has been changed by the user
-inline void ColliderComponents::setHasCollisionShapeChangedSize(Entity colliderEntity, bool hasCollisionShapeChangedSize) {
+RP3D_FORCE_INLINE void ColliderComponents::setHasCollisionShapeChangedSize(Entity colliderEntity, bool hasCollisionShapeChangedSize) {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -342,7 +342,7 @@ inline void ColliderComponents::setHasCollisionShapeChangedSize(Entity colliderE
 
 
 // Return true if a collider is a trigger
-inline bool ColliderComponents::getIsTrigger(Entity colliderEntity) const {
+RP3D_FORCE_INLINE bool ColliderComponents::getIsTrigger(Entity colliderEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -350,7 +350,7 @@ inline bool ColliderComponents::getIsTrigger(Entity colliderEntity) const {
 }
 
 // Set whether a collider is a trigger
-inline void ColliderComponents::setIsTrigger(Entity colliderEntity, bool isTrigger) {
+RP3D_FORCE_INLINE void ColliderComponents::setIsTrigger(Entity colliderEntity, bool isTrigger) {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 

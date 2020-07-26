@@ -44,7 +44,7 @@ struct Vector2;
 
 /// Function to test if two real numbers are (almost) equal
 /// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
-inline bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
+RP3D_FORCE_INLINE bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
     return (std::fabs(a - b) < epsilon);
 }
 
@@ -56,30 +56,30 @@ bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon = MAC
 
 /// Function that returns the result of the "value" clamped by
 /// two others values "lowerLimit" and "upperLimit"
-inline int clamp(int value, int lowerLimit, int upperLimit) {
+RP3D_FORCE_INLINE int clamp(int value, int lowerLimit, int upperLimit) {
     assert(lowerLimit <= upperLimit);
     return std::min(std::max(value, lowerLimit), upperLimit);
 }
 
 /// Function that returns the result of the "value" clamped by
 /// two others values "lowerLimit" and "upperLimit"
-inline decimal clamp(decimal value, decimal lowerLimit, decimal upperLimit) {
+RP3D_FORCE_INLINE decimal clamp(decimal value, decimal lowerLimit, decimal upperLimit) {
     assert(lowerLimit <= upperLimit);
     return std::min(std::max(value, lowerLimit), upperLimit);
 }
 
 /// Return the minimum value among three values
-inline decimal min3(decimal a, decimal b, decimal c) {
+RP3D_FORCE_INLINE decimal min3(decimal a, decimal b, decimal c) {
     return std::min(std::min(a, b), c);
 }
 
 /// Return the maximum value among three values
-inline decimal max3(decimal a, decimal b, decimal c) {
+RP3D_FORCE_INLINE decimal max3(decimal a, decimal b, decimal c) {
     return std::max(std::max(a, b), c);
 }
 
 /// Return true if two values have the same sign
-inline bool sameSign(decimal a, decimal b) {
+RP3D_FORCE_INLINE bool sameSign(decimal a, decimal b) {
     return a * b >= decimal(0.0);
 }
 

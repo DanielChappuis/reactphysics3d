@@ -182,7 +182,7 @@ class TriangleVertexArray {
 /**
  * @return The data type of the vertices in the array
  */
-inline TriangleVertexArray::VertexDataType TriangleVertexArray::getVertexDataType() const {
+RP3D_FORCE_INLINE TriangleVertexArray::VertexDataType TriangleVertexArray::getVertexDataType() const {
     return mVertexDataType;
 }
 
@@ -190,7 +190,7 @@ inline TriangleVertexArray::VertexDataType TriangleVertexArray::getVertexDataTyp
 /**
  * @return The data type of the normals in the array
  */
-inline TriangleVertexArray::NormalDataType TriangleVertexArray::getVertexNormalDataType() const {
+RP3D_FORCE_INLINE TriangleVertexArray::NormalDataType TriangleVertexArray::getVertexNormalDataType() const {
     return mVertexNormaldDataType;
 }
 
@@ -198,7 +198,7 @@ inline TriangleVertexArray::NormalDataType TriangleVertexArray::getVertexNormalD
 /**
  * @return The data type of the face indices in the array
  */
-inline TriangleVertexArray::IndexDataType TriangleVertexArray::getIndexDataType() const {
+RP3D_FORCE_INLINE TriangleVertexArray::IndexDataType TriangleVertexArray::getIndexDataType() const {
    return mIndexDataType;
 }
 
@@ -206,7 +206,7 @@ inline TriangleVertexArray::IndexDataType TriangleVertexArray::getIndexDataType(
 /**
  * @return The number of vertices in the array
  */
-inline uint TriangleVertexArray::getNbVertices() const {
+RP3D_FORCE_INLINE uint TriangleVertexArray::getNbVertices() const {
     return mNbVertices;
 }
 
@@ -214,7 +214,7 @@ inline uint TriangleVertexArray::getNbVertices() const {
 /**
  * @return The number of triangles in the array
  */
-inline uint TriangleVertexArray::getNbTriangles() const {
+RP3D_FORCE_INLINE uint TriangleVertexArray::getNbTriangles() const {
     return mNbTriangles;
 }
 
@@ -222,7 +222,7 @@ inline uint TriangleVertexArray::getNbTriangles() const {
 /**
  * @return The number of bytes separating two consecutive vertices in the array
  */
-inline uint TriangleVertexArray::getVerticesStride() const {
+RP3D_FORCE_INLINE uint TriangleVertexArray::getVerticesStride() const {
     return mVerticesStride;
 }
 
@@ -230,7 +230,7 @@ inline uint TriangleVertexArray::getVerticesStride() const {
 /**
  * @return The number of bytes separating two consecutive normals in the array
  */
-inline uint TriangleVertexArray::getVerticesNormalsStride() const {
+RP3D_FORCE_INLINE uint TriangleVertexArray::getVerticesNormalsStride() const {
     return mVerticesNormalsStride;
 }
 
@@ -238,7 +238,7 @@ inline uint TriangleVertexArray::getVerticesNormalsStride() const {
 /**
  * @return The number of bytes separating two consecutive face indices in the array
  */
-inline uint TriangleVertexArray::getIndicesStride() const {
+RP3D_FORCE_INLINE uint TriangleVertexArray::getIndicesStride() const {
     return mIndicesStride;
 }
 
@@ -246,7 +246,7 @@ inline uint TriangleVertexArray::getIndicesStride() const {
 /**
  * @return A pointer to the start of the vertices data in the array
  */
-inline const void* TriangleVertexArray::getVerticesStart() const {
+RP3D_FORCE_INLINE const void* TriangleVertexArray::getVerticesStart() const {
     return mVerticesStart;
 }
 
@@ -254,7 +254,7 @@ inline const void* TriangleVertexArray::getVerticesStart() const {
 /**
  * @return A pointer to the start of the normals data in the array
  */
-inline const void* TriangleVertexArray::getVerticesNormalsStart() const {
+RP3D_FORCE_INLINE const void* TriangleVertexArray::getVerticesNormalsStart() const {
     return mVerticesNormalsStart;
 }
 
@@ -262,7 +262,7 @@ inline const void* TriangleVertexArray::getVerticesNormalsStart() const {
 /**
  * @return A pointer to the start of the face indices data in the array
  */
-inline const void* TriangleVertexArray::getIndicesStart() const {
+RP3D_FORCE_INLINE const void* TriangleVertexArray::getIndicesStart() const {
     return mIndicesStart;
 }
 

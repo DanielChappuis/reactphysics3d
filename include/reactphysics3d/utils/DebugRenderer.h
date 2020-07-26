@@ -263,7 +263,7 @@ class DebugRenderer : public EventListener {
 /**
  * @return The number of lines in the array of lines to draw
  */
-inline uint32 DebugRenderer::getNbLines() const {
+RP3D_FORCE_INLINE uint32 DebugRenderer::getNbLines() const {
 	return mLines.size();
 }
 
@@ -271,7 +271,7 @@ inline uint32 DebugRenderer::getNbLines() const {
 /**
  * @return The list of lines to draw
  */
-inline const List<DebugRenderer::DebugLine>& DebugRenderer::getLines() const {
+RP3D_FORCE_INLINE const List<DebugRenderer::DebugLine>& DebugRenderer::getLines() const {
 	return mLines;
 }
 
@@ -279,7 +279,7 @@ inline const List<DebugRenderer::DebugLine>& DebugRenderer::getLines() const {
 /**
  * @return A pointer to the first element of the lines array to draw
  */
-inline const DebugRenderer::DebugLine* DebugRenderer::getLinesArray() const {
+RP3D_FORCE_INLINE const DebugRenderer::DebugLine* DebugRenderer::getLinesArray() const {
 	return &(mLines[0]);
 }
 
@@ -287,7 +287,7 @@ inline const DebugRenderer::DebugLine* DebugRenderer::getLinesArray() const {
 /**
  * @return The number of triangles in the array of triangles to draw
  */
-inline uint32 DebugRenderer::getNbTriangles() const {
+RP3D_FORCE_INLINE uint32 DebugRenderer::getNbTriangles() const {
 	return mTriangles.size();
 }
 
@@ -295,7 +295,7 @@ inline uint32 DebugRenderer::getNbTriangles() const {
 /**
  * @return The list of triangles to draw
  */
-inline const List<DebugRenderer::DebugTriangle>& DebugRenderer::getTriangles() const {
+RP3D_FORCE_INLINE const List<DebugRenderer::DebugTriangle>& DebugRenderer::getTriangles() const {
 	return mTriangles;
 }
 
@@ -303,7 +303,7 @@ inline const List<DebugRenderer::DebugTriangle>& DebugRenderer::getTriangles() c
 /**
  * @return A pointer to the first element of the triangles array to draw
  */
-inline const DebugRenderer::DebugTriangle* DebugRenderer::getTrianglesArray() const {
+RP3D_FORCE_INLINE const DebugRenderer::DebugTriangle* DebugRenderer::getTrianglesArray() const {
 	return &(mTriangles[0]);
 }
 
@@ -312,7 +312,7 @@ inline const DebugRenderer::DebugTriangle* DebugRenderer::getTrianglesArray() co
  * @param item A debug item
  * @return True if the given debug item is being displayed and false otherwise
  */
-inline bool DebugRenderer::getIsDebugItemDisplayed(DebugItem item) const {
+RP3D_FORCE_INLINE bool DebugRenderer::getIsDebugItemDisplayed(DebugItem item) const {
 	return mDisplayedDebugItems & static_cast<uint32>(item);
 }
 
@@ -321,7 +321,7 @@ inline bool DebugRenderer::getIsDebugItemDisplayed(DebugItem item) const {
  * @param item A debug item to draw
  * @param isDisplayed True if the given debug item has to be displayed and false otherwise
  */
-inline void DebugRenderer::setIsDebugItemDisplayed(DebugItem item, bool isDisplayed) {
+RP3D_FORCE_INLINE void DebugRenderer::setIsDebugItemDisplayed(DebugItem item, bool isDisplayed) {
 	const uint32 itemFlag = static_cast<uint32>(item);
 	uint32 resetBit = ~(itemFlag);
 	mDisplayedDebugItems &= resetBit;
@@ -334,7 +334,7 @@ inline void DebugRenderer::setIsDebugItemDisplayed(DebugItem item, bool isDispla
 /**
  * @return The radius of the sphere used to display a contact point
  */
-inline decimal DebugRenderer::getContactPointSphereRadius() const {
+RP3D_FORCE_INLINE decimal DebugRenderer::getContactPointSphereRadius() const {
     return mContactPointSphereRadius;
 }
 
@@ -342,7 +342,7 @@ inline decimal DebugRenderer::getContactPointSphereRadius() const {
 /**
  * @param radius The radius of the sphere used to display a contact point
  */
-inline void DebugRenderer::setContactPointSphereRadius(decimal radius) {
+RP3D_FORCE_INLINE void DebugRenderer::setContactPointSphereRadius(decimal radius) {
     assert(radius > decimal(0.0));
     mContactPointSphereRadius = radius;
 }
@@ -352,7 +352,7 @@ inline void DebugRenderer::setContactPointSphereRadius(decimal radius) {
 /**
  * @return The length of the contact normal to display
  */
-inline decimal DebugRenderer::getContactNormalLength() const {
+RP3D_FORCE_INLINE decimal DebugRenderer::getContactNormalLength() const {
     return mContactNormalLength;
 }
 
@@ -360,7 +360,7 @@ inline decimal DebugRenderer::getContactNormalLength() const {
 /**
  * @param contactNormalLength The length of the contact normal to display
  */
-inline void DebugRenderer::setContactNormalLength(decimal contactNormalLength) {
+RP3D_FORCE_INLINE void DebugRenderer::setContactNormalLength(decimal contactNormalLength) {
     mContactNormalLength = contactNormalLength;
 }
 

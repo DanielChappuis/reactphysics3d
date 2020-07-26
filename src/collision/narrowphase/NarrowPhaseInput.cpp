@@ -25,7 +25,6 @@
 
 // Libraries
 #include <reactphysics3d/collision/narrowphase/NarrowPhaseInput.h>
-#include <reactphysics3d/collision/narrowphase/CollisionDispatch.h>
 
 using namespace reactphysics3d;
 
@@ -36,37 +35,6 @@ NarrowPhaseInput::NarrowPhaseInput(MemoryAllocator& allocator, OverlappingPairs&
      mCapsuleVsConvexPolyhedronBatch(overlappingPairs, allocator),
      mConvexPolyhedronVsConvexPolyhedronBatch(overlappingPairs, allocator) {
 
-}
-
-// Add shapes to be tested during narrow-phase collision detection into the batch
-void NarrowPhaseInput::addNarrowPhaseTest(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1, CollisionShape* shape2,
-                                          const Transform& shape1Transform, const Transform& shape2Transform,
-                                          NarrowPhaseAlgorithmType narrowPhaseAlgorithmType, bool reportContacts, MemoryAllocator& shapeAllocator) {
-
-    switch (narrowPhaseAlgorithmType) {
-        case NarrowPhaseAlgorithmType::SphereVsSphere:
-            mSphereVsSphereBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
-            break;
-        case NarrowPhaseAlgorithmType::SphereVsCapsule:
-            mSphereVsCapsuleBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
-            break;
-        case NarrowPhaseAlgorithmType::CapsuleVsCapsule:
-            mCapsuleVsCapsuleBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
-            break;
-        case NarrowPhaseAlgorithmType::SphereVsConvexPolyhedron:
-            mSphereVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
-            break;
-        case NarrowPhaseAlgorithmType::CapsuleVsConvexPolyhedron:
-            mCapsuleVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
-            break;
-        case NarrowPhaseAlgorithmType::ConvexPolyhedronVsConvexPolyhedron:
-            mConvexPolyhedronVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
-            break;
-        case NarrowPhaseAlgorithmType::None:
-            // Must never happen
-            assert(false);
-            break;
-    }
 }
 
 /// Reserve memory for the containers with cached capacity

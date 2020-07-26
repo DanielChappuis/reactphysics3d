@@ -212,7 +212,7 @@ class ConcaveMeshShape : public ConcaveShape {
 };
 
 // Return the number of bytes used by the collision shape
-inline size_t ConcaveMeshShape::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t ConcaveMeshShape::getSizeInBytes() const {
     return sizeof(ConcaveMeshShape);
 }
 
@@ -222,7 +222,7 @@ inline size_t ConcaveMeshShape::getSizeInBytes() const {
  * @param min The minimum bounds of the shape in local-space coordinates
  * @param max The maximum bounds of the shape in local-space coordinates
  */
-inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
+RP3D_FORCE_INLINE void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Get the AABB of the whole tree
     AABB treeAABB = mDynamicAABBTree.getRootAABB();
@@ -233,7 +233,7 @@ inline void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
 // Called when a overlapping node has been found during the call to
 // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
-inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId) {
+RP3D_FORCE_INLINE void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId) {
 
     // Get the node data (triangle index and mesh subpart index)
     int32* data = mDynamicAABBTree.getNodeDataInt(nodeId);
@@ -253,7 +253,7 @@ inline void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId)
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void ConcaveMeshShape::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void ConcaveMeshShape::setProfiler(Profiler* profiler) {
 
     CollisionShape::setProfiler(profiler);
 

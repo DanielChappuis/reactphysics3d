@@ -167,27 +167,27 @@ class HeightFieldShape : public ConcaveShape {
 };
 
 // Return the number of rows in the height field
-inline int HeightFieldShape::getNbRows() const {
+RP3D_FORCE_INLINE int HeightFieldShape::getNbRows() const {
     return mNbRows;
 }
 
 // Return the number of columns in the height field
-inline int HeightFieldShape::getNbColumns() const {
+RP3D_FORCE_INLINE int HeightFieldShape::getNbColumns() const {
     return mNbColumns;
 }
 
 // Return the type of height value in the height field
-inline HeightFieldShape::HeightDataType HeightFieldShape::getHeightDataType() const {
+RP3D_FORCE_INLINE HeightFieldShape::HeightDataType HeightFieldShape::getHeightDataType() const {
     return mHeightDataType;
 }
 
 // Return the number of bytes used by the collision shape
-inline size_t HeightFieldShape::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t HeightFieldShape::getSizeInBytes() const {
     return sizeof(HeightFieldShape);
 }
 
 // Return the height of a given (x,y) point in the height field
-inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
+RP3D_FORCE_INLINE decimal HeightFieldShape::getHeightAt(int x, int y) const {
 
     assert(x >= 0 && x < mNbColumns);
     assert(y >= 0 && y < mNbRows);
@@ -201,12 +201,12 @@ inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 }
 
 // Return the closest inside integer grid value of a given floating grid value
-inline int HeightFieldShape::computeIntegerGridValue(decimal value) const {
+RP3D_FORCE_INLINE int HeightFieldShape::computeIntegerGridValue(decimal value) const {
     return (value < decimal(0.0)) ? value - decimal(0.5) : value + decimal(0.5);
 }
 
 // Compute the shape Id for a given triangle
-inline uint HeightFieldShape::computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const {
+RP3D_FORCE_INLINE uint HeightFieldShape::computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const {
 
     return (jIndex * (mNbColumns - 1) + iIndex) * 2 + secondTriangleIncrement;
 }

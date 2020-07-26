@@ -94,7 +94,7 @@ class ConvexPolyhedronShape : public ConvexShape {
 };
 
 // Return true if the collision shape is a polyhedron
-inline bool ConvexPolyhedronShape::isPolyhedron() const {
+RP3D_FORCE_INLINE bool ConvexPolyhedronShape::isPolyhedron() const {
     return true;
 }
 

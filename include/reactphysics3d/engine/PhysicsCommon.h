@@ -193,7 +193,7 @@ class PhysicsCommon {
 /**
  * @return A pointer to the current logger
  */
-inline Logger* PhysicsCommon::getLogger() {
+RP3D_FORCE_INLINE Logger* PhysicsCommon::getLogger() {
     return mLogger;
 }
 
@@ -201,7 +201,7 @@ inline Logger* PhysicsCommon::getLogger() {
 /**
  * @param logger A pointer to the logger to use
  */
-inline void PhysicsCommon::setLogger(Logger* logger) {
+RP3D_FORCE_INLINE void PhysicsCommon::setLogger(Logger* logger) {
     mLogger = logger;
 }
 

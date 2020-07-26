@@ -398,19 +398,19 @@ class ContactSolverSystem {
 };
 
 // Return true if the split impulses position correction technique is used for contacts
-inline bool ContactSolverSystem::isSplitImpulseActive() const {
+RP3D_FORCE_INLINE bool ContactSolverSystem::isSplitImpulseActive() const {
     return mIsSplitImpulseActive;
 }
 
 // Activate or Deactivate the split impulses for contacts
-inline void ContactSolverSystem::setIsSplitImpulseActive(bool isActive) {
+RP3D_FORCE_INLINE void ContactSolverSystem::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void ContactSolverSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void ContactSolverSystem::setProfiler(Profiler* profiler) {
 
 	mProfiler = profiler;
 }

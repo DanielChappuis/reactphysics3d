@@ -188,12 +188,12 @@ class TriangleShape : public ConvexPolyhedronShape {
 };
 
 // Return the number of bytes used by the collision shape
-inline size_t TriangleShape::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t TriangleShape::getSizeInBytes() const {
     return sizeof(TriangleShape);
 }
 
 // Return a local support point in a given direction without the object margin
-inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+RP3D_FORCE_INLINE Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
     Vector3 dotProducts(direction.dot(mPoints[0]), direction.dot(mPoints[1]), direction.dot(mPoints[2]));
     return mPoints[dotProducts.getMaxAxis()];
 }
@@ -204,7 +204,7 @@ inline Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const Vector3& d
  * @param min The minimum bounds of the shape in local-space coordinates
  * @param max The maximum bounds of the shape in local-space coordinates
  */
-inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
+RP3D_FORCE_INLINE void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     const Vector3 xAxis(mPoints[0].x, mPoints[1].x, mPoints[2].x);
     const Vector3 yAxis(mPoints[0].y, mPoints[1].y, mPoints[2].y);
@@ -222,33 +222,33 @@ inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
  *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-inline Vector3 TriangleShape::getLocalInertiaTensor(decimal mass) const {
+RP3D_FORCE_INLINE Vector3 TriangleShape::getLocalInertiaTensor(decimal mass) const {
     return Vector3(0, 0, 0);
 }
 
 // Return true if a point is inside the collision shape
-inline bool TriangleShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+RP3D_FORCE_INLINE bool TriangleShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
     return false;
 }
 
 // Return the number of faces of the polyhedron
-inline uint TriangleShape::getNbFaces() const {
+RP3D_FORCE_INLINE uint TriangleShape::getNbFaces() const {
     return 2;
 }
 
 // Return a given face of the polyhedron
-inline const HalfEdgeStructure::Face& TriangleShape::getFace(uint faceIndex) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Face& TriangleShape::getFace(uint faceIndex) const {
     assert(faceIndex < 2);
     return mFaces[faceIndex];
 }
 
 // Return the number of vertices of the polyhedron
-inline uint TriangleShape::getNbVertices() const {
+RP3D_FORCE_INLINE uint TriangleShape::getNbVertices() const {
     return 3;
 }
 
 // Return a given vertex of the polyhedron
-inline HalfEdgeStructure::Vertex TriangleShape::getVertex(uint vertexIndex) const {
+RP3D_FORCE_INLINE HalfEdgeStructure::Vertex TriangleShape::getVertex(uint vertexIndex) const {
     assert(vertexIndex < 3);
 
     HalfEdgeStructure::Vertex vertex(vertexIndex);
@@ -261,35 +261,35 @@ inline HalfEdgeStructure::Vertex TriangleShape::getVertex(uint vertexIndex) cons
 }
 
 // Return a given half-edge of the polyhedron
-inline const HalfEdgeStructure::Edge& TriangleShape::getHalfEdge(uint edgeIndex) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Edge& TriangleShape::getHalfEdge(uint edgeIndex) const {
     assert(edgeIndex < getNbHalfEdges());
     return mEdges[edgeIndex];
 }
 
 // Return the position of a given vertex
-inline Vector3 TriangleShape::getVertexPosition(uint vertexIndex) const {
+RP3D_FORCE_INLINE Vector3 TriangleShape::getVertexPosition(uint vertexIndex) const {
     assert(vertexIndex < 3);
     return mPoints[vertexIndex];
 }
 
 // Return the normal vector of a given face of the polyhedron
-inline Vector3 TriangleShape::getFaceNormal(uint faceIndex) const {
+RP3D_FORCE_INLINE Vector3 TriangleShape::getFaceNormal(uint faceIndex) const {
     assert(faceIndex < 2);
     return faceIndex == 0 ? mNormal : -mNormal;
 }
 
 // Return the centroid of the box
-inline Vector3 TriangleShape::getCentroid() const {
+RP3D_FORCE_INLINE Vector3 TriangleShape::getCentroid() const {
     return (mPoints[0] + mPoints[1] + mPoints[2]) / decimal(3.0);
 }
 
 // Return the number of half-edges of the polyhedron
-inline uint TriangleShape::getNbHalfEdges() const {
+RP3D_FORCE_INLINE uint TriangleShape::getNbHalfEdges() const {
     return 6;
 }
 
 // Return the raycast test type (front, back, front-back)
-inline TriangleRaycastSide TriangleShape::getRaycastTestType() const {
+RP3D_FORCE_INLINE TriangleRaycastSide TriangleShape::getRaycastTestType() const {
     return mRaycastTestType;
 }
 
@@ -297,18 +297,18 @@ inline TriangleRaycastSide TriangleShape::getRaycastTestType() const {
 /**
  * @param testType Raycast test type for the triangle (front, back, front-back)
  */
-inline void TriangleShape::setRaycastTestType(TriangleRaycastSide testType) {
+RP3D_FORCE_INLINE void TriangleShape::setRaycastTestType(TriangleRaycastSide testType) {
     mRaycastTestType = testType;
 }
 
 // Return the string representation of the shape
-inline std::string TriangleShape::to_string() const {
+RP3D_FORCE_INLINE std::string TriangleShape::to_string() const {
     return "TriangleShape{v1=" + mPoints[0].to_string() + ", v2=" + mPoints[1].to_string() + "," +
             "v3=" + mPoints[2].to_string() + "}";
 }
 
 // Compute and return the volume of the collision shape
-inline decimal TriangleShape::getVolume() const {
+RP3D_FORCE_INLINE decimal TriangleShape::getVolume() const {
     return decimal(0.0);
 }
 

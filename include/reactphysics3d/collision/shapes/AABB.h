@@ -127,44 +127,44 @@ class AABB {
 };
 
 // Return the center point of the AABB in world coordinates
-inline Vector3 AABB::getCenter() const {
+RP3D_FORCE_INLINE Vector3 AABB::getCenter() const {
     return (mMinCoordinates + mMaxCoordinates) * decimal(0.5);
 }
 
 // Return the minimum coordinates of the AABB
-inline const Vector3& AABB::getMin() const {
+RP3D_FORCE_INLINE const Vector3& AABB::getMin() const {
     return mMinCoordinates;
 }
 
 // Set the minimum coordinates of the AABB
-inline void AABB::setMin(const Vector3& min) {
+RP3D_FORCE_INLINE void AABB::setMin(const Vector3& min) {
     mMinCoordinates = min;
 }
 
 // Return the maximum coordinates of the AABB
-inline const Vector3& AABB::getMax() const {
+RP3D_FORCE_INLINE const Vector3& AABB::getMax() const {
     return mMaxCoordinates;
 }
 
 // Set the maximum coordinates of the AABB
-inline void AABB::setMax(const Vector3& max) {
+RP3D_FORCE_INLINE void AABB::setMax(const Vector3& max) {
     mMaxCoordinates = max;
 }
 
 // Return the size of the AABB in the three dimension x, y and z
-inline Vector3 AABB::getExtent() const {
+RP3D_FORCE_INLINE Vector3 AABB::getExtent() const {
   return  mMaxCoordinates - mMinCoordinates;
 }
 
 // Inflate each side of the AABB by a given size
-inline void AABB::inflate(decimal dx, decimal dy, decimal dz) {
+RP3D_FORCE_INLINE void AABB::inflate(decimal dx, decimal dy, decimal dz) {
     mMaxCoordinates += Vector3(dx, dy, dz);
     mMinCoordinates -= Vector3(dx, dy, dz);
 }
 
 // Return true if the current AABB is overlapping with the AABB in argument.
 /// Two AABBs overlap if they overlap in the three x, y and z axis at the same time
-inline bool AABB::testCollision(const AABB& aabb) const {
+RP3D_FORCE_INLINE bool AABB::testCollision(const AABB& aabb) const {
     if (mMaxCoordinates.x < aabb.mMinCoordinates.x ||
         aabb.mMaxCoordinates.x < mMinCoordinates.x) return false;
     if (mMaxCoordinates.y < aabb.mMinCoordinates.y ||
@@ -175,13 +175,13 @@ inline bool AABB::testCollision(const AABB& aabb) const {
 }
 
 // Return the volume of the AABB
-inline decimal AABB::getVolume() const {
+RP3D_FORCE_INLINE decimal AABB::getVolume() const {
     const Vector3 diff = mMaxCoordinates - mMinCoordinates;
     return (diff.x * diff.y * diff.z);
 }
 
 // Return true if the AABB of a triangle intersects the AABB
-inline bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const {
+RP3D_FORCE_INLINE bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const {
 
     if (min3(trianglePoints[0].x, trianglePoints[1].x, trianglePoints[2].x) > mMaxCoordinates.x) return false;
     if (min3(trianglePoints[0].y, trianglePoints[1].y, trianglePoints[2].y) > mMaxCoordinates.y) return false;
@@ -195,7 +195,7 @@ inline bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const
 }
 
 // Return true if a point is inside the AABB
-inline bool AABB::contains(const Vector3& point) const {
+RP3D_FORCE_INLINE bool AABB::contains(const Vector3& point) const {
 
     return (point.x >= mMinCoordinates.x - MACHINE_EPSILON && point.x <= mMaxCoordinates.x + MACHINE_EPSILON &&
             point.y >= mMinCoordinates.y - MACHINE_EPSILON && point.y <= mMaxCoordinates.y + MACHINE_EPSILON &&
@@ -203,13 +203,13 @@ inline bool AABB::contains(const Vector3& point) const {
 }
 
 // Apply a scale factor to the AABB
-inline void AABB::applyScale(const Vector3& scale) {
+RP3D_FORCE_INLINE void AABB::applyScale(const Vector3& scale) {
     mMinCoordinates = mMinCoordinates * scale;
     mMaxCoordinates = mMaxCoordinates * scale;
 }
 
 // Assignment operator
-inline AABB& AABB::operator=(const AABB& aabb) {
+RP3D_FORCE_INLINE AABB& AABB::operator=(const AABB& aabb) {
     if (this != &aabb) {
         mMinCoordinates = aabb.mMinCoordinates;
         mMaxCoordinates = aabb.mMaxCoordinates;

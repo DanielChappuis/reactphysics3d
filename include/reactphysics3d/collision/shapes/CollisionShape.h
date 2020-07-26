@@ -172,7 +172,7 @@ class CollisionShape {
 /**
 * @return The name of the collision shape (box, sphere, triangle, ...)
 */
-inline CollisionShapeName CollisionShape::getName() const {
+RP3D_FORCE_INLINE CollisionShapeName CollisionShape::getName() const {
 	return mName;
 }
 
@@ -180,29 +180,29 @@ inline CollisionShapeName CollisionShape::getName() const {
 /**
  * @return The type of the collision shape (sphere, capsule, convex polyhedron, concave mesh)
  */
-inline CollisionShapeType CollisionShape::getType() const {
+RP3D_FORCE_INLINE CollisionShapeType CollisionShape::getType() const {
     return mType;
 }
 
 // Return the id of the shape
-inline uint32 CollisionShape::getId() const {
+RP3D_FORCE_INLINE uint32 CollisionShape::getId() const {
    return mId;
 }
 
 // Assign a new collider to the collision shape
-inline void CollisionShape::addCollider(Collider* collider) {
+RP3D_FORCE_INLINE void CollisionShape::addCollider(Collider* collider) {
     mColliders.add(collider);
 }
 
 // Remove an assigned collider from the collision shape
-inline void CollisionShape::removeCollider(Collider* collider) {
+RP3D_FORCE_INLINE void CollisionShape::removeCollider(Collider* collider) {
     mColliders.remove(collider);
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void CollisionShape::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void CollisionShape::setProfiler(Profiler* profiler) {
 
 	mProfiler = profiler;
 }

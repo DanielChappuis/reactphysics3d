@@ -29,6 +29,7 @@
 // Libraries
 #include <reactphysics3d/engine/OverlappingPairs.h>
 #include <reactphysics3d/collision/ContactPointInfo.h>
+#include <reactphysics3d/configuration.h>
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -145,8 +146,44 @@ struct NarrowPhaseInfoBatch {
 };
 
 /// Return the number of objects in the batch
-inline uint NarrowPhaseInfoBatch::getNbObjects() const {
+RP3D_FORCE_INLINE uint NarrowPhaseInfoBatch::getNbObjects() const {
     return narrowPhaseInfos.size();
+}
+
+// Add shapes to be tested during narrow-phase collision detection into the batch
+RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
+                                              CollisionShape* shape2, const Transform& shape1Transform, const Transform& shape2Transform,
+                                              bool needToReportContacts, MemoryAllocator& shapeAllocator) {
+
+    // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
+    // TODO OPTI : Can we better manage this
+    LastFrameCollisionInfo* lastFrameInfo = mOverlappingPairs.addLastFrameInfoIfNecessary(pairIndex, shape1->getId(), shape2->getId());
+
+    // Create a meta data object
+    narrowPhaseInfos.emplace(pairId, collider1, collider2, lastFrameInfo, shapeAllocator, shape1Transform, shape2Transform, shape1, shape2, needToReportContacts);
+}
+
+// Add a new contact point
+RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth, const Vector3& localPt1, const Vector3& localPt2) {
+
+    assert(penDepth > decimal(0.0));
+
+    if (narrowPhaseInfos[index].nbContactPoints < NB_MAX_CONTACT_POINTS_IN_NARROWPHASE_INFO) {
+
+        assert(contactNormal.length() > 0.8f);
+
+        // Add it into the array of contact points
+        narrowPhaseInfos[index].contactPoints[narrowPhaseInfos[index].nbContactPoints].normal = contactNormal;
+        narrowPhaseInfos[index].contactPoints[narrowPhaseInfos[index].nbContactPoints].penetrationDepth = penDepth;
+        narrowPhaseInfos[index].contactPoints[narrowPhaseInfos[index].nbContactPoints].localPoint1 = localPt1;
+        narrowPhaseInfos[index].contactPoints[narrowPhaseInfos[index].nbContactPoints].localPoint2 = localPt2;
+        narrowPhaseInfos[index].nbContactPoints++;
+    }
+}
+
+// Reset the remaining contact points
+RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::resetContactPoints(uint index) {
+    narrowPhaseInfos[index].nbContactPoints = 0;
 }
 
 }

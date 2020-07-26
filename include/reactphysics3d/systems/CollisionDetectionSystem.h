@@ -373,12 +373,12 @@ class CollisionDetectionSystem {
 };
 
 // Return a reference to the collision dispatch configuration
-inline CollisionDispatch& CollisionDetectionSystem::getCollisionDispatch() {
+RP3D_FORCE_INLINE CollisionDispatch& CollisionDetectionSystem::getCollisionDispatch() {
     return mCollisionDispatch;
 }
 
 // Add a body to the collision detection
-inline void CollisionDetectionSystem::addCollider(Collider* collider, const AABB& aabb) {
+RP3D_FORCE_INLINE void CollisionDetectionSystem::addCollider(Collider* collider, const AABB& aabb) {
 
     // Add the body to the broad-phase
     mBroadPhaseSystem.addCollider(collider, aabb);
@@ -392,19 +392,19 @@ inline void CollisionDetectionSystem::addCollider(Collider* collider, const AABB
 }
 
 // Add a pair of bodies that cannot collide with each other
-inline void CollisionDetectionSystem::addNoCollisionPair(Entity body1Entity, Entity body2Entity) {
+RP3D_FORCE_INLINE void CollisionDetectionSystem::addNoCollisionPair(Entity body1Entity, Entity body2Entity) {
     mNoCollisionPairs.add(OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity));
 }
 
 // Remove a pair of bodies that cannot collide with each other
-inline void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, Entity body2Entity) {
+RP3D_FORCE_INLINE void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, Entity body2Entity) {
     mNoCollisionPairs.remove(OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity));
 }
 
 // Ask for a collision shape to be tested again during broad-phase.
 /// We simply put the shape in the list of collision shape that have moved in the
 /// previous frame so that it is tested for collision again in the broad-phase.
-inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* collider) {
+RP3D_FORCE_INLINE void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* collider) {
 
     if (collider->getBroadPhaseId() != -1) {
         mBroadPhaseSystem.addMovedCollider(collider->getBroadPhaseId(), collider);
@@ -412,31 +412,31 @@ inline void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* c
 }
 
 // Return a pointer to the world
-inline PhysicsWorld* CollisionDetectionSystem::getWorld() {
+RP3D_FORCE_INLINE PhysicsWorld* CollisionDetectionSystem::getWorld() {
     return mWorld;
 }
 
 // Return a reference to the memory manager
-inline MemoryManager& CollisionDetectionSystem::getMemoryManager() const {
+RP3D_FORCE_INLINE MemoryManager& CollisionDetectionSystem::getMemoryManager() const {
     return mMemoryManager;
 }
 
 // Update a collider (that has moved for instance)
-inline void CollisionDetectionSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
+RP3D_FORCE_INLINE void CollisionDetectionSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
 
     // Update the collider component
     mBroadPhaseSystem.updateCollider(colliderEntity, timeStep);
 }
 
 // Update all the enabled colliders
-inline void CollisionDetectionSystem::updateColliders(decimal timeStep) {
+RP3D_FORCE_INLINE void CollisionDetectionSystem::updateColliders(decimal timeStep) {
     mBroadPhaseSystem.updateColliders(timeStep);
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void CollisionDetectionSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void CollisionDetectionSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
     mBroadPhaseSystem.setProfiler(profiler);
     mCollisionDispatch.setProfiler(profiler);

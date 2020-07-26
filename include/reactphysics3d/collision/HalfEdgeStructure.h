@@ -129,7 +129,7 @@ class HalfEdgeStructure {
 /**
  * @param vertexPointIndex Index of the vertex in the vertex data array
  */
-inline uint HalfEdgeStructure::addVertex(uint vertexPointIndex) {
+RP3D_FORCE_INLINE uint HalfEdgeStructure::addVertex(uint vertexPointIndex) {
     Vertex vertex(vertexPointIndex);
     mVertices.add(vertex);
     return mVertices.size() - 1;
@@ -140,7 +140,7 @@ inline uint HalfEdgeStructure::addVertex(uint vertexPointIndex) {
  * @param faceVertices List of the vertices in a face (ordered in CCW order as seen from outside
  *                     the polyhedron
  */
-inline void HalfEdgeStructure::addFace(List<uint> faceVertices) {
+RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(List<uint> faceVertices) {
 
     // Create a new face
     Face face(faceVertices);
@@ -151,7 +151,7 @@ inline void HalfEdgeStructure::addFace(List<uint> faceVertices) {
 /**
  * @return The number of faces in the polyhedron
  */
-inline uint HalfEdgeStructure::getNbFaces() const {
+RP3D_FORCE_INLINE uint HalfEdgeStructure::getNbFaces() const {
     return static_cast<uint>(mFaces.size());
 }
 
@@ -159,7 +159,7 @@ inline uint HalfEdgeStructure::getNbFaces() const {
 /**
  * @return The number of edges in the polyhedron
  */
-inline uint HalfEdgeStructure::getNbHalfEdges() const {
+RP3D_FORCE_INLINE uint HalfEdgeStructure::getNbHalfEdges() const {
     return static_cast<uint>(mEdges.size());
 }
 
@@ -167,7 +167,7 @@ inline uint HalfEdgeStructure::getNbHalfEdges() const {
 /**
  * @return The number of vertices in the polyhedron
  */
-inline uint HalfEdgeStructure::getNbVertices() const {
+RP3D_FORCE_INLINE uint HalfEdgeStructure::getNbVertices() const {
     return static_cast<uint>(mVertices.size());
 }
 
@@ -175,7 +175,7 @@ inline uint HalfEdgeStructure::getNbVertices() const {
 /**
  * @return A given face of the polyhedron
  */
-inline const HalfEdgeStructure::Face& HalfEdgeStructure::getFace(uint index) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Face& HalfEdgeStructure::getFace(uint index) const {
     assert(index < mFaces.size());
     return mFaces[index];
 }
@@ -184,7 +184,7 @@ inline const HalfEdgeStructure::Face& HalfEdgeStructure::getFace(uint index) con
 /**
  * @return A given edge of the polyhedron
  */
-inline const HalfEdgeStructure::Edge& HalfEdgeStructure::getHalfEdge(uint index) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Edge& HalfEdgeStructure::getHalfEdge(uint index) const {
     assert(index < mEdges.size());
     return mEdges[index];
 }
@@ -193,7 +193,7 @@ inline const HalfEdgeStructure::Edge& HalfEdgeStructure::getHalfEdge(uint index)
 /**
  * @return A given vertex of the polyhedron
  */
-inline const HalfEdgeStructure::Vertex& HalfEdgeStructure::getVertex(uint index) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Vertex& HalfEdgeStructure::getVertex(uint index) const {
     assert(index < mVertices.size());
     return mVertices[index];
 }

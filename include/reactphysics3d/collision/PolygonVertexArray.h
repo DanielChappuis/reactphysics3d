@@ -140,7 +140,7 @@ class PolygonVertexArray {
 /**
  * @return The data type of the vertices in the array
  */
-inline PolygonVertexArray::VertexDataType PolygonVertexArray::getVertexDataType() const {
+RP3D_FORCE_INLINE PolygonVertexArray::VertexDataType PolygonVertexArray::getVertexDataType() const {
     return mVertexDataType;
 }
 
@@ -148,7 +148,7 @@ inline PolygonVertexArray::VertexDataType PolygonVertexArray::getVertexDataType(
 /**
  * @return The data type of the indices in the array
  */
-inline PolygonVertexArray::IndexDataType PolygonVertexArray::getIndexDataType() const {
+RP3D_FORCE_INLINE PolygonVertexArray::IndexDataType PolygonVertexArray::getIndexDataType() const {
    return mIndexDataType;
 }
 
@@ -156,7 +156,7 @@ inline PolygonVertexArray::IndexDataType PolygonVertexArray::getIndexDataType() 
 /**
  * @return The number of vertices in the array
  */
-inline uint PolygonVertexArray::getNbVertices() const {
+RP3D_FORCE_INLINE uint PolygonVertexArray::getNbVertices() const {
     return mNbVertices;
 }
 
@@ -164,7 +164,7 @@ inline uint PolygonVertexArray::getNbVertices() const {
 /**
  * @return The number of faces in the array
  */
-inline uint PolygonVertexArray::getNbFaces() const {
+RP3D_FORCE_INLINE uint PolygonVertexArray::getNbFaces() const {
     return mNbFaces;
 }
 
@@ -172,7 +172,7 @@ inline uint PolygonVertexArray::getNbFaces() const {
 /**
  * @return The number of bytes between two vertices
  */
-inline int PolygonVertexArray::getVerticesStride() const {
+RP3D_FORCE_INLINE int PolygonVertexArray::getVerticesStride() const {
     return mVerticesStride;
 }
 
@@ -180,7 +180,7 @@ inline int PolygonVertexArray::getVerticesStride() const {
 /**
  * @return The number of bytes between two consecutive face indices
  */
-inline int PolygonVertexArray::getIndicesStride() const {
+RP3D_FORCE_INLINE int PolygonVertexArray::getIndicesStride() const {
     return mIndicesStride;
 }
 
@@ -189,7 +189,7 @@ inline int PolygonVertexArray::getIndicesStride() const {
  * @param faceIndex Index of a given face
  * @return A polygon face
  */
-inline PolygonVertexArray::PolygonFace* PolygonVertexArray::getPolygonFace(uint faceIndex) const {
+RP3D_FORCE_INLINE PolygonVertexArray::PolygonFace* PolygonVertexArray::getPolygonFace(uint faceIndex) const {
     assert(faceIndex < mNbFaces);
     return &mPolygonFacesStart[faceIndex];
 }
@@ -198,7 +198,7 @@ inline PolygonVertexArray::PolygonFace* PolygonVertexArray::getPolygonFace(uint 
 /**
  * @return A pointer to the start of the vertex array of the polyhedron
  */
-inline const unsigned char* PolygonVertexArray::getVerticesStart() const {
+RP3D_FORCE_INLINE const unsigned char* PolygonVertexArray::getVerticesStart() const {
     return mVerticesStart;
 }
 
@@ -206,7 +206,7 @@ inline const unsigned char* PolygonVertexArray::getVerticesStart() const {
 /**
  * @return A pointer to the start of the face indices array of the polyhedron
  */
-inline const unsigned char* PolygonVertexArray::getIndicesStart() const {
+RP3D_FORCE_INLINE const unsigned char* PolygonVertexArray::getIndicesStart() const {
     return mIndicesStart;
 }
 

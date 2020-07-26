@@ -208,27 +208,27 @@ class BroadPhaseSystem {
 };
 
 // Return the fat AABB of a given broad-phase shape
-inline const AABB& BroadPhaseSystem::getFatAABB(int broadPhaseId) const  {
+RP3D_FORCE_INLINE const AABB& BroadPhaseSystem::getFatAABB(int broadPhaseId) const  {
     return mDynamicAABBTree.getFatAABB(broadPhaseId);
 }
 
 // Remove a collider from the array of colliders that have moved in the last simulation step
 // and that need to be tested again for broad-phase overlapping.
-inline void BroadPhaseSystem::removeMovedCollider(int broadPhaseID) {
+RP3D_FORCE_INLINE void BroadPhaseSystem::removeMovedCollider(int broadPhaseID) {
 
     // Remove the broad-phase ID from the set
     mMovedShapes.remove(broadPhaseID);
 }
 
 // Return the collider corresponding to the broad-phase node id in parameter
-inline Collider* BroadPhaseSystem::getColliderForBroadPhaseId(int broadPhaseId) const {
+RP3D_FORCE_INLINE Collider* BroadPhaseSystem::getColliderForBroadPhaseId(int broadPhaseId) const {
     return static_cast<Collider*>(mDynamicAABBTree.getNodeDataPointer(broadPhaseId));
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void BroadPhaseSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void BroadPhaseSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 	mDynamicAABBTree.setProfiler(profiler);
 }

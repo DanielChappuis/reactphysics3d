@@ -71,7 +71,7 @@ class EntityManager {
 };
 
 // Return true if the entity is still valid (not destroyed)
-inline bool EntityManager::isValid(Entity entity) const {
+RP3D_FORCE_INLINE bool EntityManager::isValid(Entity entity) const {
     return mGenerations[entity.getIndex()] == entity.getGeneration();
 }
 
