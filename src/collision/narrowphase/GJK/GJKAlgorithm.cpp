@@ -64,15 +64,15 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
         decimal prevDistSquare;
         bool contactFound = false;
 
-        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->isConvex());
-        assert(narrowPhaseInfoBatch.collisionShapes2[batchIndex]->isConvex());
+        assert(narrowPhaseInfoBatch.narrowPhaseInfo[[batchIndex].collisionShape1->isConvex());
+        assert(narrowPhaseInfoBatch.narrowPhaseInfo[[batchIndex].collisionShape2->isConvex());
 
-        const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfoBatch.collisionShapes1[batchIndex]);
-        const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfoBatch.collisionShapes2[batchIndex]);
+        const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1);
+        const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2);
 
         // Get the local-space to world-space transforms
-        const Transform& transform1 = narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex];
-        const Transform& transform2 = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex];
+        const Transform& transform1 = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape1ToWorldTransform;
+        const Transform& transform2 = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform;
 
         // Transform a point from local space of body 2 to local
         // space of body 1 (the GJK algorithm is done in local space of body 1)
@@ -92,7 +92,7 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
         VoronoiSimplex simplex;
 
         // Get the last collision frame info
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].lastFrameCollisionInfo;
 
         // Get the previous point V (last cached separating axis)
         Vector3 v;
@@ -215,7 +215,7 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
             }
 
             // If we need to report contacts
-            if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
+            if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
 
                 // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
                 TriangleShape::computeSmoothTriangleMeshContact(shape1, shape2, pA, pB, transform1, transform2,

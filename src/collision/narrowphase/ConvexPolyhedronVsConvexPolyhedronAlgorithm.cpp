@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two convex polyhedra
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
+bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch &narrowPhaseInfoBatch,
                                                                 uint batchStartIndex, uint batchNbItems,
                                                                 bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator) {
 
@@ -54,7 +54,7 @@ bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoB
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
         // Get the last frame collision info
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].lastFrameCollisionInfo;
 
         lastFrameCollisionInfo->wasUsingSAT = true;
         lastFrameCollisionInfo->wasUsingGJK = false;

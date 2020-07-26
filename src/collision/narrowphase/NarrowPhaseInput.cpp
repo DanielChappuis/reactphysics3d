@@ -31,10 +31,10 @@ using namespace reactphysics3d;
 
 /// Constructor
 NarrowPhaseInput::NarrowPhaseInput(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs)
-    :mSphereVsSphereBatch(allocator, overlappingPairs), mSphereVsCapsuleBatch(allocator, overlappingPairs),
-     mCapsuleVsCapsuleBatch(allocator, overlappingPairs), mSphereVsConvexPolyhedronBatch(allocator, overlappingPairs),
-     mCapsuleVsConvexPolyhedronBatch(allocator, overlappingPairs),
-     mConvexPolyhedronVsConvexPolyhedronBatch(allocator, overlappingPairs) {
+    :mSphereVsSphereBatch(overlappingPairs, allocator), mSphereVsCapsuleBatch(overlappingPairs, allocator),
+     mCapsuleVsCapsuleBatch(overlappingPairs, allocator), mSphereVsConvexPolyhedronBatch(overlappingPairs, allocator),
+     mCapsuleVsConvexPolyhedronBatch(overlappingPairs, allocator),
+     mConvexPolyhedronVsConvexPolyhedronBatch(overlappingPairs, allocator) {
 
 }
 

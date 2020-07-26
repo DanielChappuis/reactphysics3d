@@ -445,9 +445,9 @@ bool CollisionDetectionSystem::testNarrowPhaseCollision(NarrowPhaseInput& narrow
     ConvexPolyhedronVsConvexPolyhedronAlgorithm* convexPolyVsConvexPolyAlgo = mCollisionDispatch.getConvexPolyhedronVsConvexPolyhedronAlgorithm();
 
     // get the narrow-phase batches to test for collision for contacts
-    SphereVsSphereNarrowPhaseInfoBatch& sphereVsSphereBatchContacts = narrowPhaseInput.getSphereVsSphereBatch();
-    SphereVsCapsuleNarrowPhaseInfoBatch& sphereVsCapsuleBatchContacts = narrowPhaseInput.getSphereVsCapsuleBatch();
-    CapsuleVsCapsuleNarrowPhaseInfoBatch& capsuleVsCapsuleBatchContacts = narrowPhaseInput.getCapsuleVsCapsuleBatch();
+    NarrowPhaseInfoBatch& sphereVsSphereBatchContacts = narrowPhaseInput.getSphereVsSphereBatch();
+    NarrowPhaseInfoBatch& sphereVsCapsuleBatchContacts = narrowPhaseInput.getSphereVsCapsuleBatch();
+    NarrowPhaseInfoBatch& capsuleVsCapsuleBatchContacts = narrowPhaseInput.getCapsuleVsCapsuleBatch();
     NarrowPhaseInfoBatch& sphereVsConvexPolyhedronBatchContacts = narrowPhaseInput.getSphereVsConvexPolyhedronBatch();
     NarrowPhaseInfoBatch& capsuleVsConvexPolyhedronBatchContacts = narrowPhaseInput.getCapsuleVsConvexPolyhedronBatch();
     NarrowPhaseInfoBatch& convexPolyhedronVsConvexPolyhedronBatchContacts = narrowPhaseInput.getConvexPolyhedronVsConvexPolyhedronBatch();
@@ -482,7 +482,6 @@ void CollisionDetectionSystem::processAllPotentialContacts(NarrowPhaseInput& nar
                                                      List<ContactPair>* contactPairs) {
 
     assert(contactPairs->size() == 0);
-    assert(mapPairIdToContactPairIndex->size() == 0);
 
     Map<uint64, uint> mapPairIdToContactPairIndex(mMemoryManager.getHeapAllocator(), mPreviousMapPairIdToContactPairIndex.size());
 
@@ -618,13 +617,13 @@ void CollisionDetectionSystem::computeOverlapSnapshotContactPairs(NarrowPhaseInf
     for(uint i=0; i < narrowPhaseInfoBatch.getNbObjects(); i++) {
 
         // If there is a collision
-        if (narrowPhaseInfoBatch.isColliding[i]) {
+        if (narrowPhaseInfoBatch.narrowPhaseInfos[i].isColliding) {
 
             // If the contact pair does not already exist
-            if (!setOverlapContactPairId.contains(narrowPhaseInfoBatch.overlappingPairIds[i])) {
+            if (!setOverlapContactPairId.contains(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId)) {
 
-                const Entity collider1Entity = narrowPhaseInfoBatch.colliderEntities1[i];
-                const Entity collider2Entity = narrowPhaseInfoBatch.colliderEntities2[i];
+                const Entity collider1Entity = narrowPhaseInfoBatch.narrowPhaseInfos[i].colliderEntity1;
+                const Entity collider2Entity = narrowPhaseInfoBatch.narrowPhaseInfos[i].colliderEntity2;
 
                 const uint32 collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
                 const uint32 collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
@@ -635,10 +634,10 @@ void CollisionDetectionSystem::computeOverlapSnapshotContactPairs(NarrowPhaseInf
                 const bool isTrigger = mCollidersComponents.mIsTrigger[collider1Index] || mCollidersComponents.mIsTrigger[collider2Index];
 
                 // Create a new contact pair
-                ContactPair contactPair(narrowPhaseInfoBatch.overlappingPairIds[i], body1Entity, body2Entity, collider1Entity, collider2Entity, contactPairs.size(), isTrigger, false);
+                ContactPair contactPair(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId, body1Entity, body2Entity, collider1Entity, collider2Entity, contactPairs.size(), isTrigger, false);
                 contactPairs.add(contactPair);
 
-                setOverlapContactPairId.add(narrowPhaseInfoBatch.overlappingPairIds[i]);
+                setOverlapContactPairId.add(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId);
             }
         }
 
@@ -993,26 +992,31 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
     RP3D_PROFILE("CollisionDetectionSystem::processPotentialContacts()", mProfiler);
 
+    if (updateLastFrameInfo) {
+
+        // For each narrow phase info object
+        for(uint i=0; i < narrowPhaseInfoBatch.getNbObjects(); i++) {
+
+            narrowPhaseInfoBatch.narrowPhaseInfos[i].lastFrameCollisionInfo->wasColliding = narrowPhaseInfoBatch.narrowPhaseInfos[i].isColliding;
+
+            // The previous frame collision info is now valid
+            narrowPhaseInfoBatch.narrowPhaseInfos[i].lastFrameCollisionInfo->isValid = true;
+        }
+    }
+
     // For each narrow phase info object
     for(uint i=0; i < narrowPhaseInfoBatch.getNbObjects(); i++) {
 
-        if (updateLastFrameInfo) {
-            narrowPhaseInfoBatch.lastFrameCollisionInfos[i]->wasColliding = narrowPhaseInfoBatch.isColliding[i];
-
-            // The previous frame collision info is now valid
-            narrowPhaseInfoBatch.lastFrameCollisionInfos[i]->isValid = true;
-        }
-
-        const uint64 pairId = narrowPhaseInfoBatch.overlappingPairIds[i];
+        const uint64 pairId = narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId;
         const uint64 pairIndex = mOverlappingPairs.mMapPairIdToPairIndex[pairId];
 
         // If the two colliders are colliding
-        if (narrowPhaseInfoBatch.isColliding[i]) {
+        if (narrowPhaseInfoBatch.narrowPhaseInfos[i].isColliding) {
 
             mOverlappingPairs.mCollidingInCurrentFrame[pairIndex] = true;
 
-            const Entity collider1Entity = narrowPhaseInfoBatch.colliderEntities1[i];
-            const Entity collider2Entity = narrowPhaseInfoBatch.colliderEntities2[i];
+            const Entity collider1Entity = narrowPhaseInfoBatch.narrowPhaseInfos[i].colliderEntity1;
+            const Entity collider2Entity = narrowPhaseInfoBatch.narrowPhaseInfos[i].colliderEntity2;
 
             const uint32 collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
             const uint32 collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
@@ -1045,7 +1049,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                 const uint contactPointIndexStart = static_cast<uint>(potentialContactPoints.size());
 
                 // Add the potential contacts
-                for (uint j=0; j < narrowPhaseInfoBatch.contactPoints[i].size(); j++) {
+                for (uint j=0; j < narrowPhaseInfoBatch.narrowPhaseInfos[i].nbContactPoints; j++) {
 
                     if (contactManifoldInfo.nbPotentialContactPoints < NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD) {
 
@@ -1054,14 +1058,14 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                         contactManifoldInfo.nbPotentialContactPoints++;
 
                         // Add the contact point to the list of potential contact points
-                        const ContactPointInfo& contactPoint = *(narrowPhaseInfoBatch.contactPoints[i][j]);
+                        const ContactPointInfo& contactPoint = narrowPhaseInfoBatch.narrowPhaseInfos[i].contactPoints[j];
 
                         potentialContactPoints.add(contactPoint);
                     }
                 }
 
                 // Add the contact manifold to the overlapping pair contact
-                assert(overlappingPairContact.pairId == contactManifoldInfo.pairId);
+                assert(pairId == contactManifoldInfo.pairId);
                 pairContact->potentialContactManifoldsIndices[0] = contactManifoldIndex;
                 pairContact->nbPotentialContactManifolds = 1;
             }
@@ -1096,9 +1100,9 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                 assert(pairContact != nullptr);
 
                 // Add the potential contacts
-                for (uint j=0; j < narrowPhaseInfoBatch.contactPoints[i].size(); j++) {
+                for (uint j=0; j < narrowPhaseInfoBatch.narrowPhaseInfos[i].nbContactPoints; j++) {
 
-                    const ContactPointInfo& contactPoint = *(narrowPhaseInfoBatch.contactPoints[i][j]);
+                    const ContactPointInfo& contactPoint = narrowPhaseInfoBatch.narrowPhaseInfos[i].contactPoints[j];
 
                     // Add the contact point to the list of potential contact points
                     const uint contactPointIndex = static_cast<uint>(potentialContactPoints.size());

@@ -34,6 +34,7 @@ namespace reactphysics3d {
 
 // Declarations
 class ContactPoint;
+struct NarrowPhaseInfoBatch;
 
 // Class SphereVsConvexPolyhedronAlgorithm
 /**

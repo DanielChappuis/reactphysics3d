@@ -54,6 +54,8 @@ class CollisionDispatch;
  */
 struct LastFrameCollisionInfo {
 
+    // TODO OPTI : Use bit flags instead of bools here
+
     /// True if we have information about the previous frame
     bool isValid;
 
@@ -77,9 +79,9 @@ struct LastFrameCollisionInfo {
     // SAT Algorithm
     bool satIsAxisFacePolyhedron1;
     bool satIsAxisFacePolyhedron2;
-    uint satMinAxisFaceIndex;
-    uint satMinEdge1Index;
-    uint satMinEdge2Index;
+    uint8 satMinAxisFaceIndex;
+    uint8 satMinEdge1Index;
+    uint8 satMinEdge2Index;
 
     /// Constructor
     LastFrameCollisionInfo() {
@@ -118,7 +120,7 @@ class OverlappingPairs {
         MemoryAllocator& mPersistentAllocator;
 
         /// Memory allocator used to allocated memory for the ContactManifoldInfo and ContactPointInfo
-        // TODO : Do we need to keep this ?
+        // TODO OPTI : Do we need to keep this ?
         MemoryAllocator& mTempMemoryAllocator;
 
         /// Current number of components
