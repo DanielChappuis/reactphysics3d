@@ -28,6 +28,7 @@
 
 // Libraries
 #include <cassert>
+#include <cmath>
 #include <reactphysics3d/configuration.h>
 
 namespace reactphysics3d {
@@ -44,8 +45,8 @@ class Material {
 
         // -------------------- Attributes -------------------- //
 
-        /// Friction coefficient (positive value)
-        decimal mFrictionCoefficient;
+        /// Square root of the friction coefficient
+        decimal mFrictionCoefficientSqrt;
 
         /// Rolling resistance factor (positive value)
         decimal mRollingResistance;
@@ -59,14 +60,7 @@ class Material {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Material(decimal frictionCoefficient, decimal rollingResistance, decimal bounciness,
-                 decimal massDensity = decimal(1.0));
-
-        /// Copy-constructor
-        Material(const Material& material);
-
-        /// Destructor
-        ~Material() = default;
+        Material(decimal frictionCoefficient, decimal rollingResistance, decimal bounciness, decimal massDensity = decimal(1.0));
 
     public :
 
@@ -84,6 +78,9 @@ class Material {
         /// Set the friction coefficient.
         void setFrictionCoefficient(decimal frictionCoefficient);
 
+        /// Return the square root friction coefficient
+        decimal getFrictionCoefficientSqrt() const;
+
         /// Return the rolling resistance factor
         decimal getRollingResistance() const;
 
@@ -98,9 +95,6 @@ class Material {
 
         /// Return a string representation for the material
         std::string to_string() const;
-
-        /// Overloaded assignment operator
-        Material& operator=(const Material& material);
 
         // ---------- Friendship ---------- //
 
@@ -131,7 +125,7 @@ RP3D_FORCE_INLINE void Material::setBounciness(decimal bounciness) {
  * @return Friction coefficient (positive value)
  */
 RP3D_FORCE_INLINE decimal Material::getFrictionCoefficient() const {
-    return mFrictionCoefficient;
+    return mFrictionCoefficientSqrt * mFrictionCoefficientSqrt;
 }
 
 // Set the friction coefficient.
@@ -142,7 +136,12 @@ RP3D_FORCE_INLINE decimal Material::getFrictionCoefficient() const {
  */
 RP3D_FORCE_INLINE void Material::setFrictionCoefficient(decimal frictionCoefficient) {
     assert(frictionCoefficient >= decimal(0.0));
-    mFrictionCoefficient = frictionCoefficient;
+    mFrictionCoefficientSqrt = std::sqrt(frictionCoefficient);
+}
+
+// Return the square root friction coefficient
+RP3D_FORCE_INLINE decimal Material::getFrictionCoefficientSqrt() const {
+    return mFrictionCoefficientSqrt;
 }
 
 // Return the rolling resistance factor. If this value is larger than zero,
@@ -184,25 +183,11 @@ RP3D_FORCE_INLINE std::string Material::to_string() const {
 
     std::stringstream ss;
 
-    ss << "frictionCoefficient=" << mFrictionCoefficient << std::endl;
+    ss << "frictionCoefficient=" << (mFrictionCoefficientSqrt * mFrictionCoefficientSqrt) << std::endl;
     ss << "rollingResistance=" << mRollingResistance << std::endl;
     ss << "bounciness=" << mBounciness << std::endl;
 
     return ss.str();
-}
-
-// Overloaded assignment operator
-RP3D_FORCE_INLINE Material& Material::operator=(const Material& material) {
-
-    // Check for self-assignment
-    if (this != &material) {
-        mFrictionCoefficient = material.mFrictionCoefficient;
-        mBounciness = material.mBounciness;
-        mRollingResistance = material.mRollingResistance;
-    }
-
-    // Return this material
-    return *this;
 }
 
 }

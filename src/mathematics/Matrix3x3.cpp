@@ -66,5 +66,26 @@ Matrix3x3 Matrix3x3::getInverse() const {
     return (invDeterminant * tempMatrix);
 }
 
+// Return the inverse matrix
+Matrix3x3 Matrix3x3::getInverseWithDeterminant(decimal determinant) const {
+
+    // Check if the determinant is equal to zero
+    assert(determinant != decimal(0.0));
+
+    decimal invDeterminant = decimal(1.0) / determinant;
+
+    Matrix3x3 tempMatrix((mRows[1][1]*mRows[2][2]-mRows[2][1]*mRows[1][2]),
+                         -(mRows[0][1]*mRows[2][2]-mRows[2][1]*mRows[0][2]),
+                         (mRows[0][1]*mRows[1][2]-mRows[0][2]*mRows[1][1]),
+                            -(mRows[1][0]*mRows[2][2]-mRows[2][0]*mRows[1][2]),
+                         (mRows[0][0]*mRows[2][2]-mRows[2][0]*mRows[0][2]),
+                         -(mRows[0][0]*mRows[1][2]-mRows[1][0]*mRows[0][2]),
+                            (mRows[1][0]*mRows[2][1]-mRows[2][0]*mRows[1][1]),
+                         -(mRows[0][0]*mRows[2][1]-mRows[2][0]*mRows[0][1]),
+                         (mRows[0][0]*mRows[1][1]-mRows[0][1]*mRows[1][0]));
+
+    // Return the inverse matrix
+    return (invDeterminant * tempMatrix);
+}
 
 

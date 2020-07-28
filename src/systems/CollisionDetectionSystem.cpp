@@ -167,7 +167,8 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int32, int
     RP3D_PROFILE("CollisionDetectionSystem::updateOverlappingPairs()", mProfiler);
 
     // For each overlapping pair of nodes
-    for (uint i=0; i < overlappingNodes.size(); i++) {
+    const uint nbOverlappingNodes = overlappingNodes.size();
+    for (uint i=0; i < nbOverlappingNodes; i++) {
 
         Pair<int32, int32> nodePair = overlappingNodes[i];
 
@@ -241,7 +242,8 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
     mOverlappingPairs.clearObsoleteLastFrameCollisionInfos();
 
     // For each possible convex vs convex pair of bodies
-    for (uint64 i=0; i < mOverlappingPairs.getNbConvexVsConvexPairs(); i++) {
+    const uint64 nbConvexVsConvexPairs = mOverlappingPairs.getNbConvexVsConvexPairs();
+    for (uint64 i=0; i < nbConvexVsConvexPairs; i++) {
 
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[i]) != -1);
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]) != -1);
@@ -278,7 +280,8 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
 
     // For each possible convex vs concave pair of bodies
     const uint64 convexVsConcaveStartIndex = mOverlappingPairs.getConvexVsConcavePairsStartIndex();
-    for (uint64 i=convexVsConcaveStartIndex; i < convexVsConcaveStartIndex + mOverlappingPairs.getNbConvexVsConcavePairs(); i++) {
+    const uint64 nbConvexVsConcavePairs = mOverlappingPairs.getNbConvexVsConcavePairs();
+    for (uint64 i=convexVsConcaveStartIndex; i < convexVsConcaveStartIndex + nbConvexVsConcavePairs; i++) {
 
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[i]) != -1);
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]) != -1);
@@ -307,7 +310,8 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>&
     mOverlappingPairs.clearObsoleteLastFrameCollisionInfos();
 
     // For each possible convex vs convex pair of bodies
-    for (uint64 p=0; p < convexPairs.size(); p++) {
+    const uint64 nbConvexPairs = convexPairs.size();
+    for (uint64 p=0; p < nbConvexPairs; p++) {
 
         const uint64 pairId = convexPairs[p];
 
@@ -339,7 +343,8 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>&
     }
 
     // For each possible convex vs concave pair of bodies
-    for (uint p=0; p < concavePairs.size(); p++) {
+    const uint nbConcavePairs = concavePairs.size();
+    for (uint p=0; p < nbConcavePairs; p++) {
 
         const uint64 pairId = concavePairs[p];
         const uint64 pairIndex = mOverlappingPairs.mMapPairIdToPairIndex[pairId];
@@ -407,7 +412,8 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairInde
     const bool reportContacts = !isCollider1Trigger && !isCollider2Trigger;
 
     // For each overlapping triangle
-    for (uint i=0; i < shapeIds.size(); i++)
+    const uint nbShapeIds = shapeIds.size();
+    for (uint i=0; i < nbShapeIds; i++)
     {
         // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
         // destructor of the corresponding NarrowPhaseInfo.
@@ -716,7 +722,8 @@ void CollisionDetectionSystem::createContacts() {
     mCurrentContactPoints->reserve(mCurrentContactManifolds->size());
 
     // For each contact pair
-    for (uint p=0; p < (*mCurrentContactPairs).size(); p++) {
+    const uint nbCurrentContactPairs = (*mCurrentContactPairs).size();
+    for (uint p=0; p < nbCurrentContactPairs; p++) {
 
         ContactPair& contactPair = (*mCurrentContactPairs)[p];
 
@@ -725,10 +732,12 @@ void CollisionDetectionSystem::createContacts() {
         contactPair.contactPointsIndex = mCurrentContactPoints->size();
 
         // Add the associated contact pair to both bodies of the pair (used to create islands later)
-        if (mRigidBodyComponents.hasComponent(contactPair.body1Entity)) {
+        uint32 rigidBody1Index = 0;
+        uint32 rigidBody2Index = 0;
+        if (mRigidBodyComponents.hasComponentGetIndex(contactPair.body1Entity, rigidBody1Index)) {
            mRigidBodyComponents.addContacPair(contactPair.body1Entity, p);
         }
-        if (mRigidBodyComponents.hasComponent(contactPair.body2Entity)) {
+        if (mRigidBodyComponents.hasComponentGetIndex(contactPair.body2Entity, rigidBody2Index)) {
            mRigidBodyComponents.addContacPair(contactPair.body2Entity, p);
         }
 
@@ -742,12 +751,9 @@ void CollisionDetectionSystem::createContacts() {
             const int8 nbContactPoints = static_cast<int8>(potentialManifold.nbPotentialContactPoints);
             contactPair.nbToTalContactPoints += nbContactPoints;
 
-            // We create a new contact manifold
-            ContactManifold contactManifold(contactPair.body1Entity, contactPair.body2Entity, contactPair.collider1Entity,
-                                            contactPair.collider2Entity, contactPointsIndex, nbContactPoints);
-
-            // Add the contact manifold
-            mCurrentContactManifolds->add(contactManifold);
+            // Create and add the contact manifold
+            mCurrentContactManifolds->emplace(contactPair.body1Entity, contactPair.body2Entity, contactPair.collider1Entity,
+                                              contactPair.collider2Entity, contactPointsIndex, nbContactPoints, rigidBody1Index, rigidBody2Index);
 
             assert(potentialManifold.nbPotentialContactPoints > 0);
 
@@ -756,11 +762,8 @@ void CollisionDetectionSystem::createContacts() {
 
                 ContactPointInfo& potentialContactPoint = mPotentialContactPoints[potentialManifold.potentialContactPointsIndices[c]];
 
-                // Create a new contact point
-                ContactPoint contactPoint(potentialContactPoint, mWorld->mConfig.persistentContactDistanceThreshold);
-
-                // Add the contact point
-                mCurrentContactPoints->add(contactPoint);
+                // Create and add the contact point
+                mCurrentContactPoints->emplace(potentialContactPoint, mWorld->mConfig.persistentContactDistanceThreshold);
             }
         }
     }
@@ -812,7 +815,8 @@ void CollisionDetectionSystem::createSnapshotContacts(List<ContactPair>& contact
     contactPoints.reserve(contactManifolds.size());
 
     // For each contact pair
-    for (uint p=0; p < contactPairs.size(); p++) {
+    const uint nbContactPairs = contactPairs.size();
+    for (uint p=0; p < nbContactPairs; p++) {
 
         ContactPair& contactPair = contactPairs[p];
         assert(contactPair.nbPotentialContactManifolds > 0);
@@ -831,12 +835,9 @@ void CollisionDetectionSystem::createSnapshotContacts(List<ContactPair>& contact
             const uint8 nbContactPoints = potentialManifold.nbPotentialContactPoints;
             contactPair.nbToTalContactPoints += nbContactPoints;
 
-            // We create a new contact manifold
-            ContactManifold contactManifold(contactPair.body1Entity, contactPair.body2Entity, contactPair.collider1Entity,
-                                            contactPair.collider2Entity, contactPointsIndex, nbContactPoints);
-
-            // Add the contact manifold
-            contactManifolds.add(contactManifold);
+            // Create and add the contact manifold
+            contactManifolds.emplace(contactPair.body1Entity, contactPair.body2Entity, contactPair.collider1Entity,
+                                     contactPair.collider2Entity, contactPointsIndex, nbContactPoints, 0, 0);
 
             assert(potentialManifold.nbPotentialContactPoints > 0);
 
@@ -992,10 +993,12 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
     RP3D_PROFILE("CollisionDetectionSystem::processPotentialContacts()", mProfiler);
 
+    const uint nbObjects = narrowPhaseInfoBatch.getNbObjects();
+
     if (updateLastFrameInfo) {
 
         // For each narrow phase info object
-        for(uint i=0; i < narrowPhaseInfoBatch.getNbObjects(); i++) {
+        for(uint i=0; i < nbObjects; i++) {
 
             narrowPhaseInfoBatch.narrowPhaseInfos[i].lastFrameCollisionInfo->wasColliding = narrowPhaseInfoBatch.narrowPhaseInfos[i].isColliding;
 
@@ -1005,7 +1008,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
     }
 
     // For each narrow phase info object
-    for(uint i=0; i < narrowPhaseInfoBatch.getNbObjects(); i++) {
+    for(uint i=0; i < nbObjects; i++) {
 
         const uint64 pairId = narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId;
         const uint64 pairIndex = mOverlappingPairs.mMapPairIdToPairIndex[pairId];
@@ -1175,7 +1178,8 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(List<ContactPair>
     RP3D_PROFILE("CollisionDetectionSystem::reducePotentialContactManifolds()", mProfiler);
 
     // Reduce the number of potential contact manifolds in a contact pair
-    for (uint i=0; i < contactPairs->size(); i++) {
+    const uint nbContactPairs = contactPairs->size();
+    for (uint i=0; i < nbContactPairs; i++) {
 
         ContactPair& contactPair = (*contactPairs)[i];
 
@@ -1205,7 +1209,7 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(List<ContactPair>
     }
 
     // Reduce the number of potential contact points in the manifolds
-    for (uint i=0; i < contactPairs->size(); i++) {
+    for (uint i=0; i < nbContactPairs; i++) {
 
         const ContactPair& pairContact = (*contactPairs)[i];
 
