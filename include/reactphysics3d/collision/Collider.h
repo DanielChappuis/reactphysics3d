@@ -59,9 +59,6 @@ class Collider {
         /// Pointer to the parent body
         CollisionBody* mBody;
 
-        /// Material properties of the rigid body
-        Material mMaterial;
-
         /// Pointer to user data
         void* mUserData;
 
@@ -223,14 +220,6 @@ RP3D_FORCE_INLINE void Collider::setUserData(void* userData) {
 */
 RP3D_FORCE_INLINE bool Collider::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getWorldAABB());
-}
-
-// Return a reference to the material properties of the collider
-/**
- * @return A reference to the material of the body
- */
-RP3D_FORCE_INLINE Material& Collider::getMaterial() {
-    return mMaterial;
 }
 
 }

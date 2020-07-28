@@ -32,6 +32,7 @@
 #include <reactphysics3d/containers/Map.h>
 #include <reactphysics3d/collision/shapes/AABB.h>
 #include <reactphysics3d/components/Components.h>
+#include <reactphysics3d/engine/Material.h>
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -99,6 +100,9 @@ class ColliderComponents : public Components {
         /// True if the collider is a trigger
         bool* mIsTrigger;
 
+        /// Array with the material of each collider
+        Material* mMaterials;
+
 
         // -------------------- Methods -------------------- //
 
@@ -127,14 +131,15 @@ class ColliderComponents : public Components {
             unsigned short collisionCategoryBits;
             unsigned short collideWithMaskBits;
             const Transform& localToWorldTransform;
+            const Material& material;
 
             /// Constructor
             ColliderComponent(Entity bodyEntity, Collider* collider, AABB localBounds, const Transform& localToBodyTransform,
                                 CollisionShape* collisionShape, unsigned short collisionCategoryBits,
-                                unsigned short collideWithMaskBits, const Transform& localToWorldTransform)
+                                unsigned short collideWithMaskBits, const Transform& localToWorldTransform, const Material& material)
                  :bodyEntity(bodyEntity), collider(collider), localBounds(localBounds), localToBodyTransform(localToBodyTransform),
                   collisionShape(collisionShape), collisionCategoryBits(collisionCategoryBits), collideWithMaskBits(collideWithMaskBits),
-                  localToWorldTransform(localToWorldTransform) {
+                  localToWorldTransform(localToWorldTransform), material(material) {
 
             }
         };
@@ -204,12 +209,20 @@ class ColliderComponents : public Components {
         /// Set whether a collider is a trigger
         void setIsTrigger(Entity colliderEntity, bool isTrigger);
 
+        /// Return a reference to the material of a collider
+        Material& getMaterial(Entity colliderEntity);
+
+        /// Set the material of a collider
+        void setMaterial(Entity colliderEntity, const Material& material);
+
         // -------------------- Friendship -------------------- //
 
         friend class BroadPhaseSystem;
         friend class CollisionDetectionSystem;
+        friend class ContactSolverSystem;
         friend class DynamicsSystem;
         friend class OverlappingPairs;
+        friend class RigidBody;
 };
 
 // Return the body entity of a given collider
@@ -355,6 +368,22 @@ RP3D_FORCE_INLINE void ColliderComponents::setIsTrigger(Entity colliderEntity, b
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
     mIsTrigger[mMapEntityToComponentIndex[colliderEntity]] = isTrigger;
+}
+
+// Return a reference to the material of a collider
+RP3D_FORCE_INLINE Material& ColliderComponents::getMaterial(Entity colliderEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    return mMaterials[mMapEntityToComponentIndex[colliderEntity]];
+}
+
+// Set the material of a collider
+RP3D_FORCE_INLINE void ColliderComponents::setMaterial(Entity colliderEntity, const Material& material) {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    mMaterials[mMapEntityToComponentIndex[colliderEntity]] = material;
 }
 
 }

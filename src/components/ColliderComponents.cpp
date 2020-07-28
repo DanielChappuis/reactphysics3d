@@ -38,7 +38,7 @@ ColliderComponents::ColliderComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Collider*) + sizeof(int32) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(unsigned short) +
                 sizeof(unsigned short) + sizeof(Transform) + sizeof(List<uint64>) + sizeof(bool) +
-                sizeof(bool)) {
+                sizeof(bool) + sizeof(Material)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -69,6 +69,7 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     List<uint64>* newOverlappingPairs = reinterpret_cast<List<uint64>*>(newLocalToWorldTransforms + nbComponentsToAllocate);
     bool* hasCollisionShapeChangedSize = reinterpret_cast<bool*>(newOverlappingPairs + nbComponentsToAllocate);
     bool* isTrigger = reinterpret_cast<bool*>(hasCollisionShapeChangedSize + nbComponentsToAllocate);
+    Material* materials = reinterpret_cast<Material*>(isTrigger + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -86,6 +87,7 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newOverlappingPairs, mOverlappingPairs, mNbComponents * sizeof(List<uint64>));
         memcpy(hasCollisionShapeChangedSize, mHasCollisionShapeChangedSize, mNbComponents * sizeof(bool));
         memcpy(isTrigger, mIsTrigger, mNbComponents * sizeof(bool));
+        memcpy(materials, mMaterials, mNbComponents * sizeof(Material));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -105,6 +107,7 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     mOverlappingPairs = newOverlappingPairs;
     mHasCollisionShapeChangedSize = hasCollisionShapeChangedSize;
     mIsTrigger = isTrigger;
+    mMaterials = materials;
 
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
@@ -128,6 +131,7 @@ void ColliderComponents::addComponent(Entity colliderEntity, bool isSleeping, co
     new (mOverlappingPairs + index) List<uint64>(mMemoryAllocator);
     mHasCollisionShapeChangedSize[index] = false;
     mIsTrigger[index] = false;
+    mMaterials[index] = component.material;
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(colliderEntity, index));
@@ -156,6 +160,7 @@ void ColliderComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
     new (mOverlappingPairs + destIndex) List<uint64>(mOverlappingPairs[srcIndex]);
     mHasCollisionShapeChangedSize[destIndex] = mHasCollisionShapeChangedSize[srcIndex];
     mIsTrigger[destIndex] = mIsTrigger[srcIndex];
+    mMaterials[destIndex] = mMaterials[srcIndex];
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -184,6 +189,7 @@ void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
     List<uint64> overlappingPairs = mOverlappingPairs[index1];
     bool hasCollisionShapeChangedSize = mHasCollisionShapeChangedSize[index1];
     bool isTrigger = mIsTrigger[index1];
+    Material material = mMaterials[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -203,6 +209,7 @@ void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mOverlappingPairs + index2) List<uint64>(overlappingPairs);
     mHasCollisionShapeChangedSize[index2] = hasCollisionShapeChangedSize;
     mIsTrigger[index2] = isTrigger;
+    mMaterials[index2] = material;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(colliderEntity1, index2));
@@ -228,4 +235,5 @@ void ColliderComponents::destroyComponent(uint32 index) {
     mCollisionShapes[index] = nullptr;
     mLocalToWorldTransforms[index].~Transform();
     mOverlappingPairs[index].~List<uint64>();
+    mMaterials[index].~Material();
 }

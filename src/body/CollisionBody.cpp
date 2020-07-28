@@ -89,11 +89,12 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
-    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider,
-                                                                  AABB(localBoundsMin, localBoundsMax),
-                                                                  transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform);
+    Material material(mWorld.mConfig.defaultFrictionCoefficient, mWorld.mConfig.defaultRollingRestistance, mWorld.mConfig.defaultBounciness);
+    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, AABB(localBoundsMin, localBoundsMax),
+                                                                  transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform, material);
     bool isActive = mWorld.mCollisionBodyComponents.getIsActive(mEntity);
     mWorld.mCollidersComponents.addComponent(colliderEntity, !isActive, colliderComponent);
+
 
     mWorld.mCollisionBodyComponents.addColliderToBody(mEntity, colliderEntity);
 

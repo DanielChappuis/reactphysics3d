@@ -30,6 +30,7 @@
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/mathematics/Matrix3x3.h>
+#include <reactphysics3d/engine/Material.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -338,14 +339,13 @@ class ContactSolverSystem {
         // -------------------- Methods -------------------- //
 
         /// Compute the collision restitution factor from the restitution factor of each collider
-        decimal computeMixedRestitutionFactor(Collider* collider1,
-                                              Collider* collider2) const;
+        decimal computeMixedRestitutionFactor(const Material& material1, const Material& material2) const;
 
         /// Compute the mixed friction coefficient from the friction coefficient of each collider
-        decimal computeMixedFrictionCoefficient(Collider* collider1, Collider* collider2) const;
+        decimal computeMixedFrictionCoefficient(const Material &material1, const Material &material2) const;
 
         /// Compute th mixed rolling resistance factor between two colliders
-        decimal computeMixedRollingResistance(Collider* collider1, Collider* collider2) const;
+        decimal computeMixedRollingResistance(const Material& material1, const Material& material2) const;
 
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact manifold. The two vectors have to be
@@ -405,6 +405,28 @@ RP3D_FORCE_INLINE bool ContactSolverSystem::isSplitImpulseActive() const {
 // Activate or Deactivate the split impulses for contacts
 RP3D_FORCE_INLINE void ContactSolverSystem::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
+}
+
+// Compute the collision restitution factor from the restitution factor of each collider
+RP3D_FORCE_INLINE decimal ContactSolverSystem::computeMixedRestitutionFactor(const Material& material1, const Material& material2) const {
+
+    const decimal restitution1 = material1.getBounciness();
+    const decimal restitution2 = material2.getBounciness();
+
+    // Return the largest restitution factor
+    return (restitution1 > restitution2) ? restitution1 : restitution2;
+}
+
+// Compute the mixed friction coefficient from the friction coefficient of each collider
+RP3D_FORCE_INLINE decimal ContactSolverSystem::computeMixedFrictionCoefficient(const Material& material1, const Material& material2) const {
+
+    // Use the geometric mean to compute the mixed friction coefficient
+    return material1.getFrictionCoefficientSqrt() * material2.getFrictionCoefficientSqrt();
+}
+
+// Compute th mixed rolling resistance factor between two colliders
+RP3D_FORCE_INLINE decimal ContactSolverSystem::computeMixedRollingResistance(const Material& material1, const Material& material2) const {
+    return decimal(0.5f) * (material1.getRollingResistance() + material2.getRollingResistance());
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED

@@ -42,8 +42,7 @@ using namespace reactphysics3d;
  */
 Collider::Collider(Entity entity, CollisionBody* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mEntity(entity), mBody(body),
-            mMaterial(body->mWorld.mConfig.defaultFrictionCoefficient, body->mWorld.mConfig.defaultRollingRestistance,
-                      body->mWorld.mConfig.defaultBounciness), mUserData(nullptr) {
+            mUserData(nullptr) {
 
 }
 
@@ -223,10 +222,10 @@ void Collider::setHasCollisionShapeChangedSize(bool hasCollisionShapeChangedSize
  */
 void Collider::setMaterial(const Material& material) {
 
-    mMaterial = material;
+    mBody->mWorld.mCollidersComponents.setMaterial(mEntity, material);
 
     RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
-             "Collider " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string(),  __FILE__, __LINE__);
+             "Collider " + std::to_string(mEntity.id) + ": Set Material" + material.to_string(),  __FILE__, __LINE__);
 }
 
 // Return the local to world transform
@@ -252,6 +251,14 @@ bool Collider::getIsTrigger() const {
  */
 void Collider::setIsTrigger(bool isTrigger) const {
    mBody->mWorld.mCollidersComponents.setIsTrigger(mEntity, isTrigger);
+}
+
+// Return a reference to the material properties of the collider
+/**
+ * @return A reference to the material of the body
+ */
+Material& Collider::getMaterial() {
+    return mBody->mWorld.mCollidersComponents.getMaterial(mEntity);
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED

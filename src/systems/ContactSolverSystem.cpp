@@ -34,6 +34,7 @@
 #include <reactphysics3d/components/CollisionBodyComponents.h>
 #include <reactphysics3d/components/ColliderComponents.h>
 #include <reactphysics3d/collision/ContactManifold.h>
+#include <algorithm>
 
 using namespace reactphysics3d;
 using namespace std;
@@ -70,8 +71,8 @@ void ContactSolverSystem::init(List<ContactManifold>* contactManifolds, List<Con
 
     mTimeStep = timeStep;
 
-    uint nbContactManifolds = mAllContactManifolds->size();
-    uint nbContactPoints = mAllContactPoints->size();
+    const uint nbContactManifolds = mAllContactManifolds->size();
+    const uint nbContactPoints = mAllContactPoints->size();
 
     mNbContactManifolds = 0;
     mNbContactPoints = 0;
@@ -135,9 +136,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity1));
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity2));
 
-        // TODO OPTI : Do not use pointers to colliders here, maybe we call totally remove those pointers
-        Collider* collider1 = mColliderComponents.getCollider(externalManifold.colliderEntity1);
-        Collider* collider2 = mColliderComponents.getCollider(externalManifold.colliderEntity2);
+        const uint collider1Index = mColliderComponents.getEntityIndex(externalManifold.colliderEntity1);
+        const uint collider2Index = mColliderComponents.getEntityIndex(externalManifold.colliderEntity2);
 
         // Get the position of the two bodies
         const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[rigidBodyIndex1];
@@ -152,10 +152,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].massInverseBody1 = mRigidBodyComponents.mInverseMasses[rigidBodyIndex1];
         mContactConstraints[mNbContactManifolds].massInverseBody2 = mRigidBodyComponents.mInverseMasses[rigidBodyIndex2];
         mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.nbContactPoints;
-        // TODO OPTI : Do not compute this using colliders pointers
-        mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(collider1, collider2);
-        // TODO OPTI : Do not compute this using colliders pointers
-        mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(collider1, collider2);
+        mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(mColliderComponents.mMaterials[collider1Index], mColliderComponents.mMaterials[collider2Index]);
+        mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(mColliderComponents.mMaterials[collider1Index], mColliderComponents.mMaterials[collider2Index]);
         mContactConstraints[mNbContactManifolds].externalContactManifold = &externalManifold;
         mContactConstraints[mNbContactManifolds].normal.setToZero();
         mContactConstraints[mNbContactManifolds].frictionPointBody1.setToZero();
@@ -167,9 +165,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         const Vector3& v2 = mRigidBodyComponents.mLinearVelocities[rigidBodyIndex2];
         const Vector3& w2 = mRigidBodyComponents.mAngularVelocities[rigidBodyIndex2];
 
-        // TODO OPTI : Maybe use collider index here
-        const Transform& collider1LocalToWorldTransform = mColliderComponents.getLocalToWorldTransform(externalManifold.colliderEntity1);
-        const Transform& collider2LocalToWorldTransform = mColliderComponents.getLocalToWorldTransform(externalManifold.colliderEntity2);
+        const Transform& collider1LocalToWorldTransform = mColliderComponents.mLocalToWorldTransforms[collider1Index];
+        const Transform& collider2LocalToWorldTransform = mColliderComponents.mLocalToWorldTransforms[collider2Index];
 
         // For each  contact point of the contact manifold
         assert(externalManifold.nbContactPoints > 0);
@@ -179,13 +176,14 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
 
             ContactPoint& externalContact = (*mAllContactPoints)[c];
 
+            new (mContactPoints + mNbContactPoints) ContactPointSolver();
+            mContactPoints[mNbContactPoints].externalContact = &externalContact;
+            mContactPoints[mNbContactPoints].normal = externalContact.getNormal();
+
             // Get the contact point on the two bodies
             const Vector3 p1 = collider1LocalToWorldTransform * externalContact.getLocalPointOnShape1();
             const Vector3 p2 = collider2LocalToWorldTransform * externalContact.getLocalPointOnShape2();
 
-            new (mContactPoints + mNbContactPoints) ContactPointSolver();
-            mContactPoints[mNbContactPoints].externalContact = &externalContact;
-            mContactPoints[mNbContactPoints].normal = externalContact.getNormal();
             mContactPoints[mNbContactPoints].r1.x = p1.x - x1.x;
             mContactPoints[mNbContactPoints].r1.y = p1.y - x1.y;
             mContactPoints[mNbContactPoints].r1.z = p1.z - x1.z;
@@ -247,7 +245,7 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
             decimal deltaVDotN = deltaV.x * mContactPoints[mNbContactPoints].normal.x +
                                  deltaV.y * mContactPoints[mNbContactPoints].normal.y +
                                  deltaV.z * mContactPoints[mNbContactPoints].normal.z;
-            const decimal restitutionFactor = computeMixedRestitutionFactor(collider1, collider2);
+            const decimal restitutionFactor = computeMixedRestitutionFactor(mColliderComponents.mMaterials[collider1Index], mColliderComponents.mMaterials[collider2Index]);
             if (deltaVDotN < -mRestitutionVelocityThreshold) {
                 mContactPoints[mNbContactPoints].restitutionBias = restitutionFactor * deltaVDotN;
             }
@@ -259,8 +257,8 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
             mNbContactPoints++;
         }
 
-        mContactConstraints[mNbContactManifolds].frictionPointBody1 /=static_cast<decimal>(mContactConstraints[mNbContactManifolds].nbContacts);
-        mContactConstraints[mNbContactManifolds].frictionPointBody2 /=static_cast<decimal>(mContactConstraints[mNbContactManifolds].nbContacts);
+        mContactConstraints[mNbContactManifolds].frictionPointBody1 /= static_cast<decimal>(mContactConstraints[mNbContactManifolds].nbContacts);
+        mContactConstraints[mNbContactManifolds].frictionPointBody2 /= static_cast<decimal>(mContactConstraints[mNbContactManifolds].nbContacts);
         mContactConstraints[mNbContactManifolds].r1Friction.x = mContactConstraints[mNbContactManifolds].frictionPointBody1.x - x1.x;
         mContactConstraints[mNbContactManifolds].r1Friction.y = mContactConstraints[mNbContactManifolds].frictionPointBody1.y - x1.y;
         mContactConstraints[mNbContactManifolds].r1Friction.z = mContactConstraints[mNbContactManifolds].frictionPointBody1.z - x1.z;
@@ -547,7 +545,7 @@ void ContactSolverSystem::solve() {
             // Compute the bias "b" of the constraint
             decimal biasPenetrationDepth = 0.0;
             if (mContactPoints[contactPointIndex].penetrationDepth > SLOP) biasPenetrationDepth = -(beta/mTimeStep) *
-                    max(0.0f, float(mContactPoints[contactPointIndex].penetrationDepth - SLOP));
+                    std::max(0.0f, float(mContactPoints[contactPointIndex].penetrationDepth - SLOP));
             decimal b = biasPenetrationDepth + mContactPoints[contactPointIndex].restitutionBias;
 
             // Compute the Lagrange multiplier lambda
@@ -814,27 +812,6 @@ void ContactSolverSystem::solve() {
     }
 }
 
-// Compute the collision restitution factor from the restitution factor of each collider
-decimal ContactSolverSystem::computeMixedRestitutionFactor(Collider* collider1, Collider* collider2) const {
-    decimal restitution1 = collider1->getMaterial().getBounciness();
-    decimal restitution2 = collider2->getMaterial().getBounciness();
-
-    // Return the largest restitution factor
-    return (restitution1 > restitution2) ? restitution1 : restitution2;
-}
-
-// Compute the mixed friction coefficient from the friction coefficient of each collider
-decimal ContactSolverSystem::computeMixedFrictionCoefficient(Collider* collider1, Collider* collider2) const {
-
-    // Use the geometric mean to compute the mixed friction coefficient
-    return collider1->getMaterial().getFrictionCoefficientSqrt() * collider2->getMaterial().getFrictionCoefficientSqrt();
-}
-
-// Compute th mixed rolling resistance factor between two colliders
-decimal ContactSolverSystem::computeMixedRollingResistance(Collider* collider1, Collider* collider2) const {
-    return decimal(0.5f) * (collider1->getMaterial().getRollingResistance() + collider2->getMaterial().getRollingResistance());
-}
-
 // Store the computed impulses to use them to
 // warm start the solver at the next iteration
 void ContactSolverSystem::storeImpulses() {
@@ -871,14 +848,14 @@ void ContactSolverSystem::computeFrictionVectors(const Vector3& deltaVelocity, C
     assert(contact.normal.length() > decimal(0.0));
 
     // Compute the velocity difference vector in the tangential plane
-    Vector3 normalVelocity(deltaVelocity.x * contact.normal.x * contact.normal.x,
+    const Vector3 normalVelocity(deltaVelocity.x * contact.normal.x * contact.normal.x,
                            deltaVelocity.y * contact.normal.y * contact.normal.y,
                            deltaVelocity.z * contact.normal.z * contact.normal.z);
-    Vector3 tangentVelocity(deltaVelocity.x - normalVelocity.x, deltaVelocity.y - normalVelocity.y,
+    const Vector3 tangentVelocity(deltaVelocity.x - normalVelocity.x, deltaVelocity.y - normalVelocity.y,
                             deltaVelocity.z - normalVelocity.z);
 
     // If the velocty difference in the tangential plane is not zero
-    decimal lengthTangentVelocity = tangentVelocity.length();
+    const decimal lengthTangentVelocity = tangentVelocity.length();
     if (lengthTangentVelocity > MACHINE_EPSILON) {
 
         // Compute the first friction vector in the direction of the tangent
@@ -893,5 +870,5 @@ void ContactSolverSystem::computeFrictionVectors(const Vector3& deltaVelocity, C
 
     // The second friction vector is computed by the cross product of the first
     // friction vector and the contact normal
-    contact.frictionVector2 = contact.normal.cross(contact.frictionVector1).getUnit();
+    contact.frictionVector2 = contact.normal.cross(contact.frictionVector1);
 }
