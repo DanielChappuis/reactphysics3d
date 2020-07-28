@@ -732,12 +732,10 @@ void CollisionDetectionSystem::createContacts() {
         contactPair.contactPointsIndex = mCurrentContactPoints->size();
 
         // Add the associated contact pair to both bodies of the pair (used to create islands later)
-        uint32 rigidBody1Index = 0;
-        uint32 rigidBody2Index = 0;
-        if (mRigidBodyComponents.hasComponentGetIndex(contactPair.body1Entity, rigidBody1Index)) {
+        if (mRigidBodyComponents.hasComponent(contactPair.body1Entity)) {
            mRigidBodyComponents.addContacPair(contactPair.body1Entity, p);
         }
-        if (mRigidBodyComponents.hasComponentGetIndex(contactPair.body2Entity, rigidBody2Index)) {
+        if (mRigidBodyComponents.hasComponent(contactPair.body2Entity)) {
            mRigidBodyComponents.addContacPair(contactPair.body2Entity, p);
         }
 
@@ -753,7 +751,7 @@ void CollisionDetectionSystem::createContacts() {
 
             // Create and add the contact manifold
             mCurrentContactManifolds->emplace(contactPair.body1Entity, contactPair.body2Entity, contactPair.collider1Entity,
-                                              contactPair.collider2Entity, contactPointsIndex, nbContactPoints, rigidBody1Index, rigidBody2Index);
+                                              contactPair.collider2Entity, contactPointsIndex, nbContactPoints);
 
             assert(potentialManifold.nbPotentialContactPoints > 0);
 
@@ -837,7 +835,7 @@ void CollisionDetectionSystem::createSnapshotContacts(List<ContactPair>& contact
 
             // Create and add the contact manifold
             contactManifolds.emplace(contactPair.body1Entity, contactPair.body2Entity, contactPair.collider1Entity,
-                                     contactPair.collider2Entity, contactPointsIndex, nbContactPoints, 0, 0);
+                                     contactPair.collider2Entity, contactPointsIndex, nbContactPoints);
 
             assert(potentialManifold.nbPotentialContactPoints > 0);
 

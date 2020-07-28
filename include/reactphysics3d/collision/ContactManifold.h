@@ -101,19 +101,13 @@ class ContactManifold {
         /// True if the contact manifold has already been added into an island
         bool isAlreadyInIsland;
 
-        /// Index of the first body of the manifold in the mRigidBodyComponents array (only if body 1 is a RigidBody)
-        uint32 rigidBody1Index;
-
-        /// Index of the second body of the manifold in the mRigidBodyComponents array (only if body 2 is a RigidBody)
-        uint32 rigidBody2Index;
-
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity colliderEntity1, Entity colliderEntity2,
-                        uint contactPointsIndex, uint8 nbContactPoints, uint32 rigidBody1Index, uint32 rigidBody2Index);
+                        uint contactPointsIndex, uint8 nbContactPoints);
 
         // -------------------- Friendship -------------------- //
 
