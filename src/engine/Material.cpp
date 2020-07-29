@@ -29,8 +29,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-Material::Material(decimal frictionCoefficient, decimal rollingResistance, decimal bounciness, decimal massDensity)
-         : mFrictionCoefficientSqrt(std::sqrt(frictionCoefficient)),
-           mRollingResistance(rollingResistance), mBounciness(bounciness), mMassDensity(massDensity) {
+Material::Material(decimal frictionCoefficient, decimal bounciness, decimal massDensity)
+         : mFrictionCoefficientSqrt(std::sqrt(frictionCoefficient)), mBounciness(bounciness), mMassDensity(massDensity) {
 
 }

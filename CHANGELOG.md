@@ -14,7 +14,12 @@ do not hesitate to take a look at the user manual.
 
 ### Changed
 
+ - Rolling resistance constraint is not solved anymore in the solver. Angular damping needs to be used instead to simulate this.
+
 ### Removed
+
+ - Method Material::getRollingResistance() has been removed (angular damping has to be used instead of rolling resistance)
+ - Method Material::setRollingResistance() has been removed (angular damping has to be used instead of rolling resistance)
 
 ### Fixed
 

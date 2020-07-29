@@ -95,9 +95,6 @@ class Matrix3x3 {
         /// Return the inverse matrix
         Matrix3x3 getInverse() const;
 
-        /// Return the inverse matrix
-        Matrix3x3 getInverseWithDeterminant(decimal determinant) const;
-
         /// Return the matrix with absolute values
         Matrix3x3 getAbsoluteMatrix() const;
 

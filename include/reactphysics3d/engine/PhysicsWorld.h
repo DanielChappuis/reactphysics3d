@@ -93,9 +93,6 @@ class PhysicsWorld {
             /// Velocity threshold for contact velocity restitution
             decimal restitutionVelocityThreshold;
 
-            /// Default rolling resistance
-            decimal defaultRollingRestistance;
-
             /// True if the sleeping technique is enabled
             bool isSleepingEnabled;
 
@@ -129,7 +126,6 @@ class PhysicsWorld {
                 defaultFrictionCoefficient = decimal(0.3);
                 defaultBounciness = decimal(0.5);
                 restitutionVelocityThreshold = decimal(0.5);
-                defaultRollingRestistance = decimal(0.0);
                 isSleepingEnabled = true;
                 defaultVelocitySolverNbIterations = 10;
                 defaultPositionSolverNbIterations = 5;
@@ -152,7 +148,6 @@ class PhysicsWorld {
                 ss << "defaultFrictionCoefficient=" << defaultFrictionCoefficient << std::endl;
                 ss << "defaultBounciness=" << defaultBounciness << std::endl;
                 ss << "restitutionVelocityThreshold=" << restitutionVelocityThreshold << std::endl;
-                ss << "defaultRollingRestistance=" << defaultRollingRestistance << std::endl;
                 ss << "isSleepingEnabled=" << isSleepingEnabled << std::endl;
                 ss << "defaultVelocitySolverNbIterations=" << defaultVelocitySolverNbIterations << std::endl;
                 ss << "defaultPositionSolverNbIterations=" << defaultPositionSolverNbIterations << std::endl;

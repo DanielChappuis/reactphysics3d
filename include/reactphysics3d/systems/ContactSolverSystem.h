@@ -199,9 +199,6 @@ class ContactSolverSystem {
             /// Mix friction coefficient for the two bodies
             decimal frictionCoefficient;
 
-            /// Rolling resistance factor between the two bodies
-            decimal rollingResistanceFactor;
-
             // - Variables used when friction constraints are apply at the center of the manifold-//
 
             /// Average normal vector of the contact manifold
@@ -240,9 +237,6 @@ class ContactSolverSystem {
             /// Matrix K for the twist friction constraint
             decimal inverseTwistFrictionMass;
 
-            /// Matrix K for the rolling resistance constraint
-            Matrix3x3 inverseRollingResistance;
-
             /// First friction direction at contact manifold center
             Vector3 frictionVector1;
 
@@ -263,9 +257,6 @@ class ContactSolverSystem {
 
             /// Twist friction impulse at contact manifold center
             decimal frictionTwistImpulse;
-
-            /// Rolling resistance impulse
-            Vector3 rollingResistanceImpulse;
 
             /// Number of contact points
             int8 nbContacts;
@@ -344,9 +335,6 @@ class ContactSolverSystem {
         /// Compute the mixed friction coefficient from the friction coefficient of each collider
         decimal computeMixedFrictionCoefficient(const Material &material1, const Material &material2) const;
 
-        /// Compute th mixed rolling resistance factor between two colliders
-        decimal computeMixedRollingResistance(const Material& material1, const Material& material2) const;
-
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact manifold. The two vectors have to be
         /// such that : t1 x t2 = contactNormal.
@@ -422,11 +410,6 @@ RP3D_FORCE_INLINE decimal ContactSolverSystem::computeMixedFrictionCoefficient(c
 
     // Use the geometric mean to compute the mixed friction coefficient
     return material1.getFrictionCoefficientSqrt() * material2.getFrictionCoefficientSqrt();
-}
-
-// Compute th mixed rolling resistance factor between two colliders
-RP3D_FORCE_INLINE decimal ContactSolverSystem::computeMixedRollingResistance(const Material& material1, const Material& material2) const {
-    return decimal(0.5f) * (material1.getRollingResistance() + material2.getRollingResistance());
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED

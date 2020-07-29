@@ -95,9 +95,6 @@ class ContactManifold {
         /// Twist friction constraint accumulated impulse
         decimal frictionTwistImpulse;
 
-        /// Accumulated rolling resistance impulse
-        Vector3 rollingResistanceImpulse;
-
         /// True if the contact manifold has already been added into an island
         bool isAlreadyInIsland;
 

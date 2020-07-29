@@ -153,7 +153,6 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].massInverseBody2 = mRigidBodyComponents.mInverseMasses[rigidBodyIndex2];
         mContactConstraints[mNbContactManifolds].nbContacts = externalManifold.nbContactPoints;
         mContactConstraints[mNbContactManifolds].frictionCoefficient = computeMixedFrictionCoefficient(mColliderComponents.mMaterials[collider1Index], mColliderComponents.mMaterials[collider2Index]);
-        mContactConstraints[mNbContactManifolds].rollingResistanceFactor = computeMixedRollingResistance(mColliderComponents.mMaterials[collider1Index], mColliderComponents.mMaterials[collider2Index]);
         mContactConstraints[mNbContactManifolds].externalContactManifold = &externalManifold;
         mContactConstraints[mNbContactManifolds].normal.setToZero();
         mContactConstraints[mNbContactManifolds].frictionPointBody1.setToZero();
@@ -272,24 +271,6 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         mContactConstraints[mNbContactManifolds].friction1Impulse = externalManifold.frictionImpulse1;
         mContactConstraints[mNbContactManifolds].friction2Impulse = externalManifold.frictionImpulse2;
         mContactConstraints[mNbContactManifolds].frictionTwistImpulse = externalManifold.frictionTwistImpulse;
-
-        // Compute the inverse K matrix for the rolling resistance constraint
-        const bool isBody1DynamicType = mRigidBodyComponents.mBodyTypes[rigidBodyIndex1] == BodyType::DYNAMIC;
-        const bool isBody2DynamicType = mRigidBodyComponents.mBodyTypes[rigidBodyIndex2] == BodyType::DYNAMIC;
-        mContactConstraints[mNbContactManifolds].inverseRollingResistance.setToZero();
-        if (mContactConstraints[mNbContactManifolds].rollingResistanceFactor > 0 && (isBody1DynamicType || isBody2DynamicType)) {
-
-            mContactConstraints[mNbContactManifolds].inverseRollingResistance = mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody1 + mContactConstraints[mNbContactManifolds].inverseInertiaTensorBody2;
-            const decimal det = mContactConstraints[mNbContactManifolds].inverseRollingResistance.getDeterminant();
-
-            // If the matrix is not inversible
-            if (approxEqual(det, decimal(0.0))) {
-               mContactConstraints[mNbContactManifolds].inverseRollingResistance.setToZero();
-            }
-            else {
-               mContactConstraints[mNbContactManifolds].inverseRollingResistance = mContactConstraints[mNbContactManifolds].inverseRollingResistance.getInverseWithDeterminant(det);
-            }
-        }
 
         mContactConstraints[mNbContactManifolds].normal.normalize();
 
@@ -479,11 +460,6 @@ void ContactSolverSystem::warmStart() {
             // Update the velocities of the body 2 by applying the impulse P
             mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody2Index] += mContactConstraints[c].inverseInertiaTensorBody2 * angularImpulseBody2;
 
-            // ------ Rolling resistance at the center of the contact manifold ------ //
-
-            // Compute the impulse P = J^T * lambda
-            angularImpulseBody2 = mContactConstraints[c].rollingResistanceImpulse;
-
             // Update the velocities of the body 1 by applying the impulse P
             mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody1Index] -= mContactConstraints[c].inverseInertiaTensorBody1 * angularImpulseBody2;
 
@@ -496,7 +472,6 @@ void ContactSolverSystem::warmStart() {
             mContactConstraints[c].friction1Impulse = 0.0;
             mContactConstraints[c].friction2Impulse = 0.0;
             mContactConstraints[c].frictionTwistImpulse = 0.0;
-            mContactConstraints[c].rollingResistanceImpulse.setToZero();
         }
     }
 }
@@ -781,34 +756,6 @@ void ContactSolverSystem::solve() {
         mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody2Index].x += angularVelocity2.x;
         mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody2Index].y += angularVelocity2.y;
         mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody2Index].z += angularVelocity2.z;
-
-        // --------- Rolling resistance constraint at the center of the contact manifold --------- //
-
-        if (mContactConstraints[c].rollingResistanceFactor > 0) {
-
-            // Compute J*v
-            const Vector3 JvRolling = w2 - w1;
-
-            // Compute the Lagrange multiplier lambda
-            Vector3 deltaLambdaRolling = mContactConstraints[c].inverseRollingResistance * (-JvRolling);
-            decimal rollingLimit = mContactConstraints[c].rollingResistanceFactor * sumPenetrationImpulse;
-            Vector3 lambdaTempRolling = mContactConstraints[c].rollingResistanceImpulse;
-            mContactConstraints[c].rollingResistanceImpulse = clamp(mContactConstraints[c].rollingResistanceImpulse +
-                                                                 deltaLambdaRolling, rollingLimit);
-            deltaLambdaRolling = mContactConstraints[c].rollingResistanceImpulse - lambdaTempRolling;
-
-            // Update the velocities of the body 1 by applying the impulse P
-            angularVelocity1 = mContactConstraints[c].inverseInertiaTensorBody1 * deltaLambdaRolling;
-            mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody1Index].x -= angularVelocity1.x;
-            mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody1Index].y -= angularVelocity1.y;
-            mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody1Index].z -= angularVelocity1.z;
-
-            // Update the velocities of the body 2 by applying the impulse P
-            angularVelocity2 = mContactConstraints[c].inverseInertiaTensorBody2 * deltaLambdaRolling;
-            mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody2Index].x += angularVelocity2.x;
-            mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody2Index].y += angularVelocity2.y;
-            mRigidBodyComponents.mConstrainedAngularVelocities[rigidBody2Index].z += angularVelocity2.z;
-        }
     }
 }
 
@@ -833,7 +780,6 @@ void ContactSolverSystem::storeImpulses() {
         mContactConstraints[c].externalContactManifold->frictionImpulse1 = mContactConstraints[c].friction1Impulse;
         mContactConstraints[c].externalContactManifold->frictionImpulse2 = mContactConstraints[c].friction2Impulse;
         mContactConstraints[c].externalContactManifold->frictionTwistImpulse = mContactConstraints[c].frictionTwistImpulse;
-        mContactConstraints[c].externalContactManifold->rollingResistanceImpulse = mContactConstraints[c].rollingResistanceImpulse;
         mContactConstraints[c].externalContactManifold->frictionVector1 = mContactConstraints[c].frictionVector1;
         mContactConstraints[c].externalContactManifold->frictionVector2 = mContactConstraints[c].frictionVector2;
     }

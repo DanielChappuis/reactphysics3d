@@ -903,7 +903,6 @@ void CollisionDetectionSystem::initContactsWithPreviousOnes() {
                         currentContactManifold.frictionImpulse1 = previousContactManifold.frictionImpulse1;
                         currentContactManifold.frictionImpulse2 = previousContactManifold.frictionImpulse2;
                         currentContactManifold.frictionTwistImpulse = previousContactManifold.frictionTwistImpulse;
-                        currentContactManifold.rollingResistanceImpulse = previousContactManifold.rollingResistanceImpulse;
 
                         break;
                     }

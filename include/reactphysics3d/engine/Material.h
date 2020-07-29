@@ -48,9 +48,6 @@ class Material {
         /// Square root of the friction coefficient
         decimal mFrictionCoefficientSqrt;
 
-        /// Rolling resistance factor (positive value)
-        decimal mRollingResistance;
-
         /// Bounciness during collisions (between 0 and 1) where 1 is for a very bouncy body
         decimal mBounciness;
 
@@ -60,7 +57,7 @@ class Material {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Material(decimal frictionCoefficient, decimal rollingResistance, decimal bounciness, decimal massDensity = decimal(1.0));
+        Material(decimal frictionCoefficient, decimal bounciness, decimal massDensity = decimal(1.0));
 
     public :
 
@@ -80,12 +77,6 @@ class Material {
 
         /// Return the square root friction coefficient
         decimal getFrictionCoefficientSqrt() const;
-
-        /// Return the rolling resistance factor
-        decimal getRollingResistance() const;
-
-        /// Set the rolling resistance factor
-        void setRollingResistance(decimal rollingResistance);
 
         /// Return the mass density of the collider
         decimal getMassDensity() const;
@@ -146,27 +137,6 @@ RP3D_FORCE_INLINE decimal Material::getFrictionCoefficientSqrt() const {
     return mFrictionCoefficientSqrt;
 }
 
-// Return the rolling resistance factor. If this value is larger than zero,
-// it will be used to slow down the body when it is rolling
-// against another body.
-/**
- * @return The rolling resistance factor (positive value)
- */
-RP3D_FORCE_INLINE decimal Material::getRollingResistance() const {
-    return mRollingResistance;
-}
-
-// Set the rolling resistance factor. If this value is larger than zero,
-// it will be used to slow down the body when it is rolling
-// against another body.
-/**
- * @param rollingResistance The rolling resistance factor
- */
-RP3D_FORCE_INLINE void Material::setRollingResistance(decimal rollingResistance) {
-    assert(rollingResistance >= 0);
-    mRollingResistance = rollingResistance;
-}
-
 // Return the mass density of the collider
 RP3D_FORCE_INLINE decimal Material::getMassDensity() const {
    return mMassDensity;
@@ -186,7 +156,6 @@ RP3D_FORCE_INLINE std::string Material::to_string() const {
     std::stringstream ss;
 
     ss << "frictionCoefficient=" << (mFrictionCoefficientSqrt * mFrictionCoefficientSqrt) << std::endl;
-    ss << "rollingResistance=" << mRollingResistance << std::endl;
     ss << "bounciness=" << mBounciness << std::endl;
 
     return ss.str();
