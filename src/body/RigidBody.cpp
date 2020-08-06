@@ -108,11 +108,7 @@ void RigidBody::setType(BodyType type) {
     setIsSleeping(false);
 
     // Update the active status of currently overlapping pairs
-    updateOverlappingPairs();
-
-    // Ask the broad-phase to test again the collision shapes of the body for collision
-    // detection (as if the body has moved)
-    askForBroadPhaseCollisionCheck();
+    resetOverlappingPairs();
 
     // Reset the force and torque on the body
     mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
@@ -856,7 +852,7 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     mWorld.setBodyDisabled(mEntity, isSleeping);
 
     // Update the currently overlapping pairs
-    updateOverlappingPairs();
+    resetOverlappingPairs();
 
     if (isSleeping) {
 
@@ -871,8 +867,8 @@ void RigidBody::setIsSleeping(bool isSleeping) {
          (isSleeping ? "true" : "false"),  __FILE__, __LINE__);
 }
 
-// Update whether the current overlapping pairs where this body is involed are active or not
-void RigidBody::updateOverlappingPairs() {
+// Remove all the overlapping pairs in which this body is involved and ask the broad-phase to recompute pairs in the next frame
+void RigidBody::resetOverlappingPairs() {
 
     // For each collider of the body
     const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
@@ -883,9 +879,12 @@ void RigidBody::updateOverlappingPairs() {
 
         for (uint j=0; j < overlappingPairs.size(); j++) {
 
-            mWorld.mCollisionDetection.mOverlappingPairs.updateOverlappingPairIsActive(overlappingPairs[j]);
+            mWorld.mCollisionDetection.mOverlappingPairs.removePair(overlappingPairs[j]);
         }
     }
+
+    // Make sure we recompute the overlapping pairs with this body in the next frame
+    askForBroadPhaseCollisionCheck();
 }
 
 /// Compute the inverse of the inertia tensor in world coordinates.

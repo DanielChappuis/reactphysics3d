@@ -57,7 +57,7 @@ class RigidBody : public CollisionBody {
         void setIsSleeping(bool isSleeping);
 
         /// Update whether the current overlapping pairs where this body is involed are active or not
-        void updateOverlappingPairs();
+        void resetOverlappingPairs();
 
         /// Compute and return the local-space center of mass of the body using its colliders
         Vector3 computeCenterOfMass() const;

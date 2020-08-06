@@ -133,7 +133,11 @@ bool isPrimeNumber(int number);
 /// Here we assume that the two parameter numbers are sorted such that
 /// number1 = max(number1, number2)
 /// http://szudzik.com/ElegantPairing.pdf
-uint64 pairNumbers(uint32 number1, uint32 number2);
+RP3D_FORCE_INLINE uint64 pairNumbers(uint32 number1, uint32 number2) {
+    assert(number1 == std::max(number1, number2));
+    return number1 * number1 + number1 + number2;
+}
+
 
 }
 

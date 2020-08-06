@@ -131,8 +131,6 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         const uint rigidBodyIndex2 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity2);
 
         // Get the two bodies of the contact
-        assert(body1 != nullptr);
-        assert(body2 != nullptr);
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity1));
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity2));
 

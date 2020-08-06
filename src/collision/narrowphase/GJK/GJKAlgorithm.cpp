@@ -64,8 +64,8 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
         decimal prevDistSquare;
         bool contactFound = false;
 
-        assert(narrowPhaseInfoBatch.narrowPhaseInfo[[batchIndex].collisionShape1->isConvex());
-        assert(narrowPhaseInfoBatch.narrowPhaseInfo[[batchIndex].collisionShape2->isConvex());
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1->isConvex());
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2->isConvex());
 
         const ConvexShape* shape1 = static_cast<const ConvexShape*>(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1);
         const ConvexShape* shape2 = static_cast<const ConvexShape*>(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2);

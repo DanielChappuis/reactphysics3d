@@ -192,38 +192,63 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int32, int
             // If the two colliders are from the same body, skip it
             if (body1Entity != body2Entity) {
 
-                // Compute the overlapping pair ID
-                const uint64 pairId = pairNumbers(std::max(nodePair.first, nodePair.second), std::min(nodePair.first, nodePair.second));
+                const uint32 nbEnabledColliderComponents = mCollidersComponents.getNbEnabledComponents();
+                const bool isBody1Enabled = collider1Index < nbEnabledColliderComponents;
+                const bool isBody2Enabled = collider2Index < nbEnabledColliderComponents;
+                bool isBody1Static = false;
+                bool isBody2Static = false;
+                uint32 rigidBody1Index, rigidBody2Index;
+                if (mRigidBodyComponents.hasComponentGetIndex(body1Entity, rigidBody1Index)) {
+                    isBody1Static = mRigidBodyComponents.mBodyTypes[rigidBody1Index] == BodyType::STATIC;
+                }
+                if (mRigidBodyComponents.hasComponentGetIndex(body2Entity, rigidBody2Index)) {
+                    isBody2Static = mRigidBodyComponents.mBodyTypes[rigidBody2Index] == BodyType::STATIC;
+                }
 
-                // Check if the overlapping pair already exists
-                auto it = mOverlappingPairs.mMapPairIdToPairIndex.find(pairId);
-                if (it == mOverlappingPairs.mMapPairIdToPairIndex.end()) {
+                const bool isBody1Active = isBody1Enabled && !isBody1Static;
+                const bool isBody2Active = isBody2Enabled && !isBody2Static;
 
-                    const unsigned short shape1CollideWithMaskBits = mCollidersComponents.mCollideWithMaskBits[collider1Index];
-                    const unsigned short shape2CollideWithMaskBits = mCollidersComponents.mCollideWithMaskBits[collider2Index];
+                if (isBody1Active || isBody2Active) {
 
-                    const unsigned short shape1CollisionCategoryBits = mCollidersComponents.mCollisionCategoryBits[collider1Index];
-                    const unsigned short shape2CollisionCategoryBits = mCollidersComponents.mCollisionCategoryBits[collider2Index];
+                    // Check if the bodies are in the set of bodies that cannot collide between each other
+                    // TODO OPTI : What not use the pairId here ??
+                    const bodypair bodiesIndex = OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity);
+                    if (!mNoCollisionPairs.contains(bodiesIndex)) {
 
-                    // Check if the collision filtering allows collision between the two shapes
-                    if ((shape1CollideWithMaskBits & shape2CollisionCategoryBits) != 0 &&
-                        (shape1CollisionCategoryBits & shape2CollideWithMaskBits) != 0) {
+                        // Compute the overlapping pair ID
+                        const uint64 pairId = pairNumbers(std::max(nodePair.first, nodePair.second), std::min(nodePair.first, nodePair.second));
 
-                        Collider* shape1 = mCollidersComponents.mColliders[collider1Index];
-                        Collider* shape2 = mCollidersComponents.mColliders[collider2Index];
+                        // Check if the overlapping pair already exists
+                        auto it = mOverlappingPairs.mMapPairIdToPairIndex.find(pairId);
+                        if (it == mOverlappingPairs.mMapPairIdToPairIndex.end()) {
 
-                        // Check that at least one collision shape is convex
-                        if (shape1->getCollisionShape()->isConvex() || shape2->getCollisionShape()->isConvex()) {
+                            const unsigned short shape1CollideWithMaskBits = mCollidersComponents.mCollideWithMaskBits[collider1Index];
+                            const unsigned short shape2CollideWithMaskBits = mCollidersComponents.mCollideWithMaskBits[collider2Index];
 
-                            // Add the new overlapping pair
-                            mOverlappingPairs.addPair(shape1, shape2);
+                            const unsigned short shape1CollisionCategoryBits = mCollidersComponents.mCollisionCategoryBits[collider1Index];
+                            const unsigned short shape2CollisionCategoryBits = mCollidersComponents.mCollisionCategoryBits[collider2Index];
+
+                            // Check if the collision filtering allows collision between the two shapes
+                            if ((shape1CollideWithMaskBits & shape2CollisionCategoryBits) != 0 &&
+                                (shape1CollisionCategoryBits & shape2CollideWithMaskBits) != 0) {
+
+                                Collider* shape1 = mCollidersComponents.mColliders[collider1Index];
+                                Collider* shape2 = mCollidersComponents.mColliders[collider2Index];
+
+                                // Check that at least one collision shape is convex
+                                if (shape1->getCollisionShape()->isConvex() || shape2->getCollisionShape()->isConvex()) {
+
+                                    // Add the new overlapping pair
+                                    mOverlappingPairs.addPair(shape1, shape2);
+                                }
+                            }
+                        }
+                        else {
+
+                            // We do not need to test the pair for overlap because it has just been reported that they still overlap
+                            mOverlappingPairs.mNeedToTestOverlap[it->second] = false;
                         }
                     }
-                }
-                else {
-
-                    // We do not need to test the pair for overlap because it has just been reported that they still overlap
-                    mOverlappingPairs.mNeedToTestOverlap[it->second] = false;
                 }
             }
         }
@@ -249,33 +274,30 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]) != -1);
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[i]) != mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]));
 
-        // Check that at least one body is enabled (active and awake) and not static
-        if (mOverlappingPairs.mIsActive[i]) {
 
-            const Entity collider1Entity = mOverlappingPairs.mColliders1[i];
-            const Entity collider2Entity = mOverlappingPairs.mColliders2[i];
+        const Entity collider1Entity = mOverlappingPairs.mColliders1[i];
+        const Entity collider2Entity = mOverlappingPairs.mColliders2[i];
 
-            const uint collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
-            const uint collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
+        const uint collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
+        const uint collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
 
-            CollisionShape* collisionShape1 = mCollidersComponents.mCollisionShapes[collider1Index];
-            CollisionShape* collisionShape2 = mCollidersComponents.mCollisionShapes[collider2Index];
+        CollisionShape* collisionShape1 = mCollidersComponents.mCollisionShapes[collider1Index];
+        CollisionShape* collisionShape2 = mCollidersComponents.mCollisionShapes[collider2Index];
 
-            NarrowPhaseAlgorithmType algorithmType = mOverlappingPairs.mNarrowPhaseAlgorithmType[i];
+        NarrowPhaseAlgorithmType algorithmType = mOverlappingPairs.mNarrowPhaseAlgorithmType[i];
 
-            const bool isCollider1Trigger = mCollidersComponents.mIsTrigger[collider1Index];
-            const bool isCollider2Trigger = mCollidersComponents.mIsTrigger[collider2Index];
-            const bool reportContacts = needToReportContacts && !isCollider1Trigger && !isCollider2Trigger;
+        const bool isCollider1Trigger = mCollidersComponents.mIsTrigger[collider1Index];
+        const bool isCollider2Trigger = mCollidersComponents.mIsTrigger[collider2Index];
+        const bool reportContacts = needToReportContacts && !isCollider1Trigger && !isCollider2Trigger;
 
-            // No middle-phase is necessary, simply create a narrow phase info
-            // for the narrow-phase collision detection
-            narrowPhaseInput.addNarrowPhaseTest(mOverlappingPairs.mPairIds[i], i, collider1Entity, collider2Entity, collisionShape1, collisionShape2,
-                                                      mCollidersComponents.mLocalToWorldTransforms[collider1Index],
-                                                      mCollidersComponents.mLocalToWorldTransforms[collider2Index],
-                                                      algorithmType, reportContacts, mMemoryManager.getSingleFrameAllocator());
+        // No middle-phase is necessary, simply create a narrow phase info
+        // for the narrow-phase collision detection
+        narrowPhaseInput.addNarrowPhaseTest(mOverlappingPairs.mPairIds[i], i, collider1Entity, collider2Entity, collisionShape1, collisionShape2,
+                                                  mCollidersComponents.mLocalToWorldTransforms[collider1Index],
+                                                  mCollidersComponents.mLocalToWorldTransforms[collider2Index],
+                                                  algorithmType, reportContacts, mMemoryManager.getSingleFrameAllocator());
 
-            mOverlappingPairs.mCollidingInCurrentFrame[i] = false;
-        }
+        mOverlappingPairs.mCollidingInCurrentFrame[i] = false;
     }
 
     // For each possible convex vs concave pair of bodies
@@ -287,13 +309,9 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]) != -1);
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[i]) != mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]));
 
-        // Check that at least one body is enabled (active and awake) and not static
-        if (mOverlappingPairs.mIsActive[i]) {
+        computeConvexVsConcaveMiddlePhase(i, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
 
-            computeConvexVsConcaveMiddlePhase(i, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
-
-            mOverlappingPairs.mCollidingInCurrentFrame[i] = false;
-        }
+        mOverlappingPairs.mCollidingInCurrentFrame[i] = false;
     }
 }
 

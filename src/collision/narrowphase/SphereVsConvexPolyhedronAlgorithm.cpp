@@ -57,10 +57,10 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
     // For each item in the batch
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
-        assert(narrowPhaseInfoBatch.narrowPhaseInfo[[batchIndex].collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
-            narrowPhaseInfoBatch.narrowPhaseInfo[[batchIndex].collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-        assert(narrowPhaseInfoBatch.narrowPhaseInfo[[batchIndex].collisionShape1->getType() == CollisionShapeType::SPHERE ||
-            narrowPhaseInfoBatch.narrowPhaseInfo[[batchIndex].collisionShape2->getType() == CollisionShapeType::SPHERE);
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1->getType() == CollisionShapeType::SPHERE ||
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2->getType() == CollisionShapeType::SPHERE);
 
         // Get the last frame collision info
         LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].lastFrameCollisionInfo;

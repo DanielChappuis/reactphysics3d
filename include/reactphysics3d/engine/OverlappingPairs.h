@@ -166,9 +166,6 @@ class OverlappingPairs {
         /// True if we need to test if the convex vs convex overlapping pairs of shapes still overlap
         bool* mNeedToTestOverlap;
 
-        /// True if the overlapping pair is active (at least one body of the pair is active and not static)
-        bool* mIsActive;
-
         /// Array with the pointer to the narrow-phase algorithm for each overlapping pair
         NarrowPhaseAlgorithmType* mNarrowPhaseAlgorithmType;
 
@@ -263,9 +260,6 @@ class OverlappingPairs {
         /// Return the entity of the second collider
         Entity getCollider2(uint64 pairId) const;
 
-        /// Notify if a given pair is active or not
-        void setIsPairActive(uint64 pairId, bool isActive);
-
         /// Return the index of a given overlapping pair in the internal array
         uint64 getPairIndex(uint64 pairId) const;
 
@@ -277,9 +271,6 @@ class OverlappingPairs {
 
         /// Add a new last frame collision info if it does not exist for the given shapes already
         LastFrameCollisionInfo* addLastFrameInfoIfNecessary(uint64 pairIndex, uint32 shapeId1, uint32 shapeId2);
-
-        /// Update whether a given overlapping pair is active or not
-        void updateOverlappingPairIsActive(uint64 pairId);
 
         /// Delete all the obsolete last frame collision info
         void clearObsoleteLastFrameCollisionInfos();
@@ -324,14 +315,6 @@ RP3D_FORCE_INLINE Entity OverlappingPairs::getCollider2(uint64 pairId) const {
     assert(mMapPairIdToPairIndex.containsKey(pairId));
     assert(mMapPairIdToPairIndex[pairId] < mNbPairs);
     return mColliders2[mMapPairIdToPairIndex[pairId]];
-}
-
-// Notify if a given pair is active or not
-RP3D_FORCE_INLINE void OverlappingPairs::setIsPairActive(uint64 pairId, bool isActive) {
-
-    assert(mMapPairIdToPairIndex.containsKey(pairId));
-    assert(mMapPairIdToPairIndex[pairId] < mNbPairs);
-    mIsActive[mMapPairIdToPairIndex[pairId]] = isActive;
 }
 
 // Return the index of a given overlapping pair in the internal array
