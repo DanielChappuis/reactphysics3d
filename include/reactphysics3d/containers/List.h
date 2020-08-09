@@ -313,7 +313,7 @@ class List {
         void addWithoutInit(uint nbElements) {
 
             // If we need to allocate more memory
-            if (mSize == mCapacity) {
+            if ((mSize + nbElements) > mCapacity) {
                 reserve(mCapacity == 0 ? nbElements : (mCapacity + nbElements) * 2);
             }
 
