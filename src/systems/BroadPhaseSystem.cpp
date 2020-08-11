@@ -37,9 +37,9 @@ using namespace reactphysics3d;
 // Constructor
 BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ColliderComponents& collidersComponents,
                                    TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents)
-                    :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE),
+                    :mDynamicAABBTree(collisionDetection.getMemoryManager().getHeapAllocator(), DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE),
                      mCollidersComponents(collidersComponents), mTransformsComponents(transformComponents),
-                     mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
+                     mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getHeapAllocator()),
                      mCollisionDetection(collisionDetection) {
 
 #ifdef IS_RP3D_PROFILING_ENABLED
@@ -211,7 +211,7 @@ void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, Lis
     RP3D_PROFILE("BroadPhaseSystem::computeOverlappingPairs()", mProfiler);
 
     // Get the list of the colliders that have moved or have been created in the last frame
-    List<int> shapesToTest = mMovedShapes.toList(memoryManager.getPoolAllocator());
+    List<int> shapesToTest = mMovedShapes.toList(memoryManager.getHeapAllocator());
 
     // Ask the dynamic AABB tree to report all collision shapes that overlap with the shapes to test
     mDynamicAABBTree.reportAllShapesOverlappingWithShapes(shapesToTest, 0, shapesToTest.size(), overlappingNodes);

@@ -640,6 +640,9 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, List<
         // Get the next node ID to visit
         const int32 nodeIDToVisit = stack.pop();
 
+        assert(nodeIDToVisit >= 0);
+        assert(nodeIDToVisit < mNbAllocatedNodes);
+
         // Skip it if it is a null node
         if (nodeIDToVisit == TreeNode::NULL_TREE_NODE) continue;
 

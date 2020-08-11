@@ -198,13 +198,13 @@ class CollisionDetectionSystem {
         void removeNonOverlappingPairs();
 
         /// Add a lost contact pair (pair of colliders that are not in contact anymore)
-        void addLostContactPair(uint64 overlappingPairIndex);
+        void addLostContactPair(OverlappingPairs::OverlappingPair& overlappingPair);
 
         /// Execute the narrow-phase collision detection algorithm on batches
         bool testNarrowPhaseCollision(NarrowPhaseInput& narrowPhaseInput, bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& allocator);
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
-        void computeConvexVsConcaveMiddlePhase(uint64 pairIndex, MemoryAllocator& allocator,
+        void computeConvexVsConcaveMiddlePhase(OverlappingPairs::ConcaveOverlappingPair& overlappingPair, MemoryAllocator& allocator,
                                                NarrowPhaseInput& narrowPhaseInput);
 
         /// Swap the previous and current contacts lists

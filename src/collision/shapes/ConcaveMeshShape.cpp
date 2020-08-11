@@ -139,7 +139,7 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<V
     aabb.applyScale(Vector3(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z));
 
     // Compute the nodes of the internal AABB tree that are overlapping with the AABB
-    List<int> overlappingNodes(allocator);
+    List<int> overlappingNodes(allocator, 64);
     mDynamicAABBTree.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
 
     const uint nbOverlappingNodes = overlappingNodes.size();

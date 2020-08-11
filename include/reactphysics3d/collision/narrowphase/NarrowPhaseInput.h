@@ -66,10 +66,10 @@ class NarrowPhaseInput {
         NarrowPhaseInput(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs);
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        void addNarrowPhaseTest(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
+        void addNarrowPhaseTest(uint64 pairId, Entity collider1, Entity collider2, CollisionShape* shape1,
                         CollisionShape* shape2, const Transform& shape1Transform,
                         const Transform& shape2Transform, NarrowPhaseAlgorithmType narrowPhaseAlgorithmType, bool reportContacts,
-                        MemoryAllocator& shapeAllocator);
+                        LastFrameCollisionInfo* lastFrameInfo, MemoryAllocator& shapeAllocator);
 
         /// Get a reference to the sphere vs sphere batch
         NarrowPhaseInfoBatch& getSphereVsSphereBatch();
@@ -128,28 +128,29 @@ RP3D_FORCE_INLINE NarrowPhaseInfoBatch &NarrowPhaseInput::getConvexPolyhedronVsC
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-RP3D_FORCE_INLINE void NarrowPhaseInput::addNarrowPhaseTest(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1, CollisionShape* shape2,
+RP3D_FORCE_INLINE void NarrowPhaseInput::addNarrowPhaseTest(uint64 pairId, Entity collider1, Entity collider2, CollisionShape* shape1, CollisionShape* shape2,
                                           const Transform& shape1Transform, const Transform& shape2Transform,
-                                          NarrowPhaseAlgorithmType narrowPhaseAlgorithmType, bool reportContacts, MemoryAllocator& shapeAllocator) {
+                                          NarrowPhaseAlgorithmType narrowPhaseAlgorithmType, bool reportContacts, LastFrameCollisionInfo* lastFrameInfo,
+                                          MemoryAllocator& shapeAllocator) {
 
     switch (narrowPhaseAlgorithmType) {
         case NarrowPhaseAlgorithmType::SphereVsSphere:
-            mSphereVsSphereBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
+            mSphereVsSphereBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::SphereVsCapsule:
-            mSphereVsCapsuleBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
+            mSphereVsCapsuleBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::CapsuleVsCapsule:
-            mCapsuleVsCapsuleBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
+            mCapsuleVsCapsuleBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::SphereVsConvexPolyhedron:
-            mSphereVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
+            mSphereVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::CapsuleVsConvexPolyhedron:
-            mCapsuleVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
+            mCapsuleVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::ConvexPolyhedronVsConvexPolyhedron:
-            mConvexPolyhedronVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, pairIndex, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, shapeAllocator);
+            mConvexPolyhedronVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
             break;
         case NarrowPhaseAlgorithmType::None:
             // Must never happen

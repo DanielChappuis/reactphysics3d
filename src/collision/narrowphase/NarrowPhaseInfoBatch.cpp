@@ -52,10 +52,11 @@ void NarrowPhaseInfoBatch::reserveMemory() {
 // Clear all the objects in the batch
 void NarrowPhaseInfoBatch::clear() {
 
-    // TODO OPTI : Better manage this
     for (uint i=0; i < narrowPhaseInfos.size(); i++) {
 
         assert(narrowPhaseInfos[i].nbContactPoints == 0);
+
+        // TODO OPTI : Better manage this
 
         // Release the memory of the TriangleShape (this memory was allocated in the
         // MiddlePhaseTriangleCallback::testTriangle() method)

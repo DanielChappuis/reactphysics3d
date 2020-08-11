@@ -236,9 +236,9 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     const AABB rayAABB(Vector3::min(ray.point1, rayEnd), Vector3::max(ray.point1, rayEnd));
 
     // Compute the triangles overlapping with the ray AABB
-    List<Vector3> triangleVertices(allocator);
-    List<Vector3> triangleVerticesNormals(allocator);
-    List<uint> shapeIds(allocator);
+    List<Vector3> triangleVertices(allocator, 64);
+    List<Vector3> triangleVerticesNormals(allocator, 64);
+    List<uint> shapeIds(allocator, 64);
     computeOverlappingTriangles(rayAABB, triangleVertices, triangleVerticesNormals, shapeIds, allocator);
 
     assert(triangleVertices.size() == triangleVerticesNormals.size());

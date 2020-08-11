@@ -59,7 +59,6 @@ struct NarrowPhaseInfoBatch {
         Entity colliderEntity2;
 
         /// Collision info of the previous frame
-        // TODO OPTI : Do we really need to use a pointer here ? why not flat object instead ?
         LastFrameCollisionInfo* lastFrameCollisionInfo;
 
         /// Memory allocator for the collision shape (Used to release TriangleShape memory in destructor)
@@ -124,9 +123,9 @@ struct NarrowPhaseInfoBatch {
         ~NarrowPhaseInfoBatch();
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
+        void addNarrowPhaseInfo(uint64 pairId, Entity collider1, Entity collider2, CollisionShape* shape1,
                                                       CollisionShape* shape2, const Transform& shape1Transform, const Transform& shape2Transform,
-                                                      bool needToReportContacts, MemoryAllocator& shapeAllocator);
+                                                      bool needToReportContacts, LastFrameCollisionInfo* lastFrameInfo, MemoryAllocator& shapeAllocator);
 
         /// Return the number of objects in the batch
         uint getNbObjects() const;
@@ -151,13 +150,9 @@ RP3D_FORCE_INLINE uint NarrowPhaseInfoBatch::getNbObjects() const {
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch
-RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
+RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, Entity collider1, Entity collider2, CollisionShape* shape1,
                                               CollisionShape* shape2, const Transform& shape1Transform, const Transform& shape2Transform,
-                                              bool needToReportContacts, MemoryAllocator& shapeAllocator) {
-
-    // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
-    // TODO OPTI : Can we better manage this
-    LastFrameCollisionInfo* lastFrameInfo = mOverlappingPairs.addLastFrameInfoIfNecessary(pairIndex, shape1->getId(), shape2->getId());
+                                              bool needToReportContacts, LastFrameCollisionInfo* lastFrameInfo, MemoryAllocator& shapeAllocator) {
 
     // Create a meta data object
     narrowPhaseInfos.emplace(pairId, collider1, collider2, lastFrameInfo, shapeAllocator, shape1Transform, shape2Transform, shape1, shape2, needToReportContacts);

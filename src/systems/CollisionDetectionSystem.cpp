@@ -55,8 +55,8 @@ CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, Collider
                    : mMemoryManager(memoryManager), mCollidersComponents(collidersComponents), mRigidBodyComponents(rigidBodyComponents),
                      mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()),
-                     mOverlappingPairs(mMemoryManager.getPoolAllocator(), mMemoryManager.getSingleFrameAllocator(), mCollidersComponents,
-                                       collisionBodyComponents, rigidBodyComponents, mNoCollisionPairs, mCollisionDispatch),
+                     mOverlappingPairs(mMemoryManager, mCollidersComponents, collisionBodyComponents, rigidBodyComponents,
+                                       mNoCollisionPairs, mCollisionDispatch),
                      mBroadPhaseSystem(*this, mCollidersComponents, transformComponents, rigidBodyComponents),
                      mMapBroadPhaseIdToColliderEntity(memoryManager.getPoolAllocator()),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator(), mOverlappingPairs), mPotentialContactPoints(mMemoryManager.getSingleFrameAllocator()),
@@ -102,7 +102,7 @@ void CollisionDetectionSystem::computeBroadPhase() {
     // Ask the broad-phase to compute all the shapes overlapping with the shapes that
     // have moved or have been added in the last frame. This call can only add new
     // overlapping pairs in the collision detection.
-    List<Pair<int32, int32>> overlappingNodes(mMemoryManager.getPoolAllocator(), 32);
+    List<Pair<int32, int32>> overlappingNodes(mMemoryManager.getHeapAllocator(), 32);
     mBroadPhaseSystem.computeOverlappingPairs(mMemoryManager, overlappingNodes);
 
     // Create new overlapping pairs if necessary
@@ -117,25 +117,55 @@ void CollisionDetectionSystem::removeNonOverlappingPairs() {
 
     RP3D_PROFILE("CollisionDetectionSystem::removeNonOverlappingPairs()", mProfiler);
 
-    for (uint64 i=0; i < mOverlappingPairs.getNbPairs(); i++) {
+    // For each convex pairs
+    for (uint64 i=0; i < mOverlappingPairs.mConvexPairs.size(); i++) {
+
+        OverlappingPairs::ConvexOverlappingPair& overlappingPair = mOverlappingPairs.mConvexPairs[i];
 
         // Check if we need to test overlap. If so, test if the two shapes are still overlapping.
         // Otherwise, we destroy the overlapping pair
-        if (mOverlappingPairs.mNeedToTestOverlap[i]) {
+        if (overlappingPair.needToTestOverlap) {
 
-            if(mBroadPhaseSystem.testOverlappingShapes(mOverlappingPairs.mPairBroadPhaseId1[i], mOverlappingPairs.mPairBroadPhaseId2[i])) {
-                mOverlappingPairs.mNeedToTestOverlap[i] = false;
+            if(mBroadPhaseSystem.testOverlappingShapes(overlappingPair.broadPhaseId1, overlappingPair.broadPhaseId2)) {
+                overlappingPair.needToTestOverlap = false;
             }
             else {
 
                 // If the two colliders of the pair were colliding in the previous frame
-                if (mOverlappingPairs.mCollidingInPreviousFrame[i]) {
+                if (overlappingPair.collidingInPreviousFrame) {
 
                     // Create a new lost contact pair
-                    addLostContactPair(i);
+                    addLostContactPair(overlappingPair);
                 }
 
-                mOverlappingPairs.removePair(mOverlappingPairs.mPairIds[i]);
+                mOverlappingPairs.removePair(i, true);
+                i--;
+            }
+        }
+    }
+
+    // For each concave pairs
+    for (uint64 i=0; i < mOverlappingPairs.mConcavePairs.size(); i++) {
+
+        OverlappingPairs::ConcaveOverlappingPair& overlappingPair = mOverlappingPairs.mConcavePairs[i];
+
+        // Check if we need to test overlap. If so, test if the two shapes are still overlapping.
+        // Otherwise, we destroy the overlapping pair
+        if (overlappingPair.needToTestOverlap) {
+
+            if(mBroadPhaseSystem.testOverlappingShapes(overlappingPair.broadPhaseId1, overlappingPair.broadPhaseId2)) {
+                overlappingPair.needToTestOverlap = false;
+            }
+            else {
+
+                // If the two colliders of the pair were colliding in the previous frame
+                if (overlappingPair.collidingInPreviousFrame) {
+
+                    // Create a new lost contact pair
+                    addLostContactPair(overlappingPair);
+                }
+
+                mOverlappingPairs.removePair(i, false);
                 i--;
             }
         }
@@ -143,20 +173,20 @@ void CollisionDetectionSystem::removeNonOverlappingPairs() {
 }
 
 // Add a lost contact pair (pair of colliders that are not in contact anymore)
-void CollisionDetectionSystem::addLostContactPair(uint64 overlappingPairIndex) {
+void CollisionDetectionSystem::addLostContactPair(OverlappingPairs::OverlappingPair& overlappingPair) {
 
-    const Entity collider1Entity = mOverlappingPairs.mColliders1[overlappingPairIndex];
-    const Entity collider2Entity = mOverlappingPairs.mColliders2[overlappingPairIndex];
+    const uint32 collider1Index = mCollidersComponents.getEntityIndex(overlappingPair.collider1);
+    const uint32 collider2Index = mCollidersComponents.getEntityIndex(overlappingPair.collider2);
 
-    const Entity body1Entity = mCollidersComponents.getBody(collider1Entity);
-    const Entity body2Entity = mCollidersComponents.getBody(collider2Entity);
+    const Entity body1Entity = mCollidersComponents.mBodiesEntities[collider1Index];
+    const Entity body2Entity = mCollidersComponents.mBodiesEntities[collider2Index];
 
-    const bool isCollider1Trigger = mCollidersComponents.getIsTrigger(collider1Entity);
-    const bool isCollider2Trigger = mCollidersComponents.getIsTrigger(collider2Entity);
+    const bool isCollider1Trigger = mCollidersComponents.mIsTrigger[collider1Index];
+    const bool isCollider2Trigger = mCollidersComponents.mIsTrigger[collider2Index];
     const bool isTrigger = isCollider1Trigger || isCollider2Trigger;
 
     // Create a lost contact pair
-    ContactPair lostContactPair(mOverlappingPairs.mPairIds[overlappingPairIndex], body1Entity, body2Entity, collider1Entity, collider2Entity, mLostContactPairs.size(),
+    ContactPair lostContactPair(overlappingPair.pairID, body1Entity, body2Entity, overlappingPair.collider1, overlappingPair.collider2, mLostContactPairs.size(),
                                 true, isTrigger);
     mLostContactPairs.add(lostContactPair);
 }
@@ -219,8 +249,8 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int32, int
                         const uint64 pairId = pairNumbers(std::max(nodePair.first, nodePair.second), std::min(nodePair.first, nodePair.second));
 
                         // Check if the overlapping pair already exists
-                        auto it = mOverlappingPairs.mMapPairIdToPairIndex.find(pairId);
-                        if (it == mOverlappingPairs.mMapPairIdToPairIndex.end()) {
+                        OverlappingPairs::OverlappingPair* overlappingPair = mOverlappingPairs.getOverlappingPair(pairId);
+                        if (overlappingPair == nullptr) {
 
                             const unsigned short shape1CollideWithMaskBits = mCollidersComponents.mCollideWithMaskBits[collider1Index];
                             const unsigned short shape2CollideWithMaskBits = mCollidersComponents.mCollideWithMaskBits[collider2Index];
@@ -236,17 +266,19 @@ void CollisionDetectionSystem::updateOverlappingPairs(const List<Pair<int32, int
                                 Collider* shape2 = mCollidersComponents.mColliders[collider2Index];
 
                                 // Check that at least one collision shape is convex
-                                if (shape1->getCollisionShape()->isConvex() || shape2->getCollisionShape()->isConvex()) {
+                                const bool isShape1Convex = shape1->getCollisionShape()->isConvex();
+                                const bool isShape2Convex = shape2->getCollisionShape()->isConvex();
+                                if (isShape1Convex || isShape2Convex) {
 
                                     // Add the new overlapping pair
-                                    mOverlappingPairs.addPair(shape1, shape2);
+                                    mOverlappingPairs.addPair(collider1Index, collider2Index, isShape1Convex && isShape2Convex);
                                 }
                             }
                         }
                         else {
 
                             // We do not need to test the pair for overlap because it has just been reported that they still overlap
-                            mOverlappingPairs.mNeedToTestOverlap[it->second] = false;
+                            overlappingPair->needToTestOverlap = false;
                         }
                     }
                 }
@@ -267,16 +299,18 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
     mOverlappingPairs.clearObsoleteLastFrameCollisionInfos();
 
     // For each possible convex vs convex pair of bodies
-    const uint64 nbConvexVsConvexPairs = mOverlappingPairs.getNbConvexVsConvexPairs();
+    const uint64 nbConvexVsConvexPairs = mOverlappingPairs.mConvexPairs.size();
     for (uint64 i=0; i < nbConvexVsConvexPairs; i++) {
 
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[i]) != -1);
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]) != -1);
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[i]) != mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]));
+        OverlappingPairs::ConvexOverlappingPair& overlappingPair = mOverlappingPairs.mConvexPairs[i];
+
+        assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider1) != -1);
+        assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider2) != -1);
+        assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider1) != mCollidersComponents.getBroadPhaseId(overlappingPair.collider2));
 
 
-        const Entity collider1Entity = mOverlappingPairs.mColliders1[i];
-        const Entity collider2Entity = mOverlappingPairs.mColliders2[i];
+        const Entity collider1Entity = overlappingPair.collider1;
+        const Entity collider2Entity = overlappingPair.collider2;
 
         const uint collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
         const uint collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
@@ -284,7 +318,7 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         CollisionShape* collisionShape1 = mCollidersComponents.mCollisionShapes[collider1Index];
         CollisionShape* collisionShape2 = mCollidersComponents.mCollisionShapes[collider2Index];
 
-        NarrowPhaseAlgorithmType algorithmType = mOverlappingPairs.mNarrowPhaseAlgorithmType[i];
+        NarrowPhaseAlgorithmType algorithmType = overlappingPair.narrowPhaseAlgorithmType;
 
         const bool isCollider1Trigger = mCollidersComponents.mIsTrigger[collider1Index];
         const bool isCollider2Trigger = mCollidersComponents.mIsTrigger[collider2Index];
@@ -292,32 +326,34 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
 
         // No middle-phase is necessary, simply create a narrow phase info
         // for the narrow-phase collision detection
-        narrowPhaseInput.addNarrowPhaseTest(mOverlappingPairs.mPairIds[i], i, collider1Entity, collider2Entity, collisionShape1, collisionShape2,
-                                                  mCollidersComponents.mLocalToWorldTransforms[collider1Index],
-                                                  mCollidersComponents.mLocalToWorldTransforms[collider2Index],
-                                                  algorithmType, reportContacts, mMemoryManager.getSingleFrameAllocator());
+        narrowPhaseInput.addNarrowPhaseTest(overlappingPair.pairID, collider1Entity, collider2Entity, collisionShape1, collisionShape2,
+                                            mCollidersComponents.mLocalToWorldTransforms[collider1Index],
+                                            mCollidersComponents.mLocalToWorldTransforms[collider2Index],
+                                            algorithmType, reportContacts, &overlappingPair.lastFrameCollisionInfo,
+                                            mMemoryManager.getSingleFrameAllocator());
 
-        mOverlappingPairs.mCollidingInCurrentFrame[i] = false;
+        overlappingPair.collidingInCurrentFrame = false;
     }
 
     // For each possible convex vs concave pair of bodies
-    const uint64 convexVsConcaveStartIndex = mOverlappingPairs.getConvexVsConcavePairsStartIndex();
-    const uint64 nbConvexVsConcavePairs = mOverlappingPairs.getNbConvexVsConcavePairs();
-    for (uint64 i=convexVsConcaveStartIndex; i < convexVsConcaveStartIndex + nbConvexVsConcavePairs; i++) {
+    const uint64 nbConcavePairs = mOverlappingPairs.mConcavePairs.size();
+    for (uint64 i=0; i < nbConcavePairs; i++) {
 
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[i]) != -1);
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]) != -1);
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[i]) != mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[i]));
+        OverlappingPairs::ConcaveOverlappingPair& overlappingPair = mOverlappingPairs.mConcavePairs[i];
 
-        computeConvexVsConcaveMiddlePhase(i, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
+        assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider1) != -1);
+        assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider2) != -1);
+        assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider1) != mCollidersComponents.getBroadPhaseId(overlappingPair.collider2));
 
-        mOverlappingPairs.mCollidingInCurrentFrame[i] = false;
+        computeConvexVsConcaveMiddlePhase(overlappingPair, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
+
+        overlappingPair.collidingInCurrentFrame = false;
     }
 }
 
 // Compute the middle-phase collision detection
-void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>& convexPairs, List<uint64>& concavePairs, NarrowPhaseInput& narrowPhaseInput,
-                                                                   bool reportContacts) {
+void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>& convexPairs, List<uint64>& concavePairs,
+                                                                   NarrowPhaseInput& narrowPhaseInput, bool reportContacts) {
 
     RP3D_PROFILE("CollisionDetectionSystem::computeMiddlePhase()", mProfiler);
 
@@ -333,11 +369,11 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>&
 
         const uint64 pairId = convexPairs[p];
 
-        const uint64 pairIndex = mOverlappingPairs.mMapPairIdToPairIndex[pairId];
-        assert(pairIndex < mOverlappingPairs.getNbPairs());
+        const uint64 pairIndex = mOverlappingPairs.mMapConvexPairIdToPairIndex[pairId];
+        assert(pairIndex < mOverlappingPairs.mConvexPairs.size());
 
-        const Entity collider1Entity = mOverlappingPairs.mColliders1[pairIndex];
-        const Entity collider2Entity = mOverlappingPairs.mColliders2[pairIndex];
+        const Entity collider1Entity = mOverlappingPairs.mConvexPairs[pairIndex].collider1;
+        const Entity collider2Entity = mOverlappingPairs.mConvexPairs[pairIndex].collider2;
 
         const uint collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
         const uint collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
@@ -349,14 +385,14 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>&
         CollisionShape* collisionShape1 = mCollidersComponents.mCollisionShapes[collider1Index];
         CollisionShape* collisionShape2 = mCollidersComponents.mCollisionShapes[collider2Index];
 
-        NarrowPhaseAlgorithmType algorithmType = mOverlappingPairs.mNarrowPhaseAlgorithmType[pairIndex];
+        NarrowPhaseAlgorithmType algorithmType = mOverlappingPairs.mConvexPairs[pairIndex].narrowPhaseAlgorithmType;
 
         // No middle-phase is necessary, simply create a narrow phase info
         // for the narrow-phase collision detection
-        narrowPhaseInput.addNarrowPhaseTest(pairId, pairIndex, collider1Entity, collider2Entity, collisionShape1, collisionShape2,
+        narrowPhaseInput.addNarrowPhaseTest(pairId, collider1Entity, collider2Entity, collisionShape1, collisionShape2,
                                                   mCollidersComponents.mLocalToWorldTransforms[collider1Index],
                                                   mCollidersComponents.mLocalToWorldTransforms[collider2Index],
-                                                  algorithmType, reportContacts, mMemoryManager.getSingleFrameAllocator());
+                                                  algorithmType, reportContacts, &mOverlappingPairs.mConvexPairs[pairIndex].lastFrameCollisionInfo, mMemoryManager.getSingleFrameAllocator());
 
     }
 
@@ -365,23 +401,23 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>&
     for (uint p=0; p < nbConcavePairs; p++) {
 
         const uint64 pairId = concavePairs[p];
-        const uint64 pairIndex = mOverlappingPairs.mMapPairIdToPairIndex[pairId];
+        const uint64 pairIndex = mOverlappingPairs.mMapConcavePairIdToPairIndex[pairId];
 
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[pairIndex]) != -1);
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[pairIndex]) != -1);
-        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[pairIndex]) != mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[pairIndex]));
+        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mConcavePairs[pairIndex].collider1) != -1);
+        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mConcavePairs[pairIndex].collider2) != -1);
+        assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mConcavePairs[pairIndex].collider1) != mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mConcavePairs[pairIndex].collider2));
 
-        computeConvexVsConcaveMiddlePhase(pairIndex, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
+        computeConvexVsConcaveMiddlePhase(mOverlappingPairs.mConcavePairs[pairIndex], mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
     }
 }
 
 // Compute the concave vs convex middle-phase algorithm for a given pair of bodies
-void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairIndex, MemoryAllocator& allocator, NarrowPhaseInput& narrowPhaseInput) {
+void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPairs::ConcaveOverlappingPair& overlappingPair, MemoryAllocator& allocator, NarrowPhaseInput& narrowPhaseInput) {
 
     RP3D_PROFILE("CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase()", mProfiler);
 
-    const Entity collider1 = mOverlappingPairs.mColliders1[pairIndex];
-    const Entity collider2 = mOverlappingPairs.mColliders2[pairIndex];
+    const Entity collider1 = overlappingPair.collider1;
+    const Entity collider2 = overlappingPair.collider2;
 
     const uint collider1Index = mCollidersComponents.getEntityIndex(collider1);
     const uint collider2Index = mCollidersComponents.getEntityIndex(collider2);
@@ -394,8 +430,7 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairInde
     // Collision shape 1 is convex, collision shape 2 is concave
     ConvexShape* convexShape;
     ConcaveShape* concaveShape;
-    const bool isShape1Convex = mOverlappingPairs.mIsShape1Convex[pairIndex];
-    if (isShape1Convex) {
+    if (overlappingPair.isShape1Convex) {
         convexShape = static_cast<ConvexShape*>(mCollidersComponents.mCollisionShapes[collider1Index]);
         concaveShape = static_cast<ConcaveShape*>(mCollidersComponents.mCollisionShapes[collider2Index]);
         convexToConcaveTransform = shape2LocalToWorldTransform.getInverse() * shape1LocalToWorldTransform;
@@ -408,16 +443,16 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairInde
 
     assert(convexShape->isConvex());
     assert(!concaveShape->isConvex());
-    assert(mOverlappingPairs.mNarrowPhaseAlgorithmType[pairIndex] != NarrowPhaseAlgorithmType::None);
+    assert(overlappingPair.narrowPhaseAlgorithmType != NarrowPhaseAlgorithmType::None);
 
     // Compute the convex shape AABB in the local-space of the convex shape
     AABB aabb;
     convexShape->computeAABB(aabb, convexToConcaveTransform);
 
     // Compute the concave shape triangles that are overlapping with the convex mesh AABB
-    List<Vector3> triangleVertices(allocator);
-    List<Vector3> triangleVerticesNormals(allocator);
-    List<uint> shapeIds(allocator);
+    List<Vector3> triangleVertices(allocator, 64);
+    List<Vector3> triangleVerticesNormals(allocator, 64);
+    List<uint> shapeIds(allocator, 64);
     concaveShape->computeOverlappingTriangles(aabb, triangleVertices, triangleVerticesNormals, shapeIds, allocator);
 
     assert(triangleVertices.size() == triangleVerticesNormals.size());
@@ -429,10 +464,20 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairInde
     const bool isCollider2Trigger = mCollidersComponents.mIsTrigger[collider2Index];
     const bool reportContacts = !isCollider1Trigger && !isCollider2Trigger;
 
+    CollisionShape* shape1;
+    CollisionShape* shape2;
+
+    if (overlappingPair.isShape1Convex) {
+        shape1 = convexShape;
+    }
+    else {
+        shape2 = convexShape;
+    }
+
     // For each overlapping triangle
     const uint nbShapeIds = shapeIds.size();
-    for (uint i=0; i < nbShapeIds; i++)
-    {
+    for (uint i=0; i < nbShapeIds; i++) {
+
         // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
         // destructor of the corresponding NarrowPhaseInfo.
         TriangleShape* triangleShape = new (allocator.allocate(sizeof(TriangleShape)))
@@ -446,11 +491,20 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairInde
 
     #endif
 
+        if (overlappingPair.isShape1Convex) {
+            shape2 = triangleShape;
+        }
+        else {
+            shape1 = triangleShape;
+        }
+
+        // Add a collision info for the two collision shapes into the overlapping pair (if not present yet)
+        LastFrameCollisionInfo* lastFrameInfo = overlappingPair.addLastFrameInfoIfNecessary(shape1->getId(), shape2->getId());
+
         // Create a narrow phase info for the narrow-phase collision detection
-        narrowPhaseInput.addNarrowPhaseTest(mOverlappingPairs.mPairIds[pairIndex], pairIndex, collider1, collider2, isShape1Convex ? convexShape : triangleShape,
-                                                isShape1Convex ? triangleShape : convexShape,
-                                                shape1LocalToWorldTransform, shape2LocalToWorldTransform,
-                                                mOverlappingPairs.mNarrowPhaseAlgorithmType[pairIndex], reportContacts, allocator);
+        narrowPhaseInput.addNarrowPhaseTest(overlappingPair.pairID, collider1, collider2, shape1, shape2,
+                                            shape1LocalToWorldTransform, shape2LocalToWorldTransform,
+                                            overlappingPair.narrowPhaseAlgorithmType, reportContacts, lastFrameInfo, allocator);
     }
 }
 
@@ -624,7 +678,8 @@ void CollisionDetectionSystem::notifyOverlappingPairsToTestOverlap(Collider* col
     // Get the overlapping pairs involved with this collider
     List<uint64>& overlappingPairs = mCollidersComponents.getOverlappingPairs(collider->getEntity());
 
-    for (uint i=0; i < overlappingPairs.size(); i++) {
+    const uint nbPairs = overlappingPairs.size();
+    for (uint i=0; i < nbPairs; i++) {
 
         // Notify that the overlapping pair needs to be testbed for overlap
         mOverlappingPairs.setNeedToTestOverlap(overlappingPairs[i], true);
@@ -802,17 +857,34 @@ void CollisionDetectionSystem::createContacts() {
 // Compute the lost contact pairs (contact pairs in contact in the previous frame but not in the current one)
 void CollisionDetectionSystem::computeLostContactPairs() {
 
-    // For each overlapping pair
-    for (uint i=0; i < mOverlappingPairs.getNbPairs(); i++) {
+    // For each convex pair
+    const uint nbConvexPairs = mOverlappingPairs.mConvexPairs.size();
+    for (uint i=0; i < nbConvexPairs; i++) {
 
         // If the two colliders of the pair were colliding in the previous frame but not in the current one
-        if (mOverlappingPairs.mCollidingInPreviousFrame[i] && !mOverlappingPairs.mCollidingInCurrentFrame[i]) {
+        if (mOverlappingPairs.mConvexPairs[i].collidingInPreviousFrame && !mOverlappingPairs.mConvexPairs[i].collidingInCurrentFrame) {
 
             // If both bodies still exist
-            if (mCollidersComponents.hasComponent(mOverlappingPairs.mColliders1[i]) && mCollidersComponents.hasComponent(mOverlappingPairs.mColliders2[i])) {
+            if (mCollidersComponents.hasComponent(mOverlappingPairs.mConvexPairs[i].collider1) && mCollidersComponents.hasComponent(mOverlappingPairs.mConvexPairs[i].collider2)) {
 
                 // Create a lost contact pair
-                addLostContactPair(i);
+                addLostContactPair(mOverlappingPairs.mConvexPairs[i]);
+            }
+        }
+    }
+
+    // For each convex pair
+    const uint nbConcavePairs = mOverlappingPairs.mConcavePairs.size();
+    for (uint i=0; i < nbConcavePairs; i++) {
+
+        // If the two colliders of the pair were colliding in the previous frame but not in the current one
+        if (mOverlappingPairs.mConcavePairs[i].collidingInPreviousFrame && !mOverlappingPairs.mConcavePairs[i].collidingInCurrentFrame) {
+
+            // If both bodies still exist
+            if (mCollidersComponents.hasComponent(mOverlappingPairs.mConcavePairs[i].collider1) && mCollidersComponents.hasComponent(mOverlappingPairs.mConcavePairs[i].collider2)) {
+
+                // Create a lost contact pair
+                addLostContactPair(mOverlappingPairs.mConcavePairs[i]);
             }
         }
     }
@@ -1025,13 +1097,14 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
     // For each narrow phase info object
     for(uint i=0; i < nbObjects; i++) {
 
-        const uint64 pairId = narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId;
-        const uint64 pairIndex = mOverlappingPairs.mMapPairIdToPairIndex[pairId];
-
         // If the two colliders are colliding
         if (narrowPhaseInfoBatch.narrowPhaseInfos[i].isColliding) {
 
-            mOverlappingPairs.mCollidingInCurrentFrame[pairIndex] = true;
+            const uint64 pairId = narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId;
+            OverlappingPairs::OverlappingPair* overlappingPair = mOverlappingPairs.getOverlappingPair(pairId);
+            assert(overlappingPair != nullptr);
+
+            overlappingPair->collidingInCurrentFrame = true;
 
             const Entity collider1Entity = narrowPhaseInfoBatch.narrowPhaseInfos[i].colliderEntity1;
             const Entity collider2Entity = narrowPhaseInfoBatch.narrowPhaseInfos[i].colliderEntity2;
@@ -1043,8 +1116,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
             const Entity body2Entity = mCollidersComponents.mBodiesEntities[collider2Index];
 
             // If we have a convex vs convex collision (if we consider the base collision shapes of the colliders)
-            if (mCollidersComponents.mCollisionShapes[collider1Index]->isConvex() &&
-                mCollidersComponents.mCollisionShapes[collider2Index]->isConvex()) {
+            if (mCollidersComponents.mCollisionShapes[collider1Index]->isConvex() && mCollidersComponents.mCollisionShapes[collider2Index]->isConvex()) {
 
                 // Create a new ContactPair
 
@@ -1055,7 +1127,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                 const uint newContactPairIndex = contactPairs->size();
 
                 contactPairs->emplace(pairId, body1Entity, body2Entity, collider1Entity, collider2Entity,
-                                      newContactPairIndex, mOverlappingPairs.getCollidingInPreviousFrame(pairId), isTrigger);
+                                      newContactPairIndex, overlappingPair->collidingInPreviousFrame, isTrigger);
 
                 ContactPair* pairContact = &((*contactPairs)[newContactPairIndex]);
 
@@ -1102,7 +1174,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
                     const uint newContactPairIndex = contactPairs->size();
                     contactPairs->emplace(pairId, body1Entity, body2Entity, collider1Entity, collider2Entity,
-                                                       newContactPairIndex, mOverlappingPairs.getCollidingInPreviousFrame(pairId), isTrigger);
+                                                       newContactPairIndex, overlappingPair->collidingInPreviousFrame , isTrigger);
                     pairContact = &((*contactPairs)[newContactPairIndex]);
                     mapPairIdToContactPairIndex.add(Pair<uint64, uint>(pairId, newContactPairIndex));
 
@@ -1236,9 +1308,7 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(List<ContactPair>
             // If there are two many contact points in the manifold
             if (manifold.nbPotentialContactPoints > MAX_CONTACT_POINTS_IN_MANIFOLD) {
 
-                Entity collider1 = mOverlappingPairs.mColliders1[mOverlappingPairs.mMapPairIdToPairIndex[manifold.pairId]];
-
-                Transform shape1LocalToWorldTransoform = mCollidersComponents.getLocalToWorldTransform(collider1);
+                Transform shape1LocalToWorldTransoform = mCollidersComponents.getLocalToWorldTransform(pairContact.collider1Entity);
 
                 // Reduce the number of contact points in the manifold
                 reduceContactPoints(manifold, shape1LocalToWorldTransoform, potentialContactPoints);
@@ -1655,18 +1725,25 @@ void CollisionDetectionSystem::testCollision(CollisionCallback& callback) {
 // Filter the overlapping pairs to keep only the pairs where a given body is involved
 void CollisionDetectionSystem::filterOverlappingPairs(Entity bodyEntity, List<uint64>& convexPairs, List<uint64>& concavePairs) const {
 
-    // For each possible collision pair of bodies
-    for (uint i=0; i < mOverlappingPairs.getNbPairs(); i++) {
+    // For each convex pairs
+    const uint nbConvexPairs = mOverlappingPairs.mConvexPairs.size();
+    for (uint i=0; i < nbConvexPairs; i++) {
 
-        if (mCollidersComponents.getBody(mOverlappingPairs.mColliders1[i]) == bodyEntity ||
-            mCollidersComponents.getBody(mOverlappingPairs.mColliders2[i]) == bodyEntity) {
+        if (mCollidersComponents.getBody(mOverlappingPairs.mConvexPairs[i].collider1) == bodyEntity ||
+            mCollidersComponents.getBody(mOverlappingPairs.mConvexPairs[i].collider2) == bodyEntity) {
 
-            if (i < mOverlappingPairs.getNbConvexVsConvexPairs()) {
-                convexPairs.add(mOverlappingPairs.mPairIds[i]);
-            }
-            else {
-                concavePairs.add(mOverlappingPairs.mPairIds[i]);
-            }
+            convexPairs.add(mOverlappingPairs.mConvexPairs[i].pairID);
+        }
+    }
+
+    // For each concave pairs
+    const uint nbConcavePairs = mOverlappingPairs.mConcavePairs.size();
+    for (uint i=0; i < nbConcavePairs; i++) {
+
+        if (mCollidersComponents.getBody(mOverlappingPairs.mConcavePairs[i].collider1) == bodyEntity ||
+            mCollidersComponents.getBody(mOverlappingPairs.mConcavePairs[i].collider2) == bodyEntity) {
+
+            concavePairs.add(mOverlappingPairs.mConcavePairs[i].pairID);
         }
     }
 }
@@ -1674,21 +1751,31 @@ void CollisionDetectionSystem::filterOverlappingPairs(Entity bodyEntity, List<ui
 // Filter the overlapping pairs to keep only the pairs where two given bodies are involved
 void CollisionDetectionSystem::filterOverlappingPairs(Entity body1Entity, Entity body2Entity, List<uint64>& convexPairs, List<uint64>& concavePairs) const {
 
-    // For each possible collision pair of bodies
-    for (uint i=0; i < mOverlappingPairs.getNbPairs(); i++) {
+    // For each convex pair
+    const uint nbConvexPairs = mOverlappingPairs.mConvexPairs.size();
+    for (uint i=0; i < nbConvexPairs; i++) {
 
-        const Entity collider1Body = mCollidersComponents.getBody(mOverlappingPairs.mColliders1[i]);
-        const Entity collider2Body = mCollidersComponents.getBody(mOverlappingPairs.mColliders2[i]);
+        const Entity collider1Body = mCollidersComponents.getBody(mOverlappingPairs.mConvexPairs[i].collider1);
+        const Entity collider2Body = mCollidersComponents.getBody(mOverlappingPairs.mConvexPairs[i].collider2);
 
         if ((collider1Body == body1Entity && collider2Body == body2Entity) ||
             (collider1Body == body2Entity && collider2Body == body1Entity)) {
 
-            if (i < mOverlappingPairs.getNbConvexVsConvexPairs()) {
-                convexPairs.add(mOverlappingPairs.mPairIds[i]);
-            }
-            else {
-                concavePairs.add(mOverlappingPairs.mPairIds[i]);
-            }
+            convexPairs.add(mOverlappingPairs.mConvexPairs[i].pairID);
+        }
+    }
+
+    // For each concave pair
+    const uint nbConcavePairs = mOverlappingPairs.mConcavePairs.size();
+    for (uint i=0; i < nbConcavePairs; i++) {
+
+        const Entity collider1Body = mCollidersComponents.getBody(mOverlappingPairs.mConcavePairs[i].collider1);
+        const Entity collider2Body = mCollidersComponents.getBody(mOverlappingPairs.mConcavePairs[i].collider2);
+
+        if ((collider1Body == body1Entity && collider2Body == body2Entity) ||
+            (collider1Body == body2Entity && collider2Body == body1Entity)) {
+
+            concavePairs.add(mOverlappingPairs.mConcavePairs[i].pairID);
         }
     }
 }
