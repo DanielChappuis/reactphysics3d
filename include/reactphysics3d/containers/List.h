@@ -232,6 +232,11 @@ class List {
         /// Copy constructor
         List(const List<T>& list) : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(list.mAllocator) {
 
+            // If we need to allocate more memory
+            if (list.mCapacity > 0) {
+                reserve(list.mCapacity);
+            }
+
             // All all the elements of the list to the current one
             addRange(list);
         }
@@ -366,6 +371,27 @@ class List {
 
           // Return an iterator pointing to the element after the removed one
           return Iterator(mBuffer, index, mSize);
+        }
+
+        /// Remove an element from the list at a given index and replace it by the last one of the list (if any)
+        void removeAtAndReplaceByLast(uint index) {
+
+            assert(index >= 0 && index < mSize);
+
+            // Call the destructor
+            (static_cast<T*>(mBuffer)[index]).~T();
+
+            // If there is another element in the list
+            if (mSize > 1 && index < (mSize - 1)) {
+
+                // Copy the last element of the list at the location of the removed element
+                new (static_cast<char*>(mBuffer) + index * sizeof(T)) T(static_cast<T*>(mBuffer)[mSize - 1]);
+
+                // Call the destructor of the last element
+                (static_cast<T*>(mBuffer)[mSize - 1]).~T();
+            }
+
+            mSize--;
         }
 
         /// Append another list at the end of the current one
