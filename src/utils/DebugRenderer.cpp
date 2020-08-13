@@ -463,7 +463,7 @@ void DebugRenderer::onContact(const CollisionCallback::CallbackData& callbackDat
                     if (getIsDebugItemDisplayed(DebugItem::CONTACT_POINT)) {
 
                         // Contact point
-                        drawSphere(point, DEFAULT_CONTACT_POINT_SPHERE_RADIUS, mMapDebugItemWithColor[DebugItem::CONTACT_POINT]);
+                        drawSphere(point, mContactPointSphereRadius, mMapDebugItemWithColor[DebugItem::CONTACT_POINT]);
                     }
 
                     if (getIsDebugItemDisplayed(DebugItem::CONTACT_NORMAL)) {
