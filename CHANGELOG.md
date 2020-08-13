@@ -22,6 +22,7 @@ do not hesitate to take a look at the user manual.
 
 - Issue with concave vs convex shape collision detection has been fixed
 - Issue with edge vs edge collision has been fixed in SAT algorithm (wrong contact normal was computed)
+- Issue with sphere radius in DebugRenderer
 - Issue [#157](https://github.com/DanielChappuis/reactphysics3d/issues/157) with matrix to quaternion conversion has been fixed
 
 ## Version 0.8.0 (May 31, 2020)
