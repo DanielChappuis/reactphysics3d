@@ -1215,7 +1215,7 @@ for (int f = 0; f < 6; f++) {
 }
 
 // Create the polygon vertex array
-PolygonaVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 x sizeof(float),
+PolygonVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 * sizeof(float),
 indices, sizeof(int), 6, polygonFaces,
 PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
