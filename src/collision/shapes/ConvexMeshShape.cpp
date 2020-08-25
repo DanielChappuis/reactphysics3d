@@ -106,7 +106,7 @@ void ConvexMeshShape::recalculateBounds() {
 // Raycast method with feedback information
 /// This method implements the technique in the book "Real-time Collision Detection" by
 /// Christer Ericson.
-bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* /*collider*/, MemoryAllocator& /*allocator*/) const {
+bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& /*allocator*/) const {
 
     // Ray direction
     Vector3 direction = ray.point2 - ray.point1;
