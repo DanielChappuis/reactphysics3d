@@ -92,29 +92,25 @@ class Deque {
         T& getItem(size_t virtualIndex) const {
 
             // If the virtual index is valid
-            if (virtualIndex < mSize) {
+            assert (virtualIndex < mSize);
 
-                size_t chunkIndex = mFirstChunkIndex;
-                size_t itemIndex = mFirstItemIndex;
+            size_t chunkIndex = mFirstChunkIndex;
+            size_t itemIndex = mFirstItemIndex;
 
-                const size_t nbItemsFirstChunk = CHUNK_NB_ITEMS - mFirstItemIndex;
-                if (virtualIndex < nbItemsFirstChunk) {
-                   itemIndex += virtualIndex;
-                }
-                else {
-
-                    virtualIndex -= nbItemsFirstChunk;
-                    chunkIndex++;
-
-                    chunkIndex += virtualIndex / CHUNK_NB_ITEMS;
-                    itemIndex = virtualIndex % CHUNK_NB_ITEMS;
-                }
-
-                return mChunks[chunkIndex][itemIndex];
+            const size_t nbItemsFirstChunk = CHUNK_NB_ITEMS - mFirstItemIndex;
+            if (virtualIndex < nbItemsFirstChunk) {
+               itemIndex += virtualIndex;
             }
             else {
-                assert(false);
+
+                virtualIndex -= nbItemsFirstChunk;
+                chunkIndex++;
+
+                chunkIndex += virtualIndex / CHUNK_NB_ITEMS;
+                itemIndex = virtualIndex % CHUNK_NB_ITEMS;
             }
+
+            return mChunks[chunkIndex][itemIndex];
         }
 
         /// Add more chunks
