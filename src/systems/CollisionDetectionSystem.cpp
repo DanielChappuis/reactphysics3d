@@ -1038,18 +1038,18 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                     itbodyContactPairs->second.add(newContactPairIndex);
                 }
                 else {
-                    List<uint> contactPairs(mMemoryManager.getPoolAllocator(), 1);
-                    contactPairs.add(newContactPairIndex);
-                    mapBodyToContactPairs.add(Pair<Entity, List<uint>>(body1Entity, contactPairs));
+                    List<uint> scopeContactPairs(mMemoryManager.getPoolAllocator(), 1);
+                    scopeContactPairs.add(newContactPairIndex);
+                    mapBodyToContactPairs.add(Pair<Entity, List<uint>>(body1Entity, scopeContactPairs));
                 }
                 itbodyContactPairs = mapBodyToContactPairs.find(body2Entity);
                 if (itbodyContactPairs != mapBodyToContactPairs.end()) {
                     itbodyContactPairs->second.add(newContactPairIndex);
                 }
                 else {
-                    List<uint> contactPairs(mMemoryManager.getPoolAllocator(), 1);
-                    contactPairs.add(newContactPairIndex);
-                    mapBodyToContactPairs.add(Pair<Entity, List<uint>>(body2Entity, contactPairs));
+                    List<uint> scopeContactPairs(mMemoryManager.getPoolAllocator(), 1);
+                    scopeContactPairs.add(newContactPairIndex);
+                    mapBodyToContactPairs.add(Pair<Entity, List<uint>>(body2Entity, scopeContactPairs));
                 }
             }
             else { // If a ContactPair already exists for this overlapping pair, we use this one

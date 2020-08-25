@@ -371,11 +371,11 @@ AABB CollisionBody::getAABB() const {
     // For each collider of the body
     for (uint i=1; i < colliderEntities.size(); i++) {
 
-        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+        Collider* scopeCollider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
         // Compute the world-space AABB of the collider
         AABB aabb;
-        collider->getCollisionShape()->computeAABB(aabb, transform * collider->getLocalToBodyTransform());
+        scopeCollider->getCollisionShape()->computeAABB(aabb, transform * scopeCollider->getLocalToBodyTransform());
 
         // Merge the collider AABB with the current body AABB
         bodyAABB.mergeWithAABB(aabb);
