@@ -35,7 +35,7 @@ namespace reactphysics3d {
 // Declarations
 class CollisionShape;
 struct LastFrameCollisionInfo;
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 struct ContactPointInfo;
 
 // Struct NarrowPhaseInfoBatch
