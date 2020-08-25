@@ -36,7 +36,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool SphereVsCapsuleAlgorithm::testCollision(SphereVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchStartIndex, size_t batchNbItems,
-                                             MemoryAllocator& memoryAllocator) {
+                                             MemoryAllocator& /*memoryAllocator*/) {
 
     bool isCollisionFound = false;
 

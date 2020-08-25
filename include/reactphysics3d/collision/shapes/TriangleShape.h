@@ -222,12 +222,12 @@ inline void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
  *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-inline Vector3 TriangleShape::getLocalInertiaTensor(decimal mass) const {
+inline Vector3 TriangleShape::getLocalInertiaTensor(decimal /*mass*/) const {
     return Vector3(0, 0, 0);
 }
 
 // Return true if a point is inside the collision shape
-inline bool TriangleShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+inline bool TriangleShape::testPointInside(const Vector3& /*localPoint*/, Collider* /*collider*/) const {
     return false;
 }
 

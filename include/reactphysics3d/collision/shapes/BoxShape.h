@@ -185,7 +185,7 @@ inline Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 }
 
 // Return true if a point is inside the collision shape
-inline bool BoxShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+inline bool BoxShape::testPointInside(const Vector3& localPoint, Collider* /*collider*/) const {
     return (localPoint.x < mHalfExtents[0] && localPoint.x > -mHalfExtents[0] &&
             localPoint.y < mHalfExtents[1] && localPoint.y > -mHalfExtents[1] &&
             localPoint.z < mHalfExtents[2] && localPoint.z > -mHalfExtents[2]);

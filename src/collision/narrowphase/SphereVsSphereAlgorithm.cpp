@@ -31,7 +31,7 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
 
-bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchStartIndex, size_t batchNbItems, MemoryAllocator& memoryAllocator) {
+bool SphereVsSphereAlgorithm::testCollision(SphereVsSphereNarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchStartIndex, size_t batchNbItems, MemoryAllocator& /*memoryAllocator*/) {
 
     bool isCollisionFound = false;
 

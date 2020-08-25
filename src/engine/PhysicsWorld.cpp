@@ -50,7 +50,7 @@ uint PhysicsWorld::mNbWorlds = 0;
  * @param worldSettings The settings of the world
  * @param profiler Pointer to the profiler
  */
-PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings, Profiler* profiler)
+PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings, Profiler* /*profiler*/)
               : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()), mDebugRenderer(mMemoryManager.getHeapAllocator()),
                 mCollisionBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
                 mTransformComponents(mMemoryManager.getHeapAllocator()), mCollidersComponents(mMemoryManager.getHeapAllocator()),

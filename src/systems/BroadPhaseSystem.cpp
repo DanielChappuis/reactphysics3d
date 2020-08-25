@@ -153,7 +153,7 @@ void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* coll
 }
 
 // Update the broad-phase state of some colliders components
-void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal timeStep) {
+void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal /*timeStep*/) {
 
     RP3D_PROFILE("BroadPhaseSystem::updateCollidersComponents()", mProfiler);
 

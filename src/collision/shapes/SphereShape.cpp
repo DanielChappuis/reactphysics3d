@@ -60,7 +60,7 @@ void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
 }
 
 // Raycast method with feedback information
-bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
+bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& /*allocator*/) const {
 
     const Vector3 m = ray.point1;
     decimal c = m.dot(m) - mMargin * mMargin;
