@@ -70,8 +70,8 @@ void ContactSolverSystem::init(List<ContactManifold>* contactManifolds, List<Con
 
     mTimeStep = timeStep;
 
-    uint nbContactManifolds = mAllContactManifolds->size();
-    uint nbContactPoints = mAllContactPoints->size();
+    size_t nbContactManifolds = mAllContactManifolds->size();
+    size_t nbContactPoints = mAllContactPoints->size();
 
     mNbContactManifolds = 0;
     mNbContactPoints = 0;

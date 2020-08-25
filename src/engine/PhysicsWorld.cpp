@@ -118,8 +118,10 @@ PhysicsWorld::~PhysicsWorld() {
              "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);
 
     // Destroy all the collision bodies that have not been removed
-    for (int i=mCollisionBodies.size() - 1 ; i >= 0; i--) {
-        destroyCollisionBody(mCollisionBodies[i]);
+	// Remark: consider using reverse iterator; don't know exactly why reverse iteration is necessary.
+    //for (int i=mCollisionBodies.size() - 1 ; i >= 0; i--) {
+	for (size_t i = 1, cachedSize = mCollisionBodies.size(); i <= cachedSize; ++i) {
+        destroyCollisionBody(mCollisionBodies[cachedSize - i]);
     }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
@@ -136,8 +138,10 @@ PhysicsWorld::~PhysicsWorld() {
     }
 
     // Destroy all the rigid bodies that have not been removed
-    for (int i=mRigidBodies.size() - 1; i >= 0; i--) {
-        destroyRigidBody(mRigidBodies[i]);
+	// Remark: consider using reverse iterator; don't know exactly why reverse iteration is necessary.
+    //for (int i=mRigidBodies.size() - 1; i >= 0; i--) {
+	for (size_t i = 1, cachedSize = mRigidBodies.size(); i <= cachedSize; ++i) {
+        destroyRigidBody(mRigidBodies[cachedSize - i]);
     }
 
     assert(mJointsComponents.getNbComponents() == 0);
@@ -803,7 +807,7 @@ void PhysicsWorld::createIslands() {
 
                 // For each contact pair in which the current body is involded
                 List<uint>& contactPairs = itBodyContactPairs->second;
-                for (uint p=0; p < contactPairs.size(); p++) {
+                for (size_t p=0; p < contactPairs.size(); p++) {
 
                     ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[contactPairs[p]];
 
@@ -815,10 +819,10 @@ void PhysicsWorld::createIslands() {
                         && !mCollidersComponents.getIsTrigger(pair.collider1Entity) && !mCollidersComponents.getIsTrigger(pair.collider2Entity)) {
 
                         assert(pair.potentialContactManifoldsIndices.size() > 0);
-                        nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
+                        nbTotalManifolds += static_cast<uint>(pair.potentialContactManifoldsIndices.size());
 
                         // Add the contact manifold into the island
-                        mIslands.nbContactManifolds[islandIndex] += pair.potentialContactManifoldsIndices.size();
+                        mIslands.nbContactManifolds[islandIndex] += static_cast<uint>(pair.potentialContactManifoldsIndices.size());
                         pair.isAlreadyInIsland = true;
 
                         const Entity otherBodyEntity = pair.body1Entity == bodyToVisitEntity ? pair.body2Entity : pair.body1Entity;
@@ -1042,7 +1046,7 @@ void PhysicsWorld::setIsGravityEnabled(bool isGravityEnabled) {
  * @param index Index of a CollisionBody in the world
  * @return Constant pointer to a given CollisionBody
  */
-const CollisionBody* PhysicsWorld::getCollisionBody(uint index) const {
+const CollisionBody* PhysicsWorld::getCollisionBody(size_t index) const {
 
     if (index >= getNbCollisionBodies()) {
 
@@ -1060,7 +1064,7 @@ const CollisionBody* PhysicsWorld::getCollisionBody(uint index) const {
  * @param index Index of a CollisionBody in the world
  * @return Pointer to a given CollisionBody
  */
-CollisionBody* PhysicsWorld::getCollisionBody(uint index) {
+CollisionBody* PhysicsWorld::getCollisionBody(size_t index) {
 
     if (index >= getNbCollisionBodies()) {
 
@@ -1078,7 +1082,7 @@ CollisionBody* PhysicsWorld::getCollisionBody(uint index) {
  * @param index Index of a RigidBody in the world
  * @return Constant pointer to a given RigidBody
  */
-const RigidBody* PhysicsWorld::getRigidBody(uint index) const {
+const RigidBody* PhysicsWorld::getRigidBody(size_t index) const {
 
     if (index >= getNbRigidBodies()) {
 
@@ -1096,7 +1100,7 @@ const RigidBody* PhysicsWorld::getRigidBody(uint index) const {
  * @param index Index of a RigidBody in the world
  * @return Pointer to a given RigidBody
  */
-RigidBody* PhysicsWorld::getRigidBody(uint index) {
+RigidBody* PhysicsWorld::getRigidBody(size_t index) {
 
     if (index >= getNbRigidBodies()) {
 

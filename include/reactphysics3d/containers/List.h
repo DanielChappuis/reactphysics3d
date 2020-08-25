@@ -332,7 +332,7 @@ class List {
         }
 
         /// Remove an element from the list at a given index (all the following items will be moved)
-        Iterator removeAt(uint index) {
+        Iterator removeAt(size_t index) {
 
           assert(index >= 0 && index < mSize);
 
@@ -403,13 +403,13 @@ class List {
         }
 
         /// Overloaded index operator
-        T& operator[](const uint index) {
+        T& operator[](const size_t index) {
            assert(index >= 0 && index < mSize);
            return (static_cast<T*>(mBuffer)[index]);
         }
 
         /// Overloaded const index operator
-        const T& operator[](const uint index) const {
+        const T& operator[](const size_t index) const {
            assert(index >= 0 && index < mSize);
            return (static_cast<T*>(mBuffer)[index]);
         }

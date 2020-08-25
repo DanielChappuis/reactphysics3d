@@ -353,7 +353,7 @@ class Map {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Map(MemoryAllocator& allocator, size_t capacity = 0)
+        Map(MemoryAllocator& allocator, int capacity = 0)
             : mNbUsedEntries(0), mNbFreeEntries(0), mCapacity(0), mBuckets(nullptr),
               mEntries(nullptr), mAllocator(allocator), mFreeIndex(-1) {
 
@@ -468,7 +468,7 @@ class Map {
                 }
             }
 
-            size_t entryIndex;
+            int entryIndex;
 
             // If there are free entries to use
             if (mNbFreeEntries > 0) {

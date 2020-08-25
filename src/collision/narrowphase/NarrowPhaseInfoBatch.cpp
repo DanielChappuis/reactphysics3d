@@ -70,7 +70,7 @@ void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, E
 }
 
 // Add a new contact point
-void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth,
+void NarrowPhaseInfoBatch::addContactPoint(size_t index, const Vector3& contactNormal, decimal penDepth,
                      const Vector3& localPt1, const Vector3& localPt2) {
 
     assert(reportContacts[index]);
@@ -88,13 +88,13 @@ void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNor
 }
 
 // Reset the remaining contact points
-void NarrowPhaseInfoBatch::resetContactPoints(uint index) {
+void NarrowPhaseInfoBatch::resetContactPoints(size_t index) {
 
     // Get the memory allocator
     MemoryAllocator& allocator = mOverlappingPairs.getTemporaryAllocator();
 
     // For each remaining contact point info
-    for (uint i=0; i < contactPoints[index].size(); i++) {
+    for (size_t i=0; i < contactPoints[index].size(); i++) {
 
         ContactPointInfo* contactPoint = contactPoints[index][i];
 

@@ -165,10 +165,10 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Return the number of overlapping pairs of bodies
-                uint getNbOverlappingPairs() const;
+                size_t getNbOverlappingPairs() const;
 
                 /// Return a given overlapping pair of bodies
-                OverlapPair getOverlappingPair(uint index) const;
+                OverlapPair getOverlappingPair(size_t index) const;
 
                 // -------------------- Friendship -------------------- //
 
@@ -185,7 +185,7 @@ class OverlapCallback {
 };
 
 // Return the number of overlapping pairs of bodies
-inline uint OverlapCallback::CallbackData::getNbOverlappingPairs() const {
+inline size_t OverlapCallback::CallbackData::getNbOverlappingPairs() const {
     return mContactPairsIndices.size() + mLostContactPairsIndices.size();
 }
 
@@ -193,7 +193,7 @@ inline uint OverlapCallback::CallbackData::getNbOverlappingPairs() const {
 /// Note that the returned OverlapPair object is only valid during the call of the CollisionCallback::onOverlap()
 /// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the OverlapPair
 /// object itself because it won't be valid after the CollisionCallback::onOverlap() call.
-inline OverlapCallback::OverlapPair OverlapCallback::CallbackData::getOverlappingPair(uint index) const {
+inline OverlapCallback::OverlapPair OverlapCallback::CallbackData::getOverlappingPair(size_t index) const {
 
     assert(index < getNbOverlappingPairs());
 

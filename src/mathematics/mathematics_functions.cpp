@@ -301,22 +301,22 @@ List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygon
 
     assert(planesPoints.size() == planesNormals.size());
 
-        uint nbMaxElements = polygonVertices.size() + planesPoints.size();
+        size_t nbMaxElements = polygonVertices.size() + planesPoints.size();
         List<Vector3> inputVertices(allocator, nbMaxElements);
         List<Vector3> outputVertices(allocator, nbMaxElements);
 
         inputVertices.addRange(polygonVertices);
 
         // For each clipping plane
-        for (uint p=0; p<planesPoints.size(); p++) {
+        for (size_t p=0; p<planesPoints.size(); p++) {
 
             outputVertices.clear();
 
-            uint nbInputVertices = inputVertices.size();
-            uint vStart = nbInputVertices - 1;
+            size_t nbInputVertices = inputVertices.size();
+            size_t vStart = nbInputVertices - 1;
 
             // For each edge of the polygon
-            for (uint vEnd = 0; vEnd<nbInputVertices; vEnd++) {
+            for (size_t vEnd = 0; vEnd<nbInputVertices; vEnd++) {
 
                 Vector3& v1 = inputVertices[vStart];
                 Vector3& v2 = inputVertices[vEnd];

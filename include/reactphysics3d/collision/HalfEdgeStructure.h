@@ -100,7 +100,7 @@ class HalfEdgeStructure {
         void init();
 
         /// Add a vertex
-        uint addVertex(uint vertexPointIndex);
+        size_t addVertex(uint vertexPointIndex);
 
         /// Add a face
         void addFace(List<uint> faceVertices);
@@ -129,7 +129,7 @@ class HalfEdgeStructure {
 /**
  * @param vertexPointIndex Index of the vertex in the vertex data array
  */
-inline uint HalfEdgeStructure::addVertex(uint vertexPointIndex) {
+inline size_t HalfEdgeStructure::addVertex(uint vertexPointIndex) {
     Vertex vertex(vertexPointIndex);
     mVertices.add(vertex);
     return mVertices.size() - 1;

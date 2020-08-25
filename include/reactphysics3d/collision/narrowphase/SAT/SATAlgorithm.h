@@ -133,7 +133,7 @@ class SATAlgorithm {
         bool computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPenetrationFaceNormalPolyhedron1, const ConvexPolyhedronShape* polyhedron1,
                                                             const ConvexPolyhedronShape* polyhedron2, const Transform& polyhedron1ToPolyhedron2,
                                                             const Transform& polyhedron2ToPolyhedron1, uint minFaceIndex,
-                                                            NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) const;
+                                                            NarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchIndex) const;
 
 
     public :
@@ -154,24 +154,24 @@ class SATAlgorithm {
 
         /// Test collision between a sphere and a convex mesh
         bool testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                                   uint batchStartIndex, uint batchNbItems) const;
+                                                   size_t batchStartIndex, size_t batchNbItems) const;
 
         /// Test collision between a capsule and a convex mesh
-        bool testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) const;
+        bool testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchIndex) const;
 
         /// Compute the two contact points between a polyhedron and a capsule when the separating axis is a face normal of the polyhedron
         bool computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
                                                        decimal penetrationDepth, const Transform& polyhedronToCapsuleTransform,
                                                        Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
                                                        const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,
-                                                       NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex, bool isCapsuleShape1) const;
+                                                       NarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchIndex, bool isCapsuleShape1) const;
 
         // This method returns true if an edge of a polyhedron and a capsule forms a face of the Minkowski Difference
         bool isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, const Vector3& edgeAdjacentFace1Normal,
                                           const Vector3& edgeAdjacentFace2Normal) const;
 
         /// Test collision between two convex meshes
-        bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems) const;
+        bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchStartIndex, size_t batchNbItems) const;
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 

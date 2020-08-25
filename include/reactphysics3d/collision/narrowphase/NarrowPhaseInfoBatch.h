@@ -56,7 +56,7 @@ struct NarrowPhaseInfoBatch {
         OverlappingPairs& mOverlappingPairs;
 
         /// Cached capacity
-        uint mCachedCapacity = 0;
+        size_t mCachedCapacity = 0;
 
     public:
 
@@ -103,7 +103,7 @@ struct NarrowPhaseInfoBatch {
         virtual ~NarrowPhaseInfoBatch();
 
         /// Return the number of objects in the batch
-        uint getNbObjects() const;
+		size_t getNbObjects() const;
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
         virtual void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
@@ -111,11 +111,11 @@ struct NarrowPhaseInfoBatch {
                                 const Transform& shape2Transform, bool needToReportContacts, MemoryAllocator& shapeAllocator);
 
         /// Add a new contact point
-        virtual void addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth,
+        virtual void addContactPoint(size_t index, const Vector3& contactNormal, decimal penDepth,
                              const Vector3& localPt1, const Vector3& localPt2);
 
         /// Reset the remaining contact points
-        void resetContactPoints(uint index);
+        void resetContactPoints(size_t index);
 
         // Initialize the containers using cached capacity
         virtual void reserveMemory();
@@ -125,7 +125,7 @@ struct NarrowPhaseInfoBatch {
 };
 
 /// Return the number of objects in the batch
-inline uint NarrowPhaseInfoBatch::getNbObjects() const {
+inline size_t NarrowPhaseInfoBatch::getNbObjects() const {
     return overlappingPairIds.size();
 }
 

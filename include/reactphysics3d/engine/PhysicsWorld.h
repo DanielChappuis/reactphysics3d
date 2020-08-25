@@ -435,22 +435,22 @@ class PhysicsWorld {
         void setEventListener(EventListener* eventListener);
 
         /// Return the number of CollisionBody in the physics world
-        uint getNbCollisionBodies() const;
+		size_t getNbCollisionBodies() const;
 
         /// Return a constant pointer to a given CollisionBody of the world
-        const CollisionBody* getCollisionBody(uint index) const;
+        const CollisionBody* getCollisionBody(size_t index) const;
 
         /// Return a pointer to a given CollisionBody of the world
-        CollisionBody* getCollisionBody(uint index) ;
+        CollisionBody* getCollisionBody(size_t index) ;
 
         /// Return the number of RigidBody in the physics world
-        uint getNbRigidBodies() const;
+		size_t getNbRigidBodies() const;
 
         /// Return a constant pointer to a given RigidBody of the world
-        const RigidBody* getRigidBody(uint index) const;
+        const RigidBody* getRigidBody(size_t index) const;
 
         /// Return a pointer to a given RigidBody of the world
-        RigidBody* getRigidBody(uint index) ;
+        RigidBody* getRigidBody(size_t index) ;
 
         /// Return true if the debug rendering is enabled
         bool getIsDebugRenderingEnabled() const;
@@ -706,7 +706,7 @@ inline void PhysicsWorld::setEventListener(EventListener* eventListener) {
 /**
  * @return The number of collision bodies in the physics world
  */
-inline uint PhysicsWorld::getNbCollisionBodies() const {
+inline size_t PhysicsWorld::getNbCollisionBodies() const {
    return mCollisionBodies.size();
 }
 
@@ -714,7 +714,7 @@ inline uint PhysicsWorld::getNbCollisionBodies() const {
 /**
  * @return The number of rigid bodies in the physics world
  */
-inline uint PhysicsWorld::getNbRigidBodies() const {
+inline size_t PhysicsWorld::getNbRigidBodies() const {
    return mRigidBodies.size();
 }
 

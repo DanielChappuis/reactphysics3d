@@ -45,7 +45,7 @@ HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal mi
                                    const void* heightFieldData, HeightDataType dataType, MemoryAllocator& allocator, int upAxis,
                                    decimal integerHeightScale, const Vector3& scaling)
                  : ConcaveShape(CollisionShapeName::HEIGHTFIELD, allocator, scaling), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
-                   mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
+                   mWidth(static_cast<decimal>(nbGridColumns - 1)), mLength(static_cast<decimal>(nbGridRows - 1)), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
                    mHeightDataType(dataType) {
 

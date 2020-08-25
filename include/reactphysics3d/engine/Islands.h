@@ -91,7 +91,7 @@ struct Islands {
         /// Add an island and return its index
         uint32 addIsland(uint32 contactManifoldStartIndex) {
 
-            uint32 islandIndex = contactManifoldsIndices.size();
+            uint32 islandIndex = static_cast<uint32>(contactManifoldsIndices.size());
 
             contactManifoldsIndices.add(contactManifoldStartIndex);
             nbContactManifolds.add(0);

@@ -172,14 +172,14 @@ class CollisionCallback {
                 /**
                  * @return The number of contact points in the contact pair
                  */
-                uint getNbContactPoints() const;
+                size_t getNbContactPoints() const;
 
                 /// Return a given contact point
                 /**
                  * @param index Index of the contact point to retrieve
                  * @return A contact point object
                  */
-                ContactPoint getContactPoint(uint index) const;
+                ContactPoint getContactPoint(size_t index) const;
 
                 /// Return a pointer to the first body in contact
                 /**
@@ -271,14 +271,14 @@ class CollisionCallback {
                 /**
                  * @return The number of contact pairs
                  */
-                uint getNbContactPairs() const;
+                size_t getNbContactPairs() const;
 
                 /// Return a given contact pair
                 /**
                  * @param index Index of the contact pair to retrieve
                  * @return A contact pair object
                  */
-                ContactPair getContactPair(uint index) const;
+                ContactPair getContactPair(size_t index) const;
 
                 // -------------------- Friendship -------------------- //
 
@@ -296,7 +296,7 @@ class CollisionCallback {
 /**
  * @return The number of contact pairs
  */
-inline uint CollisionCallback::CallbackData::getNbContactPairs() const {
+inline size_t CollisionCallback::CallbackData::getNbContactPairs() const {
     return mContactPairsIndices.size() + mLostContactPairsIndices.size();
 }
 
@@ -304,7 +304,7 @@ inline uint CollisionCallback::CallbackData::getNbContactPairs() const {
 /**
  * @return The number of contact points
  */
-inline uint CollisionCallback::ContactPair::getNbContactPoints() const {
+inline size_t CollisionCallback::ContactPair::getNbContactPoints() const {
    return mContactPair.nbToTalContactPoints;
 }
 
