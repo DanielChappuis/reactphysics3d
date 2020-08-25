@@ -184,7 +184,7 @@ bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider
 }
 
 // Return true if a point is inside the collision shape
-bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* /*collider*/) const {
 
     const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
 
