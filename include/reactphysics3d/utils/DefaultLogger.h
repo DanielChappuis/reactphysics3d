@@ -32,6 +32,7 @@
 #include <reactphysics3d/containers/Map.h>
 #include <string>
 #include <iostream>
+#include <locale>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -253,7 +254,7 @@ class DefaultLogger : public Logger {
             /// Convert a string to lower case
             std::string toLowerCase(const std::string& text) {
                 std::string textLower = text;
-                std::transform(textLower.begin(), textLower.end(), textLower.begin(), ::tolower);
+                std::transform(textLower.begin(), textLower.end(), textLower.begin(), [locale=std::locale()](char c) {  return std::tolower(c, locale); });
                 return textLower;
             }
 

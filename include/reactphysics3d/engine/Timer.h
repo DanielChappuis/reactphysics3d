@@ -188,7 +188,7 @@ inline void Timer::update() {
     mLastUpdateTime = currentTime;
 
     // Update the accumulator value
-    mAccumulator += mDeltaTime;
+    mAccumulator += static_cast<double>(mDeltaTime);
 }
 
 }

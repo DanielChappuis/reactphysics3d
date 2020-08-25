@@ -64,7 +64,7 @@ class ConvexPolyhedronVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm 
         ConvexPolyhedronVsConvexPolyhedronAlgorithm& operator=(const ConvexPolyhedronVsConvexPolyhedronAlgorithm& algorithm) = delete;
 
         /// Compute the narrow-phase collision detection between two convex polyhedra
-        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchStartIndex, size_t batchNbItems,
                            bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator);
 };
 

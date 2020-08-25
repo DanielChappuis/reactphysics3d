@@ -171,7 +171,7 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
 
     Vector3 vertices[(NB_SECTORS_SPHERE + 1) * (NB_STACKS_SPHERE + 1) + (NB_SECTORS_SPHERE + 1)];
 
-	const decimal halfHeight = 0.5 * height;
+	const decimal halfHeight = decimal(0.5) * height;
 
 	// Use an even number of stacks
     const uint nbStacks = NB_STACKS_SPHERE % 2 == 0 ? NB_STACKS_SPHERE : NB_STACKS_SPHERE - 1;
@@ -399,11 +399,11 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
 	const bool drawColliderBroadphaseAABB = getIsDebugItemDisplayed(DebugItem::COLLIDER_BROADPHASE_AABB);
 	const bool drawCollisionShape = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE);
 	
-    const uint nbCollisionBodies = world.getNbCollisionBodies();
-    const uint nbRigidBodies = world.getNbRigidBodies();
+    const auto nbCollisionBodies = world.getNbCollisionBodies();
+    const auto nbRigidBodies = world.getNbRigidBodies();
 
     // For each body of the world
-    for (uint b = 0; b < nbCollisionBodies + nbRigidBodies; b++) {
+    for (size_t b = 0; b < nbCollisionBodies + nbRigidBodies; b++) {
 
 		// Get a body
         const CollisionBody* body = b < nbCollisionBodies ? world.getCollisionBody(b) : world.getRigidBody(b - nbCollisionBodies);

@@ -892,29 +892,29 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 decimal lambdaLowerLimit = mSliderJointComponents.mInverseMassMatrixLimit[i] * (-lowerLimitError);
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint of body 1
-                const Vector3 linearImpulseBody1 = -lambdaLowerLimit * mSliderJointComponents.mSliderAxisWorld[i];
-                const Vector3 angularImpulseBody1 = -lambdaLowerLimit * r1PlusUCrossSliderAxis;
+                const Vector3 scopeLinearImpulseBody1 = -lambdaLowerLimit * mSliderJointComponents.mSliderAxisWorld[i];
+                const Vector3 scopeAngularImpulseBody1 = -lambdaLowerLimit * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-                const Vector3 w1 = mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                const Vector3 v1 = inverseMassBody1 * scopeLinearImpulseBody1;
+                const Vector3 scopeW1 = mSliderJointComponents.mI1[i] * scopeAngularImpulseBody1;
 
                 // Update the body position/orientation of body 1
                 x1 += v1;
-                q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+                q1 += Quaternion(0, scopeW1) * q1 * decimal(0.5);
                 q1.normalize();
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
                 const Vector3 linearImpulseBody2 = lambdaLowerLimit * mSliderJointComponents.mSliderAxisWorld[i];
-                const Vector3 angularImpulseBody2 = lambdaLowerLimit * r2CrossSliderAxis;
+                const Vector3 scopeAngularImpulseBody2 = lambdaLowerLimit * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
                 const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-                const Vector3 w2 = mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                const Vector3 scopeW2 = mSliderJointComponents.mI2[i] * scopeAngularImpulseBody2;
 
                 // Update the body position/orientation of body 2
                 x2 += v2;
-                q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+                q2 += Quaternion(0, scopeW2) * q2 * decimal(0.5);
                 q2.normalize();
             }
 
@@ -932,28 +932,28 @@ void SolveSliderJointSystem::solvePositionConstraint() {
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint of body 1
                 const Vector3 linearImpulseBody1 = lambdaUpperLimit * mSliderJointComponents.mSliderAxisWorld[i];
-                const Vector3 angularImpulseBody1 = lambdaUpperLimit * r1PlusUCrossSliderAxis;
+                const Vector3 scopeAngularImpulseBody1 = lambdaUpperLimit * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
                 const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-                const Vector3 w1 = mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                const Vector3 scopeW1 = mSliderJointComponents.mI1[i] * scopeAngularImpulseBody1;
 
                 // Update the body position/orientation of body 1
                 x1 += v1;
-                q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+                q1 += Quaternion(0, scopeW1) * q1 * decimal(0.5);
                 q1.normalize();
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
                 const Vector3 linearImpulseBody2 = -lambdaUpperLimit * mSliderJointComponents.mSliderAxisWorld[i];
-                const Vector3 angularImpulseBody2 = -lambdaUpperLimit * r2CrossSliderAxis;
+                const Vector3 scopeAngularImpulseBody2 = -lambdaUpperLimit * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
                 const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-                const Vector3 w2 = mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                const Vector3 scopeW2 = mSliderJointComponents.mI2[i] * scopeAngularImpulseBody2;
 
                 // Update the body position/orientation of body 2
                 x2 += v2;
-                q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+                q2 += Quaternion(0, scopeW2) * q2 * decimal(0.5);
                 q2.normalize();
             }
         }

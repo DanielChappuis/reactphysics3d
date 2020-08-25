@@ -65,8 +65,8 @@ class SphereVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 		SphereVsCapsuleAlgorithm& operator=(const SphereVsCapsuleAlgorithm& algorithm) = delete;
 
         /// Compute the narrow-phase collision detection between a sphere and a capsule
-        bool testCollision(SphereVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, MemoryAllocator& memoryAllocator);
+        bool testCollision(SphereVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchStartIndex,
+                           size_t batchNbItems, MemoryAllocator& memoryAllocator);
 };
 
 }

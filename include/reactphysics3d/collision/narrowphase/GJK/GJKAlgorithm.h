@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 struct NarrowPhaseInfoBatch;
 class ConvexShape;
 class Profiler;
@@ -97,8 +97,8 @@ class GJKAlgorithm {
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volumes collide.
-        void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, List<GJKResult>& gjkResults);
+        void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, size_t batchStartIndex,
+                           size_t batchNbItems, List<GJKResult>& gjkResults);
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 

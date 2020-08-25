@@ -40,7 +40,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                                       uint batchStartIndex, uint batchNbItems,
+                                                       size_t batchStartIndex, size_t batchNbItems,
                                                        bool clipWithPreviousAxisIfStillColliding,
                                                        MemoryAllocator& memoryAllocator) {
 
@@ -63,7 +63,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
     gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults);
     assert(gjkResults.size() == batchNbItems);
 
-    for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
+    for (size_t batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
         // Get the last frame collision info
         LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
@@ -124,17 +124,17 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
                         // Remove the previous contact point computed by GJK
                         narrowPhaseInfoBatch.resetContactPoints(batchIndex);
 
-                        const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex] : narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex];
-                        const Transform polyhedronToCapsuleTransform = capsuleToWorld.getInverse() * polyhedronToWorld;
+                        const Transform scopeCapsuleToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex] : narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex];
+                        const Transform polyhedronToCapsuleTransform = scopeCapsuleToWorld.getInverse() * polyhedronToWorld;
 
                         // Compute the end-points of the inner segment of the capsule
-                        const Vector3 capsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
-                        const Vector3 capsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
+                        const Vector3 scopeCapsuleSegA(0, -capsuleShape->getHeight() * decimal(0.5), 0);
+                        const Vector3 scopeCapsuleSegB(0, capsuleShape->getHeight() * decimal(0.5), 0);
 
                         // Convert the inner capsule segment points into the polyhedron local-space
                         const Transform capsuleToPolyhedronTransform = polyhedronToCapsuleTransform.getInverse();
-                        const Vector3 capsuleSegAPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegA;
-                        const Vector3 capsuleSegBPolyhedronSpace = capsuleToPolyhedronTransform * capsuleSegB;
+                        const Vector3 capsuleSegAPolyhedronSpace = capsuleToPolyhedronTransform * scopeCapsuleSegA;
+                        const Vector3 capsuleSegBPolyhedronSpace = capsuleToPolyhedronTransform * scopeCapsuleSegB;
 
                         const Vector3 separatingAxisCapsuleSpace = polyhedronToCapsuleTransform.getOrientation() * faceNormal;
 

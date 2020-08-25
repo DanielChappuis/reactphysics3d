@@ -152,7 +152,7 @@ void PolyhedronMesh::computeCentroid() {
         mCentroid += getVertex(v);
     }
 
-    mCentroid /= getNbVertices();
+    mCentroid /= static_cast<decimal>(getNbVertices());
 }
 
 // Compute and return the area of a face

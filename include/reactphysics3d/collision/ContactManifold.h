@@ -34,7 +34,7 @@ namespace reactphysics3d {
 
 // Class declarations
 class ContactManifold;
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 struct ContactPointInfo;
 class CollisionBody;
 class ContactPoint;

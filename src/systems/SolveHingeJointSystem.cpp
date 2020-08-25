@@ -456,16 +456,16 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
                 deltaLambdaLower = mHingeJointComponents.mImpulseLowerLimit[i] - lambdaTemp;
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint of body 1
-                const Vector3 angularImpulseBody1 = -deltaLambdaLower * a1;
+                const Vector3 scopeAngularImpulseBody1 = -deltaLambdaLower * a1;
 
                 // Apply the impulse to the body 1
-                w1 += i1 * angularImpulseBody1;
+                w1 += i1 * scopeAngularImpulseBody1;
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
-                const Vector3 angularImpulseBody2 = deltaLambdaLower * a1;
+                const Vector3 scopeAngularImpulseBody2 = deltaLambdaLower * a1;
 
                 // Apply the impulse to the body 2
-                w2 += i2 * angularImpulseBody2;
+                w2 += i2 * scopeAngularImpulseBody2;
             }
 
             // If the upper limit is violated
@@ -481,16 +481,16 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
                 deltaLambdaUpper = mHingeJointComponents.mImpulseUpperLimit[i] - lambdaTemp;
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint of body 1
-                const Vector3 angularImpulseBody1 = deltaLambdaUpper * a1;
+                const Vector3 scopeAngularImpulseBody1 = deltaLambdaUpper * a1;
 
                 // Apply the impulse to the body 1
-                w1 += i1 * angularImpulseBody1;
+                w1 += i1 * scopeAngularImpulseBody1;
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
-                const Vector3 angularImpulseBody2 = -deltaLambdaUpper * a1;
+                const Vector3 scopeAngularImpulseBody2 = -deltaLambdaUpper * a1;
 
                 // Apply the impulse to the body 2
-                w2 += i2 * angularImpulseBody2;
+                w2 += i2 * scopeAngularImpulseBody2;
             }
         }
 
@@ -510,16 +510,16 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
             deltaLambdaMotor = mHingeJointComponents.mImpulseMotor[i] - lambdaTemp;
 
             // Compute the impulse P=J^T * lambda for the motor of body 1
-            const Vector3 angularImpulseBody1 = -deltaLambdaMotor * a1;
+            const Vector3 scopeAngularImpulseBody1 = -deltaLambdaMotor * a1;
 
             // Apply the impulse to the body 1
-            w1 += i1 * angularImpulseBody1;
+            w1 += i1 * scopeAngularImpulseBody1;
 
             // Compute the impulse P=J^T * lambda for the motor of body 2
-            const Vector3 angularImpulseBody2 = deltaLambdaMotor * a1;
+            const Vector3 scopeAngularImpulseBody2 = deltaLambdaMotor * a1;
 
             // Apply the impulse to the body 2
-            w2 += i2 * angularImpulseBody2;
+            w2 += i2 * scopeAngularImpulseBody2;
         }
     }
 }

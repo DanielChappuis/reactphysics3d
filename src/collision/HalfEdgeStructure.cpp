@@ -82,7 +82,7 @@ void HalfEdgeStructure::init() {
             auto itEdge = edges.find(pairV2V1);
             if (itEdge != edges.end()) {
 
-                const uint edgeIndex = mEdges.size();
+                const uint edgeIndex = static_cast<uint>(mEdges.size());
 
                 itEdge->second.twinEdgeIndex = edgeIndex + 1;
                 edge.twinEdgeIndex = edgeIndex;

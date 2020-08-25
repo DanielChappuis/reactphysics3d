@@ -182,10 +182,10 @@ class ConcaveMeshShape : public ConcaveShape {
         ConcaveMeshShape& operator=(const ConcaveMeshShape& shape) = delete;
 
         /// Return the number of sub parts contained in this mesh
-		uint getNbSubparts() const;
+		size_t getNbSubparts() const;
 		
         /// Return the number of triangles in a sub part of the mesh
-		uint getNbTriangles(uint subPart) const;
+		uint getNbTriangles(size_t subPart) const;
 
         /// Return the indices of the three vertices of a given triangle in the array
         void getTriangleVerticesIndices(uint subPart, uint triangleIndex, uint* outVerticesIndices) const;

@@ -114,13 +114,13 @@ void ConcaveMeshShape::getTriangleVerticesIndices(uint subPart, uint triangleInd
 }
 
 // Return the number of sub parts contained in this mesh
-uint ConcaveMeshShape::getNbSubparts() const
+size_t ConcaveMeshShape::getNbSubparts() const
 {
 	return mTriangleMesh->getNbSubparts();
 }
 		
 // Return the number of triangles in a sub part of the mesh
-uint ConcaveMeshShape::getNbTriangles(uint subPart) const
+uint ConcaveMeshShape::getNbTriangles(size_t subPart) const
 {
 	assert(mTriangleMesh->getSubpart(subPart));
 	return mTriangleMesh->getSubpart(subPart)->getNbTriangles();
@@ -142,7 +142,7 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<V
     List<int> overlappingNodes(allocator);
     mDynamicAABBTree.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
 
-    const uint nbOverlappingNodes = overlappingNodes.size();
+    const uint nbOverlappingNodes = static_cast<uint>(overlappingNodes.size());
 
     // Add space in the list of triangles vertices/normals for the new triangles
     triangleVertices.addWithoutInit(nbOverlappingNodes * 3);
