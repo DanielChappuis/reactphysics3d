@@ -94,7 +94,7 @@ class TestList : public Test {
             rp3d_test(list4.size() == 0);
 
             List<int> list5(list3);
-            rp3d_test(list5.capacity() == list3.size());
+            rp3d_test(list5.capacity() == list3.capacity());
             rp3d_test(list5.size() == list3.size());
             for (uint i=0; i<list3.size(); i++) {
                 rp3d_test(list5[i] == list3[i]);

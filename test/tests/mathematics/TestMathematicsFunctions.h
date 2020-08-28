@@ -29,6 +29,7 @@
 // Libraries
 #include <reactphysics3d/containers/List.h>
 #include <reactphysics3d/memory/DefaultAllocator.h>
+#include <reactphysics3d/mathematics/mathematics.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -267,6 +268,33 @@ class TestMathematicsFunctions : public Test {
             rp3d_test(approxEqual(clipPolygonVertices[3].y, 4, 0.000001));
             rp3d_test(approxEqual(clipPolygonVertices[3].z, 0, 0.000001));
 
+            // Test isPowerOfTwo()
+            rp3d_test(!isPowerOfTwo(0));
+            rp3d_test(!isPowerOfTwo(3));
+            rp3d_test(!isPowerOfTwo(144));
+            rp3d_test(!isPowerOfTwo(13));
+            rp3d_test(!isPowerOfTwo(18));
+            rp3d_test(!isPowerOfTwo(1000));
+
+            rp3d_test(isPowerOfTwo(1));
+            rp3d_test(isPowerOfTwo(2));
+            rp3d_test(isPowerOfTwo(4));
+            rp3d_test(isPowerOfTwo(8));
+            rp3d_test(isPowerOfTwo(256));
+            rp3d_test(isPowerOfTwo(1024));
+            rp3d_test(isPowerOfTwo(2048));
+
+            // Test nextPowerOfTwo32Bits()
+            rp3d_test(nextPowerOfTwo32Bits(0) == 1);
+            rp3d_test(nextPowerOfTwo32Bits(1) == 1);
+            rp3d_test(nextPowerOfTwo32Bits(2) == 2);
+            rp3d_test(nextPowerOfTwo32Bits(3) == 4);
+            rp3d_test(nextPowerOfTwo32Bits(5) == 8);
+            rp3d_test(nextPowerOfTwo32Bits(6) == 8);
+            rp3d_test(nextPowerOfTwo32Bits(7) == 8);
+            rp3d_test(nextPowerOfTwo32Bits(1000) == 1024);
+            rp3d_test(nextPowerOfTwo32Bits(129) == 256);
+            rp3d_test(nextPowerOfTwo32Bits(260) == 512);
         }
 
  };

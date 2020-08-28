@@ -58,53 +58,63 @@ void PhysicsCommon::release() {
 
     // Destroy the physics worlds
     for (auto it = mPhysicsWorlds.begin(); it != mPhysicsWorlds.end(); ++it) {
-        destroyPhysicsWorld(*it);
+        deletePhysicsWorld(*it);
     }
+    mPhysicsWorlds.clear();
 
     // Destroy the sphere shapes
     for (auto it = mSphereShapes.begin(); it != mSphereShapes.end(); ++it) {
-        destroySphereShape(*it);
+        deleteSphereShape(*it);
     }
+    mSphereShapes.clear();
 
     // Destroy the box shapes
     for (auto it = mBoxShapes.begin(); it != mBoxShapes.end(); ++it) {
-        destroyBoxShape(*it);
+        deleteBoxShape(*it);
     }
+    mBoxShapes.clear();
 
     // Destroy the capsule shapes
     for (auto it = mCapsuleShapes.begin(); it != mCapsuleShapes.end(); ++it) {
-        destroyCapsuleShape(*it);
+        deleteCapsuleShape(*it);
     }
+    mCapsuleShapes.clear();
 
     // Destroy the convex mesh shapes
     for (auto it = mConvexMeshShapes.begin(); it != mConvexMeshShapes.end(); ++it) {
-        destroyConvexMeshShape(*it);
+        deleteConvexMeshShape(*it);
     }
+    mConvexMeshShapes.clear();
 
     // Destroy the heigh-field shapes
     for (auto it = mHeightFieldShapes.begin(); it != mHeightFieldShapes.end(); ++it) {
-        destroyHeightFieldShape(*it);
+        deleteHeightFieldShape(*it);
     }
+    mHeightFieldShapes.clear();
 
     // Destroy the concave mesh shapes
     for (auto it = mConcaveMeshShapes.begin(); it != mConcaveMeshShapes.end(); ++it) {
-        destroyConcaveMeshShape(*it);
+        deleteConcaveMeshShape(*it);
     }
+    mConcaveMeshShapes.clear();
 
     // Destroy the polyhedron mesh
     for (auto it = mPolyhedronMeshes.begin(); it != mPolyhedronMeshes.end(); ++it) {
-        destroyPolyhedronMesh(*it);
+        deletePolyhedronMesh(*it);
     }
+    mPolyhedronMeshes.clear();
 
     // Destroy the triangle mesh
     for (auto it = mTriangleMeshes.begin(); it != mTriangleMeshes.end(); ++it) {
-        destroyTriangleMesh(*it);
+        deleteTriangleMesh(*it);
     }
+    mTriangleMeshes.clear();
 
     // Destroy the default loggers
     for (auto it = mDefaultLoggers.begin(); it != mDefaultLoggers.end(); ++it) {
-        destroyDefaultLogger(*it);
+        deleteDefaultLogger(*it);
     }
+    mDefaultLoggers.clear();
 
 // If profiling is enabled
 #ifdef IS_RP3D_PROFILING_ENABLED
@@ -112,8 +122,9 @@ void PhysicsCommon::release() {
 
     // Destroy the profilers
     for (auto it = mProfilers.begin(); it != mProfilers.end(); ++it) {
-        destroyProfiler(*it);
+        deleteProfiler(*it);
     }
+    mProfilers.clear();
 
 #endif
 
@@ -151,13 +162,22 @@ PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSetting
  */
 void PhysicsCommon::destroyPhysicsWorld(PhysicsWorld* world) {
 
+   deletePhysicsWorld(world);
+
+   mPhysicsWorlds.remove(world);
+}
+
+// Delete an instance of PhysicsWorld
+/**
+ * @param world A pointer to the physics world to destroy
+ */
+void PhysicsCommon::deletePhysicsWorld(PhysicsWorld* world) {
+
    // Call the destructor of the world
    world->~PhysicsWorld();
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Heap, world, sizeof(PhysicsWorld));
-
-   mPhysicsWorlds.remove(world);
 }
 
 // Create and return a sphere collision shape
@@ -185,6 +205,17 @@ SphereShape* PhysicsCommon::createSphereShape(const decimal radius) {
  */
 void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
 
+    deleteSphereShape(sphereShape);
+
+    mSphereShapes.remove(sphereShape);
+}
+
+// Delete a sphere collision shape
+/**
+ * @param sphereShape A pointer to the sphere collision shape to destroy
+ */
+void PhysicsCommon::deleteSphereShape(SphereShape* sphereShape) {
+
     // If the shape is still part of some colliders
     if (sphereShape->mColliders.size() > 0) {
 
@@ -197,8 +228,6 @@ void PhysicsCommon::destroySphereShape(SphereShape* sphereShape) {
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, sphereShape, sizeof(SphereShape));
-
-   mSphereShapes.remove(sphereShape);
 }
 
 // Create and return a box collision shape
@@ -226,6 +255,17 @@ BoxShape* PhysicsCommon::createBoxShape(const Vector3& halfExtents) {
  */
 void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
 
+    deleteBoxShape(boxShape);
+
+    mBoxShapes.remove(boxShape);
+}
+
+// Delete a box collision shape
+/**
+ * @param boxShape A pointer to the box shape to destroy
+ */
+void PhysicsCommon::deleteBoxShape(BoxShape* boxShape) {
+
     // If the shape is still part of some colliders
     if (boxShape->mColliders.size() > 0) {
 
@@ -238,8 +278,6 @@ void PhysicsCommon::destroyBoxShape(BoxShape* boxShape) {
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, boxShape, sizeof(BoxShape));
-
-   mBoxShapes.remove(boxShape);
 }
 
 // Create and return a capsule shape
@@ -275,6 +313,17 @@ CapsuleShape* PhysicsCommon::createCapsuleShape(decimal radius, decimal height) 
  */
 void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
 
+    deleteCapsuleShape(capsuleShape);
+
+    mCapsuleShapes.remove(capsuleShape);
+}
+
+// Delete a capsule collision shape
+/**
+ * @param capsuleShape A pointer to the capsule shape to destroy
+ */
+void PhysicsCommon::deleteCapsuleShape(CapsuleShape* capsuleShape) {
+
     // If the shape is still part of some colliders
     if (capsuleShape->mColliders.size() > 0) {
 
@@ -287,8 +336,6 @@ void PhysicsCommon::destroyCapsuleShape(CapsuleShape* capsuleShape) {
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, capsuleShape, sizeof(CapsuleShape));
-
-   mCapsuleShapes.remove(capsuleShape);
 }
 
 // Create and return a convex mesh shape
@@ -312,6 +359,17 @@ ConvexMeshShape* PhysicsCommon::createConvexMeshShape(PolyhedronMesh* polyhedron
  */
 void PhysicsCommon::destroyConvexMeshShape(ConvexMeshShape* convexMeshShape) {
 
+    deleteConvexMeshShape(convexMeshShape);
+
+    mConvexMeshShapes.remove(convexMeshShape);
+}
+
+// Delete a convex mesh shape
+/**
+ * @param convexMeshShape A pointer to the convex mesh shape to destroy
+ */
+void PhysicsCommon::deleteConvexMeshShape(ConvexMeshShape* convexMeshShape) {
+
     // If the shape is still part of some colliders
     if (convexMeshShape->mColliders.size() > 0) {
 
@@ -324,8 +382,6 @@ void PhysicsCommon::destroyConvexMeshShape(ConvexMeshShape* convexMeshShape) {
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, convexMeshShape, sizeof(ConvexMeshShape));
-
-   mConvexMeshShapes.remove(convexMeshShape);
 }
 
 // Create and return a height-field shape
@@ -358,6 +414,17 @@ HeightFieldShape* PhysicsCommon::createHeightFieldShape(int nbGridColumns, int n
  */
 void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) {
 
+    deleteHeightFieldShape(heightFieldShape);
+
+    mHeightFieldShapes.remove(heightFieldShape);
+}
+
+// Delete a height-field shape
+/**
+ * @param heightFieldShape A pointer to the height field shape to destroy
+ */
+void PhysicsCommon::deleteHeightFieldShape(HeightFieldShape* heightFieldShape) {
+
     // If the shape is still part of some colliders
     if (heightFieldShape->mColliders.size() > 0) {
 
@@ -370,8 +437,6 @@ void PhysicsCommon::destroyHeightFieldShape(HeightFieldShape* heightFieldShape) 
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, heightFieldShape, sizeof(HeightFieldShape));
-
-   mHeightFieldShapes.remove(heightFieldShape);
 }
 
 // Create and return a concave mesh shape
@@ -395,6 +460,17 @@ ConcaveMeshShape* PhysicsCommon::createConcaveMeshShape(TriangleMesh* triangleMe
  */
 void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
 
+    deleteConcaveMeshShape(concaveMeshShape);
+
+    mConcaveMeshShapes.remove(concaveMeshShape);
+}
+
+// Delete a concave mesh shape
+/**
+ * @param concaveMeshShape A pointer to the concave mesh shape to destroy
+ */
+void PhysicsCommon::deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
+
     // If the shape is still part of some colliders
     if (concaveMeshShape->mColliders.size() > 0) {
 
@@ -407,8 +483,6 @@ void PhysicsCommon::destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) 
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, concaveMeshShape, sizeof(ConcaveMeshShape));
-
-   mConcaveMeshShapes.remove(concaveMeshShape);
 }
 
 // Create a polyhedron mesh
@@ -431,13 +505,22 @@ PolyhedronMesh* PhysicsCommon::createPolyhedronMesh(PolygonVertexArray* polygonV
  */
 void PhysicsCommon::destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
 
+    deletePolyhedronMesh(polyhedronMesh);
+
+    mPolyhedronMeshes.remove(polyhedronMesh);
+}
+
+// Delete a polyhedron mesh
+/**
+ * @param polyhedronMesh A pointer to the polyhedron mesh to destroy
+ */
+void PhysicsCommon::deletePolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
+
    // Call the destructor of the shape
    polyhedronMesh->~PolyhedronMesh();
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, polyhedronMesh, sizeof(PolyhedronMesh));
-
-   mPolyhedronMeshes.remove(polyhedronMesh);
 }
 
 // Create a triangle mesh
@@ -459,13 +542,22 @@ TriangleMesh* PhysicsCommon::createTriangleMesh() {
  */
 void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
 
+    deleteTriangleMesh(triangleMesh);
+
+    mTriangleMeshes.remove(triangleMesh);
+}
+
+// Delete a triangle mesh
+/**
+ * @param A pointer to the triangle mesh to destroy
+ */
+void PhysicsCommon::deleteTriangleMesh(TriangleMesh* triangleMesh) {
+
    // Call the destructor of the shape
    triangleMesh->~TriangleMesh();
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, triangleMesh, sizeof(TriangleMesh));
-
-   mTriangleMeshes.remove(triangleMesh);
 }
 
 // Create and return a new logger
@@ -487,13 +579,22 @@ DefaultLogger* PhysicsCommon::createDefaultLogger() {
  */
 void PhysicsCommon::destroyDefaultLogger(DefaultLogger* logger) {
 
+    deleteDefaultLogger(logger);
+
+    mDefaultLoggers.remove(logger);
+}
+
+// Delete a logger
+/**
+ * @param A pointer to the default logger to destroy
+ */
+void PhysicsCommon::deleteDefaultLogger(DefaultLogger* logger) {
+
    // Call the destructor of the logger
    logger->~DefaultLogger();
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, logger, sizeof(DefaultLogger));
-
-   mDefaultLoggers.remove(logger);
 }
 
 // If profiling is enabled
@@ -514,13 +615,18 @@ Profiler* PhysicsCommon::createProfiler() {
 // Destroy a profiler
 void PhysicsCommon::destroyProfiler(Profiler* profiler) {
 
+    deleteProfiler(profiler);
+
+    mProfilers.remove(profiler);
+}
+
+// Delete a profiler
+void PhysicsCommon::deleteProfiler(Profiler* profiler) {
+
    // Call the destructor of the profiler
    profiler->~Profiler();
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, profiler, sizeof(Profiler));
-
-   mProfilers.remove(profiler);
 }
-
 #endif

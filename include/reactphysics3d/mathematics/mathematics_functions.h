@@ -126,8 +126,23 @@ Vector3 projectPointOntoPlane(const Vector3& point, const Vector3& planeNormal, 
 /// Return the distance between a point and a plane (the plane normal must be normalized)
 decimal computePointToPlaneDistance(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint);
 
-/// Return true if the given number is prime
-bool isPrimeNumber(int number);
+/// Return true if a number is a power of two
+RP3D_FORCE_INLINE bool isPowerOfTwo(uint32 number) {
+   return number != 0 && !(number & (number -1));
+}
+
+/// Return the next power of two larger than the number in parameter
+RP3D_FORCE_INLINE uint32 nextPowerOfTwo32Bits(uint32 number) {
+    number--;
+    number |= number >> 1;
+    number |= number >> 2;
+    number |= number >> 4;
+    number |= number >> 8;
+    number |= number >> 16;
+    number++;
+    number += (number == 0);
+    return number;
+}
 
 /// Return an unique integer from two integer numbers (pairing function)
 /// Here we assume that the two parameter numbers are sorted such that

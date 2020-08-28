@@ -97,6 +97,36 @@ class PhysicsCommon {
         /// Destroy and release everything that has been allocated
         void release();
 
+        /// Delete an instance of PhysicsWorld
+        void deletePhysicsWorld(PhysicsWorld* world);
+
+        /// Delete a sphere collision shape
+        void deleteSphereShape(SphereShape* sphereShape);
+
+        /// Delete a box collision shape
+        void deleteBoxShape(BoxShape* boxShape);
+
+        /// Delete a capsule collision shape
+        void deleteCapsuleShape(CapsuleShape* capsuleShape);
+
+        /// Delete a convex mesh shape
+        void deleteConvexMeshShape(ConvexMeshShape* convexMeshShape);
+
+        /// Delete a height-field shape
+        void deleteHeightFieldShape(HeightFieldShape* heightFieldShape);
+
+        /// Delete a concave mesh shape
+        void deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape);
+
+        /// Delete a polyhedron mesh
+        void deletePolyhedronMesh(PolyhedronMesh* polyhedronMesh);
+
+        /// Delete a triangle mesh
+        void deleteTriangleMesh(TriangleMesh* triangleMesh);
+
+        /// Delete a default logger
+        void deleteDefaultLogger(DefaultLogger* logger);
+
 // If profiling is enabled
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -105,6 +135,9 @@ class PhysicsCommon {
 
         /// Destroy a profiler
         void destroyProfiler(Profiler* profiler);
+
+        /// Delete a profiler
+        void deleteProfiler(Profiler* profiler);
 
 #endif
 
@@ -186,7 +219,6 @@ class PhysicsCommon {
 
         /// Set the logger
         static void setLogger(Logger* logger);
-
 };
 
 // Return the current logger

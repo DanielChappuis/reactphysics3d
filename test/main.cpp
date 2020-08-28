@@ -53,9 +53,9 @@ int main() {
 
     // ---------- Containers tests ---------- //
 
+    testSuite.addTest(new TestSet("Set"));
     testSuite.addTest(new TestList("List"));
     testSuite.addTest(new TestMap("Map"));
-    testSuite.addTest(new TestSet("Set"));
     testSuite.addTest(new TestDeque("Deque"));
     testSuite.addTest(new TestStack("Stack"));
 
