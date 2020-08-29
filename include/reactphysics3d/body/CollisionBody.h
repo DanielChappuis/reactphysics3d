@@ -143,7 +143,7 @@ class CollisionBody {
         Collider* getCollider(uint colliderIndex);
 
         /// Return the number of colliders associated with this body
-        uint getNbColliders() const;
+        uint32 getNbColliders() const;
 
         /// Return the world-space coordinates of a point given the local-space coordinates of the body
         Vector3 getWorldPoint(const Vector3& localPoint) const;

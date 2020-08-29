@@ -165,10 +165,10 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Return the number of overlapping pairs of bodies
-                uint getNbOverlappingPairs() const;
+                uint32 getNbOverlappingPairs() const;
 
                 /// Return a given overlapping pair of bodies
-                OverlapPair getOverlappingPair(uint index) const;
+                OverlapPair getOverlappingPair(uint32 index) const;
 
                 // -------------------- Friendship -------------------- //
 
@@ -185,7 +185,7 @@ class OverlapCallback {
 };
 
 // Return the number of overlapping pairs of bodies
-RP3D_FORCE_INLINE uint OverlapCallback::CallbackData::getNbOverlappingPairs() const {
+RP3D_FORCE_INLINE uint32 OverlapCallback::CallbackData::getNbOverlappingPairs() const {
     return mContactPairsIndices.size() + mLostContactPairsIndices.size();
 }
 
@@ -193,7 +193,7 @@ RP3D_FORCE_INLINE uint OverlapCallback::CallbackData::getNbOverlappingPairs() co
 /// Note that the returned OverlapPair object is only valid during the call of the CollisionCallback::onOverlap()
 /// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the OverlapPair
 /// object itself because it won't be valid after the CollisionCallback::onOverlap() call.
-RP3D_FORCE_INLINE OverlapCallback::OverlapPair OverlapCallback::CallbackData::getOverlappingPair(uint index) const {
+RP3D_FORCE_INLINE OverlapCallback::OverlapPair OverlapCallback::CallbackData::getOverlappingPair(uint32 index) const {
 
     assert(index < getNbOverlappingPairs());
 

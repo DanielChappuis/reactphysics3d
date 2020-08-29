@@ -231,7 +231,7 @@ std::string ConvexMeshShape::to_string() const {
 
         ss << "[";
 
-        for (uint v=0; v < face.faceVertices.size(); v++) {
+        for (uint32 v=0; v < face.faceVertices.size(); v++) {
 
             ss << face.faceVertices[v];
             if (v != face.faceVertices.size() - 1) {

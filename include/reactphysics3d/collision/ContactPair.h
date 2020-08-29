@@ -69,19 +69,19 @@ struct ContactPair {
         bool isAlreadyInIsland;
 
         /// Index of the contact pair in the array of pairs
-        uint contactPairIndex;
+        uint32 contactPairIndex;
 
         /// Index of the first contact manifold in the array
-        uint contactManifoldsIndex;
+        uint32 contactManifoldsIndex;
 
         /// Number of contact manifolds
         int8 nbContactManifolds;
 
         /// Index of the first contact point in the array of contact points
-        uint contactPointsIndex;
+        uint32 contactPointsIndex;
 
         /// Total number of contact points in all the manifolds of the contact pair
-        uint nbToTalContactPoints;
+        uint32 nbToTalContactPoints;
 
         /// True if the colliders of the pair were already colliding in the previous frame
         bool collidingInPreviousFrame;

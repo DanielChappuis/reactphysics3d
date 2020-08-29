@@ -82,7 +82,7 @@ CollisionCallback::CallbackData::CallbackData(List<reactphysics3d::ContactPair>*
                        mContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mWorld(world) {
 
     // Filter the contact pairs to only keep the contact events (not the overlap/trigger events)
-    for (uint i=0; i < mContactPairs->size(); i++) {
+    for (uint32 i=0; i < mContactPairs->size(); i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
         if (!(*mContactPairs)[i].isTrigger) {
@@ -90,7 +90,7 @@ CollisionCallback::CallbackData::CallbackData(List<reactphysics3d::ContactPair>*
         }
     }
     // Filter the lost contact pairs to only keep the contact events (not the overlap/trigger events)
-    for (uint i=0; i < mLostContactPairs.size(); i++) {
+    for (uint32 i=0; i < mLostContactPairs.size(); i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
         if (!mLostContactPairs[i].isTrigger) {
@@ -114,7 +114,7 @@ CollisionCallback::ContactPoint CollisionCallback::ContactPair::getContactPoint(
 /// Note that the returned ContactPair object is only valid during the call of the CollisionCallback::onContact()
 /// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the ContactPair
 /// object itself because it won't be valid after the CollisionCallback::onContact() call.
-CollisionCallback::ContactPair CollisionCallback::CallbackData::getContactPair(uint index) const {
+CollisionCallback::ContactPair CollisionCallback::CallbackData::getContactPair(uint32 index) const {
 
     assert(index < getNbContactPairs());
 

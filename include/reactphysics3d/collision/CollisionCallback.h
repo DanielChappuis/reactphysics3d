@@ -278,7 +278,7 @@ class CollisionCallback {
                  * @param index Index of the contact pair to retrieve
                  * @return A contact pair object
                  */
-                ContactPair getContactPair(uint index) const;
+                ContactPair getContactPair(uint32 index) const;
 
                 // -------------------- Friendship -------------------- //
 
@@ -296,7 +296,7 @@ class CollisionCallback {
 /**
  * @return The number of contact pairs
  */
-RP3D_FORCE_INLINE uint CollisionCallback::CallbackData::getNbContactPairs() const {
+RP3D_FORCE_INLINE uint32 CollisionCallback::CallbackData::getNbContactPairs() const {
     return mContactPairsIndices.size() + mLostContactPairsIndices.size();
 }
 

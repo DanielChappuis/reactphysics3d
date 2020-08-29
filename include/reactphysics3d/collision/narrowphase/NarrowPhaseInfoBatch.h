@@ -109,7 +109,7 @@ struct NarrowPhaseInfoBatch {
         OverlappingPairs& mOverlappingPairs;
 
         /// Cached capacity
-        uint mCachedCapacity = 0;
+        uint32 mCachedCapacity = 0;
 
     public:
 
@@ -128,10 +128,10 @@ struct NarrowPhaseInfoBatch {
                                                       bool needToReportContacts, LastFrameCollisionInfo* lastFrameInfo, MemoryAllocator& shapeAllocator);
 
         /// Return the number of objects in the batch
-        uint getNbObjects() const;
+        uint32 getNbObjects() const;
 
         /// Add a new contact point
-        void addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth,
+        void addContactPoint(uint32 index, const Vector3& contactNormal, decimal penDepth,
                              const Vector3& localPt1, const Vector3& localPt2);
 
         /// Reset the remaining contact points
@@ -145,7 +145,7 @@ struct NarrowPhaseInfoBatch {
 };
 
 /// Return the number of objects in the batch
-RP3D_FORCE_INLINE uint NarrowPhaseInfoBatch::getNbObjects() const {
+RP3D_FORCE_INLINE uint32 NarrowPhaseInfoBatch::getNbObjects() const {
     return narrowPhaseInfos.size();
 }
 

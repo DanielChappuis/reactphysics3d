@@ -96,7 +96,7 @@ struct Islands {
 
         /// Return the number of islands
         uint32 getNbIslands() const {
-            return static_cast<uint32>(contactManifoldsIndices.size());
+            return contactManifoldsIndices.size();
         }
 
         /// Add an island and return its index

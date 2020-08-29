@@ -239,7 +239,7 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     // For each collider of the body
     const List<Entity>& collidersEntities = mCollisionBodyComponents.getColliders(bodyEntity);
-    for (uint i=0; i < collidersEntities.size(); i++) {
+    for (uint32 i=0; i < collidersEntities.size(); i++) {
 
         mCollidersComponents.setIsEntityDisabled(collidersEntities[i], isDisabled);
     }
@@ -822,7 +822,7 @@ void PhysicsWorld::createIslands() {
 
             // If the body is involved in contacts with other bodies
             // For each contact pair in which the current body is involded
-            for (uint p=0; p < mRigidBodyComponents.mContactPairs[bodyToVisitIndex].size(); p++) {
+            for (uint32 p=0; p < mRigidBodyComponents.mContactPairs[bodyToVisitIndex].size(); p++) {
 
                 ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[mRigidBodyComponents.mContactPairs[bodyToVisitIndex][p]];
 
@@ -884,7 +884,7 @@ void PhysicsWorld::createIslands() {
 
         // Reset the isAlreadyIsland variable of the static bodies so that they
         // can also be included in the other islands
-        for (uint j=0; j < staticBodiesAddedToIsland.size(); j++) {
+        for (uint32 j=0; j < staticBodiesAddedToIsland.size(); j++) {
 
             assert(mRigidBodyComponents.getBodyType(staticBodiesAddedToIsland[j]) == BodyType::STATIC);
             mRigidBodyComponents.setIsAlreadyInIsland(staticBodiesAddedToIsland[j], false);

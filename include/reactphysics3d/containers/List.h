@@ -51,10 +51,10 @@ class List {
         void* mBuffer;
 
         /// Number of elements in the list
-        size_t mSize;
+        uint32 mSize;
 
         /// Number of allocated elements in the list
-        size_t mCapacity;
+        uint32 mCapacity;
 
         /// Memory allocator
         MemoryAllocator& mAllocator;
@@ -69,9 +69,9 @@ class List {
 
             private:
 
-                size_t mCurrentIndex;
+                uint32 mCurrentIndex;
                 T* mBuffer;
-                size_t mSize;
+                uint32 mSize;
 
             public:
 
@@ -88,7 +88,7 @@ class List {
                 Iterator() = default;
 
                 /// Constructor
-                Iterator(void* buffer, size_t index, size_t size)
+                Iterator(void* buffer, uint32 index, uint32 size)
                      :mCurrentIndex(index), mBuffer(static_cast<T*>(buffer)), mSize(size) {
 
                 }
@@ -219,7 +219,7 @@ class List {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        List(MemoryAllocator& allocator, size_t capacity = 0)
+        List(MemoryAllocator& allocator, uint32 capacity = 0)
             : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(allocator) {
 
             if (capacity > 0) {
@@ -253,7 +253,7 @@ class List {
         }
 
         /// Allocate memory for a given number of elements
-        void reserve(size_t capacity) {
+        void reserve(uint32 capacity) {
 
             if (capacity <= mCapacity) return;
 
@@ -270,7 +270,7 @@ class List {
                     std::uninitialized_copy(items, items + mSize, destination);
 
                     // Destruct the previous items
-                    for (size_t i=0; i<mSize; i++) {
+                    for (uint32 i=0; i<mSize; i++) {
                         items[i].~T();
                     }
                 }
@@ -315,7 +315,7 @@ class List {
         }
 
         /// Add a given numbers of elements at the end of the list but do not init them
-        void addWithoutInit(uint nbElements) {
+        void addWithoutInit(uint32 nbElements) {
 
             // If we need to allocate more memory
             if ((mSize + nbElements) > mCapacity) {
@@ -330,7 +330,7 @@ class List {
         /// this method returns the end() iterator
         Iterator find(const T& element) {
 
-            for (uint i=0; i<mSize; i++) {
+            for (uint32 i=0; i<mSize; i++) {
                 if (element == static_cast<T*>(mBuffer)[i]) {
                     return Iterator(mBuffer, i, mSize);
                 }
@@ -352,7 +352,7 @@ class List {
         }
 
         /// Remove an element from the list at a given index (all the following items will be moved)
-        Iterator removeAt(uint index) {
+        Iterator removeAt(uint32 index) {
 
           assert(index >= 0 && index < mSize);
 
@@ -374,7 +374,7 @@ class List {
         }
 
         /// Remove an element from the list at a given index and replace it by the last one of the list (if any)
-        void removeAtAndReplaceByLast(uint index) {
+        void removeAtAndReplaceByLast(uint32 index) {
 
             assert(index >= 0 && index < mSize);
 
@@ -405,7 +405,7 @@ class List {
             }
 
             // Add the elements of the list to the current one
-            for(uint i=0; i<list.size(); i++) {
+            for(uint32 i=0; i<list.size(); i++) {
 
                 new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(list[i]);
                 mSize++;
@@ -416,7 +416,7 @@ class List {
         void clear(bool releaseMemory = false) {
 
             // Call the destructor of each element
-            for (uint i=0; i < mSize; i++) {
+            for (uint32 i=0; i < mSize; i++) {
                 (static_cast<T*>(mBuffer)[i]).~T();
             }
 
@@ -434,23 +434,23 @@ class List {
         }
 
         /// Return the number of elements in the list
-        size_t size() const {
+        uint32 size() const {
             return mSize;
         }
 
         /// Return the capacity of the list
-        size_t capacity() const {
+        uint32 capacity() const {
             return mCapacity;
         }
 
         /// Overloaded index operator
-        T& operator[](const uint index) {
+        T& operator[](const uint32 index) {
            assert(index >= 0 && index < mSize);
            return (static_cast<T*>(mBuffer)[index]);
         }
 
         /// Overloaded const index operator
-        const T& operator[](const uint index) const {
+        const T& operator[](const uint32 index) const {
            assert(index >= 0 && index < mSize);
            return (static_cast<T*>(mBuffer)[index]);
         }
@@ -461,7 +461,7 @@ class List {
            if (mSize != list.mSize) return false;
 
            T* items = static_cast<T*>(mBuffer);
-            for (size_t i=0; i < mSize; i++) {
+            for (uint32 i=0; i < mSize; i++) {
                 if (items[i] != list[i]) {
                     return false;
                 }

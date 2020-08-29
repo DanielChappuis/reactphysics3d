@@ -71,8 +71,8 @@ void ContactSolverSystem::init(List<ContactManifold>* contactManifolds, List<Con
 
     mTimeStep = timeStep;
 
-    const uint nbContactManifolds = mAllContactManifolds->size();
-    const uint nbContactPoints = mAllContactPoints->size();
+    const uint32 nbContactManifolds = mAllContactManifolds->size();
+    const uint32 nbContactPoints = mAllContactPoints->size();
 
     mNbContactManifolds = 0;
     mNbContactPoints = 0;

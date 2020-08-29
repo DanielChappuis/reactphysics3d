@@ -52,7 +52,7 @@ void NarrowPhaseInfoBatch::reserveMemory() {
 // Clear all the objects in the batch
 void NarrowPhaseInfoBatch::clear() {
 
-    for (uint i=0; i < narrowPhaseInfos.size(); i++) {
+    for (uint32 i=0; i < narrowPhaseInfos.size(); i++) {
 
         assert(narrowPhaseInfos[i].nbContactPoints == 0);
 

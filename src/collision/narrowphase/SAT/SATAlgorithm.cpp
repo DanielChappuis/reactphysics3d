@@ -430,7 +430,7 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
     bool contactFound = false;
 
 	// For each of the two clipped points
-    for (uint i = 0; i<clipSegment.size(); i++) {
+    for (uint32 i = 0; i<clipSegment.size(); i++) {
 
 		// Compute the penetration depth of the two clipped points (to filter out the points that does not correspond to the penetration depth)
 		const decimal clipPointPenDepth = (planesPoints[0] - clipSegment[i]).dot(faceNormal);
@@ -915,20 +915,20 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     // Get the incident face
     const HalfEdgeStructure::Face& incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
 
-    uint nbIncidentFaceVertices = static_cast<uint>(incidentFace.faceVertices.size());
+    uint32 nbIncidentFaceVertices = incidentFace.faceVertices.size();
     List<Vector3> polygonVertices(mMemoryAllocator, nbIncidentFaceVertices);   // Vertices to clip of the incident face
     List<Vector3> planesNormals(mMemoryAllocator, nbIncidentFaceVertices);     // Normals of the clipping planes
     List<Vector3> planesPoints(mMemoryAllocator, nbIncidentFaceVertices);      // Points on the clipping planes
 
     // Get all the vertices of the incident face (in the reference local-space)
-    for (uint i=0; i < incidentFace.faceVertices.size(); i++) {
+    for (uint32 i=0; i < incidentFace.faceVertices.size(); i++) {
         const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(incidentFace.faceVertices[i]);
         polygonVertices.add(incidentToReferenceTransform * faceVertexIncidentSpace);
     }
 
     // Get the reference face clipping planes
-    uint currentEdgeIndex = referenceFace.edgeIndex;
-    uint firstEdgeIndex = currentEdgeIndex;
+    uint32 currentEdgeIndex = referenceFace.edgeIndex;
+    uint32 firstEdgeIndex = currentEdgeIndex;
     do {
 
         // Get the adjacent edge
@@ -963,7 +963,7 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     // We only keep the clipped points that are below the reference face
     const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
     bool contactPointsFound = false;
-    for (uint i=0; i<clipPolygonVertices.size(); i++) {
+    for (uint32 i=0; i<clipPolygonVertices.size(); i++) {
 
         // Compute the penetration depth of this contact point (can be different from the minPenetration depth which is
         // the maximal penetration depth of any contact point for this separating axis

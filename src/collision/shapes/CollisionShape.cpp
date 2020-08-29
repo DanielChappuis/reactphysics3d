@@ -96,7 +96,7 @@ void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
 /// Notify all the assign colliders that the size of the collision shape has changed
 void CollisionShape::notifyColliderAboutChangedSize() {
 
-    for (uint i=0; i < mColliders.size(); i++) {
+    for (uint32 i=0; i < mColliders.size(); i++) {
         mColliders[i]->setHasCollisionShapeChangedSize(true);
     }
 }
