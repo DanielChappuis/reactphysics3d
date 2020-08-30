@@ -79,7 +79,8 @@ CollisionCallback::ContactPair::EventType CollisionCallback::ContactPair::getEve
 CollisionCallback::CallbackData::CallbackData(List<reactphysics3d::ContactPair>* contactPairs, List<ContactManifold>* manifolds,
                                               List<reactphysics3d::ContactPoint>* contactPoints, List<reactphysics3d::ContactPair>& lostContactPairs, PhysicsWorld& world)
                       :mContactPairs(contactPairs), mContactManifolds(manifolds), mContactPoints(contactPoints), mLostContactPairs(lostContactPairs),
-                       mContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mWorld(world) {
+                       mContactPairsIndices(world.mMemoryManager.getHeapAllocator(), contactPairs->size()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator(), lostContactPairs.size()),
+                       mWorld(world) {
 
     // Filter the contact pairs to only keep the contact events (not the overlap/trigger events)
     for (uint32 i=0; i < mContactPairs->size(); i++) {

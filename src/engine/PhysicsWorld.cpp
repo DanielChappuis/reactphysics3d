@@ -771,7 +771,7 @@ void PhysicsWorld::createIslands() {
     Stack<Entity> bodyEntitiesToVisit(mMemoryManager.getSingleFrameAllocator(), mIslands.getNbMaxBodiesInIslandPreviousFrame());
 
     // List of static bodies added to the current island (used to reset the isAlreadyInIsland variable of static bodies)
-    List<Entity> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator());
+    List<Entity> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator(), 16);
 
     uint nbTotalManifolds = 0;
 

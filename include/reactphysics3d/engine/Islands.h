@@ -49,6 +49,9 @@ struct Islands {
         /// Number of islands in the previous frame
         uint32 mNbIslandsPreviousFrame;
 
+        /// Number of items in the bodyEntities array in the previous frame
+        uint32 mNbBodyEntitiesPreviousFrame;
+
         /// Maximum number of bodies in a single island in the previous frame
         uint32 mNbMaxBodiesInIslandPreviousFrame;
 
@@ -79,7 +82,7 @@ struct Islands {
 
         /// Constructor
         Islands(MemoryAllocator& allocator)
-            :mNbIslandsPreviousFrame(10), mNbMaxBodiesInIslandPreviousFrame(0), mNbMaxBodiesInIslandCurrentFrame(0),
+            :mNbIslandsPreviousFrame(16), mNbBodyEntitiesPreviousFrame(32), mNbMaxBodiesInIslandPreviousFrame(0), mNbMaxBodiesInIslandCurrentFrame(0),
              contactManifoldsIndices(allocator), nbContactManifolds(allocator),
              bodyEntities(allocator), startBodyEntitiesIndex(allocator), nbBodiesInIsland(allocator) {
 
@@ -133,7 +136,7 @@ struct Islands {
             startBodyEntitiesIndex.reserve(mNbIslandsPreviousFrame);
             nbBodiesInIsland.reserve(mNbIslandsPreviousFrame);
 
-            bodyEntities.reserve(mNbMaxBodiesInIslandPreviousFrame);
+            bodyEntities.reserve(mNbBodyEntitiesPreviousFrame);
         }
 
         /// Clear all the islands
@@ -145,9 +148,10 @@ struct Islands {
                 mNbMaxBodiesInIslandCurrentFrame = nbBodiesInIsland[nbIslands-1];
             }
 
-            mNbIslandsPreviousFrame = nbContactManifolds.size();
-            mNbIslandsPreviousFrame = mNbMaxBodiesInIslandCurrentFrame;
+            mNbMaxBodiesInIslandPreviousFrame = mNbMaxBodiesInIslandCurrentFrame;
+            mNbIslandsPreviousFrame = nbIslands;
             mNbMaxBodiesInIslandCurrentFrame = 0;
+            mNbBodyEntitiesPreviousFrame = bodyEntities.size();
 
             contactManifoldsIndices.clear(true);
             nbContactManifolds.clear(true);

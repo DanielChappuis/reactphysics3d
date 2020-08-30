@@ -57,6 +57,7 @@ CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, Collider
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()),
                      mOverlappingPairs(mMemoryManager, mCollidersComponents, collisionBodyComponents, rigidBodyComponents,
                                        mNoCollisionPairs, mCollisionDispatch),
+                     mBroadPhaseOverlappingNodes(mMemoryManager.getHeapAllocator(), 32),
                      mBroadPhaseSystem(*this, mCollidersComponents, transformComponents, rigidBodyComponents),
                      mMapBroadPhaseIdToColliderEntity(memoryManager.getPoolAllocator()),
                      mNarrowPhaseInput(mMemoryManager.getSingleFrameAllocator(), mOverlappingPairs), mPotentialContactPoints(mMemoryManager.getSingleFrameAllocator()),
@@ -99,17 +100,20 @@ void CollisionDetectionSystem::computeBroadPhase() {
 
     RP3D_PROFILE("CollisionDetectionSystem::computeBroadPhase()", mProfiler);
 
+    assert(mBroadPhaseOverlappingNodes.size() == 0);
+
     // Ask the broad-phase to compute all the shapes overlapping with the shapes that
     // have moved or have been added in the last frame. This call can only add new
     // overlapping pairs in the collision detection.
-    List<Pair<int32, int32>> overlappingNodes(mMemoryManager.getHeapAllocator(), 32);
-    mBroadPhaseSystem.computeOverlappingPairs(mMemoryManager, overlappingNodes);
+    mBroadPhaseSystem.computeOverlappingPairs(mMemoryManager, mBroadPhaseOverlappingNodes);
 
     // Create new overlapping pairs if necessary
-    updateOverlappingPairs(overlappingNodes);
+    updateOverlappingPairs(mBroadPhaseOverlappingNodes);
 
     // Remove non overlapping pairs
     removeNonOverlappingPairs();
+
+    mBroadPhaseOverlappingNodes.clear();
 }
 
 // Remove pairs that are not overlapping anymore

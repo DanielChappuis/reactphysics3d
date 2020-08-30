@@ -98,6 +98,9 @@ class CollisionDetectionSystem {
         /// Broad-phase overlapping pairs
         OverlappingPairs mOverlappingPairs;
 
+        /// Overlapping nodes during broad-phase computation
+        List<Pair<int32, int32>> mBroadPhaseOverlappingNodes;
+
         /// Broad-phase system
         BroadPhaseSystem mBroadPhaseSystem;
 
