@@ -226,6 +226,28 @@ class TestList : public Test {
             list7.add("new");
             rp3d_test(list7.size() == 1);
             rp3d_test(list7[0] == "new");
+
+            // ----- Test removeAtAndReplaceByLast() ----- //
+
+            List<int> list8(mAllocator);
+            list8.add(1);
+            list8.add(2);
+            list8.add(3);
+            list8.add(4);
+            list8.removeAtAndReplaceByLast(1);
+            rp3d_test(list8.size() == 3);
+            rp3d_test(list8[0] == 1);
+            rp3d_test(list8[1] == 4);
+            rp3d_test(list8[2] == 3);
+            list8.removeAtAndReplaceByLast(2);
+            rp3d_test(list8.size() == 2);
+            rp3d_test(list8[0] == 1);
+            rp3d_test(list8[1] == 4);
+            list8.removeAtAndReplaceByLast(0);
+            rp3d_test(list8.size() == 1);
+            rp3d_test(list8[0] == 4);
+            list8.removeAtAndReplaceByLast(0);
+            rp3d_test(list8.size() == 0);
         }
 
         void testAssignment() {
