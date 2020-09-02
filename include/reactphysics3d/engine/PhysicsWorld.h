@@ -241,6 +241,11 @@ class PhysicsWorld {
         /// All the islands of bodies of the current frame
         Islands mIslands;
 
+        /// Order in which to process the ContactPairs for contact creation such that
+        /// all the contact manifolds and contact points of a given island are packed together
+        /// This array contains the indices of the ContactPairs.
+        List<uint32> mProcessContactPairsOrderIslands;
+
         /// Contact solver system
         ContactSolverSystem mContactSolverSystem;
 

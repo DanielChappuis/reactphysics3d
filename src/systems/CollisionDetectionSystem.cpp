@@ -532,11 +532,6 @@ void CollisionDetectionSystem::computeNarrowPhase() {
 
     assert(mCurrentContactManifolds->size() == 0);
     assert(mCurrentContactPoints->size() == 0);
-
-    // Create the actual narrow-phase contacts
-    createContacts();
-
-    mNarrowPhaseInput.clear();
 }
 
 // Compute the narrow-phase collision detection for the testOverlap() methods.
@@ -716,10 +711,30 @@ void CollisionDetectionSystem::createContacts() {
     mCurrentContactManifolds->reserve(mCurrentContactPairs->size());
     mCurrentContactPoints->reserve(mCurrentContactManifolds->size());
 
-    // For each contact pair
-    for (uint p=0; p < (*mCurrentContactPairs).size(); p++) {
+    // We go through all the contact pairs and add the pairs with a least a CollisionBody at the end of the
+    // mProcessContactPairsOrderIslands array because those pairs have not been added during the islands
+    // creation (only the pairs with two RigidBodies are added during island creation)
+    Set<uint32> processedContactPairsIndices(mMemoryManager.getSingleFrameAllocator(), mCurrentContactPairs->size());
+    for (uint32 i=0; i < mWorld->mProcessContactPairsOrderIslands.size(); i++) {
+        processedContactPairsIndices.add(mWorld->mProcessContactPairsOrderIslands[i]);
+    }
+    for (uint32 i=0; i < mCurrentContactPairs->size(); i++) {
+        if (!processedContactPairsIndices.contains(i)) {
+            mWorld->mProcessContactPairsOrderIslands.add(i);
+        }
+    }
 
-        ContactPair& contactPair = (*mCurrentContactPairs)[p];
+    assert(mWorld->mProcessContactPairsOrderIslands.size() == (*mCurrentContactPairs).size());
+
+    // Process the contact pairs in the order defined by the islands such that the contact manifolds and
+    // contact points of a given island are packed together in the array of manifolds and contact points
+    for (uint p=0; p < mWorld->mProcessContactPairsOrderIslands.size(); p++) {
+
+        uint32 contactPairIndex = mWorld->mProcessContactPairsOrderIslands[p];
+
+        processedContactPairsIndices.add(contactPairIndex);
+
+        ContactPair& contactPair = (*mCurrentContactPairs)[contactPairIndex];
 
         contactPair.contactManifoldsIndex = mCurrentContactManifolds->size();
         contactPair.nbContactManifolds = contactPair.potentialContactManifoldsIndices.size();
@@ -772,6 +787,8 @@ void CollisionDetectionSystem::createContacts() {
     // Reset the potential contacts
     mPotentialContactPoints.clear(true);
     mPotentialContactManifolds.clear(true);
+
+    mNarrowPhaseInput.clear();
 }
 
 // Compute the lost contact pairs (contact pairs in contact in the previous frame but not in the current one)

@@ -59,7 +59,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
                 mSliderJointsComponents(mMemoryManager.getHeapAllocator()), mCollisionDetection(this, mCollidersComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents,
                                         mMemoryManager),
                 mCollisionBodies(mMemoryManager.getHeapAllocator()), mEventListener(nullptr),
-                mName(worldSettings.worldName),  mIslands(mMemoryManager.getSingleFrameAllocator()),
+                mName(worldSettings.worldName),  mIslands(mMemoryManager.getSingleFrameAllocator()), mProcessContactPairsOrderIslands(mMemoryManager.getSingleFrameAllocator()),
                 mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mCollidersComponents, mConfig.restitutionVelocityThreshold),
                 mConstraintSolverSystem(*this, mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
@@ -342,6 +342,9 @@ void PhysicsWorld::update(decimal timeStep) {
     // Create the islands
     createIslands();
 
+    // Create the actual narrow-phase contacts
+    mCollisionDetection.createContacts();
+
     // Report the contacts to the user
     mCollisionDetection.reportContactsAndTriggers();
 
@@ -373,6 +376,8 @@ void PhysicsWorld::update(decimal timeStep) {
 
     // Reset the islands
     mIslands.clear();
+
+    mProcessContactPairsOrderIslands.clear(true);
 
     // Generate debug rendering primitives (if enabled)
     if (mIsDebugRenderingEnabled) {
@@ -747,6 +752,8 @@ void PhysicsWorld::createIslands() {
 
     RP3D_PROFILE("PhysicsWorld::createIslands()", mProfiler);
 
+    assert(mProcessContactPairsOrderIslands.size() == 0);
+
     // Reset all the isAlreadyInIsland variables of bodies and joints
     for (uint b=0; b < mRigidBodyComponents.getNbComponents(); b++) {
 
@@ -814,6 +821,8 @@ void PhysicsWorld::createIslands() {
                     if (mRigidBodyComponents.hasComponent(pair.body1Entity) && mRigidBodyComponents.hasComponent(pair.body2Entity)
                         && !mCollidersComponents.getIsTrigger(pair.collider1Entity) && !mCollidersComponents.getIsTrigger(pair.collider2Entity)) {
 
+                        mProcessContactPairsOrderIslands.add(contactPairs[p]);
+
                         assert(pair.potentialContactManifoldsIndices.size() > 0);
                         nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
 
@@ -868,6 +877,15 @@ void PhysicsWorld::createIslands() {
             if (mRigidBodyComponents.mBodyTypes[j] == BodyType::STATIC) {
                 mRigidBodyComponents.mIsAlreadyInIsland[j] = false;
             }
+        }
+    }
+
+    for (uint32 i=0; i < (*mCollisionDetection.mCurrentContactPairs).size(); i++) {
+
+        ContactPair& contactPair = (*mCollisionDetection.mCurrentContactPairs)[i];
+
+        if (mRigidBodyComponents.hasComponent(contactPair.body1Entity) && mRigidBodyComponents.hasComponent(contactPair.body2Entity)) {
+
         }
     }
 

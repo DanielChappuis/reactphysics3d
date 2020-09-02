@@ -237,9 +237,6 @@ class CollisionDetectionSystem {
         void reducePotentialContactManifolds(List<ContactPair>* contactPairs, List<ContactManifoldInfo>& potentialContactManifolds,
                                              const List<ContactPointInfo>& potentialContactPoints) const;
 
-        /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
-        void createContacts();
-
         /// Compute the lost contact pairs (contact pairs in contact in the previous frame but not in the current one)
         void computeLostContactPairs();
 
@@ -278,6 +275,9 @@ class CollisionDetectionSystem {
 
         /// Filter the overlapping pairs to keep only the pairs where two given bodies are involved
         void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, List<uint64>& convexPairs, List<uint64>& concavePairs) const;
+
+        /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
+        void createContacts();
 
     public :
 
