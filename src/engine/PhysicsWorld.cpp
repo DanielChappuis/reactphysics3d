@@ -880,15 +880,6 @@ void PhysicsWorld::createIslands() {
         }
     }
 
-    for (uint32 i=0; i < (*mCollisionDetection.mCurrentContactPairs).size(); i++) {
-
-        ContactPair& contactPair = (*mCollisionDetection.mCurrentContactPairs)[i];
-
-        if (mRigidBodyComponents.hasComponent(contactPair.body1Entity) && mRigidBodyComponents.hasComponent(contactPair.body2Entity)) {
-
-        }
-    }
-
     mCollisionDetection.mMapBodyToContactPairs.clear(true);
 }
 

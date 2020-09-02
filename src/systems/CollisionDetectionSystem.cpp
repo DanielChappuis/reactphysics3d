@@ -732,8 +732,6 @@ void CollisionDetectionSystem::createContacts() {
 
         uint32 contactPairIndex = mWorld->mProcessContactPairsOrderIslands[p];
 
-        processedContactPairsIndices.add(contactPairIndex);
-
         ContactPair& contactPair = (*mCurrentContactPairs)[contactPairIndex];
 
         contactPair.contactManifoldsIndex = mCurrentContactManifolds->size();
