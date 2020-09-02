@@ -159,6 +159,9 @@ class CollisionDetectionSystem {
         /// Pointer to the contact points of the current frame (either mContactPoints1 or mContactPoints2)
         List<ContactPoint>* mCurrentContactPoints;
 
+        /// Array with the indices of all the contact pairs that have at least one CollisionBody
+        List<uint32> mCollisionBodyContactPairsIndices;
+
 #ifdef IS_RP3D_PROFILING_ENABLED
 
     /// Pointer to the profiler

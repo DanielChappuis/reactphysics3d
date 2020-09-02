@@ -67,7 +67,7 @@ CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, Collider
                      mContactManifolds1(mMemoryManager.getPoolAllocator()), mContactManifolds2(mMemoryManager.getPoolAllocator()),
                      mPreviousContactManifolds(&mContactManifolds1), mCurrentContactManifolds(&mContactManifolds2),
                      mContactPoints1(mMemoryManager.getPoolAllocator()), mContactPoints2(mMemoryManager.getPoolAllocator()),
-                     mPreviousContactPoints(&mContactPoints1), mCurrentContactPoints(&mContactPoints2) {
+                     mPreviousContactPoints(&mContactPoints1), mCurrentContactPoints(&mContactPoints2), mCollisionBodyContactPairsIndices(mMemoryManager.getSingleFrameAllocator()) {
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -623,12 +623,22 @@ void CollisionDetectionSystem::addContactPairsToBodies() {
 
         ContactPair& contactPair = (*mCurrentContactPairs)[p];
 
+        const bool isBody1Rigid = mRigidBodyComponents.hasComponent(contactPair.body1Entity);
+        const bool isBody2Rigid = mRigidBodyComponents.hasComponent(contactPair.body2Entity);
+
         // Add the associated contact pair to both bodies of the pair (used to create islands later)
-        if (mRigidBodyComponents.hasComponent(contactPair.body1Entity)) {
+        if (isBody1Rigid) {
            mRigidBodyComponents.addContacPair(contactPair.body1Entity, p);
         }
-        if (mRigidBodyComponents.hasComponent(contactPair.body2Entity)) {
+        if (isBody2Rigid) {
            mRigidBodyComponents.addContacPair(contactPair.body2Entity, p);
+        }
+
+        // If at least of body is a CollisionBody
+        if (!isBody1Rigid || !isBody2Rigid) {
+
+            // Add the pair index to the array of pairs with CollisionBody
+            mCollisionBodyContactPairsIndices.add(p);
         }
     }
 }
@@ -814,15 +824,7 @@ void CollisionDetectionSystem::createContacts() {
     // We go through all the contact pairs and add the pairs with a least a CollisionBody at the end of the
     // mProcessContactPairsOrderIslands array because those pairs have not been added during the islands
     // creation (only the pairs with two RigidBodies are added during island creation)
-    Set<uint32> processedContactPairsIndices(mMemoryManager.getSingleFrameAllocator(), mCurrentContactPairs->size());
-    for (uint32 i=0; i < mWorld->mProcessContactPairsOrderIslands.size(); i++) {
-        processedContactPairsIndices.add(mWorld->mProcessContactPairsOrderIslands[i]);
-    }
-    for (uint32 i=0; i < mCurrentContactPairs->size(); i++) {
-        if (!processedContactPairsIndices.contains(i)) {
-            mWorld->mProcessContactPairsOrderIslands.add(i);
-        }
-    }
+    mWorld->mProcessContactPairsOrderIslands.addRange(mCollisionBodyContactPairsIndices);
 
     assert(mWorld->mProcessContactPairsOrderIslands.size() == (*mCurrentContactPairs).size());
 
@@ -882,6 +884,8 @@ void CollisionDetectionSystem::createContacts() {
 
     // Compute the map from contact pairs ids to contact pair for the next frame
     computeMapPreviousContactPairs();
+
+    mCollisionBodyContactPairsIndices.clear(true);
 
     mNarrowPhaseInput.clear();
 }
