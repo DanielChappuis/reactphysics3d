@@ -59,7 +59,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& wo
                 mSliderJointsComponents(mMemoryManager.getHeapAllocator()), mCollisionDetection(this, mCollidersComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents,
                                         mMemoryManager),
                 mCollisionBodies(mMemoryManager.getHeapAllocator()), mEventListener(nullptr),
-                mName(worldSettings.worldName),  mIslands(mMemoryManager.getSingleFrameAllocator()),
+                mName(worldSettings.worldName),  mIslands(mMemoryManager.getSingleFrameAllocator()), mProcessContactPairsOrderIslands(mMemoryManager.getSingleFrameAllocator()),
                 mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
                                mCollidersComponents, mConfig.restitutionVelocityThreshold),
                 mConstraintSolverSystem(*this, mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
@@ -338,6 +338,9 @@ void PhysicsWorld::update(decimal timeStep) {
     // Create the islands
     createIslands();
 
+    // Create the actual narrow-phase contacts
+    mCollisionDetection.createContacts();
+
     // Report the contacts to the user
     mCollisionDetection.reportContactsAndTriggers();
 
@@ -372,6 +375,8 @@ void PhysicsWorld::update(decimal timeStep) {
 
     // Reset the islands
     mIslands.clear();
+
+    mProcessContactPairsOrderIslands.clear(true);
 
     // Generate debug rendering primitives (if enabled)
     if (mIsDebugRenderingEnabled) {
@@ -755,6 +760,8 @@ void PhysicsWorld::createIslands() {
 
     RP3D_PROFILE("PhysicsWorld::createIslands()", mProfiler);
 
+    assert(mProcessContactPairsOrderIslands.size() == 0);
+
     // Reset all the isAlreadyInIsland variables of bodies and joints
     for (uint b=0; b < mRigidBodyComponents.getNbComponents(); b++) {
 
@@ -824,7 +831,8 @@ void PhysicsWorld::createIslands() {
             // For each contact pair in which the current body is involded
             for (uint32 p=0; p < mRigidBodyComponents.mContactPairs[bodyToVisitIndex].size(); p++) {
 
-                ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[mRigidBodyComponents.mContactPairs[bodyToVisitIndex][p]];
+                const uint32 contactPairIndex = mRigidBodyComponents.mContactPairs[bodyToVisitIndex][p];
+                ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[contactPairIndex];
 
                 // Check if the current contact pair has already been added into an island
                 if (pair.isAlreadyInIsland) continue;
@@ -835,6 +843,8 @@ void PhysicsWorld::createIslands() {
                 uint32 otherBodyIndex;
                 if (mRigidBodyComponents.hasComponentGetIndex(otherBodyEntity, otherBodyIndex)
                     && !mCollidersComponents.getIsTrigger(pair.collider1Entity) && !mCollidersComponents.getIsTrigger(pair.collider2Entity)) {
+
+                    mProcessContactPairsOrderIslands.add(contactPairIndex);
 
                     assert(pair.nbPotentialContactManifolds > 0);
                     nbTotalManifolds += pair.nbPotentialContactManifolds;
@@ -999,7 +1009,7 @@ void PhysicsWorld::setNbIterationsPositionSolver(uint nbIterations) {
 /**
  * @param gravity The gravity vector (in meter per seconds squared)
  */
-void PhysicsWorld::setGravity(Vector3& gravity) {
+void PhysicsWorld::setGravity(const Vector3& gravity) {
 
     mConfig.gravity = gravity;
 

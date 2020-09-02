@@ -608,19 +608,32 @@ void CollisionDetectionSystem::computeNarrowPhase() {
     // Reduce the number of contact points in the manifolds
     reducePotentialContactManifolds(mCurrentContactPairs, mPotentialContactManifolds, mPotentialContactPoints);
 
+    // Add the contact pairs to the bodies
+    addContactPairsToBodies();
+
     assert(mCurrentContactManifolds->size() == 0);
     assert(mCurrentContactPoints->size() == 0);
-
-    // Create the actual narrow-phase contacts
-    createContacts();
-
-    // Compute the map from contact pairs ids to contact pair for the next frame
-    computeMapPreviousContactPairs();
-
-    mNarrowPhaseInput.clear();
 }
 
-/// Compute the map from contact pairs ids to contact pair for the next frame
+// Add the contact pairs to the corresponding bodies
+void CollisionDetectionSystem::addContactPairsToBodies() {
+
+    const uint32 nbContactPairs = mCurrentContactPairs->size();
+    for (uint32 p=0 ; p < nbContactPairs; p++) {
+
+        ContactPair& contactPair = (*mCurrentContactPairs)[p];
+
+        // Add the associated contact pair to both bodies of the pair (used to create islands later)
+        if (mRigidBodyComponents.hasComponent(contactPair.body1Entity)) {
+           mRigidBodyComponents.addContacPair(contactPair.body1Entity, p);
+        }
+        if (mRigidBodyComponents.hasComponent(contactPair.body2Entity)) {
+           mRigidBodyComponents.addContacPair(contactPair.body2Entity, p);
+        }
+    }
+}
+
+// Compute the map from contact pairs ids to contact pair for the next frame
 void CollisionDetectionSystem::computeMapPreviousContactPairs() {
 
     mPreviousMapPairIdToContactPairIndex.clear();
@@ -798,23 +811,33 @@ void CollisionDetectionSystem::createContacts() {
     mCurrentContactManifolds->reserve(mCurrentContactPairs->size());
     mCurrentContactPoints->reserve(mCurrentContactManifolds->size());
 
-    // For each contact pair
-    const uint nbCurrentContactPairs = (*mCurrentContactPairs).size();
-    for (uint p=0; p < nbCurrentContactPairs; p++) {
+    // We go through all the contact pairs and add the pairs with a least a CollisionBody at the end of the
+    // mProcessContactPairsOrderIslands array because those pairs have not been added during the islands
+    // creation (only the pairs with two RigidBodies are added during island creation)
+    Set<uint32> processedContactPairsIndices(mMemoryManager.getSingleFrameAllocator(), mCurrentContactPairs->size());
+    for (uint32 i=0; i < mWorld->mProcessContactPairsOrderIslands.size(); i++) {
+        processedContactPairsIndices.add(mWorld->mProcessContactPairsOrderIslands[i]);
+    }
+    for (uint32 i=0; i < mCurrentContactPairs->size(); i++) {
+        if (!processedContactPairsIndices.contains(i)) {
+            mWorld->mProcessContactPairsOrderIslands.add(i);
+        }
+    }
 
-        ContactPair& contactPair = (*mCurrentContactPairs)[p];
+    assert(mWorld->mProcessContactPairsOrderIslands.size() == (*mCurrentContactPairs).size());
+
+    // Process the contact pairs in the order defined by the islands such that the contact manifolds and
+    // contact points of a given island are packed together in the array of manifolds and contact points
+    uint32 nbContactPairsToProcess = mWorld->mProcessContactPairsOrderIslands.size();
+    for (uint p=0; p < nbContactPairsToProcess; p++) {
+
+        uint32 contactPairIndex = mWorld->mProcessContactPairsOrderIslands[p];
+
+        ContactPair& contactPair = (*mCurrentContactPairs)[contactPairIndex];
 
         contactPair.contactManifoldsIndex = mCurrentContactManifolds->size();
         contactPair.nbContactManifolds = contactPair.nbPotentialContactManifolds;
         contactPair.contactPointsIndex = mCurrentContactPoints->size();
-
-        // Add the associated contact pair to both bodies of the pair (used to create islands later)
-        if (mRigidBodyComponents.hasComponent(contactPair.body1Entity)) {
-           mRigidBodyComponents.addContacPair(contactPair.body1Entity, p);
-        }
-        if (mRigidBodyComponents.hasComponent(contactPair.body2Entity)) {
-           mRigidBodyComponents.addContacPair(contactPair.body2Entity, p);
-        }
 
         // For each potential contact manifold of the pair
         for (uint m=0; m < contactPair.nbPotentialContactManifolds; m++) {
@@ -856,6 +879,11 @@ void CollisionDetectionSystem::createContacts() {
     // Reset the potential contacts
     mPotentialContactPoints.clear(true);
     mPotentialContactManifolds.clear(true);
+
+    // Compute the map from contact pairs ids to contact pair for the next frame
+    computeMapPreviousContactPairs();
+
+    mNarrowPhaseInput.clear();
 }
 
 // Compute the lost contact pairs (contact pairs in contact in the previous frame but not in the current one)

@@ -230,6 +230,9 @@ class CollisionDetectionSystem {
         /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
         void createContacts();
 
+        /// Add the contact pairs to the corresponding bodies
+        void addContactPairsToBodies();
+
         /// Compute the map from contact pairs ids to contact pair for the next frame
         void computeMapPreviousContactPairs();
 

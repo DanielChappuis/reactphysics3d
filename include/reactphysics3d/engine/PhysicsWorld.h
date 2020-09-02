@@ -230,6 +230,11 @@ class PhysicsWorld {
         /// All the islands of bodies of the current frame
         Islands mIslands;
 
+        /// Order in which to process the ContactPairs for contact creation such that
+        /// all the contact manifolds and contact points of a given island are packed together
+        /// This array contains the indices of the ContactPairs.
+        List<uint32> mProcessContactPairsOrderIslands;
+
         /// Contact solver system
         ContactSolverSystem mContactSolverSystem;
 
@@ -388,7 +393,7 @@ class PhysicsWorld {
         Vector3 getGravity() const;
 
         /// Set the gravity vector of the world
-        void setGravity(Vector3& gravity);
+        void setGravity(const Vector3& gravity);
 
         /// Return if the gravity is on
         bool isGravityEnabled() const;
