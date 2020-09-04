@@ -376,20 +376,12 @@ class List {
         /// Remove an element from the list at a given index and replace it by the last one of the list (if any)
         void removeAtAndReplaceByLast(uint32 index) {
 
-            assert(index >= 0 && index < mSize);
+            assert(index < mSize);
 
-            // Call the destructor
-            (static_cast<T*>(mBuffer)[index]).~T();
+            static_cast<T*>(mBuffer)[index] = static_cast<T*>(mBuffer)[mSize - 1];
 
-            // If there is another element in the list
-            if (mSize > 1 && index < (mSize - 1)) {
-
-                // Copy the last element of the list at the location of the removed element
-                new (static_cast<char*>(mBuffer) + index * sizeof(T)) T(static_cast<T*>(mBuffer)[mSize - 1]);
-
-                // Call the destructor of the last element
-                (static_cast<T*>(mBuffer)[mSize - 1]).~T();
-            }
+            // Call the destructor of the last element
+            (static_cast<T*>(mBuffer)[mSize - 1]).~T();
 
             mSize--;
         }

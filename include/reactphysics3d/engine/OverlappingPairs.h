@@ -174,7 +174,7 @@ class OverlappingPairs {
 
             private:
 
-                MemoryAllocator& mPoolAllocator;
+                MemoryAllocator* mPoolAllocator;
 
             public:
 
@@ -192,7 +192,7 @@ class OverlappingPairs {
                 ConcaveOverlappingPair(uint64 pairId, int32 broadPhaseId1, int32 broadPhaseId2, Entity collider1, Entity collider2,
                                 NarrowPhaseAlgorithmType narrowPhaseAlgorithmType,
                                 bool isShape1Convex, MemoryAllocator& poolAllocator, MemoryAllocator& heapAllocator)
-                  : OverlappingPair(pairId, broadPhaseId1, broadPhaseId2, collider1, collider2, narrowPhaseAlgorithmType), mPoolAllocator(poolAllocator),
+                  : OverlappingPair(pairId, broadPhaseId1, broadPhaseId2, collider1, collider2, narrowPhaseAlgorithmType), mPoolAllocator(&poolAllocator),
                     isShape1Convex(isShape1Convex), lastFrameCollisionInfos(heapAllocator, 16) {
 
                 }
@@ -206,7 +206,7 @@ class OverlappingPairs {
                         it->second->LastFrameCollisionInfo::~LastFrameCollisionInfo();
 
                         // Release memory
-                        mPoolAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
+                        mPoolAllocator->release(it->second, sizeof(LastFrameCollisionInfo));
                     }
 
                     lastFrameCollisionInfos.clear();
@@ -229,7 +229,7 @@ class OverlappingPairs {
                     auto it = lastFrameCollisionInfos.find(shapesId);
                     if (it == lastFrameCollisionInfos.end()) {
 
-                        LastFrameCollisionInfo* lastFrameInfo = new (mPoolAllocator.allocate(sizeof(LastFrameCollisionInfo))) LastFrameCollisionInfo();
+                        LastFrameCollisionInfo* lastFrameInfo = new (mPoolAllocator->allocate(sizeof(LastFrameCollisionInfo))) LastFrameCollisionInfo();
 
                         // Add it into the map of collision infos
                         lastFrameCollisionInfos.add(Pair<uint64, LastFrameCollisionInfo*>(shapesId, lastFrameInfo));
@@ -258,7 +258,7 @@ class OverlappingPairs {
                             it->second->LastFrameCollisionInfo::~LastFrameCollisionInfo();
 
                             // Release memory
-                            mPoolAllocator.release(it->second, sizeof(LastFrameCollisionInfo));
+                            mPoolAllocator->release(it->second, sizeof(LastFrameCollisionInfo));
 
                             it = lastFrameCollisionInfos.remove(it);
                         }
@@ -271,11 +271,6 @@ class OverlappingPairs {
                         }
                     }
                 }
-
-            /// Destructor
-            virtual ~ConcaveOverlappingPair() {
-
-            }
         };
 
     private:
