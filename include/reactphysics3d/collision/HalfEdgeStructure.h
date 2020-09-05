@@ -54,13 +54,13 @@ class HalfEdgeStructure {
         /// Face
         struct Face {
             uint edgeIndex;             // Index of an half-edge of the face
-            List<uint> faceVertices;	// Index of the vertices of the face
+            Array<uint> faceVertices;	// Index of the vertices of the face
 
             /// Constructor
             Face(MemoryAllocator& allocator) : faceVertices(allocator) {}
 
             /// Constructor
-            Face(List<uint> vertices) : faceVertices(vertices) {}
+            Face(Array<uint> vertices) : faceVertices(vertices) {}
         };
 
         /// Vertex
@@ -78,13 +78,13 @@ class HalfEdgeStructure {
         MemoryAllocator& mAllocator;
 
         /// All the faces
-        List<Face> mFaces;
+        Array<Face> mFaces;
 
         /// All the vertices
-        List<Vertex> mVertices;
+        Array<Vertex> mVertices;
 
         /// All the half-edges
-        List<Edge> mEdges;
+        Array<Edge> mEdges;
 
     public:
 
@@ -103,7 +103,7 @@ class HalfEdgeStructure {
         uint addVertex(uint vertexPointIndex);
 
         /// Add a face
-        void addFace(List<uint> faceVertices);
+        void addFace(Array<uint> faceVertices);
 
         /// Return the number of faces
         uint getNbFaces() const;
@@ -137,10 +137,10 @@ RP3D_FORCE_INLINE uint32 HalfEdgeStructure::addVertex(uint32 vertexPointIndex) {
 
 // Add a face
 /**
- * @param faceVertices List of the vertices in a face (ordered in CCW order as seen from outside
+ * @param faceVertices Array of the vertices in a face (ordered in CCW order as seen from outside
  *                     the polyhedron
  */
-RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(List<uint> faceVertices) {
+RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(Array<uint> faceVertices) {
 
     // Create a new face
     Face face(faceVertices);

@@ -30,7 +30,7 @@
 #include <cassert>
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/utils/Profiler.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -76,8 +76,8 @@ class CollisionShape {
         /// Unique identifier of the shape inside an overlapping pair
         uint32 mId;
 
-        /// List of the colliders associated with this shape
-        List<Collider*> mColliders;
+        /// Array of the colliders associated with this shape
+        Array<Collider*> mColliders;
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 

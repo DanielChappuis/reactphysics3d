@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_LOGGER_H
 
 // Libraries
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/containers/Map.h>
 #include <string>
 #include <iostream>

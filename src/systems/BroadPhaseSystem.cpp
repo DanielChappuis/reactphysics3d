@@ -206,12 +206,12 @@ void BroadPhaseSystem::addMovedCollider(int broadPhaseID, Collider* collider) {
 }
 
 // Compute all the overlapping pairs of collision shapes
-void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int32, int32>>& overlappingNodes) {
+void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, Array<Pair<int32, int32>>& overlappingNodes) {
 
     RP3D_PROFILE("BroadPhaseSystem::computeOverlappingPairs()", mProfiler);
 
-    // Get the list of the colliders that have moved or have been created in the last frame
-    List<int> shapesToTest = mMovedShapes.toList(memoryManager.getHeapAllocator());
+    // Get the array of the colliders that have moved or have been created in the last frame
+    Array<int> shapesToTest = mMovedShapes.toArray(memoryManager.getHeapAllocator());
 
     // Ask the dynamic AABB tree to report all collision shapes that overlap with the shapes to test
     mDynamicAABBTree.reportAllShapesOverlappingWithShapes(shapesToTest, 0, shapesToTest.size(), overlappingNodes);

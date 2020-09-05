@@ -145,11 +145,11 @@ class RigidBodyComponents : public Components {
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
-        /// For each body, the list of joints entities the body is part of
-        List<Entity>* mJoints;
+        /// For each body, the array of joints entities the body is part of
+        Array<Entity>* mJoints;
 
-        /// For each body, the list of the indices of contact pairs in which the body is involved
-        List<uint>* mContactPairs;
+        /// For each body, the array of the indices of contact pairs in which the body is involved
+        Array<uint>* mContactPairs;
 
         // -------------------- Methods -------------------- //
 
@@ -342,8 +342,8 @@ class RigidBodyComponents : public Components {
         /// Set the value to know if the entity is already in an island
         void setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
 
-        /// Return the list of joints of a body
-        const List<Entity>& getJoints(Entity bodyEntity) const;
+        /// Return the array of joints of a body
+        const Array<Entity>& getJoints(Entity bodyEntity) const;
 
         /// Add a joint to a body component
         void addJointToBody(Entity bodyEntity, Entity jointEntity);
@@ -769,8 +769,8 @@ RP3D_FORCE_INLINE void RigidBodyComponents::setIsAlreadyInIsland(Entity bodyEnti
    mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]] = isAlreadyInIsland;
 }
 
-// Return the list of joints of a body
-RP3D_FORCE_INLINE const List<Entity>& RigidBodyComponents::getJoints(Entity bodyEntity) const {
+// Return the array of joints of a body
+RP3D_FORCE_INLINE const Array<Entity>& RigidBodyComponents::getJoints(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
    return mJoints[mMapEntityToComponentIndex[bodyEntity]];

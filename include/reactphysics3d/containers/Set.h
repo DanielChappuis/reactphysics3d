@@ -478,16 +478,16 @@ class Set {
             return end();
         }
 
-        /// Return a list with all the values of the set
-        List<V> toList(MemoryAllocator& listAllocator) const {
+        /// Return an array with all the values of the set
+        Array<V> toArray(MemoryAllocator& arrayAllocator) const {
 
-            List<V> list(listAllocator);
+            Array<V> array(arrayAllocator);
 
             for (auto it = begin(); it != end(); ++it) {
-                list.add(*it);
+                array.add(*it);
             }
 
-           return list;
+           return array;
         }
 
         /// Clear the set

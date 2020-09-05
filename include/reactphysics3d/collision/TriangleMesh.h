@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cassert>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/memory/MemoryAllocator.h>
 
 namespace reactphysics3d {
@@ -49,7 +49,7 @@ class TriangleMesh {
     protected:
 
         /// All the triangle arrays of the mesh (one triangle array per part)
-        List<TriangleVertexArray*> mTriangleArrays;
+        Array<TriangleVertexArray*> mTriangleArrays;
 
         /// Constructor
         TriangleMesh(reactphysics3d::MemoryAllocator& allocator);

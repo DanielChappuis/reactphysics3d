@@ -39,7 +39,7 @@ CollisionCallback::ContactPoint::ContactPoint(const reactphysics3d::ContactPoint
 
 // Contact Pair Constructor
 CollisionCallback::ContactPair::ContactPair(const reactphysics3d::ContactPair& contactPair,
-                                            List<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld& world, bool isLostContactPair)
+                                            Array<reactphysics3d::ContactPoint>* contactPoints, PhysicsWorld& world, bool isLostContactPair)
                                :mContactPair(contactPair), mContactPoints(contactPoints),
                                 mWorld(world), mIsLostContactPair(isLostContactPair) {
 
@@ -76,8 +76,8 @@ CollisionCallback::ContactPair::EventType CollisionCallback::ContactPair::getEve
 }
 
 // Constructor
-CollisionCallback::CallbackData::CallbackData(List<reactphysics3d::ContactPair>* contactPairs, List<ContactManifold>* manifolds,
-                                              List<reactphysics3d::ContactPoint>* contactPoints, List<reactphysics3d::ContactPair>& lostContactPairs, PhysicsWorld& world)
+CollisionCallback::CallbackData::CallbackData(Array<reactphysics3d::ContactPair>* contactPairs, Array<ContactManifold>* manifolds,
+                                              Array<reactphysics3d::ContactPoint>* contactPoints, Array<reactphysics3d::ContactPair>& lostContactPairs, PhysicsWorld& world)
                       :mContactPairs(contactPairs), mContactManifolds(manifolds), mContactPoints(contactPoints), mLostContactPairs(lostContactPairs),
                        mContactPairsIndices(world.mMemoryManager.getHeapAllocator(), contactPairs->size()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator(), lostContactPairs.size()),
                        mWorld(world) {

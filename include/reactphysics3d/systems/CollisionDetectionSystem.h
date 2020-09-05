@@ -99,7 +99,7 @@ class CollisionDetectionSystem {
         OverlappingPairs mOverlappingPairs;
 
         /// Overlapping nodes during broad-phase computation
-        List<Pair<int32, int32>> mBroadPhaseOverlappingNodes;
+        Array<Pair<int32, int32>> mBroadPhaseOverlappingNodes;
 
         /// Broad-phase system
         BroadPhaseSystem mBroadPhaseSystem;
@@ -110,57 +110,57 @@ class CollisionDetectionSystem {
         /// Narrow-phase collision detection input
         NarrowPhaseInput mNarrowPhaseInput;
 
-        /// List of the potential contact points
-        List<ContactPointInfo> mPotentialContactPoints;
+        /// Array of the potential contact points
+        Array<ContactPointInfo> mPotentialContactPoints;
 
-        /// List of the potential contact manifolds
-        List<ContactManifoldInfo> mPotentialContactManifolds;
+        /// Array of the potential contact manifolds
+        Array<ContactManifoldInfo> mPotentialContactManifolds;
 
-        /// First list of narrow-phase pair contacts
-        List<ContactPair> mContactPairs1;
+        /// First array of narrow-phase pair contacts
+        Array<ContactPair> mContactPairs1;
 
-        /// Second list of narrow-phase pair contacts
-        List<ContactPair> mContactPairs2;
+        /// Second array of narrow-phase pair contacts
+        Array<ContactPair> mContactPairs2;
 
-        /// Pointer to the list of contact pairs of the previous frame (either mContactPairs1 or mContactPairs2)
-        List<ContactPair>* mPreviousContactPairs;
+        /// Pointer to the array of contact pairs of the previous frame (either mContactPairs1 or mContactPairs2)
+        Array<ContactPair>* mPreviousContactPairs;
 
-        /// Pointer to the list of contact pairs of the current frame (either mContactPairs1 or mContactPairs2)
-        List<ContactPair>* mCurrentContactPairs;
+        /// Pointer to the array of contact pairs of the current frame (either mContactPairs1 or mContactPairs2)
+        Array<ContactPair>* mCurrentContactPairs;
 
-        /// List of lost contact pairs (contact pairs in contact in previous frame but not in the current one)
-        List<ContactPair> mLostContactPairs;
+        /// Array of lost contact pairs (contact pairs in contact in previous frame but not in the current one)
+        Array<ContactPair> mLostContactPairs;
 
         /// Pointer to the map of overlappingPairId to the index of contact pair of the previous frame
         /// (either mMapPairIdToContactPairIndex1 or mMapPairIdToContactPairIndex2)
         Map<uint64, uint> mPreviousMapPairIdToContactPairIndex;
 
-        /// First list with the contact manifolds
-        List<ContactManifold> mContactManifolds1;
+        /// First array with the contact manifolds
+        Array<ContactManifold> mContactManifolds1;
 
-        /// Second list with the contact manifolds
-        List<ContactManifold> mContactManifolds2;
+        /// Second array with the contact manifolds
+        Array<ContactManifold> mContactManifolds2;
 
-        /// Pointer to the list of contact manifolds from the previous frame (either mContactManifolds1 or mContactManifolds2)
-        List<ContactManifold>* mPreviousContactManifolds;
+        /// Pointer to the array of contact manifolds from the previous frame (either mContactManifolds1 or mContactManifolds2)
+        Array<ContactManifold>* mPreviousContactManifolds;
 
-        /// Pointer to the list of contact manifolds from the current frame (either mContactManifolds1 or mContactManifolds2)
-        List<ContactManifold>* mCurrentContactManifolds;
+        /// Pointer to the array of contact manifolds from the current frame (either mContactManifolds1 or mContactManifolds2)
+        Array<ContactManifold>* mCurrentContactManifolds;
 
-        /// Second list of contact points (contact points from either the current frame of the previous frame)
-        List<ContactPoint> mContactPoints1;
+        /// Second array of contact points (contact points from either the current frame of the previous frame)
+        Array<ContactPoint> mContactPoints1;
 
-        /// Second list of contact points (contact points from either the current frame of the previous frame)
-        List<ContactPoint> mContactPoints2;
+        /// Second array of contact points (contact points from either the current frame of the previous frame)
+        Array<ContactPoint> mContactPoints2;
 
         /// Pointer to the contact points of the previous frame (either mContactPoints1 or mContactPoints2)
-        List<ContactPoint>* mPreviousContactPoints;
+        Array<ContactPoint>* mPreviousContactPoints;
 
         /// Pointer to the contact points of the current frame (either mContactPoints1 or mContactPoints2)
-        List<ContactPoint>* mCurrentContactPoints;
+        Array<ContactPoint>* mCurrentContactPoints;
 
         /// Array with the indices of all the contact pairs that have at least one CollisionBody
-        List<uint32> mCollisionBodyContactPairsIndices;
+        Array<uint32> mCollisionBodyContactPairsIndices;
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -178,7 +178,7 @@ class CollisionDetectionSystem {
         void computeMiddlePhase(NarrowPhaseInput& narrowPhaseInput, bool needToReportContacts);
 
         // Compute the middle-phase collision detection
-        void computeMiddlePhaseCollisionSnapshot(List<uint64>& convexPairs, List<uint64>& concavePairs, NarrowPhaseInput& narrowPhaseInput,
+        void computeMiddlePhaseCollisionSnapshot(Array<uint64>& convexPairs, Array<uint64>& concavePairs, NarrowPhaseInput& narrowPhaseInput,
                                                  bool reportContacts);
 
         /// Compute the narrow-phase collision detection
@@ -191,14 +191,14 @@ class CollisionDetectionSystem {
         bool computeNarrowPhaseCollisionSnapshot(NarrowPhaseInput& narrowPhaseInput, CollisionCallback& callback);
 
         /// Process the potential contacts after narrow-phase collision detection
-        void computeOverlapSnapshotContactPairs(NarrowPhaseInput& narrowPhaseInput, List<ContactPair>& contactPairs) const;
+        void computeOverlapSnapshotContactPairs(NarrowPhaseInput& narrowPhaseInput, Array<ContactPair>& contactPairs) const;
 
         /// Convert the potential contact into actual contacts
-        void computeOverlapSnapshotContactPairs(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, List<ContactPair>& contactPairs,
+        void computeOverlapSnapshotContactPairs(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, Array<ContactPair>& contactPairs,
                                          Set<uint64>& setOverlapContactPairId) const;
 
-        /// Take a list of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
-        void updateOverlappingPairs(const List<Pair<int32, int32> >& overlappingNodes);
+        /// Take an array of overlapping nodes in the broad-phase and create new overlapping pairs if necessary
+        void updateOverlappingPairs(const Array<Pair<int32, int32> >& overlappingNodes);
 
         /// Remove pairs that are not overlapping anymore
         void removeNonOverlappingPairs();
@@ -213,22 +213,22 @@ class CollisionDetectionSystem {
         void computeConvexVsConcaveMiddlePhase(OverlappingPairs::ConcaveOverlappingPair& overlappingPair, MemoryAllocator& allocator,
                                                NarrowPhaseInput& narrowPhaseInput);
 
-        /// Swap the previous and current contacts lists
+        /// Swap the previous and current contacts arrays
         void swapPreviousAndCurrentContacts();
 
         /// Convert the potential contact into actual contacts
         void processPotentialContacts(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                      bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
-                                      List<ContactManifoldInfo>& potentialContactManifolds,
-                                      Map<uint64, uint>& mapPairIdToContactPairIndex, List<ContactPair>* contactPairs);
+                                      bool updateLastFrameInfo, Array<ContactPointInfo>& potentialContactPoints,
+                                      Array<ContactManifoldInfo>& potentialContactManifolds,
+                                      Map<uint64, uint>& mapPairIdToContactPairIndex, Array<ContactPair>* contactPairs);
 
         /// Process the potential contacts after narrow-phase collision detection
-        void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo, List<ContactPointInfo>& potentialContactPoints,
-                                         List<ContactManifoldInfo>& potentialContactManifolds, List<ContactPair>* contactPairs);
+        void processAllPotentialContacts(NarrowPhaseInput& narrowPhaseInput, bool updateLastFrameInfo, Array<ContactPointInfo>& potentialContactPoints,
+                                         Array<ContactManifoldInfo>& potentialContactManifolds, Array<ContactPair>* contactPairs);
 
         /// Reduce the potential contact manifolds and contact points of the overlapping pair contacts
-        void reducePotentialContactManifolds(List<ContactPair>* contactPairs, List<ContactManifoldInfo>& potentialContactManifolds,
-                                             const List<ContactPointInfo>& potentialContactPoints) const;
+        void reducePotentialContactManifolds(Array<ContactPair>* contactPairs, Array<ContactManifoldInfo>& potentialContactManifolds,
+                                             const Array<ContactPointInfo>& potentialContactPoints) const;
 
         /// Create the actual contact manifolds and contacts points (from potential contacts) for a given contact pair
         void createContacts();
@@ -243,40 +243,40 @@ class CollisionDetectionSystem {
         void computeLostContactPairs();
 
         /// Create the actual contact manifolds and contacts points for testCollision() methods
-        void createSnapshotContacts(List<ContactPair>& contactPairs, List<ContactManifold> &contactManifolds,
-                                    List<ContactPoint>& contactPoints,
-                                    List<ContactManifoldInfo>& potentialContactManifolds,
-                                    List<ContactPointInfo>& potentialContactPoints);
+        void createSnapshotContacts(Array<ContactPair>& contactPairs, Array<ContactManifold> &contactManifolds,
+                                    Array<ContactPoint>& contactPoints,
+                                    Array<ContactManifoldInfo>& potentialContactManifolds,
+                                    Array<ContactPointInfo>& potentialContactPoints);
 
         /// Initialize the current contacts with the contacts from the previous frame (for warmstarting)
         void initContactsWithPreviousOnes();
 
         /// Reduce the number of contact points of a potential contact manifold
         void reduceContactPoints(ContactManifoldInfo& manifold, const Transform& shape1ToWorldTransform,
-                                 const List<ContactPointInfo>& potentialContactPoints) const;
+                                 const Array<ContactPointInfo>& potentialContactPoints) const;
 
         /// Report contacts
-        void reportContacts(CollisionCallback& callback, List<ContactPair>* contactPairs,
-                            List<ContactManifold>* manifolds, List<ContactPoint>* contactPoints, List<ContactPair>& lostContactPairs);
+        void reportContacts(CollisionCallback& callback, Array<ContactPair>* contactPairs,
+                            Array<ContactManifold>* manifolds, Array<ContactPoint>* contactPoints, Array<ContactPair>& lostContactPairs);
 
         /// Report all triggers
-        void reportTriggers(EventListener& eventListener, List<ContactPair>* contactPairs, List<ContactPair>& lostContactPairs);
+        void reportTriggers(EventListener& eventListener, Array<ContactPair>* contactPairs, Array<ContactPair>& lostContactPairs);
 
         /// Report all contacts for debug rendering
-        void reportDebugRenderingContacts(List<ContactPair>* contactPairs, List<ContactManifold>* manifolds, List<ContactPoint>* contactPoints, List<ContactPair>& lostContactPairs);
+        void reportDebugRenderingContacts(Array<ContactPair>* contactPairs, Array<ContactManifold>* manifolds, Array<ContactPoint>* contactPoints, Array<ContactPair>& lostContactPairs);
 
         /// Return the largest depth of all the contact points of a potential manifold
         decimal computePotentialManifoldLargestContactDepth(const ContactManifoldInfo& manifold,
-                                                            const List<ContactPointInfo>& potentialContactPoints) const;
+                                                            const Array<ContactPointInfo>& potentialContactPoints) const;
 
         /// Process the potential contacts where one collion is a concave shape
         void processSmoothMeshContacts(OverlappingPair* pair);
 
         /// Filter the overlapping pairs to keep only the pairs where a given body is involved
-        void filterOverlappingPairs(Entity bodyEntity, List<uint64>& convexPairs, List<uint64>& concavePairs) const;
+        void filterOverlappingPairs(Entity bodyEntity, Array<uint64>& convexPairs, Array<uint64>& concavePairs) const;
 
         /// Filter the overlapping pairs to keep only the pairs where two given bodies are involved
-        void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, List<uint64>& convexPairs, List<uint64>& concavePairs) const;
+        void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, Array<uint64>& convexPairs, Array<uint64>& concavePairs) const;
 
         /// Remove an element in an array (and replace it by the last one in the array)
         void removeItemAtInArray(uint array[], uint8 index, uint8& arraySize) const;
@@ -411,7 +411,7 @@ RP3D_FORCE_INLINE void CollisionDetectionSystem::removeNoCollisionPair(Entity bo
 }
 
 // Ask for a collision shape to be tested again during broad-phase.
-/// We simply put the shape in the list of collision shape that have moved in the
+/// We simply put the shape in the array of collision shape that have moved in the
 /// previous frame so that it is tested for collision again in the broad-phase.
 RP3D_FORCE_INLINE void CollisionDetectionSystem::askForBroadPhaseCollisionCheck(Collider* collider) {
 

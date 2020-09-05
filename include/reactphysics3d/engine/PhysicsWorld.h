@@ -28,7 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/constraint/Joint.h>
 #include <reactphysics3d/memory/MemoryManager.h>
 #include <reactphysics3d/engine/EntityManager.h>
@@ -210,7 +210,7 @@ class PhysicsWorld {
         CollisionDetectionSystem mCollisionDetection;
 
         /// All the collision bodies of the world
-        List<CollisionBody*> mCollisionBodies;
+        Array<CollisionBody*> mCollisionBodies;
 
         /// Pointer to an event listener object
         EventListener* mEventListener;
@@ -233,7 +233,7 @@ class PhysicsWorld {
         /// Order in which to process the ContactPairs for contact creation such that
         /// all the contact manifolds and contact points of a given island are packed together
         /// This array contains the indices of the ContactPairs.
-        List<uint32> mProcessContactPairsOrderIslands;
+        Array<uint32> mProcessContactPairsOrderIslands;
 
         /// Contact solver system
         ContactSolverSystem mContactSolverSystem;
@@ -254,7 +254,7 @@ class PhysicsWorld {
         bool mIsSleepingEnabled;
 
         /// All the rigid bodies of the physics world
-        List<RigidBody*> mRigidBodies;
+        Array<RigidBody*> mRigidBodies;
 
         /// True if the gravity force is on
         bool mIsGravityEnabled;
@@ -298,7 +298,7 @@ class PhysicsWorld {
         /// Put bodies to sleep if needed.
         void updateSleepingBodies(decimal timeStep);
 
-        /// Add the joint to the list of joints of the two bodies involved in the joint
+        /// Add the joint to the array of joints of the two bodies involved in the joint
         void addJointToBodies(Entity body1, Entity body2, Entity joint);
 
         /// Update the world inverse inertia tensors of rigid bodies

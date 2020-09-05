@@ -91,8 +91,8 @@ void HeightFieldShape::getLocalBounds(Vector3& min, Vector3& max) const {
 // of the body when need to test and see against which triangles of the height-field we need
 // to test for collision. We compute the sub-grid points that are inside the other body's AABB
 // and then for each rectangle in the sub-grid we generate two triangles that we use to test collision.
-void HeightFieldShape::computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
-                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+void HeightFieldShape::computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
+                                                   Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
                                                    MemoryAllocator& allocator) const {
 
     RP3D_PROFILE("HeightFieldShape::computeOverlappingTriangles()", mProfiler);
@@ -236,9 +236,9 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     const AABB rayAABB(Vector3::min(ray.point1, rayEnd), Vector3::max(ray.point1, rayEnd));
 
     // Compute the triangles overlapping with the ray AABB
-    List<Vector3> triangleVertices(allocator, 64);
-    List<Vector3> triangleVerticesNormals(allocator, 64);
-    List<uint> shapeIds(allocator, 64);
+    Array<Vector3> triangleVertices(allocator, 64);
+    Array<Vector3> triangleVerticesNormals(allocator, 64);
+    Array<uint> shapeIds(allocator, 64);
     computeOverlappingTriangles(rayAABB, triangleVertices, triangleVerticesNormals, shapeIds, allocator);
 
     assert(triangleVertices.size() == triangleVerticesNormals.size());

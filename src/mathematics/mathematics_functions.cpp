@@ -221,14 +221,14 @@ decimal reactphysics3d::computePointToLineDistance(const Vector3& linePointA, co
 
 // Clip a segment against multiple planes and return the clipped segment vertices
 // This method implements the Sutherland–Hodgman clipping algorithm
-List<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
-                                                           const List<Vector3>& planesPoints,
-                                                           const List<Vector3>& planesNormals,
+Array<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
+                                                           const Array<Vector3>& planesPoints,
+                                                           const Array<Vector3>& planesNormals,
                                                            MemoryAllocator& allocator) {
     assert(planesPoints.size() == planesNormals.size());
 
-    List<Vector3> inputVertices(allocator, 2);
-    List<Vector3> outputVertices(allocator, 2);
+    Array<Vector3> inputVertices(allocator, 2);
+    Array<Vector3> outputVertices(allocator, 2);
 
     inputVertices.add(segA);
     inputVertices.add(segB);
@@ -296,14 +296,14 @@ List<Vector3> reactphysics3d::clipSegmentWithPlanes(const Vector3& segA, const V
 
 // Clip a polygon against multiple planes and return the clipped polygon vertices
 // This method implements the Sutherland–Hodgman clipping algorithm
-List<Vector3> reactphysics3d::clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const List<Vector3>& planesPoints,
-                                                    const List<Vector3>& planesNormals, MemoryAllocator& allocator) {
+Array<Vector3> reactphysics3d::clipPolygonWithPlanes(const Array<Vector3>& polygonVertices, const Array<Vector3>& planesPoints,
+                                                    const Array<Vector3>& planesNormals, MemoryAllocator& allocator) {
 
     assert(planesPoints.size() == planesNormals.size());
 
         uint32 nbMaxElements = polygonVertices.size() + planesPoints.size();
-        List<Vector3> inputVertices(allocator, nbMaxElements);
-        List<Vector3> outputVertices(allocator, nbMaxElements);
+        Array<Vector3> inputVertices(allocator, nbMaxElements);
+        Array<Vector3> outputVertices(allocator, nbMaxElements);
 
         inputVertices.addRange(polygonVertices);
 

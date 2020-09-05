@@ -41,7 +41,7 @@ void HalfEdgeStructure::init() {
     Map<uint32, VerticesPair> mapEdgeIndexToKey(mAllocator);
     Map<uint32, VerticesPair> mapFaceIndexToEdgeKey(mAllocator);
 
-    List<VerticesPair> currentFaceEdges(mAllocator, mFaces[0].faceVertices.size());
+    Array<VerticesPair> currentFaceEdges(mAllocator, mFaces[0].faceVertices.size());
 
     // For each face
     for (uint32 f=0; f<mFaces.size(); f++) {

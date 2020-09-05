@@ -90,8 +90,8 @@ class ColliderComponents : public Components {
         /// Array with the local-to-world transforms of the colliders
         Transform* mLocalToWorldTransforms;
 
-        /// Array with the list of involved overlapping pairs for each collider
-        List<uint64>* mOverlappingPairs;
+        /// Array with the involved overlapping pairs for each collider
+        Array<uint64>* mOverlappingPairs;
 
         /// True if the size of the collision shape associated with the collider
         /// has been changed by the user
@@ -194,8 +194,8 @@ class ColliderComponents : public Components {
         /// Set the local-to-world transform of a collider
         void setLocalToWorldTransform(Entity colliderEntity, const Transform& transform);
 
-        /// Return a reference to the list of overlapping pairs for a given collider
-        List<uint64>& getOverlappingPairs(Entity colliderEntity);
+        /// Return a reference to the array of overlapping pairs for a given collider
+        Array<uint64>& getOverlappingPairs(Entity colliderEntity);
 
         /// Return true if the size of collision shape of the collider has been changed by the user
         bool getHasCollisionShapeChangedSize(Entity colliderEntity) const;
@@ -329,8 +329,8 @@ RP3D_FORCE_INLINE void ColliderComponents::setLocalToWorldTransform(Entity colli
    mLocalToWorldTransforms[mMapEntityToComponentIndex[colliderEntity]] = transform;
 }
 
-// Return a reference to the list of overlapping pairs for a given collider
-RP3D_FORCE_INLINE List<uint64>& ColliderComponents::getOverlappingPairs(Entity colliderEntity) {
+// Return a reference to the array of overlapping pairs for a given collider
+RP3D_FORCE_INLINE Array<uint64>& ColliderComponents::getOverlappingPairs(Entity colliderEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 

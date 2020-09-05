@@ -50,7 +50,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
 
 #endif
 
-    List<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator, batchNbItems);
+    Array<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator, batchNbItems);
     gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults);
     assert(gjkResults.size() == batchNbItems);
 

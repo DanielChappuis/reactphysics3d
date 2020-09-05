@@ -57,8 +57,8 @@ class CollisionBodyComponents : public Components {
         /// Array of pointers to the corresponding bodies
         CollisionBody** mBodies;
 
-        /// Array with the list of colliders of each body
-        List<Entity>* mColliders;
+        /// Array with the colliders of each body
+        Array<Entity>* mColliders;
 
         /// Array of boolean values to know if the body is active.
         bool* mIsActive;
@@ -113,8 +113,8 @@ class CollisionBodyComponents : public Components {
         /// Return a pointer to a body
         CollisionBody* getBody(Entity bodyEntity);
 
-        /// Return the list of colliders of a body
-        const List<Entity>& getColliders(Entity bodyEntity) const;
+        /// Return the array of colliders of a body
+        const Array<Entity>& getColliders(Entity bodyEntity) const;
 
         /// Return true if the body is active
         bool getIsActive(Entity bodyEntity) const;
@@ -153,8 +153,8 @@ RP3D_FORCE_INLINE CollisionBody *CollisionBodyComponents::getBody(Entity bodyEnt
     return mBodies[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Return the list of colliders of a body
-RP3D_FORCE_INLINE const List<Entity>& CollisionBodyComponents::getColliders(Entity bodyEntity) const {
+// Return the array of colliders of a body
+RP3D_FORCE_INLINE const Array<Entity>& CollisionBodyComponents::getColliders(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 

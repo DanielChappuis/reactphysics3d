@@ -28,7 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/configuration.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/engine/Entity.h>
 #include <reactphysics3d/constraint/Joint.h>
 
@@ -64,19 +64,19 @@ struct Islands {
 
 
         /// For each island, index of the first contact manifold of the island in the array of contact manifolds
-        List<uint> contactManifoldsIndices;
+        Array<uint> contactManifoldsIndices;
 
         /// For each island, number of contact manifolds in the island
-        List<uint> nbContactManifolds;
+        Array<uint> nbContactManifolds;
 
-        /// List of all the entities of the bodies in the islands (stored sequentially)
-        List<Entity> bodyEntities;
+        /// Array of all the entities of the bodies in the islands (stored sequentially)
+        Array<Entity> bodyEntities;
 
         /// For each island we store the starting index of the bodies of that island in the "bodyEntities" array
-        List<uint32> startBodyEntitiesIndex;
+        Array<uint32> startBodyEntitiesIndex;
 
         /// For each island, total number of bodies in the island
-        List<uint32> nbBodiesInIsland;
+        Array<uint32> nbBodiesInIsland;
 
         // -------------------- Methods -------------------- //
 

@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_LIST_H
-#define REACTPHYSICS3D_LIST_H
+#ifndef REACTPHYSICS3D_ARRAY_H
+#define REACTPHYSICS3D_ARRAY_H
 
 // Libraries
 #include <reactphysics3d/configuration.h>
@@ -36,24 +36,24 @@
 
 namespace reactphysics3d {
 
-// Class List
+// Class Array
 /**
- * This class represents a simple generic list with custom memory allocator.
+ * This class represents a simple dynamic array with custom memory allocator.
  */
 template<typename T>
-class List {
+class Array {
 
     private:
 
         // -------------------- Attributes -------------------- //
 
-        /// Buffer for the list elements
+        /// Buffer for the array elements
         T* mBuffer;
 
-        /// Number of elements in the list
+        /// Number of elements in the array
         uint32 mSize;
 
-        /// Number of allocated elements in the list
+        /// Number of allocated elements in the array
         uint32 mCapacity;
 
         /// Memory allocator
@@ -63,7 +63,7 @@ class List {
 
         /// Class Iterator
         /**
-         * This class represents an iterator for the List
+         * This class represents an iterator for the array
          */
         class Iterator {
 
@@ -198,7 +198,7 @@ class List {
                 bool operator==(const Iterator& iterator) const {
                     assert(mCurrentIndex >= 0 && mCurrentIndex <= mSize);
 
-                    // If both iterators points to the end of the list
+                    // If both iterators points to the end of the array
                     if (mCurrentIndex == mSize && iterator.mCurrentIndex == iterator.mSize) {
                         return true;
                     }
@@ -212,14 +212,14 @@ class List {
                 }
 
                 /// Frienship
-                friend class List;
+                friend class Array;
 
         };
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        List(MemoryAllocator& allocator, uint32 capacity = 0)
+        Array(MemoryAllocator& allocator, uint32 capacity = 0)
             : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(allocator) {
 
             if (capacity > 0) {
@@ -230,24 +230,24 @@ class List {
         }
 
         /// Copy constructor
-        List(const List<T>& list) : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(list.mAllocator) {
+        Array(const Array<T>& array) : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(array.mAllocator) {
 
             // If we need to allocate more memory
-            if (list.mCapacity > 0) {
-                reserve(list.mCapacity);
+            if (array.mCapacity > 0) {
+                reserve(array.mCapacity);
             }
 
-            // All all the elements of the list to the current one
-            addRange(list);
+            // All all the elements of the array to the current one
+            addRange(array);
         }
 
         /// Destructor
-        ~List() {
+        ~Array() {
 
             // If elements have been allocated
             if (mCapacity > 0) {
 
-                // Clear the list
+                // Clear the array
                 clear(true);
             }
         }
@@ -284,7 +284,7 @@ class List {
             mCapacity = capacity;
         }
 
-        /// Add an element into the list
+        /// Add an element into the array
         void add(const T& element) {
 
             // If we need to allocate more memory
@@ -298,7 +298,7 @@ class List {
             mSize++;
         }
 
-        /// Add an element into the list by constructing it directly into the list (in order to avoid a copy)
+        /// Add an element into the array by constructing it directly into the array (in order to avoid a copy)
         template<typename...Ts>
         void emplace(Ts&&... args) {
 
@@ -313,7 +313,7 @@ class List {
             mSize++;
         }
 
-        /// Add a given numbers of elements at the end of the list but do not init them
+        /// Add a given numbers of elements at the end of the array but do not init them
         void addWithoutInit(uint32 nbElements) {
 
             // If we need to allocate more memory
@@ -324,8 +324,8 @@ class List {
             mSize += nbElements;
         }
 
-        /// Try to find a given item of the list and return an iterator
-        /// pointing to that element if it exists in the list. Otherwise,
+        /// Try to find a given item of the array and return an iterator
+        /// pointing to that element if it exists in the array. Otherwise,
         /// this method returns the end() iterator
         Iterator find(const T& element) {
 
@@ -338,19 +338,19 @@ class List {
             return end();
         }
 
-        /// Look for an element in the list and remove it
+        /// Look for an element in the array and remove it
         Iterator remove(const T& element) {
            return remove(find(element));
         }
 
-        /// Remove an element from the list and return a iterator
+        /// Remove an element from the array and return a iterator
         /// pointing to the element after the removed one (or end() if none)
         Iterator remove(const Iterator& it) {
            assert(it.mBuffer == mBuffer);
            return removeAt(it.mCurrentIndex);
         }
 
-        /// Remove an element from the list at a given index (all the following items will be moved)
+        /// Remove an element from the array at a given index (all the following items will be moved)
         Iterator removeAt(uint32 index) {
 
           assert(index < mSize);
@@ -379,31 +379,32 @@ class List {
 
             mBuffer[index] = mBuffer[mSize - 1];
 
-            // Call the destructor of the last element
+           // Call the destructor of the last element
             mBuffer[mSize - 1].~T();
 
             mSize--;
         }
 
-        /// Append another list at the end of the current one
-        void addRange(const List<T>& list) {
+        /// Remove an element from the array at a given index and replace it by the last one of the array (if any)
+        /// Append another array at the end of the current one
+        void addRange(const Array<T>& array) {
 
             // If we need to allocate more memory
-            if (mSize + list.size() > mCapacity) {
+            if (mSize + array.size() > mCapacity) {
 
                 // Allocate memory
-                reserve(mSize + list.size());
+                reserve(mSize + array.size());
             }
 
-            // Add the elements of the list to the current one
-            for(uint32 i=0; i<list.size(); i++) {
+            // Add the elements of the array to the current one
+            for(uint32 i=0; i<array.size(); i++) {
 
-                new (reinterpret_cast<void*>(mBuffer + mSize)) T(list[i]);
+                new (reinterpret_cast<void*>(mBuffer + mSize)) T(array[i]);
                 mSize++;
             }
         }
 
-        /// Clear the list
+        /// Clear the array
         void clear(bool releaseMemory = false) {
 
             // Call the destructor of each element
@@ -424,12 +425,12 @@ class List {
             }
         }
 
-        /// Return the number of elements in the list
+        /// Return the number of elements in the array
         uint32 size() const {
             return mSize;
         }
 
-        /// Return the capacity of the list
+        /// Return the capacity of the array
         uint32 capacity() const {
             return mCapacity;
         }
@@ -447,12 +448,12 @@ class List {
         }
 
         /// Overloaded equality operator
-        bool operator==(const List<T>& list) const {
+        bool operator==(const Array<T>& array) const {
 
-           if (mSize != list.mSize) return false;
+           if (mSize != array.mSize) return false;
 
             for (uint32 i=0; i < mSize; i++) {
-                if (mBuffer[i] != list[i]) {
+                if (mBuffer[i] != array[i]) {
                     return false;
                 }
             }
@@ -461,21 +462,21 @@ class List {
         }
 
         /// Overloaded not equal operator
-        bool operator!=(const List<T>& list) const {
+        bool operator!=(const Array<T>& array) const {
 
-            return !((*this) == list);
+            return !((*this) == array);
         }
 
         /// Overloaded assignment operator
-        List<T>& operator=(const List<T>& list) {
+        Array<T>& operator=(const Array<T>& array) {
 
-            if (this != &list) {
+            if (this != &array) {
 
                 // Clear all the elements
                 clear();
 
-                // Add all the elements of the list to the current one
-                addRange(list);
+                // Add all the elements of the array to the current one
+                addRange(array);
             }
 
             return *this;

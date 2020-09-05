@@ -62,7 +62,7 @@ ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, PhysicsWo
 }
 
 // Initialize the contact constraints
-void ContactSolverSystem::init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep) {
+void ContactSolverSystem::init(Array<ContactManifold>* contactManifolds, Array<ContactPoint>* contactPoints, decimal timeStep) {
 
     mAllContactManifolds = contactManifolds;
     mAllContactPoints = contactPoints;

@@ -152,8 +152,8 @@ class HeightFieldShape : public ConcaveShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
-                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+        virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
+                                                   Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
                                                    MemoryAllocator& allocator) const override;
 
         /// Return the string representation of the shape

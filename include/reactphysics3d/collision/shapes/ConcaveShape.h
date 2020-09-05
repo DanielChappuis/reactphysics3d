@@ -111,8 +111,8 @@ class ConcaveShape : public CollisionShape {
         virtual bool isPolyhedron() const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
-                                                 List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+        virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
+                                                 Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
                                                  MemoryAllocator& allocator) const=0;
 
         /// Compute and return the volume of the collision shape

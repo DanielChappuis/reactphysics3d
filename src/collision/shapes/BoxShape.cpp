@@ -56,17 +56,17 @@ BoxShape::BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator)
     mHalfEdgeStructure.addVertex(7);
 
     // Faces
-    List<uint> face0(allocator, 4);
+    Array<uint> face0(allocator, 4);
     face0.add(0); face0.add(1); face0.add(2); face0.add(3);
-    List<uint> face1(allocator, 4);
+    Array<uint> face1(allocator, 4);
     face1.add(1); face1.add(5); face1.add(6); face1.add(2);
-    List<uint> face2(allocator, 4);
+    Array<uint> face2(allocator, 4);
     face2.add(4); face2.add(7); face2.add(6); face2.add(5);
-    List<uint> face3(allocator, 4);
+    Array<uint> face3(allocator, 4);
     face3.add(4); face3.add(0); face3.add(3); face3.add(7);
-    List<uint> face4(allocator, 4);
+    Array<uint> face4(allocator, 4);
     face4.add(4); face4.add(5); face4.add(1); face4.add(0);
-    List<uint> face5(allocator, 4);
+    Array<uint> face5(allocator, 4);
     face5.add(2); face5.add(6); face5.add(7); face5.add(3);
 
     mHalfEdgeStructure.addFace(face0);

@@ -67,7 +67,7 @@ OverlapCallback::OverlapPair::EventType OverlapCallback::OverlapPair::getEventTy
 }
 
 // CollisionCallbackData Constructor
-OverlapCallback::CallbackData::CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world)
+OverlapCallback::CallbackData::CallbackData(Array<ContactPair>& contactPairs, Array<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world)
                 :mContactPairs(contactPairs), mLostContactPairs(lostContactPairs),
                  mContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mWorld(world) {
 

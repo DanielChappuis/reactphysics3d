@@ -28,7 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/utils/Logger.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/containers/Map.h>
 #include <string>
 #include <iostream>
@@ -445,7 +445,7 @@ class DefaultLogger : public Logger {
         MemoryAllocator& mAllocator;
 
         /// All the log destinations
-        List<Destination*> mDestinations;
+        Array<Destination*> mDestinations;
 
         /// Map a log format to the given formatter object
         Map<Format, Formatter*> mFormatters;

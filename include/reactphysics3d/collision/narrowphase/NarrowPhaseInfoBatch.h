@@ -85,7 +85,7 @@ struct NarrowPhaseInfoBatch {
         /// Number of contact points
         uint8 nbContactPoints;
 
-        /// List of contact points created during the narrow-phase
+        /// Array of contact points created during the narrow-phase
         ContactPointInfo contactPoints[NB_MAX_CONTACT_POINTS_IN_NARROWPHASE_INFO];
 
         /// Constructor
@@ -114,7 +114,7 @@ struct NarrowPhaseInfoBatch {
     public:
 
         /// For each collision test, we keep some meta data
-        List<NarrowPhaseInfo> narrowPhaseInfos;
+        Array<NarrowPhaseInfo> narrowPhaseInfos;
 
         /// Constructor
         NarrowPhaseInfoBatch(OverlappingPairs& overlappingPairs, MemoryAllocator& allocator);

@@ -58,7 +58,7 @@ struct TreeNode {
 
     // -------------------- Attributes -------------------- //
 
-    // A node is either in the tree (has a parent) or in the free nodes list
+    // A node is either in the tree (has a parent) or in the free nodes array
     // (has a next node)
     union {
 
@@ -149,7 +149,7 @@ class DynamicAABBTree {
         /// ID of the root node of the tree
         int32 mRootNodeID;
 
-        /// ID of the first node of the list of free (allocated) nodes in the tree that we can use
+        /// ID of the first node of the array of free (allocated) nodes in the tree that we can use
         int32 mFreeNodeID;
 
         /// Number of allocated nodes in the tree
@@ -236,11 +236,11 @@ class DynamicAABBTree {
         void* getNodeDataPointer(int32 nodeID) const;
 
         /// Report all shapes overlapping with all the shapes in the map in parameter
-        void reportAllShapesOverlappingWithShapes(const List<int32>& nodesToTest, size_t startIndex,
-                                                  size_t endIndex, List<Pair<int32, int32>>& outOverlappingNodes) const;
+        void reportAllShapesOverlappingWithShapes(const Array<int32>& nodesToTest, size_t startIndex,
+                                                  size_t endIndex, Array<Pair<int32, int32>>& outOverlappingNodes) const;
 
         /// Report all shapes overlapping with the AABB given in parameter.
-        void reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int>& overlappingNodes) const;
+        void reportAllShapesOverlappingWithAABB(const AABB& aabb, Array<int>& overlappingNodes) const;
 
         /// Ray casting method
         void raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& callback) const;

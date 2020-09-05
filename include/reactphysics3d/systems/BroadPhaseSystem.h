@@ -51,10 +51,10 @@ class AABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
     public:
 
-        List<int>& mOverlappingNodes;
+        Array<int>& mOverlappingNodes;
 
         // Constructor
-        AABBOverlapCallback(List<int>& overlappingNodes) : mOverlappingNodes(overlappingNodes) {
+        AABBOverlapCallback(Array<int>& overlappingNodes) : mOverlappingNodes(overlappingNodes) {
 
         }
 
@@ -184,7 +184,7 @@ class BroadPhaseSystem {
         void removeMovedCollider(int broadPhaseID);
 
         /// Compute all the overlapping pairs of collision shapes
-        void computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int32, int32>>& overlappingNodes);
+        void computeOverlappingPairs(MemoryManager& memoryManager, Array<Pair<int32, int32>>& overlappingNodes);
 
         /// Return the collider corresponding to the broad-phase node id in parameter
         Collider* getColliderForBroadPhaseId(int broadPhaseId) const;

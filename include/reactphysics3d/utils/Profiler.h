@@ -34,7 +34,7 @@
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/engine/Timer.h>
 #include <fstream>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {

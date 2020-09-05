@@ -32,7 +32,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -111,14 +111,14 @@ decimal computePlaneSegmentIntersection(const Vector3& segA, const Vector3& segB
 decimal computePointToLineDistance(const Vector3& linePointA, const Vector3& linePointB, const Vector3& point);
 
 /// Clip a segment against multiple planes and return the clipped segment vertices
-List<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
-                                                           const List<Vector3>& planesPoints,
-                                                           const List<Vector3>& planesNormals,
+Array<Vector3> clipSegmentWithPlanes(const Vector3& segA, const Vector3& segB,
+                                                           const Array<Vector3>& planesPoints,
+                                                           const Array<Vector3>& planesNormals,
                                                            MemoryAllocator& allocator);
 
 /// Clip a polygon against multiple planes and return the clipped polygon vertices
-List<Vector3> clipPolygonWithPlanes(const List<Vector3>& polygonVertices, const List<Vector3>& planesPoints,
-                                    const List<Vector3>& planesNormals, MemoryAllocator& allocator);
+Array<Vector3> clipPolygonWithPlanes(const Array<Vector3>& polygonVertices, const Array<Vector3>& planesPoints,
+                                    const Array<Vector3>& planesNormals, MemoryAllocator& allocator);
 
 /// Project a point onto a plane that is given by a point and its unit length normal
 Vector3 projectPointOntoPlane(const Vector3& point, const Vector3& planeNormal, const Vector3& planePoint);

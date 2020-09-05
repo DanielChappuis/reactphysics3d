@@ -283,11 +283,11 @@ class OverlappingPairs {
         /// Heap memory allocator
         MemoryAllocator& mHeapAllocator;
 
-        /// List of convex vs convex overlapping pairs
-        List<ConvexOverlappingPair> mConvexPairs;
+        /// Array of convex vs convex overlapping pairs
+        Array<ConvexOverlappingPair> mConvexPairs;
 
-        /// List of convex vs concave overlapping pairs
-        List<ConcaveOverlappingPair> mConcavePairs;
+        /// Array of convex vs concave overlapping pairs
+        Array<ConcaveOverlappingPair> mConcavePairs;
 
         /// Map a pair id to the internal array index
         Map<uint64, uint64> mMapConvexPairIdToPairIndex;

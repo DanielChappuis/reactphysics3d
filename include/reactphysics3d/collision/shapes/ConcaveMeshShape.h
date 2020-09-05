@@ -29,7 +29,7 @@
 // Libraries
 #include <reactphysics3d/collision/shapes/ConcaveShape.h>
 #include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 
 namespace reactphysics3d {
 
@@ -72,7 +72,7 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
     private :
 
-        List<int32> mHitAABBNodes;
+        Array<int32> mHitAABBNodes;
         const DynamicAABBTree& mDynamicAABBTree;
         const ConcaveMeshShape& mConcaveMeshShape;
         Collider* mCollider;
@@ -156,7 +156,7 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
 
-        /// Return the three vertices coordinates (in the list outTriangleVertices) of a triangle
+        /// Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
         void getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const;
 
         /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
@@ -166,8 +166,8 @@ class ConcaveMeshShape : public ConcaveShape {
         uint computeTriangleShapeId(uint subPart, uint triangleIndex) const;
 
         /// Compute all the triangles of the mesh that are overlapping with the AABB in parameter
-        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
-                                                 List<Vector3> &triangleVerticesNormals, List<uint>& shapeIds,
+        virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
+                                                 Array<Vector3> &triangleVerticesNormals, Array<uint>& shapeIds,
                                                  MemoryAllocator& allocator) const override;
 
         /// Destructor

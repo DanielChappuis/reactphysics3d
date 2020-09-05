@@ -27,7 +27,7 @@
 #define TEST_MATHEMATICS_FUNCTIONS_H
 
 // Libraries
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/memory/DefaultAllocator.h>
 #include <reactphysics3d/mathematics/mathematics.h>
 
@@ -187,12 +187,12 @@ class TestMathematicsFunctions : public Test {
             segmentVertices.push_back(Vector3(-6, 3, 0));
             segmentVertices.push_back(Vector3(8, 3, 0));
 
-            List<Vector3> planesNormals(mAllocator, 2);
-            List<Vector3> planesPoints(mAllocator, 2);
+            Array<Vector3> planesNormals(mAllocator, 2);
+            Array<Vector3> planesPoints(mAllocator, 2);
             planesNormals.add(Vector3(-1, 0, 0));
             planesPoints.add(Vector3(4, 0, 0));
 
-            List<Vector3> clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1],
+            Array<Vector3> clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1],
                                                                              planesPoints, planesNormals, mAllocator);
             rp3d_test(clipSegmentVertices.size() == 2);
             rp3d_test(approxEqual(clipSegmentVertices[0].x, -6, 0.000001));
@@ -236,14 +236,14 @@ class TestMathematicsFunctions : public Test {
             rp3d_test(clipSegmentVertices.size() == 0);
 
             // Test clipPolygonWithPlanes()
-            List<Vector3> polygonVertices(mAllocator);
+            Array<Vector3> polygonVertices(mAllocator);
             polygonVertices.add(Vector3(-4, 2, 0));
             polygonVertices.add(Vector3(7, 2, 0));
             polygonVertices.add(Vector3(7, 4, 0));
             polygonVertices.add(Vector3(-4, 4, 0));
 
-            List<Vector3> polygonPlanesNormals(mAllocator);
-            List<Vector3> polygonPlanesPoints(mAllocator);
+            Array<Vector3> polygonPlanesNormals(mAllocator);
+            Array<Vector3> polygonPlanesPoints(mAllocator);
             polygonPlanesNormals.add(Vector3(1, 0, 0));
             polygonPlanesPoints.add(Vector3(0, 0, 0));
             polygonPlanesNormals.add(Vector3(0, 1, 0));
@@ -253,7 +253,7 @@ class TestMathematicsFunctions : public Test {
             polygonPlanesNormals.add(Vector3(0, -1, 0));
             polygonPlanesPoints.add(Vector3(10, 5, 0));
 
-            List<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, polygonPlanesPoints, polygonPlanesNormals, mAllocator);
+            Array<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, polygonPlanesPoints, polygonPlanesNormals, mAllocator);
             rp3d_test(clipPolygonVertices.size() == 4);
             rp3d_test(approxEqual(clipPolygonVertices[0].x, 0, 0.000001));
             rp3d_test(approxEqual(clipPolygonVertices[0].y, 2, 0.000001));

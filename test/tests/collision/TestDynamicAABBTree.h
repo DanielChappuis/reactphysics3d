@@ -126,7 +126,7 @@ class TestDynamicAABBTree : public Test {
 
         }
 
-        bool isOverlapping(int nodeId, const List<int>& overlappingNodes) const {
+        bool isOverlapping(int nodeId, const Array<int>& overlappingNodes) const {
             return std::find(overlappingNodes.begin(), overlappingNodes.end(), nodeId) != overlappingNodes.end();
         }
 
@@ -223,7 +223,7 @@ class TestDynamicAABBTree : public Test {
 
             // ---------- Tests ---------- //
 
-            List<int> overlappingNodes(mAllocator);
+            Array<int> overlappingNodes(mAllocator);
 
             // AABB overlapping nothing
             overlappingNodes.clear();

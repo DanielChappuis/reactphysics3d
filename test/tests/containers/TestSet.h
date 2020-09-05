@@ -432,18 +432,18 @@ class TestSet : public Test {
             set1.add(3);
             set1.add(4);
 
-            List<int> list1 = set1.toList(mAllocator);
-            rp3d_test(list1.size() == 4);
-            rp3d_test(list1.find(1) != list1.end());
-            rp3d_test(list1.find(2) != list1.end());
-            rp3d_test(list1.find(3) != list1.end());
-            rp3d_test(list1.find(4) != list1.end());
-            rp3d_test(list1.find(5) == list1.end());
-            rp3d_test(list1.find(6) == list1.end());
+            Array<int> array1 = set1.toArray(mAllocator);
+            rp3d_test(array1.size() == 4);
+            rp3d_test(array1.find(1) != array1.end());
+            rp3d_test(array1.find(2) != array1.end());
+            rp3d_test(array1.find(3) != array1.end());
+            rp3d_test(array1.find(4) != array1.end());
+            rp3d_test(array1.find(5) == array1.end());
+            rp3d_test(array1.find(6) == array1.end());
 
             Set<int> set2(mAllocator);
-            List<int> list2 = set2.toList(mAllocator);
-            rp3d_test(list2.size() == 0);
+            Array<int> array2 = set2.toArray(mAllocator);
+            rp3d_test(array2.size() == 0);
         }
  };
 

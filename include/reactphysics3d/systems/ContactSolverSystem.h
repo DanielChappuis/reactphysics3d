@@ -302,11 +302,11 @@ class ContactSolverSystem {
         /// Reference to the islands
         Islands& mIslands;
 
-        /// Pointer to the list of contact manifolds from narrow-phase
-        List<ContactManifold>* mAllContactManifolds;
+        /// Pointer to the array of contact manifolds from narrow-phase
+        Array<ContactManifold>* mAllContactManifolds;
 
-        /// Pointer to the list of contact points from narrow-phase
-        List<ContactPoint>* mAllContactPoints;
+        /// Pointer to the array of contact points from narrow-phase
+        Array<ContactPoint>* mAllContactPoints;
 
         /// Reference to the body components
         CollisionBodyComponents& mBodyComponents;
@@ -356,7 +356,7 @@ class ContactSolverSystem {
         ~ContactSolverSystem() = default;
 
         /// Initialize the contact constraints
-        void init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep);
+        void init(Array<ContactManifold>* contactManifolds, Array<ContactPoint>* contactPoints, decimal timeStep);
 
         /// Initialize the constraint solver for a given island
         void initializeForIsland(uint islandIndex);

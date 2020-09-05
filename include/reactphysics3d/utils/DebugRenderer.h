@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_DEBUG_RENDERER_H
 
 // Libraries
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/containers/Map.h>
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <reactphysics3d/engine/EventListener.h>
@@ -47,7 +47,7 @@ class PhysicsWorld;
 /**
  * This class is used to display physics debug information directly into the user application view.
  * For instance, it is possible to display AABBs of colliders, colliders or contact points. This class
- * can be used to get the debug information as lists of basic primitives (points, linges, triangles, ...).
+ * can be used to get the debug information as arrays of basic primitives (points, linges, triangles, ...).
  * You can use this to render physics debug information in your simulation on top of your object. Note that
  * you should use this only for debugging purpose and you should disable it when you compile the final release
  * version of your application because computing/rendering phyiscs debug information can be expensive.
@@ -159,11 +159,11 @@ class DebugRenderer : public EventListener {
 		/// Memory allocator
 		MemoryAllocator& mAllocator;
 
-		/// List with all the debug lines
-		List<DebugLine> mLines;
+        /// Array with all the debug lines
+		Array<DebugLine> mLines;
 
-		/// List with all the debug triangles
-		List<DebugTriangle> mTriangles;
+        /// Array with all the debug triangles
+		Array<DebugTriangle> mTriangles;
 
         /// 32-bits integer that contains all the flags of debug items to display
 		uint32 mDisplayedDebugItems;
@@ -216,8 +216,8 @@ class DebugRenderer : public EventListener {
 		/// Return the number of lines
 		uint32 getNbLines() const;
 
-		/// Return a reference to the list of lines
-		const List<DebugLine>& getLines() const;
+        /// Return a reference to the array of lines
+		const Array<DebugLine>& getLines() const;
 
 		/// Return a pointer to the array of lines
 		const DebugLine* getLinesArray() const;
@@ -225,8 +225,8 @@ class DebugRenderer : public EventListener {
 		/// Return the number of triangles
 		uint32 getNbTriangles() const;
 
-		/// Return a reference to the list of triangles
-		const List<DebugTriangle>& getTriangles() const;
+        /// Return a reference to the array of triangles
+		const Array<DebugTriangle>& getTriangles() const;
 
 		/// Return a pointer to the array of triangles
 		const DebugTriangle* getTrianglesArray() const;
@@ -267,11 +267,11 @@ RP3D_FORCE_INLINE uint32 DebugRenderer::getNbLines() const {
 	return mLines.size();
 }
 
-// Return a reference to the list of lines
+// Return a reference to the array of lines
 /**
- * @return The list of lines to draw
+ * @return The array of lines to draw
  */
-RP3D_FORCE_INLINE const List<DebugRenderer::DebugLine>& DebugRenderer::getLines() const {
+RP3D_FORCE_INLINE const Array<DebugRenderer::DebugLine>& DebugRenderer::getLines() const {
 	return mLines;
 }
 
@@ -291,11 +291,11 @@ RP3D_FORCE_INLINE uint32 DebugRenderer::getNbTriangles() const {
 	return mTriangles.size();
 }
 
-// Return a reference to the list of triangles
+// Return a reference to the array of triangles
 /**
- * @return The list of triangles to draw
+ * @return The array of triangles to draw
  */
-RP3D_FORCE_INLINE const List<DebugRenderer::DebugTriangle>& DebugRenderer::getTriangles() const {
+RP3D_FORCE_INLINE const Array<DebugRenderer::DebugTriangle>& DebugRenderer::getTriangles() const {
 	return mTriangles;
 }
 

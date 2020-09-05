@@ -127,8 +127,8 @@ uint ConcaveMeshShape::getNbTriangles(uint subPart) const
 }
 
 // Compute all the triangles of the mesh that are overlapping with the AABB in parameter
-void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
-                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
+                                                   Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
                                                    MemoryAllocator& allocator) const {
 
     RP3D_PROFILE("ConcaveMeshShape::computeOverlappingTriangles()", mProfiler);
@@ -139,12 +139,12 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, List<V
     aabb.applyScale(Vector3(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z));
 
     // Compute the nodes of the internal AABB tree that are overlapping with the AABB
-    List<int> overlappingNodes(allocator, 64);
+    Array<int> overlappingNodes(allocator, 64);
     mDynamicAABBTree.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
 
     const uint32 nbOverlappingNodes = overlappingNodes.size();
 
-    // Add space in the list of triangles vertices/normals for the new triangles
+    // Add space in the array of triangles vertices/normals for the new triangles
     triangleVertices.addWithoutInit(nbOverlappingNodes * 3);
     triangleVerticesNormals.addWithoutInit(nbOverlappingNodes * 3);
 
@@ -230,7 +230,7 @@ decimal ConcaveMeshRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const R
 // Raycast all collision shapes that have been collected
 void ConcaveMeshRaycastCallback::raycastTriangles() {
 
-    List<int>::Iterator it;
+    Array<int>::Iterator it;
     decimal smallestHitFraction = mRay.maxFraction;
 
     for (it = mHitAABBNodes.begin(); it != mHitAABBNodes.end(); ++it) {

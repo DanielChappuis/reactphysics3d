@@ -64,7 +64,7 @@
 #include <reactphysics3d/constraint/SliderJoint.h>
 #include <reactphysics3d/constraint/HingeJoint.h>
 #include <reactphysics3d/constraint/FixedJoint.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 
 /// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;

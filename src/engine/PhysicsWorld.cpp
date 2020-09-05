@@ -217,7 +217,7 @@ void PhysicsWorld::destroyCollisionBody(CollisionBody* collisionBody) {
     // Call the destructor of the collision body
     collisionBody->~CollisionBody();
 
-    // Remove the collision body from the list of bodies
+    // Remove the collision body from the array of bodies
     mCollisionBodies.remove(collisionBody);
 
     // Free the object from the memory allocator
@@ -238,7 +238,7 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
     mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
     // For each collider of the body
-    const List<Entity>& collidersEntities = mCollisionBodyComponents.getColliders(bodyEntity);
+    const Array<Entity>& collidersEntities = mCollisionBodyComponents.getColliders(bodyEntity);
     for (uint32 i=0; i < collidersEntities.size(); i++) {
 
         mCollidersComponents.setIsEntityDisabled(collidersEntities[i], isDisabled);
@@ -246,7 +246,7 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     // Disable the joints of the body if necessary
     // For each joint of the body
-    const List<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
+    const Array<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
     for(uint32 i=0; i < joints.size(); i++) {
 
         const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
@@ -518,7 +518,7 @@ void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     rigidBody->removeAllColliders();
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
-    const List<Entity>& joints = mRigidBodyComponents.getJoints(rigidBody->getEntity());
+    const Array<Entity>& joints = mRigidBodyComponents.getJoints(rigidBody->getEntity());
     for (uint32 i=0; i < joints.size(); i++) {
         destroyJoint(mJointsComponents.getJoint(joints[i]));
     }
@@ -532,7 +532,7 @@ void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     // Call the destructor of the rigid body
     rigidBody->~RigidBody();
 
-    // Remove the rigid body from the list of rigid bodies
+    // Remove the rigid body from the array of rigid bodies
     mRigidBodies.remove(rigidBody);
 
     // Free the object from the memory allocator
@@ -656,7 +656,7 @@ Joint* PhysicsWorld::createJoint(const JointInfo& jointInfo) {
     RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Joint,
              "Joint " + std::to_string(newJoint->getEntity().id) + ": " + newJoint->to_string(),  __FILE__, __LINE__);
 
-    // Add the joint into the joint list of the bodies involved in the joint
+    // Add the joint into the joint array of the bodies involved in the joint
     addJointToBodies(jointInfo.body1->getEntity(), jointInfo.body2->getEntity(), entity);
 
     // Return the pointer to the created joint
@@ -688,7 +688,7 @@ void PhysicsWorld::destroyJoint(Joint* joint) {
     body1->setIsSleeping(false);
     body2->setIsSleeping(false);
 
-    // Remove the joint from the joint list of the bodies involved in the joint
+    // Remove the joint from the joint array of the bodies involved in the joint
     mRigidBodyComponents.removeJointFromBody(body1->getEntity(), joint->getEntity());
     mRigidBodyComponents.removeJointFromBody(body2->getEntity(), joint->getEntity());
 
@@ -732,7 +732,7 @@ void PhysicsWorld::setNbIterationsVelocitySolver(uint nbIterations) {
              "Physics World: Set nb iterations velocity solver to " + std::to_string(nbIterations),  __FILE__, __LINE__);
 }
 
-// Add the joint to the list of joints of the two bodies involved in the joint
+// Add the joint to the array of joints of the two bodies involved in the joint
 void PhysicsWorld::addJointToBodies(Entity body1, Entity body2, Entity joint) {
 
     mRigidBodyComponents.addJointToBody(body1, joint);
@@ -777,8 +777,8 @@ void PhysicsWorld::createIslands() {
     // Create a stack for the bodies to visit during the Depth First Search
     Stack<Entity> bodyEntitiesToVisit(mMemoryManager.getSingleFrameAllocator(), mIslands.getNbMaxBodiesInIslandPreviousFrame());
 
-    // List of static bodies added to the current island (used to reset the isAlreadyInIsland variable of static bodies)
-    List<Entity> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator(), 16);
+    // Array of static bodies added to the current island (used to reset the isAlreadyInIsland variable of static bodies)
+    Array<Entity> staticBodiesAddedToIsland(mMemoryManager.getSingleFrameAllocator(), 16);
 
     uint nbTotalManifolds = 0;
 
@@ -862,13 +862,13 @@ void PhysicsWorld::createIslands() {
                 }
                 else {
 
-                    // Add the contact pair index in the list of contact pairs that won't be part of islands
+                    // Add the contact pair index in the array of contact pairs that won't be part of islands
                     pair.isAlreadyInIsland = true;
                 }
             }
 
             // For each joint in which the current body is involved
-            const List<Entity>& joints = mRigidBodyComponents.getJoints(rigidBodyToVisit->getEntity());
+            const Array<Entity>& joints = mRigidBodyComponents.getJoints(rigidBodyToVisit->getEntity());
             for (uint32 i=0; i < joints.size(); i++) {
 
                 // Check if the current joint has already been added into an island
@@ -981,7 +981,7 @@ void PhysicsWorld::enableSleeping(bool isSleepingEnabled) {
     if (!mIsSleepingEnabled) {
 
         // For each body of the world
-        List<RigidBody*>::Iterator it;
+        Array<RigidBody*>::Iterator it;
         for (it = mRigidBodies.begin(); it != mRigidBodies.end(); ++it) {
 
             // Wake up the rigid body

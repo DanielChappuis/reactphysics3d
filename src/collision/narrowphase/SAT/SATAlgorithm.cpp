@@ -395,8 +395,8 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
     uint firstEdgeIndex = face.edgeIndex;
     uint edgeIndex = firstEdgeIndex;
 
-    List<Vector3> planesPoints(mMemoryAllocator, 2);
-    List<Vector3> planesNormals(mMemoryAllocator, 2);
+    Array<Vector3> planesPoints(mMemoryAllocator, 2);
+    Array<Vector3> planesNormals(mMemoryAllocator, 2);
 
     // For each adjacent edge of the separating face of the polyhedron
     do {
@@ -422,7 +422,7 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint referenceFaceI
     } while(edgeIndex != firstEdgeIndex);
 
     // First we clip the inner segment of the capsule with the four planes of the adjacent faces
-    List<Vector3> clipSegment = clipSegmentWithPlanes(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace, planesPoints, planesNormals, mMemoryAllocator);
+    Array<Vector3> clipSegment = clipSegmentWithPlanes(capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace, planesPoints, planesNormals, mMemoryAllocator);
 
 	// Project the two clipped points into the polyhedron face
 	const Vector3 delta = faceNormal * (penetrationDepth - capsuleRadius);
@@ -916,9 +916,9 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     const HalfEdgeStructure::Face& incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
 
     uint32 nbIncidentFaceVertices = incidentFace.faceVertices.size();
-    List<Vector3> polygonVertices(mMemoryAllocator, nbIncidentFaceVertices);   // Vertices to clip of the incident face
-    List<Vector3> planesNormals(mMemoryAllocator, nbIncidentFaceVertices);     // Normals of the clipping planes
-    List<Vector3> planesPoints(mMemoryAllocator, nbIncidentFaceVertices);      // Points on the clipping planes
+    Array<Vector3> polygonVertices(mMemoryAllocator, nbIncidentFaceVertices);   // Vertices to clip of the incident face
+    Array<Vector3> planesNormals(mMemoryAllocator, nbIncidentFaceVertices);     // Normals of the clipping planes
+    Array<Vector3> planesPoints(mMemoryAllocator, nbIncidentFaceVertices);      // Points on the clipping planes
 
     // Get all the vertices of the incident face (in the reference local-space)
     for (uint32 i=0; i < incidentFace.faceVertices.size(); i++) {
@@ -958,7 +958,7 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     assert(planesNormals.size() == planesPoints.size());
 
     // Clip the reference faces with the adjacent planes of the reference face
-    List<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals, mMemoryAllocator);
+    Array<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals, mMemoryAllocator);
 
     // We only keep the clipped points that are below the reference face
     const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);

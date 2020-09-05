@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_OVERLAP_CALLBACK_H
 
 // Libraries
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/collision/ContactPair.h>
 
 /// ReactPhysics3D namespace
@@ -131,17 +131,17 @@ class OverlapCallback {
 
                 // -------------------- Attributes -------------------- //
 
-                /// Reference to the list of contact pairs (contains contacts and triggers events)
-                List<ContactPair>& mContactPairs;
+                /// Reference to the array of contact pairs (contains contacts and triggers events)
+                Array<ContactPair>& mContactPairs;
 
-                /// Reference to the list of lost contact pairs (contains contacts and triggers events)
-                List<ContactPair>& mLostContactPairs;
+                /// Reference to the array of lost contact pairs (contains contacts and triggers events)
+                Array<ContactPair>& mLostContactPairs;
 
-                /// List of indices of the mContactPairs list that are overlap/triggers events (not contact events)
-                List<uint> mContactPairsIndices;
+                /// Array of indices of the mContactPairs array that are overlap/triggers events (not contact events)
+                Array<uint> mContactPairsIndices;
 
-                /// List of indices of the mLostContactPairs list that are overlap/triggers events (not contact events)
-                List<uint> mLostContactPairsIndices;
+                /// Array of indices of the mLostContactPairs array that are overlap/triggers events (not contact events)
+                Array<uint> mLostContactPairsIndices;
 
                 /// Reference to the physics world
                 PhysicsWorld& mWorld;
@@ -149,7 +149,7 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world);
+                CallbackData(Array<ContactPair>& contactPairs, Array<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world);
 
                 /// Deleted copy constructor
                 CallbackData(const CallbackData& callbackData) = delete;

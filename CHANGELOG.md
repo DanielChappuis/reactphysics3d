@@ -14,7 +14,8 @@ do not hesitate to take a look at the user manual.
 
 ### Changed
 
- - Rolling resistance constraint is not solved anymore in the solver. Angular damping needs to be used instead to simulate this.
+ - Rolling resistance constraint is not solved anymore in the solver. Angular damping needs to be used instead to simulate this
+ - The List class has been renamed to Array
 
 ### Removed
 

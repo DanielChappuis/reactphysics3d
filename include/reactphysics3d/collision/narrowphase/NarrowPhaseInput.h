@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_NARROW_PHASE_INPUT_H
 
 // Libraries
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
 #include <reactphysics3d/collision/narrowphase/CollisionDispatch.h>
 

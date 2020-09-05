@@ -75,7 +75,7 @@ void PolyhedronMesh::createHalfEdgeStructure() {
         // Get the polygon face
         PolygonVertexArray::PolygonFace* face = mPolygonVertexArray->getPolygonFace(f);
 
-        List<uint> faceVertices(mMemoryAllocator, face->nbVertices);
+        Array<uint> faceVertices(mMemoryAllocator, face->nbVertices);
 
         // For each vertex of the face
         for (uint v=0; v < face->nbVertices; v++) {

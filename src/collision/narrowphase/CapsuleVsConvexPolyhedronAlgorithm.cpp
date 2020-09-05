@@ -59,7 +59,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
 #endif
 
     // Run the GJK algorithm
-    List<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
+    Array<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
     gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults);
     assert(gjkResults.size() == batchNbItems);
 

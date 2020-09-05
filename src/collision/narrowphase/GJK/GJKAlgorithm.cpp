@@ -30,7 +30,7 @@
 #include <reactphysics3d/collision/shapes/TriangleShape.h>
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/utils/Profiler.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
 #include <reactphysics3d/collision/narrowphase/GJK/VoronoiSimplex.h>
 #include <cassert>
@@ -48,7 +48,7 @@ using namespace reactphysics3d;
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
 void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                                 uint batchNbItems, List<GJKResult>& gjkResults) {
+                                 uint batchNbItems, Array<GJKResult>& gjkResults) {
 
     RP3D_PROFILE("GJKAlgorithm::testCollision()", mProfiler);
     
