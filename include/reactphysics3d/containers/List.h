@@ -48,7 +48,7 @@ class List {
         // -------------------- Attributes -------------------- //
 
         /// Buffer for the list elements
-        void* mBuffer;
+        T* mBuffer;
 
         /// Number of elements in the list
         uint32 mSize;
@@ -259,19 +259,18 @@ class List {
 
             // Allocate memory for the new array
             void* newMemory = mAllocator.allocate(capacity * sizeof(T));
+            T* destination = static_cast<T*>(newMemory);
 
             if (mBuffer != nullptr) {
 
                 if (mSize > 0) {
 
                     // Copy the elements to the new allocated memory location
-                    T* destination = static_cast<T*>(newMemory);
-                    T* items = static_cast<T*>(mBuffer);
-                    std::uninitialized_copy(items, items + mSize, destination);
+                    std::uninitialized_copy(mBuffer, mBuffer + mSize, destination);
 
                     // Destruct the previous items
                     for (uint32 i=0; i<mSize; i++) {
-                        items[i].~T();
+                        mBuffer[i].~T();
                     }
                 }
 
@@ -279,7 +278,7 @@ class List {
                 mAllocator.release(mBuffer, mCapacity * sizeof(T));
             }
 
-            mBuffer = newMemory;
+            mBuffer = destination;
             assert(mBuffer != nullptr);
 
             mCapacity = capacity;
@@ -294,7 +293,7 @@ class List {
             }
 
             // Use the copy-constructor to construct the element
-            new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(element);
+            new (reinterpret_cast<void*>(mBuffer + mSize)) T(element);
 
             mSize++;
         }
@@ -309,7 +308,7 @@ class List {
             }
 
             // Construct the element directly at its location in the array
-            new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(std::forward<Ts>(args)...);
+            new (reinterpret_cast<void*>(mBuffer + mSize)) T(std::forward<Ts>(args)...);
 
             mSize++;
         }
@@ -331,7 +330,7 @@ class List {
         Iterator find(const T& element) {
 
             for (uint32 i=0; i<mSize; i++) {
-                if (element == static_cast<T*>(mBuffer)[i]) {
+                if (element == mBuffer[i]) {
                     return Iterator(mBuffer, i, mSize);
                 }
             }
@@ -354,18 +353,18 @@ class List {
         /// Remove an element from the list at a given index (all the following items will be moved)
         Iterator removeAt(uint32 index) {
 
-          assert(index >= 0 && index < mSize);
+          assert(index < mSize);
 
           // Call the destructor
-          (static_cast<T*>(mBuffer)[index]).~T();
+          mBuffer[index].~T();
 
           mSize--;
 
           if (index != mSize) {
 
               // Move the elements to fill in the empty slot
-              char* dest = static_cast<char*>(mBuffer) + index * sizeof(T);
-              char* src = dest + sizeof(T);
+              void* dest = reinterpret_cast<void*>(mBuffer + index);
+              void* src = dest + sizeof(T);
               std::memmove(static_cast<void*>(dest), static_cast<void*>(src), (mSize - index) * sizeof(T));
           }
 
@@ -378,10 +377,10 @@ class List {
 
             assert(index < mSize);
 
-            static_cast<T*>(mBuffer)[index] = static_cast<T*>(mBuffer)[mSize - 1];
+            mBuffer[index] = mBuffer[mSize - 1];
 
             // Call the destructor of the last element
-            (static_cast<T*>(mBuffer)[mSize - 1]).~T();
+            mBuffer[mSize - 1].~T();
 
             mSize--;
         }
@@ -399,7 +398,7 @@ class List {
             // Add the elements of the list to the current one
             for(uint32 i=0; i<list.size(); i++) {
 
-                new (static_cast<char*>(mBuffer) + mSize * sizeof(T)) T(list[i]);
+                new (reinterpret_cast<void*>(mBuffer + mSize)) T(list[i]);
                 mSize++;
             }
         }
@@ -409,7 +408,7 @@ class List {
 
             // Call the destructor of each element
             for (uint32 i=0; i < mSize; i++) {
-                (static_cast<T*>(mBuffer)[i]).~T();
+                mBuffer[i].~T();
             }
 
             mSize = 0;
@@ -438,13 +437,13 @@ class List {
         /// Overloaded index operator
         T& operator[](const uint32 index) {
            assert(index >= 0 && index < mSize);
-           return (static_cast<T*>(mBuffer)[index]);
+           return mBuffer[index];
         }
 
         /// Overloaded const index operator
         const T& operator[](const uint32 index) const {
            assert(index >= 0 && index < mSize);
-           return (static_cast<T*>(mBuffer)[index]);
+           return mBuffer[index];
         }
 
         /// Overloaded equality operator
@@ -452,9 +451,8 @@ class List {
 
            if (mSize != list.mSize) return false;
 
-           T* items = static_cast<T*>(mBuffer);
             for (uint32 i=0; i < mSize; i++) {
-                if (items[i] != list[i]) {
+                if (mBuffer[i] != list[i]) {
                     return false;
                 }
             }
