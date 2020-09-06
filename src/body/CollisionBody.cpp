@@ -293,7 +293,8 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
 
     // For all the colliders of the body
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint32 i=0; i < colliderEntities.size(); i++) {
+    const uint32 nbColliderEntities = colliderEntities.size();
+    for (uint32 i=0; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
@@ -340,7 +341,8 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 
     // For each collider of the body
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint32 i=0; i < colliderEntities.size(); i++) {
+    const uint32 nbColliderEntities = colliderEntities.size();
+    for (uint32 i=0; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
@@ -371,7 +373,8 @@ AABB CollisionBody::getAABB() const {
     collider->getCollisionShape()->computeAABB(bodyAABB, transform * collider->getLocalToBodyTransform());
 
     // For each collider of the body
-    for (uint32 i=1; i < colliderEntities.size(); i++) {
+    const uint32 nbColliderEntities = colliderEntities.size();
+    for (uint32 i=1; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 

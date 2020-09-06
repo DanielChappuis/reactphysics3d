@@ -280,7 +280,8 @@ void DebugRenderer::drawConvexMesh(const Transform& transform, const ConvexMeshS
 		assert(face.faceVertices.size() >= 3);
 
 		// Perform a fan triangulation of the convex polygon face
-		for (uint32 v = 2; v < face.faceVertices.size(); v++) {
+        const uint32 nbFaceVertices = face.faceVertices.size();
+        for (uint32 v = 2; v < nbFaceVertices; v++) {
 
 			uint v1Index = face.faceVertices[v - 2];
 			uint v2Index = face.faceVertices[v - 1];

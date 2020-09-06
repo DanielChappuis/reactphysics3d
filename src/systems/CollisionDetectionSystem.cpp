@@ -647,7 +647,8 @@ void CollisionDetectionSystem::addContactPairsToBodies() {
 void CollisionDetectionSystem::computeMapPreviousContactPairs() {
 
     mPreviousMapPairIdToContactPairIndex.clear();
-    for (uint32 i=0; i < mCurrentContactPairs->size(); i++) {
+    const uint32 nbCurrentContactPairs = mCurrentContactPairs->size();
+    for (uint32 i=0; i < nbCurrentContactPairs; i++) {
         mPreviousMapPairIdToContactPairIndex.add(Pair<uint64, uint>((*mCurrentContactPairs)[i].pairId, i));
     }
 }
@@ -984,7 +985,8 @@ void CollisionDetectionSystem::createSnapshotContacts(Array<ContactPair>& contac
 void CollisionDetectionSystem::initContactsWithPreviousOnes() {
 
     // For each contact pair of the current frame
-    for (uint32 i=0; i < mCurrentContactPairs->size(); i++) {
+    const uint32 nbCurrentContactPairs = mCurrentContactPairs->size();
+    for (uint32 i=0; i < nbCurrentContactPairs; i++) {
 
         ContactPair& currentContactPair = (*mCurrentContactPairs)[i];
 

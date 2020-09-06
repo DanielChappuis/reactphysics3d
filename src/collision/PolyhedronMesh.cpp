@@ -166,7 +166,8 @@ decimal PolyhedronMesh::getFaceArea(uint faceIndex) const {
     Vector3 v1 = getVertex(face.faceVertices[0]);
 
     // For each vertex of the face
-    for (uint32 i=2; i < face.faceVertices.size(); i++) {
+    const uint32 nbFaceVertices = face.faceVertices.size();
+    for (uint32 i=2; i < nbFaceVertices; i++) {
 
         const Vector3 v2 = getVertex(face.faceVertices[i-1]);
         const Vector3 v3 = getVertex(face.faceVertices[i]);

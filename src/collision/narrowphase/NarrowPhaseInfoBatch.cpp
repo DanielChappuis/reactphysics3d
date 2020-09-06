@@ -52,7 +52,8 @@ void NarrowPhaseInfoBatch::reserveMemory() {
 // Clear all the objects in the batch
 void NarrowPhaseInfoBatch::clear() {
 
-    for (uint32 i=0; i < narrowPhaseInfos.size(); i++) {
+    const uint32 nbNarrowPhaseInfos = narrowPhaseInfos.size();
+    for (uint32 i=0; i < nbNarrowPhaseInfos; i++) {
 
         assert(narrowPhaseInfos[i].nbContactPoints == 0);
 

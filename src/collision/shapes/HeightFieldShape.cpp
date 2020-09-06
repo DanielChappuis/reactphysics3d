@@ -250,7 +250,8 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     decimal smallestHitFraction = ray.maxFraction;
 
     // For each overlapping triangle
-    for (uint32 i=0; i < shapeIds.size(); i++)
+    const uint32 nbShapeIds = shapeIds.size();
+    for (uint32 i=0; i < nbShapeIds; i++)
     {
         // Create a triangle collision shape
         TriangleShape triangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], allocator);
