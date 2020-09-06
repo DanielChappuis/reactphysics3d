@@ -364,8 +364,8 @@ class Array {
 
               // Move the elements to fill in the empty slot
               void* dest = reinterpret_cast<void*>(mBuffer + index);
-              void* src = dest + sizeof(T);
-              std::memmove(static_cast<void*>(dest), static_cast<void*>(src), (mSize - index) * sizeof(T));
+              std::uintptr_t src = reinterpret_cast<std::uintptr_t>(dest) + sizeof(T);
+              std::memmove(dest, reinterpret_cast<const void*>(src), (mSize - index) * sizeof(T));
           }
 
           // Return an iterator pointing to the element after the removed one
