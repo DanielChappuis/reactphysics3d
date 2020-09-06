@@ -137,7 +137,7 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/memory/MemoryManager.h"
     "include/reactphysics3d/containers/Stack.h"
     "include/reactphysics3d/containers/LinkedList.h"
-    "include/reactphysics3d/containers/List.h"
+    "include/reactphysics3d/containers/Array.h"
     "include/reactphysics3d/containers/Map.h"
     "include/reactphysics3d/containers/Set.h"
     "include/reactphysics3d/containers/Pair.h"
