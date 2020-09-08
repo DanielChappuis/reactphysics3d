@@ -23,42 +23,28 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_MATHEMATICS_COMMON_H
+#define REACTPHYSICS3D_MATHEMATICS_COMMON_H
+
 // Libraries
-#include <reactphysics3d/mathematics/Vector3.h>
+#include <reactphysics3d/configuration.h>
+#include <reactphysics3d/decimal.h>
+#include <cassert>
+#include <cmath>
 
-// Namespaces
-using namespace reactphysics3d;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Return the corresponding unit vector
-Vector3 Vector3::getUnit() const {
-    decimal lengthVector = length();
+// ---------- Mathematics functions ---------- //
 
-    if (lengthVector < MACHINE_EPSILON) {
-        return *this;
-    }
-
-    // Compute and return the unit vector
-    decimal lengthInv = decimal(1.0) / lengthVector;
-    return Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
+/// Function to test if two real numbers are (almost) equal
+/// We test if two numbers a and b are such that (a-b) are in [-EPSILON; EPSILON]
+RP3D_FORCE_INLINE bool approxEqual(decimal a, decimal b, decimal epsilon = MACHINE_EPSILON) {
+    return (std::abs(a - b) < epsilon);
 }
 
-// Return one unit orthogonal vector of the current vector
-Vector3 Vector3::getOneUnitOrthogonalVector() const {
-
-    assert(length() > MACHINE_EPSILON);
-
-    // Get the minimum element of the vector
-    Vector3 vectorAbs(std::abs(x), std::abs(y), std::abs(z));
-    int minElement = vectorAbs.getMinAxis();
-
-    if (minElement == 0) {
-        return Vector3(0.0, -z, y) / std::sqrt(y*y + z*z);
-    }
-    else if (minElement == 1) {
-        return Vector3(-z, 0.0, x) / std::sqrt(x*x + z*z);
-    }
-    else {
-        return Vector3(-y, x, 0.0) / std::sqrt(x*x + y*y);
-    }
 
 }
+
+
+#endif

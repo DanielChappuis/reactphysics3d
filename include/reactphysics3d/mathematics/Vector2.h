@@ -148,6 +148,9 @@ struct Vector2 {
         /// Return the zero vector
         static Vector2 zero();
 
+        /// Function to test if two vectors are (almost) equal
+        static bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon = MACHINE_EPSILON);
+
         // -------------------- Friends -------------------- //
 
         friend Vector2 operator+(const Vector2& vector1, const Vector2& vector2);
@@ -230,7 +233,7 @@ RP3D_FORCE_INLINE int Vector2::getMaxAxis() const {
 
 // Return true if the vector is unit and false otherwise
 RP3D_FORCE_INLINE bool Vector2::isUnit() const {
-    return approxEqual(lengthSquare(), 1.0);
+    return reactphysics3d::approxEqual(lengthSquare(), decimal(1.0));
 }
 
 // Return true if the values are not NAN OR INF
@@ -240,7 +243,7 @@ RP3D_FORCE_INLINE bool Vector2::isFinite() const {
 
 // Return true if the vector is the zero vector
 RP3D_FORCE_INLINE bool Vector2::isZero() const {
-    return approxEqual(lengthSquare(), 0.0);
+    return reactphysics3d::approxEqual(lengthSquare(), decimal(0.0));
 }
 
 // Overloaded operator for the equality condition
@@ -369,6 +372,11 @@ RP3D_FORCE_INLINE std::string Vector2::to_string() const {
 // Return the zero vector
 RP3D_FORCE_INLINE Vector2 Vector2::zero() {
     return Vector2(0, 0);
+}
+
+// Function to test if two vectors are (almost) equal
+RP3D_FORCE_INLINE bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon) {
+    return approxEqual(vec1.x, vec2.x, epsilon) && approxEqual(vec1.y, vec2.y, epsilon);
 }
 
 }

@@ -959,7 +959,8 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     assert(planesNormals.size() == planesPoints.size());
 
     // Clip the reference faces with the adjacent planes of the reference face
-    Array<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals, mMemoryAllocator);
+    Array<Vector3> clipPolygonVertices(mMemoryAllocator);
+    clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals, clipPolygonVertices, mMemoryAllocator);
 
     // We only keep the clipped points that are below the reference face
     const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);

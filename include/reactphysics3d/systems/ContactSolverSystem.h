@@ -30,6 +30,7 @@
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/mathematics/Matrix3x3.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/engine/Material.h>
 
 /// ReactPhysics3D namespace

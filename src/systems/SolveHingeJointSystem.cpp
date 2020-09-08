@@ -852,13 +852,13 @@ decimal SolveHingeJointSystem::computeCorrespondingAngleNearLimits(decimal input
         return inputAngle;
     }
     else if (inputAngle > upperLimitAngle) {
-        decimal diffToUpperLimit = std::fabs(computeNormalizedAngle(inputAngle - upperLimitAngle));
-        decimal diffToLowerLimit = std::fabs(computeNormalizedAngle(inputAngle - lowerLimitAngle));
+        decimal diffToUpperLimit = std::abs(computeNormalizedAngle(inputAngle - upperLimitAngle));
+        decimal diffToLowerLimit = std::abs(computeNormalizedAngle(inputAngle - lowerLimitAngle));
         return (diffToUpperLimit > diffToLowerLimit) ? (inputAngle - PI_TIMES_2) : inputAngle;
     }
     else if (inputAngle < lowerLimitAngle) {
-        decimal diffToUpperLimit = std::fabs(computeNormalizedAngle(upperLimitAngle - inputAngle));
-        decimal diffToLowerLimit = std::fabs(computeNormalizedAngle(lowerLimitAngle - inputAngle));
+        decimal diffToUpperLimit = std::abs(computeNormalizedAngle(upperLimitAngle - inputAngle));
+        decimal diffToLowerLimit = std::abs(computeNormalizedAngle(lowerLimitAngle - inputAngle));
         return (diffToUpperLimit > diffToLowerLimit) ? inputAngle : (inputAngle + PI_TIMES_2);
     }
     else {

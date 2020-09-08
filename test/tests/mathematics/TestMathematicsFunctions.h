@@ -253,7 +253,8 @@ class TestMathematicsFunctions : public Test {
             polygonPlanesNormals.add(Vector3(0, -1, 0));
             polygonPlanesPoints.add(Vector3(10, 5, 0));
 
-            Array<Vector3> clipPolygonVertices = clipPolygonWithPlanes(polygonVertices, polygonPlanesPoints, polygonPlanesNormals, mAllocator);
+            Array<Vector3> clipPolygonVertices(mAllocator);
+            clipPolygonWithPlanes(polygonVertices, polygonPlanesPoints, polygonPlanesNormals, clipPolygonVertices, mAllocator);
             rp3d_test(clipPolygonVertices.size() == 4);
             rp3d_test(approxEqual(clipPolygonVertices[0].x, 0, 0.000001));
             rp3d_test(approxEqual(clipPolygonVertices[0].y, 2, 0.000001));
