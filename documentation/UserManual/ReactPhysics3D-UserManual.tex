@@ -1440,14 +1440,13 @@ colliderBody4->setCollideWithMaskBits(CATEGORY2);
     \subsection{Material}
     \label{sec:material}
 
-    The material of a rigid body is used to describe the physical properties it is made of. This is represented by the \texttt{Material} class. Each body that
-    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::\allowbreak getMaterial()} method. \\
+    The material of a collider is used to describe the physical properties it is made of. This is represented by the \texttt{Material} class. Each collider that you create will have a default material. You can get the material of the collider using the \texttt{Collider::\allowbreak getMaterial()} method. \\
 
     You can use the material to set those physical properties. \\
 
-    For instance, you can change the bounciness of the rigid body. The bounciness is a value between 0 and 1. The value 1 is used for a very bouncy
-    object and the value 0 means that the body will not be bouncy at all. To change the bounciness of the material, you can use the
-    \texttt{Material::\allowbreak setBounciness()} method. \\
+    For instance, you can change the bounciness of the collider. The bounciness is a value between 0 and 1. The value 1 is used for
+    a very bouncy object and the value 0 means that the collider will not be bouncy at all. To change the bounciness of the material,
+    you can use the \texttt{Material::\allowbreak setBounciness()} method. \\
 
     \begin{sloppypar}
     It is also possible to set the mass density of the collider which has a default value of 1. As described in section \ref{sec:rigidbodymass}, the
@@ -1455,25 +1454,20 @@ colliderBody4->setCollideWithMaskBits(CATEGORY2);
     mass density of a collider, you need to use the \texttt{Material::setMassDensity()} method. \\
     \end{sloppypar}
 
-    You are also able to change the friction coefficient of the body. This value needs to be between 0 and 1. If the value is 0, no friction will be
-    applied when the body is in contact with another body. However, if the value is 1, the friction force will be high. You can change the
-    friction coefficient of the material with the \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
+    You are also able to change the friction coefficient of the collider. This value needs to be between 0 and 1. If the value is 0,
+    no friction will be applied when the collider is in contact with another collider. However, if the value is 1, the friction force will be high. You can
+    change the friction coefficient of the material with the \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
 
-    You can use the material to add rolling resistance to a rigid body. Rolling resistance can be used to stop
-    a rolling object on a flat surface for instance. You should use this only with SphereShape or
-    CapsuleShape collision shapes. By default, rolling resistance is zero but you can
-    set a positive value using the \texttt{Material::\allowbreak setRollingResistance()} method to increase resistance. \\
-
-    Here is how to get the material of a rigid body and how to modify some of its properties: \\
+    Here is how to get the material of a collider and how to modify some of its properties: \\
 
     \begin{lstlisting}
-// Get the current material of the body
-Material& material = rigidBody->getMaterial();
+// Get the current material of the collider
+Material& material = collider->getMaterial();
 
-// Change the bounciness of the body
+// Change the bounciness of the collider
 material.setBounciness(0.4);
 
-// Change the friction coefficient of the body
+// Change the friction coefficient of the collider
 material.setFrictionCoefficient(0.2);
   \end{lstlisting}
 
