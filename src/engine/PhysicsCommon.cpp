@@ -488,13 +488,18 @@ void PhysicsCommon::deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
 // Create a polyhedron mesh
 /**
  * @param polygonVertexArray A pointer to the polygon vertex array to use to create the polyhedron mesh
- * @return A pointer to the created polyhedron mesh
+ * @return A pointer to the created polyhedron mesh or nullptr if the mesh is not valid
  */
 PolyhedronMesh* PhysicsCommon::createPolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
 
-    PolyhedronMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(PolyhedronMesh))) PolyhedronMesh(polygonVertexArray, mMemoryManager.getHeapAllocator());
+    // Create the polyhedron mesh
+    PolyhedronMesh* mesh = PolyhedronMesh::create(polygonVertexArray, mMemoryManager.getPoolAllocator(), mMemoryManager.getHeapAllocator());
 
-    mPolyhedronMeshes.add(mesh);
+    // If the mesh is valid
+    if (mesh != nullptr) {
+
+        mPolyhedronMeshes.add(mesh);
+    }
 
     return mesh;
 }

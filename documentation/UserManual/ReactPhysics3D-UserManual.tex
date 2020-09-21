@@ -1236,6 +1236,9 @@ ConvexMeshShape* convexMeshShape = physicsCommon.createConvexMeshShape(polyhedro
     that you need to avoid coplanar faces in your convex mesh shape. Coplanar faces have to be merged together. Remember that convex meshes are
     not limited to triangular faces, you can create faces with more than three vertices. \\
 
+    Also note that meshes with duplicated vertices are not supported. The number of vertices you pass to create the PolygonVertexArray must be exactly
+    the number of vertices in your convex mesh. \\
+
     When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in
     counter clockwise order as seen from the outside of your convex mesh. \\
 

@@ -27,6 +27,8 @@
 #include <reactphysics3d/collision/PolyhedronMesh.h>
 #include <reactphysics3d/memory/MemoryManager.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
+#include <reactphysics3d/utils/DefaultLogger.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
 #include <cstdlib>
 
 using namespace reactphysics3d;
@@ -37,37 +39,61 @@ using namespace reactphysics3d;
  * Create a polyhedron mesh given an array of polygons.
  * @param polygonVertexArray Pointer to the array of polygons and their vertices
  */
-PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator &allocator)
+PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator)
                : mMemoryAllocator(allocator), mHalfEdgeStructure(allocator, polygonVertexArray->getNbFaces(), polygonVertexArray->getNbVertices(),
-                                    (polygonVertexArray->getNbFaces() + polygonVertexArray->getNbVertices() - 2) * 2) {
+                                    (polygonVertexArray->getNbFaces() + polygonVertexArray->getNbVertices() - 2) * 2), mFacesNormals(nullptr) {
 
    mPolygonVertexArray = polygonVertexArray;
-
-   // Create the half-edge structure of the mesh
-   createHalfEdgeStructure();
-
-   // Create the face normals array
-   mFacesNormals = new Vector3[mHalfEdgeStructure.getNbFaces()];
-
-   // Compute the faces normals
-   computeFacesNormals();
-
-   // Compute the centroid
-   computeCentroid();
 }
 
 // Destructor
 PolyhedronMesh::~PolyhedronMesh() {
-    delete[] mFacesNormals;
+
+    if (mFacesNormals != nullptr) {
+
+        for (uint f=0; f < mHalfEdgeStructure.getNbFaces(); f++) {
+            mFacesNormals[f].~Vector3();
+        }
+
+        mMemoryAllocator.release(mFacesNormals, mHalfEdgeStructure.getNbFaces() * sizeof(Vector3));
+    }
+}
+
+/// Static factory method to create a polyhedron mesh. This methods returns null_ptr if the mesh is not valid
+PolyhedronMesh* PolyhedronMesh::create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator) {
+
+    PolyhedronMesh* mesh = new (polyhedronMeshAllocator.allocate(sizeof(PolyhedronMesh))) PolyhedronMesh(polygonVertexArray, dataAllocator);
+
+    // Create the half-edge structure of the mesh
+    bool isValid = mesh->createHalfEdgeStructure();
+
+    if (isValid) {
+
+        // Compute the faces normals
+        mesh->computeFacesNormals();
+
+        // Compute the centroid
+        mesh->computeCentroid();
+    }
+    else {
+        mesh->~PolyhedronMesh();
+        polyhedronMeshAllocator.release(mesh, sizeof(PolyhedronMesh));
+        mesh = nullptr;
+    }
+
+    return mesh;
 }
 
 // Create the half-edge structure of the mesh
-void PolyhedronMesh::createHalfEdgeStructure() {
+/// This method returns true if the mesh is valid or false otherwise
+bool PolyhedronMesh::createHalfEdgeStructure() {
 
     // For each vertex of the mesh
     for (uint v=0; v < mPolygonVertexArray->getNbVertices(); v++) {
         mHalfEdgeStructure.addVertex(v);
     }
+
+    uint32 nbEdges = 0;
 
     // For each polygon face of the mesh
     for (uint f=0; f < mPolygonVertexArray->getNbFaces(); f++) {
@@ -82,14 +108,34 @@ void PolyhedronMesh::createHalfEdgeStructure() {
             faceVertices.add(mPolygonVertexArray->getVertexIndexInFace(f, v));
         }
 
+        nbEdges += face->nbVertices;
+
         assert(faceVertices.size() >= 3);
 
         // Addd the face into the half-edge structure
         mHalfEdgeStructure.addFace(faceVertices);
     }
 
+    nbEdges /= 2;
+
+    // If the mesh is valid (check Euler formula V + F - E = 2) and does not use duplicated vertices
+    if (2 + nbEdges - mPolygonVertexArray->getNbFaces() != mPolygonVertexArray->getNbVertices()) {
+
+        RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
+                 "Error when creating a PolyhedronMesh: input PolygonVertexArray is not valid. Mesh with duplicated vertices is not supported.",  __FILE__, __LINE__);
+
+        assert(false);
+
+        return false;
+    }
+
     // Initialize the half-edge structure
     mHalfEdgeStructure.init();
+
+    // Create the face normals array
+    mFacesNormals = new (mMemoryAllocator.allocate(mHalfEdgeStructure.getNbFaces() * sizeof(Vector3))) Vector3[mHalfEdgeStructure.getNbFaces()];
+
+    return true;
 }
 
 /// Return a vertex

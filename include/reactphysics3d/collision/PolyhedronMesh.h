@@ -28,6 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
+#include <reactphysics3d/containers/Array.h>
 #include "HalfEdgeStructure.h"
 
 namespace reactphysics3d {
@@ -69,7 +70,7 @@ class PolyhedronMesh {
         PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator);
 
         /// Create the half-edge structure of the mesh
-        void createHalfEdgeStructure();
+        bool createHalfEdgeStructure();
 
         /// Compute the faces normals
         void computeFacesNormals();
@@ -79,6 +80,9 @@ class PolyhedronMesh {
 
         /// Compute and return the area of a face
         decimal getFaceArea(uint faceIndex) const;
+
+        /// Static factory method to create a polyhedron mesh
+        static PolyhedronMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator);
 
     public:
 
