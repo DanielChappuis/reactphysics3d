@@ -387,17 +387,19 @@ class Array {
 
         /// Remove an element from the array at a given index and replace it by the last one of the array (if any)
         /// Append another array at the end of the current one
-        void addRange(const Array<T>& array) {
+        void addRange(const Array<T>& array, uint32 startIndex = 0) {
+
+            assert(startIndex <= array.size());
 
             // If we need to allocate more memory
-            if (mSize + array.size() > mCapacity) {
+            if (mSize + (array.size() - startIndex) > mCapacity) {
 
                 // Allocate memory
-                reserve(mSize + array.size());
+                reserve(mSize + array.size() - startIndex);
             }
 
             // Add the elements of the array to the current one
-            for(uint32 i=0; i<array.size(); i++) {
+            for(uint32 i=startIndex; i<array.size(); i++) {
 
                 new (reinterpret_cast<void*>(mBuffer + mSize)) T(array[i]);
                 mSize++;

@@ -330,32 +330,37 @@ RP3D_FORCE_INLINE Array<Vector3> clipSegmentWithPlanes(const Vector3& segA, cons
 // Clip a polygon against multiple planes and return the clipped polygon vertices
 // This method implements the Sutherland–Hodgman clipping algorithm
 RP3D_FORCE_INLINE void clipPolygonWithPlanes(const Array<Vector3>& polygonVertices, const Array<Vector3>& planesPoints,
-                                           const Array<Vector3>& planesNormals, Array<Vector3>& outClippedPolygonVertices,
-                                           MemoryAllocator& allocator) {
+                                             const Array<Vector3>& planesNormals, Array<Vector3>& outClippedPolygonVertices,
+                                             MemoryAllocator& allocator) {
 
     assert(planesPoints.size() == planesNormals.size());
 
-    const uint32 nbMaxElements = polygonVertices.size() + planesPoints.size();
-    Array<Vector3> inputVertices(allocator, nbMaxElements);
+    const uint32 nbPlanesPoints = planesPoints.size();
+
+    const uint32 nbMaxElements = polygonVertices.size() * 2 * nbPlanesPoints;
+    Array<Vector3> vertices(allocator, nbMaxElements * nbPlanesPoints);
 
     outClippedPolygonVertices.reserve(nbMaxElements);
 
-    inputVertices.addRange(polygonVertices);
+    vertices.addRange(polygonVertices);
+
+    uint32 currentPolygonStartIndex = 0;
+    uint32 nbInputVertices = polygonVertices.size();
 
     // For each clipping plane
-    const uint32 nbPlanesPoints = planesPoints.size();
     for (uint32 p=0; p < nbPlanesPoints; p++) {
 
-        outClippedPolygonVertices.clear();
+        uint32 nextNbInputVertices = 0;
 
-        const uint32 nbInputVertices = inputVertices.size();
-        uint32 vStart = nbInputVertices - 1;
+        uint32 vStart = currentPolygonStartIndex + nbInputVertices - 1;
+
+        const decimal planeNormalDotPlanePoint = planesNormals[p].dot(planesPoints[p]);
 
         // For each edge of the polygon
-        for (uint vEnd = 0; vEnd<nbInputVertices; vEnd++) {
+        for (uint vEnd = currentPolygonStartIndex; vEnd < currentPolygonStartIndex + nbInputVertices; vEnd++) {
 
-            Vector3& v1 = inputVertices[vStart];
-            Vector3& v2 = inputVertices[vEnd];
+            Vector3& v1 = vertices[vStart];
+            Vector3& v2 = vertices[vEnd];
 
             const decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
             const decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
@@ -367,18 +372,21 @@ RP3D_FORCE_INLINE void clipPolygonWithPlanes(const Array<Vector3>& polygonVertic
                 if (v1DotN < decimal(0.0)) {
 
                     // The second point we keep is the intersection between the segment v1, v2 and the clipping plane
-                    decimal t = computePlaneSegmentIntersection(v1, v2, planesNormals[p].dot(planesPoints[p]), planesNormals[p]);
+                    const decimal t = computePlaneSegmentIntersection(v1, v2, planeNormalDotPlanePoint, planesNormals[p]);
 
                     if (t >= decimal(0) && t <= decimal(1.0)) {
-                        outClippedPolygonVertices.add(v1 + t * (v2 - v1));
+                        vertices.add(v1 + t * (v2 - v1));
+                        nextNbInputVertices++;
                     }
                     else {
-                        outClippedPolygonVertices.add(v2);
+                        vertices.add(v2);
+                        nextNbInputVertices++;
                     }
                 }
 
                 // Add the second vertex
-                outClippedPolygonVertices.add(v2);
+                vertices.add(v2);
+                nextNbInputVertices++;
             }
             else {  // If the second vertex is behind the clipping plane
 
@@ -386,13 +394,15 @@ RP3D_FORCE_INLINE void clipPolygonWithPlanes(const Array<Vector3>& polygonVertic
                 if (v1DotN >= decimal(0.0)) {
 
                     // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
-                    decimal t = computePlaneSegmentIntersection(v1, v2, -planesNormals[p].dot(planesPoints[p]), -planesNormals[p]);
+                    const decimal t = computePlaneSegmentIntersection(v1, v2, -planeNormalDotPlanePoint, -planesNormals[p]);
 
                     if (t >= decimal(0.0) && t <= decimal(1.0)) {
-                        outClippedPolygonVertices.add(v1 + t * (v2 - v1));
+                        vertices.add(v1 + t * (v2 - v1));
+                        nextNbInputVertices++;
                     }
                     else {
-                        outClippedPolygonVertices.add(v1);
+                        vertices.add(v1);
+                        nextNbInputVertices++;
                     }
                 }
             }
@@ -400,8 +410,11 @@ RP3D_FORCE_INLINE void clipPolygonWithPlanes(const Array<Vector3>& polygonVertic
             vStart = vEnd;
         }
 
-        inputVertices = outClippedPolygonVertices;
+        currentPolygonStartIndex += nbInputVertices;
+        nbInputVertices = nextNbInputVertices;
     }
+
+    outClippedPolygonVertices.addRange(vertices, currentPolygonStartIndex);
 }
 
 // Project a point onto a plane that is given by a point and its unit length normal
