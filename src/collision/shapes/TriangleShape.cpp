@@ -122,36 +122,6 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
     mId = shapeId;
 }
 
-// This method compute the smooth mesh contact with a triangle in case one of the two collision
-// shapes is a triangle. The idea in this case is to use a smooth vertex normal of the triangle mesh
-// at the contact point instead of the triangle normal to avoid the internal edge collision issue.
-// This method will return the new smooth world contact
-// normal of the triangle and the the local contact point on the other shape.
-void TriangleShape::computeSmoothTriangleMeshContact(const CollisionShape* shape1, const CollisionShape* shape2,
-                                                     Vector3& localContactPointShape1, Vector3& localContactPointShape2,
-                                                     const Transform& shape1ToWorld, const Transform& shape2ToWorld,
-                                                     decimal penetrationDepth, Vector3& outSmoothVertexNormal) {
-
-    assert(shape1->getName() != CollisionShapeName::TRIANGLE || shape2->getName() != CollisionShapeName::TRIANGLE);
-
-    // If one the shape is a triangle
-    bool isShape1Triangle = shape1->getName() == CollisionShapeName::TRIANGLE;
-    if (isShape1Triangle || shape2->getName() == CollisionShapeName::TRIANGLE) {
-
-        const TriangleShape* triangleShape = isShape1Triangle ? static_cast<const TriangleShape*>(shape1):
-                                                                static_cast<const TriangleShape*>(shape2);
-
-        // Compute the smooth triangle mesh contact normal and recompute the local contact point on the other shape
-        triangleShape->computeSmoothMeshContact(isShape1Triangle ? localContactPointShape1 : localContactPointShape2,
-                                                isShape1Triangle ? shape1ToWorld : shape2ToWorld,
-                                                isShape1Triangle ? shape2ToWorld.getInverse() : shape1ToWorld.getInverse(),
-                                                penetrationDepth, isShape1Triangle,
-                                                isShape1Triangle ? localContactPointShape2 : localContactPointShape1,
-                                                outSmoothVertexNormal);
-    }
-}
-
-
 // This method implements the technique described in Game Physics Pearl book
 // by Gino van der Bergen and Dirk Gregorius to get smooth triangle mesh collision. The idea is
 // to replace the contact normal of the triangle shape with the precomputed normal of the triangle
@@ -184,42 +154,6 @@ void TriangleShape::computeSmoothMeshContact(Vector3 localContactPointTriangle, 
     Vector3 otherShapePointTriangleSpace = localContactPointTriangle - triangleLocalNormal * penetrationDepth;
     Vector3 otherShapePoint = worldToOtherShapeTransform * triangleShapeToWorldTransform * otherShapePointTriangleSpace;
     outNewLocalContactPointOtherShape.setAllValues(otherShapePoint.x, otherShapePoint.y, otherShapePoint.z);
-}
-
-// Get a smooth contact normal for collision for a triangle of the mesh
-/// This is used to avoid the internal edges issue that occurs when a shape is colliding with
-/// several triangles of a concave mesh. If the shape collide with an edge of the triangle for instance,
-/// the computed contact normal from this triangle edge is not necessarily in the direction of the surface
-/// normal of the mesh at this point. The idea to solve this problem is to use the real (smooth) surface
-/// normal of the mesh at this point as the contact normal. This technique is described in the chapter 5
-/// of the Game Physics Pearl book by Gino van der Bergen and Dirk Gregorius. The vertices normals of the
-/// mesh are either provided by the user or precomputed if the user did not provide them. Note that we only
-/// use the interpolated normal if the contact point is on an edge of the triangle. If the contact is in the
-/// middle of the triangle, we return the true triangle normal.
-Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3& localContactPoint) const {
-
-    // Compute the barycentric coordinates of the point in the triangle
-    decimal u, v, w;
-    computeBarycentricCoordinatesInTriangle(mPoints[0], mPoints[1], mPoints[2], localContactPoint, u, v, w);
-
-    // If the contact is in the middle of the triangle face (not on the edges)
-    if (u > MACHINE_EPSILON && v > MACHINE_EPSILON && w > MACHINE_EPSILON) {
-
-        // We return the true triangle face normal (not the interpolated one)
-        return mNormal;
-    }
-
-    // We compute the contact normal as the barycentric interpolation of the three vertices normals
-    Vector3 interpolatedNormal = u * mVerticesNormals[0] + v * mVerticesNormals[1] + w * mVerticesNormals[2];
-
-    // If the interpolated normal is degenerated
-    if (interpolatedNormal.lengthSquare() < MACHINE_EPSILON) {
-
-        // Return the original normal
-        return mNormal;
-    }
-
-    return interpolatedNormal.getUnit();
 }
 
 // Update the AABB of a body using its collision shape

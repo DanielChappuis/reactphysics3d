@@ -55,8 +55,7 @@ SATAlgorithm::SATAlgorithm(bool clipWithPreviousAxisIfStillColliding, MemoryAllo
 }
 
 // Test collision between a sphere and a convex mesh
-bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                                         uint batchStartIndex, uint batchNbItems) const {
+bool SATAlgorithm::testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems) const {
 
     bool isCollisionFound = false;
 
@@ -895,10 +894,19 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
 
     RP3D_PROFILE("SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints", mProfiler);
 
-    const ConvexPolyhedronShape* referencePolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1 : polyhedron2;
-    const ConvexPolyhedronShape* incidentPolyhedron = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2 : polyhedron1;
+    const ConvexPolyhedronShape* referencePolyhedron;
+    const ConvexPolyhedronShape* incidentPolyhedron;
     const Transform& referenceToIncidentTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron1ToPolyhedron2 : polyhedron2ToPolyhedron1;
     const Transform& incidentToReferenceTransform = isMinPenetrationFaceNormalPolyhedron1 ? polyhedron2ToPolyhedron1 : polyhedron1ToPolyhedron2;
+
+    if (isMinPenetrationFaceNormalPolyhedron1) {
+        referencePolyhedron = polyhedron1;
+        incidentPolyhedron = polyhedron2;
+    }
+    else {
+        referencePolyhedron = polyhedron2;
+        incidentPolyhedron = polyhedron1;
+    }
 
     const Vector3 axisReferenceSpace = referencePolyhedron->getFaceNormal(minFaceIndex);
     const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;
@@ -972,7 +980,7 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
         // the maximal penetration depth of any contact point for this separating axis
         decimal penetrationDepth = (referenceFaceVertex - clipPolygonVertices[i]).dot(axisReferenceSpace);
 
-        // If the clip point is bellow the reference face
+        // If the clip point is below the reference face
         if (penetrationDepth > decimal(0.0)) {
 
             contactPointsFound = true;

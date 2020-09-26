@@ -45,10 +45,11 @@ uint ConvexPolyhedronShape::findMostAntiParallelFace(const Vector3& direction) c
     uint mostAntiParallelFace = 0;
 
     // For each face of the polyhedron
-    for (uint i=0; i < getNbFaces(); i++) {
+    uint32 nbFaces = getNbFaces();
+    for (uint32 i=0; i < nbFaces; i++) {
 
         // Get the face normal
-        decimal dotProduct = getFaceNormal(i).dot(direction);
+        const decimal dotProduct = getFaceNormal(i).dot(direction);
         if (dotProduct < minDotProduct) {
             minDotProduct = dotProduct;
             mostAntiParallelFace = i;
