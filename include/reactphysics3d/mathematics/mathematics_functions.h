@@ -327,94 +327,69 @@ RP3D_FORCE_INLINE Array<Vector3> clipSegmentWithPlanes(const Vector3& segA, cons
     return outputVertices;
 }
 
-// Clip a polygon against multiple planes and return the clipped polygon vertices
-// This method implements the Sutherland–Hodgman clipping algorithm
-RP3D_FORCE_INLINE void clipPolygonWithPlanes(const Array<Vector3>& polygonVertices, const Array<Vector3>& planesPoints,
-                                             const Array<Vector3>& planesNormals, Array<Vector3>& outClippedPolygonVertices,
-                                             MemoryAllocator& allocator) {
+// Clip a polygon against a single plane and return the clipped polygon vertices
+// This method implements the Sutherland–Hodgman polygon clipping algorithm
+RP3D_FORCE_INLINE void clipPolygonWithPlane(const Array<Vector3>& polygonVertices, const Vector3& planePoint,
+                                            const Vector3& planeNormal, Array<Vector3>& outClippedPolygonVertices) {
 
-    assert(planesPoints.size() == planesNormals.size());
-
-    const uint32 nbPlanesPoints = planesPoints.size();
-
-    const uint32 nbMaxElements = polygonVertices.size() * 2 * nbPlanesPoints;
-    Array<Vector3> vertices(allocator, nbMaxElements * nbPlanesPoints);
-
-    outClippedPolygonVertices.reserve(nbMaxElements);
-
-    vertices.addRange(polygonVertices);
-
-    uint32 currentPolygonStartIndex = 0;
     uint32 nbInputVertices = polygonVertices.size();
 
-    // For each clipping plane
-    for (uint32 p=0; p < nbPlanesPoints; p++) {
+    assert(outClippedPolygonVertices.size() == 0);
 
-        uint32 nextNbInputVertices = 0;
+    uint32 vStartIndex = nbInputVertices - 1;
 
-        uint32 vStart = currentPolygonStartIndex + nbInputVertices - 1;
+    const decimal planeNormalDotPlanePoint = planeNormal.dot(planePoint);
 
-        const decimal planeNormalDotPlanePoint = planesNormals[p].dot(planesPoints[p]);
+    decimal vStartDotN = (polygonVertices[vStartIndex] - planePoint).dot(planeNormal);
 
-        // For each edge of the polygon
-        for (uint vEnd = currentPolygonStartIndex; vEnd < currentPolygonStartIndex + nbInputVertices; vEnd++) {
+    // For each edge of the polygon
+    for (uint vEndIndex = 0; vEndIndex < nbInputVertices; vEndIndex++) {
 
-            Vector3& v1 = vertices[vStart];
-            Vector3& v2 = vertices[vEnd];
+        const Vector3& vStart = polygonVertices[vStartIndex];
+        const Vector3& vEnd = polygonVertices[vEndIndex];
 
-            const decimal v1DotN = (v1 - planesPoints[p]).dot(planesNormals[p]);
-            const decimal v2DotN = (v2 - planesPoints[p]).dot(planesNormals[p]);
+        const decimal vEndDotN = (vEnd - planePoint).dot(planeNormal);
 
-            // If the second vertex is in front of the clippling plane
-            if (v2DotN >= decimal(0.0)) {
+        // If the second vertex is in front of the clippling plane
+        if (vEndDotN >= decimal(0.0)) {
 
-                // If the first vertex is not in front of the clippling plane
-                if (v1DotN < decimal(0.0)) {
+            // If the first vertex is not in front of the clippling plane
+            if (vStartDotN < decimal(0.0)) {
 
-                    // The second point we keep is the intersection between the segment v1, v2 and the clipping plane
-                    const decimal t = computePlaneSegmentIntersection(v1, v2, planeNormalDotPlanePoint, planesNormals[p]);
+                // The second point we keep is the intersection between the segment v1, v2 and the clipping plane
+                const decimal t = computePlaneSegmentIntersection(vStart, vEnd, planeNormalDotPlanePoint, planeNormal);
 
-                    if (t >= decimal(0) && t <= decimal(1.0)) {
-                        vertices.add(v1 + t * (v2 - v1));
-                        nextNbInputVertices++;
-                    }
-                    else {
-                        vertices.add(v2);
-                        nextNbInputVertices++;
-                    }
+                if (t >= decimal(0) && t <= decimal(1.0)) {
+                    outClippedPolygonVertices.add(vStart + t * (vEnd - vStart));
                 }
-
-                // Add the second vertex
-                vertices.add(v2);
-                nextNbInputVertices++;
-            }
-            else {  // If the second vertex is behind the clipping plane
-
-                // If the first vertex is in front of the clippling plane
-                if (v1DotN >= decimal(0.0)) {
-
-                    // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
-                    const decimal t = computePlaneSegmentIntersection(v1, v2, -planeNormalDotPlanePoint, -planesNormals[p]);
-
-                    if (t >= decimal(0.0) && t <= decimal(1.0)) {
-                        vertices.add(v1 + t * (v2 - v1));
-                        nextNbInputVertices++;
-                    }
-                    else {
-                        vertices.add(v1);
-                        nextNbInputVertices++;
-                    }
+                else {
+                    outClippedPolygonVertices.add(vEnd);
                 }
             }
 
-            vStart = vEnd;
+            // Add the second vertex
+            outClippedPolygonVertices.add(vEnd);
+        }
+        else {  // If the second vertex is behind the clipping plane
+
+            // If the first vertex is in front of the clippling plane
+            if (vStartDotN >= decimal(0.0)) {
+
+                // The first point we keep is the intersection between the segment v1, v2 and the clipping plane
+                const decimal t = computePlaneSegmentIntersection(vStart, vEnd, -planeNormalDotPlanePoint, -planeNormal);
+
+                if (t >= decimal(0.0) && t <= decimal(1.0)) {
+                    outClippedPolygonVertices.add(vStart + t * (vEnd - vStart));
+                }
+                else {
+                    outClippedPolygonVertices.add(vStart);
+                }
+            }
         }
 
-        currentPolygonStartIndex += nbInputVertices;
-        nbInputVertices = nextNbInputVertices;
+        vStartIndex = vEndIndex;
+        vStartDotN = vEndDotN;
     }
-
-    outClippedPolygonVertices.addRange(vertices, currentPolygonStartIndex);
 }
 
 // Project a point onto a plane that is given by a point and its unit length normal

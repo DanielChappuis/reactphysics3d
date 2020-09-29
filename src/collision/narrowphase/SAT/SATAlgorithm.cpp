@@ -925,20 +925,27 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     const HalfEdgeStructure::Face& incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
 
     const uint32 nbIncidentFaceVertices = incidentFace.faceVertices.size();
-    Array<Vector3> polygonVertices(mMemoryAllocator, nbIncidentFaceVertices);   // Vertices to clip of the incident face
-    Array<Vector3> planesNormals(mMemoryAllocator, nbIncidentFaceVertices);     // Normals of the clipping planes
-    Array<Vector3> planesPoints(mMemoryAllocator, nbIncidentFaceVertices);      // Points on the clipping planes
+    const uint32 nbMaxElements = nbIncidentFaceVertices * 2 * referenceFace.faceVertices.size();
+    Array<Vector3> verticesTemp1(mMemoryAllocator, nbMaxElements);
+    Array<Vector3> verticesTemp2(mMemoryAllocator, nbMaxElements);
 
     // Get all the vertices of the incident face (in the reference local-space)
     for (uint32 i=0; i < nbIncidentFaceVertices; i++) {
         const Vector3 faceVertexIncidentSpace = incidentPolyhedron->getVertexPosition(incidentFace.faceVertices[i]);
-        polygonVertices.add(incidentToReferenceTransform * faceVertexIncidentSpace);
+        verticesTemp1.add(incidentToReferenceTransform * faceVertexIncidentSpace);
     }
 
-    // Get the reference face clipping planes
+    // For each edge of the reference we use it to clip the incident face polygon using Sutherland-Hodgman algorithm
     uint32 currentEdgeIndex = referenceFace.edgeIndex;
     uint32 firstEdgeIndex = currentEdgeIndex;
+    Vector3 planeNormal;
+    Vector3 planePoint;
+    bool areVertices1Input = false;
+    uint32 nbOutputVertices;
     do {
+
+        // Switch the input/output arrays of vertices
+        areVertices1Input = !areVertices1Input;
 
         // Get the adjacent edge
         const HalfEdgeStructure::Edge& edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
@@ -955,30 +962,42 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
         // The clipping plane is perpendicular to the edge direction and the reference face normal
         Vector3 clipPlaneNormal = axisReferenceSpace.cross(edgeDirection);
 
-        planesNormals.add(clipPlaneNormal);
-        planesPoints.add(edgeV1);
+        planeNormal = clipPlaneNormal;
+        planePoint = edgeV1;
+
+        assert(areVertices1Input && verticesTemp1.size() > 0 || !areVertices1Input);
+        assert(!areVertices1Input && verticesTemp2.size() > 0 || areVertices1Input);
+
+        // Clip the incident face with one adjacent plane (corresponding to one edge) of the reference face
+        clipPolygonWithPlane(areVertices1Input ? verticesTemp1 : verticesTemp2, planePoint, planeNormal, areVertices1Input ? verticesTemp2 : verticesTemp1);
 
         // Go to the next adjacent edge of the reference face
         currentEdgeIndex = edge.nextEdgeIndex;
 
-    } while (currentEdgeIndex != firstEdgeIndex);
+        // Clear the input array of vertices before the next loop
+        if (areVertices1Input) {
+            verticesTemp1.clear();
+            nbOutputVertices = verticesTemp2.size();
+        }
+        else {
+            verticesTemp2.clear();
+            nbOutputVertices = verticesTemp1.size();
+        }
 
-    assert(planesNormals.size() > 0);
-    assert(planesNormals.size() == planesPoints.size());
+    } while (currentEdgeIndex != firstEdgeIndex && nbOutputVertices > 0);
 
-    // Clip the reference faces with the adjacent planes of the reference face
-    Array<Vector3> clipPolygonVertices(mMemoryAllocator);
-    clipPolygonWithPlanes(polygonVertices, planesPoints, planesNormals, clipPolygonVertices, mMemoryAllocator);
+    // Reference to the output clipped polygon vertices
+    Array<Vector3>& clippedPolygonVertices = areVertices1Input ? verticesTemp2 : verticesTemp1;
 
     // We only keep the clipped points that are below the reference face
     const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
     bool contactPointsFound = false;
-    const uint32 nbClipPolygonVertices = clipPolygonVertices.size();
+    const uint32 nbClipPolygonVertices = clippedPolygonVertices.size();
     for (uint32 i=0; i < nbClipPolygonVertices; i++) {
 
         // Compute the penetration depth of this contact point (can be different from the minPenetration depth which is
         // the maximal penetration depth of any contact point for this separating axis
-        decimal penetrationDepth = (referenceFaceVertex - clipPolygonVertices[i]).dot(axisReferenceSpace);
+        decimal penetrationDepth = (referenceFaceVertex - clippedPolygonVertices[i]).dot(axisReferenceSpace);
 
         // If the clip point is below the reference face
         if (penetrationDepth > decimal(0.0)) {
@@ -991,10 +1010,10 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
                 Vector3 outWorldNormal = normalWorld;
 
                 // Convert the clip incident polyhedron vertex into the incident polyhedron local-space
-                Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * clipPolygonVertices[i];
+                Vector3 contactPointIncidentPolyhedron = referenceToIncidentTransform * clippedPolygonVertices[i];
 
                 // Project the contact point onto the reference face
-                Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(clipPolygonVertices[i], axisReferenceSpace, referenceFaceVertex);
+                Vector3 contactPointReferencePolyhedron = projectPointOntoPlane(clippedPolygonVertices[i], axisReferenceSpace, referenceFaceVertex);
 
                 // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
                 TriangleShape::computeSmoothTriangleMeshContact(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1, narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2,
