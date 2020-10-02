@@ -217,17 +217,15 @@ RP3D_FORCE_INLINE HalfEdgeStructure::Vertex BoxShape::getVertex(uint vertexIndex
 RP3D_FORCE_INLINE Vector3 BoxShape::getVertexPosition(uint vertexIndex) const {
     assert(vertexIndex < getNbVertices());
 
-    Vector3 extent = getHalfExtents();
-
     switch(vertexIndex) {
-        case 0: return Vector3(-extent.x, -extent.y, extent.z);
-        case 1: return Vector3(extent.x, -extent.y, extent.z);
-        case 2: return Vector3(extent.x, extent.y, extent.z);
-        case 3: return Vector3(-extent.x, extent.y, extent.z);
-        case 4: return Vector3(-extent.x, -extent.y, -extent.z);
-        case 5: return Vector3(extent.x, -extent.y, -extent.z);
-        case 6: return Vector3(extent.x, extent.y, -extent.z);
-        case 7: return Vector3(-extent.x, extent.y, -extent.z);
+        case 0: return Vector3(-mHalfExtents.x, -mHalfExtents.y, mHalfExtents.z);
+        case 1: return Vector3(mHalfExtents.x, -mHalfExtents.y, mHalfExtents.z);
+        case 2: return Vector3(mHalfExtents.x, mHalfExtents.y, mHalfExtents.z);
+        case 3: return Vector3(-mHalfExtents.x, mHalfExtents.y, mHalfExtents.z);
+        case 4: return Vector3(-mHalfExtents.x, -mHalfExtents.y, -mHalfExtents.z);
+        case 5: return Vector3(mHalfExtents.x, -mHalfExtents.y, -mHalfExtents.z);
+        case 6: return Vector3(mHalfExtents.x, mHalfExtents.y, -mHalfExtents.z);
+        case 7: return Vector3(-mHalfExtents.x, mHalfExtents.y, -mHalfExtents.z);
     }
 
     assert(false);
