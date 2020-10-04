@@ -52,14 +52,15 @@ struct ContactPointInfo {
         /// Normalized normal vector of the collision contact in world space
         Vector3 normal;
 
-        /// Penetration depth of the contact
-        decimal penetrationDepth;
-
         /// Contact point of body 1 in local space of body 1
         Vector3 localPoint1;
 
         /// Contact point of body 2 in local space of body 2
         Vector3 localPoint2;
+
+        /// Penetration depth of the contact
+        decimal penetrationDepth;
+
 };
 
 }

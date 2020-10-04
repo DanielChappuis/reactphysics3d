@@ -520,7 +520,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
             // was a face normal of polyhedron 1
             if (lastFrameCollisionInfo->satIsAxisFacePolyhedron1) {
 
-                decimal penetrationDepth = testSingleFaceDirectionPolyhedronVsPolyhedron(polyhedron1, polyhedron2, polyhedron1ToPolyhedron2,
+                const decimal penetrationDepth = testSingleFaceDirectionPolyhedronVsPolyhedron(polyhedron1, polyhedron2, polyhedron1ToPolyhedron2,
                                                      lastFrameCollisionInfo->satMinAxisFaceIndex);
 
                 // If the previous axis was a separating axis and is still a separating axis in this frame
@@ -912,7 +912,7 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     const Vector3 axisIncidentSpace = referenceToIncidentTransform.getOrientation() * axisReferenceSpace;
 
     // Compute the world normal
-    Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
+    const Vector3 normalWorld = isMinPenetrationFaceNormalPolyhedron1 ? narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape1ToWorldTransform.getOrientation() * axisReferenceSpace :
                                     -(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * axisReferenceSpace);
 
     // Get the reference face
@@ -936,43 +936,42 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     }
 
     // For each edge of the reference we use it to clip the incident face polygon using Sutherland-Hodgman algorithm
-    uint32 currentEdgeIndex = referenceFace.edgeIndex;
-    uint32 firstEdgeIndex = currentEdgeIndex;
-    Vector3 planeNormal;
-    Vector3 planePoint;
+    uint32 firstEdgeIndex = referenceFace.edgeIndex;
     bool areVertices1Input = false;
     uint32 nbOutputVertices;
+    uint currentEdgeIndex;
+
+    // Get the adjacent edge
+    const HalfEdgeStructure::Edge* currentEdge = &(referencePolyhedron->getHalfEdge(firstEdgeIndex));
+    Vector3 edgeV1 = referencePolyhedron->getVertexPosition(currentEdge->vertexIndex);
+
     do {
 
         // Switch the input/output arrays of vertices
         areVertices1Input = !areVertices1Input;
 
         // Get the adjacent edge
-        const HalfEdgeStructure::Edge& edge = referencePolyhedron->getHalfEdge(currentEdgeIndex);
-
-        // Get the twin edge
-        const HalfEdgeStructure::Edge& twinEdge = referencePolyhedron->getHalfEdge(edge.twinEdgeIndex);
+        const HalfEdgeStructure::Edge* nextEdge = &(referencePolyhedron->getHalfEdge(currentEdge->nextEdgeIndex));
 
         // Compute the edge vertices and edge direction
-        Vector3 edgeV1 = referencePolyhedron->getVertexPosition(edge.vertexIndex);
-        Vector3 edgeV2 = referencePolyhedron->getVertexPosition(twinEdge.vertexIndex);
-        Vector3 edgeDirection = edgeV2 - edgeV1;
+        const Vector3 edgeV2 = referencePolyhedron->getVertexPosition(nextEdge->vertexIndex);
+        const Vector3 edgeDirection = edgeV2 - edgeV1;
 
         // Compute the normal of the clipping plane for this edge
         // The clipping plane is perpendicular to the edge direction and the reference face normal
-        Vector3 clipPlaneNormal = axisReferenceSpace.cross(edgeDirection);
-
-        planeNormal = clipPlaneNormal;
-        planePoint = edgeV1;
+        const Vector3 planeNormal = axisReferenceSpace.cross(edgeDirection);
 
         assert(areVertices1Input && verticesTemp1.size() > 0 || !areVertices1Input);
         assert(!areVertices1Input && verticesTemp2.size() > 0 || areVertices1Input);
 
         // Clip the incident face with one adjacent plane (corresponding to one edge) of the reference face
-        clipPolygonWithPlane(areVertices1Input ? verticesTemp1 : verticesTemp2, planePoint, planeNormal, areVertices1Input ? verticesTemp2 : verticesTemp1);
+        clipPolygonWithPlane(areVertices1Input ? verticesTemp1 : verticesTemp2, edgeV1, planeNormal, areVertices1Input ? verticesTemp2 : verticesTemp1);
+
+        currentEdgeIndex = currentEdge->nextEdgeIndex;
 
         // Go to the next adjacent edge of the reference face
-        currentEdgeIndex = edge.nextEdgeIndex;
+        currentEdge = nextEdge;
+        edgeV1 = edgeV2;
 
         // Clear the input array of vertices before the next loop
         if (areVertices1Input) {

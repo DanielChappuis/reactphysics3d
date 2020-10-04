@@ -832,7 +832,7 @@ void CollisionDetectionSystem::createContacts() {
 
     // Process the contact pairs in the order defined by the islands such that the contact manifolds and
     // contact points of a given island are packed together in the array of manifolds and contact points
-    uint32 nbContactPairsToProcess = mWorld->mProcessContactPairsOrderIslands.size();
+    const uint32 nbContactPairsToProcess = mWorld->mProcessContactPairsOrderIslands.size();
     for (uint p=0; p < nbContactPairsToProcess; p++) {
 
         uint32 contactPairIndex = mWorld->mProcessContactPairsOrderIslands[p];
@@ -988,6 +988,8 @@ void CollisionDetectionSystem::createSnapshotContacts(Array<ContactPair>& contac
 // Initialize the current contacts with the contacts from the previous frame (for warmstarting)
 void CollisionDetectionSystem::initContactsWithPreviousOnes() {
 
+    const decimal persistentContactDistThresholdSqr = mWorld->mConfig.persistentContactDistanceThreshold * mWorld->mConfig.persistentContactDistanceThreshold;
+
     // For each contact pair of the current frame
     const uint32 nbCurrentContactPairs = mCurrentContactPairs->size();
     for (uint32 i=0; i < nbCurrentContactPairs; i++) {
@@ -1052,16 +1054,18 @@ void CollisionDetectionSystem::initContactsWithPreviousOnes() {
                 assert(c < mCurrentContactPoints->size());
                 ContactPoint& currentContactPoint = (*mCurrentContactPoints)[c];
 
+                const Vector3& currentContactPointLocalShape1 = currentContactPoint.getLocalPointOnShape1();
+
                 // Find a similar contact point among the contact points from the previous frame (for warmstarting)
                 const uint previousContactPointsIndex = previousContactPair.contactPointsIndex;
                 const uint previousNbContactPoints = previousContactPair.nbToTalContactPoints;
                 for (uint p=previousContactPointsIndex; p < previousContactPointsIndex + previousNbContactPoints; p++) {
 
-                    ContactPoint& previousContactPoint = (*mPreviousContactPoints)[p];
+                    const ContactPoint& previousContactPoint = (*mPreviousContactPoints)[p];
 
                     // If the previous contact point is very close to th current one
-                    const decimal distSquare = (currentContactPoint.getLocalPointOnShape1() - previousContactPoint.getLocalPointOnShape1()).lengthSquare();
-                    if (distSquare <= mWorld->mConfig.persistentContactDistanceThreshold * mWorld->mConfig.persistentContactDistanceThreshold) {
+                    const decimal distSquare = (currentContactPointLocalShape1 - previousContactPoint.getLocalPointOnShape1()).lengthSquare();
+                    if (distSquare <= persistentContactDistThresholdSqr) {
 
                         // Transfer data from the previous contact point to the current one
                         currentContactPoint.setPenetrationImpulse(previousContactPoint.getPenetrationImpulse());

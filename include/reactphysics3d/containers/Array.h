@@ -292,7 +292,7 @@ class Array {
                 reserve(mCapacity == 0 ? 1 : mCapacity * 2);
             }
 
-            // Use the copy-constructor to construct the element
+            // Use the constructor to construct the element
             new (reinterpret_cast<void*>(mBuffer + mSize)) T(element);
 
             mSize++;
