@@ -56,50 +56,56 @@ bool SphereVsSphereAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInf
         const decimal sphere2Radius = sphereShape2->getRadius();
 
         // Compute the sum of the radius
-        decimal sumRadiuses = sphere1Radius + sphere2Radius;
+        const decimal sumRadiuses = sphere1Radius + sphere2Radius;
 
         // Compute the product of the sum of the radius
-        decimal sumRadiusesProducts = sumRadiuses * sumRadiuses;
+        const decimal sumRadiusesProducts = sumRadiuses * sumRadiuses;
 
         // If the sphere collision shapes intersect
         if (squaredDistanceBetweenCenters < sumRadiusesProducts) {
 
-            // If we need to report contacts
-            if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
+            const decimal penetrationDepth = sumRadiuses - std::sqrt(squaredDistanceBetweenCenters);
 
-                const Transform transform1Inverse = transform1.getInverse();
-                const Transform transform2Inverse = transform2.getInverse();
+            // Make sure the penetration depth is not zero (even if the previous condition test was true the penetration depth can still be
+            // zero because of precision issue of the computation at the previous line)
+            if (penetrationDepth > 0) {
 
-                decimal penetrationDepth = sumRadiuses - std::sqrt(squaredDistanceBetweenCenters);
-                Vector3 intersectionOnBody1;
-                Vector3 intersectionOnBody2;
-                Vector3 normal;
+                // If we need to report contacts
+                if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
 
-                // If the two sphere centers are not at the same position
-                if (squaredDistanceBetweenCenters > MACHINE_EPSILON) {
+                    const Transform transform1Inverse = transform1.getInverse();
+                    const Transform transform2Inverse = transform2.getInverse();
 
-                    Vector3 centerSphere2InBody1LocalSpace = transform1Inverse * transform2.getPosition();
-                    Vector3 centerSphere1InBody2LocalSpace = transform2Inverse * transform1.getPosition();
+                    Vector3 intersectionOnBody1;
+                    Vector3 intersectionOnBody2;
+                    Vector3 normal;
 
-                    intersectionOnBody1 = sphere1Radius * centerSphere2InBody1LocalSpace.getUnit();
-                    intersectionOnBody2 = sphere2Radius * centerSphere1InBody2LocalSpace.getUnit();
-                    normal = vectorBetweenCenters.getUnit();
+                    // If the two sphere centers are not at the same position
+                    if (squaredDistanceBetweenCenters > MACHINE_EPSILON) {
+
+                        const Vector3 centerSphere2InBody1LocalSpace = transform1Inverse * transform2.getPosition();
+                        const Vector3 centerSphere1InBody2LocalSpace = transform2Inverse * transform1.getPosition();
+
+                        intersectionOnBody1 = sphere1Radius * centerSphere2InBody1LocalSpace.getUnit();
+                        intersectionOnBody2 = sphere2Radius * centerSphere1InBody2LocalSpace.getUnit();
+                        normal = vectorBetweenCenters.getUnit();
+                    }
+                    else {    // If the sphere centers are at the same position (degenerate case)
+
+                        // Take any contact normal direction
+                        normal.setAllValues(0, 1, 0);
+
+                        intersectionOnBody1 = sphere1Radius * (transform1Inverse.getOrientation() * normal);
+                        intersectionOnBody2 = sphere2Radius * (transform2Inverse.getOrientation() * normal);
+                    }
+
+                    // Create the contact info object
+                    narrowPhaseInfoBatch.addContactPoint(batchIndex, normal, penetrationDepth, intersectionOnBody1, intersectionOnBody2);
                 }
-                else {    // If the sphere centers are at the same position (degenerate case)
 
-                    // Take any contact normal direction
-                    normal.setAllValues(0, 1, 0);
-
-                    intersectionOnBody1 = sphere1Radius * (transform1Inverse.getOrientation() * normal);
-                    intersectionOnBody2 = sphere2Radius * (transform2Inverse.getOrientation() * normal);
-                }
-
-                // Create the contact info object
-                narrowPhaseInfoBatch.addContactPoint(batchIndex, normal, penetrationDepth, intersectionOnBody1, intersectionOnBody2);
+                narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
+                isCollisionFound = true;
             }
-
-            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
-            isCollisionFound = true;
         }
     }
 
