@@ -1319,8 +1319,11 @@ ConcaveMeshShape* concaveMesh = physicsCommon.createConcaveMeshShape(triangleMes
   \texttt{TriangleMesh} for multiple \texttt{ConcaveMeshShape} with a different scaling factor each time. \\
   \end{sloppypar}
 
-  In the previous example, the vertex normals that are needed for collision detection are automatically computed. However, if you want to specify your own
-  vertex normals, you can do it by using another constructor for the \texttt{TriangleVertexArray}. \\
+  In the previous example, the vertices normals that are needed for collision detection are automatically computed. However, you can specify your own
+  vertices normals by using another constructor for the \texttt{TriangleVertexArray}. Note that each vertex normal is computed as weighted average
+  of the face normals of all the neighboring triangle faces. Therefore, if you specify your mesh with duplicated vertices when you create the
+  \emph{TriangleVertexArray}, the automatic vertices normals computation will not give correct normals because each vertex of the mesh will only be
+  part of a single triangle face. In this case, you should provide your own vertices normals when you create the \emph{TriangleVertexArray}. \\
 
   \subsubsection{Heightfield Shape}
 
