@@ -123,6 +123,8 @@ set(COMMON_SOURCES
 
 # Examples scenes source files
 set(SCENES_SOURCES
+    scenes/ballandsocketjointsnet/BallAndSocketJointsNetScene.h
+    scenes/ballandsocketjointsnet/BallAndSocketJointsNetScene.cpp
     scenes/cubes/CubesScene.h
     scenes/cubes/CubesScene.cpp
     scenes/joints/JointsScene.h

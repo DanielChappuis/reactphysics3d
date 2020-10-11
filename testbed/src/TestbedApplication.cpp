@@ -39,6 +39,7 @@
 #include "cubestack/CubeStackScene.h"
 #include "pile/PileScene.h"
 #include "boxtower/BoxTowerScene.h"
+#include "ballandsocketjointsnet/BallAndSocketJointsNetScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -51,6 +52,7 @@ using namespace collisiondetectionscene;
 using namespace cubestackscene;
 using namespace pilescene;
 using namespace boxtowerscene;
+using namespace ballandsocketjointsnetscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -152,7 +154,12 @@ void TestbedApplication::createScenes() {
     mScenes.push_back(boxTowerScene);
     assert(mScenes.size() > 0);
 
-    const int firstSceneIndex = 0;
+    // Ball and Socket joints Net scene
+    BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene("BallAndSocket Joints Net", mEngineSettings);
+    mScenes.push_back(ballAndSocketJointsNetScene);
+    assert(mScenes.size() > 0);
+
+    const int firstSceneIndex = 10;
 
     switchScene(mScenes[firstSceneIndex]);
 }
