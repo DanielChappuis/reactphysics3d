@@ -888,16 +888,6 @@ void RigidBody::resetOverlappingPairs() {
     askForBroadPhaseCollisionCheck();
 }
 
-/// Compute the inverse of the inertia tensor in world coordinates.
-void RigidBody::computeWorldInertiaTensorInverse(const Matrix3x3& orientation, const Vector3& inverseInertiaTensorLocal, Matrix3x3& outInverseInertiaTensorWorld) {
-
-    Matrix3x3 orientationTranspose = orientation.getTranspose();
-    orientationTranspose[0] *= inverseInertiaTensorLocal.x;
-    orientationTranspose[1] *= inverseInertiaTensorLocal.y;
-    orientationTranspose[2] *= inverseInertiaTensorLocal.z;
-    outInverseInertiaTensorWorld = orientation * orientationTranspose;
-}
-
 // Set whether or not the body is allowed to go to sleep
 /**
  * @param isAllowedToSleep True if the body is allowed to sleep

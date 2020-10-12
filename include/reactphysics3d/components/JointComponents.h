@@ -157,6 +157,11 @@ class JointComponents : public Components {
         friend class BroadPhaseSystem;
         friend class ConstraintSolverSystem;
         friend class PhysicsWorld;
+        friend class SolveBallAndSocketJointSystem;
+        friend class SolveFixedJointSystem;
+        friend class SolveHingeJointSystem;
+        friend class SolveSliderJointSystem;
+
 };
 
 // Return the entity of the first body of a joint
