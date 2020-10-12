@@ -47,6 +47,8 @@ SolveHingeJointSystem::SolveHingeJointSystem(PhysicsWorld& world, RigidBodyCompo
 // Initialize before solving the constraint
 void SolveHingeJointSystem::initBeforeSolve() {
 
+    const decimal biasFactor = (BETA / mTimeStep);
+
     // For each joint
     const uint32 nbJoints = mHingeJointComponents.getNbEnabledComponents();
     for (uint32 i=0; i < nbJoints; i++) {
@@ -58,23 +60,15 @@ void SolveHingeJointSystem::initBeforeSolve() {
         const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
         const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
-        assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity));
-        assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
+        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
+        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
+
+        assert(!mRigidBodyComponents.mIsEntityDisabled[componentIndexBody1]);
+        assert(!mRigidBodyComponents.mIsEntityDisabled[componentIndexBody2]);
 
         // Get the inertia tensor of bodies
-        mHingeJointComponents.mI1[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body1Entity);
-        mHingeJointComponents.mI2[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body2Entity);
-    }
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
+        mHingeJointComponents.mI1[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody1];
+        mHingeJointComponents.mI2[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody2];
 
         const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
@@ -82,22 +76,6 @@ void SolveHingeJointSystem::initBeforeSolve() {
         // Compute the vector from body center to the anchor point in world-space
         mHingeJointComponents.mR1World[i] = orientationBody1 * mHingeJointComponents.mLocalAnchorPointBody1[i];
         mHingeJointComponents.mR2World[i] = orientationBody2 * mHingeJointComponents.mLocalAnchorPointBody2[i];
-    }
-
-    const decimal biasFactor = (BETA / mTimeStep);
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
-
-        const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
-        const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Compute vectors needed in the Jacobian
         Vector3& a1 = mHingeJointComponents.mA1[i];
@@ -116,24 +94,10 @@ void SolveHingeJointSystem::initBeforeSolve() {
         if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mHingeJointComponents.mBiasRotation[i] = biasFactor * Vector2(a1.dot(b2), a1.dot(c2));
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         // Compute the corresponding skew-symmetric matrices
         Matrix3x3 skewSymmetricMatrixU1= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR1World[i]);
         Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR2World[i]);
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         // Compute the inverse mass matrix K=JM^-1J^t for the 3 translation constraints (3x3 matrix)
         decimal body1MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
@@ -150,38 +114,16 @@ void SolveHingeJointSystem::initBeforeSolve() {
             mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
             mHingeJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse();
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         // Get the bodies positions and orientations
-        const Vector3& x1 = mRigidBodyComponents.getCenterOfMassWorld(body1Entity);
-        const Vector3& x2 = mRigidBodyComponents.getCenterOfMassWorld(body2Entity);
+        const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody1];
+        const Vector3& x2 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody2];
 
         // Compute the bias "b" of the translation constraints
         mHingeJointComponents.mBiasTranslation[i].setToZero();
         if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mHingeJointComponents.mBiasTranslation[i] = biasFactor * (x2 + mHingeJointComponents.mR2World[i] - x1 - mHingeJointComponents.mR1World[i]);
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const Matrix3x3& i1 = mHingeJointComponents.mI1[i];
         const Matrix3x3& i2 = mHingeJointComponents.mI2[i];
@@ -199,17 +141,13 @@ void SolveHingeJointSystem::initBeforeSolve() {
         const decimal el22 = c2CrossA1.dot(i1C2CrossA1) + c2CrossA1.dot(i2C2CrossA1);
         const Matrix2x2 matrixKRotation(el11, el12, el21, el22);
         mHingeJointComponents.mInverseMassMatrixRotation[i].setToZero();
-        if (mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
-            mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
+        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
             mHingeJointComponents.mInverseMassMatrixRotation[i] = matrixKRotation.getInverse();
         }
-    }
 
-    // If warm-starting is not enabled
-    if (!mIsWarmStartingActive) {
-
-        // For each joint
-        for (uint32 i=0; i < nbJoints; i++) {
+        // If warm-starting is not enabled
+        if (!mIsWarmStartingActive) {
 
             // Reset all the accumulated impulses
             mHingeJointComponents.mImpulseTranslation[i].setToZero();
@@ -218,20 +156,6 @@ void SolveHingeJointSystem::initBeforeSolve() {
             mHingeJointComponents.mImpulseUpperLimit[i] = decimal(0.0);
             mHingeJointComponents.mImpulseMotor[i] = decimal(0.0);
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
-
-        const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
-        const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Compute the current angle around the hinge axis
         decimal hingeAngle = computeCurrentHingeAngle(jointEntity, orientationBody1, orientationBody2);
@@ -553,58 +477,30 @@ void SolveHingeJointSystem::solvePositionConstraint() {
         Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
         Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
+        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
+        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
+
         // Recompute the world inverse inertia tensors
         const Matrix3x3 orientation1 = mTransformComponents.getTransform(body1Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.getInertiaTensorLocalInverse(body1Entity),
+        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody1],
                                                     mHingeJointComponents.mI1[i]);
 
         const Matrix3x3 orientation2 = mTransformComponents.getTransform(body2Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.getInertiaTensorLocalInverse(body2Entity),
+        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody2],
                                                     mHingeJointComponents.mI2[i]);
-    }
 
-    // For each joint component
-    for (uint32 i=0; i < nbEnabledJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
-
-        const Quaternion& q1 = mRigidBodyComponents.getConstrainedOrientation(body1Entity);
-        const Quaternion& q2 = mRigidBodyComponents.getConstrainedOrientation(body2Entity);
+        Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
+        Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
 
         // Compute the vector from body center to the anchor point in world-space
         mHingeJointComponents.mR1World[i] = q1 * mHingeJointComponents.mLocalAnchorPointBody1[i];
         mHingeJointComponents.mR2World[i] = q2 * mHingeJointComponents.mLocalAnchorPointBody2[i];
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < nbEnabledJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         // Compute the corresponding skew-symmetric matrices
         Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR1World[i]);
         Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR2World[i]);
 
         // --------------- Translation Constraints --------------- //
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
         const decimal body1InverseMass = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
@@ -620,26 +516,6 @@ void SolveHingeJointSystem::solvePositionConstraint() {
             mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
             mHingeJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse();
         }
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < nbEnabledJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
-
-        Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
-        Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
 
         Vector3& b2CrossA1 = mHingeJointComponents.mB2CrossA1[i];
         Vector3& c2CrossA1 = mHingeJointComponents.mC2CrossA1[i];
@@ -744,23 +620,6 @@ void SolveHingeJointSystem::solvePositionConstraint() {
         // Update the body position/orientation of body 2
         q2 += Quaternion(0, w2) * q2 * decimal(0.5);
         q2.normalize();
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < nbEnabledJoints; i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
-
-        Quaternion& q1 = mRigidBodyComponents.getConstrainedOrientation(body1Entity);
-        Quaternion& q2 = mRigidBodyComponents.getConstrainedOrientation(body2Entity);
 
         // Compute the current angle around the hinge axis
         const decimal hingeAngle = computeCurrentHingeAngle(jointEntity, q1, q2);

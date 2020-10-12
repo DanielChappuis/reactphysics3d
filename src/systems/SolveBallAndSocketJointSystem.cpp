@@ -47,6 +47,8 @@ SolveBallAndSocketJointSystem::SolveBallAndSocketJointSystem(PhysicsWorld& world
 // Initialize before solving the constraint
 void SolveBallAndSocketJointSystem::initBeforeSolve() {
 
+    const decimal biasFactor = (BETA / mTimeStep);
+
     // For each joint
     const uint32 nbJoints = mBallAndSocketJointComponents.getNbEnabledComponents();
     for (uint32 i=0; i < nbJoints; i++) {
@@ -64,17 +66,6 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         // Get the inertia tensor of bodies
         mBallAndSocketJointComponents.mI1[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body1Entity);
         mBallAndSocketJointComponents.mI2[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body2Entity);
-    }
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mBallAndSocketJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
@@ -82,23 +73,12 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         // Compute the vector from body center to the anchor point in world-space
         mBallAndSocketJointComponents.mR1World[i] = orientationBody1 * mBallAndSocketJointComponents.mLocalAnchorPointBody1[i];
         mBallAndSocketJointComponents.mR2World[i] = orientationBody2 * mBallAndSocketJointComponents.mLocalAnchorPointBody2[i];
-    }
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mBallAndSocketJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // Compute the corresponding skew-symmetric matrices
         const Vector3& r1World = mBallAndSocketJointComponents.mR1World[i];
         const Vector3& r2World = mBallAndSocketJointComponents.mR2World[i];
         Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(r1World);
         Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(r2World);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
@@ -121,22 +101,6 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
             mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
             mBallAndSocketJointComponents.mInverseMassMatrix[i] = massMatrix.getInverse();
         }
-    }
-
-    const decimal biasFactor = (BETA / mTimeStep);
-
-    // For each joint
-    for (uint32 i=0; i < nbJoints; i++) {
-
-        const Entity jointEntity = mBallAndSocketJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
-
-        const Vector3& r1World = mBallAndSocketJointComponents.mR1World[i];
-        const Vector3& r2World = mBallAndSocketJointComponents.mR2World[i];
 
         const Vector3& x1 = mRigidBodyComponents.getCenterOfMassWorld(body1Entity);
         const Vector3& x2 = mRigidBodyComponents.getCenterOfMassWorld(body2Entity);
@@ -146,13 +110,9 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mBallAndSocketJointComponents.mBiasVector[i] = biasFactor * (x2 + r2World - x1 - r1World);
         }
-    }
 
-    // If warm-starting is not enabled
-    if (!mIsWarmStartingActive) {
-
-        // For each joint
-        for (uint32 i=0; i < mBallAndSocketJointComponents.getNbEnabledComponents(); i++) {
+        // If warm-starting is not enabled
+        if (!mIsWarmStartingActive) {
 
             // Reset the accumulated impulse
             mBallAndSocketJointComponents.mImpulse[i].setToZero();
@@ -271,51 +231,23 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
         const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
+        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
+        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
+
         // Recompute the world inverse inertia tensors
         const Matrix3x3 orientation1 = mTransformComponents.getTransform(body1Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.getInertiaTensorLocalInverse(body1Entity),
+        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody1],
                                                     mBallAndSocketJointComponents.mI1[i]);
 
         const Matrix3x3 orientation2 = mTransformComponents.getTransform(body2Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.getInertiaTensorLocalInverse(body2Entity),
+        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody2],
                                                     mBallAndSocketJointComponents.mI2[i]);
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < nbEnabledJoints; i++) {
-
-        const Entity jointEntity = mBallAndSocketJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do
-        // do not execute this method
-        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         // Compute the vector from body center to the anchor point in world-space
-        mBallAndSocketJointComponents.mR1World[i] = mRigidBodyComponents.getConstrainedOrientation(body1Entity) *
+        mBallAndSocketJointComponents.mR1World[i] = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1] *
                                                     mBallAndSocketJointComponents.mLocalAnchorPointBody1[i];
-        mBallAndSocketJointComponents.mR2World[i] = mRigidBodyComponents.getConstrainedOrientation(body2Entity) *
+        mBallAndSocketJointComponents.mR2World[i] = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2] *
                                                     mBallAndSocketJointComponents.mLocalAnchorPointBody2[i];
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < nbEnabledJoints; i++) {
-
-        const Entity jointEntity = mBallAndSocketJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do
-        // do not execute this method
-        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         const Vector3& r1World = mBallAndSocketJointComponents.mR1World[i];
         const Vector3& r2World = mBallAndSocketJointComponents.mR2World[i];
@@ -340,29 +272,9 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
             mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
             mBallAndSocketJointComponents.mInverseMassMatrix[i] = massMatrix.getInverse();
         }
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < nbEnabledJoints; i++) {
-
-        const Entity jointEntity = mBallAndSocketJointComponents.mJointEntities[i];
-        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do
-        // do not execute this method
-        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
-        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
         Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
-
-        const Vector3& r1World = mBallAndSocketJointComponents.mR1World[i];
-        const Vector3& r2World = mBallAndSocketJointComponents.mR2World[i];
 
         // Compute the constraint error (value of the C(x) function)
         const Vector3 constraintError = (x2 + r2World - x1 - r1World);
@@ -375,10 +287,6 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         // Compute the impulse of body 1
         const Vector3 linearImpulseBody1 = -lambda;
         const Vector3 angularImpulseBody1 = lambda.cross(r1World);
-
-        // Get the inverse mass and inverse inertia tensors of the bodies
-        const decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
-        const decimal inverseMassBody2 = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
 
         // Compute the pseudo velocity of body 1
         const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
