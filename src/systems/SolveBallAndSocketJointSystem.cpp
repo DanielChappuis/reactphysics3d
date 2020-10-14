@@ -234,13 +234,14 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
+        Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
+        Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
+
         // Recompute the world inverse inertia tensors
-        const Matrix3x3 orientation1 = mTransformComponents.getTransform(body1Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody1],
+        RigidBody::computeWorldInertiaTensorInverse(q1.getMatrix(), mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody1],
                                                     mBallAndSocketJointComponents.mI1[i]);
 
-        const Matrix3x3 orientation2 = mTransformComponents.getTransform(body2Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody2],
+        RigidBody::computeWorldInertiaTensorInverse(q2.getMatrix(), mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody2],
                                                     mBallAndSocketJointComponents.mI2[i]);
 
         // Compute the vector from body center to the anchor point in world-space
@@ -291,9 +292,6 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         // Compute the pseudo velocity of body 1
         const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
         const Vector3 w1 = mBallAndSocketJointComponents.mI1[i] * angularImpulseBody1;
-
-        Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
-        Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
 
         // Update the body center of mass and orientation of body 1
         x1 += v1;

@@ -480,17 +480,15 @@ void SolveHingeJointSystem::solvePositionConstraint() {
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
-        // Recompute the world inverse inertia tensors
-        const Matrix3x3 orientation1 = mTransformComponents.getTransform(body1Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody1],
-                                                    mHingeJointComponents.mI1[i]);
-
-        const Matrix3x3 orientation2 = mTransformComponents.getTransform(body2Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody2],
-                                                    mHingeJointComponents.mI2[i]);
-
         Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
         Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
+
+        // Recompute the world inverse inertia tensors
+        RigidBody::computeWorldInertiaTensorInverse(q1.getMatrix(), mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody1],
+                                                    mHingeJointComponents.mI1[i]);
+
+        RigidBody::computeWorldInertiaTensorInverse(q2.getMatrix(), mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody2],
+                                                    mHingeJointComponents.mI2[i]);
 
         // Compute the vector from body center to the anchor point in world-space
         mHingeJointComponents.mR1World[i] = q1 * mHingeJointComponents.mLocalAnchorPointBody1[i];

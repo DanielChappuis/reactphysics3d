@@ -297,21 +297,19 @@ void SolveFixedJointSystem::solvePositionConstraint() {
         const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
         const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
-        // Recompute the world inverse inertia tensors
-        const Matrix3x3 orientation1 = mTransformComponents.getTransform(body1Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation1, mRigidBodyComponents.getInertiaTensorLocalInverse(body1Entity),
-                                                    mFixedJointComponents.mI1[i]);
-
-        const Matrix3x3 orientation2 = mTransformComponents.getTransform(body2Entity).getOrientation().getMatrix();
-        RigidBody::computeWorldInertiaTensorInverse(orientation2, mRigidBodyComponents.getInertiaTensorLocalInverse(body2Entity),
-                                                    mFixedJointComponents.mI2[i]);
-
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         // Get the bodies positions and orientations
         Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
         Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
+
+        // Recompute the world inverse inertia tensors
+        RigidBody::computeWorldInertiaTensorInverse(q1.getMatrix(), mRigidBodyComponents.getInertiaTensorLocalInverse(body1Entity),
+                                                    mFixedJointComponents.mI1[i]);
+
+        RigidBody::computeWorldInertiaTensorInverse(q2.getMatrix(), mRigidBodyComponents.getInertiaTensorLocalInverse(body2Entity),
+                                                    mFixedJointComponents.mI2[i]);
 
         // Compute the vector from body center to the anchor point in world-space
         mFixedJointComponents.mR1World[i] = q1 * mFixedJointComponents.mLocalAnchorPointBody1[i];
