@@ -127,8 +127,8 @@ class PhysicsWorld {
                 defaultBounciness = decimal(0.5);
                 restitutionVelocityThreshold = decimal(0.5);
                 isSleepingEnabled = true;
-                defaultVelocitySolverNbIterations = 10;
-                defaultPositionSolverNbIterations = 5;
+                defaultVelocitySolverNbIterations = 6;
+                defaultPositionSolverNbIterations = 3;
                 defaultTimeBeforeSleep = 1.0f;
                 defaultSleepLinearVelocity = decimal(0.02);
                 defaultSleepAngularVelocity = decimal(3.0) * (PI_RP3D / decimal(180.0));
