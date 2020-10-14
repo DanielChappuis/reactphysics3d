@@ -766,11 +766,12 @@ void PhysicsWorld::createIslands() {
     assert(mProcessContactPairsOrderIslands.size() == 0);
 
     // Reset all the isAlreadyInIsland variables of bodies and joints
-    for (uint b=0; b < mRigidBodyComponents.getNbComponents(); b++) {
-
+    const uint32 nbRigidBodyComponents = mRigidBodyComponents.getNbComponents();
+    for (uint b=0; b < nbRigidBodyComponents; b++) {
         mRigidBodyComponents.mIsAlreadyInIsland[b] = false;
     }
-    for (uint32 i=0; i < mJointsComponents.getNbComponents(); i++) {
+    const uint32 nbJointsComponents = mJointsComponents.getNbComponents();
+    for (uint32 i=0; i < nbJointsComponents; i++) {
         mJointsComponents.mIsAlreadyInIsland[i] = false;
     }
 
@@ -876,14 +877,16 @@ void PhysicsWorld::createIslands() {
             const uint32 nbBodyJoints = joints.size();
             for (uint32 i=0; i < nbBodyJoints; i++) {
 
+                const uint32 jointComponentIndex = mJointsComponents.getEntityIndex(joints[i]);
+
                 // Check if the current joint has already been added into an island
-                if (mJointsComponents.getIsAlreadyInIsland(joints[i])) continue;
+                if (mJointsComponents.mIsAlreadyInIsland[jointComponentIndex]) continue;
 
                 // Add the joint into the island
-                mJointsComponents.setIsAlreadyInIsland(joints[i], true);
+                mJointsComponents.mIsAlreadyInIsland[jointComponentIndex] = true;
 
-                const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
-                const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
+                const Entity body1Entity = mJointsComponents.mBody1Entities[jointComponentIndex];
+                const Entity body2Entity = mJointsComponents.mBody2Entities[jointComponentIndex];
                 const Entity otherBodyEntity = body1Entity == bodyToVisitEntity ? body2Entity : body1Entity;
 
                 const uint32 otherBodyIndex = mRigidBodyComponents.getEntityIndex(otherBodyEntity);
@@ -910,7 +913,8 @@ void PhysicsWorld::createIslands() {
     }
 
     // Clear the associated contacts pairs of rigid bodies
-    for (uint b=0; b < mRigidBodyComponents.getNbEnabledComponents(); b++) {
+    const uint32 nbRigidBodyEnabledComponents = mRigidBodyComponents.getNbEnabledComponents();
+    for (uint b=0; b < nbRigidBodyEnabledComponents; b++) {
         mRigidBodyComponents.mContactPairs[b].clear();
     }
 }
@@ -926,7 +930,8 @@ void PhysicsWorld::updateSleepingBodies(decimal timeStep) {
     const decimal sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;
 
     // For each island of the world
-    for (uint i=0; i<mIslands.getNbIslands(); i++) {
+    const uint32 nbIslands = mIslands.getNbIslands();
+    for (uint i=0; i < nbIslands; i++) {
 
         decimal minSleepTime = DECIMAL_LARGEST;
 
