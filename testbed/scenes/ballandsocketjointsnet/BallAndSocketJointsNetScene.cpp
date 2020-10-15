@@ -90,7 +90,7 @@ BallAndSocketJointsNetScene::BallAndSocketJointsNetScene(const std::string& name
     createJoints();
 
     // Create the main sphere
-    mMainSphere = new Sphere(true, 10, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
+    mMainSphere = new Sphere(true, 7, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
     mMainSphere->setColor(mObjectColorDemo);
     mMainSphere->setSleepingColor(mSleepingColorDemo);
     rp3d::Vector3 initPosition(0, 0, 0);
@@ -181,7 +181,7 @@ void BallAndSocketJointsNetScene::reset() {
 
     SceneDemo::reset();
 
-    const float space = 0.3f;
+    const float space = 0.5f;
     const float startX = -(NB_ROWS_NET_SPHERES / 2.0f * (2.0 * SPHERE_RADIUS + space));
     const float startZ = -(NB_ROWS_NET_SPHERES / 2.0f * (2.0 * SPHERE_RADIUS + space));
 

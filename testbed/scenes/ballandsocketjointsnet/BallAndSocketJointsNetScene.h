@@ -37,7 +37,7 @@ namespace ballandsocketjointsnetscene {
 // Constants
 const float SCENE_RADIUS = 40.0f;
 const float SPHERE_RADIUS = 0.5f;
-const int NB_ROWS_NET_SPHERES = 40;
+const int NB_ROWS_NET_SPHERES = 20;
 
 // Class JointsScene
 class BallAndSocketJointsNetScene : public SceneDemo {

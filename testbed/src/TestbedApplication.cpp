@@ -159,7 +159,7 @@ void TestbedApplication::createScenes() {
     mScenes.push_back(ballAndSocketJointsNetScene);
     assert(mScenes.size() > 0);
 
-    const int firstSceneIndex = 10;
+    const int firstSceneIndex = 0;
 
     switchScene(mScenes[firstSceneIndex]);
 }
