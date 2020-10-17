@@ -138,7 +138,7 @@ class JointComponents : public Components {
         JointsPositionCorrectionTechnique getPositionCorrectionTechnique(Entity jointEntity) const;
 
         /// Set the position correction technique of a joint
-        void getPositionCorrectionTechnique(Entity jointEntity, JointsPositionCorrectionTechnique positionCorrectionTechnique);
+        void setPositionCorrectionTechnique(Entity jointEntity, JointsPositionCorrectionTechnique positionCorrectionTechnique);
 
         /// Return true if the collision is enabled between the two bodies of a joint
         bool getIsCollisionEnabled(Entity jointEntity) const;
@@ -195,7 +195,7 @@ RP3D_FORCE_INLINE JointsPositionCorrectionTechnique JointComponents::getPosition
 }
 
 // Set the position correction technique of a joint
-RP3D_FORCE_INLINE void JointComponents::getPositionCorrectionTechnique(Entity jointEntity, JointsPositionCorrectionTechnique positionCorrectionTechnique) {
+RP3D_FORCE_INLINE void JointComponents::setPositionCorrectionTechnique(Entity jointEntity, JointsPositionCorrectionTechnique positionCorrectionTechnique) {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mPositionCorrectionTechniques[mMapEntityToComponentIndex[jointEntity]] = positionCorrectionTechnique;
 }
