@@ -40,6 +40,8 @@
 #include "pile/PileScene.h"
 #include "boxtower/BoxTowerScene.h"
 #include "ballandsocketjointsnet/BallAndSocketJointsNetScene.h"
+#include "ballandsocketjointschain/BallAndSocketJointsChainScene.h"
+#include "hingejointschain/HingeJointsChainScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -53,6 +55,8 @@ using namespace cubestackscene;
 using namespace pilescene;
 using namespace boxtowerscene;
 using namespace ballandsocketjointsnetscene;
+using namespace ballandsocketjointschainscene;
+using namespace hingejointschainscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -147,16 +151,23 @@ void TestbedApplication::createScenes() {
     // Pile scene
     PileScene* pileScene = new PileScene("Pile", mEngineSettings);
     mScenes.push_back(pileScene);
-    assert(mScenes.size() > 0);
 
     // Box Tower scene
     BoxTowerScene* boxTowerScene = new BoxTowerScene("Box Tower", mEngineSettings);
     mScenes.push_back(boxTowerScene);
-    assert(mScenes.size() > 0);
 
     // Ball and Socket joints Net scene
     BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene("BallAndSocket Joints Net", mEngineSettings);
     mScenes.push_back(ballAndSocketJointsNetScene);
+
+    // Ball and Socket joints chain scene
+    BallAndSocketJointsChainScene* ballAndSocketJointsChainScene = new BallAndSocketJointsChainScene("BallAndSocket Joints Chain", mEngineSettings);
+    mScenes.push_back(ballAndSocketJointsChainScene);
+
+    // Hinge joints chain scene
+    HingeJointsChainScene* hingeJointsChainScene = new HingeJointsChainScene("Hinge Joints Chain", mEngineSettings);
+    mScenes.push_back(hingeJointsChainScene);
+
     assert(mScenes.size() > 0);
 
     const int firstSceneIndex = 0;

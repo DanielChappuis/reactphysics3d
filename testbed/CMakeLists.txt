@@ -125,6 +125,10 @@ set(COMMON_SOURCES
 set(SCENES_SOURCES
     scenes/ballandsocketjointsnet/BallAndSocketJointsNetScene.h
     scenes/ballandsocketjointsnet/BallAndSocketJointsNetScene.cpp
+    scenes/ballandsocketjointschain/BallAndSocketJointsChainScene.h
+    scenes/ballandsocketjointschain/BallAndSocketJointsChainScene.cpp
+    scenes/hingejointschain/HingeJointsChainScene.h
+    scenes/hingejointschain/HingeJointsChainScene.cpp
     scenes/cubes/CubesScene.h
     scenes/cubes/CubesScene.cpp
     scenes/joints/JointsScene.h
