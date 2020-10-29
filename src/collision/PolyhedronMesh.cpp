@@ -177,7 +177,8 @@ Vector3 PolyhedronMesh::getVertex(uint index) const {
 void PolyhedronMesh::computeFacesNormals() {
 
     // For each face
-    for (uint f=0; f < mHalfEdgeStructure.getNbFaces(); f++) {
+    const uint32 nbFaces = mHalfEdgeStructure.getNbFaces();
+    for (uint f=0; f < nbFaces; f++) {
         const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(f);
 
         assert(face.faceVertices.size() >= 3);

@@ -42,8 +42,11 @@ PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
                 mConvexMeshShapes(mMemoryManager.getHeapAllocator()), mConcaveMeshShapes(mMemoryManager.getHeapAllocator()),
                 mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mPolyhedronMeshes(mMemoryManager.getHeapAllocator()),
                 mTriangleMeshes(mMemoryManager.getHeapAllocator()),
-                mProfilers(mMemoryManager.getHeapAllocator()), mDefaultLoggers(mMemoryManager.getHeapAllocator()) {
+                mProfilers(mMemoryManager.getHeapAllocator()), mDefaultLoggers(mMemoryManager.getHeapAllocator()),
+                mBoxShapeHalfEdgeStructure(mMemoryManager.getHeapAllocator(), 6, 8, 24),
+                mTriangleShapeHalfEdgeStructure(mMemoryManager.getHeapAllocator(), 2, 3, 6) {
 
+    init();
 }
 
 // Destructor
@@ -51,6 +54,77 @@ PhysicsCommon::~PhysicsCommon() {
 
     // Release the allocated memory
     release();
+}
+
+/// Initialization
+void PhysicsCommon::init() {
+
+    // Initialize the static half-edge structure for the BoxShape collision shape
+    initBoxShapeHalfEdgeStructure();
+
+    // Initialize the static half-edge structure for the TriangleShape collision shape
+    initTriangleShapeHalfEdgeStructure();
+}
+
+// Initialize the static half-edge structure of a BoxShape
+void PhysicsCommon::initBoxShapeHalfEdgeStructure() {
+
+    // Vertices
+    mBoxShapeHalfEdgeStructure.addVertex(0);
+    mBoxShapeHalfEdgeStructure.addVertex(1);
+    mBoxShapeHalfEdgeStructure.addVertex(2);
+    mBoxShapeHalfEdgeStructure.addVertex(3);
+    mBoxShapeHalfEdgeStructure.addVertex(4);
+    mBoxShapeHalfEdgeStructure.addVertex(5);
+    mBoxShapeHalfEdgeStructure.addVertex(6);
+    mBoxShapeHalfEdgeStructure.addVertex(7);
+
+    MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
+
+    // Faces
+    Array<uint> face0(allocator, 4);
+    face0.add(0); face0.add(1); face0.add(2); face0.add(3);
+    Array<uint> face1(allocator, 4);
+    face1.add(1); face1.add(5); face1.add(6); face1.add(2);
+    Array<uint> face2(allocator, 4);
+    face2.add(4); face2.add(7); face2.add(6); face2.add(5);
+    Array<uint> face3(allocator, 4);
+    face3.add(4); face3.add(0); face3.add(3); face3.add(7);
+    Array<uint> face4(allocator, 4);
+    face4.add(4); face4.add(5); face4.add(1); face4.add(0);
+    Array<uint> face5(allocator, 4);
+    face5.add(2); face5.add(6); face5.add(7); face5.add(3);
+
+    mBoxShapeHalfEdgeStructure.addFace(face0);
+    mBoxShapeHalfEdgeStructure.addFace(face1);
+    mBoxShapeHalfEdgeStructure.addFace(face2);
+    mBoxShapeHalfEdgeStructure.addFace(face3);
+    mBoxShapeHalfEdgeStructure.addFace(face4);
+    mBoxShapeHalfEdgeStructure.addFace(face5);
+
+    mBoxShapeHalfEdgeStructure.init();
+}
+
+// Initialize the static half-edge structure of a TriangleShape
+void PhysicsCommon::initTriangleShapeHalfEdgeStructure() {
+
+    // Vertices
+    mTriangleShapeHalfEdgeStructure.addVertex(0);
+    mTriangleShapeHalfEdgeStructure.addVertex(1);
+    mTriangleShapeHalfEdgeStructure.addVertex(2);
+
+    MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
+
+    // Faces
+    Array<uint> face0(allocator, 3);
+    face0.add(0); face0.add(1); face0.add(2);
+    Array<uint> face1(allocator, 3);
+    face1.add(0); face1.add(2); face1.add(1);
+
+    mTriangleShapeHalfEdgeStructure.addFace(face0);
+    mTriangleShapeHalfEdgeStructure.addFace(face1);
+
+    mTriangleShapeHalfEdgeStructure.init();
 }
 
 // Destroy and release everything that has been allocated
@@ -149,7 +223,7 @@ PhysicsWorld* PhysicsCommon::createPhysicsWorld(const PhysicsWorld::WorldSetting
 
 #endif
 
-    PhysicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(PhysicsWorld))) PhysicsWorld(mMemoryManager, worldSettings, profiler);
+    PhysicsWorld* world = new(mMemoryManager.allocate(MemoryManager::AllocationType::Heap, sizeof(PhysicsWorld))) PhysicsWorld(mMemoryManager, *this, worldSettings, profiler);
 
     mPhysicsWorlds.add(world);
 
@@ -242,7 +316,7 @@ BoxShape* PhysicsCommon::createBoxShape(const Vector3& halfExtents) {
         RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
                  "Error when creating a BoxShape: the half extents must be positive values",  __FILE__, __LINE__);
     }
-    BoxShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(BoxShape))) BoxShape(halfExtents, mMemoryManager.getHeapAllocator());
+    BoxShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(BoxShape))) BoxShape(halfExtents, mMemoryManager.getHeapAllocator(), *this);
 
     mBoxShapes.add(shape);
 
@@ -401,7 +475,7 @@ HeightFieldShape* PhysicsCommon::createHeightFieldShape(int nbGridColumns, int n
                                          int upAxis, decimal integerHeightScale, const Vector3& scaling) {
 
     HeightFieldShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(HeightFieldShape))) HeightFieldShape(nbGridColumns, nbGridRows, minHeight, maxHeight,
-                                         heightFieldData, dataType, mMemoryManager.getHeapAllocator(), upAxis, integerHeightScale, scaling);
+                                         heightFieldData, dataType, mMemoryManager.getHeapAllocator(), mTriangleShapeHalfEdgeStructure, upAxis, integerHeightScale, scaling);
 
     mHeightFieldShapes.add(shape);
 
@@ -447,7 +521,8 @@ void PhysicsCommon::deleteHeightFieldShape(HeightFieldShape* heightFieldShape) {
  */
 ConcaveMeshShape* PhysicsCommon::createConcaveMeshShape(TriangleMesh* triangleMesh, const Vector3& scaling) {
 
-    ConcaveMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConcaveMeshShape))) ConcaveMeshShape(triangleMesh, mMemoryManager.getHeapAllocator(), scaling);
+    ConcaveMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConcaveMeshShape))) ConcaveMeshShape(triangleMesh,
+                                                                                                                                            mMemoryManager.getHeapAllocator(), mTriangleShapeHalfEdgeStructure, scaling);
 
     mConcaveMeshShapes.add(shape);
 

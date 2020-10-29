@@ -51,7 +51,7 @@ using namespace std;
 // Constructor
 CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, ColliderComponents& collidersComponents,  TransformComponents& transformComponents,
                                                    CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
-                                                   MemoryManager& memoryManager)
+                                                   MemoryManager& memoryManager, HalfEdgeStructure& triangleHalfEdgeStructure)
                    : mMemoryManager(memoryManager), mCollidersComponents(collidersComponents), mRigidBodyComponents(rigidBodyComponents),
                      mCollisionDispatch(mMemoryManager.getPoolAllocator()), mWorld(world),
                      mNoCollisionPairs(mMemoryManager.getPoolAllocator()),
@@ -68,7 +68,7 @@ CollisionDetectionSystem::CollisionDetectionSystem(PhysicsWorld* world, Collider
                      mPreviousContactManifolds(&mContactManifolds1), mCurrentContactManifolds(&mContactManifolds2),
                      mContactPoints1(mMemoryManager.getPoolAllocator()), mContactPoints2(mMemoryManager.getPoolAllocator()),
                      mPreviousContactPoints(&mContactPoints1), mCurrentContactPoints(&mContactPoints2), mCollisionBodyContactPairsIndices(mMemoryManager.getSingleFrameAllocator()),
-                     mNbPreviousPotentialContactManifolds(0), mNbPreviousPotentialContactPoints(0) {
+                     mNbPreviousPotentialContactManifolds(0), mNbPreviousPotentialContactPoints(0), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -486,7 +486,7 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
         // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
         // destructor of the corresponding NarrowPhaseInfo.
         TriangleShape* triangleShape = new (allocator.allocate(sizeof(TriangleShape)))
-                                       TriangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], allocator);
+                                       TriangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], mTriangleHalfEdgeStructure, allocator);
 
     #ifdef IS_RP3D_PROFILING_ENABLED
 

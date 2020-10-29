@@ -91,12 +91,15 @@ class HeightFieldShape : public ConcaveShape {
         /// Local AABB of the height field (without scaling)
         AABB mAABB;
 
+        /// Reference to the half-edge structure
+        HalfEdgeStructure& mTriangleHalfEdgeStructure;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
         HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                          const void* heightFieldData, HeightDataType dataType, MemoryAllocator& allocator,
-                         int upAxis = 1, decimal integerHeightScale = 1.0f,
+                         HalfEdgeStructure& triangleHalfEdgeStructure, int upAxis = 1, decimal integerHeightScale = 1.0f,
                          const Vector3& scaling = Vector3(1,1,1));
 
         /// Raycast method with feedback information

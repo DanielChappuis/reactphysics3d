@@ -47,7 +47,7 @@ void HalfEdgeStructure::init() {
     const uint32 nbFaces = mFaces.size();
     for (uint32 f=0; f < nbFaces; f++) {
 
-        Face face = mFaces[f];
+        Face& face = mFaces[f];
 
         VerticesPair firstEdgeKey(0, 0);
 

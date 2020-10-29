@@ -34,8 +34,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, const Vector3& scaling)
-                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH, allocator, scaling), mDynamicAABBTree(allocator) {
+ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, HalfEdgeStructure& triangleHalfEdgeStructure, const Vector3& scaling)
+                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH, allocator, scaling), mDynamicAABBTree(allocator), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
 
     mTriangleMesh = triangleMesh;
     mRaycastTestType = TriangleRaycastSide::FRONT;
@@ -247,7 +247,7 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
         mConcaveMeshShape.getTriangleVerticesNormals(data[0], data[1], verticesNormals);
 
         // Create a triangle collision shape
-        TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]), mAllocator);
+        TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]), mConcaveMeshShape.mTriangleHalfEdgeStructure, mAllocator);
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
 		
 #ifdef IS_RP3D_PROFILING_ENABLED

@@ -142,10 +142,13 @@ class ConcaveMeshShape : public ConcaveShape {
         /// if the user did not provide its own vertices normals)
         Vector3** mComputedVerticesNormals;
 
+        /// Reference to the triangle half-edge structure
+        HalfEdgeStructure& mTriangleHalfEdgeStructure;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, const Vector3& scaling = Vector3(1, 1, 1));
+        ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, HalfEdgeStructure& triangleHalfEdgeStructure, const Vector3& scaling = Vector3(1, 1, 1));
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const override;

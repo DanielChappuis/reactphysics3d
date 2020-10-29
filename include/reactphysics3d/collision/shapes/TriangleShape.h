@@ -33,6 +33,9 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
+// Forward declarations
+class PhysicsCommon;
+
 /// Raycast test side for the triangle
 enum class TriangleRaycastSide {
 
@@ -73,11 +76,8 @@ class TriangleShape : public ConvexPolyhedronShape {
         /// Raycast test type for the triangle (front, back, front-back)
         TriangleRaycastSide mRaycastTestType;
 
-        /// Faces information for the two faces of the triangle
-        HalfEdgeStructure::Face mFaces[2];
-
-        /// Edges information for the six edges of the triangle
-        HalfEdgeStructure::Edge mEdges[6];
+        /// Reference to triangle half-edge structure
+        HalfEdgeStructure& mTriangleHalfEdgeStructure;
 
         // -------------------- Methods -------------------- //
 
@@ -108,8 +108,8 @@ class TriangleShape : public ConvexPolyhedronShape {
                                       Vector3& outNewLocalContactPointOtherShape, Vector3& outSmoothWorldContactTriangleNormal) const;
 
         /// Constructor
-        TriangleShape(const Vector3* vertices, const Vector3* verticesNormals,
-                      uint shapeId, MemoryAllocator& allocator);
+        TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId, HalfEdgeStructure& triangleHalfEdgeStructure,
+                      MemoryAllocator& allocator);
 
         /// Destructor
         virtual ~TriangleShape() override = default;
@@ -236,12 +236,6 @@ RP3D_FORCE_INLINE uint TriangleShape::getNbFaces() const {
     return 2;
 }
 
-// Return a given face of the polyhedron
-RP3D_FORCE_INLINE const HalfEdgeStructure::Face& TriangleShape::getFace(uint faceIndex) const {
-    assert(faceIndex < 2);
-    return mFaces[faceIndex];
-}
-
 // Return the number of vertices of the polyhedron
 RP3D_FORCE_INLINE uint TriangleShape::getNbVertices() const {
     return 3;
@@ -258,12 +252,6 @@ RP3D_FORCE_INLINE HalfEdgeStructure::Vertex TriangleShape::getVertex(uint vertex
         case 2: vertex.edgeIndex = 4; break;
     }
     return vertex;
-}
-
-// Return a given half-edge of the polyhedron
-RP3D_FORCE_INLINE const HalfEdgeStructure::Edge& TriangleShape::getHalfEdge(uint edgeIndex) const {
-    assert(edgeIndex < getNbHalfEdges());
-    return mEdges[edgeIndex];
 }
 
 // Return the position of a given vertex
@@ -375,6 +363,18 @@ RP3D_FORCE_INLINE void TriangleShape::computeSmoothTriangleMeshContact(const Col
                                                 isShape1Triangle ? localContactPointShape2 : localContactPointShape1,
                                                 outSmoothVertexNormal);
     }
+}
+
+// Return a given face of the polyhedron
+RP3D_FORCE_INLINE const HalfEdgeStructure::Face& TriangleShape::getFace(uint faceIndex) const {
+    assert(faceIndex < 2);
+    return mTriangleHalfEdgeStructure.getFace(faceIndex);
+}
+
+// Return a given half-edge of the polyhedron
+RP3D_FORCE_INLINE const HalfEdgeStructure::Edge& TriangleShape::getHalfEdge(uint edgeIndex) const {
+    assert(edgeIndex < getNbHalfEdges());
+    return mTriangleHalfEdgeStructure.getHalfEdge(edgeIndex);
 }
 
 }

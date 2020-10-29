@@ -92,7 +92,16 @@ class PhysicsCommon {
         /// Set of default loggers
         Set<DefaultLogger*> mDefaultLoggers;
 
+        /// Half-edge structure of a box polyhedron
+        HalfEdgeStructure mBoxShapeHalfEdgeStructure;
+
+        /// Half-edge structure of a triangle shape
+        HalfEdgeStructure mTriangleShapeHalfEdgeStructure;
+
         // -------------------- Methods -------------------- //
+
+        /// Initialization
+        void init();
 
         /// Destroy and release everything that has been allocated
         void release();
@@ -126,6 +135,12 @@ class PhysicsCommon {
 
         /// Delete a default logger
         void deleteDefaultLogger(DefaultLogger* logger);
+
+        /// Initialize the half-edge structure of a BoxShape
+        void initBoxShapeHalfEdgeStructure();
+
+        /// Initialize the static half-edge structure of a TriangleShape
+        void initTriangleShapeHalfEdgeStructure();
 
 // If profiling is enabled
 #ifdef IS_RP3D_PROFILING_ENABLED
@@ -219,6 +234,13 @@ class PhysicsCommon {
 
         /// Set the logger
         static void setLogger(Logger* logger);
+
+
+        // ---------- Friendship ---------- //
+
+        friend class BoxShape;
+        friend class TriangleShape;
+        friend class PhysicsWorld;
 };
 
 // Return the current logger

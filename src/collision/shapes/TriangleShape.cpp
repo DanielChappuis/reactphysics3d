@@ -29,6 +29,7 @@
 #include <reactphysics3d/mathematics/mathematics_functions.h>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <reactphysics3d/utils/Profiler.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/configuration.h>
 #include <cassert>
 
@@ -45,9 +46,8 @@ using namespace reactphysics3d;
  * @param verticesNormals The three vertices normals for smooth mesh collision
  * @param margin The collision margin (in meters) around the collision shape
  */
-TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId,
-                             MemoryAllocator& allocator)
-    : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, allocator), mFaces{HalfEdgeStructure::Face(allocator), HalfEdgeStructure::Face(allocator)} {
+TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId, HalfEdgeStructure& triangleHalfEdgeStructure, MemoryAllocator& allocator)
+    : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, allocator), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
 
     mPoints[0] = vertices[0];
     mPoints[1] = vertices[1];
@@ -60,62 +60,6 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
     mVerticesNormals[0] = verticesNormals[0];
     mVerticesNormals[1] = verticesNormals[1];
     mVerticesNormals[2] = verticesNormals[2];
-
-    // Faces
-    mFaces[0].faceVertices.reserve(3);
-    mFaces[0].faceVertices.add(0);
-    mFaces[0].faceVertices.add(1);
-    mFaces[0].faceVertices.add(2);
-    mFaces[0].edgeIndex = 0;
-
-    mFaces[1].faceVertices.reserve(3);
-    mFaces[1].faceVertices.add(0);
-    mFaces[1].faceVertices.add(2);
-    mFaces[1].faceVertices.add(1);
-    mFaces[1].edgeIndex = 1;
-
-    // Edges
-    for (uint i=0; i<6; i++) {
-        switch(i) {
-            case 0:
-                mEdges[0].vertexIndex = 0;
-                mEdges[0].twinEdgeIndex = 1;
-                mEdges[0].faceIndex = 0;
-                mEdges[0].nextEdgeIndex = 2;
-                break;
-            case 1:
-                mEdges[1].vertexIndex = 1;
-                mEdges[1].twinEdgeIndex = 0;
-                mEdges[1].faceIndex = 1;
-                mEdges[1].nextEdgeIndex = 5;
-                break;
-            case 2:
-                mEdges[2].vertexIndex = 1;
-                mEdges[2].twinEdgeIndex = 3;
-                mEdges[2].faceIndex = 0;
-                mEdges[2].nextEdgeIndex = 4;
-                break;
-            case 3:
-                mEdges[3].vertexIndex = 2;
-                mEdges[3].twinEdgeIndex = 2;
-                mEdges[3].faceIndex = 1;
-                mEdges[3].nextEdgeIndex = 1;
-                break;
-            case 4:
-                mEdges[4].vertexIndex = 2;
-                mEdges[4].twinEdgeIndex = 5;
-                mEdges[4].faceIndex = 0;
-                mEdges[4].nextEdgeIndex = 0;
-                break;
-            case 5:
-                mEdges[5].vertexIndex = 0;
-                mEdges[5].twinEdgeIndex = 4;
-                mEdges[5].faceIndex = 1;
-                mEdges[5].nextEdgeIndex = 3;
-                break;
-        }
-    }
-
 
     mRaycastTestType = TriangleRaycastSide::FRONT;
 
@@ -249,4 +193,3 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* 
 
     return true;
 }
-

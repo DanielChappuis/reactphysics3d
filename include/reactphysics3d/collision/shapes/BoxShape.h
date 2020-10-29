@@ -36,6 +36,7 @@ namespace reactphysics3d {
 // Declarations
 class CollisionBody;
 class DefaultAllocator;
+class PhysicsCommon;
 
 // Class BoxShape
 /**
@@ -53,13 +54,13 @@ class BoxShape : public ConvexPolyhedronShape {
         /// Half-extents of the box in the x, y and z direction
         Vector3 mHalfExtents;
 
-        /// Half-edge structure of the polyhedron
-        HalfEdgeStructure mHalfEdgeStructure;
+        /// Reference to the physics common object
+        PhysicsCommon& mPhysicsCommon;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator);
+        BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator, PhysicsCommon& physicsCommon);
 
         /// Return a local support point in a given direction without the object margin
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
@@ -196,21 +197,9 @@ RP3D_FORCE_INLINE uint BoxShape::getNbFaces() const {
     return 6;
 }
 
-// Return a given face of the polyhedron
-RP3D_FORCE_INLINE const HalfEdgeStructure::Face& BoxShape::getFace(uint faceIndex) const {
-    assert(faceIndex < mHalfEdgeStructure.getNbFaces());
-    return mHalfEdgeStructure.getFace(faceIndex);
-}
-
 // Return the number of vertices of the polyhedron
 RP3D_FORCE_INLINE uint BoxShape::getNbVertices() const {
     return 8;
-}
-
-// Return a given vertex of the polyhedron
-RP3D_FORCE_INLINE HalfEdgeStructure::Vertex BoxShape::getVertex(uint vertexIndex) const {
-    assert(vertexIndex < getNbVertices());
-    return mHalfEdgeStructure.getVertex(vertexIndex);
 }
 
 // Return the position of a given vertex
@@ -267,12 +256,6 @@ RP3D_FORCE_INLINE std::string BoxShape::to_string() const {
 // Return the number of half-edges of the polyhedron
 RP3D_FORCE_INLINE uint BoxShape::getNbHalfEdges() const {
     return 24;
-}
-
-// Return a given half-edge of the polyhedron
-RP3D_FORCE_INLINE const HalfEdgeStructure::Edge& BoxShape::getHalfEdge(uint edgeIndex) const {
-    assert(edgeIndex < getNbHalfEdges());
-    return mHalfEdgeStructure.getHalfEdge(edgeIndex);
 }
 
 }

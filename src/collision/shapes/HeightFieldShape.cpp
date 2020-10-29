@@ -42,12 +42,13 @@ using namespace reactphysics3d;
  * @param integerHeightScale Scaling factor used to scale the height values (only when height values type is integer)
  */
 HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
-                                   const void* heightFieldData, HeightDataType dataType, MemoryAllocator& allocator, int upAxis,
+                                   const void* heightFieldData, HeightDataType dataType, MemoryAllocator& allocator,
+                                   HalfEdgeStructure& triangleHalfEdgeStructure, int upAxis,
                                    decimal integerHeightScale, const Vector3& scaling)
                  : ConcaveShape(CollisionShapeName::HEIGHTFIELD, allocator, scaling), mNbColumns(nbGridColumns), mNbRows(nbGridRows),
                    mWidth(nbGridColumns - 1), mLength(nbGridRows - 1), mMinHeight(minHeight),
                    mMaxHeight(maxHeight), mUpAxis(upAxis), mIntegerHeightScale(integerHeightScale),
-                   mHeightDataType(dataType) {
+                   mHeightDataType(dataType), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
 
     assert(nbGridColumns >= 2);
     assert(nbGridRows >= 2);
@@ -254,7 +255,7 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     for (uint32 i=0; i < nbShapeIds; i++)
     {
         // Create a triangle collision shape
-        TriangleShape triangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], allocator);
+        TriangleShape triangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], mTriangleHalfEdgeStructure, allocator);
         triangleShape.setRaycastTestType(getRaycastTestType());
 
     #ifdef IS_RP3D_PROFILING_ENABLED

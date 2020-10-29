@@ -59,6 +59,7 @@ namespace reactphysics3d {
 // Declarations
 class Island;
 class RigidBody;
+class PhysicsCommon;
 struct JointInfo;
 
 // Class PhysicsWorld
@@ -275,7 +276,7 @@ class PhysicsWorld {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        PhysicsWorld(MemoryManager& memoryManager, const WorldSettings& worldSettings = WorldSettings(), Profiler* profiler = nullptr);
+        PhysicsWorld(MemoryManager& memoryManager, PhysicsCommon& physicsCommon, const WorldSettings& worldSettings = WorldSettings(), Profiler* profiler = nullptr);
 
         /// Notify the world if a body is disabled (slepping or inactive) or not
         void setBodyDisabled(Entity entity, bool isDisabled);

@@ -43,6 +43,7 @@
 #include <reactphysics3d/containers/Set.h>
 #include <reactphysics3d/components/ColliderComponents.h>
 #include <reactphysics3d/components/TransformComponents.h>
+#include <reactphysics3d/collision/HalfEdgeStructure.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -167,6 +168,9 @@ class CollisionDetectionSystem {
 
         /// Number of potential contact points in the previous frame
         uint32 mNbPreviousPotentialContactPoints;
+
+        /// Reference to the half-edge structure of the triangle polyhedron
+        HalfEdgeStructure& mTriangleHalfEdgeStructure;
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -294,7 +298,7 @@ class CollisionDetectionSystem {
         /// Constructor
         CollisionDetectionSystem(PhysicsWorld* world, ColliderComponents& collidersComponents,
                            TransformComponents& transformComponents, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
-                           MemoryManager& memoryManager);
+                           MemoryManager& memoryManager, HalfEdgeStructure& triangleHalfEdgeStructure);
 
         /// Destructor
         ~CollisionDetectionSystem() = default;
