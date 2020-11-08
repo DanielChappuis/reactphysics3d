@@ -675,6 +675,10 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& ca
 
     decimal maxFraction = ray.maxFraction;
 
+    // Compute the inverse ray direction
+    const Vector3 rayDirection = ray.point2 - ray.point1;
+    const Vector3 rayDirectionInverse(decimal(1.0) / rayDirection.x, decimal(1.0) / rayDirection.y, decimal(1.0) / rayDirection.z);
+
     Stack<int32> stack(mAllocator, 128);
     stack.push(mRootNodeID);
 
@@ -691,13 +695,13 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& ca
         // Get the corresponding node
         const TreeNode* node = mNodes + nodeID;
 
-        Ray rayTemp(ray.point1, ray.point2, maxFraction);
-
         // Test if the ray intersects with the current node AABB
-        if (!node->aabb.testRayIntersect(rayTemp)) continue;
+        if (!node->aabb.testRayIntersect(ray.point1, rayDirectionInverse, maxFraction)) continue;
 
         // If the node is a leaf of the tree
         if (node->isLeaf()) {
+
+            Ray rayTemp(ray.point1, ray.point2, maxFraction);
 
             // Call the callback that will raycast again the broad-phase shape
             decimal hitFraction = callback.raycastBroadPhaseShape(nodeID, rayTemp);

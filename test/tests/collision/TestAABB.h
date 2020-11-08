@@ -286,14 +286,31 @@ class TestAABB : public Test {
             Ray ray7(Vector3(-4, 6, -100), Vector3(-4, 6, -11), 0.6);
             Ray ray8(Vector3(-403, -432, -100), Vector3(134, 643, 23));
 
-            rp3d_test(mAABB1.testRayIntersect(ray1));
-            rp3d_test(!mAABB1.testRayIntersect(ray2));
-            rp3d_test(mAABB1.testRayIntersect(ray3));
-            rp3d_test(mAABB1.testRayIntersect(ray4));
-            rp3d_test(mAABB1.testRayIntersect(ray5));
-            rp3d_test(mAABB1.testRayIntersect(ray6));
-            rp3d_test(!mAABB1.testRayIntersect(ray7));
-            rp3d_test(!mAABB1.testRayIntersect(ray8));
+            const Vector3 ray1Direction = ray1.point2 - ray1.point1;
+            const Vector3 ray1DirectionInv(decimal(1.0) / ray1Direction.x, decimal(1.0) / ray1Direction.y, decimal(1.0) / ray1Direction.z);
+            const Vector3 ray2Direction = ray2.point2 - ray2.point1;
+            const Vector3 ray2DirectionInv(decimal(1.0) / ray2Direction.x, decimal(1.0) / ray2Direction.y, decimal(1.0) / ray2Direction.z);
+            const Vector3 ray3Direction = ray3.point2 - ray3.point1;
+            const Vector3 ray3DirectionInv(decimal(1.0) / ray3Direction.x, decimal(1.0) / ray3Direction.y, decimal(1.0) / ray3Direction.z);
+            const Vector3 ray4Direction = ray4.point2 - ray4.point1;
+            const Vector3 ray4DirectionInv(decimal(1.0) / ray4Direction.x, decimal(1.0) / ray4Direction.y, decimal(1.0) / ray4Direction.z);
+            const Vector3 ray5Direction = ray5.point2 - ray5.point1;
+            const Vector3 ray5DirectionInv(decimal(1.0) / ray5Direction.x, decimal(1.0) / ray5Direction.y, decimal(1.0) / ray5Direction.z);
+            const Vector3 ray6Direction = ray6.point2 - ray6.point1;
+            const Vector3 ray6DirectionInv(decimal(1.0) / ray6Direction.x, decimal(1.0) / ray6Direction.y, decimal(1.0) / ray6Direction.z);
+            const Vector3 ray7Direction = ray7.point2 - ray7.point1;
+            const Vector3 ray7DirectionInv(decimal(1.0) / ray7Direction.x, decimal(1.0) / ray7Direction.y, decimal(1.0) / ray7Direction.z);
+            const Vector3 ray8Direction = ray8.point2 - ray8.point1;
+            const Vector3 ray8DirectionInv(decimal(1.0) / ray8Direction.x, decimal(1.0) / ray8Direction.y, decimal(1.0) / ray8Direction.z);
+
+            rp3d_test(mAABB1.testRayIntersect(ray1.point1, ray1DirectionInv, decimal(1.0)));
+            rp3d_test(!mAABB1.testRayIntersect(ray2.point1, ray2DirectionInv, decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray3.point1, ray3DirectionInv, decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray4.point1, ray4DirectionInv, decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray5.point1, ray5DirectionInv, decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray6.point1, ray6DirectionInv, decimal(1.0)));
+            rp3d_test(!mAABB1.testRayIntersect(ray7.point1, ray7DirectionInv, decimal(1.0)));
+            rp3d_test(!mAABB1.testRayIntersect(ray8.point1, ray8DirectionInv, decimal(1.0)));
         }
  };
 

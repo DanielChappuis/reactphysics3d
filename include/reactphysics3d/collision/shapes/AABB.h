@@ -110,7 +110,7 @@ class AABB {
         bool testCollisionTriangleAABB(const Vector3* trianglePoints) const;
 
         /// Return true if the ray intersects the AABB
-        bool testRayIntersect(const Ray& ray) const;
+        bool testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInv, decimal rayMaxFraction) const;
 
         /// Apply a scale factor to the AABB
         void applyScale(const Vector3& scale);
@@ -279,38 +279,36 @@ RP3D_FORCE_INLINE AABB AABB::createAABBForTriangle(const Vector3* trianglePoints
 }
 
 // Return true if the ray intersects the AABB
-/// This method use the line vs AABB raycasting technique (SAT algorithm) described in
-/// Real-time Collision Detection by Christer Ericson.
-RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Ray& ray) const {
+RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInverse, decimal rayMaxFraction) const {
 
-    const Vector3 point2 = ray.point1 + ray.maxFraction * (ray.point2 - ray.point1);
-    const Vector3 e = mMaxCoordinates - mMinCoordinates;
-    const Vector3 d = point2 - ray.point1;
-    const Vector3 m = ray.point1 + point2 - mMinCoordinates - mMaxCoordinates;
+    // This algorithm relies on the IEE floating point properties (division by zero). If the rayDirection is zero, rayDirectionInverse and
+    // therfore t1 and t2 will be +-INFINITY. If the i coordinate of the ray's origin is inside the AABB (mMinCoordinates[i] < rayOrigin[i] < mMaxCordinates[i)), we have
+    // t1 = -t2 = +- INFINITY. Since max(n, -INFINITY) = min(n, INFINITY) = n for all n, tMin and tMax will stay unchanged. Secondly, if the i
+    // coordinate of the ray's origin is outside the box (rayOrigin[i] < mMinCoordinates[i] or rayOrigin[i] > mMaxCoordinates[i]) we have
+    // t1 = t2 = +- INFINITY and therefore either tMin = +INFINITY or tMax = -INFINITY. One of those values will stay until the end and make the
+    // method to return false. Unfortunately, if the ray lies exactly on a slab (rayOrigin[i] = mMinCoordinates[i] or rayOrigin[i] = mMaxCoordinates[i]) we
+    // have t1 = (mMinCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i] = 0 * INFINITY = NaN which is a problem for the remaining of the algorithm.
+    // This will cause the method to return true when the ray is not intersecting the AABB and therefore cause to traverse more nodes than necessary in
+    // the BVH tree. Because this should be rare, it is not really a big issue.
+    // Reference: https://tavianator.com/2011/ray_box.html
 
-    // Test if the AABB face normals are separating axis
-    decimal adx = std::abs(d.x);
-    if (std::abs(m.x) > e.x + adx) return false;
-    decimal ady = std::abs(d.y);
-    if (std::abs(m.y) > e.y + ady) return false;
-    decimal adz = std::abs(d.z);
-    if (std::abs(m.z) > e.z + adz) return false;
+    decimal t1 = (mMinCoordinates[0] - rayOrigin[0]) * rayDirectionInverse[0];
+    decimal t2 = (mMaxCoordinates[0] - rayOrigin[0]) * rayDirectionInverse[0];
 
-    // Add in an epsilon term to counteract arithmetic errors when segment is
-    // (near) parallel to a coordinate axis
-    const decimal epsilon = 0.00001;
-    adx += epsilon;
-    ady += epsilon;
-    adz += epsilon;
+    decimal tMin = std::min(t1, t2);
+    decimal tMax = std::max(t1, t2);
+    tMax = std::min(tMax, rayMaxFraction);
 
-    // Test if the cross products between face normals and ray direction are
-    // separating axis
-    if (std::abs(m.y * d.z - m.z * d.y) > e.y * adz + e.z * ady) return false;
-    if (std::abs(m.z * d.x - m.x * d.z) > e.x * adz + e.z * adx) return false;
-    if (std::abs(m.x * d.y - m.y * d.x) > e.x * ady + e.y * adx) return false;
+    for (uint i = 1; i < 3; i++) {
 
-    // No separating axis has been found
-    return true;
+        t1 = (mMinCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
+        t2 = (mMaxCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
+
+        tMin = std::max(tMin, std::min(t1, t2));
+        tMax = std::min(tMax, std::max(t1, t2));
+    }
+
+    return tMax >= std::max(tMin, decimal(0.0));
 }
 
 }

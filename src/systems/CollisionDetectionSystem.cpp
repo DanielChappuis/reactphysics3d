@@ -1104,9 +1104,7 @@ void CollisionDetectionSystem::removeCollider(Collider* collider) {
 }
 
 // Ray casting method
-void CollisionDetectionSystem::raycast(RaycastCallback* raycastCallback,
-                                        const Ray& ray,
-                                        unsigned short raycastWithCategoryMaskBits) const {
+void CollisionDetectionSystem::raycast(RaycastCallback* raycastCallback, const Ray& ray, unsigned short raycastWithCategoryMaskBits) const {
 
     RP3D_PROFILE("CollisionDetectionSystem::raycast()", mProfiler);
 

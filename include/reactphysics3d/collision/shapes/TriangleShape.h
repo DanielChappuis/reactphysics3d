@@ -91,8 +91,7 @@ class TriangleShape : public ConvexPolyhedronShape {
         virtual bool testPointInside(const Vector3& localPoint, Collider* collider) const override;
 
         /// Raycast method with feedback information
-        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider,
-                             MemoryAllocator& allocator) const override;
+        virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const override;
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
