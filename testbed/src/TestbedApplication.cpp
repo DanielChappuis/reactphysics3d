@@ -95,12 +95,15 @@ void TestbedApplication::init() {
     glGetIntegerv(GL_MAJOR_VERSION, &glMajorVersion);
     glGetIntegerv(GL_MINOR_VERSION, &glMinorVersion);
 
+#ifdef GL_DEBUG_OUTPUT
+
     if (glMajorVersion > 4 || (glMajorVersion == 4 && glMinorVersion >= 3)) {
 
         // Enable OpenGL error reporting
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageCallback(onOpenGLError, 0);
     }
+#endif
 
     mIsInitialized = true;
 }
@@ -307,6 +310,7 @@ void TestbedApplication::notifyEngineSetttingsChanged() {
 void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                               const GLchar* message, const void* userParam ) {
 
+#ifdef GL_DEBUG_OUTPUT
     if (type == GL_DEBUG_TYPE_ERROR) {
         /*
         fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
@@ -314,6 +318,8 @@ void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GL
                     type, severity, message );
          */
     }
+#endif
+
 }
 
 // Compute the FPS
