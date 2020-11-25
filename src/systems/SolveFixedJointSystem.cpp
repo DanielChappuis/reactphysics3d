@@ -454,7 +454,7 @@ void SolveFixedJointSystem::solvePositionConstraint() {
 
         // Compute the pseudo velocity of body 1
         const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        Vector3 w1 = mFixedJointComponents.mI2[i] * angularImpulseBody1;
+        Vector3 w1 = mFixedJointComponents.mI1[i] * angularImpulseBody1;
 
         // Update the body position/orientation of body 1
         x1 += v1;
