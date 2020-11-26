@@ -163,7 +163,7 @@ void FixedJointComponents::moveComponentToIndex(uint32 srcIndex, uint32 destInde
     new (mR2World + destIndex) Vector3(mR2World[srcIndex]);
     new (mI1 + destIndex) Matrix3x3(mI1[srcIndex]);
     new (mI2 + destIndex) Matrix3x3(mI2[srcIndex]);
-    new (mImpulseTranslation + destIndex) Vector3(mImpulseRotation[srcIndex]);
+    new (mImpulseTranslation + destIndex) Vector3(mImpulseTranslation[srcIndex]);
     new (mImpulseRotation + destIndex) Vector3(mImpulseRotation[srcIndex]);
     new (mInverseMassMatrixTranslation + destIndex) Matrix3x3(mInverseMassMatrixTranslation[srcIndex]);
     new (mInverseMassMatrixRotation + destIndex) Matrix3x3(mInverseMassMatrixRotation[srcIndex]);
