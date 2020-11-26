@@ -27,6 +27,7 @@ do not hesitate to take a look at the user manual.
 ### Fixed
 
 - Issue [#165](https://github.com/DanielChappuis/reactphysics3d/issues/165) with order of contact manifolds in islands creation has been fixed
+- Issue [#179](https://github.com/DanielChappuis/reactphysics3d/issues/179) with FixedJoint constraint 
 - Issue with concave vs convex shape collision detection has been fixed
 - Issue with edge vs edge collision has been fixed in SAT algorithm (wrong contact normal was computed)
 
