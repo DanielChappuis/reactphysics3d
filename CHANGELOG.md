@@ -7,10 +7,11 @@ do not hesitate to take a look at the user manual.
 
 ### Added
 
- - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has beend added
- - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has beend added
+ - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has been added
+ - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has been added
  - Constructors with local-space anchor/axis have been added to BallAndSocketJointInfo, HingeJointInfo, FixedJointInfo and SliderJointInfo classes
  - Robustness of polyhedron vs polyhedron collision detection has been improved in SAT algorithm (face contacts are favored over edge-edge contacts for better stability)
+ - Method HingeJoint::getAngle() to get the current angle of the hinge joint has been added 
 
 ### Changed
 
