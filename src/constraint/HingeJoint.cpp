@@ -207,7 +207,7 @@ decimal HingeJoint::getMaxAngleLimit() const {
 /**
  * @return The current speed of the joint motor (in radian per second)
  */
- decimal HingeJoint::getMotorSpeed() const {
+decimal HingeJoint::getMotorSpeed() const {
     return mWorld.mHingeJointsComponents.getMotorSpeed(mEntity);
 }
 
@@ -215,7 +215,7 @@ decimal HingeJoint::getMaxAngleLimit() const {
 /**
  * @return The maximum torque of the joint motor (in Newtons)
  */
- decimal HingeJoint::getMaxMotorTorque() const {
+decimal HingeJoint::getMaxMotorTorque() const {
     return mWorld.mHingeJointsComponents.getMaxMotorTorque(mEntity);
 }
 
@@ -224,8 +224,25 @@ decimal HingeJoint::getMaxAngleLimit() const {
  * @param timeStep The current time step (in seconds)
  * @return The intensity of the current torque (in Newtons) of the joint motor
  */
- decimal HingeJoint::getMotorTorque(decimal timeStep) const {
+decimal HingeJoint::getMotorTorque(decimal timeStep) const {
     return mWorld.mHingeJointsComponents.getImpulseMotor(mEntity) / timeStep;
+}
+
+// Return the current hinge angle
+/**
+ * @return The current hinge angle (in radians)
+ */
+decimal HingeJoint::getAngle() const {
+
+    // Get the bodies entities
+    const Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);
+    const Entity body2Entity = mWorld.mJointsComponents.getBody2Entity(mEntity);
+
+    const Quaternion& orientationBody1 = mWorld.mTransformComponents.getTransform(body1Entity).getOrientation();
+    const Quaternion& orientationBody2 = mWorld.mTransformComponents.getTransform(body2Entity).getOrientation();
+
+    // Compute the current angle around the hinge axis
+    return mWorld.mConstraintSolverSystem.mSolveHingeJointSystem.computeCurrentHingeAngle(mEntity, orientationBody1, orientationBody2);
 }
 
 // Return the number of bytes used by the joint
