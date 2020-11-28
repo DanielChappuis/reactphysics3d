@@ -210,6 +210,9 @@ class ConstraintSolverSystem {
 
 #endif
 
+        // ---------- Friendship ----------
+
+        friend class HingeJoint;
 };
 
 #ifdef IS_RP3D_PROFILING_ENABLED

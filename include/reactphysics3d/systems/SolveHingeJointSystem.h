@@ -92,8 +92,7 @@ class SolveHingeJointSystem {
                                                     decimal upperLimitAngle) const;
 
         /// Compute the current angle around the hinge axis
-        decimal computeCurrentHingeAngle(Entity jointEntity, const Quaternion& orientationBody1,
-                                         const Quaternion& orientationBody2);
+        decimal computeCurrentHingeAngle(Entity jointEntity, const Quaternion& orientationBody1, const Quaternion& orientationBody2);
 
     public :
 
@@ -132,6 +131,10 @@ class SolveHingeJointSystem {
         void setProfiler(Profiler* profiler);
 
 #endif
+
+        // ---------- Friendship ----------
+
+        friend class HingeJoint;
 
 };
 
