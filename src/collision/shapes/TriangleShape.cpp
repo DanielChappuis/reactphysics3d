@@ -182,7 +182,7 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* 
 
     if (hitFraction < decimal(0.0) || hitFraction > ray.maxFraction) return false;
 
-    Vector3 localHitNormal = mNormal.dot(pq) > decimal(0.0) ? mNormal : -mNormal;
+    Vector3 localHitNormal = mNormal.dot(pq) > decimal(0.0) ? -mNormal : mNormal;
 
     raycastInfo.body = collider->getBody();
     raycastInfo.collider = collider;
