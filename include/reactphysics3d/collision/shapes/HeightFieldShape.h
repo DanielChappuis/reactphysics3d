@@ -102,6 +102,10 @@ class HeightFieldShape : public ConcaveShape {
                          HalfEdgeStructure& triangleHalfEdgeStructure, int upAxis = 1, decimal integerHeightScale = 1.0f,
                          const Vector3& scaling = Vector3(1,1,1));
 
+        /// Raycast a single triangle of the height-field
+        bool raycastTriangle(const Ray& ray, const Vector3& p1, const Vector3& p2, const Vector3& p3, uint shapeId,
+                             Collider *collider, RaycastInfo& raycastInfo, decimal &smallestHitFraction, MemoryAllocator& allocator) const;
+
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const override;
 
@@ -125,6 +129,9 @@ class HeightFieldShape : public ConcaveShape {
         /// Compute the shape Id for a given triangle
         uint computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const;
 
+        /// Compute the first grid cell of the heightfield intersected by a ray
+        bool computeEnteringRayGridCoordinates(const Ray& ray, int& i, int& j, Vector3& outHitPoint) const;
+        
         /// Destructor
         virtual ~HeightFieldShape() override = default;
 

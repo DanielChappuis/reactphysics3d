@@ -112,6 +112,9 @@ class AABB {
         /// Return true if the ray intersects the AABB
         bool testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInv, decimal rayMaxFraction) const;
 
+        /// Compute the intersection of a ray and the AABB
+        bool raycast(const Ray& ray, Vector3& hitPoint) const;
+
         /// Apply a scale factor to the AABB
         void applyScale(const Vector3& scale);
 
@@ -309,6 +312,53 @@ RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Vector3& rayOrigin, const Ve
     }
 
     return tMax >= std::max(tMin, decimal(0.0));
+}
+
+// Compute the intersection of a ray and the AABB
+RP3D_FORCE_INLINE bool AABB::raycast(const Ray& ray, Vector3& hitPoint) const {
+
+    decimal tMin = decimal(0.0);
+    decimal tMax = DECIMAL_LARGEST;
+
+    const decimal epsilon = 0.00001;
+
+    const Vector3 rayDirection = ray.point2 - ray.point1;
+
+    // For all three slabs
+    for (int i=0; i < 3; i++) {
+
+        // If the ray is parallel to the slab
+        if (std::abs(rayDirection[i]) < epsilon) {
+
+            // If origin of the ray is not inside the slab, no hit
+            if (ray.point1[i] < mMinCoordinates[i] || ray.point1[i] > mMaxCoordinates[i]) return false;
+        }
+        else {
+
+            decimal rayDirectionInverse = decimal(1.0) / rayDirection[i];
+            decimal t1 = (mMinCoordinates[i] - ray.point1[i]) * rayDirectionInverse;
+            decimal t2 = (mMaxCoordinates[i] - ray.point1[i]) * rayDirectionInverse;
+
+            if (t1 > t2) {
+
+                // Swap t1 and t2
+                decimal tTemp = t2;
+                t2 = t1;
+                t1 = tTemp;
+            }
+            
+            tMin = std::max(tMin, t1);
+            tMax = std::min(tMax, t2);
+            
+            // Exit with no collision 
+            if (tMin > tMax) return false;
+        }
+    }
+
+    // Compute the hit point
+    hitPoint = ray.point1 + tMin * rayDirection;
+
+    return true;
 }
 
 }
