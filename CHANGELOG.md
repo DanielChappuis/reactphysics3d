@@ -19,6 +19,8 @@ do not hesitate to take a look at the user manual.
  - The List class has been renamed to Array
  - The default number of iterations for the velocity solver is now 6 instead of 10
  - The default number of iterations for the position solver is now 3 instead of 5
+ - The raycasting broad-phase performance has been improved
+ - The raycasting performance against HeighFieldShape has been improved (better middle-phase algorithm)
 
 ### Removed
 
