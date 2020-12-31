@@ -238,131 +238,92 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     const Vector3 inverseScale(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z);
     Ray scaledRay(ray.point1 * inverseScale, ray.point2 * inverseScale, ray.maxFraction);
 
+    bool isHit = false;
+
     // Compute the grid coordinates where the ray is entering the AABB of the height field
     int i, j;
     Vector3 outHitGridPoint;
-    bool isIntersecting = computeEnteringRayGridCoordinates(scaledRay, i, j, outHitGridPoint);
-    assert(isIntersecting);
+    if (computeEnteringRayGridCoordinates(scaledRay, i, j, outHitGridPoint)) {
 
-    const int nbCellsI = mNbColumns - 1;
-    const int nbCellsJ = mNbRows - 1;
+        const int nbCellsI = mNbColumns - 1;
+        const int nbCellsJ = mNbRows - 1;
 
-    const Vector3 aabbSize = mAABB.getExtent();
+        const Vector3 aabbSize = mAABB.getExtent();
 
-    const Vector3 rayDirection = scaledRay.point2 - scaledRay.point1;
+        const Vector3 rayDirection = scaledRay.point2 - scaledRay.point1;
 
-    int stepI, stepJ;
-    decimal tMaxI, tMaxJ, nextI, nextJ, tDeltaI, tDeltaJ, sizeI, sizeJ;
+        int stepI, stepJ;
+        decimal tMaxI, tMaxJ, nextI, nextJ, tDeltaI, tDeltaJ, sizeI, sizeJ;
 
-    switch(mUpAxis) {
-        case 0 : stepI = rayDirection.y > 0 ? 1 : (rayDirection.y < 0 ? -1 : 0);
-                 stepJ = rayDirection.z > 0 ? 1 : (rayDirection.z < 0 ? -1 : 0);
-                 nextI = stepI >= 0 ? i + 1 : i;
-                 nextJ = stepJ >= 0 ? j + 1 : j;
-                 sizeI = aabbSize.y / nbCellsI;
-                 sizeJ = aabbSize.z / nbCellsJ;
-                 tMaxI = ((nextI * sizeI) - outHitGridPoint.y) / rayDirection.y;
-                 tMaxJ = ((nextJ * sizeJ) - outHitGridPoint.z) / rayDirection.z;
-                 tDeltaI = sizeI / std::abs(rayDirection.y);
-                 tDeltaJ = sizeJ / std::abs(rayDirection.z);
-                 break;
-        case 1 : stepI = rayDirection.x > 0 ? 1 : (rayDirection.x < 0 ? -1 : 0);
-                 stepJ = rayDirection.z > 0 ? 1 : (rayDirection.z < 0 ? -1 : 0);
-                 nextI = stepI >= 0 ? i + 1 : i;
-                 nextJ = stepJ >= 0 ? j + 1 : j;
-                 sizeI = aabbSize.x / nbCellsI;
-                 sizeJ = aabbSize.z / nbCellsJ;
-                 tMaxI = ((nextI * sizeI) - outHitGridPoint.x) / rayDirection.x;
-                 tMaxJ = ((nextJ * sizeJ) - outHitGridPoint.z) / rayDirection.z;
-                 tDeltaI = sizeI / std::abs(rayDirection.x);
-                 tDeltaJ = sizeJ / std::abs(rayDirection.z);
-                 break;
-        case 2 : stepI = rayDirection.x > 0 ? 1 : (rayDirection.x < 0 ? -1 : 0);
-                 stepJ = rayDirection.y > 0 ? 1 : (rayDirection.y < 0 ? -1 : 0);
-                 nextI = stepI >= 0 ? i + 1 : i;
-                 nextJ = stepJ >= 0 ? j + 1 : j;
-                 sizeI = aabbSize.x / nbCellsI;
-                 sizeJ = aabbSize.y / nbCellsJ;
-                 tMaxI = ((nextI * sizeI) - outHitGridPoint.x) / rayDirection.x;
-                 tMaxJ = ((nextJ * sizeJ) - outHitGridPoint.y) / rayDirection.y;
-                 tDeltaI = sizeI / std::abs(rayDirection.x);
-                 tDeltaJ = sizeJ / std::abs(rayDirection.y);
-                 break;
-    }
-
-    bool isHit = false;
-    decimal smallestHitFraction = ray.maxFraction;
-
-    while (i >= 0 && i < nbCellsI && j >= 0 && j < nbCellsJ) {
-
-        // TODO : Remove this
-        //std::cout << "Cell " << i << ", " << j << std::endl;
-
-       // Compute the four point of the current quad
-       const Vector3 p1 = getVertexAt(i, j);
-       const Vector3 p2 = getVertexAt(i, j + 1);
-       const Vector3 p3 = getVertexAt(i + 1, j);
-       const Vector3 p4 = getVertexAt(i + 1, j + 1);
-
-       // Raycast against the first triangle of the cell
-       uint shapeId = computeTriangleShapeId(i, j, 0);
-       isHit |= raycastTriangle(ray, p1, p2, p3, shapeId, collider, raycastInfo, smallestHitFraction, allocator);
-
-       // Raycast against the second triangle of the cell
-       shapeId = computeTriangleShapeId(i, j, 1);
-       isHit |= raycastTriangle(ray, p3, p2, p4, shapeId, collider, raycastInfo, smallestHitFraction, allocator);
-
-       if (stepI == 0 && stepJ == 0) break;
-
-       if (tMaxI < tMaxJ) {
-            tMaxI += tDeltaI;
-            i += stepI;
+        switch(mUpAxis) {
+            case 0 : stepI = rayDirection.y > 0 ? 1 : (rayDirection.y < 0 ? -1 : 0);
+                     stepJ = rayDirection.z > 0 ? 1 : (rayDirection.z < 0 ? -1 : 0);
+                     nextI = stepI >= 0 ? i + 1 : i;
+                     nextJ = stepJ >= 0 ? j + 1 : j;
+                     sizeI = aabbSize.y / nbCellsI;
+                     sizeJ = aabbSize.z / nbCellsJ;
+                     tMaxI = ((nextI * sizeI) - outHitGridPoint.y) / rayDirection.y;
+                     tMaxJ = ((nextJ * sizeJ) - outHitGridPoint.z) / rayDirection.z;
+                     tDeltaI = sizeI / std::abs(rayDirection.y);
+                     tDeltaJ = sizeJ / std::abs(rayDirection.z);
+                     break;
+            case 1 : stepI = rayDirection.x > 0 ? 1 : (rayDirection.x < 0 ? -1 : 0);
+                     stepJ = rayDirection.z > 0 ? 1 : (rayDirection.z < 0 ? -1 : 0);
+                     nextI = stepI >= 0 ? i + 1 : i;
+                     nextJ = stepJ >= 0 ? j + 1 : j;
+                     sizeI = aabbSize.x / nbCellsI;
+                     sizeJ = aabbSize.z / nbCellsJ;
+                     tMaxI = ((nextI * sizeI) - outHitGridPoint.x) / rayDirection.x;
+                     tMaxJ = ((nextJ * sizeJ) - outHitGridPoint.z) / rayDirection.z;
+                     tDeltaI = sizeI / std::abs(rayDirection.x);
+                     tDeltaJ = sizeJ / std::abs(rayDirection.z);
+                     break;
+            case 2 : stepI = rayDirection.x > 0 ? 1 : (rayDirection.x < 0 ? -1 : 0);
+                     stepJ = rayDirection.y > 0 ? 1 : (rayDirection.y < 0 ? -1 : 0);
+                     nextI = stepI >= 0 ? i + 1 : i;
+                     nextJ = stepJ >= 0 ? j + 1 : j;
+                     sizeI = aabbSize.x / nbCellsI;
+                     sizeJ = aabbSize.y / nbCellsJ;
+                     tMaxI = ((nextI * sizeI) - outHitGridPoint.x) / rayDirection.x;
+                     tMaxJ = ((nextJ * sizeJ) - outHitGridPoint.y) / rayDirection.y;
+                     tDeltaI = sizeI / std::abs(rayDirection.x);
+                     tDeltaJ = sizeJ / std::abs(rayDirection.y);
+                     break;
         }
-        else {
-            tMaxJ += tDeltaJ;
-            j += stepJ;
-        }
-    }
 
-    /*
-    // For each overlapping triangle
-    const uint32 nbShapeIds = shapeIds.size();
-    for (uint32 i=0; i < nbShapeIds; i++)
-    {
-        // Create a triangle collision shape
-        TriangleShape triangleShape(&(triangleVertices[i * 3]), &(triangleVerticesNormals[i * 3]), shapeIds[i], mTriangleHalfEdgeStructure, allocator);
-        triangleShape.setRaycastTestType(getRaycastTestType());
+        decimal smallestHitFraction = ray.maxFraction;
 
-    #ifdef IS_RP3D_PROFILING_ENABLED
+        while (i >= 0 && i < nbCellsI && j >= 0 && j < nbCellsJ) {
 
+            // TODO : Remove this
+            //std::cout << "Cell " << i << ", " << j << std::endl;
 
-        // Set the profiler to the triangle shape
-        triangleShape.setProfiler(mProfiler);
+           // Compute the four point of the current quad
+           const Vector3 p1 = getVertexAt(i, j);
+           const Vector3 p2 = getVertexAt(i, j + 1);
+           const Vector3 p3 = getVertexAt(i + 1, j);
+           const Vector3 p4 = getVertexAt(i + 1, j + 1);
 
-    #endif
+           // Raycast against the first triangle of the cell
+           uint shapeId = computeTriangleShapeId(i, j, 0);
+           isHit |= raycastTriangle(ray, p1, p2, p3, shapeId, collider, raycastInfo, smallestHitFraction, allocator);
 
-        // Ray casting test against the collision shape
-        RaycastInfo triangleRaycastInfo;
-        bool isTriangleHit = triangleShape.raycast(ray, triangleRaycastInfo, collider, allocator);
+           // Raycast against the second triangle of the cell
+           shapeId = computeTriangleShapeId(i, j, 1);
+           isHit |= raycastTriangle(ray, p3, p2, p4, shapeId, collider, raycastInfo, smallestHitFraction, allocator);
 
-        // If the ray hit the collision shape
-        if (isTriangleHit && triangleRaycastInfo.hitFraction <= smallestHitFraction) {
+           if (stepI == 0 && stepJ == 0) break;
 
-            assert(triangleRaycastInfo.hitFraction >= decimal(0.0));
-
-            raycastInfo.body = triangleRaycastInfo.body;
-            raycastInfo.collider = triangleRaycastInfo.collider;
-            raycastInfo.hitFraction = triangleRaycastInfo.hitFraction;
-            raycastInfo.worldPoint = triangleRaycastInfo.worldPoint;
-            raycastInfo.worldNormal = triangleRaycastInfo.worldNormal;
-            raycastInfo.meshSubpart = -1;
-            raycastInfo.triangleIndex = -1;
-
-            smallestHitFraction = triangleRaycastInfo.hitFraction;
-            isHit = true;
+           if (tMaxI < tMaxJ) {
+                tMaxI += tDeltaI;
+                i += stepI;
+            }
+            else {
+                tMaxJ += tDeltaJ;
+                j += stepJ;
+            }
         }
     }
-    */
 
     return isHit;
 }
@@ -374,20 +335,8 @@ bool HeightFieldShape::raycastTriangle(const Ray& ray, const Vector3& p1, const 
    // Generate the first triangle for the current grid rectangle
    Vector3 triangleVertices[3] = {p1, p2, p3};
 
-   // Compute the triangle normal
-   Vector3 triangleNormal = (p2 - p1).cross(p3 - p1).getUnit();
-
-   // Use the triangle face normal as vertices normals (this is an aproximation. The correct
-   // solution would be to compute all the normals of the neighbor triangles and use their
-   // weighted average (with incident angle as weight) at the vertices. However, this solution
-   // seems too expensive (it requires to compute the normal of all neighbor triangles instead
-   // and compute the angle of incident edges with asin(). Maybe we could also precompute the
-   // vertices normal at the HeightFieldShape constructor but it will require extra memory to
-   // store them.
-   Vector3 triangleVerticesNormals[3] = {triangleNormal, triangleNormal, triangleNormal};
-
     // Create a triangle collision shape
-    TriangleShape triangleShape(triangleVertices, triangleVerticesNormals, shapeId, mTriangleHalfEdgeStructure, allocator);
+    TriangleShape triangleShape(triangleVertices, shapeId, mTriangleHalfEdgeStructure, allocator);
     triangleShape.setRaycastTestType(getRaycastTestType());
 
 #ifdef IS_RP3D_PROFILING_ENABLED

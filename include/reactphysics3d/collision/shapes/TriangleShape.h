@@ -110,6 +110,9 @@ class TriangleShape : public ConvexPolyhedronShape {
         TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId, HalfEdgeStructure& triangleHalfEdgeStructure,
                       MemoryAllocator& allocator);
 
+        /// Constructor
+        TriangleShape(const Vector3* vertices, uint shapeId, HalfEdgeStructure& triangleHalfEdgeStructure, MemoryAllocator& allocator);
+
         /// Destructor
         virtual ~TriangleShape() override = default;
 
@@ -262,6 +265,7 @@ RP3D_FORCE_INLINE Vector3 TriangleShape::getVertexPosition(uint vertexIndex) con
 // Return the normal vector of a given face of the polyhedron
 RP3D_FORCE_INLINE Vector3 TriangleShape::getFaceNormal(uint faceIndex) const {
     assert(faceIndex < 2);
+    assert(mNormal.length() > decimal(0.0));
     return faceIndex == 0 ? mNormal : -mNormal;
 }
 
@@ -310,6 +314,8 @@ RP3D_FORCE_INLINE decimal TriangleShape::getVolume() const {
 /// use the interpolated normal if the contact point is on an edge of the triangle. If the contact is in the
 /// middle of the triangle, we return the true triangle normal.
 RP3D_FORCE_INLINE Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3& localContactPoint) const {
+
+    assert(mNormal.length() > decimal(0.0));
 
     // Compute the barycentric coordinates of the point in the triangle
     decimal u, v, w;

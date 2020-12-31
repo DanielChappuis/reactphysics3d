@@ -37,15 +37,6 @@ using namespace reactphysics3d;
 
 
 // Constructor
-/**
- * Do not use this constructor. It is supposed to be used internally only.
- * Use a ConcaveMeshShape instead.
- * @param point1 First point of the triangle
- * @param point2 Second point of the triangle
- * @param point3 Third point of the triangle
- * @param verticesNormals The three vertices normals for smooth mesh collision
- * @param margin The collision margin (in meters) around the collision shape
- */
 TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId, HalfEdgeStructure& triangleHalfEdgeStructure, MemoryAllocator& allocator)
     : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, allocator), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
 
@@ -60,6 +51,27 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
     mVerticesNormals[0] = verticesNormals[0];
     mVerticesNormals[1] = verticesNormals[1];
     mVerticesNormals[2] = verticesNormals[2];
+
+    mRaycastTestType = TriangleRaycastSide::FRONT;
+
+    mId = shapeId;
+}
+
+// Constructor for raycasting
+TriangleShape::TriangleShape(const Vector3* vertices, uint shapeId, HalfEdgeStructure& triangleHalfEdgeStructure, MemoryAllocator& allocator)
+    : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, allocator), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
+
+    mPoints[0] = vertices[0];
+    mPoints[1] = vertices[1];
+    mPoints[2] = vertices[2];
+
+    // The normal is not used when creating the triangle shape with this constructor (for raycasting for instance)
+    mNormal = Vector3(0, 0, 0);
+
+    // Interpolated normals are not used in this constructor (for raycasting for instance)
+    mVerticesNormals[0] = mNormal;
+    mVerticesNormals[1] = mNormal;
+    mVerticesNormals[2] = mNormal;
 
     mRaycastTestType = TriangleRaycastSide::FRONT;
 
@@ -182,13 +194,16 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* 
 
     if (hitFraction < decimal(0.0) || hitFraction > ray.maxFraction) return false;
 
-    Vector3 localHitNormal = mNormal.dot(pq) > decimal(0.0) ? -mNormal : mNormal;
+    // Compute the triangle face normal
+    Vector3 normal = (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]);
+    normal.normalize();
+    normal = normal.dot(pq) > decimal(0.0) ? -normal : normal;
 
     raycastInfo.body = collider->getBody();
     raycastInfo.collider = collider;
     raycastInfo.worldPoint = localHitPoint;
     raycastInfo.hitFraction = hitFraction;
-    raycastInfo.worldNormal = localHitNormal;
+    raycastInfo.worldNormal = normal;
 
     return true;
 }
