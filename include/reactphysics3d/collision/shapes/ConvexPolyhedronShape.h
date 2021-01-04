@@ -94,10 +94,33 @@ class ConvexPolyhedronShape : public ConvexShape {
 };
 
 // Return true if the collision shape is a polyhedron
-inline bool ConvexPolyhedronShape::isPolyhedron() const {
+RP3D_FORCE_INLINE bool ConvexPolyhedronShape::isPolyhedron() const {
     return true;
 }
 
+
+// Find and return the index of the polyhedron face with the most anti-parallel face
+// normal given a direction vector. This is used to find the incident face on
+// a polyhedron of a given reference face of another polyhedron
+RP3D_FORCE_INLINE uint ConvexPolyhedronShape::findMostAntiParallelFace(const Vector3& direction) const {
+
+    decimal minDotProduct = DECIMAL_LARGEST;
+    uint mostAntiParallelFace = 0;
+
+    // For each face of the polyhedron
+    const uint32 nbFaces = getNbFaces();
+    for (uint32 i=0; i < nbFaces; i++) {
+
+        // Get the face normal
+        const decimal dotProduct = getFaceNormal(i).dot(direction);
+        if (dotProduct < minDotProduct) {
+            minDotProduct = dotProduct;
+            mostAntiParallelFace = i;
+        }
+    }
+
+    return mostAntiParallelFace;
+}
 
 }
 

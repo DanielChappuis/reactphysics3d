@@ -56,8 +56,8 @@ class TestQuaternion : public Test {
         /// Constructor
         TestQuaternion(const std::string& name) : Test(name), mIdentity(Quaternion::identity()) {
 
-            decimal sinA = sin(decimal(PI/8.0));
-            decimal cosA = cos(decimal(PI/8.0));
+            decimal sinA = sin(decimal(PI_RP3D/8.0));
+            decimal cosA = cos(decimal(PI_RP3D/8.0));
             Vector3 vector(2, 3, 4);
             vector.normalize();
             mQuaternion1 = Quaternion(vector.x * sinA, vector.y * sinA, vector.z * sinA, cosA);
@@ -90,9 +90,24 @@ class TestQuaternion : public Test {
             rp3d_test(approxEqual(quaternion4.z, mQuaternion1.z));
             rp3d_test(approxEqual(quaternion4.w, mQuaternion1.w));
 
+            Matrix3x3 original(0.001743,-0.968608,0.248589,-0.614229,-0.197205,-0.764090,0.789126,-0.151359,-0.595290);
+            Matrix3x3 converted = Quaternion(original).getMatrix();
+            rp3d_test(approxEqual(original[0][0], converted[0][0], 0.0001));
+            rp3d_test(approxEqual(original[0][1], converted[0][1], 0.0001));
+            rp3d_test(approxEqual(original[0][2], converted[0][2], 0.0001));
+            rp3d_test(approxEqual(original[1][0], converted[1][0], 0.0001));
+            rp3d_test(approxEqual(original[1][1], converted[1][1], 0.0001));
+            rp3d_test(approxEqual(original[1][2], converted[1][2], 0.0001));
+            rp3d_test(approxEqual(original[2][0], converted[2][0], 0.0001));
+            rp3d_test(approxEqual(original[2][1], converted[2][1], 0.0001));
+            rp3d_test(approxEqual(original[2][2], converted[2][2], 0.0001));
+
+            std::cout << original.to_string() << std::endl;
+            std::cout << converted.to_string() << std::endl;
+
             // Test conversion from Euler angles to quaternion
 
-            const decimal PI_OVER_2 = PI * decimal(0.5);
+            const decimal PI_OVER_2 = PI_RP3D * decimal(0.5);
             const decimal PI_OVER_4 = PI_OVER_2 * decimal(0.5);
             Quaternion quaternion5 = Quaternion::fromEulerAngles(PI_OVER_2, 0, 0);
             Quaternion quaternionTest5(std::sin(PI_OVER_4), 0, 0, std::cos(PI_OVER_4));
@@ -189,7 +204,7 @@ class TestQuaternion : public Test {
             Vector3 originalAxis = Vector3(2, 3, 4).getUnit();
             mQuaternion1.getRotationAngleAxis(angle, axis);
             rp3d_test(approxEqual(axis.x, originalAxis.x));
-            rp3d_test(approxEqual(angle, decimal(PI/4.0), decimal(10e-6)));
+            rp3d_test(approxEqual(angle, decimal(PI_RP3D/4.0), decimal(10e-6)));
 
             // Test the method that returns the corresponding matrix
             Matrix3x3 matrix = mQuaternion1.getMatrix();
@@ -207,14 +222,14 @@ class TestQuaternion : public Test {
             Quaternion test2 = Quaternion::slerp(quatStart, quatEnd, 1.0);
             rp3d_test(test1 == quatStart);
             rp3d_test(test2 == quatEnd);
-            decimal sinA = sin(decimal(PI/4.0));
-            decimal cosA = cos(decimal(PI/4.0));
+            decimal sinA = sin(decimal(PI_RP3D/4.0));
+            decimal cosA = cos(decimal(PI_RP3D/4.0));
             Quaternion quat(sinA, 0, 0, cosA);
             Quaternion test3 = Quaternion::slerp(mIdentity, quat, decimal(0.5));
-            rp3d_test(approxEqual(test3.x, sin(decimal(PI/8.0))));
+            rp3d_test(approxEqual(test3.x, sin(decimal(PI_RP3D/8.0))));
             rp3d_test(approxEqual(test3.y, 0.0));
             rp3d_test(approxEqual(test3.z, 0.0));
-            rp3d_test(approxEqual(test3.w, cos(decimal(PI/8.0)), decimal(10e-6)));
+            rp3d_test(approxEqual(test3.w, cos(decimal(PI_RP3D/8.0)), decimal(10e-6)));
         }
 
         /// Test overloaded operators

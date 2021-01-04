@@ -107,9 +107,6 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
         // Create a sphere and a corresponding rigid in the physics world
         Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
 
-		// Add some rolling resistance
-        sphere->getCollider()->getMaterial().setRollingResistance(0.08f);
-
 		// Set the box color
 		sphere->setColor(mObjectColorDemo);
 		sphere->setSleepingColor(mSleepingColorDemo);
@@ -128,8 +125,6 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
 
         // Create a cylinder and a corresponding rigid in the physics world
         Capsule* capsule = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-
-        capsule->getCollider()->getMaterial().setRollingResistance(0.08f);
 
 		// Set the box color
 		capsule->setColor(mObjectColorDemo);

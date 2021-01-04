@@ -123,20 +123,20 @@ class SolveBallAndSocketJointSystem {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 
 #endif
 
 // Set the time step
-inline void SolveBallAndSocketJointSystem::setTimeStep(decimal timeStep) {
+RP3D_FORCE_INLINE void SolveBallAndSocketJointSystem::setTimeStep(decimal timeStep) {
     assert(timeStep > decimal(0.0));
     mTimeStep = timeStep;
 }
 
 // Set to true to enable warm starting
-inline void SolveBallAndSocketJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
+RP3D_FORCE_INLINE void SolveBallAndSocketJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
     mIsWarmStartingActive = isWarmStartingActive;
 }
 

@@ -143,7 +143,7 @@ class CollisionBody {
         Collider* getCollider(uint colliderIndex);
 
         /// Return the number of colliders associated with this body
-        uint getNbColliders() const;
+        uint32 getNbColliders() const;
 
         /// Return the world-space coordinates of a point given the local-space coordinates of the body
         Vector3 getWorldPoint(const Vector3& localPoint) const;
@@ -178,7 +178,7 @@ class CollisionBody {
 * @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
 * @return True if the given AABB overlaps with the AABB of the collision body
 */
-inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
+RP3D_FORCE_INLINE bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getAABB());
 }
 
@@ -186,14 +186,14 @@ inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
 /**
  * @return The entity of the body
  */
-inline Entity CollisionBody::getEntity() const {
+RP3D_FORCE_INLINE Entity CollisionBody::getEntity() const {
     return mEntity;
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void CollisionBody::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void CollisionBody::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 }
 

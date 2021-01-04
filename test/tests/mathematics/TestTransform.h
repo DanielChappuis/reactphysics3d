@@ -65,12 +65,12 @@ class TestTransform : public Test {
             Vector3 unitVec(1, 1, 1);
             unitVec.normalize();
 
-            decimal sinA = std::sin(PI/8.0f);
-            decimal cosA = std::cos(PI/8.0f);
+            decimal sinA = std::sin(PI_RP3D/8.0f);
+            decimal cosA = std::cos(PI_RP3D/8.0f);
             mTransform1 = Transform(Vector3(4, 5, 6), Quaternion(sinA * unitVec, cosA));
 
-            decimal sinB = std::sin(PI/3.0f);
-            decimal cosB = std::cos(PI/3.0f);
+            decimal sinB = std::sin(PI_RP3D/3.0f);
+            decimal cosB = std::cos(PI_RP3D/3.0f);
             mTransform2 = Transform(Vector3(8, 45, -6), Quaternion(sinB * unitVec, cosB));
         }
 
@@ -162,10 +162,10 @@ class TestTransform : public Test {
             rp3d_test(transformStart == mTransform1);
             rp3d_test(transformEnd == mTransform2);
 
-            decimal sinA = sin(PI/3.0f);
-            decimal cosA = cos(PI/3.0f);
-            decimal sinB = sin(PI/6.0f);
-            decimal cosB = cos(PI/6.0f);
+            decimal sinA = sin(PI_RP3D/3.0f);
+            decimal cosA = cos(PI_RP3D/3.0f);
+            decimal sinB = sin(PI_RP3D/6.0f);
+            decimal cosB = cos(PI_RP3D/6.0f);
             Transform transform1(Vector3(4, 5, 6), Quaternion::identity());
             Transform transform2(Vector3(8, 11, 16), Quaternion(sinA, sinA, sinA, cosA));
             Transform transform = Transform::interpolateTransforms(transform1, transform2, 0.5);

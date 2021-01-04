@@ -49,7 +49,7 @@ ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, MemoryAllocator
 
 // Return a local support point in a given direction without the object margin.
 /// If the edges information is not used for collision detection, this method will go through
-/// the whole vertices list and pick up the vertex with the largest dot product in the support
+/// the whole vertices array and pick up the vertex with the largest dot product in the support
 /// direction. This is an O(n) process with "n" being the number of vertices in the mesh.
 /// However, if the edges information is used, we can cache the previous support vertex and use
 /// it as a start in a hill-climbing (local search) process to find the new support vertex which
@@ -231,7 +231,7 @@ std::string ConvexMeshShape::to_string() const {
 
         ss << "[";
 
-        for (uint v=0; v < face.faceVertices.size(); v++) {
+        for (uint32 v=0; v < face.faceVertices.size(); v++) {
 
             ss << face.faceVertices[v];
             if (v != face.faceVertices.size() - 1) {

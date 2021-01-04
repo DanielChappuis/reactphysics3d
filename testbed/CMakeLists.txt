@@ -8,6 +8,7 @@ project(Testbed)
 set(NANOGUI_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
 set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
 set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
+set(NANOGUI_BACKEND       OpenGL CACHE BOOL " " FORCE)
 
 # ---- Make sure to recursively clone all the git submodules for external libraries (nanogui) --- #
 find_package(Git QUIET)
@@ -123,6 +124,12 @@ set(COMMON_SOURCES
 
 # Examples scenes source files
 set(SCENES_SOURCES
+    scenes/ballandsocketjointsnet/BallAndSocketJointsNetScene.h
+    scenes/ballandsocketjointsnet/BallAndSocketJointsNetScene.cpp
+    scenes/ballandsocketjointschain/BallAndSocketJointsChainScene.h
+    scenes/ballandsocketjointschain/BallAndSocketJointsChainScene.cpp
+    scenes/hingejointschain/HingeJointsChainScene.h
+    scenes/hingejointschain/HingeJointsChainScene.cpp
     scenes/cubes/CubesScene.h
     scenes/cubes/CubesScene.cpp
     scenes/joints/JointsScene.h

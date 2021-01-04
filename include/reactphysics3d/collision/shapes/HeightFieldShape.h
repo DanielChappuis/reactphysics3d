@@ -91,13 +91,20 @@ class HeightFieldShape : public ConcaveShape {
         /// Local AABB of the height field (without scaling)
         AABB mAABB;
 
+        /// Reference to the half-edge structure
+        HalfEdgeStructure& mTriangleHalfEdgeStructure;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
         HeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                          const void* heightFieldData, HeightDataType dataType, MemoryAllocator& allocator,
-                         int upAxis = 1, decimal integerHeightScale = 1.0f,
+                         HalfEdgeStructure& triangleHalfEdgeStructure, int upAxis = 1, decimal integerHeightScale = 1.0f,
                          const Vector3& scaling = Vector3(1,1,1));
+
+        /// Raycast a single triangle of the height-field
+        bool raycastTriangle(const Ray& ray, const Vector3& p1, const Vector3& p2, const Vector3& p3, uint shapeId,
+                             Collider *collider, RaycastInfo& raycastInfo, decimal &smallestHitFraction, MemoryAllocator& allocator) const;
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const override;
@@ -122,6 +129,9 @@ class HeightFieldShape : public ConcaveShape {
         /// Compute the shape Id for a given triangle
         uint computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const;
 
+        /// Compute the first grid cell of the heightfield intersected by a ray
+        bool computeEnteringRayGridCoordinates(const Ray& ray, int& i, int& j, Vector3& outHitPoint) const;
+        
         /// Destructor
         virtual ~HeightFieldShape() override = default;
 
@@ -152,8 +162,8 @@ class HeightFieldShape : public ConcaveShape {
         virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
-                                                   List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+        virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
+                                                   Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
                                                    MemoryAllocator& allocator) const override;
 
         /// Return the string representation of the shape
@@ -167,27 +177,27 @@ class HeightFieldShape : public ConcaveShape {
 };
 
 // Return the number of rows in the height field
-inline int HeightFieldShape::getNbRows() const {
+RP3D_FORCE_INLINE int HeightFieldShape::getNbRows() const {
     return mNbRows;
 }
 
 // Return the number of columns in the height field
-inline int HeightFieldShape::getNbColumns() const {
+RP3D_FORCE_INLINE int HeightFieldShape::getNbColumns() const {
     return mNbColumns;
 }
 
 // Return the type of height value in the height field
-inline HeightFieldShape::HeightDataType HeightFieldShape::getHeightDataType() const {
+RP3D_FORCE_INLINE HeightFieldShape::HeightDataType HeightFieldShape::getHeightDataType() const {
     return mHeightDataType;
 }
 
 // Return the number of bytes used by the collision shape
-inline size_t HeightFieldShape::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t HeightFieldShape::getSizeInBytes() const {
     return sizeof(HeightFieldShape);
 }
 
 // Return the height of a given (x,y) point in the height field
-inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
+RP3D_FORCE_INLINE decimal HeightFieldShape::getHeightAt(int x, int y) const {
 
     assert(x >= 0 && x < mNbColumns);
     assert(y >= 0 && y < mNbRows);
@@ -201,12 +211,12 @@ inline decimal HeightFieldShape::getHeightAt(int x, int y) const {
 }
 
 // Return the closest inside integer grid value of a given floating grid value
-inline int HeightFieldShape::computeIntegerGridValue(decimal value) const {
+RP3D_FORCE_INLINE int HeightFieldShape::computeIntegerGridValue(decimal value) const {
     return (value < decimal(0.0)) ? value - decimal(0.5) : value + decimal(0.5);
 }
 
 // Compute the shape Id for a given triangle
-inline uint HeightFieldShape::computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const {
+RP3D_FORCE_INLINE uint HeightFieldShape::computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const {
 
     return (jIndex * (mNbColumns - 1) + iIndex) * 2 + secondTriangleIncrement;
 }

@@ -48,7 +48,7 @@ Vector3 Vector3::getOneUnitOrthogonalVector() const {
     assert(length() > MACHINE_EPSILON);
 
     // Get the minimum element of the vector
-    Vector3 vectorAbs(std::fabs(x), std::fabs(y), std::fabs(z));
+    Vector3 vectorAbs(std::abs(x), std::abs(y), std::abs(z));
     int minElement = vectorAbs.getMinAxis();
 
     if (minElement == 0) {

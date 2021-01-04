@@ -129,7 +129,7 @@ class BallAndSocketJoint : public Joint {
 };
 
 // Return the number of bytes used by the joint
-inline size_t BallAndSocketJoint::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t BallAndSocketJoint::getSizeInBytes() const {
     return sizeof(BallAndSocketJoint);
 }
 

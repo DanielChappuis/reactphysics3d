@@ -137,6 +137,7 @@ struct RaycastTest {
         /// Constructor
         RaycastTest(RaycastCallback* callback) {
             userCallback = callback;
+
         }
 
         /// Ray cast test against a collider

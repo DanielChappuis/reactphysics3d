@@ -145,6 +145,8 @@ void CubeStackScene::reset() {
                                   0);
 
             box->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+            box->getRigidBody()->setLinearVelocity(rp3d::Vector3::zero());
+            box->getRigidBody()->setAngularVelocity(rp3d::Vector3::zero());
 
             index++;
         }

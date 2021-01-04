@@ -79,7 +79,7 @@ void DefaultLogger::addStreamDestination(std::ostream& outputStream, uint logLev
 void DefaultLogger::removeAllDestinations() {
 
     // Delete all the destinations
-    for (uint i=0; i<mDestinations.size(); i++) {
+    for (uint32 i=0; i<mDestinations.size(); i++) {
 
         size_t size = mDestinations[i]->getSizeBytes();
 

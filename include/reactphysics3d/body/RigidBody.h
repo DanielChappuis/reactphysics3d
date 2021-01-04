@@ -57,7 +57,7 @@ class RigidBody : public CollisionBody {
         void setIsSleeping(bool isSleeping);
 
         /// Update whether the current overlapping pairs where this body is involed are active or not
-        void updateOverlappingPairs();
+        void resetOverlappingPairs();
 
         /// Compute and return the local-space center of mass of the body using its colliders
         Vector3 computeCenterOfMass() const;
@@ -65,8 +65,8 @@ class RigidBody : public CollisionBody {
         /// Compute the local-space inertia tensor and total mass of the body using its colliders
         void computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, decimal& totalMass) const;
 
-        /// Return the inverse of the inertia tensor in world coordinates.
-        static const Matrix3x3 getWorldInertiaTensorInverse(PhysicsWorld& world, Entity bodyEntity);
+        /// Compute the inverse of the inertia tensor in world coordinates.
+        static void computeWorldInertiaTensorInverse(const Matrix3x3& orientation, const Vector3& inverseInertiaTensorLocal, Matrix3x3& outInverseInertiaTensorWorld);
 
     public :
 
@@ -211,6 +211,24 @@ class RigidBody : public CollisionBody {
         friend class SolveSliderJointSystem;
         friend class Joint;
 };
+
+/// Compute the inverse of the inertia tensor in world coordinates.
+RP3D_FORCE_INLINE void RigidBody::computeWorldInertiaTensorInverse(const Matrix3x3& orientation, const Vector3& inverseInertiaTensorLocal, Matrix3x3& outInverseInertiaTensorWorld) {
+
+    outInverseInertiaTensorWorld[0][0] = orientation[0][0] * inverseInertiaTensorLocal.x;
+    outInverseInertiaTensorWorld[0][1] = orientation[1][0] * inverseInertiaTensorLocal.x;
+    outInverseInertiaTensorWorld[0][2] = orientation[2][0] * inverseInertiaTensorLocal.x;
+
+    outInverseInertiaTensorWorld[1][0] = orientation[0][1] * inverseInertiaTensorLocal.y;
+    outInverseInertiaTensorWorld[1][1] = orientation[1][1] * inverseInertiaTensorLocal.y;
+    outInverseInertiaTensorWorld[1][2] = orientation[2][1] * inverseInertiaTensorLocal.y;
+
+    outInverseInertiaTensorWorld[2][0] = orientation[0][2] * inverseInertiaTensorLocal.z;
+    outInverseInertiaTensorWorld[2][1] = orientation[1][2] * inverseInertiaTensorLocal.z;
+    outInverseInertiaTensorWorld[2][2] = orientation[2][2] * inverseInertiaTensorLocal.z;
+
+    outInverseInertiaTensorWorld = orientation * outInverseInertiaTensorWorld;
+}
 
 }
 

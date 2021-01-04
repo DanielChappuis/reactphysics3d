@@ -28,7 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/configuration.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/containers/Deque.h>
 #include <reactphysics3d/engine/Entity.h>
 
@@ -45,8 +45,8 @@ class EntityManager {
 
         // -------------------- Attributes -------------------- //
 
-        /// List storing the generations of the created entities
-        List<uint8> mGenerations;
+        /// Array storing the generations of the created entities
+        Array<uint8> mGenerations;
 
         /// Deque with the indices of destroyed entities that can be reused
         Deque<uint32> mFreeIndices;
@@ -71,7 +71,7 @@ class EntityManager {
 };
 
 // Return true if the entity is still valid (not destroyed)
-inline bool EntityManager::isValid(Entity entity) const {
+RP3D_FORCE_INLINE bool EntityManager::isValid(Entity entity) const {
     return mGenerations[entity.getIndex()] == entity.getGeneration();
 }
 

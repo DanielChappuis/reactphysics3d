@@ -157,7 +157,7 @@ class Joint {
 /**
  * @return The entity of the joint
  */
-inline Entity Joint::getEntity() const {
+RP3D_FORCE_INLINE Entity Joint::getEntity() const {
     return mEntity;
 }
 

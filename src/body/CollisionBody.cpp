@@ -89,11 +89,12 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
-    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider,
-                                                                  AABB(localBoundsMin, localBoundsMax),
-                                                                  transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform);
+    Material material(mWorld.mConfig.defaultFrictionCoefficient, mWorld.mConfig.defaultBounciness);
+    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, AABB(localBoundsMin, localBoundsMax),
+                                                                  transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform, material);
     bool isActive = mWorld.mCollisionBodyComponents.getIsActive(mEntity);
     mWorld.mCollidersComponents.addComponent(colliderEntity, !isActive, colliderComponent);
+
 
     mWorld.mCollisionBodyComponents.addColliderToBody(mEntity, colliderEntity);
 
@@ -130,8 +131,8 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
 /**
 * @return The number of colliders associated with this body
 */
-uint CollisionBody::getNbColliders() const {
-    return static_cast<uint>(mWorld.mCollisionBodyComponents.getColliders(mEntity).size());
+uint32 CollisionBody::getNbColliders() const {
+    return mWorld.mCollisionBodyComponents.getColliders(mEntity).size();
 }
 
 // Return a const pointer to a given collider of the body
@@ -199,9 +200,9 @@ void CollisionBody::removeCollider(Collider* collider) {
 void CollisionBody::removeAllColliders() {
 
     // Look for the collider that contains the collision shape in parameter.
-    // Note that we need to copy the list of collider entities because we are deleting them in a loop.
-    const List<Entity> collidersEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < collidersEntities.size(); i++) {
+    // Note that we need to copy the array of collider entities because we are deleting them in a loop.
+    const Array<Entity> collidersEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < collidersEntities.size(); i++) {
 
         removeCollider(mWorld.mCollidersComponents.getCollider(collidersEntities[i]));
     }
@@ -221,8 +222,9 @@ const Transform& CollisionBody::getTransform() const {
 void CollisionBody::updateBroadPhaseState(decimal timeStep) const {
 
     // For all the colliders of the body
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    const uint32 nbColliderEntities = colliderEntities.size();
+    for (uint32 i=0; i < nbColliderEntities; i++) {
 
         // Update the local-to-world transform of the collider
         mWorld.mCollidersComponents.setLocalToWorldTransform(colliderEntities[i],
@@ -251,8 +253,8 @@ void CollisionBody::setIsActive(bool isActive) {
         const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
 
         // For each collider of the body
-        const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-        for (uint i=0; i < colliderEntities.size(); i++) {
+        const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+        for (uint32 i=0; i < colliderEntities.size(); i++) {
 
             Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
@@ -267,8 +269,8 @@ void CollisionBody::setIsActive(bool isActive) {
     else {  // If we have to deactivate the body
 
         // For each collider of the body
-        const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-        for (uint i=0; i < colliderEntities.size(); i++) {
+        const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+        for (uint32 i=0; i < colliderEntities.size(); i++) {
 
             Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
@@ -290,8 +292,9 @@ void CollisionBody::setIsActive(bool isActive) {
 void CollisionBody::askForBroadPhaseCollisionCheck() const {
 
     // For all the colliders of the body
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    const uint32 nbColliderEntities = colliderEntities.size();
+    for (uint32 i=0; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
@@ -308,8 +311,8 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
 bool CollisionBody::testPointInside(const Vector3& worldPoint) const {
 
     // For each collider of the body
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
@@ -337,8 +340,9 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     Ray rayTemp(ray);
 
     // For each collider of the body
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    const uint32 nbColliderEntities = colliderEntities.size();
+    for (uint32 i=0; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
@@ -360,7 +364,7 @@ AABB CollisionBody::getAABB() const {
 
     AABB bodyAABB;
 
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
     if (colliderEntities.size() == 0) return bodyAABB;
 
     const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
@@ -369,7 +373,8 @@ AABB CollisionBody::getAABB() const {
     collider->getCollisionShape()->computeAABB(bodyAABB, transform * collider->getLocalToBodyTransform());
 
     // For each collider of the body
-    for (uint i=1; i < colliderEntities.size(); i++) {
+    const uint32 nbColliderEntities = colliderEntities.size();
+    for (uint32 i=1; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 

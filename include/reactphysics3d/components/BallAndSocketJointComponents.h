@@ -188,140 +188,140 @@ class BallAndSocketJointComponents : public Components {
 };
 
 // Return a pointer to a given joint
-inline BallAndSocketJoint* BallAndSocketJointComponents::getJoint(Entity jointEntity) const {
+RP3D_FORCE_INLINE BallAndSocketJoint* BallAndSocketJointComponents::getJoint(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mJoints[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the joint pointer to a given joint
-inline void BallAndSocketJointComponents::setJoint(Entity jointEntity, BallAndSocketJoint* joint) const {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setJoint(Entity jointEntity, BallAndSocketJoint* joint) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mJoints[mMapEntityToComponentIndex[jointEntity]] = joint;
 }
 
 // Return the local anchor point of body 1 for a given joint
-inline const Vector3& BallAndSocketJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& BallAndSocketJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 1 for a given joint
-inline void BallAndSocketJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchoirPointBody1) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchoirPointBody1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]] = localAnchoirPointBody1;
 }
 
 // Return the local anchor point of body 2 for a given joint
-inline const Vector3& BallAndSocketJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& BallAndSocketJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 2 for a given joint
-inline void BallAndSocketJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]] = localAnchoirPointBody2;
 }
 
 // Return the vector from center of body 1 to anchor point in world-space
-inline const Vector3& BallAndSocketJointComponents::getR1World(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& BallAndSocketJointComponents::getR1World(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR1World[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the vector from center of body 1 to anchor point in world-space
-inline void BallAndSocketJointComponents::setR1World(Entity jointEntity, const Vector3& r1World) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setR1World(Entity jointEntity, const Vector3& r1World) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR1World[mMapEntityToComponentIndex[jointEntity]] = r1World;
 }
 
 // Return the vector from center of body 2 to anchor point in world-space
-inline const Vector3& BallAndSocketJointComponents::getR2World(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& BallAndSocketJointComponents::getR2World(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR2World[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the vector from center of body 2 to anchor point in world-space
-inline void BallAndSocketJointComponents::setR2World(Entity jointEntity, const Vector3& r2World) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setR2World(Entity jointEntity, const Vector3& r2World) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR2World[mMapEntityToComponentIndex[jointEntity]] = r2World;
 }
 
 // Return the inertia tensor of body 1 (in world-space coordinates)
-inline const Matrix3x3& BallAndSocketJointComponents::getI1(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Matrix3x3& BallAndSocketJointComponents::getI1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mI1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inertia tensor of body 1 (in world-space coordinates)
-inline void BallAndSocketJointComponents::setI1(Entity jointEntity, const Matrix3x3& i1) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setI1(Entity jointEntity, const Matrix3x3& i1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mI1[mMapEntityToComponentIndex[jointEntity]] = i1;
 }
 
 // Return the inertia tensor of body 2 (in world-space coordinates)
-inline const Matrix3x3& BallAndSocketJointComponents::getI2(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Matrix3x3& BallAndSocketJointComponents::getI2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mI2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inertia tensor of body 2 (in world-space coordinates)
-inline void BallAndSocketJointComponents::setI2(Entity jointEntity, const Matrix3x3& i2) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setI2(Entity jointEntity, const Matrix3x3& i2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mI2[mMapEntityToComponentIndex[jointEntity]] = i2;
 }
 
 // Return the bias vector for the constraint
-inline Vector3 &BallAndSocketJointComponents::getBiasVector(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3 &BallAndSocketJointComponents::getBiasVector(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBiasVector[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the bias vector for the constraint
-inline void BallAndSocketJointComponents::setBiasVector(Entity jointEntity, const Vector3& biasVector) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setBiasVector(Entity jointEntity, const Vector3& biasVector) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBiasVector[mMapEntityToComponentIndex[jointEntity]] = biasVector;
 }
 
 // Return the inverse mass matrix K=JM^-1J^-t of the constraint
-inline Matrix3x3& BallAndSocketJointComponents::getInverseMassMatrix(Entity jointEntity) {
+RP3D_FORCE_INLINE Matrix3x3& BallAndSocketJointComponents::getInverseMassMatrix(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrix[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inverse mass matrix K=JM^-1J^-t of the constraint
-inline void BallAndSocketJointComponents::setInverseMassMatrix(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setInverseMassMatrix(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrix[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
 }
 
 // Return the accumulated impulse
-inline Vector3 &BallAndSocketJointComponents::getImpulse(Entity jointEntity)  {
+RP3D_FORCE_INLINE Vector3 &BallAndSocketJointComponents::getImpulse(Entity jointEntity)  {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulse[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse
-inline void BallAndSocketJointComponents::setImpulse(Entity jointEntity, const Vector3& impulse) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setImpulse(Entity jointEntity, const Vector3& impulse) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulse[mMapEntityToComponentIndex[jointEntity]] = impulse;

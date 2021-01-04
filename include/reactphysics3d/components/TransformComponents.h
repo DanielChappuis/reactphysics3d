@@ -107,13 +107,13 @@ class TransformComponents : public Components {
 };
 
 // Return the transform of an entity
-inline Transform& TransformComponents::getTransform(Entity bodyEntity) const {
+RP3D_FORCE_INLINE Transform& TransformComponents::getTransform(Entity bodyEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
     return mTransforms[mMapEntityToComponentIndex[bodyEntity]];
 }
 
 // Set the transform of an entity
-inline void TransformComponents::setTransform(Entity bodyEntity, const Transform& transform) {
+RP3D_FORCE_INLINE void TransformComponents::setTransform(Entity bodyEntity, const Transform& transform) {
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
     mTransforms[mMapEntityToComponentIndex[bodyEntity]] = transform;
 }

@@ -50,20 +50,20 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
 
 #endif
 
-    List<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
+    Array<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator, batchNbItems);
     gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults);
     assert(gjkResults.size() == batchNbItems);
 
     // For each item in the batch
     for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
-        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
-            narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::SPHERE ||
-            narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::SPHERE);
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1->getType() == CollisionShapeType::SPHERE ||
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2->getType() == CollisionShapeType::SPHERE);
 
         // Get the last frame collision info
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].lastFrameCollisionInfo;
 
         lastFrameCollisionInfo->wasUsingGJK = true;
         lastFrameCollisionInfo->wasUsingSAT = false;
@@ -72,7 +72,7 @@ bool SphereVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narr
         if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
 
             // Return true
-            narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
             isCollisionFound = true;
             continue;
         }

@@ -108,11 +108,7 @@ void RigidBody::setType(BodyType type) {
     setIsSleeping(false);
 
     // Update the active status of currently overlapping pairs
-    updateOverlappingPairs();
-
-    // Ask the broad-phase to test again the collision shapes of the body for collision
-    // detection (as if the body has moved)
-    askForBroadPhaseCollisionCheck();
+    resetOverlappingPairs();
 
     // Reset the force and torque on the body
     mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
@@ -328,18 +324,18 @@ Vector3 RigidBody::computeCenterOfMass() const {
     Vector3 centerOfMassLocal(0, 0, 0);
 
     // Compute the local center of mass
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
 
-        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+        const uint colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
 
-        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
-        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+        const decimal colliderVolume = mWorld.mCollidersComponents.mCollisionShapes[colliderIndex]->getVolume();
+        const decimal colliderMassDensity = mWorld.mCollidersComponents.mMaterials[colliderIndex].getMassDensity();
 
         const decimal colliderMass = colliderVolume * colliderMassDensity;
 
         totalMass += colliderMass;
-        centerOfMassLocal += colliderMass * mWorld.mCollidersComponents.getLocalToBodyTransform(colliderEntities[i]).getPosition();
+        centerOfMassLocal += colliderMass * mWorld.mCollidersComponents.mLocalToBodyTransforms[colliderIndex].getPosition();
     }
 
     if (totalMass > decimal(0.0)) {
@@ -360,22 +356,22 @@ void RigidBody::computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, de
     const Vector3 centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
 
     // Compute the inertia tensor using all the colliders
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
 
-        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+        const uint colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
 
-        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
-        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+        const decimal colliderVolume = mWorld.mCollidersComponents.mCollisionShapes[colliderIndex]->getVolume();
+        const decimal colliderMassDensity = mWorld.mCollidersComponents.mMaterials[colliderIndex].getMassDensity();
         const decimal colliderMass = colliderVolume * colliderMassDensity;
 
         totalMass += colliderMass;
 
         // Get the inertia tensor of the collider in its local-space
-        Vector3 shapeLocalInertiaTensor = collider->getCollisionShape()->getLocalInertiaTensor(colliderMass);
+        Vector3 shapeLocalInertiaTensor = mWorld.mCollidersComponents.mCollisionShapes[colliderIndex]->getLocalInertiaTensor(colliderMass);
 
         // Convert the collider inertia tensor into the local-space of the body
-        const Transform& shapeTransform = collider->getLocalToBodyTransform();
+        const Transform& shapeTransform = mWorld.mCollidersComponents.mLocalToBodyTransforms[colliderIndex];
         Matrix3x3 rotationMatrix = shapeTransform.getOrientation().getMatrix();
         Matrix3x3 rotationMatrixTranspose = rotationMatrix.getTranspose();
         rotationMatrixTranspose[0] *= shapeLocalInertiaTensor.x;
@@ -435,12 +431,13 @@ void RigidBody::updateMassFromColliders() {
     decimal totalMass = decimal(0.0);
 
     // Compute the total mass of the body
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
-        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
 
-        const decimal colliderVolume = mWorld.mCollidersComponents.getCollisionShape(colliderEntities[i])->getVolume();
-        const decimal colliderMassDensity = collider->getMaterial().getMassDensity();
+        const uint colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
+
+        const decimal colliderVolume = mWorld.mCollidersComponents.mCollisionShapes[colliderIndex]->getVolume();
+        const decimal colliderMassDensity = mWorld.mCollidersComponents.mMaterials[colliderIndex].getMassDensity();
 
         const decimal colliderMass = colliderVolume * colliderMassDensity;
 
@@ -589,8 +586,9 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
     // TODO : Maybe this method can directly returns an AABB
     collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
+    Material material(mWorld.mConfig.defaultFrictionCoefficient, mWorld.mConfig.defaultBounciness);
     ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, AABB(localBoundsMin, localBoundsMax),
-                                                            transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform);
+                                                            transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform, material);
     bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
     mWorld.mCollidersComponents.addComponent(colliderEntity, isSleeping, colliderComponent);
 
@@ -854,7 +852,7 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     mWorld.setBodyDisabled(mEntity, isSleeping);
 
     // Update the currently overlapping pairs
-    updateOverlappingPairs();
+    resetOverlappingPairs();
 
     if (isSleeping) {
 
@@ -869,33 +867,25 @@ void RigidBody::setIsSleeping(bool isSleeping) {
          (isSleeping ? "true" : "false"),  __FILE__, __LINE__);
 }
 
-// Update whether the current overlapping pairs where this body is involed are active or not
-void RigidBody::updateOverlappingPairs() {
+// Remove all the overlapping pairs in which this body is involved and ask the broad-phase to recompute pairs in the next frame
+void RigidBody::resetOverlappingPairs() {
 
     // For each collider of the body
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
 
         // Get the currently overlapping pairs for this collider
-        List<uint64> overlappingPairs = mWorld.mCollidersComponents.getOverlappingPairs(colliderEntities[i]);
+        Array<uint64> overlappingPairs = mWorld.mCollidersComponents.getOverlappingPairs(colliderEntities[i]);
 
-        for (uint j=0; j < overlappingPairs.size(); j++) {
+        const uint32 nbOverlappingPairs = overlappingPairs.size();
+        for (uint32 j=0; j < nbOverlappingPairs; j++) {
 
-            mWorld.mCollisionDetection.mOverlappingPairs.updateOverlappingPairIsActive(overlappingPairs[j]);
+            mWorld.mCollisionDetection.mOverlappingPairs.removePair(overlappingPairs[j]);
         }
     }
-}
 
-/// Return the inverse of the inertia tensor in world coordinates.
-const Matrix3x3 RigidBody::getWorldInertiaTensorInverse(PhysicsWorld& world, Entity bodyEntity) {
-
-    Matrix3x3 orientation = world.mTransformComponents.getTransform(bodyEntity).getOrientation().getMatrix();
-    const Vector3& inverseInertiaLocalTensor = world.mRigidBodyComponents.getInertiaTensorLocalInverse(bodyEntity);
-    Matrix3x3 orientationTranspose = orientation.getTranspose();
-    orientationTranspose[0] *= inverseInertiaLocalTensor.x;
-    orientationTranspose[1] *= inverseInertiaLocalTensor.y;
-    orientationTranspose[2] *= inverseInertiaLocalTensor.z;
-    return orientation * orientationTranspose;
+    // Make sure we recompute the overlapping pairs with this body in the next frame
+    askForBroadPhaseCollisionCheck();
 }
 
 // Set whether or not the body is allowed to go to sleep
@@ -952,8 +942,8 @@ void RigidBody::setProfiler(Profiler* profiler) {
 	CollisionBody::setProfiler(profiler);
 
     // Set the profiler for each collider
-    const List<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint i=0; i < colliderEntities.size(); i++) {
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 

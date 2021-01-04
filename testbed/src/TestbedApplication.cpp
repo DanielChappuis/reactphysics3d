@@ -39,6 +39,9 @@
 #include "cubestack/CubeStackScene.h"
 #include "pile/PileScene.h"
 #include "boxtower/BoxTowerScene.h"
+#include "ballandsocketjointsnet/BallAndSocketJointsNetScene.h"
+#include "ballandsocketjointschain/BallAndSocketJointsChainScene.h"
+#include "hingejointschain/HingeJointsChainScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -51,6 +54,9 @@ using namespace collisiondetectionscene;
 using namespace cubestackscene;
 using namespace pilescene;
 using namespace boxtowerscene;
+using namespace ballandsocketjointsnetscene;
+using namespace ballandsocketjointschainscene;
+using namespace hingejointschainscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -97,12 +103,15 @@ void TestbedApplication::init() {
     glGetIntegerv(GL_MAJOR_VERSION, &glMajorVersion);
     glGetIntegerv(GL_MINOR_VERSION, &glMinorVersion);
 
+#ifdef GL_DEBUG_OUTPUT
+
     if (glMajorVersion > 4 || (glMajorVersion == 4 && glMinorVersion >= 3)) {
 
         // Enable OpenGL error reporting
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageCallback(onOpenGLError, 0);
     }
+#endif
 
     mIsInitialized = true;
 }
@@ -145,11 +154,23 @@ void TestbedApplication::createScenes() {
     // Pile scene
     PileScene* pileScene = new PileScene("Pile", mEngineSettings);
     mScenes.push_back(pileScene);
-    assert(mScenes.size() > 0);
 
     // Box Tower scene
     BoxTowerScene* boxTowerScene = new BoxTowerScene("Box Tower", mEngineSettings);
     mScenes.push_back(boxTowerScene);
+
+    // Ball and Socket joints Net scene
+    BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene("BallAndSocket Joints Net", mEngineSettings);
+    mScenes.push_back(ballAndSocketJointsNetScene);
+
+    // Ball and Socket joints chain scene
+    BallAndSocketJointsChainScene* ballAndSocketJointsChainScene = new BallAndSocketJointsChainScene("BallAndSocket Joints Chain", mEngineSettings);
+    mScenes.push_back(ballAndSocketJointsChainScene);
+
+    // Hinge joints chain scene
+    HingeJointsChainScene* hingeJointsChainScene = new HingeJointsChainScene("Hinge Joints Chain", mEngineSettings);
+    mScenes.push_back(hingeJointsChainScene);
+
     assert(mScenes.size() > 0);
 
     const int firstSceneIndex = 0;
@@ -314,6 +335,7 @@ void TestbedApplication::notifyEngineSetttingsChanged() {
 void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                               const GLchar* message, const void* userParam ) {
 
+#ifdef GL_DEBUG_OUTPUT
     if (type == GL_DEBUG_TYPE_ERROR) {
         /*
         fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
@@ -321,6 +343,8 @@ void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GL
                     type, severity, message );
          */
     }
+#endif
+
 }
 
 // Compute the FPS

@@ -39,7 +39,7 @@ struct NarrowPhaseInfoBatch;
 class ConvexShape;
 class Profiler;
 class VoronoiSimplex;
-template<typename T> class List;
+template<typename T> class Array;
 
 // Constants
 constexpr decimal REL_ERROR = decimal(1.0e-3);
@@ -98,7 +98,7 @@ class GJKAlgorithm {
 
         /// Compute a contact info if the two bounding volumes collide.
         void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, List<GJKResult>& gjkResults);
+                           uint batchNbItems, Array<GJKResult>& gjkResults);
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -112,7 +112,7 @@ class GJKAlgorithm {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void GJKAlgorithm::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void GJKAlgorithm::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 }
 

@@ -65,6 +65,3 @@ Matrix3x3 Matrix3x3::getInverse() const {
     // Return the inverse matrix
     return (invDeterminant * tempMatrix);
 }
-
-
-

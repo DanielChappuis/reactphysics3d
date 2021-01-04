@@ -120,28 +120,28 @@ class Timer {
 };
 
 // Return the timestep of the physics engine
-inline double Timer::getTimeStep() const {
+RP3D_FORCE_INLINE double Timer::getTimeStep() const {
     return mTimeStep;
 }
 
 // Set the timestep of the physics engine
-inline void Timer::setTimeStep(double timeStep) {
+RP3D_FORCE_INLINE void Timer::setTimeStep(double timeStep) {
     assert(timeStep > 0.0f);
     mTimeStep = timeStep;
 }
 
 // Return the current time
-inline long double Timer::getPhysicsTime() const {
+RP3D_FORCE_INLINE long double Timer::getPhysicsTime() const {
     return mLastUpdateTime;
 }
 
 // Return if the timer is running
-inline bool Timer::getIsRunning() const {
+RP3D_FORCE_INLINE bool Timer::getIsRunning() const {
     return mIsRunning;
 }
 
 // Start the timer
-inline void Timer::start() {
+RP3D_FORCE_INLINE void Timer::start() {
     if (!mIsRunning) {
 
         // Get the current system time
@@ -153,17 +153,17 @@ inline void Timer::start() {
 }
 
 // Stop the timer
-inline void Timer::stop() {
+RP3D_FORCE_INLINE void Timer::stop() {
     mIsRunning = false;
 }
 
 // True if it's possible to take a new step
-inline bool Timer::isPossibleToTakeStep() const {
+RP3D_FORCE_INLINE bool Timer::isPossibleToTakeStep() const {
     return (mAccumulator >= mTimeStep);
 }
 
 // Take a new step => update the timer by adding the timeStep value to the current time
-inline void Timer::nextStep() {
+RP3D_FORCE_INLINE void Timer::nextStep() {
     assert(mIsRunning);
 
     // Update the accumulator value
@@ -171,12 +171,12 @@ inline void Timer::nextStep() {
 }
 
 // Compute the interpolation factor
-inline decimal Timer::computeInterpolationFactor() {
+RP3D_FORCE_INLINE decimal Timer::computeInterpolationFactor() {
     return (decimal(mAccumulator / mTimeStep));
 }
 
 // Compute the time since the last update() call and add it to the accumulator
-inline void Timer::update() {
+RP3D_FORCE_INLINE void Timer::update() {
 
     // Get the current system time
     long double currentTime = getCurrentSystemTime();
