@@ -151,6 +151,12 @@ class RigidBodyComponents : public Components {
         /// For each body, the array of the indices of contact pairs in which the body is involved
         Array<uint>* mContactPairs;
 
+        /// For each body, the array of lock translation vectors
+        Vector3* mLinearLockAxisFactors;
+
+        /// For each body, the array of lock rotation vectors
+        Vector3* mAngularLockAxisFactors;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -312,6 +318,12 @@ class RigidBodyComponents : public Components {
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
 
+        /// Return the lock translation factor
+        const Vector3& getLinearLockAxisFactor(Entity bodyEntity) const;
+
+        /// Return the lock rotation factor
+        const Vector3& getAngularLockAxisFactor(Entity bodyEntity) const;
+
         /// Set the constrained linear velocity of an entity
         void setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity);
 
@@ -341,6 +353,12 @@ class RigidBodyComponents : public Components {
 
         /// Set the value to know if the entity is already in an island
         void setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
+
+        /// Set the lock translation factor
+        void setLinearLockAxisFactor(Entity bodyEntity, const Vector3& lockTranslationFactor);
+
+        /// Set the lock rotation factor
+        void setAngularLockAxisFactor(Entity bodyEntity, const Vector3& rotationTranslationFactor);
 
         /// Return the array of joints of a body
         const Array<Entity>& getJoints(Entity bodyEntity) const;
@@ -754,6 +772,23 @@ RP3D_FORCE_INLINE bool RigidBodyComponents::getIsAlreadyInIsland(Entity bodyEnti
    return mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+
+// Return the linear lock axis factor
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getLinearLockAxisFactor(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mLinearLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the angular lock axis factor
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getAngularLockAxisFactor(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mAngularLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the value to know if the gravity is enabled for this entity
 RP3D_FORCE_INLINE void RigidBodyComponents::setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled) {
 
@@ -767,6 +802,20 @@ RP3D_FORCE_INLINE void RigidBodyComponents::setIsAlreadyInIsland(Entity bodyEnti
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
    mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]] = isAlreadyInIsland;
+}
+
+// Set the linear lock axis factor
+RP3D_FORCE_INLINE void RigidBodyComponents::setLinearLockAxisFactor(Entity bodyEntity, const Vector3& lockTranslationFactor) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+   mLinearLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]] = lockTranslationFactor;
+}
+
+// Set the angular lock axis factor
+RP3D_FORCE_INLINE void RigidBodyComponents::setAngularLockAxisFactor(Entity bodyEntity, const Vector3& lockRotationFactor) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+   mAngularLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]] = lockRotationFactor;
 }
 
 // Return the array of joints of a body

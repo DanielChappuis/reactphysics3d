@@ -153,6 +153,18 @@ class RigidBody : public CollisionBody {
         /// Set the angular damping factor
         void setAngularDamping(decimal angularDamping);
 
+        /// Return the lock translation factor
+        const Vector3& getLinearLockAxisFactor() const;
+
+        /// Set the linear lock factor
+        void setLinearLockAxisFactor(const Vector3& linearLockAxisFactor) const;
+
+        /// Return the lock rotation factor
+        const Vector3& getAngularLockAxisFactor() const;
+
+        /// Set the lock rotation factor
+        void setAngularLockAxisFactor(const Vector3& angularLockAxisFactor) const;
+
         /// Apply an external force to the body at its center of mass.
         void applyForceToCenterOfMass(const Vector3& force);
 

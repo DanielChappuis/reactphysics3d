@@ -60,12 +60,15 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
         const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
+        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
+        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
+
         assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity));
         assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
 
         // Get the inertia tensor of bodies
-        mBallAndSocketJointComponents.mI1[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body1Entity);
-        mBallAndSocketJointComponents.mI2[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body2Entity);
+        mBallAndSocketJointComponents.mI1[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody1];
+        mBallAndSocketJointComponents.mI2[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody2];
 
         const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
@@ -79,9 +82,6 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         const Vector3& r2World = mBallAndSocketJointComponents.mR2World[i];
         Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(r1World);
         Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(r2World);
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         // Compute the matrix K=JM^-1J^t (3x3 matrix)
         const decimal body1MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
@@ -102,8 +102,8 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
             mBallAndSocketJointComponents.mInverseMassMatrix[i] = massMatrix.getInverse();
         }
 
-        const Vector3& x1 = mRigidBodyComponents.getCenterOfMassWorld(body1Entity);
-        const Vector3& x2 = mRigidBodyComponents.getCenterOfMassWorld(body2Entity);
+        const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody1];
+        const Vector3& x2 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody2];
 
         // Compute the bias "b" of the constraint
         mBallAndSocketJointComponents.mBiasVector[i].setToZero();
@@ -153,15 +153,15 @@ void SolveBallAndSocketJointSystem::warmstart() {
         const Vector3 angularImpulseBody1 = mBallAndSocketJointComponents.mImpulse[i].cross(r1World);
 
         // Apply the impulse to the body 1
-        v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * linearImpulseBody1;
-        w1 += i1 * angularImpulseBody1;
+        v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Compute the impulse P=J^T * lambda for the body 2
         const Vector3 angularImpulseBody2 = -mBallAndSocketJointComponents.mImpulse[i].cross(r2World);
 
         // Apply the impulse to the body to the body 2
-        v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mBallAndSocketJointComponents.mImpulse[i];
-        w2 += i2 * angularImpulseBody2;
+        v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * mBallAndSocketJointComponents.mImpulse[i];
+        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
     }
 }
 
@@ -202,15 +202,15 @@ void SolveBallAndSocketJointSystem::solveVelocityConstraint() {
         const Vector3 angularImpulseBody1 = deltaLambda.cross(mBallAndSocketJointComponents.mR1World[i]);
 
         // Apply the impulse to the body 1
-        v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * linearImpulseBody1;
-        w1 += i1 * angularImpulseBody1;
+        v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Compute the impulse P=J^T * lambda for the body 2
         const Vector3 angularImpulseBody2 = -deltaLambda.cross(mBallAndSocketJointComponents.mR2World[i]);
 
         // Apply the impulse to the body 2
-        v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * deltaLambda;
-        w2 += i2 * angularImpulseBody2;
+        v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambda;
+        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
     }
 }
 
@@ -290,8 +290,8 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         const Vector3 angularImpulseBody1 = lambda.cross(r1World);
 
         // Compute the pseudo velocity of body 1
-        const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        const Vector3 w1 = mBallAndSocketJointComponents.mI1[i] * angularImpulseBody1;
+        const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        const Vector3 w1 = mBallAndSocketJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Update the body center of mass and orientation of body 1
         x1 += v1;
@@ -302,8 +302,8 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         const Vector3 angularImpulseBody2 = -lambda.cross(r2World);
 
         // Compute the pseudo velocity of body 2
-        const Vector3 v2 = inverseMassBody2 * lambda;
-        const Vector3 w2 = mBallAndSocketJointComponents.mI2[i] * angularImpulseBody2;
+        const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambda;
+        const Vector3 w2 = mBallAndSocketJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
         // Update the body position/orientation of body 2
         x2 += v2;

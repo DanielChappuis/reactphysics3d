@@ -188,8 +188,20 @@ class ContactSolverSystem {
             /// Inverse of the mass of body 1
             decimal massInverseBody1;
 
-            // Inverse of the mass of body 2
+            /// Inverse of the mass of body 2
             decimal massInverseBody2;
+
+            /// Linear lock axis factor of body 1
+            Vector3 linearLockAxisFactorBody1;
+
+            /// Linear lock axis factor of body 2
+            Vector3 linearLockAxisFactorBody2;
+
+            /// Angular lock axis factor of body 1
+            Vector3 angularLockAxisFactorBody1;
+
+            /// Angular lock axis factor of body 2
+            Vector3 angularLockAxisFactorBody2;
 
             /// Inverse inertia tensor of body 1
             Matrix3x3 inverseInertiaTensorBody1;

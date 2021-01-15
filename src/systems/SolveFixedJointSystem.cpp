@@ -60,12 +60,15 @@ void SolveFixedJointSystem::initBeforeSolve() {
         const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
         const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
+        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
+        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
+
         assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity));
         assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
 
         // Get the inertia tensor of bodies
-        mFixedJointComponents.mI1[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body1Entity);
-        mFixedJointComponents.mI2[i] = mRigidBodyComponents.getInertiaTensorWorldInverse(body2Entity);
+        mFixedJointComponents.mI1[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody1];
+        mFixedJointComponents.mI2[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody2];
 
         const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
@@ -77,9 +80,6 @@ void SolveFixedJointSystem::initBeforeSolve() {
         // Compute the corresponding skew-symmetric matrices
         Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mFixedJointComponents.mR1World[i]);
         Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mFixedJointComponents.mR2World[i]);
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
         const decimal body1MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
@@ -99,8 +99,8 @@ void SolveFixedJointSystem::initBeforeSolve() {
         }
 
         // Get the bodies positions and orientations
-        const Vector3& x1 = mRigidBodyComponents.getCenterOfMassWorld(body1Entity);
-        const Vector3& x2 = mRigidBodyComponents.getCenterOfMassWorld(body2Entity);
+        const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody1];
+        const Vector3& x2 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody2];
 
         const Vector3& r1World = mFixedJointComponents.mR1World[i];
         const Vector3& r2World = mFixedJointComponents.mR2World[i];
@@ -113,8 +113,8 @@ void SolveFixedJointSystem::initBeforeSolve() {
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation contraints (3x3 matrix)
         mFixedJointComponents.mInverseMassMatrixRotation[i] = mFixedJointComponents.mI1[i] + mFixedJointComponents.mI2[i];
-        if (mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
-            mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
+        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
             mFixedJointComponents.mInverseMassMatrixRotation[i] = mFixedJointComponents.mInverseMassMatrixRotation[i].getInverse();
         }
 
@@ -179,8 +179,8 @@ void SolveFixedJointSystem::warmstart() {
         const Matrix3x3& i1 = mFixedJointComponents.mI1[i];
 
         // Apply the impulse to the body 1
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += i1 * angularImpulseBody1;
+        v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Compute the impulse P=J^T * lambda for the 3 translation constraints for body 2
         Vector3 angularImpulseBody2 = -impulseTranslation.cross(r2World);
@@ -191,8 +191,8 @@ void SolveFixedJointSystem::warmstart() {
         const Matrix3x3& i2 = mFixedJointComponents.mI2[i];
 
         // Apply the impulse to the body 2
-        v2 += inverseMassBody2 * impulseTranslation;
-        w2 += i2 * angularImpulseBody2;
+        v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * impulseTranslation;
+        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
     }
 }
 
@@ -244,8 +244,8 @@ void SolveFixedJointSystem::solveVelocityConstraint() {
         const Matrix3x3& i1 = mFixedJointComponents.mI1[i];
 
         // Apply the impulse to the body 1
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += i1 * angularImpulseBody1;
+        v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Compute the impulse P=J^T * lambda  for body 2
         const Vector3 angularImpulseBody2 = -deltaLambda.cross(r2World);
@@ -253,8 +253,8 @@ void SolveFixedJointSystem::solveVelocityConstraint() {
         const Matrix3x3& i2 = mFixedJointComponents.mI2[i];
 
         // Apply the impulse to the body 2
-        v2 += inverseMassBody2 * deltaLambda;
-        w2 += i2 * angularImpulseBody2;
+        v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambda;
+        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
         // --------------- Rotation Constraints --------------- //
 
@@ -272,10 +272,10 @@ void SolveFixedJointSystem::solveVelocityConstraint() {
         angularImpulseBody1 = -deltaLambda2;
 
         // Apply the impulse to the body 1
-        w1 += i1 * angularImpulseBody1;
+        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Apply the impulse to the body 2
-        w2 += i2 * deltaLambda2;
+        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * deltaLambda2;
     }
 }
 
@@ -354,8 +354,8 @@ void SolveFixedJointSystem::solvePositionConstraint() {
         Vector3 angularImpulseBody1 = lambdaTranslation.cross(r1World);
 
         // Compute the pseudo velocity of body 1
-        const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        Vector3 w1 = mFixedJointComponents.mI1[i] * angularImpulseBody1;
+        const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        Vector3 w1 = mFixedJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Update the body position/orientation of body 1
         x1 += v1;
@@ -366,8 +366,8 @@ void SolveFixedJointSystem::solvePositionConstraint() {
         Vector3 angularImpulseBody2 = -lambdaTranslation.cross(r2World);
 
         // Compute the pseudo velocity of body 2
-        const Vector3 v2 = inverseMassBody2 * lambdaTranslation;
-        Vector3 w2 = mFixedJointComponents.mI2[i] * angularImpulseBody2;
+        const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambdaTranslation;
+        Vector3 w2 = mFixedJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
         // Update the body position/orientation of body 2
         x2 += v2;
@@ -419,14 +419,14 @@ void SolveFixedJointSystem::solvePositionConstraint() {
         angularImpulseBody1 = -lambdaRotation;
 
         // Compute the pseudo velocity of body 1
-        w1 = mFixedJointComponents.mI1[i] * angularImpulseBody1;
+        w1 = mFixedJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Update the body position/orientation of body 1
         q1 += Quaternion(0, w1) * q1 * decimal(0.5);
         q1.normalize();
 
         // Compute the pseudo velocity of body 2
-        w2 = mFixedJointComponents.mI2[i] * lambdaRotation;
+        w2 = mFixedJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * lambdaRotation;
 
         // Update the body position/orientation of body 2
         q2 += Quaternion(0, w2) * q2 * decimal(0.5);

@@ -289,8 +289,8 @@ void SolveSliderJointSystem::warmstart() {
         linearImpulseBody1 += impulseMotor;
 
         // Apply the impulse to the body 1
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mSliderJointComponents.mI1[i] * angularImpulseBody1;
+        v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += mSliderJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
         Vector3 linearImpulseBody2 = n1 * impulseTranslation.x + n2 * impulseTranslation.y;
@@ -308,8 +308,8 @@ void SolveSliderJointSystem::warmstart() {
         linearImpulseBody2 += -impulseMotor;
 
         // Apply the impulse to the body 2
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += mSliderJointComponents.mI2[i] * angularImpulseBody2;
+        v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+        w2 += mSliderJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
     }
 }
 
@@ -370,16 +370,16 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
                 r1PlusUCrossN2 * deltaLambda.y;
 
         // Apply the impulse to the body 1
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += i1 * angularImpulseBody1;
+        v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
         const Vector3 linearImpulseBody2 = n1 * deltaLambda.x + n2 * deltaLambda.y;
         Vector3 angularImpulseBody2 = r2CrossN1 * deltaLambda.x + r2CrossN2 * deltaLambda.y;
 
         // Apply the impulse to the body 2
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += i2 * angularImpulseBody2;
+        v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
         // --------------- Rotation Constraints --------------- //
 
@@ -395,13 +395,13 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
         angularImpulseBody1 = -deltaLambda2;
 
         // Apply the impulse to the body 1
-        w1 += mSliderJointComponents.mI1[i] * angularImpulseBody1;
+        w1 += mSliderJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
         angularImpulseBody2 = deltaLambda2;
 
         // Apply the impulse to the body 2
-        w2 += mSliderJointComponents.mI2[i] * angularImpulseBody2;
+        w2 += mSliderJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
         const Vector3& r2CrossSliderAxis = mSliderJointComponents.mR2CrossSliderAxis[i];
         const Vector3& r1PlusUCrossSliderAxis = mSliderJointComponents.mR1PlusUCrossSliderAxis[i];
@@ -435,16 +435,16 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
                 const Vector3 angularImpulseBody1 = -deltaLambdaLower * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                v1 += inverseMassBody1 * linearImpulseBody1;
-                w1 += mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+                w1 += mSliderJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
                 const Vector3 linearImpulseBody2 = deltaLambdaLower * sliderAxisWorld;
                 const Vector3 angularImpulseBody2 = deltaLambdaLower * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
-                v2 += inverseMassBody2 * linearImpulseBody2;
-                w2 += mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+                w2 += mSliderJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
             }
 
             // If the upper limit is violated
@@ -465,16 +465,16 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
                 const Vector3 angularImpulseBody1 = deltaLambdaUpper * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                v1 += inverseMassBody1 * linearImpulseBody1;
-                w1 += mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+                w1 += mSliderJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
                 const Vector3 linearImpulseBody2 = -deltaLambdaUpper * sliderAxisWorld;
                 const Vector3 angularImpulseBody2 = -deltaLambdaUpper * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
-                v2 += inverseMassBody2 * linearImpulseBody2;
-                w2 += mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+                w2 += mSliderJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
             }
         }
 
@@ -496,13 +496,13 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
             const Vector3 linearImpulseBody1 = deltaLambdaMotor * sliderAxisWorld;
 
             // Apply the impulse to the body 1
-            v1 += inverseMassBody1 * linearImpulseBody1;
+            v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
 
             // Compute the impulse P=J^T * lambda for the motor of body 2
             const Vector3 linearImpulseBody2 = -deltaLambdaMotor * sliderAxisWorld;
 
             // Apply the impulse to the body 2
-            v2 += inverseMassBody2 * linearImpulseBody2;
+            v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
         }
     }
 }
@@ -626,8 +626,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                                             r1PlusUCrossN2 * lambdaTranslation.y;
 
         // Apply the impulse to the body 1
-        const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        Vector3 w1 = i1 * angularImpulseBody1;
+        const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        Vector3 w1 = i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Update the body position/orientation of body 1
         x1 += v1;
@@ -639,8 +639,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
         Vector3 angularImpulseBody2 = r2CrossN1 * lambdaTranslation.x + r2CrossN2 * lambdaTranslation.y;
 
         // Apply the impulse to the body 2
-        const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-        Vector3 w2 = i2 * angularImpulseBody2;
+        const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+        Vector3 w2 = i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
         // Update the body position/orientation of body 2
         x2 += v2;
@@ -692,7 +692,7 @@ void SolveSliderJointSystem::solvePositionConstraint() {
         angularImpulseBody1 = -lambdaRotation;
 
         // Apply the impulse to the body 1
-        w1 = mSliderJointComponents.mI1[i] * angularImpulseBody1;
+        w1 = mSliderJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
         // Update the body position/orientation of body 1
         q1 += Quaternion(0, w1) * q1 * decimal(0.5);
@@ -702,7 +702,7 @@ void SolveSliderJointSystem::solvePositionConstraint() {
         angularImpulseBody2 = lambdaRotation;
 
         // Apply the impulse to the body 2
-        w2 = mSliderJointComponents.mI2[i] * angularImpulseBody2;
+        w2 = mSliderJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
         // Update the body position/orientation of body 2
         q2 += Quaternion(0, w2) * q2 * decimal(0.5);
@@ -750,8 +750,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody1 = -lambdaLowerLimit * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-                const Vector3 w1 = mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+                const Vector3 w1 = mSliderJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
                 // Update the body position/orientation of body 1
                 x1 += v1;
@@ -763,8 +763,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody2 = lambdaLowerLimit * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
-                const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-                const Vector3 w2 = mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+                const Vector3 w2 = mSliderJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
                 // Update the body position/orientation of body 2
                 x2 += v2;
@@ -789,8 +789,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody1 = lambdaUpperLimit * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-                const Vector3 w1 = mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+                const Vector3 w1 = mSliderJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
 
                 // Update the body position/orientation of body 1
                 x1 += v1;
@@ -802,8 +802,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody2 = -lambdaUpperLimit * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
-                const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-                const Vector3 w2 = mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+                const Vector3 w2 = mSliderJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
 
                 // Update the body position/orientation of body 2
                 x2 += v2;

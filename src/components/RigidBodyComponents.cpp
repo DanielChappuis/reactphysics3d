@@ -43,7 +43,8 @@ RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
                                 sizeof(Vector3) + + sizeof(Matrix3x3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) +
-                                sizeof(bool) + sizeof(bool) + sizeof(Array<Entity>) + sizeof(Array<uint>)) {
+                                sizeof(bool) + sizeof(bool) + sizeof(Array<Entity>) + sizeof(Array<uint>) +
+                                sizeof(Vector3) + sizeof(Vector3)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -91,6 +92,8 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newIsGravityEnabled + nbComponentsToAllocate);
     Array<Entity>* newJoints = reinterpret_cast<Array<Entity>*>(newIsAlreadyInIsland + nbComponentsToAllocate);
     Array<uint>* newContactPairs = reinterpret_cast<Array<uint>*>(newJoints + nbComponentsToAllocate);
+    Vector3* newLinearLockAxisFactors = reinterpret_cast<Vector3*>(newContactPairs + nbComponentsToAllocate);
+    Vector3* newAngularLockAxisFactors = reinterpret_cast<Vector3*>(newLinearLockAxisFactors + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -125,6 +128,8 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newIsAlreadyInIsland, mIsAlreadyInIsland, mNbComponents * sizeof(bool));
         memcpy(newJoints, mJoints, mNbComponents * sizeof(Array<Entity>));
         memcpy(newContactPairs, mContactPairs, mNbComponents * sizeof(Array<uint>));
+        memcpy(newLinearLockAxisFactors, mLinearLockAxisFactors, mNbComponents * sizeof(Vector3));
+        memcpy(newAngularLockAxisFactors, mAngularLockAxisFactors, mNbComponents * sizeof(Vector3));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -161,6 +166,8 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     mIsAlreadyInIsland = newIsAlreadyInIsland;
     mJoints = newJoints;
     mContactPairs = newContactPairs;
+    mLinearLockAxisFactors = newLinearLockAxisFactors;
+    mAngularLockAxisFactors = newAngularLockAxisFactors;
 }
 
 // Add a component
@@ -199,6 +206,8 @@ void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const
     mIsAlreadyInIsland[index] = false;
     new (mJoints + index) Array<Entity>(mMemoryAllocator);
     new (mContactPairs + index) Array<uint>(mMemoryAllocator);
+    new (mLinearLockAxisFactors + index) Vector3(1, 1, 1);
+    new (mAngularLockAxisFactors + index) Vector3(1, 1, 1);
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(bodyEntity, index));
@@ -245,6 +254,8 @@ void RigidBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex
     mIsAlreadyInIsland[destIndex] = mIsAlreadyInIsland[srcIndex];
     new (mJoints + destIndex) Array<Entity>(mJoints[srcIndex]);
     new (mContactPairs + destIndex) Array<uint>(mContactPairs[srcIndex]);
+    new (mLinearLockAxisFactors + destIndex) Vector3(mLinearLockAxisFactors[srcIndex]);
+    new (mAngularLockAxisFactors + destIndex) Vector3(mAngularLockAxisFactors[srcIndex]);
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -290,6 +301,8 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     bool isAlreadyInIsland1 = mIsAlreadyInIsland[index1];
     Array<Entity> joints1 = mJoints[index1];
     Array<uint> contactPairs1 = mContactPairs[index1];
+    Vector3 linearLockAxisFactor1(mLinearLockAxisFactors[index1]);
+    Vector3 angularLockAxisFactor1(mAngularLockAxisFactors[index1]);
 
     // Destroy component 1
     destroyComponent(index1);
@@ -326,6 +339,8 @@ void RigidBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     mIsAlreadyInIsland[index2] = isAlreadyInIsland1;
     new (mJoints + index2) Array<Entity>(joints1);
     new (mContactPairs + index2) Array<uint>(contactPairs1);
+    new (mLinearLockAxisFactors + index2) Vector3(linearLockAxisFactor1);
+    new (mAngularLockAxisFactors + index2) Vector3(angularLockAxisFactor1);
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(entity1, index2));
@@ -363,4 +378,6 @@ void RigidBodyComponents::destroyComponent(uint32 index) {
     mCentersOfMassWorld[index].~Vector3();
     mJoints[index].~Array<Entity>();
     mContactPairs[index].~Array<uint>();
+    mLinearLockAxisFactors[index].~Vector3();
+    mAngularLockAxisFactors[index].~Vector3();
 }

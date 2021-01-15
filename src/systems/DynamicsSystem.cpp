@@ -132,10 +132,10 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
         const Vector3& angularVelocity = mRigidBodyComponents.mAngularVelocities[i];
 
         // Integrate the external force to get the new velocity of the body
-        mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + timeStep *
-                                                              mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
+        mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + timeStep * mRigidBodyComponents.mInverseMasses[i] *
+                                                               mRigidBodyComponents.mLinearLockAxisFactors[i] * mRigidBodyComponents.mExternalForces[i];
         mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep * mRigidBodyComponents.mInverseInertiaTensorsWorld[i] *
-                                                                mRigidBodyComponents.mExternalTorques[i];
+                                                                mRigidBodyComponents.mAngularLockAxisFactors[i] * mRigidBodyComponents.mExternalTorques[i];
     }
 
     // Apply gravity force
@@ -149,7 +149,8 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
 
                 // Integrate the gravity force
                 mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] + timeStep *
-                                                                       mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mMasses[i] * mGravity;
+                                                                       mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mLinearLockAxisFactors[i] *
+                                                                       mRigidBodyComponents.mMasses[i] * mGravity;
             }
         }
     }

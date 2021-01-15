@@ -781,6 +781,26 @@ bool RigidBody::isGravityEnabled() const {
     return mWorld.mRigidBodyComponents.getIsGravityEnabled(mEntity);
 }
 
+// Return the linear lock axis factor
+const Vector3& RigidBody::getLinearLockAxisFactor() const {
+    return mWorld.mRigidBodyComponents.getLinearLockAxisFactor(mEntity);
+}
+
+// Set the linear lock axis factor
+void RigidBody::setLinearLockAxisFactor(const Vector3& linearLockAxisFactor) const {
+    mWorld.mRigidBodyComponents.setLinearLockAxisFactor(mEntity, linearLockAxisFactor);
+}
+
+// Return the angular lock axis factor
+const Vector3& RigidBody::getAngularLockAxisFactor() const {
+    return mWorld.mRigidBodyComponents.getAngularLockAxisFactor(mEntity);
+}
+
+// Set the angular lock axis factor
+void RigidBody::setAngularLockAxisFactor(const Vector3& angularLockAxisFactor) const {
+    mWorld.mRigidBodyComponents.setAngularLockAxisFactor(mEntity, angularLockAxisFactor);
+}
+
 // Apply an external torque to the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied torques and that this sum will be
