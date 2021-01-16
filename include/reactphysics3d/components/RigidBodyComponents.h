@@ -354,10 +354,10 @@ class RigidBodyComponents : public Components {
         /// Set the value to know if the entity is already in an island
         void setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
 
-        /// Set the lock translation factor
-        void setLinearLockAxisFactor(Entity bodyEntity, const Vector3& lockTranslationFactor);
+        /// Set the linear lock axis factor
+        void setLinearLockAxisFactor(Entity bodyEntity, const Vector3& linearLockAxisFactor);
 
-        /// Set the lock rotation factor
+        /// Set the angular lock axis factor
         void setAngularLockAxisFactor(Entity bodyEntity, const Vector3& rotationTranslationFactor);
 
         /// Return the array of joints of a body
@@ -805,17 +805,17 @@ RP3D_FORCE_INLINE void RigidBodyComponents::setIsAlreadyInIsland(Entity bodyEnti
 }
 
 // Set the linear lock axis factor
-RP3D_FORCE_INLINE void RigidBodyComponents::setLinearLockAxisFactor(Entity bodyEntity, const Vector3& lockTranslationFactor) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setLinearLockAxisFactor(Entity bodyEntity, const Vector3& linearLockAxisFactor) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-   mLinearLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]] = lockTranslationFactor;
+   mLinearLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]] = linearLockAxisFactor;
 }
 
 // Set the angular lock axis factor
-RP3D_FORCE_INLINE void RigidBodyComponents::setAngularLockAxisFactor(Entity bodyEntity, const Vector3& lockRotationFactor) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setAngularLockAxisFactor(Entity bodyEntity, const Vector3& angularLockAxisFactor) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
-   mAngularLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]] = lockRotationFactor;
+   mAngularLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]] = angularLockAxisFactor;
 }
 
 // Return the array of joints of a body
