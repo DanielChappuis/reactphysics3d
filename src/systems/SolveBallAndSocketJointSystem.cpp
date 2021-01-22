@@ -154,14 +154,14 @@ void SolveBallAndSocketJointSystem::warmstart() {
 
         // Apply the impulse to the body 1
         v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the body 2
         const Vector3 angularImpulseBody2 = -mBallAndSocketJointComponents.mImpulse[i].cross(r2World);
 
         // Apply the impulse to the body to the body 2
         v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * mBallAndSocketJointComponents.mImpulse[i];
-        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
     }
 }
 
@@ -203,14 +203,14 @@ void SolveBallAndSocketJointSystem::solveVelocityConstraint() {
 
         // Apply the impulse to the body 1
         v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the body 2
         const Vector3 angularImpulseBody2 = -deltaLambda.cross(mBallAndSocketJointComponents.mR2World[i]);
 
         // Apply the impulse to the body 2
         v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambda;
-        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
     }
 }
 
@@ -291,7 +291,7 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
 
         // Compute the pseudo velocity of body 1
         const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        const Vector3 w1 = mBallAndSocketJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mBallAndSocketJointComponents.mI1[i] * angularImpulseBody1);
 
         // Update the body center of mass and orientation of body 1
         x1 += v1;
@@ -303,7 +303,7 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
 
         // Compute the pseudo velocity of body 2
         const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambda;
-        const Vector3 w2 = mBallAndSocketJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mBallAndSocketJointComponents.mI2[i] * angularImpulseBody2);
 
         // Update the body position/orientation of body 2
         x2 += v2;

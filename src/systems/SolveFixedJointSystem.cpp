@@ -180,7 +180,7 @@ void SolveFixedJointSystem::warmstart() {
 
         // Apply the impulse to the body 1
         v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the 3 translation constraints for body 2
         Vector3 angularImpulseBody2 = -impulseTranslation.cross(r2World);
@@ -192,7 +192,7 @@ void SolveFixedJointSystem::warmstart() {
 
         // Apply the impulse to the body 2
         v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * impulseTranslation;
-        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
     }
 }
 
@@ -245,7 +245,7 @@ void SolveFixedJointSystem::solveVelocityConstraint() {
 
         // Apply the impulse to the body 1
         v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda  for body 2
         const Vector3 angularImpulseBody2 = -deltaLambda.cross(r2World);
@@ -254,7 +254,7 @@ void SolveFixedJointSystem::solveVelocityConstraint() {
 
         // Apply the impulse to the body 2
         v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambda;
-        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
 
         // --------------- Rotation Constraints --------------- //
 
@@ -272,10 +272,10 @@ void SolveFixedJointSystem::solveVelocityConstraint() {
         angularImpulseBody1 = -deltaLambda2;
 
         // Apply the impulse to the body 1
-        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Apply the impulse to the body 2
-        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * deltaLambda2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * deltaLambda2);
     }
 }
 
@@ -355,7 +355,7 @@ void SolveFixedJointSystem::solvePositionConstraint() {
 
         // Compute the pseudo velocity of body 1
         const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        Vector3 w1 = mFixedJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mFixedJointComponents.mI1[i] * angularImpulseBody1);
 
         // Update the body position/orientation of body 1
         x1 += v1;
@@ -367,7 +367,7 @@ void SolveFixedJointSystem::solvePositionConstraint() {
 
         // Compute the pseudo velocity of body 2
         const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambdaTranslation;
-        Vector3 w2 = mFixedJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mFixedJointComponents.mI2[i] * angularImpulseBody2);
 
         // Update the body position/orientation of body 2
         x2 += v2;
@@ -419,14 +419,14 @@ void SolveFixedJointSystem::solvePositionConstraint() {
         angularImpulseBody1 = -lambdaRotation;
 
         // Compute the pseudo velocity of body 1
-        w1 = mFixedJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mFixedJointComponents.mI1[i] * angularImpulseBody1);
 
         // Update the body position/orientation of body 1
         q1 += Quaternion(0, w1) * q1 * decimal(0.5);
         q1.normalize();
 
         // Compute the pseudo velocity of body 2
-        w2 = mFixedJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * lambdaRotation;
+        w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mFixedJointComponents.mI2[i] * lambdaRotation);
 
         // Update the body position/orientation of body 2
         q2 += Quaternion(0, w2) * q2 * decimal(0.5);

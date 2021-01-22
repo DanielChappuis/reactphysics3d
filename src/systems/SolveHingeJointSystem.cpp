@@ -267,7 +267,7 @@ void SolveHingeJointSystem::warmstart() {
 
         // Apply the impulse to the body 1
         v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        w1 += mHingeJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the 3 translation constraints of body 2
         Vector3 angularImpulseBody2 = -impulseTranslation.cross(mHingeJointComponents.mR2World[i]);
@@ -283,7 +283,7 @@ void SolveHingeJointSystem::warmstart() {
 
         // Apply the impulse to the body 2
         v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * impulseTranslation;
-        w2 += mHingeJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
     }
 }
 
@@ -340,14 +340,14 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
 
         // Apply the impulse to the body 1
         v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda of body 2
         Vector3 angularImpulseBody2 = -deltaLambdaTranslation.cross(r2World);
 
         // Apply the impulse to the body 2
         v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambdaTranslation;
-        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
 
         // --------------- Rotation Constraints --------------- //
 
@@ -367,13 +367,13 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
         angularImpulseBody1 = -b2CrossA1 * deltaLambdaRotation.x - c2CrossA1 * deltaLambdaRotation.y;
 
         // Apply the impulse to the body 1
-        w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the 2 rotation constraints of body 2
         angularImpulseBody2 = b2CrossA1 * deltaLambdaRotation.x + c2CrossA1 * deltaLambdaRotation.y;
 
         // Apply the impulse to the body 2
-        w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
 
         // --------------- Limits Constraints --------------- //
 
@@ -395,13 +395,13 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
                 const Vector3 angularImpulseBody1 = -deltaLambdaLower * a1;
 
                 // Apply the impulse to the body 1
-                w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+                w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
                 const Vector3 angularImpulseBody2 = deltaLambdaLower * a1;
 
                 // Apply the impulse to the body 2
-                w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+                w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
             }
 
             // If the upper limit is violated
@@ -420,13 +420,13 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
                 const Vector3 angularImpulseBody1 = deltaLambdaUpper * a1;
 
                 // Apply the impulse to the body 1
-                w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+                w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
                 const Vector3 angularImpulseBody2 = -deltaLambdaUpper * a1;
 
                 // Apply the impulse to the body 2
-                w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+                w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
             }
         }
 
@@ -449,13 +449,13 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
             const Vector3 angularImpulseBody1 = -deltaLambdaMotor * a1;
 
             // Apply the impulse to the body 1
-            w1 += i1 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+            w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
             // Compute the impulse P=J^T * lambda for the motor of body 2
             const Vector3 angularImpulseBody2 = deltaLambdaMotor * a1;
 
             // Apply the impulse to the body 2
-            w2 += i2 * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+            w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
         }
     }
 }
@@ -552,7 +552,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
 
         // Compute the pseudo velocity of body 1
         const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        Vector3 w1 = mHingeJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
 
         // Update the body position/orientation of body 1
         x1 += v1;
@@ -564,7 +564,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
 
         // Compute the pseudo velocity of body 2
         const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambdaTranslation;
-        Vector3 w2 = mHingeJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
 
         // Update the body position/orientation of body 2
         x2 += v2;
@@ -603,7 +603,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
         angularImpulseBody1 = -b2CrossA1 * lambdaRotation.x - c2CrossA1 * lambdaRotation.y;
 
         // Compute the pseudo velocity of body 1
-        w1 = mHingeJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+        w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
 
         // Update the body position/orientation of body 1
         q1 += Quaternion(0, w1) * q1 * decimal(0.5);
@@ -613,7 +613,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
         angularImpulseBody2 = b2CrossA1 * lambdaRotation.x + c2CrossA1 * lambdaRotation.y;
 
         // Compute the pseudo velocity of body 2
-        w2 = mHingeJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+        w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
 
         // Update the body position/orientation of body 2
         q2 += Quaternion(0, w2) * q2 * decimal(0.5);
@@ -654,7 +654,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody1 = -lambdaLowerLimit * a1;
 
                 // Compute the pseudo velocity of body 1
-                const Vector3 w1 = mHingeJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1]  * angularImpulseBody1;
+                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
 
                 // Update the body position/orientation of body 1
                 q1 += Quaternion(0, w1) * q1 * decimal(0.5);
@@ -664,7 +664,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody2 = lambdaLowerLimit * a1;
 
                 // Compute the pseudo velocity of body 2
-                const Vector3 w2 = mHingeJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
 
                 // Update the body position/orientation of body 2
                 q2 += Quaternion(0, w2) * q2 * decimal(0.5);
@@ -681,7 +681,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody1 = lambdaUpperLimit * a1;
 
                 // Compute the pseudo velocity of body 1
-                const Vector3 w1 = mHingeJointComponents.mI1[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * angularImpulseBody1;
+                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
 
                 // Update the body position/orientation of body 1
                 q1 += Quaternion(0, w1) * q1 * decimal(0.5);
@@ -691,7 +691,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody2 = -lambdaUpperLimit * a1;
 
                 // Compute the pseudo velocity of body 2
-                const Vector3 w2 = mHingeJointComponents.mI2[i] * mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * angularImpulseBody2;
+                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
 
                 // Update the body position/orientation of body 2
                 q2 += Quaternion(0, w2) * q2 * decimal(0.5);
