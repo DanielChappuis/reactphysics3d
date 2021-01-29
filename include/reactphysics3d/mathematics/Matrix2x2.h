@@ -92,6 +92,9 @@ class Matrix2x2 {
         /// Return the inverse matrix
         Matrix2x2 getInverse() const;
 
+        /// Return the inverse matrix
+        Matrix2x2 getInverse(decimal determinant) const;
+
         /// Return the matrix with absolute values
         Matrix2x2 getAbsoluteMatrix() const;
 
@@ -238,6 +241,12 @@ RP3D_FORCE_INLINE Matrix2x2 Matrix2x2::identity() {
 // Return the 2x2 zero matrix
 RP3D_FORCE_INLINE Matrix2x2 Matrix2x2::zero() {
     return Matrix2x2(0.0, 0.0, 0.0, 0.0);
+}
+
+// Return the inverse matrix
+RP3D_FORCE_INLINE Matrix2x2 Matrix2x2::getInverse() const {
+
+    return getInverse(getDeterminant());
 }
 
 // Return the matrix with absolute values

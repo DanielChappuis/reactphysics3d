@@ -97,9 +97,12 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
 
         // Compute the inverse mass matrix K^-1
         mBallAndSocketJointComponents.mInverseMassMatrix[i].setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mBallAndSocketJointComponents.mInverseMassMatrix[i] = massMatrix.getInverse();
+        decimal massMatrixDeterminant = massMatrix.getDeterminant();
+        if (std::abs(massMatrixDeterminant) > MACHINE_EPSILON) {
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mBallAndSocketJointComponents.mInverseMassMatrix[i] = massMatrix.getInverse(massMatrixDeterminant);
+            }
         }
 
         const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody1];
@@ -269,45 +272,49 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
                                skewSymmetricMatrixU1 * mBallAndSocketJointComponents.mI1[i] * skewSymmetricMatrixU1.getTranspose() +
                                skewSymmetricMatrixU2 * mBallAndSocketJointComponents.mI2[i] * skewSymmetricMatrixU2.getTranspose();
         mBallAndSocketJointComponents.mInverseMassMatrix[i].setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mBallAndSocketJointComponents.mInverseMassMatrix[i] = massMatrix.getInverse();
+        decimal massMatrixDeterminant = massMatrix.getDeterminant();
+        if (std::abs(massMatrixDeterminant) > MACHINE_EPSILON) {
+
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mBallAndSocketJointComponents.mInverseMassMatrix[i] = massMatrix.getInverse(massMatrixDeterminant);
+            }
+
+            Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
+            Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
+
+            // Compute the constraint error (value of the C(x) function)
+            const Vector3 constraintError = (x2 + r2World - x1 - r1World);
+
+            // Compute the Lagrange multiplier lambda
+            // TODO : Do not solve the system by computing the inverse each time and multiplying with the
+            //        right-hand side vector but instead use a method to directly solve the linear system.
+            const Vector3 lambda = mBallAndSocketJointComponents.mInverseMassMatrix[i] * (-constraintError);
+
+            // Compute the impulse of body 1
+            const Vector3 linearImpulseBody1 = -lambda;
+            const Vector3 angularImpulseBody1 = lambda.cross(r1World);
+
+            // Compute the pseudo velocity of body 1
+            const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+            const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mBallAndSocketJointComponents.mI1[i] * angularImpulseBody1);
+
+            // Update the body center of mass and orientation of body 1
+            x1 += v1;
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
+
+            // Compute the impulse of body 2
+            const Vector3 angularImpulseBody2 = -lambda.cross(r2World);
+
+            // Compute the pseudo velocity of body 2
+            const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambda;
+            const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mBallAndSocketJointComponents.mI2[i] * angularImpulseBody2);
+
+            // Update the body position/orientation of body 2
+            x2 += v2;
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
         }
-
-        Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
-        Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
-
-        // Compute the constraint error (value of the C(x) function)
-        const Vector3 constraintError = (x2 + r2World - x1 - r1World);
-
-        // Compute the Lagrange multiplier lambda
-        // TODO : Do not solve the system by computing the inverse each time and multiplying with the
-        //        right-hand side vector but instead use a method to directly solve the linear system.
-        const Vector3 lambda = mBallAndSocketJointComponents.mInverseMassMatrix[i] * (-constraintError);
-
-        // Compute the impulse of body 1
-        const Vector3 linearImpulseBody1 = -lambda;
-        const Vector3 angularImpulseBody1 = lambda.cross(r1World);
-
-        // Compute the pseudo velocity of body 1
-        const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mBallAndSocketJointComponents.mI1[i] * angularImpulseBody1);
-
-        // Update the body center of mass and orientation of body 1
-        x1 += v1;
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-
-        // Compute the impulse of body 2
-        const Vector3 angularImpulseBody2 = -lambda.cross(r2World);
-
-        // Compute the pseudo velocity of body 2
-        const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambda;
-        const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mBallAndSocketJointComponents.mI2[i] * angularImpulseBody2);
-
-        // Update the body position/orientation of body 2
-        x2 += v2;
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
     }
 }

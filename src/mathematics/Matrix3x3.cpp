@@ -42,10 +42,7 @@ Matrix3x3& Matrix3x3::operator=(const Matrix3x3& matrix) {
 }
 
 // Return the inverse matrix
-Matrix3x3 Matrix3x3::getInverse() const {
-
-    // Compute the determinant of the matrix
-    decimal determinant = getDeterminant();
+Matrix3x3 Matrix3x3::getInverse(decimal determinant) const {
 
     // Check if the determinant is equal to zero
     assert(determinant != decimal(0.0));

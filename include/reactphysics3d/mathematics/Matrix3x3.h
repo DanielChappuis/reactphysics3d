@@ -95,6 +95,9 @@ class Matrix3x3 {
         /// Return the inverse matrix
         Matrix3x3 getInverse() const;
 
+        /// Return the inverse matrix
+        Matrix3x3 getInverse(decimal determinant) const;
+
         /// Return the matrix with absolute values
         Matrix3x3 getAbsoluteMatrix() const;
 
@@ -251,6 +254,12 @@ RP3D_FORCE_INLINE Matrix3x3 Matrix3x3::identity() {
 // Return the 3x3 zero matrix
 RP3D_FORCE_INLINE Matrix3x3 Matrix3x3::zero() {
     return Matrix3x3(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+}
+
+// Return the inverse matrix
+RP3D_FORCE_INLINE Matrix3x3 Matrix3x3::getInverse() const {
+
+    return getInverse(getDeterminant());
 }
 
 // Return a skew-symmetric matrix using a given vector that can be used

@@ -40,10 +40,7 @@ Matrix2x2& Matrix2x2::operator=(const Matrix2x2& matrix) {
 }
 
 // Return the inverse matrix
-Matrix2x2 Matrix2x2::getInverse() const {
-
-    // Compute the determinant of the matrix
-    decimal determinant = getDeterminant();
+Matrix2x2 Matrix2x2::getInverse(decimal determinant) const {
 
     // Check if the determinant is equal to zero
     assert(std::abs(determinant) > MACHINE_EPSILON);

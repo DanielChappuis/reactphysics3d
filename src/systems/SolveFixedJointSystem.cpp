@@ -93,9 +93,12 @@ void SolveFixedJointSystem::initBeforeSolve() {
 
         // Compute the inverse mass matrix K^-1 for the 3 translation constraints
         mFixedJointComponents.mInverseMassMatrixTranslation[i].setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mFixedJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse();
+        decimal massMatrixDeterminant = massMatrix.getDeterminant();
+        if (std::abs(massMatrixDeterminant) > MACHINE_EPSILON) {
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mFixedJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse(massMatrixDeterminant);
+            }
         }
 
         // Get the bodies positions and orientations
@@ -113,9 +116,12 @@ void SolveFixedJointSystem::initBeforeSolve() {
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation contraints (3x3 matrix)
         mFixedJointComponents.mInverseMassMatrixRotation[i] = mFixedJointComponents.mI1[i] + mFixedJointComponents.mI2[i];
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mFixedJointComponents.mInverseMassMatrixRotation[i] = mFixedJointComponents.mInverseMassMatrixRotation[i].getInverse();
+        decimal massMatrixRotationDeterminant = mFixedJointComponents.mInverseMassMatrixRotation[i].getDeterminant();
+        if (std::abs(massMatrixRotationDeterminant) > MACHINE_EPSILON) {
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mFixedJointComponents.mInverseMassMatrixRotation[i] = mFixedJointComponents.mInverseMassMatrixRotation[i].getInverse(massMatrixRotationDeterminant);
+            }
         }
 
         // Compute the bias "b" for the 3 rotation constraints
@@ -336,100 +342,108 @@ void SolveFixedJointSystem::solvePositionConstraint() {
                                skewSymmetricMatrixU1 * mFixedJointComponents.mI1[i] * skewSymmetricMatrixU1.getTranspose() +
                                skewSymmetricMatrixU2 * mFixedJointComponents.mI2[i] * skewSymmetricMatrixU2.getTranspose();
         mFixedJointComponents.mInverseMassMatrixTranslation[i].setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mFixedJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse();
+        decimal massMatrixDeterminant = massMatrix.getDeterminant();
+        if (std::abs(massMatrixDeterminant) > MACHINE_EPSILON) {
+
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mFixedJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse(massMatrixDeterminant);
+            }
+
+            Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
+            Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
+            // Compute position error for the 3 translation constraints
+            const Vector3 errorTranslation = x2 + r2World - x1 - r1World;
+
+            // Compute the Lagrange multiplier lambda
+            const Vector3 lambdaTranslation = mFixedJointComponents.mInverseMassMatrixTranslation[i] * (-errorTranslation);
+
+            // Compute the impulse of body 1
+            Vector3 linearImpulseBody1 = -lambdaTranslation;
+            Vector3 angularImpulseBody1 = lambdaTranslation.cross(r1World);
+
+            // Compute the pseudo velocity of body 1
+            const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+            Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mFixedJointComponents.mI1[i] * angularImpulseBody1);
+
+            // Update the body position/orientation of body 1
+            x1 += v1;
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
+
+            // Compute the impulse of body 2
+            Vector3 angularImpulseBody2 = -lambdaTranslation.cross(r2World);
+
+            // Compute the pseudo velocity of body 2
+            const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambdaTranslation;
+            Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mFixedJointComponents.mI2[i] * angularImpulseBody2);
+
+            // Update the body position/orientation of body 2
+            x2 += v2;
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
         }
-
-        Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
-        Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
-        // Compute position error for the 3 translation constraints
-        const Vector3 errorTranslation = x2 + r2World - x1 - r1World;
-
-        // Compute the Lagrange multiplier lambda
-        const Vector3 lambdaTranslation = mFixedJointComponents.mInverseMassMatrixTranslation[i] * (-errorTranslation);
-
-        // Compute the impulse of body 1
-        Vector3 linearImpulseBody1 = -lambdaTranslation;
-        Vector3 angularImpulseBody1 = lambdaTranslation.cross(r1World);
-
-        // Compute the pseudo velocity of body 1
-        const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mFixedJointComponents.mI1[i] * angularImpulseBody1);
-
-        // Update the body position/orientation of body 1
-        x1 += v1;
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-
-        // Compute the impulse of body 2
-        Vector3 angularImpulseBody2 = -lambdaTranslation.cross(r2World);
-
-        // Compute the pseudo velocity of body 2
-        const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambdaTranslation;
-        Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mFixedJointComponents.mI2[i] * angularImpulseBody2);
-
-        // Update the body position/orientation of body 2
-        x2 += v2;
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
 
         // --------------- Rotation Constraints --------------- //
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
         // contraints (3x3 matrix)
         mFixedJointComponents.mInverseMassMatrixRotation[i] = mFixedJointComponents.mI1[i] + mFixedJointComponents.mI2[i];
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mFixedJointComponents.mInverseMassMatrixRotation[i] = mFixedJointComponents.mInverseMassMatrixRotation[i].getInverse();
+        decimal massMatrixRotationDeterminant = mFixedJointComponents.mInverseMassMatrixRotation[i].getDeterminant();
+        if (std::abs(massMatrixRotationDeterminant) > MACHINE_EPSILON) {
+
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mFixedJointComponents.mInverseMassMatrixRotation[i] = mFixedJointComponents.mInverseMassMatrixRotation[i].getInverse(massMatrixRotationDeterminant);
+            }
+
+            // Calculate difference in rotation
+            //
+            // The rotation should be:
+            //
+            // q2 = q1 r0
+            //
+            // But because of drift the actual rotation is:
+            //
+            // q2 = qError q1 r0
+            // <=> qError = q2 r0^-1 q1^-1
+            //
+            // Where:
+            // q1 = current rotation of body 1
+            // q2 = current rotation of body 2
+            // qError = error that needs to be reduced to zero
+            Quaternion qError = q2 * mFixedJointComponents.mInitOrientationDifferenceInv[i] * q1.getInverse();
+
+            // A quaternion can be seen as:
+            //
+            // q = [sin(theta / 2) * v, cos(theta/2)]
+            //
+            // Where:
+            // v = rotation vector
+            // theta = rotation angle
+            //
+            // If we assume theta is small (error is small) then sin(x) = x so an approximation of the error angles is:
+            const Vector3 errorRotation = decimal(2.0) * qError.getVectorV();
+
+            // Compute the Lagrange multiplier lambda for the 3 rotation constraints
+            Vector3 lambdaRotation = mFixedJointComponents.mInverseMassMatrixRotation[i] * (-errorRotation);
+
+            // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
+            Vector3 angularImpulseBody1 = -lambdaRotation;
+
+            // Compute the pseudo velocity of body 1
+            Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mFixedJointComponents.mI1[i] * angularImpulseBody1);
+
+            // Update the body position/orientation of body 1
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
+
+            // Compute the pseudo velocity of body 2
+            Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mFixedJointComponents.mI2[i] * lambdaRotation);
+
+            // Update the body position/orientation of body 2
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
         }
-
-        // Calculate difference in rotation
-        //
-        // The rotation should be:
-        //
-        // q2 = q1 r0
-        //
-        // But because of drift the actual rotation is:
-        //
-        // q2 = qError q1 r0
-        // <=> qError = q2 r0^-1 q1^-1
-        //
-        // Where:
-        // q1 = current rotation of body 1
-        // q2 = current rotation of body 2
-        // qError = error that needs to be reduced to zero
-        Quaternion qError = q2 * mFixedJointComponents.mInitOrientationDifferenceInv[i] * q1.getInverse();
-
-        // A quaternion can be seen as:
-        //
-        // q = [sin(theta / 2) * v, cos(theta/2)]
-        //
-        // Where:
-        // v = rotation vector
-        // theta = rotation angle
-        //
-        // If we assume theta is small (error is small) then sin(x) = x so an approximation of the error angles is:
-        const Vector3 errorRotation = decimal(2.0) * qError.getVectorV();
-
-        // Compute the Lagrange multiplier lambda for the 3 rotation constraints
-        Vector3 lambdaRotation = mFixedJointComponents.mInverseMassMatrixRotation[i] * (-errorRotation);
-
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
-        angularImpulseBody1 = -lambdaRotation;
-
-        // Compute the pseudo velocity of body 1
-        w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mFixedJointComponents.mI1[i] * angularImpulseBody1);
-
-        // Update the body position/orientation of body 1
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-
-        // Compute the pseudo velocity of body 2
-        w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mFixedJointComponents.mI2[i] * lambdaRotation);
-
-        // Update the body position/orientation of body 2
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
     }
 }
