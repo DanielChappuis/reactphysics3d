@@ -112,9 +112,6 @@ class HeightFieldShape : public ConcaveShape {
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
 
-        /// Insert all the triangles into the dynamic AABB tree
-        void initBVHTree();
-
         /// Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
         /// given the start vertex index pointer of the triangle.
         void getTriangleVerticesWithIndexPointer(int32 subPart, int32 triangleIndex,
