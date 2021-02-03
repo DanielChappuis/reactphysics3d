@@ -228,9 +228,6 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
 /// the ray hits many triangles.
 bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
 
-    // TODO : Implement raycasting without using an AABB for the ray
-    //        but using a dynamic AABB tree or octree instead
-
     RP3D_PROFILE("HeightFieldShape::raycast()", mProfiler);
 
     // Apply the concave mesh inverse scale factor because the mesh is stored without scaling
@@ -294,9 +291,6 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
         decimal smallestHitFraction = ray.maxFraction;
 
         while (i >= 0 && i < nbCellsI && j >= 0 && j < nbCellsJ) {
-
-            // TODO : Remove this
-            //std::cout << "Cell " << i << ", " << j << std::endl;
 
            // Compute the four point of the current quad
            const Vector3 p1 = getVertexAt(i, j);
