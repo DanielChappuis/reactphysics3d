@@ -61,6 +61,17 @@ BallAndSocketJoint::BallAndSocketJoint(Entity entity, PhysicsWorld& world, const
     mWorld.mBallAndSocketJointsComponents.setLocalAnchorPointBody2(entity, anchorPointBody2LocalSpace);
 }
 
+// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+Vector3 BallAndSocketJoint::getReactionForce(decimal timeStep) const {
+    assert(timeStep > MACHINE_EPSILON);
+    return mWorld.mBallAndSocketJointsComponents.getImpulse(mEntity) / timeStep;
+}
+
+// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+Vector3 BallAndSocketJoint::getReactionTorque(decimal timeStep) const {
+    assert(timeStep > MACHINE_EPSILON);
+    return Vector3(0, 0, 0);
+}
 
 // Return a string representation
 std::string BallAndSocketJoint::to_string() const {

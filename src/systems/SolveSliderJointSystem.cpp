@@ -367,7 +367,7 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
         const Vector2 JvTranslation(el1, el2);
 
         // Compute the Lagrange multiplier lambda for the 2 translation constraints
-        Vector2 deltaLambda = mSliderJointComponents.mInverseMassMatrixTranslation[i] * (-JvTranslation - mSliderJointComponents.mBiasTranslation[i]);
+        const Vector2 deltaLambda = mSliderJointComponents.mInverseMassMatrixTranslation[i] * (-JvTranslation - mSliderJointComponents.mBiasTranslation[i]);
         mSliderJointComponents.mImpulseTranslation[i] += deltaLambda;
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
@@ -380,7 +380,7 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
         w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
-        const Vector3 linearImpulseBody2 = n1 * deltaLambda.x + n2 * deltaLambda.y;
+        const Vector3 linearImpulseBody2 = -linearImpulseBody1;
         Vector3 angularImpulseBody2 = r2CrossN1 * deltaLambda.x + r2CrossN2 * deltaLambda.y;
 
         // Apply the impulse to the body 2

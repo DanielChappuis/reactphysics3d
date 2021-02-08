@@ -121,6 +121,12 @@ class BallAndSocketJoint : public Joint {
         /// Deleted copy-constructor
         BallAndSocketJoint(const BallAndSocketJoint& constraint) = delete;
 
+        /// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+        virtual Vector3 getReactionForce(decimal timeStep) const override;
+
+        /// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+        virtual Vector3 getReactionTorque(decimal timeStep) const override;
+
         /// Return a string representation
         virtual std::string to_string() const override;
 

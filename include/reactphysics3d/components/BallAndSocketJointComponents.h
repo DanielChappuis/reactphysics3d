@@ -314,7 +314,7 @@ RP3D_FORCE_INLINE void BallAndSocketJointComponents::setInverseMassMatrix(Entity
 }
 
 // Return the accumulated impulse
-RP3D_FORCE_INLINE Vector3 &BallAndSocketJointComponents::getImpulse(Entity jointEntity)  {
+RP3D_FORCE_INLINE Vector3& BallAndSocketJointComponents::getImpulse(Entity jointEntity)  {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulse[mMapEntityToComponentIndex[jointEntity]];

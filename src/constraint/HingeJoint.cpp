@@ -266,6 +266,31 @@ decimal HingeJoint::getAngle() const {
     return mWorld.mConstraintSolverSystem.mSolveHingeJointSystem.computeCurrentHingeAngle(mEntity, orientationBody1, orientationBody2);
 }
 
+// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+Vector3 HingeJoint::getReactionForce(decimal timeStep) const {
+    assert(timeStep > MACHINE_EPSILON);
+    return mWorld.mHingeJointsComponents.getImpulseTranslation(mEntity) / timeStep;
+}
+
+// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+Vector3 HingeJoint::getReactionTorque(decimal timeStep) const {
+
+    assert(timeStep > MACHINE_EPSILON);
+
+    const uint32 jointIndex = mWorld.mHingeJointsComponents.getEntityIndex(mEntity);
+
+    const Vector2& impulseRotation = mWorld.mHingeJointsComponents.mImpulseRotation[jointIndex];
+    const Vector3& b2CrossA1 = mWorld.mHingeJointsComponents.mB2CrossA1[jointIndex];
+    const Vector3& c2CrossA1 = mWorld.mHingeJointsComponents.mC2CrossA1[jointIndex];
+
+    Vector3 impulseJoint = b2CrossA1 * impulseRotation.x + c2CrossA1 * impulseRotation.y;
+    Vector3 impulseLowerLimit = mWorld.mHingeJointsComponents.mImpulseLowerLimit[jointIndex] * mWorld.mHingeJointsComponents.mA1[jointIndex];
+    Vector3 impulseUpperLimit = -mWorld.mHingeJointsComponents.mImpulseUpperLimit[jointIndex] * mWorld.mHingeJointsComponents.mA1[jointIndex];
+    Vector3 impulseMotor = mWorld.mHingeJointsComponents.mImpulseMotor[jointIndex] * mWorld.mHingeJointsComponents.mA1[jointIndex];
+
+    return (impulseJoint + impulseLowerLimit + impulseUpperLimit + impulseMotor) / timeStep;
+}
+
 // Return the number of bytes used by the joint
  size_t HingeJoint::getSizeInBytes() const {
     return sizeof(HingeJoint);

@@ -137,6 +137,12 @@ class Joint {
         /// Return the type of the constraint
         JointType getType() const;
 
+        /// Return the force (in Newtons) on body 2 required to satisfy the joint constraint
+        virtual Vector3 getReactionForce(decimal timeStep) const=0;
+
+        /// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint
+        virtual Vector3 getReactionTorque(decimal timeStep) const=0;
+
         /// Return true if the collision between the two bodies of the joint is enabled
         bool isCollisionEnabled() const;
 

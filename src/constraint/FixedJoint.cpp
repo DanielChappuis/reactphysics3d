@@ -71,6 +71,18 @@ FixedJoint::FixedJoint(Entity entity, PhysicsWorld& world, const FixedJointInfo&
     mWorld.mFixedJointsComponents.setInitOrientationDifferenceInv(mEntity, transform2.getOrientation().getInverse() * transform1.getOrientation());
 }
 
+// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+Vector3 FixedJoint::getReactionForce(decimal timeStep) const {
+    assert(timeStep > MACHINE_EPSILON);
+    return mWorld.mFixedJointsComponents.getImpulseTranslation(mEntity) / timeStep;
+}
+
+// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+Vector3 FixedJoint::getReactionTorque(decimal timeStep) const {
+    assert(timeStep > MACHINE_EPSILON);
+    return mWorld.mFixedJointsComponents.getImpulseRotation(mEntity) / timeStep;
+}
+
 // Return a string representation
 std::string FixedJoint::to_string() const {
     return "FixedJoint{ localAnchorPointBody1=" + mWorld.mFixedJointsComponents.getLocalAnchorPointBody1(mEntity).to_string() +

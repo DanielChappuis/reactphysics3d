@@ -293,6 +293,33 @@ decimal SliderJoint::getMaxMotorForce() const {
 decimal SliderJoint::getMaxTranslationLimit() const {
     return mWorld.mSliderJointsComponents.getUpperLimit(mEntity);
 }
+
+// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+Vector3 SliderJoint::getReactionForce(decimal timeStep) const {
+    assert(timeStep > MACHINE_EPSILON);
+
+    const uint32 jointIndex = mWorld.mSliderJointsComponents.getEntityIndex(mEntity);
+
+    const Vector2 translationImpulse = mWorld.mSliderJointsComponents.mImpulseTranslation[jointIndex];
+    const Vector3& n1 = mWorld.mSliderJointsComponents.mN1[jointIndex];
+    const Vector3& n2 = mWorld.mSliderJointsComponents.mN2[jointIndex];
+    const Vector3 impulseJoint = n1 * translationImpulse.x + n2 * translationImpulse.y;
+
+    const Vector3& sliderAxisWorld = mWorld.mSliderJointsComponents.mSliderAxisWorld[jointIndex];
+    const Vector3 impulseLowerLimit = mWorld.mSliderJointsComponents.mImpulseLowerLimit[jointIndex] * sliderAxisWorld;
+    const Vector3 impulseUpperLimit = -mWorld.mSliderJointsComponents.mImpulseUpperLimit[jointIndex] * sliderAxisWorld;
+    Vector3 impulseMotor = -mWorld.mSliderJointsComponents.mImpulseMotor[jointIndex] * sliderAxisWorld;
+
+    return (impulseJoint + impulseLowerLimit + impulseUpperLimit + impulseMotor) / timeStep;
+}
+
+// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+Vector3 SliderJoint::getReactionTorque(decimal timeStep) const {
+
+    assert(timeStep > MACHINE_EPSILON);
+    return mWorld.mSliderJointsComponents.getImpulseRotation(mEntity) / timeStep;
+}
+
 // Return a string representation
 std::string SliderJoint::to_string() const {
     return "SliderJoint{ lowerLimit=" + std::to_string(mWorld.mSliderJointsComponents.getLowerLimit(mEntity)) + ", upperLimit=" + std::to_string(mWorld.mSliderJointsComponents.getUpperLimit(mEntity)) +

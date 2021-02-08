@@ -10,18 +10,22 @@ do not hesitate to take a look at the user manual.
  - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has been added
  - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has been added
  - Constructors with local-space anchor/axis have been added to BallAndSocketJointInfo, HingeJointInfo, FixedJointInfo and SliderJointInfo classes
- - Robustness of polyhedron vs polyhedron collision detection has been improved in SAT algorithm (face contacts are favored over edge-edge contacts for better stability)
  - Method HingeJoint::getAngle() to get the current angle of the hinge joint has been added 
+ - Method Joint::getReactionForce() has been added to retrieve the current reaction force of a joint
+ - Method Joint::getReactionTorque() has been added to retrieve the current reaction torque of a joint
+ - Method RigidBody::setLinearLockAxisFactor() to lock the translational movement of a body along the world-space x, y and z axes
+ - Method RigidBody::setAngularLockAxisFactor() to lock the rotational movement of a body around the world-space x, y and z axes
 
 ### Changed
 
  - The PhysicsWorld::setGravity() method now takes a const parameter
- - Rolling resistance constraint is not solved anymore in the solver. Angular damping needs to be used instead to simulate this
+ - Rolling resistance constraint is not solved anymore in the solver. Angular damping needs to be used instead to simulate it.
  - The List class has been renamed to Array
  - The default number of iterations for the velocity solver is now 6 instead of 10
  - The default number of iterations for the position solver is now 3 instead of 5
  - The raycasting broad-phase performance has been improved
  - The raycasting performance against HeighFieldShape has been improved (better middle-phase algorithm)
+ - Robustness of polyhedron vs polyhedron collision detection has been improved in SAT algorithm (face contacts are favored over edge-edge contacts for better stability)
 
 ### Removed
 
