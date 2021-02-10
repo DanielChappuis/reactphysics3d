@@ -150,6 +150,8 @@ set(SCENES_SOURCES
     scenes/pile/PileScene.cpp
     scenes/boxtower/BoxTowerScene.h
     scenes/boxtower/BoxTowerScene.cpp
+    scenes/bridge/BridgeScene.h
+    scenes/bridge/BridgeScene.cpp
 )
 
 # Create the executable

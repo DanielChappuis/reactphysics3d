@@ -42,6 +42,7 @@
 #include "ballandsocketjointsnet/BallAndSocketJointsNetScene.h"
 #include "ballandsocketjointschain/BallAndSocketJointsChainScene.h"
 #include "hingejointschain/HingeJointsChainScene.h"
+#include "bridge/BridgeScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -57,6 +58,7 @@ using namespace boxtowerscene;
 using namespace ballandsocketjointsnetscene;
 using namespace ballandsocketjointschainscene;
 using namespace hingejointschainscene;
+using namespace bridgescene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -170,6 +172,10 @@ void TestbedApplication::createScenes() {
     // Hinge joints chain scene
     HingeJointsChainScene* hingeJointsChainScene = new HingeJointsChainScene("Hinge Joints Chain", mEngineSettings);
     mScenes.push_back(hingeJointsChainScene);
+
+    // Bridge scene
+    BridgeScene* bridgeScene = new BridgeScene("Bridge", mEngineSettings);
+    mScenes.push_back(bridgeScene);
 
     assert(mScenes.size() > 0);
 
