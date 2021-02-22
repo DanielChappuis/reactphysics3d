@@ -155,7 +155,7 @@ void SceneDemo::updatePhysics() {
     if (mIsPhysicsWorldSimulated) {
 
         // Take a simulation step
-        mPhysicsWorld->update(mEngineSettings.timeStep);
+        mPhysicsWorld->update(mEngineSettings.timeStep.count());
     }
 }
 

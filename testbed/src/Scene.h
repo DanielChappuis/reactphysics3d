@@ -30,6 +30,8 @@
 #include "openglframework.h"
 #include <reactphysics3d/reactphysics3d.h>
 
+using namespace std::chrono_literals;
+
 // Structure ContactPoint
 struct SceneContactPoint {
 
@@ -51,8 +53,8 @@ struct EngineSettings {
 
     public:
 
-       long double elapsedTime;             // Elapsed time (in seconds)
-       float timeStep;                      // Current time step (in seconds)
+       std::chrono::duration<double> elapsedTime;    // Elapsed time (in seconds)
+       std::chrono::duration<double> timeStep;       // Current time step (in seconds)
        unsigned int nbVelocitySolverIterations;      // Nb of velocity solver iterations
        unsigned int nbPositionSolverIterations;      // Nb of position solver iterations
        bool isSleepingEnabled;              // True if sleeping technique is enabled
@@ -73,7 +75,7 @@ struct EngineSettings {
            EngineSettings defaultSettings;
 
            rp3d::PhysicsWorld::WorldSettings worldSettings;
-           defaultSettings.timeStep = 1.0f / 60.0f;
+           defaultSettings.timeStep = std::chrono::duration<double>(1.0f / 60.0f);
            defaultSettings.nbVelocitySolverIterations = worldSettings.defaultVelocitySolverNbIterations;
            defaultSettings.nbPositionSolverIterations = worldSettings.defaultPositionSolverNbIterations;
            defaultSettings.isSleepingEnabled = worldSettings.isSleepingEnabled;

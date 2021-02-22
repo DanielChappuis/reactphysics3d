@@ -91,7 +91,6 @@ set(TESTBED_SOURCES
     src/SceneDemo.h
     src/SceneDemo.cpp
     src/Timer.h
-    src/Timer.cpp
 )
 
 # Common source files

@@ -129,7 +129,7 @@ JointsScene::~JointsScene() {
 void JointsScene::updatePhysics() {
 
     // Update the motor speed of the Slider Joint (to move up and down)
-    double motorSpeed = 2.0 * std::cos(static_cast<double>(mEngineSettings.elapsedTime) * 1.5);
+    double motorSpeed = 2.0 * std::cos(mEngineSettings.elapsedTime.count() * 1.5);
     mSliderJoint->setMotorSpeed(rp3d::decimal(motorSpeed));
 
     SceneDemo::updatePhysics();

@@ -201,7 +201,7 @@ void Gui::createSettingsPanel() {
     textboxTimeStep->set_fixed_size(Vector2i(70, 25));
     textboxTimeStep->set_editable(true);
     std::ostringstream out;
-    out << std::setprecision(1) << std::fixed << (mApp->mEngineSettings.timeStep * 1000);
+    out << std::setprecision(1) << std::fixed << (mApp->mEngineSettings.timeStep.count() * 1000);
     textboxTimeStep->set_value(out.str());
     textboxTimeStep->set_units("ms");
     textboxTimeStep->set_callback([&, textboxTimeStep](const std::string &str) {
@@ -214,7 +214,7 @@ void Gui::createSettingsPanel() {
 
             if (finalValue < 1 || finalValue > 1000) return false;
 
-            mApp->mEngineSettings.timeStep = finalValue / 1000.0f;
+            mApp->mEngineSettings.timeStep = std::chrono::duration<double>(finalValue / 1000.0f);
             mApp->notifyEngineSetttingsChanged();
             textboxTimeStep->set_value(out.str());
         }

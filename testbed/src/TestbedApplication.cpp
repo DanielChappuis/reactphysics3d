@@ -205,7 +205,7 @@ void TestbedApplication::updateSinglePhysicsStep() {
 void TestbedApplication::updatePhysics() {
 
     // Update the elapsed time
-    mEngineSettings.elapsedTime = mTimer.getPhysicsTime();
+    mEngineSettings.elapsedTime = mTimer.getElapsedPhysicsTime();
 
     if (mTimer.isRunning()) {
 

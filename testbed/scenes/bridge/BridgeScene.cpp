@@ -183,7 +183,7 @@ void BridgeScene::updatePhysics() {
 
         if (joint != nullptr) {
 
-            if (joint->getReactionForce(mEngineSettings.timeStep).lengthSquare() > 60000000) {
+            if (joint->getReactionForce(mEngineSettings.timeStep.count()).lengthSquare() > 60000000) {
                 mPhysicsWorld->destroyJoint(joint);
                 mHingeJoints[jointIndex] = nullptr;
             }

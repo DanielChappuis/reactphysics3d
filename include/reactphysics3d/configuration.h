@@ -35,15 +35,6 @@
 #include <reactphysics3d/decimal.h>
 #include <reactphysics3d/containers/Pair.h>
 
-// Platforms
-#if defined(WIN32) ||defined(_WIN32) || defined(_WIN64) ||defined(__WIN32__) || defined(__WINDOWS__)
-    #define WINDOWS_OS
-#elif defined(__APPLE__)
-    #define APPLE_OS
-#elif defined(__linux__) || defined(linux) || defined(__linux)    // Linux platform
-    #define LINUX_OS
-#endif
-
 // Compilers
 #if defined(_MSC_VER)
     #define RP3D_COMPILER_VISUAL_STUDIO
