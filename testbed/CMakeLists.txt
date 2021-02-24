@@ -151,6 +151,8 @@ set(SCENES_SOURCES
     scenes/boxtower/BoxTowerScene.cpp
     scenes/bridge/BridgeScene.h
     scenes/bridge/BridgeScene.cpp
+    scenes/fixedjoint/FixedJointScene.h
+    scenes/fixedjoint/FixedJointScene.cpp
 )
 
 # Create the executable
