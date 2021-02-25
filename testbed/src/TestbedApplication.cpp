@@ -44,6 +44,7 @@
 #include "hingejointschain/HingeJointsChainScene.h"
 #include "bridge/BridgeScene.h"
 #include "fixedjoint/FixedJointScene.h"
+#include "ballandsocketjoint/BallAndSocketJointScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -61,6 +62,7 @@ using namespace ballandsocketjointschainscene;
 using namespace hingejointschainscene;
 using namespace bridgescene;
 using namespace fixedjointscene;
+using namespace ballandsocketjointscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -182,6 +184,11 @@ void TestbedApplication::createScenes() {
     // Fixed joint scene
     FixedJointScene* fixedJointScene = new FixedJointScene("Fixed joint", mEngineSettings);
     mScenes.push_back(fixedJointScene);
+
+    // Ball and Socket joint scene
+    BallAndSocketJointScene* ballAndSocketJointScene = new BallAndSocketJointScene("Ball and Socket joint", mEngineSettings);
+    mScenes.push_back(ballAndSocketJointScene);
+
     assert(mScenes.size() > 0);
 
     const int firstSceneIndex = 0;
