@@ -98,7 +98,7 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newBodies, mRigidBodies, mNbComponents * sizeof(RigidBody*));
         memcpy(newIsAllowedToSleep, mIsAllowedToSleep, mNbComponents * sizeof(bool));
         memcpy(newIsSleeping, mIsSleeping, mNbComponents * sizeof(bool));
-        memcpy(newSleepTimes, mSleepTimes, mNbComponents * sizeof(bool));
+        memcpy(newSleepTimes, mSleepTimes, mNbComponents * sizeof(decimal));
         memcpy(newBodyTypes, mBodyTypes, mNbComponents * sizeof(BodyType));
         memcpy(newLinearVelocities, mLinearVelocities, mNbComponents * sizeof(Vector3));
         memcpy(newAngularVelocities, mAngularVelocities, mNbComponents * sizeof(Vector3));
