@@ -157,6 +157,8 @@ set(SCENES_SOURCES
     scenes/ballandsocketjoint/BallAndSocketJointScene.cpp
     scenes/hingejoint/HingeJointScene.h
     scenes/hingejoint/HingeJointScene.cpp
+    scenes/sliderjoint/SliderJointScene.h
+    scenes/sliderjoint/SliderJointScene.cpp
 )
 
 # Create the executable
