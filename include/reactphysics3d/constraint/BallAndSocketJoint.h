@@ -121,6 +121,18 @@ class BallAndSocketJoint : public Joint {
         /// Deleted copy-constructor
         BallAndSocketJoint(const BallAndSocketJoint& constraint) = delete;
 
+        /// Enable/disable the cone limit of the joint
+        void enableConeLimit(bool isLimitEnabled);
+
+        /// Return true if the cone limit or the joint is enabled
+        bool isConeLimitEnabled() const;
+
+        /// Set the cone limit half angle
+        void setConeLimitHalfAngle(decimal coneHalfAngle);
+
+        /// Return the cone limit half angle
+        decimal getConeLimitHalfAngle() const;
+
         /// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
         virtual Vector3 getReactionForce(decimal timeStep) const override;
 

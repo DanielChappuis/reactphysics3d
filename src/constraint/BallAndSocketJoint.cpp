@@ -61,6 +61,29 @@ BallAndSocketJoint::BallAndSocketJoint(Entity entity, PhysicsWorld& world, const
     mWorld.mBallAndSocketJointsComponents.setLocalAnchorPointBody2(entity, anchorPointBody2LocalSpace);
 }
 
+// Enable/disable the cone limit of the joint
+void BallAndSocketJoint::enableConeLimit(bool isLimitEnabled) {
+    mWorld.mBallAndSocketJointsComponents.setIsConeLimitEnabled(mEntity, isLimitEnabled);
+}
+
+// Return true if the cone limit or the joint is enabled
+bool BallAndSocketJoint::isConeLimitEnabled() const {
+    return mWorld.mBallAndSocketJointsComponents.getIsConeLimitEnabled(mEntity);
+}
+
+// Set the cone limit half angle
+/**
+ * @param coneHalfAngle The angle of the cone limit (in radian) from [0; PI]
+ */
+void BallAndSocketJoint::setConeLimitHalfAngle(decimal coneHalfAngle) {
+    mWorld.mBallAndSocketJointsComponents.setConeLimitHalfAngle(mEntity, coneHalfAngle);
+}
+
+// Return the cone angle limit (in radians) from [0; PI]
+decimal BallAndSocketJoint::getConeLimitHalfAngle() const {
+    return mWorld.mBallAndSocketJointsComponents.getConeLimitHalfAngle(mEntity);
+}
+
 // Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
 Vector3 BallAndSocketJoint::getReactionForce(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);

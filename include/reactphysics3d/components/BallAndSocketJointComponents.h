@@ -85,6 +85,18 @@ class BallAndSocketJointComponents : public Components {
         /// Accumulated impulse
         Vector3* mImpulse;
 
+        /// True if the joint cone limit is enabled
+        bool* mIsConeLimitEnabled;
+
+        /// Cone limit impulse
+        decimal* mConeLimitImpulse;
+
+        /// Cone limit half angle
+        decimal* mConeLimitHalfAngle;
+
+        /// Inverse of mass matrix K=JM^-1J^t for the cone limit
+        decimal* mInverseMassMatrixConeLimit;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components
@@ -180,6 +192,30 @@ class BallAndSocketJointComponents : public Components {
 
         /// Set the accumulated impulse
         void setImpulse(Entity jointEntity, const Vector3& impulse);
+
+        /// Return true if the cone limit is enabled
+        bool getIsConeLimitEnabled(Entity jointEntity) const;
+
+        /// Set to true if the cone limit is enabled
+        void setIsConeLimitEnabled(Entity jointEntity, bool isLimitEnabled);
+
+        /// Return the cone limit impulse
+        bool getConeLimitImpulse(Entity jointEntity) const;
+
+        /// Set the cone limit impulse
+        void setConeLimitImpulse(Entity jointEntity, decimal impulse);
+
+        /// Return the cone limit half angle
+        bool getConeLimitHalfAngle(Entity jointEntity) const;
+
+        /// Set the cone limit half angle
+        void setConeLimitHalfAngle(Entity jointEntity, decimal halfAngle);
+
+        /// Return the inverse mass matrix cone limit
+        bool getInverseMassMatrixConeLimit(Entity jointEntity) const;
+
+        /// Set the inverse mass matrix cone limit
+        void setInverseMassMatrixCone(Entity jointEntity, decimal inverseMassMatrix);
 
         // -------------------- Friendship -------------------- //
 
@@ -325,6 +361,62 @@ RP3D_FORCE_INLINE void BallAndSocketJointComponents::setImpulse(Entity jointEnti
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulse[mMapEntityToComponentIndex[jointEntity]] = impulse;
+}
+
+// Return true if the cone limit is enabled
+RP3D_FORCE_INLINE bool BallAndSocketJointComponents::getIsConeLimitEnabled(Entity jointEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mIsConeLimitEnabled[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set to true if the cone limit is enabled
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setIsConeLimitEnabled(Entity jointEntity, bool isLimitEnabled) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mIsConeLimitEnabled[mMapEntityToComponentIndex[jointEntity]] = isLimitEnabled;
+}
+
+// Return the cone limit impulse
+RP3D_FORCE_INLINE bool BallAndSocketJointComponents::getConeLimitImpulse(Entity jointEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mConeLimitImpulse[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cone limit impulse
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setConeLimitImpulse(Entity jointEntity, decimal impulse) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mConeLimitImpulse[mMapEntityToComponentIndex[jointEntity]] = impulse;
+}
+
+// Return the cone limit half angle
+RP3D_FORCE_INLINE bool BallAndSocketJointComponents::getConeLimitHalfAngle(Entity jointEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mConeLimitHalfAngle[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cone limit half angle
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setConeLimitHalfAngle(Entity jointEntity, decimal halfAngle) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mConeLimitHalfAngle[mMapEntityToComponentIndex[jointEntity]] = halfAngle;
+}
+
+// Return the inverse mass matrix cone limit
+RP3D_FORCE_INLINE bool BallAndSocketJointComponents::getInverseMassMatrixConeLimit(Entity jointEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mInverseMassMatrixConeLimit[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the inverse mass matrix cone limit
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setInverseMassMatrixCone(Entity jointEntity, decimal inverseMassMatrix) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mInverseMassMatrixConeLimit[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
 }
 
 }
