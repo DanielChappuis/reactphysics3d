@@ -521,8 +521,9 @@ void ContactSolverSystem::solve() {
 
             // Compute the bias "b" of the constraint
             decimal biasPenetrationDepth = 0.0;
-            if (mContactPoints[contactPointIndex].penetrationDepth > SLOP) biasPenetrationDepth = -(beta/mTimeStep) *
-                    std::max(0.0f, float(mContactPoints[contactPointIndex].penetrationDepth - SLOP));
+            if (mContactPoints[contactPointIndex].penetrationDepth > SLOP) {
+                biasPenetrationDepth = -(beta/mTimeStep) * std::max(0.0f, float(mContactPoints[contactPointIndex].penetrationDepth - SLOP));
+            }
             decimal b = biasPenetrationDepth + mContactPoints[contactPointIndex].restitutionBias;
 
             // Compute the Lagrange multiplier lambda
@@ -650,7 +651,6 @@ void ContactSolverSystem::solve() {
         Vector3 angularImpulseBody2(mContactConstraints[c].r2CrossT1.x * deltaLambda,
                                     mContactConstraints[c].r2CrossT1.y * deltaLambda,
                                     mContactConstraints[c].r2CrossT1.z * deltaLambda);
-
 
         // Update the velocities of the body 1 by applying the impulse P
         mRigidBodyComponents.mConstrainedLinearVelocities[rigidBody1Index].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x * mContactConstraints[c].linearLockAxisFactorBody1.x;
@@ -796,10 +796,9 @@ void ContactSolverSystem::computeFrictionVectors(const Vector3& deltaVelocity, C
     assert(contact.normal.length() > decimal(0.0));
 
     // Compute the velocity difference vector in the tangential plane
-    const Vector3 normalVelocity(deltaVelocity.x * contact.normal.x * contact.normal.x,
-                           deltaVelocity.y * contact.normal.y * contact.normal.y,
-                           deltaVelocity.z * contact.normal.z * contact.normal.z);
-    const Vector3 tangentVelocity(deltaVelocity.x - normalVelocity.x, deltaVelocity.y - normalVelocity.y,
+    decimal deltaVDotNormal = deltaVelocity.dot(contact.normal);
+    Vector3 normalVelocity = deltaVDotNormal * contact.normal;
+    Vector3 tangentVelocity(deltaVelocity.x - normalVelocity.x, deltaVelocity.y - normalVelocity.y,
                             deltaVelocity.z - normalVelocity.z);
 
     // If the velocty difference in the tangential plane is not zero
