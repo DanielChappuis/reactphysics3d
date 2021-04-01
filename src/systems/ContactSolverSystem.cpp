@@ -532,8 +532,10 @@ void ContactSolverSystem::solve() {
 
             // Compute the bias "b" of the constraint
             decimal biasPenetrationDepth = 0.0;
-            if (mContactPoints[contactPointIndex].penetrationDepth > SLOP) biasPenetrationDepth = -(beta/mTimeStep) *
+            if (mContactPoints[contactPointIndex].penetrationDepth > SLOP) {
+                biasPenetrationDepth = -(beta/mTimeStep) *
                     max(0.0f, float(mContactPoints[contactPointIndex].penetrationDepth - SLOP));
+            }
             decimal b = biasPenetrationDepth + mContactPoints[contactPointIndex].restitutionBias;
 
             // Compute the Lagrange multiplier lambda
@@ -661,7 +663,6 @@ void ContactSolverSystem::solve() {
         Vector3 angularImpulseBody2(mContactConstraints[c].r2CrossT1.x * deltaLambda,
                                     mContactConstraints[c].r2CrossT1.y * deltaLambda,
                                     mContactConstraints[c].r2CrossT1.z * deltaLambda);
-
 
         // Update the velocities of the body 1 by applying the impulse P
         mRigidBodyComponents.mConstrainedLinearVelocities[mContactConstraints[c].rigidBodyComponentIndexBody1].x -= mContactConstraints[c].massInverseBody1 * linearImpulseBody2.x;
@@ -825,17 +826,15 @@ void ContactSolverSystem::storeImpulses() {
 
 // Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction plane
 // for a contact manifold. The two vectors have to be such that : t1 x t2 = contactNormal.
-void ContactSolverSystem::computeFrictionVectors(const Vector3& deltaVelocity,
-                                           ContactManifoldSolver& contact) const {
+void ContactSolverSystem::computeFrictionVectors(const Vector3& deltaVelocity, ContactManifoldSolver& contact) const {
 
     RP3D_PROFILE("ContactSolver::computeFrictionVectors()", mProfiler);
 
     assert(contact.normal.length() > decimal(0.0));
 
     // Compute the velocity difference vector in the tangential plane
-    Vector3 normalVelocity(deltaVelocity.x * contact.normal.x * contact.normal.x,
-                           deltaVelocity.y * contact.normal.y * contact.normal.y,
-                           deltaVelocity.z * contact.normal.z * contact.normal.z);
+    decimal deltaVDotNormal = deltaVelocity.dot(contact.normal);
+    Vector3 normalVelocity = deltaVDotNormal * contact.normal;
     Vector3 tangentVelocity(deltaVelocity.x - normalVelocity.x, deltaVelocity.y - normalVelocity.y,
                             deltaVelocity.z - normalVelocity.z);
 
