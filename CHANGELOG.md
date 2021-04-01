@@ -43,6 +43,7 @@ do not hesitate to take a look at the user manual.
 - Issue with sphere radius in DebugRenderer
 - Issue [#157](https://github.com/DanielChappuis/reactphysics3d/issues/157) with matrix to quaternion conversion has been fixed
 - Issue [#184](https://github.com/DanielChappuis/reactphysics3d/issues/184) with update of mass/inertia properties of static bodies
+- Issue with the computation of the two friction vectors in the contact solver
 
 
 ## Version 0.8.0 (May 31, 2020)
