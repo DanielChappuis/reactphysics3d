@@ -267,6 +267,7 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
     for (uint i = 0; i < NB_SECTORS_SPHERE; i++, a1++, a2++) {
 
 		mTriangles.add(DebugTriangle(vertices[a1 + 1], vertices[a2], vertices[a2 + 1], color));
+		mTriangles.add(DebugTriangle(vertices[a1], vertices[a2], vertices[a1 + 1], color));
 	}
 }
 
