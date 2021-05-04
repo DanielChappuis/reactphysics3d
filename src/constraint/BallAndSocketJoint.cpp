@@ -84,6 +84,11 @@ decimal BallAndSocketJoint::getConeLimitHalfAngle() const {
     return mWorld.mBallAndSocketJointsComponents.getConeLimitHalfAngle(mEntity);
 }
 
+// Return the current cone angle in radians (in [0, pi])
+decimal BallAndSocketJoint::getConeAngle() const {
+    ...
+}
+
 // Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
 Vector3 BallAndSocketJoint::getReactionForce(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);

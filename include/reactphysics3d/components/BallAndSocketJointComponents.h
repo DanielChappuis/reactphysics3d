@@ -97,6 +97,9 @@ class BallAndSocketJointComponents : public Components {
         /// Inverse of mass matrix K=JM^-1J^t for the cone limit
         decimal* mInverseMassMatrixConeLimit;
 
+        /// True if the cone limit is violated
+        bool* mIsConeLimitViolated;
+
         // -------------------- Methods -------------------- //
 
         /// Allocate memory for a given number of components

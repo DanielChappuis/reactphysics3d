@@ -111,6 +111,9 @@ class SolveBallAndSocketJointSystem {
         /// Set to true to enable warm starting
         void setIsWarmStartingActive(bool isWarmStartingActive);
 
+        /// Return the current cone angle (for the cone limit)
+        decimal computeCurrentConeAngle(uint32 jointIndex) const;
+
 #ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Set the profiler

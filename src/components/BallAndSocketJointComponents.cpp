@@ -37,7 +37,8 @@ BallAndSocketJointComponents::BallAndSocketJointComponents(MemoryAllocator& allo
                     :Components(allocator, sizeof(Entity) + sizeof(BallAndSocketJoint*) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Matrix3x3) + sizeof(Matrix3x3) + sizeof(Vector3) +
-                                sizeof(Matrix3x3) + sizeof(Vector3)) {
+                                sizeof(Matrix3x3) + sizeof(Vector3) + sizeof(bool) + sizeof(decimal) +
+                                sizeof(decimal) + sizeof(decimal) + sizeof(bool)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -71,6 +72,7 @@ void BallAndSocketJointComponents::allocate(uint32 nbComponentsToAllocate) {
     decimal* newConeLimitImpulse = reinterpret_cast<decimal*>(newIsConeLimitEnabled + nbComponentsToAllocate);
     decimal* newConeLimitHalfAngle = reinterpret_cast<decimal*>(newConeLimitImpulse + nbComponentsToAllocate);
     decimal* newInverseMassMatrixConeLimit = reinterpret_cast<decimal*>(newConeLimitHalfAngle + nbComponentsToAllocate);
+    bool* newIsConeLimitViolated = reinterpret_cast<bool*>(newInverseMassMatrixConeLimit + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -91,6 +93,7 @@ void BallAndSocketJointComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newConeLimitImpulse, mConeLimitImpulse, mNbComponents * sizeof(decimal));
         memcpy(newConeLimitHalfAngle, mConeLimitHalfAngle, mNbComponents * sizeof(decimal));
         memcpy(newInverseMassMatrixConeLimit, mInverseMassMatrixConeLimit, mNbComponents * sizeof(decimal));
+        memcpy(newIsConeLimitViolated, mIsConeLimitViolated, mNbComponents * sizeof(bool));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -113,6 +116,7 @@ void BallAndSocketJointComponents::allocate(uint32 nbComponentsToAllocate) {
     mConeLimitImpulse = newConeLimitImpulse;
     mConeLimitHalfAngle = newConeLimitHalfAngle;
     mInverseMassMatrixConeLimit = newInverseMassMatrixConeLimit;
+    mIsConeLimitViolated = newIsConeLimitViolated;
 }
 
 // Add a component
@@ -137,6 +141,7 @@ void BallAndSocketJointComponents::addComponent(Entity jointEntity, bool isSleep
     mConeLimitImpulse[index] = decimal(0.0);
     mConeLimitHalfAngle[index] = PI_RP3D;
     mInverseMassMatrixConeLimit[index] = decimal(0.0);
+    mIsConeLimitViolated[index] = false;
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity, index));
@@ -169,6 +174,7 @@ void BallAndSocketJointComponents::moveComponentToIndex(uint32 srcIndex, uint32 
     mConeLimitImpulse[destIndex] = mConeLimitImpulse[srcIndex];
     mConeLimitHalfAngle[destIndex] = mConeLimitHalfAngle[srcIndex];
     mInverseMassMatrixConeLimit[destIndex] = mInverseMassMatrixConeLimit[srcIndex];
+    mIsConeLimitViolated[destIndex] = mIsConeLimitViolated[srcIndex];
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -200,6 +206,7 @@ void BallAndSocketJointComponents::swapComponents(uint32 index1, uint32 index2) 
     decimal coneLimitImpulse1 = mConeLimitImpulse[index1];
     decimal coneLimitHalfAngle1 = mConeLimitHalfAngle[index1];
     decimal inverseMassMatrixConeLimit1 = mInverseMassMatrixConeLimit[index1];
+    bool isConeLimitViolated = mIsConeLimitViolated[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -222,6 +229,7 @@ void BallAndSocketJointComponents::swapComponents(uint32 index1, uint32 index2) 
     mConeLimitImpulse[index2] = coneLimitImpulse1;
     mConeLimitHalfAngle[index2] = coneLimitHalfAngle1;
     mInverseMassMatrixConeLimit[index2] = inverseMassMatrixConeLimit1;
+    mIsConeLimitViolated[index2] = isConeLimitViolated;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity1, index2));

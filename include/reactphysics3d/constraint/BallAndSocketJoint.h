@@ -132,6 +132,9 @@ class BallAndSocketJoint : public Joint {
 
         /// Return the cone limit half angle
         decimal getConeLimitHalfAngle() const;
+        
+        /// Return the current cone angle in radians (in [0, 
+        decimal getConeAngle() const;
 
         /// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
         virtual Vector3 getReactionForce(decimal timeStep) const override;

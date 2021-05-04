@@ -27,6 +27,7 @@
 #include <reactphysics3d/systems/SolveBallAndSocketJointSystem.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
 #include <reactphysics3d/body/RigidBody.h>
+#include <cmath>
 
 using namespace reactphysics3d;
 
@@ -70,8 +71,10 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         mBallAndSocketJointComponents.mI1[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody1];
         mBallAndSocketJointComponents.mI2[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody2];
 
-        const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
-        const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
+        const Transform& transformBody1 = mTransformComponents.getTransform(body1Entity);
+        const Transform& transformBody2 = mTransformComponents.getTransform(body2Entity);
+        const Quaternion& orientationBody1 = transformBody1.getOrientation();
+        const Quaternion& orientationBody2 = transformBody2.getOrientation();
 
         // Compute the vector from body center to the anchor point in world-space
         mBallAndSocketJointComponents.mR1World[i] = orientationBody1 * mBallAndSocketJointComponents.mLocalAnchorPointBody1[i];
@@ -112,6 +115,45 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         mBallAndSocketJointComponents.mBiasVector[i].setToZero();
         if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mBallAndSocketJointComponents.mBiasVector[i] = biasFactor * (x2 + r2World - x1 - r1World);
+        }
+
+        // Compute the current angle around the hinge axis
+        decimal coneAngle = computeCurrentConeAngle(jointIndex);
+
+        // Check if the cone limit constraints is violated or not
+        decimal coneLimitError = coneAngle - mBallAndSocketJointComponents.mConeLimitHalfAngle[i];
+        bool oldIsConeLimitViolated = mBallAndSocketJointComponents.mIsConeLimitViolated[i];
+        bool isConeLimitViolated = coneAngle > mBallAndSocketJointComponents.mConeLimitHalfAngle[i];
+        mBallAndSocketJointComponents.mIsConeLimitViolated[i] = isConeLimitViolated;
+        if (!isConeLimitViolated) {
+            mBallAndSocketJointComponents.mConeLimitImpulse[i] = decimal(0.0);
+        }
+
+        // If the cone limit is enabled
+        if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
+
+            Vector3& a1 = mHingeJointComponents.mA1[i];
+
+            // Compute the inverse of the mass matrix K=JM^-1J^t for the limits and motor (1x1 matrix)
+            decimal inverseMassMatrixLimitMotor = a1.dot(mHingeJointComponents.mI1[i] * a1) + a1.dot(mHingeJointComponents.mI2[i] * a1);
+            inverseMassMatrixLimitMotor = (inverseMassMatrixLimitMotor > decimal(0.0)) ?
+                                      decimal(1.0) / inverseMassMatrixLimitMotor : decimal(0.0);
+            mHingeJointComponents.mInverseMassMatrixLimitMotor[i] = inverseMassMatrixLimitMotor;
+
+            if (mHingeJointComponents.mIsLimitEnabled[i]) {
+
+                // Compute the bias "b" of the lower limit constraint
+                mHingeJointComponents.mBLowerLimit[i] = decimal(0.0);
+                if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+                    mHingeJointComponents.mBLowerLimit[i] = biasFactor * lowerLimitError;
+                }
+
+                // Compute the bias "b" of the upper limit constraint
+                mHingeJointComponents.mBUpperLimit[i] = decimal(0.0);
+                if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+                    mHingeJointComponents.mBUpperLimit[i] = biasFactor * upperLimitError;
+                }
+            }
         }
 
         // If warm-starting is not enabled
@@ -317,4 +359,13 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
             q2.normalize();
         }
     }
+}
+
+// Return the current cone angle (for the cone limit)
+/**
+ * @return The positive cone angle in radian in range [0, PI]
+ */
+decimal SolveBallAndSocketJointSystem::computeCurrentConeAngle(uint32 jointIndex) const {
+
+    return std::acos(-mBallAndSocketJointComponents.mR1World[jointIndex], mBallAndSocketJointComponents.mR2World[jointIndex]);
 }
