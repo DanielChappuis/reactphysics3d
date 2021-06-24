@@ -112,7 +112,7 @@ class SolveBallAndSocketJointSystem {
         void setIsWarmStartingActive(bool isWarmStartingActive);
 
         /// Return the current cone angle (for the cone limit)
-        decimal computeCurrentConeAngle(uint32 jointIndex) const;
+        static decimal computeCurrentConeHalfAngle(const Vector3& coneLimitWorldAxisBody1, const Vector3& coneLimitWorldAxisBody2);
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -143,6 +143,15 @@ RP3D_FORCE_INLINE void SolveBallAndSocketJointSystem::setIsWarmStartingActive(bo
     mIsWarmStartingActive = isWarmStartingActive;
 }
 
+// Return the current cone angle (for the cone limit)
+/**
+ * @return The positive cone angle in radian in range [0, PI]
+ */
+RP3D_FORCE_INLINE decimal SolveBallAndSocketJointSystem::computeCurrentConeHalfAngle(const Vector3& coneLimitWorldAxisBody1,
+                                                                                     const Vector3& coneLimitWorldAxisBody2) {
+
+    return std::acos(coneLimitWorldAxisBody1.dot(coneLimitWorldAxisBody2));
+}
 
 }
 

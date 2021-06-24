@@ -117,42 +117,38 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
             mBallAndSocketJointComponents.mBiasVector[i] = biasFactor * (x2 + r2World - x1 - r1World);
         }
 
+        // Convert local-space cone axis of bodies to world-space
+        const Vector3 coneAxisBody1World = orientationBody1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[jointIndex];
+        const Vector3 coneAxisBody2World = orientationBody2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[jointIndex];
+
+        mBallAndSocketJointComponents.mConeLimitACrossB[i] = coneAxisBody1World.cross(coneAxisBody2World);
+
         // Compute the current angle around the hinge axis
-        decimal coneAngle = computeCurrentConeAngle(jointIndex);
+        decimal coneAngle = computeCurrentConeHalfAngle(coneAxisBody1World, coneAxisBody2World);
 
         // Check if the cone limit constraints is violated or not
-        decimal coneLimitError = coneAngle - mBallAndSocketJointComponents.mConeLimitHalfAngle[i];
+        decimal coneLimitError = mBallAndSocketJointComponents.mConeLimitHalfAngle[i] - coneAngle;
         bool oldIsConeLimitViolated = mBallAndSocketJointComponents.mIsConeLimitViolated[i];
-        bool isConeLimitViolated = coneAngle > mBallAndSocketJointComponents.mConeLimitHalfAngle[i];
+        bool isConeLimitViolated = coneLimitError < 0;
         mBallAndSocketJointComponents.mIsConeLimitViolated[i] = isConeLimitViolated;
-        if (!isConeLimitViolated) {
+        if (!isConeLimitViolated || isConeLimitViolated != oldIsConeLimitViolated) {
             mBallAndSocketJointComponents.mConeLimitImpulse[i] = decimal(0.0);
         }
 
         // If the cone limit is enabled
         if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
 
-            Vector3& a1 = mHingeJointComponents.mA1[i];
+            // Compute the inverse of the mass matrix K=JM^-1J^t for the cone limit
+            decimal inverseMassMatrixConeLimit = mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI1[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i]) +
+                                                 mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI2[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i]);
+            inverseMassMatrixConeLimit = (inverseMassMatrixConeLimit > decimal(0.0)) ?
+                                      decimal(1.0) / inverseMassMatrixConeLimit : decimal(0.0);
+            mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] = inverseMassMatrixConeLimit;
 
-            // Compute the inverse of the mass matrix K=JM^-1J^t for the limits and motor (1x1 matrix)
-            decimal inverseMassMatrixLimitMotor = a1.dot(mHingeJointComponents.mI1[i] * a1) + a1.dot(mHingeJointComponents.mI2[i] * a1);
-            inverseMassMatrixLimitMotor = (inverseMassMatrixLimitMotor > decimal(0.0)) ?
-                                      decimal(1.0) / inverseMassMatrixLimitMotor : decimal(0.0);
-            mHingeJointComponents.mInverseMassMatrixLimitMotor[i] = inverseMassMatrixLimitMotor;
-
-            if (mHingeJointComponents.mIsLimitEnabled[i]) {
-
-                // Compute the bias "b" of the lower limit constraint
-                mHingeJointComponents.mBLowerLimit[i] = decimal(0.0);
-                if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-                    mHingeJointComponents.mBLowerLimit[i] = biasFactor * lowerLimitError;
-                }
-
-                // Compute the bias "b" of the upper limit constraint
-                mHingeJointComponents.mBUpperLimit[i] = decimal(0.0);
-                if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
-                    mHingeJointComponents.mBUpperLimit[i] = biasFactor * upperLimitError;
-                }
+            // Compute the bias "b" of the lower limit constraint
+            mBallAndSocketJointComponents.mBConeLimit[i] = decimal(0.0);
+            if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+                mBallAndSocketJointComponents.mBConeLimit[i] = biasFactor * coneLimitError;
             }
         }
 
@@ -194,15 +190,24 @@ void SolveBallAndSocketJointSystem::warmstart() {
         const Matrix3x3& i2 = mBallAndSocketJointComponents.mI2[i];
 
         // Compute the impulse P=J^T * lambda for the body 1
-        const Vector3 linearImpulseBody1 = -mBallAndSocketJointComponents.mImpulse[i];
-        const Vector3 angularImpulseBody1 = mBallAndSocketJointComponents.mImpulse[i].cross(r1World);
+        Vector3 linearImpulseBody1 = -mBallAndSocketJointComponents.mImpulse[i];
+        Vector3 angularImpulseBody1 = mBallAndSocketJointComponents.mImpulse[i].cross(r1World);
+
+        // Compute the impulse P=J^T * lambda for the lower and upper limits constraints
+        const Vector3 coneLimitImpulse = mBallAndSocketJointComponents.mConeLimitImpulse[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i];
+
+        // Compute the impulse P=J^T * lambda for the cone limit constraint of body 1
+        angularImpulseBody1 += coneLimitImpulse;
 
         // Apply the impulse to the body 1
         v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
         w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the body 2
-        const Vector3 angularImpulseBody2 = -mBallAndSocketJointComponents.mImpulse[i].cross(r2World);
+        Vector3 angularImpulseBody2 = -mBallAndSocketJointComponents.mImpulse[i].cross(r2World);
+
+        // Compute the impulse P=J^T * lambda for the cone limit constraint of body 2
+        angularImpulseBody2 += -coneLimitImpulse;
 
         // Apply the impulse to the body to the body 2
         v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * mBallAndSocketJointComponents.mImpulse[i];
@@ -256,6 +261,37 @@ void SolveBallAndSocketJointSystem::solveVelocityConstraint() {
         // Apply the impulse to the body 2
         v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambda;
         w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
+
+        // --------------- Limits Constraints --------------- //
+
+        if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
+
+            // If the cone limit is violated
+            if (mBallAndSocketJointComponents.mIsConeLimitViolated[i]) {
+
+                // Compute J*v for the cone limit constraine
+                const decimal JvConeLimit = mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(w1 - w2);
+
+                // Compute the Lagrange multiplier lambda for the cone limit constraint
+                decimal deltaLambdaConeLimit = mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] * (-JvConeLimit -mBallAndSocketJointComponents.mBConeLimit[i]);
+                decimal lambdaTemp = mBallAndSocketJointComponents.mConeLimitImpulse[i];
+                mBallAndSocketJointComponents.mConeLimitImpulse[i] = std::max(mBallAndSocketJointComponents.mConeLimitImpulse[i] + deltaLambdaConeLimit, decimal(0.0));
+                deltaLambdaConeLimit = mBallAndSocketJointComponents.mConeLimitImpulse[i] - lambdaTemp;
+
+                // Compute the impulse P=J^T * lambda for the lower limit constraint of body 1
+                const Vector3 angularImpulseBody1 = deltaLambdaConeLimit * mBallAndSocketJointComponents.mConeLimitACrossB[i];
+
+                // Apply the impulse to the body 1
+                w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
+
+                // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
+                const Vector3 angularImpulseBody2 = -deltaLambdaConeLimit * mBallAndSocketJointComponents.mConeLimitACrossB[i];
+
+                // Apply the impulse to the body 2
+                w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
+
+            }
+        }
     }
 }
 
@@ -358,14 +394,51 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
             q2 += Quaternion(0, w2) * q2 * decimal(0.5);
             q2.normalize();
         }
+
+        // --------------- Limits Constraints --------------- //
+
+        if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
+
+            // Check if the cone limit constraints is violated or not
+            const Vector3 coneAxisBody1World = q1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[jointIndex];
+            const Vector3 coneAxisBody2World = q2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[jointIndex];
+            mBallAndSocketJointComponents.mConeLimitACrossB[i] = coneAxisBody1World.cross(coneAxisBody2World);
+            decimal coneAngle = computeCurrentConeHalfAngle(coneAxisBody1World, coneAxisBody2World);
+            decimal coneLimitError = mBallAndSocketJointComponents.mConeLimitHalfAngle[i] - coneAngle;
+            mBallAndSocketJointComponents.mIsConeLimitViolated[i] = coneLimitError < 0;
+
+            // If the cone limit is violated
+            if (mBallAndSocketJointComponents.mIsConeLimitViolated[i]) {
+
+                // Compute the inverse of the mass matrix K=JM^-1J^t for the cone limit (1x1 matrix)
+                decimal inverseMassMatrixConeLimit = mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI1[jointIndex] * mBallAndSocketJointComponents.mConeLimitACrossB[i]) +
+                                                 mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI2[jointIndex] * mBallAndSocketJointComponents.mConeLimitACrossB[i]);
+                mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] = (inverseMassMatrixConeLimit > decimal(0.0)) ?
+                                                                               decimal(1.0) / inverseMassMatrixConeLimit : decimal(0.0);
+
+                // Compute the Lagrange multiplier lambda for the cone limit constraint
+                decimal lambdaConeLimit = mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] * (-coneLimitError );
+
+                // Compute the impulse P=J^T * lambda of body 1
+                const Vector3 angularImpulseBody1 = lambdaConeLimit * mBallAndSocketJointComponents.mConeLimitACrossB[i];
+
+                // Compute the pseudo velocity of body 1
+                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mBallAndSocketJointComponents.mI1[i] * angularImpulseBody1);
+
+                // Update the body position/orientation of body 1
+                q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+                q1.normalize();
+
+                // Compute the impulse P=J^T * lambda of body 2
+                const Vector3 angularImpulseBody2 = -lambdaConeLimit * mBallAndSocketJointComponents.mConeLimitACrossB[i];
+
+                // Compute the pseudo velocity of body 2
+                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mBallAndSocketJointComponents.mI2[i] * angularImpulseBody2);
+
+                // Update the body position/orientation of body 2
+                q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+                q2.normalize();
+            }
+        }
     }
-}
-
-// Return the current cone angle (for the cone limit)
-/**
- * @return The positive cone angle in radian in range [0, PI]
- */
-decimal SolveBallAndSocketJointSystem::computeCurrentConeAngle(uint32 jointIndex) const {
-
-    return std::acos(-mBallAndSocketJointComponents.mR1World[jointIndex], mBallAndSocketJointComponents.mR2World[jointIndex]);
 }

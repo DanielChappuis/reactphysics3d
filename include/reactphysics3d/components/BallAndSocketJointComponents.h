@@ -97,8 +97,20 @@ class BallAndSocketJointComponents : public Components {
         /// Inverse of mass matrix K=JM^-1J^t for the cone limit
         decimal* mInverseMassMatrixConeLimit;
 
+        /// Bias of the cone limit constraint
+        decimal* mBConeLimit;
+
         /// True if the cone limit is violated
         bool* mIsConeLimitViolated;
+
+        /// Cone limit axis in local-space of body 1
+        Vector3* mConeLimitLocalAxisBody1;
+
+        /// Cone limit axis in local-space of body 2
+        Vector3* mConeLimitLocalAxisBody2;
+
+        /// Cross product of cone limit axis of both bodies
+        Vector3* mConeLimitACrossB;
 
         // -------------------- Methods -------------------- //
 
@@ -218,7 +230,19 @@ class BallAndSocketJointComponents : public Components {
         bool getInverseMassMatrixConeLimit(Entity jointEntity) const;
 
         /// Set the inverse mass matrix cone limit
-        void setInverseMassMatrixCone(Entity jointEntity, decimal inverseMassMatrix);
+        void setInverseMassMatrixConeLimit(Entity jointEntity, decimal inverseMassMatrix);
+
+        /// Get the cone limit local axis of body 1
+        Vector3 getConeLimitLocalAxisBody1(Entity jointEntity) const;
+
+        /// Set the cone limit local axis of body 1
+        void setConeLimitLocalAxisBody1(Entity jointEntity, const Vector3& localAxisBody1);
+
+        /// Get the cone limit local axis of body 2
+        Vector3 getConeLimitLocalAxisBody2(Entity jointEntity) const;
+
+        /// Set the cone limit local axis of body 2
+        void setConeLimitLocalAxisBody2(Entity jointEntity, const Vector3& localAxisBody2);
 
         // -------------------- Friendship -------------------- //
 
@@ -416,10 +440,38 @@ RP3D_FORCE_INLINE bool BallAndSocketJointComponents::getInverseMassMatrixConeLim
 }
 
 // Set the inverse mass matrix cone limit
-RP3D_FORCE_INLINE void BallAndSocketJointComponents::setInverseMassMatrixCone(Entity jointEntity, decimal inverseMassMatrix) {
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setInverseMassMatrixConeLimit(Entity jointEntity, decimal inverseMassMatrix) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixConeLimit[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
+}
+
+// Get the cone limit local axis of body 1
+RP3D_FORCE_INLINE Vector3 BallAndSocketJointComponents::getConeLimitLocalAxisBody1(Entity jointEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mConeLimitLocalAxisBody1[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cone limit local axis of body 1
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setConeLimitLocalAxisBody1(Entity jointEntity, const Vector3& localAxisBody1) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mConeLimitLocalAxisBody1[mMapEntityToComponentIndex[jointEntity]] = localAxisBody1;
+}
+
+// Get the cone limit local axis of body 2
+RP3D_FORCE_INLINE Vector3 BallAndSocketJointComponents::getConeLimitLocalAxisBody2(Entity jointEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    return mConeLimitLocalAxisBody2[mMapEntityToComponentIndex[jointEntity]];
+}
+
+// Set the cone limit local axis of body 2
+RP3D_FORCE_INLINE void BallAndSocketJointComponents::setConeLimitLocalAxisBody2(Entity jointEntity, const Vector3& localAxisBody2) {
+
+    assert(mMapEntityToComponentIndex.containsKey(jointEntity));
+    mConeLimitLocalAxisBody2[mMapEntityToComponentIndex[jointEntity]] = localAxisBody2;
 }
 
 }
