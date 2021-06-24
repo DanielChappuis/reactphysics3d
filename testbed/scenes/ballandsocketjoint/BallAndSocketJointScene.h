@@ -74,6 +74,9 @@ class BallAndSocketJointScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Update the scene
+        virtual void update() override;
 };
 
 }

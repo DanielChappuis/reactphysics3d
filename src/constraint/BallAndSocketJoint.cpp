@@ -61,6 +61,56 @@ BallAndSocketJoint::BallAndSocketJoint(Entity entity, PhysicsWorld& world, const
     mWorld.mBallAndSocketJointsComponents.setLocalAnchorPointBody2(entity, anchorPointBody2LocalSpace);
 }
 
+// Enable/disable the cone limit of the joint
+void BallAndSocketJoint::enableConeLimit(bool isLimitEnabled) {
+    mWorld.mBallAndSocketJointsComponents.setIsConeLimitEnabled(mEntity, isLimitEnabled);
+}
+
+// Return true if the cone limit or the joint is enabled
+bool BallAndSocketJoint::isConeLimitEnabled() const {
+    return mWorld.mBallAndSocketJointsComponents.getIsConeLimitEnabled(mEntity);
+}
+
+// Set the cone limit half angle
+/**
+ * @param coneHalfAngle The angle of the cone limit (in radian) from [0; PI]
+ */
+void BallAndSocketJoint::setConeLimitHalfAngle(decimal coneHalfAngle) {
+    mWorld.mBallAndSocketJointsComponents.setConeLimitHalfAngle(mEntity, coneHalfAngle);
+}
+
+// Set the normalized cone limit axis of body 1 in local-space of body 1
+void BallAndSocketJoint::setConeLimitLocalAxisBody1(const Vector3& localAxisBody1) {
+    mWorld.mBallAndSocketJointsComponents.setConeLimitLocalAxisBody1(mEntity, localAxisBody1);
+}
+
+// Set the normalized cone limit axis of body 2 in local-space of body 2
+void BallAndSocketJoint::setConeLimitLocalAxisBody2(const Vector3& localAxisBody2) {
+    mWorld.mBallAndSocketJointsComponents.setConeLimitLocalAxisBody2(mEntity, localAxisBody2);
+}
+
+// Return the cone angle limit (in radians) from [0; PI]
+decimal BallAndSocketJoint::getConeLimitHalfAngle() const {
+    return mWorld.mBallAndSocketJointsComponents.getConeLimitHalfAngle(mEntity);
+}
+
+// Return the current cone angle in radians (in [0, pi])
+decimal BallAndSocketJoint::getConeHalfAngle() const {
+
+    // Get the bodies entities
+    const Entity body1Entity = mWorld.mJointsComponents.getBody1Entity(mEntity);
+    const Entity body2Entity = mWorld.mJointsComponents.getBody2Entity(mEntity);
+
+    const Transform& transformBody1 = mWorld.mTransformComponents.getTransform(body1Entity);
+    const Transform& transformBody2 = mWorld.mTransformComponents.getTransform(body2Entity);
+
+    // Convert local-space cone axis of bodies to world-space
+    const Vector3 coneAxisBody1World = transformBody1.getOrientation() * mWorld.mBallAndSocketJointsComponents.getConeLimitLocalAxisBody1(mEntity);
+    const Vector3 coneAxisBody2World = transformBody2.getOrientation() * mWorld.mBallAndSocketJointsComponents.getConeLimitLocalAxisBody2(mEntity);
+
+    return SolveBallAndSocketJointSystem::computeCurrentConeHalfAngle(coneAxisBody1World, coneAxisBody2World);
+}
+
 // Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
 Vector3 BallAndSocketJoint::getReactionForce(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);

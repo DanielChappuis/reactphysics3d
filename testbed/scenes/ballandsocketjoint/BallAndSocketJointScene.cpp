@@ -97,7 +97,7 @@ void BallAndSocketJointScene::reset() {
     SceneDemo::reset();
 
     mBox1->setTransform(rp3d::Transform(rp3d::Vector3(0, 8, 0), rp3d::Quaternion::identity()));
-    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(4, 4, 4), rp3d::Quaternion::identity()));
+    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity()));
 }
 
 // Create the boxes and joints for the Ball-and-Socket joint example
@@ -117,8 +117,8 @@ void BallAndSocketJointScene::createBallAndSocketJoint() {
 
     // --------------- Create the box 2 --------------- //
 
-    mBox2 = new Box(true, Vector3(4, 4, 4),  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
-    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(4, 4, 4), rp3d::Quaternion::identity()));
+    mBox2 = new Box(true, Vector3(4, 8, 4),  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity()));
 
     // Set the box color
     mBox2->setColor(mObjectColorDemo);
@@ -139,4 +139,15 @@ void BallAndSocketJointScene::createBallAndSocketJoint() {
 
     // Create the joint in the physics world
     mJoint = dynamic_cast<rp3d::BallAndSocketJoint*>(mPhysicsWorld->createJoint(jointInfo));
+    mJoint->setConeLimitLocalAxisBody1(rp3d::Vector3(0, 1, 0));
+    mJoint->setConeLimitLocalAxisBody2(rp3d::Vector3(0, 1, 0));
+    mJoint->setConeLimitHalfAngle(45.0 * rp3d::PI_RP3D / 180.0);
+    mJoint->enableConeLimit(true);
+
+}
+
+// Update the scene
+void BallAndSocketJointScene::update() {
+
+    SceneDemo::update();
 }
