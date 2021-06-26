@@ -222,6 +222,7 @@ class RigidBody : public CollisionBody {
         friend class SolveHingeJointSystem;
         friend class SolveSliderJointSystem;
         friend class Joint;
+        friend class Collider;
 };
 
 /// Compute the inverse of the inertia tensor in world coordinates.

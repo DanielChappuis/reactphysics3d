@@ -114,7 +114,7 @@ void Collider::setLocalToBodyTransform(const Transform& transform) {
 
     RigidBody* rigidBody = static_cast<RigidBody*>(mBody);
     if (rigidBody != nullptr) {
-        mBody->mWorld.mRigidBodyComponents.setIsSleeping(mBody->getEntity(), false);
+        rigidBody->setIsSleeping(false);
     }
 
     mBody->mWorld.mCollisionDetection.updateCollider(mEntity, 0);
