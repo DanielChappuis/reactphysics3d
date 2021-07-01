@@ -41,6 +41,7 @@ do not hesitate to take a look at the user manual.
 - Issue with concave vs convex shape collision detection has been fixed
 - Issue with edge vs edge collision has been fixed in SAT algorithm (wrong contact normal was computed)
 - Issue with sphere radius in DebugRenderer
+- Issue where changing the transform of a Collider attached to a sleeping RigidBody caused the body to remain asleep
 - Issue [#157](https://github.com/DanielChappuis/reactphysics3d/issues/157) with matrix to quaternion conversion has been fixed
 - Issue [#184](https://github.com/DanielChappuis/reactphysics3d/issues/184) with update of mass/inertia properties of static bodies
 - Issue with the computation of the two friction vectors in the contact solver
