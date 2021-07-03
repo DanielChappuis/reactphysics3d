@@ -379,7 +379,7 @@ class PhysicsWorld {
         RigidBody* createRigidBody(const Transform& transform);
 
         /// Disable the joints for pair of sleeping bodies
-        void disableJointsOfSleepingBodies();
+        void enableDisableJoints();
 
         /// Destroy a rigid body and all the joints which it belongs
         void destroyRigidBody(RigidBody* rigidBody);

@@ -64,6 +64,8 @@ BallAndSocketJoint::BallAndSocketJoint(Entity entity, PhysicsWorld& world, const
 // Enable/disable the cone limit of the joint
 void BallAndSocketJoint::enableConeLimit(bool isLimitEnabled) {
     mWorld.mBallAndSocketJointsComponents.setIsConeLimitEnabled(mEntity, isLimitEnabled);
+
+    awakeBodies();
 }
 
 // Return true if the cone limit or the joint is enabled
@@ -76,17 +78,27 @@ bool BallAndSocketJoint::isConeLimitEnabled() const {
  * @param coneHalfAngle The angle of the cone limit (in radian) from [0; PI]
  */
 void BallAndSocketJoint::setConeLimitHalfAngle(decimal coneHalfAngle) {
-    mWorld.mBallAndSocketJointsComponents.setConeLimitHalfAngle(mEntity, coneHalfAngle);
+
+    if (mWorld.mBallAndSocketJointsComponents.getConeLimitHalfAngle(mEntity) != coneHalfAngle) {
+
+        mWorld.mBallAndSocketJointsComponents.setConeLimitHalfAngle(mEntity, coneHalfAngle);
+
+        awakeBodies();
+    }
 }
 
 // Set the normalized cone limit axis of body 1 in local-space of body 1
 void BallAndSocketJoint::setConeLimitLocalAxisBody1(const Vector3& localAxisBody1) {
     mWorld.mBallAndSocketJointsComponents.setConeLimitLocalAxisBody1(mEntity, localAxisBody1);
+
+    awakeBodies();
 }
 
 // Set the normalized cone limit axis of body 2 in local-space of body 2
 void BallAndSocketJoint::setConeLimitLocalAxisBody2(const Vector3& localAxisBody2) {
     mWorld.mBallAndSocketJointsComponents.setConeLimitLocalAxisBody2(mEntity, localAxisBody2);
+
+    awakeBodies();
 }
 
 // Return the cone angle limit (in radians) from [0; PI]

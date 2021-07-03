@@ -244,28 +244,6 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
         mCollidersComponents.setIsEntityDisabled(collidersEntities[i], isDisabled);
     }
-
-    // Disable the joints of the body if necessary
-    // For each joint of the body
-    const Array<Entity>& joints = mRigidBodyComponents.getJoints(bodyEntity);
-    const uint32 nbJoints = joints.size();
-    for(uint32 i=0; i < nbJoints; i++) {
-
-        const Entity body1Entity = mJointsComponents.getBody1Entity(joints[i]);
-        const Entity body2Entity = mJointsComponents.getBody2Entity(joints[i]);
-
-        // If both bodies of the joint are disabled
-        if (mRigidBodyComponents.getIsEntityDisabled(body1Entity) && mRigidBodyComponents.getIsEntityDisabled(body2Entity)) {
-
-            // We disable the joint
-            setJointDisabled(joints[i], true);
-        }
-        else {
-
-            // Enable the joint
-            setJointDisabled(joints[i], false);
-        }
-    }
 }
 
 // Notify the world whether a joint is disabled or not
@@ -349,8 +327,8 @@ void PhysicsWorld::update(decimal timeStep) {
     // Recompute the inverse inertia tensors of rigid bodies
     updateBodiesInverseWorldInertiaTensors();
 
-    // Disable the joints for pair of sleeping bodies
-    disableJointsOfSleepingBodies();
+    // Enable or disable the joints
+    enableDisableJoints();
 
     // Integrate the velocities
     mDynamicsSystem.integrateRigidBodiesVelocities(timeStep);
@@ -441,20 +419,36 @@ void PhysicsWorld::solvePositionCorrection() {
     }
 }
 
-// Disable the joints for pair of sleeping bodies
-void PhysicsWorld::disableJointsOfSleepingBodies() {
+// Enable or disable the joints
+void PhysicsWorld::enableDisableJoints() {
+
+    const uint32 nbJointComponents = mJointsComponents.getNbComponents();
+
+    Array<Entity> jointsEntites(mMemoryManager.getHeapAllocator(), nbJointComponents);
+
+    // Get all the joints entities
+    for (uint32 i = 0; i < nbJointComponents; i++) {
+        jointsEntites.add(mJointsComponents.mJointEntities[i]);
+    }
 
     // For each joint
-    for (uint32 i=0; i < mJointsComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i = 0; i < nbJointComponents; i++) {
 
-        Entity body1 = mJointsComponents.mBody1Entities[i];
-        Entity body2 = mJointsComponents.mBody2Entities[i];
+        uint32 jointEntityIndex = mJointsComponents.getEntityIndex(jointsEntites[i]);
+
+        Entity body1 = mJointsComponents.mBody1Entities[jointEntityIndex];
+        Entity body2 = mJointsComponents.mBody2Entities[jointEntityIndex];
 
         // If both bodies of the joint are disabled
-        if (mCollisionBodyComponents.getIsEntityDisabled(body1) && mCollisionBodyComponents.getIsEntityDisabled(body2)) {
+        if (mCollisionBodyComponents.getIsEntityDisabled(body1) || mCollisionBodyComponents.getIsEntityDisabled(body2)) {
 
             // Disable the joint
-            setJointDisabled(mJointsComponents.mJointEntities[i], true);
+            setJointDisabled(jointsEntites[i], true);
+        }
+        else {
+
+            // Enable the joint
+            setJointDisabled(jointsEntites[i], false);
         }
     }
 }
@@ -822,7 +816,7 @@ void PhysicsWorld::createIslands() {
             // Compute the body index in the array (Note that it could have changed because of the previous call to rigidBodyToVisit->setIsSleeping(false))
             const uint32 bodyToVisitIndex = mRigidBodyComponents.getEntityIndex(bodyToVisitEntity);
 
-            // If the currenbodyEntityIndicesToVisitt body is static, we do not want to perform the DFS search across that body
+            // If the current body is static, we do not want to perform the DFS search across that body
             if (mRigidBodyComponents.mBodyTypes[bodyToVisitIndex] == BodyType::STATIC) {
 
                 staticBodiesAddedToIsland.add(bodyToVisitEntity);
