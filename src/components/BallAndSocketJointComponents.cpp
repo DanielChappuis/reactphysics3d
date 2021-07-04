@@ -157,7 +157,7 @@ void BallAndSocketJointComponents::addComponent(Entity jointEntity, bool isSleep
     mBConeLimit[index] = decimal(0.0);
     mIsConeLimitViolated[index] = false;
     new (mConeLimitLocalAxisBody1 + index) Vector3(1, 0, 0);
-    new (mConeLimitLocalAxisBody2 + index) Vector3(-1, 0, 0);
+    new (mConeLimitLocalAxisBody2 + index) Vector3(1, 0, 0);
     new (mConeLimitACrossB + index) Vector3(0, 0, 0);
 
     // Map the entity with the new component lookup index

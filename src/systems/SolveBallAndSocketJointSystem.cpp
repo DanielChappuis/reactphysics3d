@@ -118,8 +118,8 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         }
 
         // Convert local-space cone axis of bodies to world-space
-        const Vector3 coneAxisBody1World = orientationBody1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[jointIndex];
-        const Vector3 coneAxisBody2World = orientationBody2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[jointIndex];
+        const Vector3 coneAxisBody1World = orientationBody1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[i];
+        const Vector3 coneAxisBody2World = orientationBody2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[i];
 
         mBallAndSocketJointComponents.mConeLimitACrossB[i] = coneAxisBody1World.cross(coneAxisBody2World);
 
@@ -400,8 +400,8 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
 
             // Check if the cone limit constraints is violated or not
-            const Vector3 coneAxisBody1World = q1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[jointIndex];
-            const Vector3 coneAxisBody2World = q2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[jointIndex];
+            const Vector3 coneAxisBody1World = q1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[i];
+            const Vector3 coneAxisBody2World = q2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[i];
             mBallAndSocketJointComponents.mConeLimitACrossB[i] = coneAxisBody1World.cross(coneAxisBody2World);
             decimal coneAngle = computeCurrentConeHalfAngle(coneAxisBody1World, coneAxisBody2World);
             decimal coneLimitError = mBallAndSocketJointComponents.mConeLimitHalfAngle[i] - coneAngle;
@@ -411,8 +411,8 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
             if (mBallAndSocketJointComponents.mIsConeLimitViolated[i]) {
 
                 // Compute the inverse of the mass matrix K=JM^-1J^t for the cone limit (1x1 matrix)
-                decimal inverseMassMatrixConeLimit = mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI1[jointIndex] * mBallAndSocketJointComponents.mConeLimitACrossB[i]) +
-                                                 mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI2[jointIndex] * mBallAndSocketJointComponents.mConeLimitACrossB[i]);
+                decimal inverseMassMatrixConeLimit = mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI1[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i]) +
+                                                 mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI2[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i]);
                 mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] = (inverseMassMatrixConeLimit > decimal(0.0)) ?
                                                                                decimal(1.0) / inverseMassMatrixConeLimit : decimal(0.0);
 
