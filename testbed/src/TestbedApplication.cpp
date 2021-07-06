@@ -47,6 +47,7 @@
 #include "ballandsocketjoint/BallAndSocketJointScene.h"
 #include "hingejoint/HingeJointScene.h"
 #include "sliderjoint/SliderJointScene.h"
+#include "ragdoll/RagdollScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -67,6 +68,7 @@ using namespace fixedjointscene;
 using namespace ballandsocketjointscene;
 using namespace hingejointscene;
 using namespace sliderjointscene;
+using namespace ragdollscene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -200,6 +202,10 @@ void TestbedApplication::createScenes() {
     // Slider joint scene
     SliderJointScene* sliderJointScene = new SliderJointScene("Slider joint", mEngineSettings);
     mScenes.push_back(sliderJointScene);
+
+    // Ragdoll scene
+    RagdollScene* ragdollScene = new RagdollScene("Ragdoll", mEngineSettings);
+    mScenes.push_back(ragdollScene);
 
     assert(mScenes.size() > 0);
 

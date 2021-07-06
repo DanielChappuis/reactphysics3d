@@ -15,7 +15,9 @@ do not hesitate to take a look at the user manual.
  - Method Joint::getReactionTorque() has been added to retrieve the current reaction torque of a joint
  - Method RigidBody::setLinearLockAxisFactor() to lock the translational movement of a body along the world-space x, y and z axes
  - Method RigidBody::setAngularLockAxisFactor() to lock the rotational movement of a body around the world-space x, y and z axes
+ - A cone limit can now be set to the ball-and-socket joint (this is useful for ragdolls)
  - Bridge scene has been added to the testbed application
+ - Ragdoll scene has been added to the testbed application
 
 ### Changed
 
