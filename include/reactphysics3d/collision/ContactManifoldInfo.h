@@ -45,12 +45,11 @@ struct ContactManifoldInfo {
 
         // -------------------- Attributes -------------------- //
 
-        /// Number of potential contact points
-        uint8 nbPotentialContactPoints;
+        /// Memory allocator
+        MemoryAllocator& allocator;
 
         /// Indices of the contact points in the mPotentialContactPoints array
-        uint potentialContactPointsIndices[NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD];
-
+        Array<uint> potentialContactPointsIndices;
 
         /// Overlapping pair id
         uint64 pairId;
@@ -58,7 +57,8 @@ struct ContactManifoldInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifoldInfo(uint64 pairId) : nbPotentialContactPoints(0), pairId(pairId) {
+        ContactManifoldInfo(uint64 pairId, MemoryAllocator& allocator)
+            : allocator(allocator), potentialContactPointsIndices(allocator, 4), pairId(pairId) {
 
         }
 

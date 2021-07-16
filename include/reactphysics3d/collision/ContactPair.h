@@ -44,14 +44,14 @@ struct ContactPair {
 
         // -------------------- Attributes -------------------- //
 
+        /// Reference to the memory allocator
+        MemoryAllocator& allocator;
+
         /// Overlapping pair Id
         uint64 pairId;
 
-        /// Number of potential contact manifolds
-        uint8 nbPotentialContactManifolds;
-
         /// Indices of the potential contact manifolds
-        uint potentialContactManifoldsIndices[NB_MAX_POTENTIAL_CONTACT_MANIFOLDS];
+        Array<uint> potentialContactManifoldsIndices;
 
         /// Entity of the first body of the contact
         Entity body1Entity;
@@ -93,8 +93,9 @@ struct ContactPair {
 
         /// Constructor
         ContactPair(uint64 pairId, Entity body1Entity, Entity body2Entity, Entity collider1Entity,
-                    Entity collider2Entity, uint contactPairIndex, bool collidingInPreviousFrame, bool isTrigger)
-            : pairId(pairId), nbPotentialContactManifolds(0), body1Entity(body1Entity), body2Entity(body2Entity),
+                    Entity collider2Entity, uint contactPairIndex, bool collidingInPreviousFrame, bool isTrigger, MemoryAllocator& allocator)
+            : allocator(allocator), pairId(pairId), potentialContactManifoldsIndices(allocator, 1),
+              body1Entity(body1Entity), body2Entity(body2Entity),
               collider1Entity(collider1Entity), collider2Entity(collider2Entity),
               isAlreadyInIsland(false), contactPairIndex(contactPairIndex), contactManifoldsIndex(0), nbContactManifolds(0),
               contactPointsIndex(0), nbToTalContactPoints(0), collidingInPreviousFrame(collidingInPreviousFrame), isTrigger(isTrigger) {
@@ -103,10 +104,9 @@ struct ContactPair {
 
         // Remove a potential manifold at a given index in the array
         void removePotentialManifoldAtIndex(uint index) {
-            assert(index < nbPotentialContactManifolds);
+            assert(index < potentialContactManifoldsIndices.size());
 
-            potentialContactManifoldsIndices[index] = potentialContactManifoldsIndices[nbPotentialContactManifolds - 1];
-            nbPotentialContactManifolds--;
+            potentialContactManifoldsIndices.removeAtAndReplaceByLast(index);
         }
 };
 

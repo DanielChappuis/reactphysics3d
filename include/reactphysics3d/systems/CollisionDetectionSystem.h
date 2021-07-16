@@ -265,6 +265,10 @@ class CollisionDetectionSystem {
         void reduceContactPoints(ContactManifoldInfo& manifold, const Transform& shape1ToWorldTransform,
                                  const Array<ContactPointInfo>& potentialContactPoints) const;
 
+        /// Remove the duplicated contact points in a given contact manifold
+        void removeDuplicatedContactPointsInManifold(ContactManifoldInfo& manifold,
+                                                     const Array<ContactPointInfo>& potentialContactPoints) const;
+
         /// Report contacts
         void reportContacts(CollisionCallback& callback, Array<ContactPair>* contactPairs,
                             Array<ContactManifold>* manifolds, Array<ContactPoint>* contactPoints, Array<ContactPair>& lostContactPairs);
@@ -289,7 +293,7 @@ class CollisionDetectionSystem {
         void filterOverlappingPairs(Entity body1Entity, Entity body2Entity, Array<uint64>& convexPairs, Array<uint64>& concavePairs) const;
 
         /// Remove an element in an array (and replace it by the last one in the array)
-        void removeItemAtInArray(uint array[], uint8 index, uint8& arraySize) const;
+        void removeItemAtInArray(Array<uint>& array, uint32 index) const;
 
     public :
 
