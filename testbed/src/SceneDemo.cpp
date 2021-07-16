@@ -636,7 +636,7 @@ void SceneDemo::moveBodyWithMouse(double mousePosX, double mousePosY) {
         openglframework::Vector4 forceScreen = currentScreenPos - previousScreenPos;
         openglframework::Vector4 f = mCamera.getTransformMatrix() * forceScreen * MOUSE_MOVE_BODY_FORCE;
         rp3d::Vector3 force(f.x, f.y, f.z);
-        mMovingBody->applyForceAtLocalPosition(force, mMovingBodyLocalPoint);
+        mMovingBody->applyWorldForceAtLocalPosition(force, mMovingBodyLocalPoint);
     }
 
     mLastMouseX = mousePosX;
