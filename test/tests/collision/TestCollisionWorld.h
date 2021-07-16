@@ -445,7 +445,7 @@ class TestCollisionWorld : public Test {
 			}
 
             mConcaveMeshTriangleVertexArray = new rp3d::TriangleVertexArray(36, &(mConcaveMeshPlaneVertices[0]), sizeof(Vector3),
-					25, &(mConcaveMeshPlaneIndices[0]), 3 * sizeof(int),
+                    50, &(mConcaveMeshPlaneIndices[0]), 3 * sizeof(int),
 					rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
@@ -2524,7 +2524,7 @@ class TestCollisionWorld : public Test {
             Transform initTransform2 = mConcaveMeshBody->getTransform();
 
             /********************************************************************************
-            * Test Box vs Concave Mesh
+            * Test Convex Mesh vs Concave Mesh
             *********************************************************************************/
 
             Transform transform1(Vector3(10, 22, 50), Quaternion::identity());
