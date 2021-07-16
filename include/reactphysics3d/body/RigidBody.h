@@ -165,14 +165,23 @@ class RigidBody : public CollisionBody {
         /// Set the lock rotation factor
         void setAngularLockAxisFactor(const Vector3& angularLockAxisFactor) const;
 
-        /// Apply an external force to the body at its center of mass.
-        void applyForceToCenterOfMass(const Vector3& force);
+        /// Apply an external force (in local-space) to the body at its center of mass.
+        void applyLocalForceAtCenterOfMass(const Vector3& force);
 
-        /// Apply an external force to the body at a given point (in local-space coordinates).
-        void applyForceAtLocalPosition(const Vector3& force, const Vector3& point);
+        /// Apply an external force (in world-space) to the body at its center of mass.
+        void applyWorldForceAtCenterOfMass(const Vector3& force);
 
-        /// Apply an external force to the body at a given point (in world-space coordinates).
-        void applyForceAtWorldPosition(const Vector3& force, const Vector3& point);
+        /// Apply an external force (in local-space) to the body at a given point (in local-space).
+        void applyLocalForceAtLocalPosition(const Vector3& force, const Vector3& point);
+
+        /// Apply an external force (in world-space) to the body at a given point (in local-space).
+        void applyWorldForceAtLocalPosition(const Vector3& force, const Vector3& point);
+
+        /// Apply an external force (in local-space) to the body at a given point (in world-space).
+        void applyLocalForceAtWorldPosition(const Vector3& force, const Vector3& point);
+
+        /// Apply an external force (in world-space) to the body at a given point (in world-space).
+        void applyWorldForceAtWorldPosition(const Vector3& force, const Vector3& point);
 
         /// Apply an external torque to the body.
         void applyTorque(const Vector3& torque);

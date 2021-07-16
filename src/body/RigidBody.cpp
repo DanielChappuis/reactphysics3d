@@ -127,7 +127,26 @@ decimal RigidBody::getMass() const {
     return mWorld.mRigidBodyComponents.getMass(mEntity);
 }
 
-// Apply an external force to the body at a given point (in local-space coordinates).
+// Apply an external force (in local-space) to the body at a given point (in local-space).
+/// If the point is not at the center of mass of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The force (in local-space of the body) to apply on the body (in Newtons)
+ * @param point The point where the force is applied (in local-space of the body)
+ */
+void RigidBody::applyLocalForceAtLocalPosition(const Vector3& force, const Vector3& point) {
+
+    // Convert the local-space force to world-space
+    const Vector3 worldForce = mWorld.mTransformComponents.getTransform(mEntity).getOrientation() * force;
+
+    applyWorldForceAtLocalPosition(worldForce, point);
+}
+
+// Apply an external force (in world-space) to the body at a given point (in local-space).
 /// If the point is not at the center of mass of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
@@ -136,9 +155,9 @@ decimal RigidBody::getMass() const {
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
  * @param force The force (in world-space) to apply on the body (in Newtons)
- * @param point The point where the force is applied (in local-space coordinates)
+ * @param point The point where the force is applied (in local-space)
  */
-void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& point) {
+void RigidBody::applyWorldForceAtLocalPosition(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
@@ -159,7 +178,26 @@ void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& p
     mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + (worldPoint - centerOfMassWorld).cross(force));
 }
 
-// Apply an external force to the body at a given point (in world-space coordinates).
+// Apply an external force (in local-space) to the body at a given point (in world-space).
+/// If the point is not at the center of mass of the body, it will also
+/// generate some torque and therefore, change the angular velocity of the body.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The force (in local-space of the body) to apply on the body (in Newtons)
+ * @param point The point where the force is applied (in world-space)
+ */
+void RigidBody::applyLocalForceAtWorldPosition(const Vector3& force, const Vector3& point) {
+
+    // Convert the local-space force to world-space
+    const Vector3 worldForce = mWorld.mTransformComponents.getTransform(mEntity).getOrientation() * force;
+
+    applyWorldForceAtWorldPosition(worldForce, point);
+}
+
+// Apply an external force (in world-space) to the body at a given point (in world-space).
 /// If the point is not at the center of mass of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
@@ -168,9 +206,9 @@ void RigidBody::applyForceAtLocalPosition(const Vector3& force, const Vector3& p
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
  * @param force The force (in world-space) to apply on the body (in Newtons)
- * @param point The point where the force is applied (in world-space coordinates)
+ * @param point The point where the force is applied (in world-space)
  */
-void RigidBody::applyForceAtWorldPosition(const Vector3& force, const Vector3& point) {
+void RigidBody::applyWorldForceAtWorldPosition(const Vector3& force, const Vector3& point) {
 
     // If it is not a dynamic body, we do nothing
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
@@ -223,7 +261,23 @@ void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
              "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string(),  __FILE__, __LINE__);
 }
 
-// Apply an external force to the body at its center of mass.
+// Apply an external force (in local-space) to the body at its center of mass.
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied forces and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param force The external force (in local-space of the body) to apply on the center of mass of the body (in Newtons)
+ */
+void RigidBody::applyLocalForceAtCenterOfMass(const Vector3& force) {
+
+    // Convert the local-space force to world-space
+    const Vector3 worldForce = mWorld.mTransformComponents.getTransform(mEntity).getOrientation() * force;
+
+    applyWorldForceAtCenterOfMass(worldForce);
+}
+
+// Apply an external force (in world-space) to the body at its center of mass.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied forces and that this sum will be
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
@@ -231,7 +285,7 @@ void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
 /**
  * @param force The external force (in world-space) to apply on the center of mass of the body (in Newtons)
  */
-void RigidBody::applyForceToCenterOfMass(const Vector3& force) {
+void RigidBody::applyWorldForceAtCenterOfMass(const Vector3& force) {
 
     // If it is not a dynamic body, we do nothing
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;

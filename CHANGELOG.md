@@ -15,6 +15,9 @@ do not hesitate to take a look at the user manual.
  - Method Joint::getReactionTorque() has been added to retrieve the current reaction torque of a joint
  - Method RigidBody::setLinearLockAxisFactor() to lock the translational movement of a body along the world-space x, y and z axes
  - Method RigidBody::setAngularLockAxisFactor() to lock the rotational movement of a body around the world-space x, y and z axes
+ - Method RigidBody::applyLocalForceAtWorldPosition()
+ - Method RigidBody::applyLocalForceAtLocalPosition()
+ - Method RigidBody::applyLocalForceToCenterOfMass()
  - A cone limit can now be set to the ball-and-socket joint (this is useful for ragdolls)
  - Bridge scene has been added to the testbed application
  - Ragdoll scene has been added to the testbed application
@@ -26,6 +29,9 @@ do not hesitate to take a look at the user manual.
  - The List class has been renamed to Array
  - The default number of iterations for the velocity solver is now 6 instead of 10
  - The default number of iterations for the position solver is now 3 instead of 5
+ - Rename method RigidBody::applyForceAtWorldPosition() into RigidBody::applyWorldForceAtWorldPosition()
+ - Rename method RigidBody::applyForceAtLocalPosition() into RigidBody::applyWorldForceAtLocalPosition()
+ - Rename method RigidBody::applyForceToCenterOfMass() into RigidBody::applyWorldForceAtCenterOfMass()
  - The raycasting broad-phase performance has been improved
  - The raycasting performance against HeighFieldShape has been improved (better middle-phase algorithm)
  - Robustness of polyhedron vs polyhedron collision detection has been improved in SAT algorithm (face contacts are favored over edge-edge contacts for better stability)
