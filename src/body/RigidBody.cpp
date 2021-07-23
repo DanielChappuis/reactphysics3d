@@ -127,7 +127,7 @@ decimal RigidBody::getMass() const {
     return mWorld.mRigidBodyComponents.getMass(mEntity);
 }
 
-// Apply an external force (in local-space) to the body at a given point (in local-space).
+// Manually apply an external force (in local-space) to the body at a given point (in local-space).
 /// If the point is not at the center of mass of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
@@ -146,7 +146,7 @@ void RigidBody::applyLocalForceAtLocalPosition(const Vector3& force, const Vecto
     applyWorldForceAtLocalPosition(worldForce, point);
 }
 
-// Apply an external force (in world-space) to the body at a given point (in local-space).
+// Manually apply an external force (in world-space) to the body at a given point (in local-space).
 /// If the point is not at the center of mass of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
@@ -178,7 +178,7 @@ void RigidBody::applyWorldForceAtLocalPosition(const Vector3& force, const Vecto
     mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + (worldPoint - centerOfMassWorld).cross(force));
 }
 
-// Apply an external force (in local-space) to the body at a given point (in world-space).
+// Manually apply an external force (in local-space) to the body at a given point (in world-space).
 /// If the point is not at the center of mass of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
@@ -197,7 +197,7 @@ void RigidBody::applyLocalForceAtWorldPosition(const Vector3& force, const Vecto
     applyWorldForceAtWorldPosition(worldForce, point);
 }
 
-// Apply an external force (in world-space) to the body at a given point (in world-space).
+// Manually apply an external force (in world-space) to the body at a given point (in world-space).
 /// If the point is not at the center of mass of the body, it will also
 /// generate some torque and therefore, change the angular velocity of the body.
 /// If the body is sleeping, calling this method will wake it up. Note that the
@@ -261,7 +261,7 @@ void RigidBody::setLocalInertiaTensor(const Vector3& inertiaTensorLocal) {
              "Body " + std::to_string(mEntity.id) + ": Set inertiaTensorLocal=" + inertiaTensorLocal.to_string(),  __FILE__, __LINE__);
 }
 
-// Apply an external force (in local-space) to the body at its center of mass.
+// Manually apply an external force (in local-space) to the body at its center of mass.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied forces and that this sum will be
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
@@ -277,7 +277,7 @@ void RigidBody::applyLocalForceAtCenterOfMass(const Vector3& force) {
     applyWorldForceAtCenterOfMass(worldForce);
 }
 
-// Apply an external force (in world-space) to the body at its center of mass.
+// Manually apply an external force (in world-space) to the body at its center of mass.
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied forces and that this sum will be
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
@@ -885,15 +885,15 @@ void RigidBody::setAngularLockAxisFactor(const Vector3& angularLockAxisFactor) c
     mWorld.mRigidBodyComponents.setAngularLockAxisFactor(mEntity, angularLockAxisFactor);
 }
 
-// Apply an external torque to the body.
+// Manually apply an external torque to the body (in world-space).
 /// If the body is sleeping, calling this method will wake it up. Note that the
 /// force will we added to the sum of the applied torques and that this sum will be
 /// reset to zero at the end of each call of the PhyscisWorld::update() method.
 /// You can only apply a force to a dynamic body otherwise, this method will do nothing.
 /**
- * @param torque The external torque to apply on the body
+ * @param torque The external torque to apply on the body (in world-space)
  */
-void RigidBody::applyTorque(const Vector3& torque) {
+void RigidBody::applyWorldTorque(const Vector3& torque) {
 
     // If it is not a dynamic body, we do nothing
     if (mWorld.mRigidBodyComponents.getBodyType(mEntity) != BodyType::DYNAMIC) return;
@@ -906,6 +906,22 @@ void RigidBody::applyTorque(const Vector3& torque) {
     // Add the torque
     const Vector3& externalTorque = mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
     mWorld.mRigidBodyComponents.setExternalTorque(mEntity, externalTorque + torque);
+}
+
+// Manually apply an external torque to the body (in local-space).
+/// If the body is sleeping, calling this method will wake it up. Note that the
+/// force will we added to the sum of the applied torques and that this sum will be
+/// reset to zero at the end of each call of the PhyscisWorld::update() method.
+/// You can only apply a force to a dynamic body otherwise, this method will do nothing.
+/**
+ * @param torque The external torque to apply on the body (in local-space)
+ */
+void RigidBody::applyLocalTorque(const Vector3& torque) {
+
+    // Convert the local-space torque to world-space
+    const Vector3 worldTorque = mWorld.mTransformComponents.getTransform(mEntity).getOrientation() * torque;
+
+    applyWorldTorque(worldTorque);
 }
 
 // Reset the accumulated force to zero
@@ -926,6 +942,16 @@ void RigidBody::resetTorque() {
 
     // Set the external torque to zero
     mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3(0, 0, 0));
+}
+
+// Return the total manually applied force on the body (in world-space)
+const Vector3& RigidBody::getForce() const {
+    return mWorld.mRigidBodyComponents.getExternalForce(mEntity);
+}
+
+// Return the total manually applied torque on the body (in world-space)
+const Vector3& RigidBody::getTorque() const {
+    return mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
 }
 
 // Set the variable to know whether or not the body is sleeping

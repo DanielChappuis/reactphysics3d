@@ -2432,7 +2432,7 @@ class TestCollisionWorld : public Test {
             Transform transform1(Vector3(10, 22, 50), Quaternion::identity());
             Transform transform2(Vector3(10, 20, 50), Quaternion::identity());
 
-            // Move spheres to collide with each other
+            // Move bodies to collide with each other
             mBoxBody1->setTransform(transform1);
             mConcaveMeshBody->setTransform(transform2);
 
@@ -2454,7 +2454,10 @@ class TestCollisionWorld : public Test {
             // Get collision data
             const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
+            auto test = collisionData->getNbContactPairs();
             rp3d_test(collisionData->getNbContactPairs() == 1);
+            auto test1 = collisionData->getTotalNbContactPoints();
+
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {

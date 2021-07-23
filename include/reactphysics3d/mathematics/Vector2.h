@@ -148,9 +148,6 @@ struct Vector2 {
         /// Return the zero vector
         static Vector2 zero();
 
-        /// Function to test if two vectors are (almost) equal
-        static bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon = MACHINE_EPSILON);
-
         // -------------------- Friends -------------------- //
 
         friend Vector2 operator+(const Vector2& vector1, const Vector2& vector2);
@@ -375,7 +372,7 @@ RP3D_FORCE_INLINE Vector2 Vector2::zero() {
 }
 
 // Function to test if two vectors are (almost) equal
-RP3D_FORCE_INLINE bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon) {
+RP3D_FORCE_INLINE bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon = MACHINE_EPSILON) {
     return approxEqual(vec1.x, vec2.x, epsilon) && approxEqual(vec1.y, vec2.y, epsilon);
 }
 

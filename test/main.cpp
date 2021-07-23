@@ -44,6 +44,7 @@
 #include "tests/containers/TestSet.h"
 #include "tests/containers/TestDeque.h"
 #include "tests/containers/TestStack.h"
+#include "tests/engine/TestRigidBody.h"
 
 using namespace reactphysics3d;
 
@@ -78,6 +79,11 @@ int main() {
     testSuite.addTest(new TestCollisionWorld("CollisionWorld"));
     testSuite.addTest(new TestDynamicAABBTree("DynamicAABBTree"));
     testSuite.addTest(new TestHalfEdgeStructure("HalfEdgeStructure"));
+
+
+    // ---------- Engine tests ---------- //
+
+    testSuite.addTest(new TestRigidBody("RigidBody"));
 
     // Run the tests
     testSuite.run();

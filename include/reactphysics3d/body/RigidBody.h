@@ -165,32 +165,41 @@ class RigidBody : public CollisionBody {
         /// Set the lock rotation factor
         void setAngularLockAxisFactor(const Vector3& angularLockAxisFactor) const;
 
-        /// Apply an external force (in local-space) to the body at its center of mass.
+        /// Manually apply an external force (in local-space) to the body at its center of mass.
         void applyLocalForceAtCenterOfMass(const Vector3& force);
 
-        /// Apply an external force (in world-space) to the body at its center of mass.
+        /// Manually apply an external force (in world-space) to the body at its center of mass.
         void applyWorldForceAtCenterOfMass(const Vector3& force);
 
-        /// Apply an external force (in local-space) to the body at a given point (in local-space).
+        /// Manually apply an external force (in local-space) to the body at a given point (in local-space).
         void applyLocalForceAtLocalPosition(const Vector3& force, const Vector3& point);
 
-        /// Apply an external force (in world-space) to the body at a given point (in local-space).
+        /// Manually apply an external force (in world-space) to the body at a given point (in local-space).
         void applyWorldForceAtLocalPosition(const Vector3& force, const Vector3& point);
 
-        /// Apply an external force (in local-space) to the body at a given point (in world-space).
+        /// Manually apply an external force (in local-space) to the body at a given point (in world-space).
         void applyLocalForceAtWorldPosition(const Vector3& force, const Vector3& point);
 
-        /// Apply an external force (in world-space) to the body at a given point (in world-space).
+        /// Manually apply an external force (in world-space) to the body at a given point (in world-space).
         void applyWorldForceAtWorldPosition(const Vector3& force, const Vector3& point);
 
-        /// Apply an external torque to the body.
-        void applyTorque(const Vector3& torque);
+        /// Manually apply an external torque to the body (in world-space).
+        void applyWorldTorque(const Vector3& torque);
 
-        /// Reset the accumulated force to zero
+        /// Manually apply an external torque to the body (in local-space).
+        void applyLocalTorque(const Vector3& torque);
+
+        /// Reset the manually applied force to zero
         void resetForce();
 
-        /// Reset the accumulated torque to zero
+        /// Reset the manually applied torque to zero
         void resetTorque();
+
+        /// Return the total manually applied force on the body (in world-space)
+        const Vector3& getForce() const;
+
+        /// Return the total manually applied torque on the body (in world-space)
+        const Vector3& getTorque() const;
 
         /// Return whether or not the body is allowed to sleep
         bool isAllowedToSleep() const;
