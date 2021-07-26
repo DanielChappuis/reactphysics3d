@@ -845,11 +845,11 @@ void PhysicsWorld::createIslands() {
 
                     mProcessContactPairsOrderIslands.add(contactPairIndex);
 
-                    assert(pair.nbPotentialContactManifolds > 0);
-                    nbTotalManifolds += pair.nbPotentialContactManifolds;
+                    assert(pair.potentialContactManifoldsIndices.size() > 0);
+                    nbTotalManifolds += pair.potentialContactManifoldsIndices.size();
 
                     // Add the contact manifold into the island
-                    mIslands.nbContactManifolds[islandIndex] += pair.nbPotentialContactManifolds;
+                    mIslands.nbContactManifolds[islandIndex] += pair.potentialContactManifoldsIndices.size();
                     pair.isAlreadyInIsland = true;
 
                     // Check if the other body has already been added to the island
