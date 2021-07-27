@@ -102,9 +102,6 @@ class TestQuaternion : public Test {
             rp3d_test(approxEqual(original[2][1], converted[2][1], 0.0001));
             rp3d_test(approxEqual(original[2][2], converted[2][2], 0.0001));
 
-            std::cout << original.to_string() << std::endl;
-            std::cout << converted.to_string() << std::endl;
-
             // Test conversion from Euler angles to quaternion
 
             const decimal PI_OVER_2 = PI_RP3D * decimal(0.5);
