@@ -288,7 +288,7 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         // Check that at least one body is enabled (active and awake) and not static
         if (mOverlappingPairs.mIsActive[i]) {
 
-            computeConvexVsConcaveMiddlePhase(i, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
+            computeConvexVsConcaveMiddlePhase(i, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput, needToReportContacts);
 
             mOverlappingPairs.mCollidingInCurrentFrame[i] = false;
         }
@@ -349,12 +349,12 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(List<uint64>&
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[pairIndex]) != -1);
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders1[pairIndex]) != mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mColliders2[pairIndex]));
 
-        computeConvexVsConcaveMiddlePhase(pairIndex, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
+        computeConvexVsConcaveMiddlePhase(pairIndex, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput, reportContacts);
     }
 }
 
 // Compute the concave vs convex middle-phase algorithm for a given pair of bodies
-void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairIndex, MemoryAllocator& allocator, NarrowPhaseInput& narrowPhaseInput) {
+void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairIndex, MemoryAllocator& allocator, NarrowPhaseInput& narrowPhaseInput, bool reportContacts) {
 
     RP3D_PROFILE("CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase()", mProfiler);
 
@@ -405,7 +405,7 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(uint64 pairInde
 
     const bool isCollider1Trigger = mCollidersComponents.mIsTrigger[collider1Index];
     const bool isCollider2Trigger = mCollidersComponents.mIsTrigger[collider2Index];
-    const bool reportContacts = !isCollider1Trigger && !isCollider2Trigger;
+    reportContacts = reportContacts && !isCollider1Trigger && !isCollider2Trigger;
 
     // For each overlapping triangle
     for (uint i=0; i < shapeIds.size(); i++)
