@@ -350,7 +350,7 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider2) != -1);
         assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider1) != mCollidersComponents.getBroadPhaseId(overlappingPair.collider2));
 
-        computeConvexVsConcaveMiddlePhase(overlappingPair, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
+        computeConvexVsConcaveMiddlePhase(overlappingPair, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput, needToReportContacts);
 
         overlappingPair.collidingInCurrentFrame = false;
     }
@@ -412,12 +412,12 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(Array<uint64>
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mConcavePairs[pairIndex].collider2) != -1);
         assert(mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mConcavePairs[pairIndex].collider1) != mCollidersComponents.getBroadPhaseId(mOverlappingPairs.mConcavePairs[pairIndex].collider2));
 
-        computeConvexVsConcaveMiddlePhase(mOverlappingPairs.mConcavePairs[pairIndex], mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput);
+        computeConvexVsConcaveMiddlePhase(mOverlappingPairs.mConcavePairs[pairIndex], mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput, reportContacts);
     }
 }
 
 // Compute the concave vs convex middle-phase algorithm for a given pair of bodies
-void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPairs::ConcaveOverlappingPair& overlappingPair, MemoryAllocator& allocator, NarrowPhaseInput& narrowPhaseInput) {
+void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPairs::ConcaveOverlappingPair& overlappingPair, MemoryAllocator& allocator, NarrowPhaseInput& narrowPhaseInput, bool reportContacts) {
 
     RP3D_PROFILE("CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase()", mProfiler);
 
@@ -467,7 +467,7 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
 
     const bool isCollider1Trigger = mCollidersComponents.mIsTrigger[collider1Index];
     const bool isCollider2Trigger = mCollidersComponents.mIsTrigger[collider2Index];
-    const bool reportContacts = !isCollider1Trigger && !isCollider2Trigger;
+    reportContacts = reportContacts && !isCollider1Trigger && !isCollider2Trigger;
 
     CollisionShape* shape1;
     CollisionShape* shape2;

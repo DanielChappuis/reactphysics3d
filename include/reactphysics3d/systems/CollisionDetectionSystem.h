@@ -221,7 +221,7 @@ class CollisionDetectionSystem {
 
         /// Compute the concave vs convex middle-phase algorithm for a given pair of bodies
         void computeConvexVsConcaveMiddlePhase(OverlappingPairs::ConcaveOverlappingPair& overlappingPair, MemoryAllocator& allocator,
-                                               NarrowPhaseInput& narrowPhaseInput);
+                                               NarrowPhaseInput& narrowPhaseInput, bool reportContacts);
 
         /// Swap the previous and current contacts arrays
         void swapPreviousAndCurrentContacts();
