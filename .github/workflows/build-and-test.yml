@@ -115,3 +115,7 @@ jobs:
         shell: bash
         run: cmake --build build/ --config ${{ matrix.config.build_type }}
 
+      - name: Unit Tests
+        shell: bash
+        run: ./build/test/tests
+
