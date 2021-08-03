@@ -40,6 +40,17 @@ jobs:
             generators: "Ninja",
             double_precision: false
           }
+        - {
+            name: "Linux / Clang (Debug, Single Precision)",
+            os: ubuntu-latest,
+            artifact: "ubuntu_gcc.7z",
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+            archiver: "7z a",
+            generators: "Ninja",
+            double_precision: false
+          }
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -66,6 +77,7 @@ jobs:
           ninja --version
           cmake --version
           gcc --version
+          clang --version
 
       - name: Install dependencies on MacOS
         if: startsWith(matrix.config.os, 'macos')
