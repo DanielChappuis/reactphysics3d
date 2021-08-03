@@ -19,14 +19,15 @@ jobs:
       matrix:
         config: 
         - {
-            name: "Ubuntu_Latest_GCC",
+            name: "Ubuntu Latest GCC",
             os: ubuntu-latest,
             artifact: "ubuntu_gcc.7z",
             build_type: "Release",
             cc: "gcc",
             cxx: "g++",
             archiver: "7z a",
-            generators: "Ninja"
+            generators: "Ninja",
+            double_precision: false
           }
 
     steps:
@@ -37,6 +38,7 @@ jobs:
         run: |
           echo github.event.action: ${{ github.event.action }}
           echo github.event_name: ${{ github.event_name }}
+
       - name: Install dependencies on windows
         if: startsWith(matrix.config.os, 'windows')
         run: |
@@ -45,14 +47,15 @@ jobs:
           cmake --version
         # cmd "${{ matrix.config.environment_script }}"
 
-      - name: Install dependencies on ubuntu
-        if: startsWith(matrix.config.name, 'Ubuntu_Latest_GCC')
+      - name: Install dependencies on Ubuntu
+        if: startsWith(matrix.config.name, 'Ubuntu Latest GCC')
         run: |
           sudo apt-get update
           sudo apt-get install ninja-build cmake
           ninja --version
           cmake --version
           gcc --version
+
       - name: Install dependencies on ubuntu9
         if: startsWith(matrix.config.name, 'Ubuntu_GCC_9')
         run: |
@@ -88,25 +91,31 @@ jobs:
           sudo update-alternatives --install /usr/bin/cmake cmake /opt/cmake/bin/cmake 1 --force
           echo cmake version after
           cmake --version
-      - name: Install dependencies on macos
+
+      - name: Install dependencies on MacOS
         if: startsWith(matrix.config.os, 'macos')
         run: |
-          brew install p7zip cmake ninja
+          brew install cmake ninja
           ninja --version
           cmake --version
           
-      - name: Configure
+      - name: CMake Configure
         shell: bash
         run: |
           mkdir build
-          mkdir instdir
           cmake \
             -S . \
-            -B . \
+            -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
+            -DRP3D_COMPILE_TESTS=True \
             -G "${{ matrix.config.generators }}" \
-            -DCMAKE_INSTALL_PREFIX:PATH=instdir
+
       - name: Build
         shell: bash
         run: cmake --build . --config ${{ matrix.config.build_type }}
+
+      - name: Unit Tests
+        shell: bash
+        run: ./build/test/tests
 
