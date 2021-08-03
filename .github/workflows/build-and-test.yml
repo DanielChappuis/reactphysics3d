@@ -105,7 +105,7 @@ jobs:
           mkdir build
           cmake \
             -S . \
-            -B build \
+            -B . \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
             -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
             -DRP3D_COMPILE_TESTS=True \
@@ -117,5 +117,5 @@ jobs:
 
       - name: Unit Tests
         shell: bash
-        run: ./build/test/tests
+        run: ./test/tests
 
