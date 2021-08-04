@@ -195,9 +195,12 @@ jobs:
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
           ./build_hello_world/helloworld
 
-      - name: Test Coverage
+      - name: Compute Code Coverage
+        if: ${{ matrix.config.coverage }}
         shell: bash
-        run: ls -la coverage/
+        run: |
+          make ReactPhysics3D_coverage
+          ls -la coverage/
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.config.coverage }}
