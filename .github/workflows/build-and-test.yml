@@ -193,13 +193,16 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
             -G "${{ matrix.config.generators }}"
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
-          ls -la build_hello_world
           ./build_hello_world/helloworld
+
+      - name: Test Coverage
+        shell: bash
+        run: ls -la coverage/
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.config.coverage }}
         uses: codecov/codecov-action@v2
         with:
-          path_to_write_report: ./coverage/codecov_report.txt
+          fail_ci_if_error: true
           verbose: true
 
