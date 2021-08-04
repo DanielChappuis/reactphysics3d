@@ -69,6 +69,14 @@ jobs:
             coverage: false
           }
         - {
+            name: "MacOS / Clang (Debug, Single Precision)",
+            os: macos-latest,
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+            generators: "Ninja"
+          }
+        - {
             name: "Code Coverage",
             os: ubuntu-latest,
             build_type: "Debug",
@@ -94,10 +102,9 @@ jobs:
           choco install ninja cmake
           ninja --version
           cmake --version
-        # cmd "${{ matrix.config.environment_script }}"
 
       - name: Install dependencies on Linux
-        if: startsWith(matrix.config.name, 'Linux')
+        if: startsWith(matrix.config.os, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install ninja-build cmake
@@ -159,6 +166,7 @@ jobs:
           ./build_hello_world/helloworld
 
       - name: Upload coverage to Codecov
+        if: startsWith(matrix.config.name, 'Code Coverage')
         uses: codecov/codecov-action@v2
         with:
           path_to_write_report: ./coverage/codecov_report.txt
