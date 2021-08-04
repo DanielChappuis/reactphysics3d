@@ -165,7 +165,7 @@ jobs:
         run: cmake --build build/ --config ${{ matrix.config.build_type }}
 
       - name: Install Library on Linux/MacOS
-        if: !(startsWith(matrix.config.os, 'windows'))
+        if: ${{ !startsWith(matrix.config.os, 'windows') }}
         shell: bash
         run: sudo cmake --install build/ 
 
