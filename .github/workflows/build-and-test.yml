@@ -164,15 +164,22 @@ jobs:
         shell: bash
         run: cmake --build build/ --config ${{ matrix.config.build_type }}
 
-      - name: Install
+      - name: Install Library on Linux/MacOS
+        if: !(startsWith(matrix.config.os, 'windows'))
         shell: bash
         run: sudo cmake --install build/ 
+
+      - name: Install Library on Windows
+        if: startsWith(matrix.config.os, 'windows')
+        shell: bash
+        run: cmake --install build/ 
 
       - name: Unit Tests
         shell: bash
         run: ./build/test/tests
         
       - name: Build and Run Hello World
+        if: !(${{ matrix.config.coverage }})
         shell: bash
         env:
           CC: ${{ matrix.config.cc }}
@@ -190,7 +197,7 @@ jobs:
           ./build_hello_world/helloworld
 
       - name: Upload coverage to Codecov
-        if: startsWith(matrix.config.name, 'Code Coverage')
+        if: ${{ matrix.config.coverage }}
         uses: codecov/codecov-action@v2
         with:
           path_to_write_report: ./coverage/codecov_report.txt
