@@ -99,7 +99,25 @@ jobs:
         shell: bash
         run: cmake --build build/ --config ${{ matrix.config.build_type }}
 
+      - name: Install
+        shell: bash
+        run: cmake --install build/ 
+
       - name: Unit Tests
         shell: bash
         run: ./build/test/tests
+        
+      - name: Build and Run Hello World
+        shell: bash
+        run: |
+          mkdir build_hello_world
+          cmake \
+            -S helloworld \
+            -B build_hello_world \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
+            -G "${{ matrix.config.generators }}" \
+          cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
+          ls -la build_hello_world
+          ./build_hello_world/helloworld/helloworld
 
