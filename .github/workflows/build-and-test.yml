@@ -125,7 +125,7 @@ jobs:
             -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
             -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
-            -DRP3D_CODE_COVERAGE_ENABLED=${{ matrix.config.coverage }}
+            -DRP3D_CODE_COVERAGE_ENABLED=${{ matrix.config.coverage }} \
             -DRP3D_COMPILE_TESTS=True \
             -G "${{ matrix.config.generators }}" \
 
