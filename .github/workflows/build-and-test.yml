@@ -101,7 +101,7 @@ jobs:
 
       - name: Install
         shell: bash
-        run: cmake --install build/ 
+        run: sudo cmake --install build/ 
 
       - name: Unit Tests
         shell: bash
