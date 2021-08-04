@@ -109,6 +109,9 @@ jobs:
         
       - name: Build and Run Hello World
         shell: bash
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
         run: |
           mkdir build_hello_world
           cmake \
