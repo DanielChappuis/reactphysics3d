@@ -179,7 +179,7 @@ jobs:
         run: ./build/test/tests
         
       - name: Build and Run Hello World
-        if: !(${{ matrix.config.coverage }})
+        if: ${{ !matrix.config.coverage }}
         shell: bash
         env:
           CC: ${{ matrix.config.cc }}
