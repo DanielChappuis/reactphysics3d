@@ -116,7 +116,7 @@ jobs:
             -B build_hello_world \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
             -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
-            -G "${{ matrix.config.generators }}" \
+            -G "${{ matrix.config.generators }}"
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
           ls -la build_hello_world
           ./build_hello_world/helloworld/helloworld
