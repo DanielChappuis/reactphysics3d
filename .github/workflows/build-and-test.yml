@@ -25,7 +25,8 @@ jobs:
             cc: "gcc",
             cxx: "g++",
             generators: "Ninja",
-            double_precision: false
+            double_precision: false,
+            coverage: false
           }
         - {
             name: "Linux / GCC (Release, Single Precision)",
@@ -34,7 +35,28 @@ jobs:
             cc: "gcc",
             cxx: "g++",
             generators: "Ninja",
-            double_precision: false
+            double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "Linux / GCC (Debug, Double Precision)",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja",
+            double_precision: true,
+            coverage: false
+          }
+        - {
+            name: "Linux / GCC (Release, Double Precision)",
+            os: ubuntu-latest,
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja",
+            double_precision: true,
+            coverage: false
           }
         - {
             name: "Linux / Clang (Debug, Single Precision)",
@@ -43,7 +65,18 @@ jobs:
             cc: "clang",
             cxx: "clang++",
             generators: "Ninja",
-            double_precision: false
+            double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "Code Coverage",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: true
           }
 
     steps:
@@ -92,6 +125,7 @@ jobs:
             -B build \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
             -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
+            -DRP3D_CODE_COVERAGE_ENABLED=${{ matrix.config.coverage }}
             -DRP3D_COMPILE_TESTS=True \
             -G "${{ matrix.config.generators }}" \
 
@@ -123,4 +157,10 @@ jobs:
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
           ls -la build_hello_world
           ./build_hello_world/helloworld
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
 
