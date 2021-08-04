@@ -115,6 +115,7 @@ jobs:
             -S helloworld \
             -B build_hello_world \
             -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -DCMAKE_EXE_LINKER_FLAGS=-no-pie
             -G "${{ matrix.config.generators }}"
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
           ls -la build_hello_world
