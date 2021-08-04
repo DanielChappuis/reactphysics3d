@@ -77,6 +77,30 @@ jobs:
             generators: "Ninja"
           }
         - {
+            name: "Windows / MSVC (Debug, Single Precision)",
+            os: windows-latest,
+            build_type: "Debug",
+            cc: "cl",
+            cxx: "cl",
+            generators: "Visual Studio 16 2019"
+          }
+        - {
+            name: "Windows / MinGW (Debug, Single Precision)",
+            os: windows-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja"
+          }
+        - {
+            name: "MacOS / Clang (Release, Single Precision)",
+            os: macos-latest,
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+            generators: "Ninja"
+          }
+        - {
             name: "Code Coverage",
             os: ubuntu-latest,
             build_type: "Debug",
@@ -107,7 +131,7 @@ jobs:
         if: startsWith(matrix.config.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install ninja-build cmake
+          sudo apt-get install ninja-build cmake lcov
           ninja --version
           cmake --version
           gcc --version
