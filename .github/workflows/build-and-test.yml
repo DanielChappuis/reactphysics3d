@@ -21,33 +21,27 @@ jobs:
         - {
             name: "Linux / GCC (Debug, Single Precision)",
             os: ubuntu-latest,
-            artifact: "ubuntu_gcc.7z",
             build_type: "Debug",
             cc: "gcc",
             cxx: "g++",
-            archiver: "7z a",
             generators: "Ninja",
             double_precision: false
           }
         - {
             name: "Linux / GCC (Release, Single Precision)",
             os: ubuntu-latest,
-            artifact: "ubuntu_gcc.7z",
             build_type: "Release",
             cc: "gcc",
             cxx: "g++",
-            archiver: "7z a",
             generators: "Ninja",
             double_precision: false
           }
         - {
             name: "Linux / Clang (Debug, Single Precision)",
             os: ubuntu-latest,
-            artifact: "ubuntu_gcc.7z",
             build_type: "Debug",
             cc: "clang",
             cxx: "clang++",
-            archiver: "7z a",
             generators: "Ninja",
             double_precision: false
           }
@@ -88,6 +82,9 @@ jobs:
           
       - name: CMake Configure
         shell: bash
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
         run: |
           mkdir build
           cmake \
