@@ -32,11 +32,12 @@ option(RP3D_CODE_COVERAGE_ENABLED "Select this if you need to build for code cov
 option(RP3D_DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating values" OFF)
 
 if(RP3D_CODE_COVERAGE_ENABLED)
-    if(CMAKE_COMPILER_IS_GNUCXX)
-        INCLUDE(CodeCoverage)
-        SETUP_TARGET_FOR_COVERAGE(${PROJECT_NAME}_coverage tests coverage)
-    endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+    INCLUDE(CodeCoverage)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+	NAME coverage
+	EXECUTABLE tests)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
 endif()
 
 # Headers filen1s
