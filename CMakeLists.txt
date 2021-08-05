@@ -31,16 +31,7 @@ option(RP3D_PROFILING_ENABLED "Select this if you want to compile for performana
 option(RP3D_CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage calculation" OFF)
 option(RP3D_DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating values" OFF)
 
-if(RP3D_CODE_COVERAGE_ENABLED)
-    INCLUDE(CodeCoverage)
-    SETUP_TARGET_FOR_COVERAGE_LCOV(
-	NAME coverage
-	EXECUTABLE "test/tests")
-    APPEND_COVERAGE_COMPILER_FLAGS()
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
-endif()
-
-# Headers filen1s
+# Headers files
 set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/configuration.h"
     "include/reactphysics3d/decimal.h"
@@ -326,3 +317,14 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/ReactPhysics3DConfigVersion.cmake
     DESTINATION lib/cmake/ReactPhysics3D
 )
+
+# Code Coverage
+if(RP3D_CODE_COVERAGE_ENABLED)
+    INCLUDE(CodeCoverage)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(
+	NAME coverage
+	EXECUTABLE "test/tests"
+	DEPENDENCIES Test)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+endif()
