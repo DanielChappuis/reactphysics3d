@@ -35,7 +35,7 @@ if(RP3D_CODE_COVERAGE_ENABLED)
     INCLUDE(CodeCoverage)
     SETUP_TARGET_FOR_COVERAGE_LCOV(
 	NAME coverage
-	EXECUTABLE tests)
+	EXECUTABLE "test/tests")
     APPEND_COVERAGE_COMPILER_FLAGS()
     # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
 endif()
