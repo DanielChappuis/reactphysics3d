@@ -205,13 +205,13 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
             mContactConstraints[mNbContactManifolds].frictionPointBody2.z += p2.z;
 
             // Compute the velocity difference
-            //deltaV = v2 + w2.cross(mContactPoints[mNbContactPoints].r2) - v1 - w1.cross(mContactPoints[mNbContactPoints].r1);
+            // deltaV = v2 + w2.cross(mContactPoints[mNbContactPoints].r2) - v1 - w1.cross(mContactPoints[mNbContactPoints].r1);
             Vector3 deltaV(v2.x + w2.y * mContactPoints[mNbContactPoints].r2.z - w2.z * mContactPoints[mNbContactPoints].r2.y
-                           - v1.x - w1.y * mContactPoints[mNbContactPoints].r1.z - w1.z * mContactPoints[mNbContactPoints].r1.y,
+                           - v1.x - w1.y * mContactPoints[mNbContactPoints].r1.z + w1.z * mContactPoints[mNbContactPoints].r1.y,
                            v2.y + w2.z * mContactPoints[mNbContactPoints].r2.x - w2.x * mContactPoints[mNbContactPoints].r2.z
-                           - v1.y - w1.z * mContactPoints[mNbContactPoints].r1.x - w1.x * mContactPoints[mNbContactPoints].r1.z,
+                           - v1.y - w1.z * mContactPoints[mNbContactPoints].r1.x + w1.x * mContactPoints[mNbContactPoints].r1.z,
                            v2.z + w2.x * mContactPoints[mNbContactPoints].r2.y - w2.y * mContactPoints[mNbContactPoints].r2.x
-                           - v1.z - w1.x * mContactPoints[mNbContactPoints].r1.y - w1.y * mContactPoints[mNbContactPoints].r1.x);
+                           - v1.z - w1.x * mContactPoints[mNbContactPoints].r1.y + w1.y * mContactPoints[mNbContactPoints].r1.x);
 
             // r1CrossN = mContactPoints[mNbContactPoints].r1.cross(mContactPoints[mNbContactPoints].normal);
             Vector3 r1CrossN(mContactPoints[mNbContactPoints].r1.y * mContactPoints[mNbContactPoints].normal.z -
