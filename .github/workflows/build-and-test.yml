@@ -75,6 +75,8 @@ jobs:
             cc: "clang",
             cxx: "clang++",
             generators: "Ninja"
+            double_precision: false,
+            coverage: false
           }
         - {
             name: "Windows / MSVC (Debug, Single Precision)",
@@ -83,6 +85,38 @@ jobs:
             cc: "cl",
             cxx: "cl",
             generators: "Visual Studio 16 2019"
+            double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "Windows / MSVC (Release, Single Precision)",
+            os: windows-latest,
+            build_type: "Release",
+            cc: "cl",
+            cxx: "cl",
+            generators: "Visual Studio 16 2019"
+            double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "Windows / MSVC (Debug, Double Precision)",
+            os: windows-latest,
+            build_type: "Debug",
+            cc: "cl",
+            cxx: "cl",
+            generators: "Visual Studio 16 2019"
+            double_precision: true,
+            coverage: false
+          }
+        - {
+            name: "Windows / MSVC (Release, Double Precision)",
+            os: windows-latest,
+            build_type: "Release",
+            cc: "cl",
+            cxx: "cl",
+            generators: "Visual Studio 16 2019"
+            double_precision: true,
+            coverage: false
           }
         - {
             name: "Windows / MinGW (Debug, Single Precision)",
@@ -91,6 +125,38 @@ jobs:
             cc: "gcc",
             cxx: "g++",
             generators: "Ninja"
+            double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "Windows / MinGW (Release, Single Precision)",
+            os: windows-latest,
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja"
+            double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "Windows / MinGW (Debug, Double Precision)",
+            os: windows-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja"
+            double_precision: true,
+            coverage: false
+          }
+        - {
+            name: "Windows / MinGW (Release, Double Precision)",
+            os: windows-latest,
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja"
+            double_precision: true,
+            coverage: false
           }
         - {
             name: "MacOS / Clang (Release, Single Precision)",
@@ -99,6 +165,18 @@ jobs:
             cc: "clang",
             cxx: "clang++",
             generators: "Ninja"
+            double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "MacOS / GCC (Release, Single Precision)",
+            os: macos-latest,
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja"
+            double_precision: false,
+            coverage: false
           }
         - {
             name: "Code Coverage",
@@ -140,7 +218,7 @@ jobs:
       - name: Install dependencies on MacOS
         if: startsWith(matrix.config.os, 'macos')
         run: |
-          brew install cmake ninja
+          brew install cmake ninja gcc
           ninja --version
           cmake --version
           
@@ -171,7 +249,7 @@ jobs:
         run: sudo cmake --install build/ 
 
       - name: Install Library on Windows
-        if: startsWith(matrix.config.os, 'windows')
+        if: startsWith(matrix.config.name, 'Windows / MinGW')
         shell: bash
         run: cmake --install build/ 
 
