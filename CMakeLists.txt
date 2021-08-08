@@ -34,9 +34,7 @@ option(RP3D_DOUBLE_PRECISION_ENABLED "Select this if you want to compile using d
 # Code Coverage
 if(RP3D_CODE_COVERAGE_ENABLED)
     INCLUDE(CodeCoverage)
-    SETUP_TARGET_FOR_COVERAGE_LCOV(
-	NAME coverage
-	EXECUTABLE test/tests)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE test/tests)
     APPEND_COVERAGE_COMPILER_FLAGS()
     # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
 endif()
