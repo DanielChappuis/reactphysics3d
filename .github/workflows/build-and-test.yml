@@ -201,7 +201,6 @@ jobs:
         shell: bash
         run: |
           cmake --build build/ --target coverage
-          ls -la coverage/
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.config.coverage }}
