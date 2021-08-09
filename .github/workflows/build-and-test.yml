@@ -159,26 +159,6 @@ jobs:
             coverage: false
           }
         - {
-            name: "MacOS / GCC (Debug, Single Precision)",
-            os: macos-latest,
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-            generators: "Ninja",
-            double_precision: false,
-            coverage: false
-          }
-        - {
-            name: "MacOS / GCC (Release, Single Precision)",
-            os: macos-latest,
-            build_type: "Release",
-            cc: "gcc",
-            cxx: "g++",
-            generators: "Ninja",
-            double_precision: false,
-            coverage: false
-          }
-        - {
             name: "Code Coverage",
             os: ubuntu-latest,
             build_type: "Debug",
@@ -253,10 +233,16 @@ jobs:
         shell: bash
         run: cmake --install build/ 
 
-      - name: Unit Tests
+      - name: Unit Tests (Linux / MacOS)
+        if: ${{ !startsWith(matrix.config.os, 'windows') }}
         shell: bash
         run: ./build/test/tests
         
+      - name: Unit Tests (Wndows)
+        if: ${{ startsWith(matrix.config.os, 'windows') }}
+        shell: bash
+        run: "./build/test/${{ matrix.config.build_type }}/tests.exe"
+
       - name: Build and Run Hello World
         if: ${{ !matrix.config.coverage }}
         shell: bash
