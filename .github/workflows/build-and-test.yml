@@ -69,13 +69,33 @@ jobs:
             coverage: false
           }
         - {
-            name: "MacOS / Clang (Debug, Single Precision)",
-            os: macos-latest,
-            build_type: "Debug",
+            name: "Linux / Clang (Release, Single Precision)",
+            os: ubuntu-latest,
+            build_type: "Release",
             cc: "clang",
             cxx: "clang++",
             generators: "Ninja",
             double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "Linux / Clang (Debug, Double Precision)",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+            generators: "Ninja",
+            double_precision: true,
+            coverage: false
+          }
+        - {
+            name: "Linux / Clang (Release, Double Precision)",
+            os: ubuntu-latest,
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+            generators: "Ninja",
+            double_precision: true,
             coverage: false
           }
         - {
@@ -99,26 +119,6 @@ jobs:
             coverage: false
           }
         - {
-            name: "Windows / MSVC (Debug, Double Precision)",
-            os: windows-latest,
-            build_type: "Debug",
-            cc: "cl",
-            cxx: "cl",
-            generators: "Visual Studio 16 2019",
-            double_precision: true,
-            coverage: false
-          }
-        - {
-            name: "Windows / MSVC (Release, Double Precision)",
-            os: windows-latest,
-            build_type: "Release",
-            cc: "cl",
-            cxx: "cl",
-            generators: "Visual Studio 16 2019",
-            double_precision: true,
-            coverage: false
-          }
-        - {
             name: "Windows / MinGW (Debug, Single Precision)",
             os: windows-latest,
             build_type: "Debug",
@@ -139,23 +139,13 @@ jobs:
             coverage: false
           }
         - {
-            name: "Windows / MinGW (Debug, Double Precision)",
-            os: windows-latest,
+            name: "MacOS / Clang (Debug, Single Precision)",
+            os: macos-latest,
             build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
+            cc: "clang",
+            cxx: "clang++",
             generators: "Ninja",
-            double_precision: true,
-            coverage: false
-          }
-        - {
-            name: "Windows / MinGW (Release, Double Precision)",
-            os: windows-latest,
-            build_type: "Release",
-            cc: "gcc",
-            cxx: "g++",
-            generators: "Ninja",
-            double_precision: true,
+            double_precision: false,
             coverage: false
           }
         - {
@@ -164,6 +154,16 @@ jobs:
             build_type: "Release",
             cc: "clang",
             cxx: "clang++",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false
+          }
+        - {
+            name: "MacOS / GCC (Debug, Single Precision)",
+            os: macos-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
             generators: "Ninja",
             double_precision: false,
             coverage: false
@@ -276,6 +276,9 @@ jobs:
 
       - name: Compute Code Coverage
         if: ${{ matrix.config.coverage }}
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
         shell: bash
         run: |
           cmake --build build/ --target coverage
