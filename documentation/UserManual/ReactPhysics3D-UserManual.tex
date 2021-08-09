@@ -1090,7 +1090,9 @@ collider = body->addCollider(&shape, transform);
     \label{sec:collisionshapes}
 
     As we have just seen, a collision shape is used to describe the shape of a collider for collision detection. They are many types of
-    collision shapes that you can use. They all inherit from the \texttt{CollisionShape} class.
+    collision shapes that you can use. They all inherit from the \texttt{CollisionShape} class. \\
+
+    Note that ReactPhysics3D does not support collision between two concave shapes (\texttt{ConcaveMeshShape} and \texttt{HeightFieldShape}).
 
     \subsubsection{Box Shape}
 

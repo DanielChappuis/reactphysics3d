@@ -53,6 +53,8 @@ class TestTransform : public Test {
         /// Second example transform
         Transform mTransform2;
 
+        const float mEpsilon = 0.0001;
+
     public :
 
         // ---------- Methods ---------- //
@@ -137,22 +139,22 @@ class TestTransform : public Test {
             transform.setFromOpenGL(openglMatrix);
             decimal openglMatrix2[16];
             transform.getOpenGLMatrix(openglMatrix2);
-            rp3d_test(approxEqual(openglMatrix2[0], orientation[0][0]));
-            rp3d_test(approxEqual(openglMatrix2[1], orientation[1][0]));
-            rp3d_test(approxEqual(openglMatrix2[2], orientation[2][0]));
-            rp3d_test(approxEqual(openglMatrix2[3], 0));
-            rp3d_test(approxEqual(openglMatrix2[4], orientation[0][1]));
-            rp3d_test(approxEqual(openglMatrix2[5], orientation[1][1]));
-            rp3d_test(approxEqual(openglMatrix2[6], orientation[2][1]));
-            rp3d_test(approxEqual(openglMatrix2[7], 0));
-            rp3d_test(approxEqual(openglMatrix2[8], orientation[0][2]));
-            rp3d_test(approxEqual(openglMatrix2[9], orientation[1][2]));
-            rp3d_test(approxEqual(openglMatrix2[10], orientation[2][2]));
-            rp3d_test(approxEqual(openglMatrix2[11], 0));
-            rp3d_test(approxEqual(openglMatrix2[12], position.x));
-            rp3d_test(approxEqual(openglMatrix2[13], position.y));
-            rp3d_test(approxEqual(openglMatrix2[14], position.z));
-            rp3d_test(approxEqual(openglMatrix2[15], 1));
+            rp3d_test(approxEqual(openglMatrix2[0], orientation[0][0], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[1], orientation[1][0], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[2], orientation[2][0], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[3], 0, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[4], orientation[0][1], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[5], orientation[1][1], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[6], orientation[2][1], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[7], 0, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[8], orientation[0][2], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[9], orientation[1][2], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[10], orientation[2][2], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[11], 0, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[12], position.x, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[13], position.y, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[14], position.z, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[15], 1, mEpsilon));
         }
 
         /// Test the method to interpolate transforms

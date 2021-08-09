@@ -65,7 +65,7 @@ class TestPointInside : public Test {
         CollisionBody* mCylinderBody;
         CollisionBody* mCompoundBody;
 
-        Vector3 mConvexMeshCubeVertices[8];
+        float mConvexMeshCubeVertices[8 * 3];
         int mConvexMeshCubeIndices[24];
         PolygonVertexArray* mConvexMeshPolygonVertexArray;
         PolyhedronMesh* mConvexMeshPolyhedronMesh;
@@ -133,14 +133,14 @@ class TestPointInside : public Test {
             mCapsuleShape = mPhysicsCommon.createCapsuleShape(3, 10);
             mCapsuleCollider = mCapsuleBody->addCollider(mCapsuleShape, mShapeTransform);
 
-            mConvexMeshCubeVertices[0] = Vector3(-2, -3, 4);
-            mConvexMeshCubeVertices[1] = Vector3(2, -3, 4);
-            mConvexMeshCubeVertices[2] = Vector3(2, -3, -4);
-            mConvexMeshCubeVertices[3] = Vector3(-2, -3, -4);
-            mConvexMeshCubeVertices[4] = Vector3(-2, 3, 4);
-            mConvexMeshCubeVertices[5] = Vector3(2, 3, 4);
-            mConvexMeshCubeVertices[6] = Vector3(2, 3, -4);
-            mConvexMeshCubeVertices[7] = Vector3(-2, 3, -4);
+            mConvexMeshCubeVertices[0] = -2; mConvexMeshCubeVertices[1] = -3; mConvexMeshCubeVertices[2] = 4;
+            mConvexMeshCubeVertices[3] = 2; mConvexMeshCubeVertices[4] = -3; mConvexMeshCubeVertices[5] = 4;
+            mConvexMeshCubeVertices[6] = 2; mConvexMeshCubeVertices[7] = -3; mConvexMeshCubeVertices[8] = -4;
+            mConvexMeshCubeVertices[9] = -2; mConvexMeshCubeVertices[10] = -3; mConvexMeshCubeVertices[11] = -4;
+            mConvexMeshCubeVertices[12] = -2; mConvexMeshCubeVertices[13] = 3; mConvexMeshCubeVertices[14] = 4;
+            mConvexMeshCubeVertices[15] = 2; mConvexMeshCubeVertices[16] = 3; mConvexMeshCubeVertices[17] = 4;
+            mConvexMeshCubeVertices[18] = 2; mConvexMeshCubeVertices[19] = 3; mConvexMeshCubeVertices[20] = -4;
+            mConvexMeshCubeVertices[21] = -2; mConvexMeshCubeVertices[22] = 3; mConvexMeshCubeVertices[23] = -4;
 
             mConvexMeshCubeIndices[0] = 0; mConvexMeshCubeIndices[1] = 3; mConvexMeshCubeIndices[2] = 2; mConvexMeshCubeIndices[3] = 1;
             mConvexMeshCubeIndices[4] = 4; mConvexMeshCubeIndices[5] = 5; mConvexMeshCubeIndices[6] = 6; mConvexMeshCubeIndices[7] = 7;
@@ -156,7 +156,7 @@ class TestPointInside : public Test {
                 face->nbVertices = 4;
                 face++;
             }
-            mConvexMeshPolygonVertexArray = new PolygonVertexArray(8, &(mConvexMeshCubeVertices[0]), sizeof(Vector3),
+            mConvexMeshPolygonVertexArray = new PolygonVertexArray(8, &(mConvexMeshCubeVertices[0]), 3 * sizeof(float),
                     &(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
                     PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);

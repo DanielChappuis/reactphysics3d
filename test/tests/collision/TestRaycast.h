@@ -159,7 +159,7 @@ class TestRaycast : public Test {
         PolygonVertexArray::PolygonFace mPolygonFaces[6];
         PolygonVertexArray* mPolygonVertexArray;
         PolyhedronMesh* mPolyhedronMesh;
-        Vector3 mPolyhedronVertices[8];
+        float mPolyhedronVertices[8 * 3];
         int mPolyhedronIndices[4 * 6];
 
     public :
@@ -207,14 +207,14 @@ class TestRaycast : public Test {
             mCapsuleShape = mPhysicsCommon.createCapsuleShape(2, 5);
             mCapsuleCollider = mCapsuleBody->addCollider(mCapsuleShape, mShapeTransform);
 
-            mPolyhedronVertices[0] = Vector3(-2, -3, 4);
-            mPolyhedronVertices[1] = Vector3(2, -3, 4);
-            mPolyhedronVertices[2] = Vector3(2, -3, -4);
-            mPolyhedronVertices[3] = Vector3(-2, -3, -4);
-            mPolyhedronVertices[4] = Vector3(-2, 3, 4);
-            mPolyhedronVertices[5] = Vector3(2, 3, 4);
-            mPolyhedronVertices[6] = Vector3(2, 3, -4);
-            mPolyhedronVertices[7] = Vector3(-2, 3, -4);
+            mPolyhedronVertices[0] = -2; mPolyhedronVertices[1] = -3; mPolyhedronVertices[2] = 4;
+            mPolyhedronVertices[3] = 2; mPolyhedronVertices[4] = -3; mPolyhedronVertices[5] = 4;
+            mPolyhedronVertices[6] = 2; mPolyhedronVertices[7] = -3; mPolyhedronVertices[8] = -4;
+            mPolyhedronVertices[9] = -2; mPolyhedronVertices[10] = -3; mPolyhedronVertices[11] = -4;
+            mPolyhedronVertices[12] = -2; mPolyhedronVertices[13] = 3; mPolyhedronVertices[14] = 4;
+            mPolyhedronVertices[15] = 2; mPolyhedronVertices[16] = 3; mPolyhedronVertices[17] = 4;
+            mPolyhedronVertices[18] = 2; mPolyhedronVertices[19] = 3; mPolyhedronVertices[20] = -4;
+            mPolyhedronVertices[21] = -2; mPolyhedronVertices[22] = 3; mPolyhedronVertices[23] = -4;
 
             mPolyhedronIndices[0] = 0; mPolyhedronIndices[1] = 3; mPolyhedronIndices[2] = 2; mPolyhedronIndices[3] = 1;
             mPolyhedronIndices[4] = 4; mPolyhedronIndices[5] = 5; mPolyhedronIndices[6] = 6; mPolyhedronIndices[7] = 7;
@@ -232,7 +232,7 @@ class TestRaycast : public Test {
             }
 
             // Create the polygon vertex array
-            mPolygonVertexArray = new PolygonVertexArray(8, mPolyhedronVertices, sizeof(Vector3),
+            mPolygonVertexArray = new PolygonVertexArray(8, mPolyhedronVertices, 3 * sizeof(float),
                                          mPolyhedronIndices, sizeof(int), 6, mPolygonFaces,
                                          PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
