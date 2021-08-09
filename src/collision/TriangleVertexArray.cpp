@@ -160,16 +160,20 @@ void TriangleVertexArray::computeVerticesNormals() {
             Vector3 b = triangleVertices[previousVertex] - triangleVertices[v];
 
             Vector3 crossProduct = a.cross(b);
-            decimal sinA = crossProduct.length() / (edgesLengths[previousVertex] * edgesLengths[v]);
-            sinA = std::min(std::max(sinA, decimal(0.0)), decimal(1.0));
-            decimal arcSinA = std::asin(sinA);
-            assert(arcSinA >= decimal(0.0));
-            Vector3 normalComponent = arcSinA * crossProduct;
+            decimal edgeLengths = (edgesLengths[previousVertex] * edgesLengths[v]);
+            if (std::abs(edgeLengths) > decimal(MACHINE_EPSILON)) {
 
-            // Add the normal component of this vertex into the normals array
-            verticesNormals[verticesIndices[v] * 3] += normalComponent.x;
-            verticesNormals[verticesIndices[v] * 3 + 1] += normalComponent.y;
-            verticesNormals[verticesIndices[v] * 3 + 2] += normalComponent.z;
+                decimal sinA = crossProduct.length() / edgeLengths;
+                sinA = std::min(std::max(sinA, decimal(0.0)), decimal(1.0));
+                decimal arcSinA = std::asin(sinA);
+                assert(arcSinA >= decimal(0.0));
+                Vector3 normalComponent = arcSinA * crossProduct;
+
+                // Add the normal component of this vertex into the normals array
+                verticesNormals[verticesIndices[v] * 3] += normalComponent.x;
+                verticesNormals[verticesIndices[v] * 3 + 1] += normalComponent.y;
+                verticesNormals[verticesIndices[v] * 3 + 2] += normalComponent.z;
+            }
         }
     }
 

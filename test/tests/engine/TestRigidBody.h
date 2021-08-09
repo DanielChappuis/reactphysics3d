@@ -59,7 +59,7 @@ class TestRigidBody : public Test {
         PolyhedronMesh* mConvexMeshPolyhedronMesh;
         PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
         TriangleVertexArray* mConcaveMeshTriangleVertexArray;
-        Vector3 mConvexMeshCubeVertices[8];
+        float mConvexMeshCubeVertices[8 * 3];
         int mConvexMeshCubeIndices[24];
 
     public :
@@ -89,14 +89,14 @@ class TestRigidBody : public Test {
 
             //  Convex Meshes (in the shape of a box)
 
-            mConvexMeshCubeVertices[0] = Vector3(-3, -3, 3);
-            mConvexMeshCubeVertices[1] = Vector3(3, -3, 3);
-            mConvexMeshCubeVertices[2] = Vector3(3, -3, -3);
-            mConvexMeshCubeVertices[3] = Vector3(-3, -3, -3);
-            mConvexMeshCubeVertices[4] = Vector3(-3, 3, 3);
-            mConvexMeshCubeVertices[5] = Vector3(3, 3, 3);
-            mConvexMeshCubeVertices[6] = Vector3(3, 3, -3);
-            mConvexMeshCubeVertices[7] = Vector3(-3, 3, -3);
+            mConvexMeshCubeVertices[0] = -3; mConvexMeshCubeVertices[1] = -3; mConvexMeshCubeVertices[2] = 3;
+            mConvexMeshCubeVertices[3] = 3; mConvexMeshCubeVertices[4] = -3; mConvexMeshCubeVertices[5] = 3;
+            mConvexMeshCubeVertices[6] = 3; mConvexMeshCubeVertices[7] = -3; mConvexMeshCubeVertices[8] = -3;
+            mConvexMeshCubeVertices[9] = -3; mConvexMeshCubeVertices[10] = -3; mConvexMeshCubeVertices[11] = -3;
+            mConvexMeshCubeVertices[12] = -3; mConvexMeshCubeVertices[13] = 3; mConvexMeshCubeVertices[14] = 3;
+            mConvexMeshCubeVertices[15] = 3; mConvexMeshCubeVertices[16] = 3; mConvexMeshCubeVertices[17] = 3;
+            mConvexMeshCubeVertices[18] = 3; mConvexMeshCubeVertices[19] = 3; mConvexMeshCubeVertices[20] = -3;
+            mConvexMeshCubeVertices[21] = -3; mConvexMeshCubeVertices[22] = 3; mConvexMeshCubeVertices[23] = -3;
 
             mConvexMeshCubeIndices[0] = 0; mConvexMeshCubeIndices[1] = 3; mConvexMeshCubeIndices[2] = 2; mConvexMeshCubeIndices[3] = 1;
             mConvexMeshCubeIndices[4] = 4; mConvexMeshCubeIndices[5] = 5; mConvexMeshCubeIndices[6] = 6; mConvexMeshCubeIndices[7] = 7;
@@ -112,7 +112,7 @@ class TestRigidBody : public Test {
                 face->nbVertices = 4;
                 face++;
             }
-            mConvexMeshPolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMeshCubeVertices[0]), sizeof(Vector3),
+            mConvexMeshPolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMeshCubeVertices[0]), 3 * sizeof(float),
                     &(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
                     rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);

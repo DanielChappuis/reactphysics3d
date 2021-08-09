@@ -310,11 +310,11 @@ class TestCollisionWorld : public Test {
 		PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
 
         TriangleVertexArray* mConcaveMeshTriangleVertexArray;
-		Vector3 mConvexMesh1CubeVertices[8];
-		Vector3 mConvexMesh2CubeVertices[8];
+        float mConvexMesh1CubeVertices[8 * 3];
+        float mConvexMesh2CubeVertices[8 * 3];
 		int mConvexMeshCubeIndices[24];
 
-        Vector3 mConcaveMeshPlaneVertices[36];
+        float mConcaveMeshPlaneVertices[36 * 3];
 		int mConcaveMeshPlaneIndices[25 * 2 * 3];
         TriangleMesh* mConcaveTriangleMesh;
 
@@ -368,30 +368,30 @@ class TestCollisionWorld : public Test {
             mCapsuleCollider2 = mCapsuleBody2->addCollider(mCapsuleShape2, Transform::identity());
 
 			// ---------- Convex Meshes ---------- //
-			mConvexMesh1CubeVertices[0] = Vector3(-3, -3, 3);
-			mConvexMesh1CubeVertices[1] = Vector3(3, -3, 3);
-			mConvexMesh1CubeVertices[2] = Vector3(3, -3, -3);
-			mConvexMesh1CubeVertices[3] = Vector3(-3, -3, -3);
-			mConvexMesh1CubeVertices[4] = Vector3(-3, 3, 3);
-			mConvexMesh1CubeVertices[5] = Vector3(3, 3, 3);
-			mConvexMesh1CubeVertices[6] = Vector3(3, 3, -3);
-			mConvexMesh1CubeVertices[7] = Vector3(-3, 3, -3);
+            mConvexMesh1CubeVertices[0] = -3; mConvexMesh1CubeVertices[1] = -3; mConvexMesh1CubeVertices[2] = 3;
+            mConvexMesh1CubeVertices[3] = 3; mConvexMesh1CubeVertices[4] = -3; mConvexMesh1CubeVertices[5] = 3;
+            mConvexMesh1CubeVertices[6] = 3; mConvexMesh1CubeVertices[7] = -3; mConvexMesh1CubeVertices[8] = -3;
+            mConvexMesh1CubeVertices[9] = -3; mConvexMesh1CubeVertices[10] = -3; mConvexMesh1CubeVertices[11] = -3;
+            mConvexMesh1CubeVertices[12] = -3; mConvexMesh1CubeVertices[13] = 3; mConvexMesh1CubeVertices[14] = 3;
+            mConvexMesh1CubeVertices[15] = 3; mConvexMesh1CubeVertices[16] = 3; mConvexMesh1CubeVertices[17] = 3;
+            mConvexMesh1CubeVertices[18] = 3; mConvexMesh1CubeVertices[19] = 3; mConvexMesh1CubeVertices[20] = -3;
+            mConvexMesh1CubeVertices[21] = -3; mConvexMesh1CubeVertices[22] = 3; mConvexMesh1CubeVertices[23] = -3;
 
-			mConvexMeshCubeIndices[0] = 0; mConvexMeshCubeIndices[1] = 3; mConvexMeshCubeIndices[2] = 2; mConvexMeshCubeIndices[3] = 1;
-			mConvexMeshCubeIndices[4] = 4; mConvexMeshCubeIndices[5] = 5; mConvexMeshCubeIndices[6] = 6; mConvexMeshCubeIndices[7] = 7;
-			mConvexMeshCubeIndices[8] = 0; mConvexMeshCubeIndices[9] = 1; mConvexMeshCubeIndices[10] = 5; mConvexMeshCubeIndices[11] = 4;
-			mConvexMeshCubeIndices[12] = 1; mConvexMeshCubeIndices[13] = 2; mConvexMeshCubeIndices[14] = 6; mConvexMeshCubeIndices[15] = 5;
-			mConvexMeshCubeIndices[16] = 2; mConvexMeshCubeIndices[17] = 3; mConvexMeshCubeIndices[18] = 7; mConvexMeshCubeIndices[19] = 6;
-			mConvexMeshCubeIndices[20] = 0; mConvexMeshCubeIndices[21] = 4; mConvexMeshCubeIndices[22] = 7; mConvexMeshCubeIndices[23] = 3;
+            mConvexMeshCubeIndices[0] = 0; mConvexMeshCubeIndices[1] = 3; mConvexMeshCubeIndices[2] = 2; mConvexMeshCubeIndices[3] = 1;
+            mConvexMeshCubeIndices[4] = 4; mConvexMeshCubeIndices[5] = 5; mConvexMeshCubeIndices[6] = 6; mConvexMeshCubeIndices[7] = 7;
+            mConvexMeshCubeIndices[8] = 0; mConvexMeshCubeIndices[9] = 1; mConvexMeshCubeIndices[10] = 5; mConvexMeshCubeIndices[11] = 4;
+            mConvexMeshCubeIndices[12] = 1; mConvexMeshCubeIndices[13] = 2; mConvexMeshCubeIndices[14] = 6; mConvexMeshCubeIndices[15] = 5;
+            mConvexMeshCubeIndices[16] = 2; mConvexMeshCubeIndices[17] = 3; mConvexMeshCubeIndices[18] = 7; mConvexMeshCubeIndices[19] = 6;
+            mConvexMeshCubeIndices[20] = 0; mConvexMeshCubeIndices[21] = 4; mConvexMeshCubeIndices[22] = 7; mConvexMeshCubeIndices[23] = 3;
 
 			mConvexMeshPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[6];
 			rp3d::PolygonVertexArray::PolygonFace* face = mConvexMeshPolygonFaces;
 			for (int f = 0; f < 6; f++) {
-				face->indexBase = f * 4;
+                face->indexBase = f * 4;
 				face->nbVertices = 4;
 				face++;
 			}
-			mConvexMesh1PolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMesh1CubeVertices[0]), sizeof(Vector3),
+            mConvexMesh1PolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMesh1CubeVertices[0]), 3 * sizeof(float),
 					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
@@ -401,16 +401,16 @@ class TestCollisionWorld : public Test {
             mConvexMeshBody1 = mWorld->createCollisionBody(convexMeshTransform1);
             mConvexMeshCollider1 = mConvexMeshBody1->addCollider(mConvexMeshShape1, Transform::identity());
 
-			mConvexMesh2CubeVertices[0] = Vector3(-4, -2, 8);
-			mConvexMesh2CubeVertices[1] = Vector3(4, -2, 8);
-			mConvexMesh2CubeVertices[2] = Vector3(4, -2, -8);
-			mConvexMesh2CubeVertices[3] = Vector3(-4, -2, -8);
-			mConvexMesh2CubeVertices[4] = Vector3(-4, 2, 8);
-			mConvexMesh2CubeVertices[5] = Vector3(4, 2, 8);
-			mConvexMesh2CubeVertices[6] = Vector3(4, 2, -8);
-			mConvexMesh2CubeVertices[7] = Vector3(-4, 2, -8);
+            mConvexMesh2CubeVertices[0] = -4; mConvexMesh2CubeVertices[1] = -2; mConvexMesh2CubeVertices[2] = 8;
+            mConvexMesh2CubeVertices[3] = 4; mConvexMesh2CubeVertices[4] = -2; mConvexMesh2CubeVertices[5] = 8;
+            mConvexMesh2CubeVertices[6] = 4; mConvexMesh2CubeVertices[7] = -2; mConvexMesh2CubeVertices[8] = -8;
+            mConvexMesh2CubeVertices[9] = -4; mConvexMesh2CubeVertices[10] = -2; mConvexMesh2CubeVertices[11] = -8;
+            mConvexMesh2CubeVertices[12] = -4; mConvexMesh2CubeVertices[13] = 2; mConvexMesh2CubeVertices[14] = 8;
+            mConvexMesh2CubeVertices[15] = 4; mConvexMesh2CubeVertices[16] = 2; mConvexMesh2CubeVertices[17] = 8;
+            mConvexMesh2CubeVertices[18] = 4; mConvexMesh2CubeVertices[19] = 2; mConvexMesh2CubeVertices[20] = -8;
+            mConvexMesh2CubeVertices[21] = -4; mConvexMesh2CubeVertices[22] = 2; mConvexMesh2CubeVertices[23] = -8;
 
-			mConvexMesh2PolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMesh2CubeVertices[0]), sizeof(Vector3),
+            mConvexMesh2PolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMesh2CubeVertices[0]), 3 * sizeof(float),
 					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
@@ -423,30 +423,32 @@ class TestCollisionWorld : public Test {
 			// ---------- Concave Meshes ---------- //
 			for (int i = 0; i < 6; i++) {
 				for (int j = 0; j < 6; j++) {
-                    mConcaveMeshPlaneVertices[i * 6 + j] = Vector3(-2.5f + i, 0, -2.5f + j);
-				}
+                    mConcaveMeshPlaneVertices[i * 6 * 3 + j * 3] = -2.5f + i;
+                    mConcaveMeshPlaneVertices[i * 6 * 3+ (j * 3) + 1] = 0;
+                    mConcaveMeshPlaneVertices[i * 6 * 3+ (j * 3) + 2] = -2.5f + j;
+                }
 			}
             int triangleIndex = 0;
 			for (int i = 0; i < 5; i++) {
 				for (int j = 0; j < 5; j++) {
 
 					// Triangle 1
-                    mConcaveMeshPlaneIndices[triangleIndex * 3] = i * 6 + j;
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] =  (i+1) * 6 + (j+1);
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = i * 6 + (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3] = i * 6+ j;
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = (i+1) * 6 + (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = i * 6+ (j+1);
                     triangleIndex++;
 
                     // Triangle 2
-                    mConcaveMeshPlaneIndices[triangleIndex * 3] = i * 6 + j;
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] =  (i+1) * 6 + j;
+                    mConcaveMeshPlaneIndices[triangleIndex * 3] = i * 6+ j;
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = (i+1) * 6 + j;
                     mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = (i+1) * 6 + (j+1);
                     triangleIndex++;
                 }
 			}
 
-            mConcaveMeshTriangleVertexArray = new rp3d::TriangleVertexArray(36, &(mConcaveMeshPlaneVertices[0]), sizeof(Vector3),
+            mConcaveMeshTriangleVertexArray = new rp3d::TriangleVertexArray(36, &(mConcaveMeshPlaneVertices[0]), 3 * sizeof(float),
                     50, &(mConcaveMeshPlaneIndices[0]), 3 * sizeof(int),
-					rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                    rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 			// Add the triangle vertex array of the subpart to the triangle mesh
