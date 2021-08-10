@@ -26,7 +26,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Linux / GCC (Release, Single Precision)",
@@ -36,7 +37,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Linux / GCC (Debug, Double Precision)",
@@ -46,7 +48,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             double_precision: true,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Linux / GCC (Release, Double Precision)",
@@ -56,7 +59,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             double_precision: true,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Linux / Clang (Debug, Single Precision)",
@@ -66,7 +70,8 @@ jobs:
             cxx: "clang++",
             generators: "Ninja",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Linux / Clang (Release, Single Precision)",
@@ -76,7 +81,8 @@ jobs:
             cxx: "clang++",
             generators: "Ninja",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Linux / Clang (Debug, Double Precision)",
@@ -86,7 +92,8 @@ jobs:
             cxx: "clang++",
             generators: "Ninja",
             double_precision: true,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Linux / Clang (Release, Double Precision)",
@@ -96,7 +103,8 @@ jobs:
             cxx: "clang++",
             generators: "Ninja",
             double_precision: true,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Windows / MSVC (Debug, Single Precision)",
@@ -106,7 +114,8 @@ jobs:
             cxx: "cl",
             generators: "Visual Studio 16 2019",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Windows / MSVC (Release, Single Precision)",
@@ -116,7 +125,8 @@ jobs:
             cxx: "cl",
             generators: "Visual Studio 16 2019",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Windows / MinGW (Debug, Single Precision)",
@@ -126,7 +136,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "Windows / MinGW (Release, Single Precision)",
@@ -136,7 +147,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "MacOS / Clang (Debug, Single Precision)",
@@ -146,7 +158,8 @@ jobs:
             cxx: "clang++",
             generators: "Ninja",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
           }
         - {
             name: "MacOS / Clang (Release, Single Precision)",
@@ -156,7 +169,30 @@ jobs:
             cxx: "clang++",
             generators: "Ninja",
             double_precision: false,
-            coverage: false
+            coverage: false,
+            memory_leaks_test: false
+          }
+        - {
+            name: "MacOS / GCC (Debug, Single Precision)",
+            os: macos-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+            memory_leaks_test: false
+          }
+        - {
+            name: "Memory Leaks Test - Linux / GCC (Debug, Single Precision)",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+            memory_leaks_test: true
           }
         - {
             name: "Code Coverage",
@@ -166,7 +202,8 @@ jobs:
             cxx: "g++",
             generators: "Ninja",
             double_precision: false,
-            coverage: true
+            coverage: true,
+            memory_leaks_test: false
           }
 
     steps:
@@ -189,7 +226,7 @@ jobs:
         if: startsWith(matrix.config.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install ninja-build cmake lcov
+          sudo apt-get install ninja-build cmake lcov valgrind
           ninja --version
           cmake --version
           gcc --version
@@ -198,7 +235,8 @@ jobs:
       - name: Install dependencies on MacOS
         if: startsWith(matrix.config.os, 'macos')
         run: |
-          brew install cmake ninja gcc
+          brew install cmake ninja
+          brew reinstall gcc
           ninja --version
           cmake --version
           
@@ -233,13 +271,13 @@ jobs:
         shell: bash
         run: cmake --install build/ 
 
-      - name: Unit Tests (Linux / MacOS)
+      - name: Unit Tests (Linux / MacOS / Windows MinGW)
         if: ${{ !startsWith(matrix.config.os, 'windows') }}
         shell: bash
         run: ./build/test/tests
         
-      - name: Unit Tests (Wndows)
-        if: ${{ startsWith(matrix.config.os, 'windows') }}
+      - name: Unit Tests (Wndows MSVC)
+        if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
         shell: bash
         run: "./build/test/${{ matrix.config.build_type }}/tests.exe"
 
@@ -259,6 +297,11 @@ jobs:
             -G "${{ matrix.config.generators }}"
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
           ./build_hello_world/helloworld
+
+      - name: Memory Leaks Test
+        if: ${{ matrix.config.memory_leaks_test }}
+        shell: bash
+        run: valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 ./build/test/tests
 
       - name: Compute Code Coverage
         if: ${{ matrix.config.coverage }}
