@@ -159,16 +159,6 @@ jobs:
             coverage: false,
           }
         - {
-            name: "MacOS / GCC (Debug, Single Precision)",
-            os: macos-latest,
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-            generators: "Ninja",
-            double_precision: false,
-            coverage: false,
-          }
-        - {
             name: "Code Coverage",
             os: ubuntu-latest,
             build_type: "Debug",
@@ -209,7 +199,6 @@ jobs:
         if: startsWith(matrix.config.os, 'macos')
         run: |
           brew install cmake ninja
-          brew reinstall gcc
           ninja --version
           cmake --version
           
