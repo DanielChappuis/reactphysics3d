@@ -4,6 +4,9 @@ name: Build
 # Controls when the action will run. Triggers the workflow on push
 on: 
   push:
+    branches:
+      - master
+      - develop
   pull_request:
   release:
 
