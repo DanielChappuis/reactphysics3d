@@ -330,7 +330,7 @@ void RigidBody::setLocalCenterOfMass(const Vector3& centerOfMass) {
     mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, mWorld.mTransformComponents.getTransform(mEntity) * centerOfMass);
 
     // Update the linear velocity of the center of mass
-    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
     const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
     const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
     linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
@@ -367,7 +367,7 @@ void RigidBody::updateLocalCenterOfMassFromColliders() {
     mWorld.mRigidBodyComponents.setCenterOfMassWorld(mEntity, centerOfMassWorld);
 
     // Update the linear velocity of the center of mass
-    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+    Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
     const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
     linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMassWorld);
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
@@ -553,7 +553,7 @@ void RigidBody::updateMassPropertiesFromColliders() {
     if (type == BodyType::DYNAMIC) {
 
         // Update the linear velocity of the center of mass
-        Vector3 linearVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
+        Vector3 linearVelocity = mWorld.mRigidBodyComponents.getLinearVelocity(mEntity);
         const Vector3& angularVelocity = mWorld.mRigidBodyComponents.getAngularVelocity(mEntity);
         linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMassWorld);
         mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);

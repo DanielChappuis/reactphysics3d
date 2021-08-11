@@ -205,13 +205,13 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
             mContactConstraints[mNbContactManifolds].frictionPointBody2.z += p2.z;
 
             // Compute the velocity difference
-            //deltaV = v2 + w2.cross(mContactPoints[mNbContactPoints].r2) - v1 - w1.cross(mContactPoints[mNbContactPoints].r1);
+            // deltaV = v2 + w2.cross(mContactPoints[mNbContactPoints].r2) - v1 - w1.cross(mContactPoints[mNbContactPoints].r1);
             Vector3 deltaV(v2.x + w2.y * mContactPoints[mNbContactPoints].r2.z - w2.z * mContactPoints[mNbContactPoints].r2.y
-                           - v1.x - w1.y * mContactPoints[mNbContactPoints].r1.z - w1.z * mContactPoints[mNbContactPoints].r1.y,
+                           - v1.x - w1.y * mContactPoints[mNbContactPoints].r1.z + w1.z * mContactPoints[mNbContactPoints].r1.y,
                            v2.y + w2.z * mContactPoints[mNbContactPoints].r2.x - w2.x * mContactPoints[mNbContactPoints].r2.z
-                           - v1.y - w1.z * mContactPoints[mNbContactPoints].r1.x - w1.x * mContactPoints[mNbContactPoints].r1.z,
+                           - v1.y - w1.z * mContactPoints[mNbContactPoints].r1.x + w1.x * mContactPoints[mNbContactPoints].r1.z,
                            v2.z + w2.x * mContactPoints[mNbContactPoints].r2.y - w2.y * mContactPoints[mNbContactPoints].r2.x
-                           - v1.z - w1.x * mContactPoints[mNbContactPoints].r1.y - w1.y * mContactPoints[mNbContactPoints].r1.x);
+                           - v1.z - w1.x * mContactPoints[mNbContactPoints].r1.y + w1.y * mContactPoints[mNbContactPoints].r1.x);
 
             // r1CrossN = mContactPoints[mNbContactPoints].r1.cross(mContactPoints[mNbContactPoints].normal);
             Vector3 r1CrossN(mContactPoints[mNbContactPoints].r1.y * mContactPoints[mNbContactPoints].normal.z -
@@ -280,15 +280,15 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
         //                              v1 - w1.cross(mContactConstraints[mNbContactManifolds].r1Friction);
         Vector3 deltaVFrictionPoint(v2.x + w2.y * mContactConstraints[mNbContactManifolds].r2Friction.z -
                                     w2.z * mContactConstraints[mNbContactManifolds].r2Friction.y -
-                                      v1.x - w1.y * mContactConstraints[mNbContactManifolds].r1Friction.z -
+                                      v1.x - w1.y * mContactConstraints[mNbContactManifolds].r1Friction.z +
                                       w1.z * mContactConstraints[mNbContactManifolds].r1Friction.y,
                                    v2.y + w2.z * mContactConstraints[mNbContactManifolds].r2Friction.x -
                                     w2.x * mContactConstraints[mNbContactManifolds].r2Friction.z -
-                                      v1.y - w1.z * mContactConstraints[mNbContactManifolds].r1Friction.x -
+                                      v1.y - w1.z * mContactConstraints[mNbContactManifolds].r1Friction.x +
                                       w1.x * mContactConstraints[mNbContactManifolds].r1Friction.z,
                                    v2.z + w2.x * mContactConstraints[mNbContactManifolds].r2Friction.y -
                                     w2.y * mContactConstraints[mNbContactManifolds].r2Friction.x -
-                                      v1.z - w1.x * mContactConstraints[mNbContactManifolds].r1Friction.y -
+                                      v1.z - w1.x * mContactConstraints[mNbContactManifolds].r1Friction.y +
                                       w1.y * mContactConstraints[mNbContactManifolds].r1Friction.x);
 
         // Compute the friction vectors
