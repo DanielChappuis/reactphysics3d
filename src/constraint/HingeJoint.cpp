@@ -251,7 +251,7 @@ decimal HingeJoint::getMotorTorque(decimal timeStep) const {
 
 // Return the current hinge angle
 /**
- * @return The current hinge angle (in radians)
+ * @return The current hinge angle (in radians) in the range [-pi; pi]
  */
 decimal HingeJoint::getAngle() const {
 
