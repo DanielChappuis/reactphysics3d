@@ -239,29 +239,32 @@ class Set {
           :mNbAllocatedEntries(set.mNbAllocatedEntries), mNbEntries(set.mNbEntries), mHashSize(set.mHashSize),
            mBuckets(nullptr), mEntries(nullptr), mNextEntries(nullptr), mAllocator(set.mAllocator), mFreeIndex(set.mFreeIndex) {
 
-            // Allocate memory for the buckets
-            mBuckets = static_cast<uint32*>(mAllocator.allocate(mHashSize * sizeof(uint32)));
+            if (mHashSize > 0) {
 
-            // Allocate memory for the entries
-            mEntries = static_cast<V*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(V)));
-            mNextEntries = static_cast<uint32*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(uint32)));
+                // Allocate memory for the buckets
+                mBuckets = static_cast<uint32*>(mAllocator.allocate(mHashSize * sizeof(uint32)));
 
-            // Copy the buckets array
-            std::memcpy(mBuckets, set.mBuckets, mHashSize * sizeof(uint32));
+                // Allocate memory for the entries
+                mEntries = static_cast<V*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(V)));
+                mNextEntries = static_cast<uint32*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(uint32)));
 
-            // Copy the next entries indices
-            std::memcpy(mNextEntries, set.mNextEntries, mNbAllocatedEntries * sizeof(uint32));
+                // Copy the buckets array
+                std::memcpy(mBuckets, set.mBuckets, mHashSize * sizeof(uint32));
 
-            // Copy the entries
-            for (uint32 i=0; i<mHashSize; i++) {
+                // Copy the next entries indices
+                std::memcpy(mNextEntries, set.mNextEntries, mNbAllocatedEntries * sizeof(uint32));
 
-                uint32 entryIndex = mBuckets[i];
-                while(entryIndex != INVALID_INDEX) {
+                // Copy the entries
+                for (uint32 i=0; i<mHashSize; i++) {
 
-                    // Copy the entry to the new location and destroy the previous one
-                    new (mEntries + entryIndex) V(set.mEntries[entryIndex]);
+                    uint32 entryIndex = mBuckets[i];
+                    while(entryIndex != INVALID_INDEX) {
 
-                    entryIndex = mNextEntries[entryIndex];
+                        // Copy the entry to the new location and destroy the previous one
+                        new (mEntries + entryIndex) V(set.mEntries[entryIndex]);
+
+                        entryIndex = mNextEntries[entryIndex];
+                    }
                 }
             }
         }
@@ -604,29 +607,32 @@ class Set {
                 mHashSize = set.mHashSize;
                 mFreeIndex = set.mFreeIndex;
 
-                // Allocate memory for the buckets
-                mBuckets = static_cast<uint32*>(mAllocator.allocate(mHashSize * sizeof(uint32)));
+                if (mHashSize > 0) {
 
-                // Allocate memory for the entries
-                mEntries = static_cast<V*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(V)));
-                mNextEntries = static_cast<uint32*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(uint32)));
+                    // Allocate memory for the buckets
+                    mBuckets = static_cast<uint32*>(mAllocator.allocate(mHashSize * sizeof(uint32)));
 
-                // Copy the buckets array
-                std::memcpy(mBuckets, set.mBuckets, mHashSize * sizeof(uint32));
+                    // Allocate memory for the entries
+                    mEntries = static_cast<V*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(V)));
+                    mNextEntries = static_cast<uint32*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(uint32)));
 
-                // Copy the next entries indices
-                std::memcpy(mNextEntries, set.mNextEntries, mNbAllocatedEntries * sizeof(uint32));
+                    // Copy the buckets array
+                    std::memcpy(mBuckets, set.mBuckets, mHashSize * sizeof(uint32));
 
-                // Copy the entries
-                for (uint32 i=0; i<mHashSize; i++) {
+                    // Copy the next entries indices
+                    std::memcpy(mNextEntries, set.mNextEntries, mNbAllocatedEntries * sizeof(uint32));
 
-                    uint32 entryIndex = mBuckets[i];
-                    while(entryIndex != INVALID_INDEX) {
+                    // Copy the entries
+                    for (uint32 i=0; i<mHashSize; i++) {
 
-                        // Copy the entry to the new location and destroy the previous one
-                        new (mEntries + entryIndex) V(set.mEntries[entryIndex]);
+                        uint32 entryIndex = mBuckets[i];
+                        while(entryIndex != INVALID_INDEX) {
 
-                        entryIndex = mNextEntries[entryIndex];
+                            // Copy the entry to the new location and destroy the previous one
+                            new (mEntries + entryIndex) V(set.mEntries[entryIndex]);
+
+                            entryIndex = mNextEntries[entryIndex];
+                        }
                     }
                 }
             }

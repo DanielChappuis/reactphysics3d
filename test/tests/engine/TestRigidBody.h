@@ -58,7 +58,6 @@ class TestRigidBody : public Test {
         PolygonVertexArray* mConvexMeshPolygonVertexArray;
         PolyhedronMesh* mConvexMeshPolyhedronMesh;
         PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
-        TriangleVertexArray* mConcaveMeshTriangleVertexArray;
         float mConvexMeshCubeVertices[8 * 3];
         int mConvexMeshCubeIndices[24];
 
@@ -137,6 +136,9 @@ class TestRigidBody : public Test {
             mWorld->destroyRigidBody(mRigidBody1);
             mWorld->destroyRigidBody(mRigidBody2Box);
             mWorld->destroyRigidBody(mRigidBody2Sphere);
+
+            delete[] mConvexMeshPolygonFaces;
+            delete mConvexMeshPolygonVertexArray;
         }
 
         /// Run the tests
