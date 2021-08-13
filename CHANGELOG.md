@@ -54,10 +54,14 @@ do not hesitate to take a look at the user manual.
 - Issue with edge vs edge collision has been fixed in SAT algorithm (wrong contact normal was computed)
 - Issue with sphere radius in DebugRenderer
 - Issue where changing the transform of a Collider attached to a sleeping RigidBody caused the body to remain asleep
+- Issue with wrong calculation performed in the ContactSolverSystem
 - Issue [#157](https://github.com/DanielChappuis/reactphysics3d/issues/157) with matrix to quaternion conversion has been fixed
 - Issue [#184](https://github.com/DanielChappuis/reactphysics3d/issues/184) with update of mass/inertia properties of static bodies
 - Issue with the computation of the two friction vectors in the contact solver
 - Issue with the rendering of the capsule collision shape in the Debug Renderer (missing triangle faces)
+- Issue with wrong linear velocity update computed in RigidBody::setLocalCenterOfMass() method
+- Issue with wrong linear velocity update computed in RigidBody::updateLocalCenterOfMassFromColliders() method
+- Issue with wrong linear velocity update computed in RigidBody::updateMassPropertiesFromColliders() method
 
 
 ## Version 0.8.0 (May 31, 2020)
