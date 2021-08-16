@@ -311,7 +311,7 @@ class HingeJoint : public Joint {
         /// Return the intensity of the current torque applied for the joint motor
         decimal getMotorTorque(decimal timeStep) const;
 
-        /// Return the current hinge angle
+        /// Return the current hinge angle (in radians)
         decimal getAngle() const;
 
         /// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
