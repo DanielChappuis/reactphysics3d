@@ -240,28 +240,6 @@ void SolveBallAndSocketJointSystem::solveVelocityConstraint() {
         const Matrix3x3& i1 = mBallAndSocketJointComponents.mI1[i];
         const Matrix3x3& i2 = mBallAndSocketJointComponents.mI2[i];
 
-        // Compute J*v
-        const Vector3 Jv = v2 + w2.cross(mBallAndSocketJointComponents.mR2World[i]) - v1 - w1.cross(mBallAndSocketJointComponents.mR1World[i]);
-
-        // Compute the Lagrange multiplier lambda
-        const Vector3 deltaLambda = mBallAndSocketJointComponents.mInverseMassMatrix[i] * (-Jv - mBallAndSocketJointComponents.mBiasVector[i]);
-        mBallAndSocketJointComponents.mImpulse[i] += deltaLambda;
-
-        // Compute the impulse P=J^T * lambda for the body 1
-        const Vector3 linearImpulseBody1 = -deltaLambda;
-        const Vector3 angularImpulseBody1 = deltaLambda.cross(mBallAndSocketJointComponents.mR1World[i]);
-
-        // Apply the impulse to the body 1
-        v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
-        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
-
-        // Compute the impulse P=J^T * lambda for the body 2
-        const Vector3 angularImpulseBody2 = -deltaLambda.cross(mBallAndSocketJointComponents.mR2World[i]);
-
-        // Apply the impulse to the body 2
-        v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambda;
-        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
-
         // --------------- Limits Constraints --------------- //
 
         if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
@@ -292,6 +270,30 @@ void SolveBallAndSocketJointSystem::solveVelocityConstraint() {
 
             }
         }
+
+        // --------------- Joint Constraints --------------- //
+
+        // Compute J*v
+        const Vector3 Jv = v2 + w2.cross(mBallAndSocketJointComponents.mR2World[i]) - v1 - w1.cross(mBallAndSocketJointComponents.mR1World[i]);
+
+        // Compute the Lagrange multiplier lambda
+        const Vector3 deltaLambda = mBallAndSocketJointComponents.mInverseMassMatrix[i] * (-Jv - mBallAndSocketJointComponents.mBiasVector[i]);
+        mBallAndSocketJointComponents.mImpulse[i] += deltaLambda;
+
+        // Compute the impulse P=J^T * lambda for the body 1
+        const Vector3 linearImpulseBody1 = -deltaLambda;
+        const Vector3 angularImpulseBody1 = deltaLambda.cross(mBallAndSocketJointComponents.mR1World[i]);
+
+        // Apply the impulse to the body 1
+        v1 += mRigidBodyComponents.mInverseMasses[componentIndexBody1] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
+
+        // Compute the impulse P=J^T * lambda for the body 2
+        const Vector3 angularImpulseBody2 = -deltaLambda.cross(mBallAndSocketJointComponents.mR2World[i]);
+
+        // Apply the impulse to the body 2
+        v2 += mRigidBodyComponents.mInverseMasses[componentIndexBody2] * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambda;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
     }
 }
 
@@ -341,6 +343,54 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         // Get the inverse mass and inverse inertia tensors of the bodies
         const decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
         const decimal inverseMassBody2 = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
+
+        // --------------- Limits Constraints --------------- //
+
+        if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
+
+            // Check if the cone limit constraints is violated or not
+            const Vector3 coneAxisBody1World = q1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[i];
+            const Vector3 coneAxisBody2World = q2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[i];
+            mBallAndSocketJointComponents.mConeLimitACrossB[i] = coneAxisBody1World.cross(coneAxisBody2World);
+            decimal coneAngle = computeCurrentConeHalfAngle(coneAxisBody1World, coneAxisBody2World);
+            decimal coneLimitError = mBallAndSocketJointComponents.mConeLimitHalfAngle[i] - coneAngle;
+            mBallAndSocketJointComponents.mIsConeLimitViolated[i] = coneLimitError < 0;
+
+            // If the cone limit is violated
+            if (mBallAndSocketJointComponents.mIsConeLimitViolated[i]) {
+
+                // Compute the inverse of the mass matrix K=JM^-1J^t for the cone limit (1x1 matrix)
+                decimal inverseMassMatrixConeLimit = mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI1[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i]) +
+                                                 mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI2[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i]);
+                mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] = (inverseMassMatrixConeLimit > decimal(0.0)) ?
+                                                                               decimal(1.0) / inverseMassMatrixConeLimit : decimal(0.0);
+
+                // Compute the Lagrange multiplier lambda for the cone limit constraint
+                decimal lambdaConeLimit = mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] * (-coneLimitError );
+
+                // Compute the impulse P=J^T * lambda of body 1
+                const Vector3 angularImpulseBody1 = lambdaConeLimit * mBallAndSocketJointComponents.mConeLimitACrossB[i];
+
+                // Compute the pseudo velocity of body 1
+                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mBallAndSocketJointComponents.mI1[i] * angularImpulseBody1);
+
+                // Update the body position/orientation of body 1
+                q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+                q1.normalize();
+
+                // Compute the impulse P=J^T * lambda of body 2
+                const Vector3 angularImpulseBody2 = -lambdaConeLimit * mBallAndSocketJointComponents.mConeLimitACrossB[i];
+
+                // Compute the pseudo velocity of body 2
+                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mBallAndSocketJointComponents.mI2[i] * angularImpulseBody2);
+
+                // Update the body position/orientation of body 2
+                q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+                q2.normalize();
+            }
+        }
+
+        // --------------- Joint Constraints --------------- //
 
         // Recompute the inverse mass matrix K=J^TM^-1J of of the 3 translation constraints
         decimal inverseMassBodies = inverseMassBody1 + inverseMassBody2;
@@ -393,52 +443,6 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
             x2 += v2;
             q2 += Quaternion(0, w2) * q2 * decimal(0.5);
             q2.normalize();
-        }
-
-        // --------------- Limits Constraints --------------- //
-
-        if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
-
-            // Check if the cone limit constraints is violated or not
-            const Vector3 coneAxisBody1World = q1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[i];
-            const Vector3 coneAxisBody2World = q2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[i];
-            mBallAndSocketJointComponents.mConeLimitACrossB[i] = coneAxisBody1World.cross(coneAxisBody2World);
-            decimal coneAngle = computeCurrentConeHalfAngle(coneAxisBody1World, coneAxisBody2World);
-            decimal coneLimitError = mBallAndSocketJointComponents.mConeLimitHalfAngle[i] - coneAngle;
-            mBallAndSocketJointComponents.mIsConeLimitViolated[i] = coneLimitError < 0;
-
-            // If the cone limit is violated
-            if (mBallAndSocketJointComponents.mIsConeLimitViolated[i]) {
-
-                // Compute the inverse of the mass matrix K=JM^-1J^t for the cone limit (1x1 matrix)
-                decimal inverseMassMatrixConeLimit = mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI1[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i]) +
-                                                 mBallAndSocketJointComponents.mConeLimitACrossB[i].dot(mBallAndSocketJointComponents.mI2[i] * mBallAndSocketJointComponents.mConeLimitACrossB[i]);
-                mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] = (inverseMassMatrixConeLimit > decimal(0.0)) ?
-                                                                               decimal(1.0) / inverseMassMatrixConeLimit : decimal(0.0);
-
-                // Compute the Lagrange multiplier lambda for the cone limit constraint
-                decimal lambdaConeLimit = mBallAndSocketJointComponents.mInverseMassMatrixConeLimit[i] * (-coneLimitError );
-
-                // Compute the impulse P=J^T * lambda of body 1
-                const Vector3 angularImpulseBody1 = lambdaConeLimit * mBallAndSocketJointComponents.mConeLimitACrossB[i];
-
-                // Compute the pseudo velocity of body 1
-                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mBallAndSocketJointComponents.mI1[i] * angularImpulseBody1);
-
-                // Update the body position/orientation of body 1
-                q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-                q1.normalize();
-
-                // Compute the impulse P=J^T * lambda of body 2
-                const Vector3 angularImpulseBody2 = -lambdaConeLimit * mBallAndSocketJointComponents.mConeLimitACrossB[i];
-
-                // Compute the pseudo velocity of body 2
-                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mBallAndSocketJointComponents.mI2[i] * angularImpulseBody2);
-
-                // Update the body position/orientation of body 2
-                q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-                q2.normalize();
-            }
         }
     }
 }
