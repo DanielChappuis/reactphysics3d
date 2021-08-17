@@ -136,7 +136,7 @@ void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
 // Raycast method with feedback information
 /// This method use the line vs triangle raycasting technique described in
 /// Real-time Collision Detection by Christer Ericson.
-bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
+bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& /*allocator*/) const {
 
     RP3D_PROFILE("TriangleShape::raycast()", mProfiler);
 

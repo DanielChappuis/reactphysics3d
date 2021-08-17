@@ -59,7 +59,7 @@ Vector3 BoxShape::getLocalInertiaTensor(decimal mass) const {
 }
 
 // Raycast method with feedback information
-bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
+bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& /*allocator*/) const {
 
     Vector3 rayDirection = ray.point2 - ray.point1;
     decimal tMin = DECIMAL_SMALLEST;

@@ -91,9 +91,6 @@ struct Entity {
         /// Return the generation number of the entity
         uint32 getGeneration() const;
 
-        /// Assignment operator
-        Entity& operator=(const Entity& entity);
-
         /// Equality operator
         bool operator==(const Entity& entity) const;
 

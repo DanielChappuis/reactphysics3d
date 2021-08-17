@@ -145,7 +145,7 @@ RP3D_FORCE_INLINE size_t SphereShape::getSizeInBytes() const {
 }
 
 // Return a local support point in a given direction without the object margin
-RP3D_FORCE_INLINE Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+RP3D_FORCE_INLINE Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& /*direction*/) const {
 
     // Return the center of the sphere (the radius is taken into account in the object margin)
     return Vector3(0.0, 0.0, 0.0);
@@ -185,7 +185,7 @@ RP3D_FORCE_INLINE decimal SphereShape::getVolume() const {
 }
 
 // Return true if a point is inside the collision shape
-RP3D_FORCE_INLINE bool SphereShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+RP3D_FORCE_INLINE bool SphereShape::testPointInside(const Vector3& localPoint, Collider* /*collider*/) const {
     return (localPoint.lengthSquare() < mMargin * mMargin);
 }
 

@@ -43,14 +43,3 @@ Entity::Entity(uint32 index, uint32 generation)
     assert(getIndex() == index);
     assert(getGeneration() == generation);
 }
-
-// Assignment operator
-Entity& Entity::operator=(const Entity& entity) {
-
-    if (&entity != this) {
-
-        id = entity.id;
-    }
-
-    return *this;
-}

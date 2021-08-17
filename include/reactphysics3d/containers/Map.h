@@ -83,8 +83,8 @@ class Map {
 
         // -------------------- Methods -------------------- //
 
-        /// Return the index of the entry with a given key or -1 if there is no entry with this key
-        int findEntry(const K& key) const {
+        /// Return the index of the entry with a given key or INVALID_INDEX if there is no entry with this key
+        uint32 findEntry(const K& key) const {
 
             if (mHashSize > 0) {
 

@@ -130,7 +130,7 @@ RP3D_FORCE_INLINE bool ConcaveShape::isPolyhedron() const {
 }
 
 // Return true if a point is inside the collision shape
-RP3D_FORCE_INLINE bool ConcaveShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+RP3D_FORCE_INLINE bool ConcaveShape::testPointInside(const Vector3& /*localPoint*/, Collider* /*collider*/) const {
     return false;
 }
 

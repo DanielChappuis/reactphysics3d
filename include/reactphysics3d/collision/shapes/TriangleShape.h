@@ -224,12 +224,12 @@ RP3D_FORCE_INLINE void TriangleShape::getLocalBounds(Vector3& min, Vector3& max)
  *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-RP3D_FORCE_INLINE Vector3 TriangleShape::getLocalInertiaTensor(decimal mass) const {
+RP3D_FORCE_INLINE Vector3 TriangleShape::getLocalInertiaTensor(decimal /*mass*/) const {
     return Vector3(0, 0, 0);
 }
 
 // Return true if a point is inside the collision shape
-RP3D_FORCE_INLINE bool TriangleShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+RP3D_FORCE_INLINE bool TriangleShape::testPointInside(const Vector3& /*localPoint*/, Collider* /*collider*/) const {
     return false;
 }
 

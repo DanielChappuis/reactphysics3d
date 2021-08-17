@@ -186,7 +186,7 @@ RP3D_FORCE_INLINE Vector3 BoxShape::getLocalSupportPointWithoutMargin(const Vect
 }
 
 // Return true if a point is inside the collision shape
-RP3D_FORCE_INLINE bool BoxShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+RP3D_FORCE_INLINE bool BoxShape::testPointInside(const Vector3& localPoint, Collider* /*collider*/) const {
     return (localPoint.x < mHalfExtents[0] && localPoint.x > -mHalfExtents[0] &&
             localPoint.y < mHalfExtents[1] && localPoint.y > -mHalfExtents[1] &&
             localPoint.z < mHalfExtents[2] && localPoint.z > -mHalfExtents[2]);

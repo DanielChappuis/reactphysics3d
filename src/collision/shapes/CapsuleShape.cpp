@@ -67,7 +67,7 @@ Vector3 CapsuleShape::getLocalInertiaTensor(decimal mass) const {
 }
 
 // Return true if a point is inside the collision shape
-bool CapsuleShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+bool CapsuleShape::testPointInside(const Vector3& localPoint, Collider* /*collider*/) const {
 
     const decimal diffYCenterSphere1 = localPoint.y - mHalfHeight;
     const decimal diffYCenterSphere2 = localPoint.y + mHalfHeight;
@@ -83,7 +83,7 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, Collider* collider
 }
 
 // Raycast method with feedback information
-bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
+bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& /*allocator*/) const {
 
     const Vector3 n = ray.point2 - ray.point1;
 

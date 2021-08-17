@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two capsules
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, MemoryAllocator& memoryAllocator) {
+bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems, MemoryAllocator& /*memoryAllocator*/) {
     
     bool isCollisionFound = false;
 

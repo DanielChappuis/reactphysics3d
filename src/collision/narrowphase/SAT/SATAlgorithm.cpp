@@ -961,8 +961,8 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
         // The clipping plane is perpendicular to the edge direction and the reference face normal
         const Vector3 planeNormal = axisReferenceSpace.cross(edgeDirection);
 
-        assert(areVertices1Input && verticesTemp1.size() > 0 || !areVertices1Input);
-        assert(!areVertices1Input && verticesTemp2.size() > 0 || areVertices1Input);
+        assert((areVertices1Input && verticesTemp1.size() > 0) || !areVertices1Input);
+        assert((!areVertices1Input && verticesTemp2.size() > 0) || areVertices1Input);
 
         // Clip the incident face with one adjacent plane (corresponding to one edge) of the reference face
         clipPolygonWithPlane(areVertices1Input ? verticesTemp1 : verticesTemp2, edgeV1, planeNormal, areVertices1Input ? verticesTemp2 : verticesTemp1);

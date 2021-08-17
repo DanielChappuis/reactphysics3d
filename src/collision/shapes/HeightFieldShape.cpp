@@ -95,7 +95,7 @@ void HeightFieldShape::getLocalBounds(Vector3& min, Vector3& max) const {
 // and then for each rectangle in the sub-grid we generate two triangles that we use to test collision.
 void HeightFieldShape::computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
                                                    Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
-                                                   MemoryAllocator& allocator) const {
+                                                   MemoryAllocator& /*allocator*/) const {
 
     RP3D_PROFILE("HeightFieldShape::computeOverlappingTriangles()", mProfiler);
 
@@ -373,8 +373,11 @@ bool HeightFieldShape::computeEnteringRayGridCoordinates(const Ray& ray, int& i,
     decimal stepI, stepJ;
     const Vector3 aabbSize = mAABB.getExtent();
 
-    const uint32 nbCellsI = mNbColumns - 1;
-    const uint32 nbCellsJ = mNbRows - 1;
+    assert(mNbColumns > 0);
+    assert(mNbRows > 0);
+
+    const int nbCellsI = mNbColumns - 1;
+    const int nbCellsJ = mNbRows - 1;
 
     if (mAABB.raycast(ray, outHitGridPoint)) {
 
