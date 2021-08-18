@@ -63,6 +63,7 @@ do not hesitate to take a look at the user manual.
 - Issue with wrong linear velocity update computed in RigidBody::updateLocalCenterOfMassFromColliders() method
 - Issue with wrong linear velocity update computed in RigidBody::updateMassPropertiesFromColliders() method
 - Issue in copy-constructors in Map and Set classes
+- A lot of code warnings have been fixed
 
 
 ## Version 0.8.0 (May 31, 2020)

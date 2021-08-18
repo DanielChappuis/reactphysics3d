@@ -63,12 +63,6 @@ class Transform {
         /// Constructor
         Transform(const Vector3& position, const Quaternion& orientation);
 
-        /// Destructor
-        ~Transform() = default;
-
-        /// Copy-constructor
-        Transform(const Transform& transform);
-
         /// Return the origin of the transform
         const Vector3& getPosition() const;
 
@@ -116,9 +110,6 @@ class Transform {
         /// Return true if the two transforms are different
         bool operator!=(const Transform& transform2) const;
 
-        /// Assignment operator
-        Transform& operator=(const Transform& transform);
-
         /// Return the string representation
         std::string to_string() const;
 
@@ -138,12 +129,6 @@ RP3D_FORCE_INLINE Transform::Transform(const Vector3& position, const Matrix3x3&
 // Constructor
 RP3D_FORCE_INLINE Transform::Transform(const Vector3& position, const Quaternion& orientation)
           : mPosition(position), mOrientation(orientation) {
-
-}
-
-// Copy-constructor
-RP3D_FORCE_INLINE Transform::Transform(const Transform& transform)
-          : mPosition(transform.mPosition), mOrientation(transform.mOrientation) {
 
 }
 
@@ -246,15 +231,6 @@ RP3D_FORCE_INLINE bool Transform::operator==(const Transform& transform2) const 
 // Return true if the two transforms are different
 RP3D_FORCE_INLINE bool Transform::operator!=(const Transform& transform2) const {
     return !(*this == transform2);
-}
-
-// Assignment operator
-RP3D_FORCE_INLINE Transform& Transform::operator=(const Transform& transform) {
-    if (&transform != this) {
-        mPosition = transform.mPosition;
-        mOrientation = transform.mOrientation;
-    }
-    return *this;
 }
 
 // Get the string representation

@@ -59,15 +59,6 @@ class Matrix2x2 {
         /// Constructor
         Matrix2x2(decimal a1, decimal a2, decimal b1, decimal b2);
 
-        /// Destructor
-        ~Matrix2x2() = default;
-
-        /// Copy-constructor
-        Matrix2x2(const Matrix2x2& matrix);
-
-        /// Assignment operator
-        Matrix2x2& operator=(const Matrix2x2& matrix);
-
         /// Set all the values in the matrix
         void setAllValues(decimal a1, decimal a2, decimal b1, decimal b2);
 
@@ -170,12 +161,6 @@ RP3D_FORCE_INLINE Matrix2x2::Matrix2x2(decimal a1, decimal a2, decimal b1, decim
 
     // Initialize the matrix with the values
     setAllValues(a1, a2, b1, b2);
-}
-
-// Copy-constructor
-RP3D_FORCE_INLINE Matrix2x2::Matrix2x2(const Matrix2x2& matrix) {
-    setAllValues(matrix.mRows[0][0], matrix.mRows[0][1],
-                 matrix.mRows[1][0], matrix.mRows[1][1]);
 }
 
 // Method to set all the values in the matrix

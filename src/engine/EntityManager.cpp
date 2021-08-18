@@ -55,7 +55,7 @@ Entity EntityManager::createEntity() {
         // Create a new indice
         index = mGenerations.size() - 1;
 
-        assert(index < (1 << Entity::ENTITY_INDEX_BITS));
+        assert(index < (uint32(1) << Entity::ENTITY_INDEX_BITS));
     }
 
     // Return a new entity

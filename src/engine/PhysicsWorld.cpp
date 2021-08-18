@@ -346,7 +346,7 @@ void PhysicsWorld::update(decimal timeStep) {
     mDynamicsSystem.updateBodiesState();
 
     // Update the colliders components
-    mCollisionDetection.updateColliders(timeStep);
+    mCollisionDetection.updateColliders();
 
     if (mIsSleepingEnabled) updateSleepingBodies(timeStep);
 

@@ -144,7 +144,7 @@ class BroadPhaseSystem {
                                     bool forceReInsert);
 
         /// Update the broad-phase state of some colliders components
-        void updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal timeStep);
+        void updateCollidersComponents(uint32 startIndex, uint32 nbItems);
 
     public :
 
@@ -170,10 +170,10 @@ class BroadPhaseSystem {
         void removeCollider(Collider* collider);
 
         /// Update the broad-phase state of a single collider
-        void updateCollider(Entity colliderEntity, decimal timeStep);
+        void updateCollider(Entity colliderEntity);
 
         /// Update the broad-phase state of all the enabled colliders
-        void updateColliders(decimal timeStep);
+        void updateColliders();
 
         /// Add a collider in the array of colliders that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.

@@ -75,7 +75,7 @@ class CollisionBody {
         void removeAllColliders();
 
         /// Update the broad-phase state for this body (because it has moved for instance)
-        void updateBroadPhaseState(decimal timeStep) const;
+        void updateBroadPhaseState() const;
 
         /// Ask the broad-phase to test again the collision shapes of the body for collision
         /// (as if the body has moved).

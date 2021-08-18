@@ -100,7 +100,6 @@ struct Entity {
         // -------------------- Friendship -------------------- //
 
         friend class EntityManager;
-
 };
 
 // Return the lookup index of the entity in a array

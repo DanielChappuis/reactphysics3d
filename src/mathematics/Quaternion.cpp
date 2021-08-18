@@ -51,12 +51,6 @@ Quaternion Quaternion::fromEulerAngles(const Vector3& eulerAngles) {
     return quaternion;
 }
 
-// Copy-constructor
-Quaternion::Quaternion(const Quaternion& quaternion)
-           :x(quaternion.x), y(quaternion.y), z(quaternion.z), w(quaternion.w) {
-
-}
-
 // Create a unit quaternion from a rotation matrix
 Quaternion::Quaternion(const Matrix3x3& matrix) {
 

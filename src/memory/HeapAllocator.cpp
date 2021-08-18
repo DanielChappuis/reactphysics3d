@@ -62,9 +62,11 @@ HeapAllocator::~HeapAllocator() {
 
         MemoryUnitHeader* nextUnit = unit->nextUnit;
 
+        const size_t unitSize = unit->size;
+
         // Destroy the unit
         unit->~MemoryUnitHeader();
-        mBaseAllocator.release(static_cast<void*>(unit), unit->size + sizeof(MemoryUnitHeader));
+        mBaseAllocator.release(static_cast<void*>(unit), unitSize + sizeof(MemoryUnitHeader));
 
         unit = nextUnit;
     }

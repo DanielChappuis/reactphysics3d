@@ -61,15 +61,6 @@ class Matrix3x3 {
         Matrix3x3(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3,
                   decimal c1, decimal c2, decimal c3);
 
-        /// Destructor
-        ~Matrix3x3() = default;
-
-        /// Copy-constructor
-        Matrix3x3(const Matrix3x3& matrix);
-
-        /// Assignment operator
-        Matrix3x3& operator=(const Matrix3x3& matrix);
-
         /// Set all the values in the matrix
         void setAllValues(decimal a1, decimal a2, decimal a3, decimal b1, decimal b2, decimal b3,
                   decimal c1, decimal c2, decimal c3);
@@ -177,13 +168,6 @@ RP3D_FORCE_INLINE Matrix3x3::Matrix3x3(decimal a1, decimal a2, decimal a3,
                      decimal c1, decimal c2, decimal c3) {
     // Initialize the matrix with the values
     setAllValues(a1, a2, a3, b1, b2, b3, c1, c2, c3);
-}
-
-// Copy-constructor
-RP3D_FORCE_INLINE Matrix3x3::Matrix3x3(const Matrix3x3& matrix) {
-    setAllValues(matrix.mRows[0][0], matrix.mRows[0][1], matrix.mRows[0][2],
-                 matrix.mRows[1][0], matrix.mRows[1][1], matrix.mRows[1][2],
-                 matrix.mRows[2][0], matrix.mRows[2][1], matrix.mRows[2][2]);
 }
 
 // Method to set all the values in the matrix

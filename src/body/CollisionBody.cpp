@@ -219,7 +219,7 @@ const Transform& CollisionBody::getTransform() const {
 }
 
 // Update the broad-phase state for this body (because it has moved for instance)
-void CollisionBody::updateBroadPhaseState(decimal timeStep) const {
+void CollisionBody::updateBroadPhaseState() const {
 
     // For all the colliders of the body
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
@@ -232,7 +232,7 @@ void CollisionBody::updateBroadPhaseState(decimal timeStep) const {
                                                                mWorld.mCollidersComponents.getLocalToBodyTransform(colliderEntities[i]));
 
         // Update the collider
-        mWorld.mCollisionDetection.updateCollider(colliderEntities[i], timeStep);
+        mWorld.mCollisionDetection.updateCollider(colliderEntities[i]);
     }
 }
 
@@ -400,7 +400,7 @@ void CollisionBody::setTransform(const Transform& transform) {
     mWorld.mTransformComponents.setTransform(mEntity, transform);
 
     // Update the broad-phase state of the body
-    updateBroadPhaseState(0);
+    updateBroadPhaseState();
 
     RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Set transform=" + transform.to_string(),  __FILE__, __LINE__);

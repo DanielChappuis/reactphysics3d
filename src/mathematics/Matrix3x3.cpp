@@ -29,18 +29,6 @@
 // Namespaces
 using namespace reactphysics3d;
 
-// Assignment operator
-Matrix3x3& Matrix3x3::operator=(const Matrix3x3& matrix) {
-
-    // Check for self-assignment
-    if (&matrix != this) {
-        setAllValues(matrix.mRows[0][0], matrix.mRows[0][1], matrix.mRows[0][2],
-                     matrix.mRows[1][0], matrix.mRows[1][1], matrix.mRows[1][2],
-                     matrix.mRows[2][0], matrix.mRows[2][1], matrix.mRows[2][2]);
-    }
-    return *this;
-}
-
 // Return the inverse matrix
 Matrix3x3 Matrix3x3::getInverse(decimal determinant) const {
 

@@ -114,7 +114,7 @@ void BroadPhaseSystem::removeCollider(Collider* collider) {
 }
 
 // Update the broad-phase state of a single collider
-void BroadPhaseSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
+void BroadPhaseSystem::updateCollider(Entity colliderEntity) {
 
     assert(mCollidersComponents.mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -122,17 +122,17 @@ void BroadPhaseSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
     uint32 index = mCollidersComponents.mMapEntityToComponentIndex[colliderEntity];
 
     // Update the collider component
-    updateCollidersComponents(index, 1, timeStep);
+    updateCollidersComponents(index, 1);
 }
 
 // Update the broad-phase state of all the enabled colliders
-void BroadPhaseSystem::updateColliders(decimal timeStep) {
+void BroadPhaseSystem::updateColliders() {
 
     RP3D_PROFILE("BroadPhaseSystem::updateColliders()", mProfiler);
 
     // Update all the enabled collider components
     if (mCollidersComponents.getNbEnabledComponents() > 0) {
-        updateCollidersComponents(0, mCollidersComponents.getNbEnabledComponents(), timeStep);
+        updateCollidersComponents(0, mCollidersComponents.getNbEnabledComponents());
     }
 }
 
@@ -156,7 +156,7 @@ void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* coll
 }
 
 // Update the broad-phase state of some colliders components
-void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal timeStep) {
+void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbItems) {
 
     RP3D_PROFILE("BroadPhaseSystem::updateCollidersComponents()", mProfiler);
 

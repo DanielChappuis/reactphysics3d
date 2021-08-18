@@ -36,9 +36,3 @@ AABB::AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates)
      :mMinCoordinates(minCoordinates), mMaxCoordinates(maxCoordinates) {
 
 }
-
-// Copy-constructor
-AABB::AABB(const AABB& aabb)
-     : mMinCoordinates(aabb.mMinCoordinates), mMaxCoordinates(aabb.mMaxCoordinates) {
-
-}

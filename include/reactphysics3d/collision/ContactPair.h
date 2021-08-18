@@ -75,7 +75,7 @@ struct ContactPair {
         uint32 contactManifoldsIndex;
 
         /// Number of contact manifolds
-        int8 nbContactManifolds;
+        uint32 nbContactManifolds;
 
         /// Index of the first contact point in the array of contact points
         uint32 contactPointsIndex;

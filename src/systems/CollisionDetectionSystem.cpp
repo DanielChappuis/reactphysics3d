@@ -844,7 +844,7 @@ void CollisionDetectionSystem::createContacts() {
         contactPair.contactPointsIndex = mCurrentContactPoints->size();
 
         // For each potential contact manifold of the pair
-        for (uint m=0; m < contactPair.nbContactManifolds; m++) {
+        for (uint32 m=0; m < contactPair.nbContactManifolds; m++) {
 
             ContactManifoldInfo& potentialManifold = mPotentialContactManifolds[contactPair.potentialContactManifoldsIndices[m]];
 

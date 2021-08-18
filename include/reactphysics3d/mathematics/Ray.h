@@ -60,24 +60,6 @@ struct Ray {
            : point1(p1), point2(p2), maxFraction(maxFrac) {
 
         }
-
-        /// Copy-constructor
-        Ray(const Ray& ray) : point1(ray.point1), point2(ray.point2), maxFraction(ray.maxFraction) {
-
-        }
-
-        /// Destructor
-        ~Ray() = default;
-
-        /// Overloaded assignment operator
-        Ray& operator=(const Ray& ray) {
-            if (&ray != this) {
-                point1 = ray.point1;
-                point2 = ray.point2;
-                maxFraction = ray.maxFraction;
-            }
-            return *this;
-        }
 };
 
 }

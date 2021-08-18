@@ -323,10 +323,10 @@ class CollisionDetectionSystem {
         void removeCollider(Collider* collider);
 
         /// Update a collider (that has moved for instance)
-        void updateCollider(Entity colliderEntity, decimal timeStep);
+        void updateCollider(Entity colliderEntity);
 
         /// Update all the enabled colliders
-        void updateColliders(decimal timeStep);
+        void updateColliders();
 
         /// Add a pair of bodies that cannot collide with each other
         void addNoCollisionPair(Entity body1Entity, Entity body2Entity);
@@ -445,15 +445,15 @@ RP3D_FORCE_INLINE MemoryManager& CollisionDetectionSystem::getMemoryManager() co
 }
 
 // Update a collider (that has moved for instance)
-RP3D_FORCE_INLINE void CollisionDetectionSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
+RP3D_FORCE_INLINE void CollisionDetectionSystem::updateCollider(Entity colliderEntity) {
 
     // Update the collider component
-    mBroadPhaseSystem.updateCollider(colliderEntity, timeStep);
+    mBroadPhaseSystem.updateCollider(colliderEntity);
 }
 
 // Update all the enabled colliders
-RP3D_FORCE_INLINE void CollisionDetectionSystem::updateColliders(decimal timeStep) {
-    mBroadPhaseSystem.updateColliders(timeStep);
+RP3D_FORCE_INLINE void CollisionDetectionSystem::updateColliders() {
+    mBroadPhaseSystem.updateColliders();
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED

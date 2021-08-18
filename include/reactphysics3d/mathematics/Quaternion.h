@@ -73,14 +73,8 @@ struct Quaternion {
         /// Constructor with the component w and the vector v=(x y z)
         Quaternion(const Vector3& v, decimal newW);
 
-        /// Copy-constructor
-        Quaternion(const Quaternion& quaternion);
-
         /// Create a unit quaternion from a rotation matrix
         Quaternion(const Matrix3x3& matrix);
-
-        /// Destructor
-        ~Quaternion() = default;
 
         /// Set all the values
         void setAllValues(decimal newX, decimal newY, decimal newZ, decimal newW);
@@ -165,9 +159,6 @@ struct Quaternion {
 
         /// Overloaded operator for the multiplication with a vector
         Vector3 operator*(const Vector3& point) const;
-
-        /// Overloaded operator for assignment
-        Quaternion& operator=(const Quaternion& quaternion);
 
         /// Overloaded operator for equality condition
         bool operator==(const Quaternion& quaternion) const;
@@ -385,21 +376,6 @@ RP3D_FORCE_INLINE Vector3 Quaternion::operator*(const Vector3& point) const {
     return Vector3(w * prodX - prodY * z + prodZ * y - prodW * x,
                    w * prodY - prodZ * x + prodX * z - prodW * y,
                    w * prodZ - prodX * y + prodY * x - prodW * z);
-}
-
-// Overloaded operator for the assignment
-RP3D_FORCE_INLINE Quaternion& Quaternion::operator=(const Quaternion& quaternion) {
-
-    // Check for self-assignment
-    if (this != &quaternion) {
-        x = quaternion.x;
-        y = quaternion.y;
-        z = quaternion.z;
-        w = quaternion.w;
-    }
-
-    // Return this quaternion
-    return *this;
 }
 
 // Overloaded operator for equality condition

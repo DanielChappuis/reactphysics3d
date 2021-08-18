@@ -64,12 +64,6 @@ struct Vector3 {
         /// Constructor with arguments
         Vector3(decimal newX, decimal newY, decimal newZ);
 
-        /// Copy-constructor
-        Vector3(const Vector3& vector);
-
-        /// Destructor
-        ~Vector3() = default;
-
         /// Set all the values of the vector
         void setAllValues(decimal newX, decimal newY, decimal newZ);
 
@@ -145,9 +139,6 @@ struct Vector3 {
         /// Overloaded operator for value access
         const decimal& operator[] (int index) const;
 
-        /// Overloaded operator
-        Vector3& operator=(const Vector3& vector);
-
         /// Overloaded less than operator for ordering to be used inside std::set for instance
         bool operator<(const Vector3& vector) const;
 
@@ -182,11 +173,6 @@ RP3D_FORCE_INLINE Vector3::Vector3() : x(0.0), y(0.0), z(0.0) {
 
 // Constructor with arguments
 RP3D_FORCE_INLINE Vector3::Vector3(decimal newX, decimal newY, decimal newZ) : x(newX), y(newY), z(newZ) {
-
-}
-
-// Copy-constructor
-RP3D_FORCE_INLINE Vector3::Vector3(const Vector3& vector) : x(vector.x), y(vector.y), z(vector.z) {
 
 }
 
@@ -362,16 +348,6 @@ RP3D_FORCE_INLINE Vector3 operator*(decimal number, const Vector3& vector) {
 // Overload operator for multiplication between two vectors
 RP3D_FORCE_INLINE Vector3 operator*(const Vector3& vector1, const Vector3& vector2) {
     return Vector3(vector1.x * vector2.x, vector1.y * vector2.y, vector1.z * vector2.z);
-}
-
-// Assignment operator
-RP3D_FORCE_INLINE Vector3& Vector3::operator=(const Vector3& vector) {
-    if (&vector != this) {
-        x = vector.x;
-        y = vector.y;
-        z = vector.z;
-    }
-    return *this;
 }
 
 // Overloaded less than operator for ordering to be used inside std::set for instance

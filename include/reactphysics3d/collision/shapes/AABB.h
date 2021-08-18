@@ -61,12 +61,6 @@ class AABB {
         /// Constructor
         AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates);
 
-        /// Copy-constructor
-        AABB(const AABB& aabb);
-
-        /// Destructor
-        ~AABB() = default;
-
         /// Return the center point
         Vector3 getCenter() const;
 
@@ -120,9 +114,6 @@ class AABB {
 
         /// Create and return an AABB for a triangle
         static AABB createAABBForTriangle(const Vector3* trianglePoints);
-
-        /// Assignment operator
-        AABB& operator=(const AABB& aabb);
 
         // -------------------- Friendship -------------------- //
 
@@ -209,15 +200,6 @@ RP3D_FORCE_INLINE bool AABB::contains(const Vector3& point) const {
 RP3D_FORCE_INLINE void AABB::applyScale(const Vector3& scale) {
     mMinCoordinates = mMinCoordinates * scale;
     mMaxCoordinates = mMaxCoordinates * scale;
-}
-
-// Assignment operator
-RP3D_FORCE_INLINE AABB& AABB::operator=(const AABB& aabb) {
-    if (this != &aabb) {
-        mMinCoordinates = aabb.mMinCoordinates;
-        mMaxCoordinates = aabb.mMaxCoordinates;
-    }
-    return *this;
 }
 
 // Merge the AABB in parameter with the current one

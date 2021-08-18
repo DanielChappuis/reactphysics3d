@@ -30,7 +30,6 @@
 // Namespaces
 using namespace reactphysics3d;
 
-
 // Set the transform from an OpenGL transform matrix
 void Transform::setFromOpenGL(decimal* openglMatrix) {
     Matrix3x3 matrix(openglMatrix[0], openglMatrix[4], openglMatrix[8],

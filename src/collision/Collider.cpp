@@ -117,7 +117,7 @@ void Collider::setLocalToBodyTransform(const Transform& transform) {
         rigidBody->setIsSleeping(false);
     }
 
-    mBody->mWorld.mCollisionDetection.updateCollider(mEntity, 0);
+    mBody->mWorld.mCollisionDetection.updateCollider(mEntity);
 
     RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(getBroadPhaseId()) + ": Set localToBodyTransform=" +
