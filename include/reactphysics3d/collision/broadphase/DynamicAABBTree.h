@@ -90,6 +90,11 @@ struct TreeNode {
 
     // -------------------- Methods -------------------- //
 
+    /// Constructor
+    TreeNode() : nextNodeID(NULL_TREE_NODE), height(-1) {
+
+    }
+
     /// Return true if the node is a leaf of the tree
     bool isLeaf() const;
 };

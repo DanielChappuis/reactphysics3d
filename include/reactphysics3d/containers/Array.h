@@ -93,12 +93,6 @@ class Array {
 
                 }
 
-                /// Copy constructor
-                Iterator(const Iterator& it)
-                     :mCurrentIndex(it.mCurrentIndex), mBuffer(it.mBuffer), mSize(it.mSize) {
-
-                }
-
                 /// Deferencable
                 reference operator*() {
                     assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);

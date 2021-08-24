@@ -150,9 +150,9 @@ void BallAndSocketJointComponents::addComponent(Entity jointEntity, bool isSleep
     new (mBiasVector + index) Vector3(0, 0, 0);
     new (mInverseMassMatrix + index) Matrix3x3();
     new (mImpulse + index) Vector3(0, 0, 0);
-    mIsConeLimitEnabled[index] = false;
+    mIsConeLimitEnabled[index] = component.isConeLimitEnabled;
     mConeLimitImpulse[index] = decimal(0.0);
-    mConeLimitHalfAngle[index] = PI_RP3D;
+    mConeLimitHalfAngle[index] = component.coneLimitHalfAngle;
     mInverseMassMatrixConeLimit[index] = decimal(0.0);
     mBConeLimit[index] = decimal(0.0);
     mIsConeLimitViolated[index] = false;

@@ -58,7 +58,11 @@ void DynamicAABBTree::init() {
     // Allocate memory for the nodes of the tree
     mNodes = static_cast<TreeNode*>(mAllocator.allocate(static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode)));
     assert(mNodes);
-    std::memset(mNodes, 0, static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode));
+
+    // Construct the nodes
+    for (int32 i=0; i < mNbAllocatedNodes; i++) {
+        new (mNodes + i) TreeNode();
+    }
 
     // Initialize the allocated nodes
     for (int32 i=0; i<mNbAllocatedNodes - 1; i++) {
@@ -72,6 +76,11 @@ void DynamicAABBTree::init() {
 
 // Clear all the nodes and reset the tree
 void DynamicAABBTree::reset() {
+
+    // Call the destructor of all the nodes
+    for (int32 i=0; i < mNbAllocatedNodes; i++) {
+        mNodes[i].~TreeNode();
+    }
 
     // Free the allocated memory for the nodes
     mAllocator.release(mNodes, static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode));
@@ -94,11 +103,15 @@ int32 DynamicAABBTree::allocateNode() {
         TreeNode* oldNodes = mNodes;
         mNodes = static_cast<TreeNode*>(mAllocator.allocate(static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode)));
         assert(mNodes);
-        memcpy(mNodes, oldNodes, static_cast<size_t>(mNbNodes) * sizeof(TreeNode));
+
+        // Copy the elements to the new allocated memory location
+        std::uninitialized_copy(oldNodes, oldNodes + mNbNodes, mNodes);
+
         mAllocator.release(oldNodes, static_cast<size_t>(oldNbAllocatedNodes) * sizeof(TreeNode));
 
         // Initialize the allocated nodes
         for (int32 i=mNbNodes; i<mNbAllocatedNodes - 1; i++) {
+            new (mNodes + i) TreeNode();
             mNodes[i].nextNodeID = i + 1;
             mNodes[i].height = -1;
         }

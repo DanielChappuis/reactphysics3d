@@ -162,12 +162,6 @@ class Map {
 
                 }
 
-                /// Copy constructor
-                Iterator(const Iterator& it)
-                     :mMap(it.mMap), mCurrentBucketIndex(it.mCurrentBucketIndex), mCurrentEntryIndex(it.mCurrentEntryIndex) {
-
-                }
-
                 /// Deferencable
                 reference operator*() const {
                     assert(mCurrentEntryIndex < mMap->mNbAllocatedEntries);
@@ -203,20 +197,6 @@ class Map {
                 /// Inequality operator (it != end())
                 bool operator!=(const Iterator& iterator) const {
                     return !(*this == iterator);
-                }
-
-                /// Overloaded assignment operator
-                Iterator& operator=(const Iterator& it) {
-
-                    // Check for self assignment
-                    if (this != &it) {
-
-                        mMap = it.mMap;
-                        mCurrentBucketIndex = it.mCurrentBucketIndex;
-                        mCurrentEntryIndex = it.mCurrentEntryIndex;
-                    }
-
-                    return *this;
                 }
         };
 

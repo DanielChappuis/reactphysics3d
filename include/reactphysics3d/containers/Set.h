@@ -162,12 +162,6 @@ class Set {
 
                 }
 
-                /// Copy constructor
-                Iterator(const Iterator& it)
-                     :mSet(it.mSet), mCurrentBucketIndex(it.mCurrentBucketIndex), mCurrentEntryIndex(it.mCurrentEntryIndex) {
-
-                }
-
                 /// Deferencable
                 reference operator*() const {
                     assert(mCurrentEntryIndex < mSet->mNbAllocatedEntries);
@@ -203,20 +197,6 @@ class Set {
                 /// Inequality operator (it != end())
                 bool operator!=(const Iterator& iterator) const {
                     return !(*this == iterator);
-                }
-
-                /// Overloaded assignment operator
-                Iterator& operator=(const Iterator& it) {
-
-                    // Check for self assignment
-                    if (this != &it) {
-
-                        mSet = it.mSet;
-                        mCurrentBucketIndex = it.mCurrentBucketIndex;
-                        mCurrentEntryIndex = it.mCurrentEntryIndex;
-                    }
-
-                    return *this;
                 }
         };
 

@@ -131,8 +131,12 @@ class BallAndSocketJointComponents : public Components {
         /// Structure for the data of a transform component
         struct BallAndSocketJointComponent {
 
+            bool isConeLimitEnabled;
+            decimal coneLimitHalfAngle;
+
             /// Constructor
-            BallAndSocketJointComponent() {
+            BallAndSocketJointComponent(bool isConeLimitEnabled, decimal coneLimitHalfAngle)
+                : isConeLimitEnabled(isConeLimitEnabled), coneLimitHalfAngle(coneLimitHalfAngle) {
 
             }
         };

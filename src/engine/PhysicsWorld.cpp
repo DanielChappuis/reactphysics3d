@@ -50,7 +50,12 @@ uint PhysicsWorld::mNbWorlds = 0;
  * @param worldSettings The settings of the world
  * @param profiler Pointer to the profiler
  */
-PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, PhysicsCommon& physicsCommon, const WorldSettings& worldSettings, Profiler* profiler)
+PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, PhysicsCommon& physicsCommon, const WorldSettings& worldSettings,
+#ifdef IS_RP3D_PROFILING_ENABLED
+                           Profiler* profiler)
+#else
+                           Profiler* /*profiler*/)
+#endif
               : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()), mDebugRenderer(mMemoryManager.getHeapAllocator()),
                 mCollisionBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
                 mTransformComponents(mMemoryManager.getHeapAllocator()), mCollidersComponents(mMemoryManager.getHeapAllocator()),
@@ -558,7 +563,7 @@ Joint* PhysicsWorld::createJoint(const JointInfo& jointInfo) {
         case JointType::BALLSOCKETJOINT:
         {
             // Create a BallAndSocketJoint component
-            BallAndSocketJointComponents::BallAndSocketJointComponent ballAndSocketJointComponent;
+            BallAndSocketJointComponents::BallAndSocketJointComponent ballAndSocketJointComponent(false, PI_RP3D);
             mBallAndSocketJointsComponents.addComponent(entity, isJointDisabled, ballAndSocketJointComponent);
 
             void* allocatedMemory = mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
