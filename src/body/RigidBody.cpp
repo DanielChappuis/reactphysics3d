@@ -386,7 +386,7 @@ Vector3 RigidBody::computeCenterOfMass() const {
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
     for (uint32 i=0; i < colliderEntities.size(); i++) {
 
-        const uint colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
+        const uint32 colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
 
         const decimal colliderVolume = mWorld.mCollidersComponents.mCollisionShapes[colliderIndex]->getVolume();
         const decimal colliderMassDensity = mWorld.mCollidersComponents.mMaterials[colliderIndex].getMassDensity();
@@ -418,7 +418,7 @@ void RigidBody::computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, de
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
     for (uint32 i=0; i < colliderEntities.size(); i++) {
 
-        const uint colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
+        const uint32 colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
 
         const decimal colliderVolume = mWorld.mCollidersComponents.mCollisionShapes[colliderIndex]->getVolume();
         const decimal colliderMassDensity = mWorld.mCollidersComponents.mMaterials[colliderIndex].getMassDensity();
@@ -498,7 +498,7 @@ void RigidBody::updateMassFromColliders() {
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
     for (uint32 i=0; i < colliderEntities.size(); i++) {
 
-        const uint colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
+        const uint32 colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
 
         const decimal colliderVolume = mWorld.mCollidersComponents.mCollisionShapes[colliderIndex]->getVolume();
         const decimal colliderMassDensity = mWorld.mCollidersComponents.mMaterials[colliderIndex].getMassDensity();

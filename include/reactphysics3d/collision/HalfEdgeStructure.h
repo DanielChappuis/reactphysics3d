@@ -41,26 +41,26 @@ class HalfEdgeStructure {
 
     public:
 
-        using VerticesPair = Pair<uint, uint>;
+        using VerticesPair = Pair<uint32, uint32>;
 
         /// Edge
         struct Edge {
-            uint vertexIndex;       // Index of the vertex at the beginning of the edge
-            uint twinEdgeIndex;     // Index of the twin edge
-            uint faceIndex;         // Adjacent face index of the edge
-            uint nextEdgeIndex;     // Index of the next edge
+            uint32 vertexIndex;       // Index of the vertex at the beginning of the edge
+            uint32 twinEdgeIndex;     // Index of the twin edge
+            uint32 faceIndex;         // Adjacent face index of the edge
+            uint32 nextEdgeIndex;     // Index of the next edge
         };
 
         /// Face
         struct Face {
-            uint edgeIndex;             // Index of an half-edge of the face
-            Array<uint> faceVertices;	// Index of the vertices of the face
+            uint32 edgeIndex;             // Index of an half-edge of the face
+            Array<uint32> faceVertices;	// Index of the vertices of the face
 
             /// Constructor
             Face(MemoryAllocator& allocator) : faceVertices(allocator) {}
 
             /// Constructor
-            Face(Array<uint> vertices) : faceVertices(vertices) {}
+            Face(Array<uint32> vertices) : faceVertices(vertices) {}
         };
 
         /// Vertex
@@ -89,8 +89,8 @@ class HalfEdgeStructure {
     public:
 
         /// Constructor
-        HalfEdgeStructure(MemoryAllocator& allocator, uint facesCapacity, uint verticesCapacity,
-                          uint edgesCapacity) :mAllocator(allocator), mFaces(allocator, facesCapacity),
+        HalfEdgeStructure(MemoryAllocator& allocator, uint32 facesCapacity, uint32 verticesCapacity,
+                          uint32 edgesCapacity) :mAllocator(allocator), mFaces(allocator, facesCapacity),
                           mVertices(allocator, verticesCapacity), mEdges(allocator, edgesCapacity) {}
 
         /// Destructor
@@ -100,28 +100,28 @@ class HalfEdgeStructure {
         void init();
 
         /// Add a vertex
-        uint addVertex(uint vertexPointIndex);
+        uint32 addVertex(uint vertexPointIndex);
 
         /// Add a face
-        void addFace(Array<uint> faceVertices);
+        void addFace(Array<uint32> faceVertices);
 
         /// Return the number of faces
-        uint getNbFaces() const;
+        uint32 getNbFaces() const;
 
         /// Return the number of half-edges
-        uint getNbHalfEdges() const;
+        uint32 getNbHalfEdges() const;
 
         /// Return the number of vertices
-        uint getNbVertices() const;
+        uint32 getNbVertices() const;
 
         /// Return a given face
-        const Face& getFace(uint index) const;
+        const Face& getFace(uint32 index) const;
 
         /// Return a given edge
-        const Edge& getHalfEdge(uint index) const;
+        const Edge& getHalfEdge(uint32 index) const;
 
         /// Return a given vertex
-        const Vertex& getVertex(uint index) const;
+        const Vertex& getVertex(uint32 index) const;
 
 };
 
@@ -140,7 +140,7 @@ RP3D_FORCE_INLINE uint32 HalfEdgeStructure::addVertex(uint32 vertexPointIndex) {
  * @param faceVertices Array of the vertices in a face (ordered in CCW order as seen from outside
  *                     the polyhedron
  */
-RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(Array<uint> faceVertices) {
+RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(Array<uint32> faceVertices) {
 
     // Create a new face
     Face face(faceVertices);

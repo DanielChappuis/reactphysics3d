@@ -172,14 +172,14 @@ class CollisionCallback {
                 /**
                  * @return The number of contact points in the contact pair
                  */
-                uint getNbContactPoints() const;
+                uint32 getNbContactPoints() const;
 
                 /// Return a given contact point
                 /**
                  * @param index Index of the contact point to retrieve
                  * @return A contact point object
                  */
-                ContactPoint getContactPoint(uint index) const;
+                ContactPoint getContactPoint(uint32 index) const;
 
                 /// Return a pointer to the first body in contact
                 /**
@@ -271,7 +271,7 @@ class CollisionCallback {
                 /**
                  * @return The number of contact pairs
                  */
-                uint getNbContactPairs() const;
+                uint32 getNbContactPairs() const;
 
                 /// Return a given contact pair
                 /**
@@ -304,7 +304,7 @@ RP3D_FORCE_INLINE uint32 CollisionCallback::CallbackData::getNbContactPairs() co
 /**
  * @return The number of contact points
  */
-RP3D_FORCE_INLINE uint CollisionCallback::ContactPair::getNbContactPoints() const {
+RP3D_FORCE_INLINE uint32 CollisionCallback::ContactPair::getNbContactPoints() const {
    return mContactPair.nbToTalContactPoints;
 }
 

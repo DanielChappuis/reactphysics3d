@@ -58,10 +58,10 @@ ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, MemoryAllocator
 Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
 
     decimal maxDotProduct = DECIMAL_SMALLEST;
-    uint indexMaxDotProduct = 0;
+    uint32 indexMaxDotProduct = 0;
 
     // For each vertex of the mesh
-    for (uint i=0; i<mPolyhedronMesh->getNbVertices(); i++) {
+    for (uint32 i=0; i<mPolyhedronMesh->getNbVertices(); i++) {
 
         // Compute the dot product of the current vertex
         decimal dotProduct = direction.dot(mPolyhedronMesh->getVertex(i));
@@ -86,7 +86,7 @@ void ConvexMeshShape::recalculateBounds() {
     mMaxBounds = mPolyhedronMesh->getVertex(0);
 
     // For each vertex of the mesh
-    for (uint i=1; i<mPolyhedronMesh->getNbVertices(); i++) {
+    for (uint32 i=1; i<mPolyhedronMesh->getNbVertices(); i++) {
 
         if (mPolyhedronMesh->getVertex(i).x > mMaxBounds.x) mMaxBounds.x = mPolyhedronMesh->getVertex(i).x;
         if (mPolyhedronMesh->getVertex(i).x < mMinBounds.x) mMinBounds.x = mPolyhedronMesh->getVertex(i).x;
@@ -119,7 +119,7 @@ bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider
     const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
 
     // For each face of the convex mesh
-    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+    for (uint32 f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
         const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
@@ -189,7 +189,7 @@ bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* /*col
     const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
 
     // For each face plane of the convex mesh
-    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+    for (uint32 f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
         const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
@@ -213,7 +213,7 @@ std::string ConvexMeshShape::to_string() const {
 
     ss << "vertices=[";
 
-    for (uint v=0; v < mPolyhedronMesh->getNbVertices(); v++) {
+    for (uint32 v=0; v < mPolyhedronMesh->getNbVertices(); v++) {
 
         Vector3 vertex = mPolyhedronMesh->getVertex(v);
         ss << vertex.to_string();
@@ -225,7 +225,7 @@ std::string ConvexMeshShape::to_string() const {
     ss << "], faces=[";
 
     HalfEdgeStructure halfEdgeStruct = mPolyhedronMesh->getHalfEdgeStructure();
-    for (uint f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+    for (uint32 f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStruct.getFace(f);
 

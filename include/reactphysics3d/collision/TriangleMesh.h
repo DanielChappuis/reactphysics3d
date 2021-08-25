@@ -63,10 +63,10 @@ class TriangleMesh {
         void addSubpart(TriangleVertexArray* triangleVertexArray);
 
         /// Return a pointer to a given subpart (triangle vertex array) of the mesh
-        TriangleVertexArray* getSubpart(uint indexSubpart) const;
+        TriangleVertexArray* getSubpart(uint32 indexSubpart) const;
 
         /// Return the number of subparts of the mesh
-        uint getNbSubparts() const;
+        uint32 getNbSubparts() const;
 
 
         // ---------- Friendship ---------- //

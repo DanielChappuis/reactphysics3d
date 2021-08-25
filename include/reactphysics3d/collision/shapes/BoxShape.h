@@ -103,28 +103,28 @@ class BoxShape : public ConvexPolyhedronShape {
         virtual decimal getVolume() const override;
 
         /// Return the number of faces of the polyhedron
-        virtual uint getNbFaces() const override;
+        virtual uint32 getNbFaces() const override;
 
         /// Return a given face of the polyhedron
-        virtual const HalfEdgeStructure::Face& getFace(uint faceIndex) const override;
+        virtual const HalfEdgeStructure::Face& getFace(uint32 faceIndex) const override;
 
         /// Return the number of vertices of the polyhedron
-        virtual uint getNbVertices() const override;
+        virtual uint32 getNbVertices() const override;
 
         /// Return a given vertex of the polyhedron
-        virtual HalfEdgeStructure::Vertex getVertex(uint vertexIndex) const override;
+        virtual HalfEdgeStructure::Vertex getVertex(uint32 vertexIndex) const override;
 
         /// Return the number of half-edges of the polyhedron
-        virtual uint getNbHalfEdges() const override;
+        virtual uint32 getNbHalfEdges() const override;
 
         /// Return a given half-edge of the polyhedron
-        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint edgeIndex) const override;
+        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint32 edgeIndex) const override;
 
         /// Return the position of a given vertex
-        virtual Vector3 getVertexPosition(uint vertexIndex) const override;
+        virtual Vector3 getVertexPosition(uint32 vertexIndex) const override;
 
         /// Return the normal vector of a given face of the polyhedron
-        virtual Vector3 getFaceNormal(uint faceIndex) const override;
+        virtual Vector3 getFaceNormal(uint32 faceIndex) const override;
 
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
@@ -193,17 +193,17 @@ RP3D_FORCE_INLINE bool BoxShape::testPointInside(const Vector3& localPoint, Coll
 }
 
 // Return the number of faces of the polyhedron
-RP3D_FORCE_INLINE uint BoxShape::getNbFaces() const {
+RP3D_FORCE_INLINE uint32 BoxShape::getNbFaces() const {
     return 6;
 }
 
 // Return the number of vertices of the polyhedron
-RP3D_FORCE_INLINE uint BoxShape::getNbVertices() const {
+RP3D_FORCE_INLINE uint32 BoxShape::getNbVertices() const {
     return 8;
 }
 
 // Return the position of a given vertex
-RP3D_FORCE_INLINE Vector3 BoxShape::getVertexPosition(uint vertexIndex) const {
+RP3D_FORCE_INLINE Vector3 BoxShape::getVertexPosition(uint32 vertexIndex) const {
     assert(vertexIndex < getNbVertices());
 
     switch(vertexIndex) {
@@ -222,7 +222,7 @@ RP3D_FORCE_INLINE Vector3 BoxShape::getVertexPosition(uint vertexIndex) const {
 }
 
 // Return the normal vector of a given face of the polyhedron
-RP3D_FORCE_INLINE Vector3 BoxShape::getFaceNormal(uint faceIndex) const {
+RP3D_FORCE_INLINE Vector3 BoxShape::getFaceNormal(uint32 faceIndex) const {
     assert(faceIndex < getNbFaces());
 
     switch(faceIndex) {
@@ -254,7 +254,7 @@ RP3D_FORCE_INLINE std::string BoxShape::to_string() const {
 }
 
 // Return the number of half-edges of the polyhedron
-RP3D_FORCE_INLINE uint BoxShape::getNbHalfEdges() const {
+RP3D_FORCE_INLINE uint32 BoxShape::getNbHalfEdges() const {
     return 24;
 }
 

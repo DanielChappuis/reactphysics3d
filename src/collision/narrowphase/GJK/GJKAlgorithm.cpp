@@ -47,13 +47,13 @@ using namespace reactphysics3d;
 /// algorithm on the enlarged object to obtain a simplex polytope that contains the
 /// origin, they we give that simplex polytope to the EPA algorithm which will compute
 /// the correct penetration depth and contact points between the enlarged objects.
-void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                                 uint batchNbItems, Array<GJKResult>& gjkResults) {
+void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchStartIndex,
+                                 uint32 batchNbItems, Array<GJKResult>& gjkResults) {
 
     RP3D_PROFILE("GJKAlgorithm::testCollision()", mProfiler);
     
     // For each item in the batch
-    for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
+    for (uint32 batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
         Vector3 suppA;             // Support point of object A
         Vector3 suppB;             // Support point of object B

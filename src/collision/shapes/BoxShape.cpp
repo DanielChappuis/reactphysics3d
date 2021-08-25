@@ -124,19 +124,19 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* colli
 }
 
 // Return a given face of the polyhedron
-const HalfEdgeStructure::Face& BoxShape::getFace(uint faceIndex) const {
+const HalfEdgeStructure::Face& BoxShape::getFace(uint32 faceIndex) const {
     assert(faceIndex < mPhysicsCommon.mBoxShapeHalfEdgeStructure.getNbFaces());
     return mPhysicsCommon.mBoxShapeHalfEdgeStructure.getFace(faceIndex);
 }
 
 // Return a given vertex of the polyhedron
-HalfEdgeStructure::Vertex BoxShape::getVertex(uint vertexIndex) const {
+HalfEdgeStructure::Vertex BoxShape::getVertex(uint32 vertexIndex) const {
     assert(vertexIndex < getNbVertices());
     return mPhysicsCommon.mBoxShapeHalfEdgeStructure.getVertex(vertexIndex);
 }
 
 // Return a given half-edge of the polyhedron
-const HalfEdgeStructure::Edge& BoxShape::getHalfEdge(uint edgeIndex) const {
+const HalfEdgeStructure::Edge& BoxShape::getHalfEdge(uint32 edgeIndex) const {
     assert(edgeIndex < getNbHalfEdges());
     return mPhysicsCommon.mBoxShapeHalfEdgeStructure.getHalfEdge(edgeIndex);
 }

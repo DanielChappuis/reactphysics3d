@@ -51,7 +51,7 @@ PolyhedronMesh::~PolyhedronMesh() {
 
     if (mFacesNormals != nullptr) {
 
-        for (uint f=0; f < mHalfEdgeStructure.getNbFaces(); f++) {
+        for (uint32 f=0; f < mHalfEdgeStructure.getNbFaces(); f++) {
             mFacesNormals[f].~Vector3();
         }
 
@@ -89,22 +89,22 @@ PolyhedronMesh* PolyhedronMesh::create(PolygonVertexArray* polygonVertexArray, M
 bool PolyhedronMesh::createHalfEdgeStructure() {
 
     // For each vertex of the mesh
-    for (uint v=0; v < mPolygonVertexArray->getNbVertices(); v++) {
+    for (uint32 v=0; v < mPolygonVertexArray->getNbVertices(); v++) {
         mHalfEdgeStructure.addVertex(v);
     }
 
     uint32 nbEdges = 0;
 
     // For each polygon face of the mesh
-    for (uint f=0; f < mPolygonVertexArray->getNbFaces(); f++) {
+    for (uint32 f=0; f < mPolygonVertexArray->getNbFaces(); f++) {
 
         // Get the polygon face
         PolygonVertexArray::PolygonFace* face = mPolygonVertexArray->getPolygonFace(f);
 
-        Array<uint> faceVertices(mMemoryAllocator, face->nbVertices);
+        Array<uint32> faceVertices(mMemoryAllocator, face->nbVertices);
 
         // For each vertex of the face
-        for (uint v=0; v < face->nbVertices; v++) {
+        for (uint32 v=0; v < face->nbVertices; v++) {
             faceVertices.add(mPolygonVertexArray->getVertexIndexInFace(f, v));
         }
 
@@ -143,15 +143,15 @@ bool PolyhedronMesh::createHalfEdgeStructure() {
  * @param index Index of a given vertex in the mesh
  * @return The coordinates of a given vertex in the mesh
  */
-Vector3 PolyhedronMesh::getVertex(uint index) const {
+Vector3 PolyhedronMesh::getVertex(uint32 index) const {
     assert(index < getNbVertices());
 
     // Get the vertex index in the array with all vertices
-    uint vertexIndex = mHalfEdgeStructure.getVertex(index).vertexPointIndex;
+    uint32 vertexIndex = mHalfEdgeStructure.getVertex(index).vertexPointIndex;
 
     PolygonVertexArray::VertexDataType vertexType = mPolygonVertexArray->getVertexDataType();
     const unsigned char* verticesStart = mPolygonVertexArray->getVerticesStart();
-    int vertexStride = mPolygonVertexArray->getVerticesStride();
+    uint32 vertexStride = mPolygonVertexArray->getVerticesStride();
 
     Vector3 vertex;
     if (vertexType == PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
@@ -178,7 +178,7 @@ void PolyhedronMesh::computeFacesNormals() {
 
     // For each face
     const uint32 nbFaces = mHalfEdgeStructure.getNbFaces();
-    for (uint f=0; f < nbFaces; f++) {
+    for (uint32 f=0; f < nbFaces; f++) {
         const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(f);
 
         assert(face.faceVertices.size() >= 3);
@@ -195,7 +195,7 @@ void PolyhedronMesh::computeCentroid() {
 
     mCentroid.setToZero();
 
-    for (uint v=0; v < getNbVertices(); v++) {
+    for (uint32 v=0; v < getNbVertices(); v++) {
         mCentroid += getVertex(v);
     }
 
@@ -203,7 +203,7 @@ void PolyhedronMesh::computeCentroid() {
 }
 
 // Compute and return the area of a face
-decimal PolyhedronMesh::getFaceArea(uint faceIndex) const {
+decimal PolyhedronMesh::getFaceArea(uint32 faceIndex) const {
 
     Vector3 sumCrossProducts(0, 0, 0);
 
@@ -235,7 +235,7 @@ decimal PolyhedronMesh::getVolume() const {
     decimal sum = 0.0;
 
     // For each face of the polyhedron
-    for (uint f=0; f < getNbFaces(); f++) {
+    for (uint32 f=0; f < getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(f);
         const decimal faceArea = getFaceArea(f);

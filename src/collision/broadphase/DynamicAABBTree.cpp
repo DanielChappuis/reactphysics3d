@@ -596,7 +596,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const Array<int32>& n
     Stack<int32> stack(mAllocator, 64);
 
     // For each shape to be tested for overlap
-    for (uint i=startIndex; i < endIndex; i++) {
+    for (uint32 i=startIndex; i < endIndex; i++) {
 
         assert(nodesToTest[i] != -1);
 

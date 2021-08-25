@@ -62,30 +62,30 @@ class TriangleVertexArray {
         // -------------------- Attributes -------------------- //
 
         /// Number of vertices in the array
-        uint mNbVertices;
+        uint32 mNbVertices;
 
         /// Pointer to the first vertex value in the array
         const uchar* mVerticesStart;
 
         /// Stride (number of bytes) between the beginning of two vertices
         /// values in the array
-        uint mVerticesStride;
+        uint32 mVerticesStride;
 
         /// Pointer to the first vertex normal value in the array
         const uchar* mVerticesNormalsStart;
 
         /// Stride (number of bytes) between the beginning of two vertex normals
         /// values in the array
-        uint mVerticesNormalsStride;
+        uint32 mVerticesNormalsStride;
 
         /// Number of triangles in the array
-        uint mNbTriangles;
+        uint32 mNbTriangles;
 
         /// Pointer to the first vertex index of the array
         const uchar* mIndicesStart;
 
         /// Stride (number of bytes) between the beginning of the three indices of two triangles
-        uint mIndicesStride;
+        uint32 mIndicesStride;
 
         /// Data type of the vertices in the array
         VertexDataType mVertexDataType;
@@ -109,14 +109,14 @@ class TriangleVertexArray {
         // -------------------- Methods -------------------- //
 
         /// Constructor without vertices normals
-        TriangleVertexArray(uint nbVertices, const void* verticesStart, uint verticesStride,
-                            uint nbTriangles, const void* indexesStart, uint indexesStride,
+        TriangleVertexArray(uint32 nbVertices, const void* verticesStart, uint32 verticesStride,
+                            uint32 nbTriangles, const void* indexesStart, uint32 indexesStride,
                             VertexDataType vertexDataType, IndexDataType indexDataType);
 
         /// Constructor with vertices normals
-        TriangleVertexArray(uint nbVertices, const void* verticesStart, uint verticesStride,
-                            const void* verticesNormalsStart, uint uverticesNormalsStride,
-                            uint nbTriangles, const void* indexesStart, uint indexesStride,
+        TriangleVertexArray(uint32 nbVertices, const void* verticesStart, uint32 verticesStride,
+                            const void* verticesNormalsStart, uint32 uverticesNormalsStride,
+                            uint32 nbTriangles, const void* indexesStart, uint32 indexesStride,
                             VertexDataType vertexDataType, NormalDataType normalDataType,
                             IndexDataType indexDataType);
 
@@ -139,19 +139,19 @@ class TriangleVertexArray {
         IndexDataType getIndexDataType() const;
 
         /// Return the number of vertices
-        uint getNbVertices() const;
+        uint32 getNbVertices() const;
 
         /// Return the number of triangles
-        uint getNbTriangles() const;
+        uint32 getNbTriangles() const;
 
         /// Return the vertices stride (number of bytes)
-        uint getVerticesStride() const;
+        uint32 getVerticesStride() const;
 
         /// Return the vertex normals stride (number of bytes)
-        uint getVerticesNormalsStride() const;
+        uint32 getVerticesNormalsStride() const;
 
         /// Return the indices stride (number of bytes)
-        uint getIndicesStride() const;
+        uint32 getIndicesStride() const;
 
         /// Return the pointer to the start of the vertices array
         const void* getVerticesStart() const;
@@ -163,19 +163,19 @@ class TriangleVertexArray {
         const void* getIndicesStart() const;
 
         /// Return the vertices coordinates of a triangle
-        void getTriangleVertices(uint triangleIndex, Vector3* outTriangleVertices) const;
+        void getTriangleVertices(uint32 triangleIndex, Vector3* outTriangleVertices) const;
 
         /// Return the three vertices normals of a triangle
-        void getTriangleVerticesNormals(uint triangleIndex, Vector3* outTriangleVerticesNormals) const;
+        void getTriangleVerticesNormals(uint32 triangleIndex, Vector3* outTriangleVerticesNormals) const;
 
         /// Return the indices of the three vertices of a given triangle in the array
-        void getTriangleVerticesIndices(uint triangleIndex, uint* outVerticesIndices) const;
+        void getTriangleVerticesIndices(uint32 triangleIndex, uint32* outVerticesIndices) const;
 
         /// Return a vertex of the array
-        void getVertex(uint vertexIndex, Vector3* outVertex);
+        void getVertex(uint32 vertexIndex, Vector3* outVertex);
 
         /// Return a vertex normal of the array
-        void getNormal(uint vertexIndex, Vector3* outNormal);
+        void getNormal(uint32 vertexIndex, Vector3* outNormal);
 };
 
 // Return the vertex data type
@@ -206,7 +206,7 @@ RP3D_FORCE_INLINE TriangleVertexArray::IndexDataType TriangleVertexArray::getInd
 /**
  * @return The number of vertices in the array
  */
-RP3D_FORCE_INLINE uint TriangleVertexArray::getNbVertices() const {
+RP3D_FORCE_INLINE uint32 TriangleVertexArray::getNbVertices() const {
     return mNbVertices;
 }
 
@@ -214,7 +214,7 @@ RP3D_FORCE_INLINE uint TriangleVertexArray::getNbVertices() const {
 /**
  * @return The number of triangles in the array
  */
-RP3D_FORCE_INLINE uint TriangleVertexArray::getNbTriangles() const {
+RP3D_FORCE_INLINE uint32 TriangleVertexArray::getNbTriangles() const {
     return mNbTriangles;
 }
 
@@ -222,7 +222,7 @@ RP3D_FORCE_INLINE uint TriangleVertexArray::getNbTriangles() const {
 /**
  * @return The number of bytes separating two consecutive vertices in the array
  */
-RP3D_FORCE_INLINE uint TriangleVertexArray::getVerticesStride() const {
+RP3D_FORCE_INLINE uint32 TriangleVertexArray::getVerticesStride() const {
     return mVerticesStride;
 }
 
@@ -230,7 +230,7 @@ RP3D_FORCE_INLINE uint TriangleVertexArray::getVerticesStride() const {
 /**
  * @return The number of bytes separating two consecutive normals in the array
  */
-RP3D_FORCE_INLINE uint TriangleVertexArray::getVerticesNormalsStride() const {
+RP3D_FORCE_INLINE uint32 TriangleVertexArray::getVerticesNormalsStride() const {
     return mVerticesNormalsStride;
 }
 
@@ -238,7 +238,7 @@ RP3D_FORCE_INLINE uint TriangleVertexArray::getVerticesNormalsStride() const {
 /**
  * @return The number of bytes separating two consecutive face indices in the array
  */
-RP3D_FORCE_INLINE uint TriangleVertexArray::getIndicesStride() const {
+RP3D_FORCE_INLINE uint32 TriangleVertexArray::getIndicesStride() const {
     return mIndicesStride;
 }
 

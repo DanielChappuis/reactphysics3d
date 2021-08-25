@@ -54,17 +54,17 @@ class Island {
         ContactManifold** mContactManifolds;
 
         /// Current number of bodies in the island
-        uint mNbBodies;
+        uint32 mNbBodies;
 
         /// Current number of contact manifold in the island
-        uint mNbContactManifolds;
+        uint32 mNbContactManifolds;
 
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Island(uint nbMaxBodies, uint nbMaxContactManifolds, MemoryManager& memoryManager);
+        Island(uint32 nbMaxBodies, uint32 nbMaxContactManifolds, MemoryManager& memoryManager);
 
         /// Destructor
         ~Island();

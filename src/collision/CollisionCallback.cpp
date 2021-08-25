@@ -106,7 +106,7 @@ CollisionCallback::CallbackData::CallbackData(Array<reactphysics3d::ContactPair>
 /// Note that the returned ContactPoint object is only valid during the call of the CollisionCallback::onContact()
 /// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the ContactPoint
 /// object itself because it won't be valid after the CollisionCallback::onContact() call.
-CollisionCallback::ContactPoint CollisionCallback::ContactPair::getContactPoint(uint index) const {
+CollisionCallback::ContactPoint CollisionCallback::ContactPair::getContactPoint(uint32 index) const {
 
     assert(index < getNbContactPoints());
 

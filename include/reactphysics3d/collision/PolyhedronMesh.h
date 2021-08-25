@@ -79,7 +79,7 @@ class PolyhedronMesh {
         void computeCentroid() ;
 
         /// Compute and return the area of a face
-        decimal getFaceArea(uint faceIndex) const;
+        decimal getFaceArea(uint32 faceIndex) const;
 
         /// Static factory method to create a polyhedron mesh
         static PolyhedronMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator);
@@ -92,16 +92,16 @@ class PolyhedronMesh {
         ~PolyhedronMesh();
 
         /// Return the number of vertices
-        uint getNbVertices() const;
+        uint32 getNbVertices() const;
 
         /// Return a vertex
-        Vector3 getVertex(uint index) const;
+        Vector3 getVertex(uint32 index) const;
 
         /// Return the number of faces
-        uint getNbFaces() const;
+        uint32 getNbFaces() const;
 
         /// Return a face normal
-        Vector3 getFaceNormal(uint faceIndex) const;
+        Vector3 getFaceNormal(uint32 faceIndex) const;
 
         /// Return the half-edge structure of the mesh
         const HalfEdgeStructure& getHalfEdgeStructure() const;
@@ -121,7 +121,7 @@ class PolyhedronMesh {
 /**
  * @return The number of vertices in the mesh
  */
-RP3D_FORCE_INLINE uint PolyhedronMesh::getNbVertices() const {
+RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbVertices() const {
     return mHalfEdgeStructure.getNbVertices();
 }
 
@@ -129,7 +129,7 @@ RP3D_FORCE_INLINE uint PolyhedronMesh::getNbVertices() const {
 /**
  * @return The number of faces in the mesh
  */
-RP3D_FORCE_INLINE uint PolyhedronMesh::getNbFaces() const {
+RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbFaces() const {
    return mHalfEdgeStructure.getNbFaces();
 }
 
@@ -138,7 +138,7 @@ RP3D_FORCE_INLINE uint PolyhedronMesh::getNbFaces() const {
  * @param faceIndex The index of a given face of the mesh
  * @return The normal vector of a given face of the mesh
  */
-RP3D_FORCE_INLINE Vector3 PolyhedronMesh::getFaceNormal(uint faceIndex) const {
+RP3D_FORCE_INLINE Vector3 PolyhedronMesh::getFaceNormal(uint32 faceIndex) const {
     assert(faceIndex < mHalfEdgeStructure.getNbFaces());
     return mFacesNormals[faceIndex];
 }

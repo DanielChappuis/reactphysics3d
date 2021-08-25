@@ -104,7 +104,7 @@ class ContactManifold {
 
         /// Constructor
         ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity colliderEntity1, Entity colliderEntity2,
-                        uint contactPointsIndex, uint8 nbContactPoints);
+                        uint32 contactPointsIndex, uint8 nbContactPoints);
 
         // -------------------- Friendship -------------------- //
 
