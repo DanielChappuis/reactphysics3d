@@ -727,7 +727,7 @@ void PhysicsWorld::destroyJoint(Joint* joint) {
 /**
  * @param nbIterations Number of iterations for the velocity solver
  */
-void PhysicsWorld::setNbIterationsVelocitySolver(uint32 nbIterations) {
+void PhysicsWorld::setNbIterationsVelocitySolver(uint16 nbIterations) {
 
     mNbVelocitySolverIterations = nbIterations;
 

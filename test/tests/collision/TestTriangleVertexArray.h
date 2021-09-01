@@ -46,7 +46,7 @@ class TestTriangleVertexArray : public Test {
         float mVertices1[4*3];
         double mVertices2[4*3];
         float mNormals2[4*3];
-        uint mIndices1[6];
+        uint32 mIndices1[6];
         short mIndices2[6];
         TriangleVertexArray* mTriangleVertexArray1;
         TriangleVertexArray* mTriangleVertexArray2;
@@ -114,7 +114,7 @@ class TestTriangleVertexArray : public Test {
 
             // Create triangle vertex array with automatic normals computation
             mTriangleVertexArray1 = new TriangleVertexArray(4, static_cast<const void*>(mVertices1), 3 * sizeof(float),
-                                                            2, static_cast<const void*>(mIndices1), 3 * sizeof(uint),
+                                                            2, static_cast<const void*>(mIndices1), 3 * sizeof(uint32),
                                                             TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                                             TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
@@ -151,14 +151,14 @@ class TestTriangleVertexArray : public Test {
 
             // Get triangle indices
 
-            uint triangle0Indices[3];
+            uint32 triangle0Indices[3];
             mTriangleVertexArray1->getTriangleVerticesIndices(0, triangle0Indices);
 
             rp3d_test(triangle0Indices[0] == mIndices1[0]);
             rp3d_test(triangle0Indices[1] == mIndices1[1]);
             rp3d_test(triangle0Indices[2] == mIndices1[2]);
 
-            uint triangle1Indices[3];
+            uint32 triangle1Indices[3];
             mTriangleVertexArray1->getTriangleVerticesIndices(1, triangle1Indices);
 
             rp3d_test(triangle1Indices[0] == mIndices1[3]);

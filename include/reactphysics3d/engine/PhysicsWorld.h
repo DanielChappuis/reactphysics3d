@@ -98,10 +98,10 @@ class PhysicsWorld {
             bool isSleepingEnabled;
 
             /// Number of iterations when solving the velocity constraints of the Sequential Impulse technique
-            uint defaultVelocitySolverNbIterations;
+            uint16 defaultVelocitySolverNbIterations;
 
             /// Number of iterations when solving the position constraints of the Sequential Impulse technique
-            uint defaultPositionSolverNbIterations;
+            uint16 defaultPositionSolverNbIterations;
 
             /// Time (in seconds) that a body must stay still to be considered sleeping
             float defaultTimeBeforeSleep;
@@ -226,7 +226,7 @@ class PhysicsWorld {
 #endif
 
         /// Total number of worlds
-        static uint mNbWorlds;
+        static uint32 mNbWorlds;
 
         /// All the islands of bodies of the current frame
         Islands mIslands;
@@ -246,10 +246,10 @@ class PhysicsWorld {
         DynamicsSystem mDynamicsSystem;
 
         /// Number of iterations for the velocity solver of the Sequential Impulses technique
-        uint mNbVelocitySolverIterations;
+        uint16 mNbVelocitySolverIterations;
 
         /// Number of iterations for the position solver of the Sequential Impulses technique
-        uint mNbPositionSolverIterations;
+        uint16 mNbPositionSolverIterations;
 
         /// True if the spleeping technique for inactive bodies is enabled
         bool mIsSleepingEnabled;
@@ -358,13 +358,13 @@ class PhysicsWorld {
         void update(decimal timeStep);
 
         /// Get the number of iterations for the velocity constraint solver
-        uint getNbIterationsVelocitySolver() const;
+        uint16 getNbIterationsVelocitySolver() const;
 
         /// Set the number of iterations for the velocity constraint solver
-        void setNbIterationsVelocitySolver(uint nbIterations);
+        void setNbIterationsVelocitySolver(uint16 nbIterations);
 
         /// Get the number of iterations for the position constraint solver
-        uint getNbIterationsPositionSolver() const;
+        uint16 getNbIterationsPositionSolver() const;
 
         /// Set the number of iterations for the position constraint solver
         void setNbIterationsPositionSolver(uint32 nbIterations);
@@ -427,7 +427,7 @@ class PhysicsWorld {
         void setEventListener(EventListener* eventListener);
 
         /// Return the number of CollisionBody in the physics world
-        uint getNbCollisionBodies() const;
+        uint32 getNbCollisionBodies() const;
 
         /// Return a constant pointer to a given CollisionBody of the world
         const CollisionBody* getCollisionBody(uint32 index) const;
@@ -436,7 +436,7 @@ class PhysicsWorld {
         CollisionBody* getCollisionBody(uint32 index) ;
 
         /// Return the number of RigidBody in the physics world
-        uint getNbRigidBodies() const;
+        uint32 getNbRigidBodies() const;
 
         /// Return a constant pointer to a given RigidBody of the world
         const RigidBody* getRigidBody(uint32 index) const;
@@ -595,7 +595,7 @@ RP3D_FORCE_INLINE Profiler* PhysicsWorld::getProfiler() {
 /**
  * @return The number of iterations of the velocity constraint solver
  */
-RP3D_FORCE_INLINE uint PhysicsWorld::getNbIterationsVelocitySolver() const {
+RP3D_FORCE_INLINE uint16 PhysicsWorld::getNbIterationsVelocitySolver() const {
     return mNbVelocitySolverIterations;
 }
 
@@ -603,7 +603,7 @@ RP3D_FORCE_INLINE uint PhysicsWorld::getNbIterationsVelocitySolver() const {
 /**
  * @return The number of iterations of the position constraint solver
  */
-RP3D_FORCE_INLINE uint PhysicsWorld::getNbIterationsPositionSolver() const {
+RP3D_FORCE_INLINE uint16 PhysicsWorld::getNbIterationsPositionSolver() const {
     return mNbPositionSolverIterations;
 }
 
