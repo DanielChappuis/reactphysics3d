@@ -135,7 +135,7 @@ struct NarrowPhaseInfoBatch {
                              const Vector3& localPt1, const Vector3& localPt2);
 
         /// Reset the remaining contact points
-        void resetContactPoints(uint index);
+        void resetContactPoints(uint32 index);
 
         // Initialize the containers using cached capacity
         void reserveMemory();
@@ -159,7 +159,7 @@ RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::addNarrowPhaseInfo(uint64 pairId, E
 }
 
 // Add a new contact point
-RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::addContactPoint(uint index, const Vector3& contactNormal, decimal penDepth, const Vector3& localPt1, const Vector3& localPt2) {
+RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::addContactPoint(uint32 index, const Vector3& contactNormal, decimal penDepth, const Vector3& localPt1, const Vector3& localPt2) {
 
     assert(penDepth > decimal(0.0));
 
@@ -177,7 +177,7 @@ RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::addContactPoint(uint index, const V
 }
 
 // Reset the remaining contact points
-RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::resetContactPoints(uint index) {
+RP3D_FORCE_INLINE void NarrowPhaseInfoBatch::resetContactPoints(uint32 index) {
     narrowPhaseInfos[index].nbContactPoints = 0;
 }
 

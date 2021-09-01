@@ -51,7 +51,7 @@ struct ContactPair {
         uint64 pairId;
 
         /// Indices of the potential contact manifolds
-        Array<uint> potentialContactManifoldsIndices;
+        Array<uint32> potentialContactManifoldsIndices;
 
         /// Entity of the first body of the contact
         Entity body1Entity;
@@ -93,7 +93,7 @@ struct ContactPair {
 
         /// Constructor
         ContactPair(uint64 pairId, Entity body1Entity, Entity body2Entity, Entity collider1Entity,
-                    Entity collider2Entity, uint contactPairIndex, bool collidingInPreviousFrame, bool isTrigger, MemoryAllocator& allocator)
+                    Entity collider2Entity, uint32 contactPairIndex, bool collidingInPreviousFrame, bool isTrigger, MemoryAllocator& allocator)
             : allocator(allocator), pairId(pairId), potentialContactManifoldsIndices(allocator, 1),
               body1Entity(body1Entity), body2Entity(body2Entity),
               collider1Entity(collider1Entity), collider2Entity(collider2Entity),
@@ -103,7 +103,7 @@ struct ContactPair {
         }
 
         // Remove a potential manifold at a given index in the array
-        void removePotentialManifoldAtIndex(uint index) {
+        void removePotentialManifoldAtIndex(uint32 index) {
             assert(index < potentialContactManifoldsIndices.size());
 
             potentialContactManifoldsIndices.removeAtAndReplaceByLast(index);

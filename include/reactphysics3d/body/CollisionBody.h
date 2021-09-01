@@ -137,10 +137,10 @@ class CollisionBody {
         AABB getAABB() const;
 
         /// Return a const pointer to a given collider of the body
-        const Collider* getCollider(uint colliderIndex) const;
+        const Collider* getCollider(uint32 colliderIndex) const;
 
         /// Return a pointer to a given collider of the body
-        Collider* getCollider(uint colliderIndex);
+        Collider* getCollider(uint32 colliderIndex);
 
         /// Return the number of colliders associated with this body
         uint32 getNbColliders() const;

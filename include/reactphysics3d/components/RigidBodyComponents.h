@@ -370,7 +370,7 @@ class RigidBodyComponents : public Components {
         void removeJointFromBody(Entity bodyEntity, Entity jointEntity);
 
         /// A an associated contact pairs into the contact pairs array of the body
-        void addContacPair(Entity bodyEntity, uint contactPairIndex);
+        void addContacPair(Entity bodyEntity, uint32 contactPairIndex);
 
         // -------------------- Friendship -------------------- //
 
@@ -840,7 +840,7 @@ RP3D_FORCE_INLINE void RigidBodyComponents::removeJointFromBody(Entity bodyEntit
 }
 
 // A an associated contact pairs into the contact pairs array of the body
-RP3D_FORCE_INLINE void RigidBodyComponents::addContacPair(Entity bodyEntity, uint contactPairIndex) {
+RP3D_FORCE_INLINE void RigidBodyComponents::addContacPair(Entity bodyEntity, uint32 contactPairIndex) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
     mContactPairs[mMapEntityToComponentIndex[bodyEntity]].add(contactPairIndex);

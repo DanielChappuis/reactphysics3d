@@ -109,28 +109,28 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
 
         /// Return the number of faces of the polyhedron
-        virtual uint getNbFaces() const override;
+        virtual uint32 getNbFaces() const override;
 
         /// Return a given face of the polyhedron
-        virtual const HalfEdgeStructure::Face& getFace(uint faceIndex) const override;
+        virtual const HalfEdgeStructure::Face& getFace(uint32 faceIndex) const override;
 
         /// Return the number of vertices of the polyhedron
-        virtual uint getNbVertices() const override;
+        virtual uint32 getNbVertices() const override;
 
         /// Return a given vertex of the polyhedron
-        virtual HalfEdgeStructure::Vertex getVertex(uint vertexIndex) const override;
+        virtual HalfEdgeStructure::Vertex getVertex(uint32 vertexIndex) const override;
 
         /// Return the number of half-edges of the polyhedron
-        virtual uint getNbHalfEdges() const override;
+        virtual uint32 getNbHalfEdges() const override;
 
         /// Return a given half-edge of the polyhedron
-        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint edgeIndex) const override;
+        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint32 edgeIndex) const override;
 
         /// Return the position of a given vertex
-        virtual Vector3 getVertexPosition(uint vertexIndex) const override;
+        virtual Vector3 getVertexPosition(uint32 vertexIndex) const override;
 
         /// Return the normal vector of a given face of the polyhedron
-        virtual Vector3 getFaceNormal(uint faceIndex) const override;
+        virtual Vector3 getFaceNormal(uint32 faceIndex) const override;
 
         /// Return the centroid of the polyhedron
         virtual Vector3 getCentroid() const override;
@@ -192,46 +192,46 @@ RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getLocalInertiaTensor(decimal mass) c
 }
 
 // Return the number of faces of the polyhedron
-RP3D_FORCE_INLINE uint ConvexMeshShape::getNbFaces() const {
+RP3D_FORCE_INLINE uint32 ConvexMeshShape::getNbFaces() const {
     return mPolyhedronMesh->getHalfEdgeStructure().getNbFaces();
 }
 
 // Return a given face of the polyhedron
-RP3D_FORCE_INLINE const HalfEdgeStructure::Face& ConvexMeshShape::getFace(uint faceIndex) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Face& ConvexMeshShape::getFace(uint32 faceIndex) const {
     assert(faceIndex < getNbFaces());
     return mPolyhedronMesh->getHalfEdgeStructure().getFace(faceIndex);
 }
 
 // Return the number of vertices of the polyhedron
-RP3D_FORCE_INLINE uint ConvexMeshShape::getNbVertices() const {
+RP3D_FORCE_INLINE uint32 ConvexMeshShape::getNbVertices() const {
     return mPolyhedronMesh->getHalfEdgeStructure().getNbVertices();
 }
 
 // Return a given vertex of the polyhedron
-RP3D_FORCE_INLINE HalfEdgeStructure::Vertex ConvexMeshShape::getVertex(uint vertexIndex) const {
+RP3D_FORCE_INLINE HalfEdgeStructure::Vertex ConvexMeshShape::getVertex(uint32 vertexIndex) const {
     assert(vertexIndex < getNbVertices());
     return mPolyhedronMesh->getHalfEdgeStructure().getVertex(vertexIndex);
 }
 
 // Return the number of half-edges of the polyhedron
-RP3D_FORCE_INLINE uint ConvexMeshShape::getNbHalfEdges() const {
+RP3D_FORCE_INLINE uint32 ConvexMeshShape::getNbHalfEdges() const {
     return mPolyhedronMesh->getHalfEdgeStructure().getNbHalfEdges();
 }
 
 // Return a given half-edge of the polyhedron
-RP3D_FORCE_INLINE const HalfEdgeStructure::Edge& ConvexMeshShape::getHalfEdge(uint edgeIndex) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Edge& ConvexMeshShape::getHalfEdge(uint32 edgeIndex) const {
     assert(edgeIndex < getNbHalfEdges());
     return mPolyhedronMesh->getHalfEdgeStructure().getHalfEdge(edgeIndex);
 }
 
 // Return the position of a given vertex
-RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getVertexPosition(uint vertexIndex) const {
+RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getVertexPosition(uint32 vertexIndex) const {
     assert(vertexIndex < getNbVertices());
     return mPolyhedronMesh->getVertex(vertexIndex) * mScale;
 }
 
 // Return the normal vector of a given face of the polyhedron
-RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getFaceNormal(uint faceIndex) const {
+RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getFaceNormal(uint32 faceIndex) const {
     assert(faceIndex < getNbFaces());
     return mPolyhedronMesh->getFaceNormal(faceIndex);
 }

@@ -70,7 +70,7 @@ struct ContactPairData {
 
 	std::vector<CollisionPointData> contactPoints;
 
-    uint getNbContactPoints() const {
+    uint32 getNbContactPoints() const {
 		return contactPoints.size();
 	}
 
@@ -189,7 +189,7 @@ class WorldCollisionCallback : public CollisionCallback
             CollisionData collisionData;
 
             // For each contact pair
-            for (uint p=0; p < callbackData.getNbContactPairs(); p++) {
+            for (uint32 p=0; p < callbackData.getNbContactPairs(); p++) {
 
                 ContactPairData contactPairData;
                 ContactPair contactPair = callbackData.getContactPair(p);
@@ -198,7 +198,7 @@ class WorldCollisionCallback : public CollisionCallback
                 collisionData.colliders = std::make_pair(contactPair.getCollider1(), contactPair.getCollider2());
 
                 // For each contact point
-                for (uint c=0; c < contactPair.getNbContactPoints(); c++) {
+                for (uint32 c=0; c < contactPair.getNbContactPoints(); c++) {
 
                     ContactPoint contactPoint = contactPair.getContactPoint(c);
 
@@ -231,7 +231,7 @@ class WorldOverlapCallback : public OverlapCallback {
         virtual void onOverlap(CallbackData& callbackData) override {
 
             // For each overlapping pair
-            for (uint i=0; i < callbackData.getNbOverlappingPairs(); i++) {
+            for (uint32 i=0; i < callbackData.getNbOverlappingPairs(); i++) {
 
                 OverlapPair overlapPair = callbackData.getOverlappingPair(i);
                 mOverlapBodies.push_back(std::make_pair(overlapPair.getBody1(), overlapPair.getBody2()));
@@ -244,7 +244,7 @@ class WorldOverlapCallback : public OverlapCallback {
 
         bool hasOverlapWithBody(CollisionBody* collisionBody) const {
 
-            for (uint i=0; i < mOverlapBodies.size(); i++) {
+            for (uint32 i=0; i < mOverlapBodies.size(); i++) {
 
                 if (mOverlapBodies[i].first == collisionBody || mOverlapBodies[i].second == collisionBody) {
                     return true;

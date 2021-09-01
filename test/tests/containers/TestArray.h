@@ -96,14 +96,14 @@ class TestArray : public Test {
             Array<int> array5(array3);
             rp3d_test(array5.capacity() == array3.capacity());
             rp3d_test(array5.size() == array3.size());
-            for (uint i=0; i<array3.size(); i++) {
+            for (uint32 i=0; i<array3.size(); i++) {
                 rp3d_test(array5[i] == array3[i]);
             }
 
             // ----- Test capacity grow ----- //
             Array<std::string> arra6(mAllocator, 20);
             rp3d_test(arra6.capacity() == 20);
-            for (uint i=0; i<20; i++) {
+            for (uint32 i=0; i<20; i++) {
                 arra6.add("test");
             }
             rp3d_test(arra6.capacity() == 20);
@@ -127,11 +127,11 @@ class TestArray : public Test {
             const int arraySize = 15;
             int arrayTest[arraySize] = {3, 145, -182, 34, 12, 95, -1834, 4143, -111, -111, 4343, 234, 22983, -3432, 753};
             Array<int> array2(mAllocator);
-            for (uint i=0; i<arraySize; i++) {
+            for (uint32 i=0; i<arraySize; i++) {
                array2.add(arrayTest[i]);
             }
             rp3d_test(array2.size() == arraySize);
-            for (uint i=0; i<arraySize; i++) {
+            for (uint32 i=0; i<arraySize; i++) {
                 rp3d_test(array2[i] == arrayTest[i]);
             }
 

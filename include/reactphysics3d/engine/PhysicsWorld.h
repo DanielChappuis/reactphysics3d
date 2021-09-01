@@ -270,9 +270,6 @@ class PhysicsWorld {
         /// becomes smaller than the sleep velocity.
         decimal mTimeBeforeSleep;
 
-        /// Current joint id
-        uint mCurrentJointId;
-
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -370,7 +367,7 @@ class PhysicsWorld {
         uint getNbIterationsPositionSolver() const;
 
         /// Set the number of iterations for the position constraint solver
-        void setNbIterationsPositionSolver(uint nbIterations);
+        void setNbIterationsPositionSolver(uint32 nbIterations);
 
         /// Set the position correction technique used for contacts
         void setContactsPositionCorrectionTechnique(ContactsPositionCorrectionTechnique technique);
@@ -433,19 +430,19 @@ class PhysicsWorld {
         uint getNbCollisionBodies() const;
 
         /// Return a constant pointer to a given CollisionBody of the world
-        const CollisionBody* getCollisionBody(uint index) const;
+        const CollisionBody* getCollisionBody(uint32 index) const;
 
         /// Return a pointer to a given CollisionBody of the world
-        CollisionBody* getCollisionBody(uint index) ;
+        CollisionBody* getCollisionBody(uint32 index) ;
 
         /// Return the number of RigidBody in the physics world
         uint getNbRigidBodies() const;
 
         /// Return a constant pointer to a given RigidBody of the world
-        const RigidBody* getRigidBody(uint index) const;
+        const RigidBody* getRigidBody(uint32 index) const;
 
         /// Return a pointer to a given RigidBody of the world
-        RigidBody* getRigidBody(uint index) ;
+        RigidBody* getRigidBody(uint32 index) ;
 
         /// Return true if the debug rendering is enabled
         bool getIsDebugRenderingEnabled() const;

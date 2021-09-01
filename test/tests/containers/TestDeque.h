@@ -87,7 +87,7 @@ class TestDeque : public Test {
             rp3d_test(deque4.size() == deque2.size());
             Deque<int>::Iterator it3 = deque2.begin();
             Deque<int>::Iterator it5 = deque4.begin();
-            for (uint i=0; i<deque2.size(); i++) {
+            for (uint32 i=0; i<deque2.size(); i++) {
                 rp3d_test((*it3) == (*it5));
                 ++it3;
                 ++it5;
@@ -95,7 +95,7 @@ class TestDeque : public Test {
 
             // ----- Test capacity grow ----- //
             Deque<std::string> deque5(mAllocator);
-            for (uint i=0; i<300; i++) {
+            for (uint32 i=0; i<300; i++) {
                 deque5.addBack("test");
             }
 

@@ -63,7 +63,7 @@ class ContactManifold {
         // -------------------- Attributes -------------------- //
 
         /// Index of the first contact point of the manifold in the array of contact points
-        uint contactPointsIndex;
+        uint32 contactPointsIndex;
 
         /// Entity of the first body in contact
         Entity bodyEntity1;

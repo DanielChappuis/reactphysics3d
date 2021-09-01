@@ -37,7 +37,7 @@ using namespace reactphysics3d;
 
 
 // Constructor
-TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint shapeId, HalfEdgeStructure& triangleHalfEdgeStructure, MemoryAllocator& allocator)
+TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNormals, uint32 shapeId, HalfEdgeStructure& triangleHalfEdgeStructure, MemoryAllocator& allocator)
     : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, allocator), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
 
     mPoints[0] = vertices[0];
@@ -58,7 +58,7 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
 }
 
 // Constructor for raycasting
-TriangleShape::TriangleShape(const Vector3* vertices, uint shapeId, HalfEdgeStructure& triangleHalfEdgeStructure, MemoryAllocator& allocator)
+TriangleShape::TriangleShape(const Vector3* vertices, uint32 shapeId, HalfEdgeStructure& triangleHalfEdgeStructure, MemoryAllocator& allocator)
     : ConvexPolyhedronShape(CollisionShapeName::TRIANGLE, allocator), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
 
     mPoints[0] = vertices[0];

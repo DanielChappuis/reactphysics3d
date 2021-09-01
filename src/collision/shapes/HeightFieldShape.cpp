@@ -94,7 +94,7 @@ void HeightFieldShape::getLocalBounds(Vector3& min, Vector3& max) const {
 // to test for collision. We compute the sub-grid points that are inside the other body's AABB
 // and then for each rectangle in the sub-grid we generate two triangles that we use to test collision.
 void HeightFieldShape::computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
-                                                   Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
+                                                   Array<Vector3>& triangleVerticesNormals, Array<uint32>& shapeIds,
                                                    MemoryAllocator& /*allocator*/) const {
 
     RP3D_PROFILE("HeightFieldShape::computeOverlappingTriangles()", mProfiler);
@@ -299,7 +299,7 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
            const Vector3 p4 = getVertexAt(i + 1, j + 1);
 
            // Raycast against the first triangle of the cell
-           uint shapeId = computeTriangleShapeId(i, j, 0);
+           uint32 shapeId = computeTriangleShapeId(i, j, 0);
            isHit |= raycastTriangle(ray, p1, p2, p3, shapeId, collider, raycastInfo, smallestHitFraction, allocator);
 
            // Raycast against the second triangle of the cell
@@ -323,7 +323,7 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
 }
 
 // Raycast a single triangle of the height-field
-bool HeightFieldShape::raycastTriangle(const Ray& ray, const Vector3& p1, const Vector3& p2, const Vector3& p3, uint shapeId,
+bool HeightFieldShape::raycastTriangle(const Ray& ray, const Vector3& p1, const Vector3& p2, const Vector3& p3, uint32 shapeId,
                                        Collider* collider, RaycastInfo& raycastInfo, decimal& smallestHitFraction, MemoryAllocator& allocator) const {
 
    // Generate the first triangle for the current grid rectangle

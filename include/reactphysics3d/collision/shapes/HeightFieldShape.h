@@ -103,7 +103,7 @@ class HeightFieldShape : public ConcaveShape {
                          const Vector3& scaling = Vector3(1,1,1));
 
         /// Raycast a single triangle of the height-field
-        bool raycastTriangle(const Ray& ray, const Vector3& p1, const Vector3& p2, const Vector3& p3, uint shapeId,
+        bool raycastTriangle(const Ray& ray, const Vector3& p1, const Vector3& p2, const Vector3& p3, uint32 shapeId,
                              Collider *collider, RaycastInfo& raycastInfo, decimal &smallestHitFraction, MemoryAllocator& allocator) const;
 
         /// Raycast method with feedback information
@@ -124,7 +124,7 @@ class HeightFieldShape : public ConcaveShape {
         void computeMinMaxGridCoordinates(int* minCoords, int* maxCoords, const AABB& aabbToCollide) const;
 
         /// Compute the shape Id for a given triangle
-        uint computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const;
+        uint32 computeTriangleShapeId(uint32 iIndex, uint32 jIndex, uint32 secondTriangleIncrement) const;
 
         /// Compute the first grid cell of the heightfield intersected by a ray
         bool computeEnteringRayGridCoordinates(const Ray& ray, int& i, int& j, Vector3& outHitPoint) const;
@@ -160,7 +160,7 @@ class HeightFieldShape : public ConcaveShape {
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
-                                                   Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
+                                                   Array<Vector3>& triangleVerticesNormals, Array<uint32>& shapeIds,
                                                    MemoryAllocator& allocator) const override;
 
         /// Return the string representation of the shape
@@ -213,7 +213,7 @@ RP3D_FORCE_INLINE int HeightFieldShape::computeIntegerGridValue(decimal value) c
 }
 
 // Compute the shape Id for a given triangle
-RP3D_FORCE_INLINE uint HeightFieldShape::computeTriangleShapeId(uint iIndex, uint jIndex, uint secondTriangleIncrement) const {
+RP3D_FORCE_INLINE uint32 HeightFieldShape::computeTriangleShapeId(uint32 iIndex, uint32 jIndex, uint32 secondTriangleIncrement) const {
 
     return (jIndex * (mNbColumns - 1) + iIndex) * 2 + secondTriangleIncrement;
 }

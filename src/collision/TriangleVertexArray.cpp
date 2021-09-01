@@ -198,7 +198,7 @@ void TriangleVertexArray::computeVerticesNormals() {
  * @param triangleIndex Index of a given triangle in the array
  * @param[out] outVerticesIndices Pointer to the three output vertex indices
  */
-void TriangleVertexArray::getTriangleVerticesIndices(uint32 triangleIndex, uint32 *outVerticesIndices) const {
+void TriangleVertexArray::getTriangleVerticesIndices(uint32 triangleIndex, uint32* outVerticesIndices) const {
 
     assert(triangleIndex < mNbTriangles);
 

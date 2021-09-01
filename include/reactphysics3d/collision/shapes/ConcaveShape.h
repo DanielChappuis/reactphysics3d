@@ -46,7 +46,7 @@ class TriangleCallback {
         virtual ~TriangleCallback() = default;
 
         /// Report a triangle
-        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId)=0;
+        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint32 shapeId)=0;
 
 };
 
@@ -112,7 +112,7 @@ class ConcaveShape : public CollisionShape {
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
-                                                 Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
+                                                 Array<Vector3>& triangleVerticesNormals, Array<uint32>& shapeIds,
                                                  MemoryAllocator& allocator) const=0;
 
         /// Compute and return the volume of the collision shape

@@ -85,13 +85,13 @@ class Island {
         void addJoint(Joint* joint);
 
         /// Return the number of bodies in the island
-        uint getNbBodies() const;
+        uint32 getNbBodies() const;
 
         /// Return the number of contact manifolds in the island
-        uint getNbContactManifolds() const;
+        uint32 getNbContactManifolds() const;
 
         /// Return the number of joints in the island
-        uint getNbJoints() const;
+        uint32 getNbJoints() const;
 
         /// Return a pointer to the array of bodies
         RigidBody** getBodies();
@@ -118,12 +118,12 @@ RP3D_FORCE_INLINE void Island::addContactManifold(ContactManifold* contactManifo
 }
 
 // Return the number of bodies in the island
-RP3D_FORCE_INLINE uint Island::getNbBodies() const {
+RP3D_FORCE_INLINE uint32 Island::getNbBodies() const {
     return mNbBodies;
 }
 
 // Return the number of contact manifolds in the island
-RP3D_FORCE_INLINE uint Island::getNbContactManifolds() const {
+RP3D_FORCE_INLINE uint32 Island::getNbContactManifolds() const {
     return mNbContactManifolds;
 }
 

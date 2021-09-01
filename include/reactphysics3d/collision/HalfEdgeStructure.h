@@ -100,7 +100,7 @@ class HalfEdgeStructure {
         void init();
 
         /// Add a vertex
-        uint32 addVertex(uint vertexPointIndex);
+        uint32 addVertex(uint32 vertexPointIndex);
 
         /// Add a face
         void addFace(Array<uint32> faceVertices);

@@ -91,8 +91,8 @@ void ContactSolverSystem::init(Array<ContactManifold>* contactManifolds, Array<C
     assert(mContactConstraints != nullptr);
 
     // For each island of the world
-    const uint nbIslands = mIslands.getNbIslands();
-    for (uint i = 0; i < nbIslands; i++) {
+    const uint32 nbIslands = mIslands.getNbIslands();
+    for (uint32 i = 0; i < nbIslands; i++) {
 
         if (mIslands.nbContactManifolds[i] > 0) {
             initializeForIsland(i);
@@ -111,7 +111,7 @@ void ContactSolverSystem::reset() {
 }
 
 // Initialize the constraint solver for a given island
-void ContactSolverSystem::initializeForIsland(uint islandIndex) {
+void ContactSolverSystem::initializeForIsland(uint32 islandIndex) {
 
     RP3D_PROFILE("ContactSolver::initializeForIsland()", mProfiler);
 
@@ -119,23 +119,23 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
     assert(mIslands.nbContactManifolds[islandIndex] > 0);
 
     // For each contact manifold of the island
-    const uint contactManifoldsIndex = mIslands.contactManifoldsIndices[islandIndex];
-    const uint nbContactManifolds = mIslands.nbContactManifolds[islandIndex];
-    for (uint m=contactManifoldsIndex; m < contactManifoldsIndex + nbContactManifolds; m++) {
+    const uint32 contactManifoldsIndex = mIslands.contactManifoldsIndices[islandIndex];
+    const uint32 nbContactManifolds = mIslands.nbContactManifolds[islandIndex];
+    for (uint32 m=contactManifoldsIndex; m < contactManifoldsIndex + nbContactManifolds; m++) {
 
         ContactManifold& externalManifold = (*mAllContactManifolds)[m];
 
         assert(externalManifold.nbContactPoints > 0);
 
-        const uint rigidBodyIndex1 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity1);
-        const uint rigidBodyIndex2 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity2);
+        const uint32 rigidBodyIndex1 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity1);
+        const uint32 rigidBodyIndex2 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity2);
 
         // Get the two bodies of the contact
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity1));
         assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity2));
 
-        const uint collider1Index = mColliderComponents.getEntityIndex(externalManifold.colliderEntity1);
-        const uint collider2Index = mColliderComponents.getEntityIndex(externalManifold.colliderEntity2);
+        const uint32 collider1Index = mColliderComponents.getEntityIndex(externalManifold.colliderEntity1);
+        const uint32 collider2Index = mColliderComponents.getEntityIndex(externalManifold.colliderEntity2);
 
         // Get the position of the two bodies
         const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[rigidBodyIndex1];
@@ -171,9 +171,9 @@ void ContactSolverSystem::initializeForIsland(uint islandIndex) {
 
         // For each  contact point of the contact manifold
         assert(externalManifold.nbContactPoints > 0);
-        const uint contactPointsStartIndex = externalManifold.contactPointsIndex;
-        const uint nbContactPoints = static_cast<uint>(externalManifold.nbContactPoints);
-        for (uint c=contactPointsStartIndex; c < contactPointsStartIndex + nbContactPoints; c++) {
+        const uint32 contactPointsStartIndex = externalManifold.contactPointsIndex;
+        const uint32 nbContactPoints = static_cast<uint>(externalManifold.nbContactPoints);
+        for (uint32 c=contactPointsStartIndex; c < contactPointsStartIndex + nbContactPoints; c++) {
 
             ContactPoint& externalContact = (*mAllContactPoints)[c];
 
@@ -330,10 +330,10 @@ void ContactSolverSystem::warmStart() {
 
     RP3D_PROFILE("ContactSolver::warmStart()", mProfiler);
 
-    uint contactPointIndex = 0;
+    uint32 contactPointIndex = 0;
 
     // For each constraint
-    for (uint c=0; c<mNbContactManifolds; c++) {
+    for (uint32 c=0; c<mNbContactManifolds; c++) {
 
         bool atLeastOneRestingContactPoint = false;
 
@@ -485,12 +485,12 @@ void ContactSolverSystem::solve() {
 
     decimal deltaLambda;
     decimal lambdaTemp;
-    uint contactPointIndex = 0;
+    uint32 contactPointIndex = 0;
 
     const decimal beta = mIsSplitImpulseActive ? BETA_SPLIT_IMPULSE : BETA;
 
     // For each contact manifold
-    for (uint c=0; c<mNbContactManifolds; c++) {
+    for (uint32 c=0; c<mNbContactManifolds; c++) {
 
         decimal sumPenetrationImpulse = 0.0;
 
@@ -767,10 +767,10 @@ void ContactSolverSystem::storeImpulses() {
 
     RP3D_PROFILE("ContactSolver::storeImpulses()", mProfiler);
 
-    uint contactPointIndex = 0;
+    uint32 contactPointIndex = 0;
 
     // For each contact manifold
-    for (uint c=0; c<mNbContactManifolds; c++) {
+    for (uint32 c=0; c<mNbContactManifolds; c++) {
 
         for (short int i=0; i<mContactConstraints[c].nbContacts; i++) {
 

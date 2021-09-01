@@ -140,7 +140,7 @@ uint32 CollisionBody::getNbColliders() const {
 * @param index Index of a Collider of the body
 * @return The const pointer of a given collider of the body
 */
-const Collider* CollisionBody::getCollider(uint colliderIndex) const {
+const Collider* CollisionBody::getCollider(uint32 colliderIndex) const {
 
     assert(colliderIndex < getNbColliders());
 
@@ -154,7 +154,7 @@ const Collider* CollisionBody::getCollider(uint colliderIndex) const {
 * @param index Index of a Collider of the body
 * @return The pointer of a given collider of the body
 */
-Collider* CollisionBody::getCollider(uint colliderIndex) {
+Collider* CollisionBody::getCollider(uint32 colliderIndex) {
 
     assert(colliderIndex < getNbColliders());
 

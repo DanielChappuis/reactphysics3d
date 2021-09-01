@@ -50,13 +50,13 @@ void ConcaveMeshShape::initBVHTree() {
     // TODO : Try to randomly add the triangles into the tree to obtain a better tree
 
     // For each sub-part of the mesh
-    for (uint subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
+    for (uint32 subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
 
         // Get the triangle vertex array of the current sub-part
         TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
 
         // For each triangle of the concave mesh
-        for (uint triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
+        for (uint32 triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
 
             Vector3 trianglePoints[3];
 
@@ -73,7 +73,7 @@ void ConcaveMeshShape::initBVHTree() {
 }
 
 // Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex, Vector3* outTriangleVertices) const {
+void ConcaveMeshShape::getTriangleVertices(uint32 subPart, uint32 triangleIndex, Vector3* outTriangleVertices) const {
 
     // Get the triangle vertex array of the current sub-part
     TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
@@ -94,7 +94,7 @@ void ConcaveMeshShape::getTriangleVertices(uint subPart, uint triangleIndex, Vec
 }
 
 // Return the three vertex normals (in the array outVerticesNormals) of a triangle
-void ConcaveMeshShape::getTriangleVerticesNormals(uint subPart, uint triangleIndex, Vector3* outVerticesNormals) const {
+void ConcaveMeshShape::getTriangleVerticesNormals(uint32 subPart, uint32 triangleIndex, Vector3* outVerticesNormals) const {
 
     // Get the triangle vertex array of the current sub-part
     TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
@@ -104,7 +104,7 @@ void ConcaveMeshShape::getTriangleVerticesNormals(uint subPart, uint triangleInd
 }
 
 // Return the indices of the three vertices of a given triangle in the array
-void ConcaveMeshShape::getTriangleVerticesIndices(uint subPart, uint triangleIndex, uint* outVerticesIndices) const {
+void ConcaveMeshShape::getTriangleVerticesIndices(uint32 subPart, uint32 triangleIndex, uint32* outVerticesIndices) const {
 
     // Get the triangle vertex array of the current sub-part
     TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
@@ -114,13 +114,13 @@ void ConcaveMeshShape::getTriangleVerticesIndices(uint subPart, uint triangleInd
 }
 
 // Return the number of sub parts contained in this mesh
-uint ConcaveMeshShape::getNbSubparts() const
+uint32 ConcaveMeshShape::getNbSubparts() const
 {
 	return mTriangleMesh->getNbSubparts();
 }
 		
 // Return the number of triangles in a sub part of the mesh
-uint ConcaveMeshShape::getNbTriangles(uint subPart) const
+uint32 ConcaveMeshShape::getNbTriangles(uint32 subPart) const
 {
 	assert(mTriangleMesh->getSubpart(subPart));
 	return mTriangleMesh->getSubpart(subPart)->getNbTriangles();
@@ -128,7 +128,7 @@ uint ConcaveMeshShape::getNbTriangles(uint subPart) const
 
 // Compute all the triangles of the mesh that are overlapping with the AABB in parameter
 void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
-                                                   Array<Vector3>& triangleVerticesNormals, Array<uint>& shapeIds,
+                                                   Array<Vector3>& triangleVerticesNormals, Array<uint32>& shapeIds,
                                                    MemoryAllocator& allocator) const {
 
     RP3D_PROFILE("ConcaveMeshShape::computeOverlappingTriangles()", mProfiler);
@@ -149,7 +149,7 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, Array<
     triangleVerticesNormals.addWithoutInit(nbOverlappingNodes * 3);
 
     // For each overlapping node
-    for (uint i=0; i < nbOverlappingNodes; i++) {
+    for (uint32 i=0; i < nbOverlappingNodes; i++) {
 
         int nodeId = overlappingNodes[i];
 
@@ -201,13 +201,13 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
 }
 
 // Compute the shape Id for a given triangle of the mesh
-uint ConcaveMeshShape::computeTriangleShapeId(uint subPart, uint triangleIndex) const {
+uint32 ConcaveMeshShape::computeTriangleShapeId(uint32 subPart, uint32 triangleIndex) const {
 
     RP3D_PROFILE("ConcaveMeshShape::computeTriangleShapeId()", mProfiler);
 
-    uint shapeId = 0;
+    uint32 shapeId = 0;
 
-    uint i=0;
+    uint32 i=0;
     while (i < subPart) {
 
         shapeId += mTriangleMesh->getSubpart(i)->getNbTriangles();
@@ -290,7 +290,7 @@ std::string ConcaveMeshShape::to_string() const {
     ss << "nbSubparts=" << mTriangleMesh->getNbSubparts() << std::endl;
 
     // Vertices array
-    for (uint subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
+    for (uint32 subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
 
         // Get the triangle vertex array of the current sub-part
         TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
@@ -302,7 +302,7 @@ std::string ConcaveMeshShape::to_string() const {
         ss << "vertices=[";
 
         // For each triangle of the concave mesh
-        for (uint v=0; v<triangleVertexArray->getNbVertices(); v++) {
+        for (uint32 v=0; v<triangleVertexArray->getNbVertices(); v++) {
 
             Vector3 vertex;
             triangleVertexArray->getVertex(v, &vertex);
@@ -315,7 +315,7 @@ std::string ConcaveMeshShape::to_string() const {
         ss << "normals=[";
 
         // For each triangle of the concave mesh
-        for (uint v=0; v<triangleVertexArray->getNbVertices(); v++) {
+        for (uint32 v=0; v<triangleVertexArray->getNbVertices(); v++) {
 
             Vector3 normal;
             triangleVertexArray->getNormal(v, &normal);
@@ -329,9 +329,9 @@ std::string ConcaveMeshShape::to_string() const {
 
         // For each triangle of the concave mesh
         // For each triangle of the concave mesh
-        for (uint triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
+        for (uint32 triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
 
-            uint indices[3];
+            uint32 indices[3];
 
             triangleVertexArray->getTriangleVerticesIndices(triangleIndex, indices);
 

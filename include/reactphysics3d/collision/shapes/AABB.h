@@ -284,7 +284,7 @@ RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Vector3& rayOrigin, const Ve
     decimal tMax = std::max(t1, t2);
     tMax = std::min(tMax, rayMaxFraction);
 
-    for (uint i = 1; i < 3; i++) {
+    for (int i = 1; i < 3; i++) {
 
         t1 = (mMinCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
         t2 = (mMaxCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
