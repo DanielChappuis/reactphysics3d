@@ -34,7 +34,6 @@
 #include <functional>
 #include <limits>
 
-
 namespace reactphysics3d {
 
 // Class Set
@@ -89,7 +88,8 @@ class Set {
             if (mHashSize > 0) {
 
                const size_t hashCode = Hash()(value);
-               const uint32 bucket = hashCode & (mHashSize - 1);
+               const size_t divider = mHashSize - 1;
+               const uint32 bucket = static_cast<uint32>(hashCode & divider);
                auto keyEqual = KeyEqual();
 
                for (uint32 i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {
@@ -304,7 +304,8 @@ class Set {
 
                     // Get the corresponding bucket
                     const size_t hashCode = Hash()(mEntries[entryIndex]);
-                    const uint32 bucketIndex = hashCode & (capacity - 1);
+                    const size_t divider = capacity - 1;
+                    const uint32 bucketIndex = static_cast<uint32>(hashCode & divider);
 
                     newNextEntries[entryIndex] = newBuckets[bucketIndex];
                     newBuckets[bucketIndex] = entryIndex;
@@ -358,7 +359,8 @@ class Set {
             if (mHashSize > 0) {
 
                 // Compute the corresponding bucket index
-                bucket = hashCode & (mHashSize - 1);
+                const size_t divider = mHashSize - 1;
+                bucket = static_cast<uint32>(hashCode & divider);
 
                 auto keyEqual  = KeyEqual();
 
@@ -382,7 +384,8 @@ class Set {
                 reserve(mHashSize == 0 ? 16 : mHashSize * 2);
 
                 // Recompute the bucket index
-                bucket = hashCode & (mHashSize - 1);
+                const size_t divider = mHashSize - 1;
+                bucket = static_cast<uint32>(hashCode & divider);
             }
 
             assert(mNbEntries < mNbAllocatedEntries);
@@ -418,7 +421,8 @@ class Set {
 
                 const size_t hashcode = Hash()(value);
                 auto keyEqual = KeyEqual();
-                const uint32 bucket = hashcode & (mHashSize - 1);
+                const size_t divider = mHashSize - 1;
+                const uint32 bucket = static_cast<uint32>(hashcode & divider);
                 uint32 last = INVALID_INDEX;
                 for (uint32 i = mBuckets[bucket]; i != INVALID_INDEX; last = i, i = mNextEntries[i]) {
 
@@ -535,7 +539,8 @@ class Set {
             if (mHashSize > 0) {
 
                const size_t hashCode = Hash()(value);
-               bucket = hashCode & (mHashSize - 1);
+               const size_t divider = mHashSize - 1;
+               bucket = static_cast<uint32>(hashCode & divider);
                auto keyEqual = KeyEqual();
 
                for (uint32 i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {
