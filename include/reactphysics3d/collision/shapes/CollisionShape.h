@@ -89,7 +89,7 @@ class CollisionShape {
         // -------------------- Methods -------------------- //
 
         /// Return true if a point is inside the collision shape
-        virtual bool testPointInside(const Vector3& worldPoint, Collider* collider) const=0;
+        virtual bool testPointInside(const Vector3& localPoint, Collider* collider) const=0;
 
         /// Raycast method with feedback information
         virtual bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const=0;
