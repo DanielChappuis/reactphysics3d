@@ -134,6 +134,7 @@ do not hesitate to take a look at the user manual.
  - The RigidBody::recomputeMassInformation() method has been renamed to RigidBody::updateMassPropertiesFromColliders.
  - Now, you need to manually call the RigidBody::updateMassPropertiesFromColliders() method after adding colliders to a rigid body to recompute its inertia tensor, center of mass and mass. There are other methods that you can use form that (see the user manual)
  - The RigidBody::applyForce() method has been renamed to RigidBody::applyForceAtWorldPosition()
+ - The linear and angular damping function of the rigid bodies has been changed
  - The rendering in the testbed application has been improved
  - Many of the data inside the library have been refactored for better caching and easier parallelization in the future
  - The old Logger class has been renamed to DefaultLogger

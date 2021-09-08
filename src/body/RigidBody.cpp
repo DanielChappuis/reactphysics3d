@@ -302,7 +302,7 @@ void RigidBody::applyWorldForceAtCenterOfMass(const Vector3& force) {
 
 // Return the linear velocity damping factor
 /**
- * @return The linear damping factor of this body
+ * @return The linear damping factor of this body (in range [0; +inf]). Zero means no damping.
  */
 decimal RigidBody::getLinearDamping() const {
     return mWorld.mRigidBodyComponents.getLinearDamping(mEntity);
@@ -310,7 +310,7 @@ decimal RigidBody::getLinearDamping() const {
 
 // Return the angular velocity damping factor
 /**
- * @return The angular damping factor of this body
+ * @return The angular damping factor of this body (in range [0; +inf]). Zero means no damping.
  */
 decimal RigidBody::getAngularDamping() const {
     return mWorld.mRigidBodyComponents.getAngularDamping(mEntity);
@@ -730,10 +730,9 @@ void RigidBody::enableGravity(bool isEnabled) {
              (isEnabled ? "true" : "false"),  __FILE__, __LINE__);
 }
 
-// Set the linear damping factor. This is the ratio of the linear velocity
-// that the body will lose every at seconds of simulation.
+// Set the linear damping factor.
 /**
- * @param linearDamping The linear damping factor of this body
+ * @param linearDamping The linear damping factor of this body (in range [0; +inf]). Zero means no damping.
  */
 void RigidBody::setLinearDamping(decimal linearDamping) {
     assert(linearDamping >= decimal(0.0));
@@ -752,10 +751,9 @@ void RigidBody::setLinearDamping(decimal linearDamping) {
     }
 }
 
-// Set the angular damping factor. This is the ratio of the angular velocity
-// that the body will lose at every seconds of simulation.
+// Set the angular damping factor.
 /**
- * @param angularDamping The angular damping factor of this body
+ * @param angularDamping The angular damping factor of this body (in range [0; +inf]). Zero means no damping.
  */
 void RigidBody::setAngularDamping(decimal angularDamping) {
     assert(angularDamping >= decimal(0.0));
