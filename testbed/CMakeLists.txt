@@ -161,6 +161,8 @@ set(SCENES_SOURCES
     scenes/sliderjoint/SliderJointScene.cpp
     scenes/ragdoll/RagdollScene.h
     scenes/ragdoll/RagdollScene.cpp
+    scenes/rope/RopeScene.h
+    scenes/rope/RopeScene.cpp
 )
 
 # Create the executable
