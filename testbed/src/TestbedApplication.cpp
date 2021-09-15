@@ -48,6 +48,7 @@
 #include "hingejoint/HingeJointScene.h"
 #include "sliderjoint/SliderJointScene.h"
 #include "ragdoll/RagdollScene.h"
+#include "rope/RopeScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -69,6 +70,7 @@ using namespace ballandsocketjointscene;
 using namespace hingejointscene;
 using namespace sliderjointscene;
 using namespace ragdollscene;
+using namespace ropescene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
@@ -77,7 +79,7 @@ const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
 TestbedApplication::TestbedApplication(bool isFullscreen, int windowWidth, int windowHeight)
                    : Screen(Vector2i(windowWidth, windowHeight), "Testbed ReactPhysics3D v" + rp3d::RP3D_VERSION, true, isFullscreen, true, true, false, 4, 1),
                      mIsInitialized(false), mGui(this), mCurrentScene(nullptr),
-                     mEngineSettings(EngineSettings::defaultSettings()),
+                     mDefaultEngineSettings(EngineSettings::defaultSettings()),
                      mFPS(0), mNbFrames(0), mPreviousTime(0),
                      mLastTimeComputedFPS(0), mFrameTime(0), mTotalPhysicsTime(0), mPhysicsStepTime(0),
                      mWidth(windowWidth), mHeight(windowHeight),
@@ -109,6 +111,10 @@ void TestbedApplication::init() {
     // Initialize the GUI
     mGui.init();
 
+    // Select the initial scene
+    const int firstSceneIndex = 0;
+    switchScene(mScenes[firstSceneIndex]);
+
     mTimer.start();
 
     int glMajorVersion, glMinorVersion;
@@ -132,86 +138,85 @@ void TestbedApplication::init() {
 void TestbedApplication::createScenes() {
 
     // Cubes scene
-    CubesScene* cubeScene = new CubesScene("Cubes", mEngineSettings);
+    CubesScene* cubeScene = new CubesScene("Cubes", mDefaultEngineSettings);
     mScenes.push_back(cubeScene);
 
     // Cube Stack scene
-    CubeStackScene* cubeStackScene = new CubeStackScene("Cube Stack", mEngineSettings);
+    CubeStackScene* cubeStackScene = new CubeStackScene("Cube Stack", mDefaultEngineSettings);
     mScenes.push_back(cubeStackScene);
 
     // Joints scene
-    JointsScene* jointsScene = new JointsScene("Joints", mEngineSettings);
+    JointsScene* jointsScene = new JointsScene("Joints", mDefaultEngineSettings);
     mScenes.push_back(jointsScene);
 
     // Collision shapes scene
-    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes", mEngineSettings);
+    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes", mDefaultEngineSettings);
     mScenes.push_back(collisionShapesScene);
 
     // Heightfield shape scene
-    HeightFieldScene* heightFieldScene = new HeightFieldScene("Heightfield", mEngineSettings);
+    HeightFieldScene* heightFieldScene = new HeightFieldScene("Heightfield", mDefaultEngineSettings);
     mScenes.push_back(heightFieldScene);
 
     // Raycast scene
-    RaycastScene* raycastScene = new RaycastScene("Raycast", mEngineSettings);
+    RaycastScene* raycastScene = new RaycastScene("Raycast", mDefaultEngineSettings);
     mScenes.push_back(raycastScene);
 
     // Collision Detection scene
-    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene("Collision Detection", mEngineSettings);
+    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene("Collision Detection", mDefaultEngineSettings);
     mScenes.push_back(collisionDetectionScene);
 
     // Concave Mesh scene
-    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh", mEngineSettings);
+    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh", mDefaultEngineSettings);
     mScenes.push_back(concaveMeshScene);
 
     // Pile scene
-    PileScene* pileScene = new PileScene("Pile", mEngineSettings);
+    PileScene* pileScene = new PileScene("Pile", mDefaultEngineSettings);
     mScenes.push_back(pileScene);
 
     // Box Tower scene
-    BoxTowerScene* boxTowerScene = new BoxTowerScene("Box Tower", mEngineSettings);
+    BoxTowerScene* boxTowerScene = new BoxTowerScene("Box Tower", mDefaultEngineSettings);
     mScenes.push_back(boxTowerScene);
 
     // Ball and Socket joints Net scene
-    BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene("BallAndSocket Joints Net", mEngineSettings);
+    BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene("BallAndSocket Joints Net", mDefaultEngineSettings);
     mScenes.push_back(ballAndSocketJointsNetScene);
 
     // Ball and Socket joints chain scene
-    BallAndSocketJointsChainScene* ballAndSocketJointsChainScene = new BallAndSocketJointsChainScene("BallAndSocket Joints Chain", mEngineSettings);
+    BallAndSocketJointsChainScene* ballAndSocketJointsChainScene = new BallAndSocketJointsChainScene("BallAndSocket Joints Chain", mDefaultEngineSettings);
     mScenes.push_back(ballAndSocketJointsChainScene);
 
     // Hinge joints chain scene
-    HingeJointsChainScene* hingeJointsChainScene = new HingeJointsChainScene("Hinge Joints Chain", mEngineSettings);
+    HingeJointsChainScene* hingeJointsChainScene = new HingeJointsChainScene("Hinge Joints Chain", mDefaultEngineSettings);
     mScenes.push_back(hingeJointsChainScene);
 
     // Bridge scene
-    BridgeScene* bridgeScene = new BridgeScene("Bridge", mEngineSettings);
+    BridgeScene* bridgeScene = new BridgeScene("Bridge", mDefaultEngineSettings);
     mScenes.push_back(bridgeScene);
 
     // Fixed joint scene
-    FixedJointScene* fixedJointScene = new FixedJointScene("Fixed joint", mEngineSettings);
+    FixedJointScene* fixedJointScene = new FixedJointScene("Fixed joint", mDefaultEngineSettings);
     mScenes.push_back(fixedJointScene);
 
     // Ball and Socket joint scene
-    BallAndSocketJointScene* ballAndSocketJointScene = new BallAndSocketJointScene("Ball and Socket joint", mEngineSettings);
+    BallAndSocketJointScene* ballAndSocketJointScene = new BallAndSocketJointScene("Ball and Socket joint", mDefaultEngineSettings);
     mScenes.push_back(ballAndSocketJointScene);
 
     // Hinge joint scene
-    HingeJointScene* hingeJointScene = new HingeJointScene("Hinge joint", mEngineSettings);
+    HingeJointScene* hingeJointScene = new HingeJointScene("Hinge joint", mDefaultEngineSettings);
     mScenes.push_back(hingeJointScene);
 
     // Slider joint scene
-    SliderJointScene* sliderJointScene = new SliderJointScene("Slider joint", mEngineSettings);
+    SliderJointScene* sliderJointScene = new SliderJointScene("Slider joint", mDefaultEngineSettings);
     mScenes.push_back(sliderJointScene);
 
     // Ragdoll scene
-    RagdollScene* ragdollScene = new RagdollScene("Ragdoll", mEngineSettings);
+    RagdollScene* ragdollScene = new RagdollScene("Ragdoll", mDefaultEngineSettings);
     mScenes.push_back(ragdollScene);
 
+    // Rope scene
+    RopeScene* ropeScene = new RopeScene("Rope", mDefaultEngineSettings);
+    mScenes.push_back(ropeScene);
     assert(mScenes.size() > 0);
-
-    const int firstSceneIndex = 0;
-
-    switchScene(mScenes[firstSceneIndex]);
 }
 
 // Remove all the scenes
@@ -235,7 +240,7 @@ void TestbedApplication::updateSinglePhysicsStep() {
 void TestbedApplication::updatePhysics() {
 
     // Update the elapsed time
-    mEngineSettings.elapsedTime = mTimer.getElapsedPhysicsTime();
+    mCurrentScene->getEngineSettings().elapsedTime = mTimer.getElapsedPhysicsTime();
 
     if (mTimer.isRunning()) {
 
@@ -243,7 +248,7 @@ void TestbedApplication::updatePhysics() {
         mTimer.update();
 
         // While the time accumulator is not empty
-        while(mTimer.isPossibleToTakeStep(mEngineSettings.timeStep)) {
+        while(mTimer.isPossibleToTakeStep(mCurrentScene->getEngineSettings().timeStep)) {
 
             double currentTime = glfwGetTime();
 
@@ -253,7 +258,7 @@ void TestbedApplication::updatePhysics() {
             mPhysicsStepTime = glfwGetTime() - currentTime;
 
             // Update the timer
-            mTimer.nextStep(mEngineSettings.timeStep);
+            mTimer.nextStep(mCurrentScene->getEngineSettings().timeStep);
         }
     }
 }
@@ -277,7 +282,7 @@ void TestbedApplication::update() {
     mTotalPhysicsTime = glfwGetTime() - currentTime;
 
     // Compute the interpolation factor
-    float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
+    float factor = mTimer.computeInterpolationFactor(mDefaultEngineSettings.timeStep);
     assert(factor >= 0.0f && factor <= 1.0f);
 
     // Notify the scene about the interpolation factor
@@ -358,6 +363,7 @@ void TestbedApplication::switchScene(Scene* newScene) {
     // Reset the scene
     mCurrentScene->reset();
 
+    mGui.resetWithValuesFromCurrentScene();
     mCurrentScene->updateEngineSettings();
 
     resize_event(Vector2i(0, 0));

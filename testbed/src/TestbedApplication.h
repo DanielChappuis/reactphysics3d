@@ -62,8 +62,8 @@ class TestbedApplication : public Screen {
         /// Current 3D scene
         Scene* mCurrentScene;
 
-        /// Physics engine settings
-        EngineSettings mEngineSettings;
+        /// Physics engine default settings
+        EngineSettings mDefaultEngineSettings;
 
         /// Current number of frames per seconds
         double mFPS;
@@ -171,6 +171,9 @@ class TestbedApplication : public Screen {
         /// Set the variable to know if we need to take a single physics step
         void toggleTakeSinglePhysicsStep();
 
+        /// Return the engine settings of the current scene
+        EngineSettings& getCurrentSceneEngineSettings();
+
     public :
 
         // -------------------- Methods -------------------- //
@@ -271,6 +274,11 @@ inline void TestbedApplication::enableVSync(bool enable) {
     else {
         glfwSwapInterval(0);
     }
+}
+
+// Return the engine settings of the current scene
+inline EngineSettings& TestbedApplication::getCurrentSceneEngineSettings() {
+   return mCurrentScene->getEngineSettings();
 }
 
 #endif

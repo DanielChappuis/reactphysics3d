@@ -72,6 +72,15 @@ class Gui {
         Label* mTotalPhysicsTimeLabel;
         Label* mPhysicsStepTimeLabel;
 
+        CheckBox* mCheckboxSleeping;
+        CheckBox* mCheckboxGravity;
+        TextBox* mTextboxTimeStep;
+        TextBox* mTextboxVelocityIterations;
+        TextBox* mTextboxPositionIterations;
+        TextBox* mTextboxTimeSleep;
+        TextBox* mTextboxSleepLinearVel;
+        TextBox* mTextboxSleepAngularVel;
+
         std::vector<CheckBox*> mCheckboxesScenes;
 
         // -------------------- Methods -------------------- //
@@ -122,6 +131,9 @@ class Gui {
 
         /// Display the GUI
         void render();
+
+        /// Update the GUI values with the engine settings from the current scene
+        void resetWithValuesFromCurrentScene();
 
         static void setScroll(double scrollX, double scrollY);
 };

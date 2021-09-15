@@ -188,6 +188,9 @@ void RagdollScene::reset() {
 // Create the boxes and joints for the ragdoll
 void RagdollScene::createRagdolls() {
 
+    const float linearDamping = 0.02f;
+    const float angularDamping = 0.02f;
+
     // For each ragdoll
     for (int i=0; i < NB_RAGDOLLS_ROWS; i++) {
 
@@ -208,6 +211,8 @@ void RagdollScene::createRagdolls() {
             mHeadBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mHeadBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(7);
             mHeadBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mHeadBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mHeadBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mHeadBox[ragdollIndex]);
 
             // --------------- Create the torso box --------------- //
@@ -218,6 +223,8 @@ void RagdollScene::createRagdolls() {
             mTorsoBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mTorsoBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(9);
             mTorsoBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mTorsoBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mTorsoBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             //mTorsoBox->getRigidBody()->setType(rp3d::BodyType::STATIC);
             mPhysicsObjects.push_back(mTorsoBox[ragdollIndex]);
 
@@ -229,6 +236,8 @@ void RagdollScene::createRagdolls() {
             mLeftUpperArmBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mLeftUpperArmBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(8);
             mLeftUpperArmBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mLeftUpperArmBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mLeftUpperArmBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mLeftUpperArmBox[ragdollIndex]);
 
             // --------------- Create the left lower arm box --------------- //
@@ -239,6 +248,8 @@ void RagdollScene::createRagdolls() {
             mLeftLowerArmBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mLeftLowerArmBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(8);
             mLeftLowerArmBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mLeftLowerArmBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mLeftLowerArmBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mLeftLowerArmBox[ragdollIndex]);
 
             // --------------- Create the left upper leg box --------------- //
@@ -249,6 +260,8 @@ void RagdollScene::createRagdolls() {
             mLeftUpperLegBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mLeftUpperLegBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(8);
             mLeftUpperLegBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mLeftUpperLegBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mLeftUpperLegBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mLeftUpperLegBox[ragdollIndex]);
 
             // --------------- Create the left lower leg box --------------- //
@@ -259,6 +272,8 @@ void RagdollScene::createRagdolls() {
             mLeftLowerLegBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mLeftLowerLegBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(8);
             mLeftLowerLegBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mLeftLowerLegBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mLeftLowerLegBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mLeftLowerLegBox[ragdollIndex]);
 
             // --------------- Create the right upper arm box --------------- //
@@ -269,6 +284,8 @@ void RagdollScene::createRagdolls() {
             mRightUpperArmBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mRightUpperArmBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(8);
             mRightUpperArmBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mRightUpperArmBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mRightUpperArmBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mRightUpperArmBox[ragdollIndex]);
 
             // --------------- Create the right lower arm box --------------- //
@@ -279,6 +296,8 @@ void RagdollScene::createRagdolls() {
             mRightLowerArmBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mRightLowerArmBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(8);
             mRightLowerArmBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mRightLowerArmBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mRightLowerArmBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mRightLowerArmBox[ragdollIndex]);
 
             // --------------- Create the right upper leg box --------------- //
@@ -289,6 +308,8 @@ void RagdollScene::createRagdolls() {
             mRightUpperLegBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mRightUpperLegBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(8);
             mRightUpperLegBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mRightUpperLegBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mRightUpperLegBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mRightUpperLegBox[ragdollIndex]);
 
             // --------------- Create the right lower leg box --------------- //
@@ -299,6 +320,8 @@ void RagdollScene::createRagdolls() {
             mRightLowerLegBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
             mRightLowerLegBox[ragdollIndex]->getCollider()->getMaterial().setMassDensity(8);
             mRightLowerLegBox[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
+            mRightLowerLegBox[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
+            mRightLowerLegBox[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mPhysicsObjects.push_back(mRightLowerLegBox[ragdollIndex]);
 
             // --------------- Create the joint between head and torso --------------- //

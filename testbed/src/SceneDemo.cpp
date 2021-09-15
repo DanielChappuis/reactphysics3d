@@ -685,18 +685,15 @@ rp3d::decimal SceneDemo::notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) 
 // Update the engine settings
 void SceneDemo::updateEngineSettings() {
 
-    if (mIsPhysicsWorldSimulated) {
-
-        // Update the physics engine parameters
-        mPhysicsWorld->setIsGravityEnabled(mEngineSettings.isGravityEnabled);
-        rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
-                         mEngineSettings.gravity.z);
-        mPhysicsWorld->setGravity(gravity);
-        mPhysicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
-        mPhysicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
-        mPhysicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
-        mPhysicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
-        mPhysicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
-        mPhysicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
-    }
+    // Update the physics engine parameters
+    mPhysicsWorld->setIsGravityEnabled(mEngineSettings.isGravityEnabled);
+    rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
+                     mEngineSettings.gravity.z);
+    mPhysicsWorld->setGravity(gravity);
+    mPhysicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
+    mPhysicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
+    mPhysicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
+    mPhysicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
+    mPhysicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
+    mPhysicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
 }

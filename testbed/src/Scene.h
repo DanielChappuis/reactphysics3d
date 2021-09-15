@@ -100,7 +100,7 @@ class Scene : public rp3d::EventListener {
         std::string mName;
 
         /// Physics engine settings
-        EngineSettings& mEngineSettings;
+        EngineSettings mEngineSettings;
 
         /// Camera
         openglframework::Camera mCamera;
@@ -257,6 +257,9 @@ class Scene : public rp3d::EventListener {
 
         /// Update the engine settings
         virtual void updateEngineSettings() = 0;
+
+        /// Return a reference to the engine settings of the scene
+        EngineSettings& getEngineSettings();
 };
 
 // Called when a keyboard event occurs
@@ -346,6 +349,11 @@ inline bool Scene::getIsWireframeEnabled() const {
 // Enable/disable wireframe rendering
 inline void Scene::setIsWireframeEnabled(bool isEnabled) {
     mIsWireframeEnabled = isEnabled;
+}
+
+// Return a reference to the engine settings of the scene
+inline EngineSettings& Scene::getEngineSettings() {
+    return mEngineSettings;
 }
 
 #endif
