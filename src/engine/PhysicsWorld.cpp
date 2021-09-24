@@ -521,9 +521,8 @@ void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     // Destroy all the joints in which the rigid body to be destroyed is involved
     const Array<Entity>& joints = mRigidBodyComponents.getJoints(rigidBody->getEntity());
-    const uint32 nbJoints = joints.size();
-    for (uint32 i=0; i < nbJoints; i++) {
-        destroyJoint(mJointsComponents.getJoint(joints[i]));
+    while (joints.size() > 0) {
+        destroyJoint(mJointsComponents.getJoint(joints[0]));
     }
 
     // Destroy the corresponding entity and its components
