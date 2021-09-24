@@ -52,6 +52,9 @@ class HingeJointsChainScene : public SceneDemo {
         /// Hinge joints of the chain
         std::vector<rp3d::HingeJoint*> mHingeJoints;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Create the joints
@@ -69,6 +72,15 @@ class HingeJointsChainScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

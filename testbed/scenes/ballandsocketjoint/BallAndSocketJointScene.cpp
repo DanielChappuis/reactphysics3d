@@ -41,11 +41,7 @@ BallAndSocketJointScene::BallAndSocketJointScene(const std::string& name, Engine
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
-    // Gravity vector in the physics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
-
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
+    mWorldSettings.worldName = name;
 
     // Logger
     rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
@@ -53,42 +49,48 @@ BallAndSocketJointScene::BallAndSocketJointScene(const std::string& name, Engine
             static_cast<uint>(rp3d::Logger::Level::Error);
     defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
     mPhysicsCommon.setLogger(defaultLogger);
-
-    // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
-    physicsWorld->setEventListener(this);
-    mPhysicsWorld = physicsWorld;
-
-    // Create the Ball-and-Socket joint
-    createBallAndSocketJoint();
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
 // Destructor
 BallAndSocketJointScene::~BallAndSocketJointScene() {
 
-    // Destroy the joints
-    mPhysicsWorld->destroyJoint(mJoint);
+    destroyPhysicsWorld();
+}
 
-    // Destroy all the rigid bodies of the scene
-    mPhysicsWorld->destroyRigidBody(mBox1->getRigidBody());
-    mPhysicsWorld->destroyRigidBody(mBox2->getRigidBody());
+// Create the physics world
+void BallAndSocketJointScene::createPhysicsWorld() {
 
-    delete mBox1;
-    delete mBox2;
+    // Gravity vector in the physics world
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+    // Create the physics world for the physics simulation
+    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    mPhysicsWorld->setEventListener(this);
+
+    // Create the Ball-and-Socket joint
+    createBallAndSocketJoint();
+}
+
+// Initialize the bodies positions
+void BallAndSocketJointScene::initBodiesPositions() {
+
+    mBox1->setTransform(rp3d::Transform(rp3d::Vector3(0, 8, 0), rp3d::Quaternion::identity()));
+    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity()));
+}
+
+// Destroy the physics world
+void BallAndSocketJointScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        delete mBox1;
+        delete mBox2;
+
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
 }
 
 // Reset the scene
@@ -96,8 +98,9 @@ void BallAndSocketJointScene::reset() {
 
     SceneDemo::reset();
 
-    mBox1->setTransform(rp3d::Transform(rp3d::Vector3(0, 8, 0), rp3d::Quaternion::identity()));
-    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity()));
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }
 
 // Create the boxes and joints for the Ball-and-Socket joint example
@@ -144,10 +147,4 @@ void BallAndSocketJointScene::createBallAndSocketJoint() {
     mJoint->setConeLimitHalfAngle(45.0 * rp3d::PI_RP3D / 180.0);
     mJoint->enableConeLimit(true);
 
-}
-
-// Update the scene
-void BallAndSocketJointScene::update() {
-
-    SceneDemo::update();
 }

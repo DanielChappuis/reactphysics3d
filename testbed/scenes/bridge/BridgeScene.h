@@ -59,6 +59,9 @@ class BridgeScene : public SceneDemo {
         /// Hinge joints of the bridge
         std::vector<rp3d::HingeJoint*> mHingeJoints;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Create the joints
@@ -79,6 +82,15 @@ class BridgeScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

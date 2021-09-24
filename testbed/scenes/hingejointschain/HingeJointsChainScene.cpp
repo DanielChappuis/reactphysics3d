@@ -46,8 +46,7 @@ HingeJointsChainScene::HingeJointsChainScene(const std::string& name, EngineSett
     // Gravity vector in the physics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
+    mWorldSettings.worldName = name;
 
     // Logger
     rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
@@ -55,17 +54,29 @@ HingeJointsChainScene::HingeJointsChainScene(const std::string& name, EngineSett
             static_cast<uint>(rp3d::Logger::Level::Error);
     defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
     mPhysicsCommon.setLogger(defaultLogger);
+}
+
+// Destructor
+HingeJointsChainScene::~HingeJointsChainScene() {
+
+    destroyPhysicsWorld();
+}
+
+// Create the physics world
+void HingeJointsChainScene::createPhysicsWorld() {
+
+    // Gravity vector in the physics world
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
     // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
-    physicsWorld->setEventListener(this);
-    mPhysicsWorld = physicsWorld;
+    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    mPhysicsWorld->setEventListener(this);
 
     // Create all the boxes of the scene
     for (int i=0; i<NB_BOXES; i++) {
 
         // Create a box and a corresponding rigid in the physics world
-        mBoxes[i] = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
+        mBoxes[i] = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         mBoxes[i]->setColor(mObjectColorDemo);
@@ -84,64 +95,14 @@ HingeJointsChainScene::HingeJointsChainScene(const std::string& name, EngineSett
     }
 
     // Set the position of the boxes before the joints creation
-    reset();
+    initBodiesPositions();
 
     // Create the Ball-and-Socket joints
     createJoints();
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
-// Destructor
-HingeJointsChainScene::~HingeJointsChainScene() {
-
-    // Destroy the joints
-    for (uint i=0; i < mHingeJoints.size(); i++) {
-
-        mPhysicsWorld->destroyJoint(mHingeJoints[i]);
-    }
-
-    // Destroy all the rigid bodies of the scene
-    for (int i=0; i<NB_BOXES; i++) {
-
-        mPhysicsWorld->destroyRigidBody(mBoxes[i]->getRigidBody());
-    }
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
-}
-
-// Create the joints
-void HingeJointsChainScene::createJoints() {
-
-    for (int i=0; i < NB_BOXES-1; i++) {
-
-        // Create the joint info object
-        rp3d::RigidBody* body1 = mBoxes[i]->getRigidBody();
-        rp3d::RigidBody* body2 = mBoxes[i+1]->getRigidBody();
-        rp3d::Vector3 body1Position = body1->getTransform().getPosition();
-        rp3d::Vector3 body2Position = body2->getTransform().getPosition();
-        const rp3d::Vector3 anchorPointWorldSpace = body1Position + rp3d::Vector3(BOX_SIZE.x / 2.0f, 0, 0);
-        rp3d::HingeJointInfo jointInfo(body1, body2, anchorPointWorldSpace, rp3d::Vector3(0, 0, 1));
-        jointInfo.isCollisionEnabled = false;
-        rp3d::HingeJoint* joint = dynamic_cast<rp3d::HingeJoint*>(mPhysicsWorld->createJoint(jointInfo));
-        mHingeJoints.push_back(joint);
-    }
-}
-
-// Reset the scene
-void HingeJointsChainScene::reset() {
-
-    SceneDemo::reset();
+// Initialize the bodies positions
+void HingeJointsChainScene::initBodiesPositions() {
 
     const float space = 0.3f;
 
@@ -156,4 +117,50 @@ void HingeJointsChainScene::reset() {
         // Create a box and a corresponding rigid in the physics world
         mBoxes[i]->setTransform(transform);
     }
+}
+
+// Destroy the physics world
+void HingeJointsChainScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        // Destroy all the physics objects of the scene
+        for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+
+            // Destroy the object
+            delete (*it);
+        }
+
+        mHingeJoints.clear();
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
+// Create the joints
+void HingeJointsChainScene::createJoints() {
+
+    for (int i=0; i < NB_BOXES-1; i++) {
+
+        // Create the joint info object
+        rp3d::RigidBody* body1 = mBoxes[i]->getRigidBody();
+        rp3d::RigidBody* body2 = mBoxes[i+1]->getRigidBody();
+        rp3d::Vector3 body1Position = body1->getTransform().getPosition();
+        const rp3d::Vector3 anchorPointWorldSpace = body1Position + rp3d::Vector3(BOX_SIZE.x / 2.0f, 0, 0);
+        rp3d::HingeJointInfo jointInfo(body1, body2, anchorPointWorldSpace, rp3d::Vector3(0, 0, 1));
+        jointInfo.isCollisionEnabled = false;
+        rp3d::HingeJoint* joint = dynamic_cast<rp3d::HingeJoint*>(mPhysicsWorld->createJoint(jointInfo));
+        mHingeJoints.push_back(joint);
+    }
+}
+
+// Reset the scene
+void HingeJointsChainScene::reset() {
+
+    SceneDemo::reset();
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }

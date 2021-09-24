@@ -35,9 +35,9 @@
 namespace cubesscene {
 
 // Constants
-const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
-const int NB_CUBES = 40;                                    // Number of boxes in the scene
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
+const float SCENE_RADIUS = 30.0f;                       // Radius of the scene in meters
+const int NB_CUBES = 30;                                // Number of boxes in the scene
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);       // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(50, 1, 50);   // Floor dimensions in meters
 
 // Class CubesScene
@@ -55,6 +55,9 @@ class CubesScene : public SceneDemo {
 
         unsigned int iter;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -67,6 +70,15 @@ class CubesScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

@@ -80,6 +80,9 @@ class HeightFieldScene : public SceneDemo {
         /// Height field
         HeightField* mHeightField;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -92,6 +95,15 @@ class HeightFieldScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override ;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

@@ -85,6 +85,9 @@ class Timer {
         /// Stop the timer
         void stop();
 
+        /// Reset the timer to zero
+        void reset();
+
         /// Return true if the timer is running
         bool isRunning() const;
 
@@ -130,6 +133,13 @@ inline void Timer::start() {
 // Stop the timer
 inline void Timer::stop() {
     mIsRunning = false;
+}
+
+// Reset the timer to zero
+inline void Timer::reset() {
+    mAccumulator = std::chrono::milliseconds::zero();
+    mStartTime = clock::now();
+    mLastUpdateTime = mStartTime;
 }
 
 // True if it's possible to take a new step

@@ -251,6 +251,7 @@ inline void TestbedApplication::pauseSimulation() {
 
 // Restart the simulation
 inline void TestbedApplication::restartSimulation() {
+    mTimer.reset();
     mCurrentScene->reset();
     mTimer.start();
 }

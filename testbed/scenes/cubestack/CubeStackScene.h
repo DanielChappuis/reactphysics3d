@@ -53,6 +53,9 @@ class CubeStackScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -65,6 +68,15 @@ class CubeStackScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

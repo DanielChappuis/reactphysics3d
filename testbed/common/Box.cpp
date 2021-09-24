@@ -40,7 +40,7 @@ int Box::totalNbBoxes = 0;
 // Constructor
 Box::Box(bool createRigidBody, const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world,
          const std::string& meshFolderPath)
-    : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj") {
+    : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj"), mPhysicsWorld(world) {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;
@@ -96,6 +96,13 @@ Box::~Box() {
         mVBOVertices.destroy();
         mVBONormals.destroy();
         mVAO.destroy();
+    }
+    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
+    if (body != nullptr) {
+        mPhysicsWorld->destroyRigidBody(body);
+    }
+    else {
+        mPhysicsWorld->destroyCollisionBody(mBody);
     }
     mPhysicsCommon.destroyBoxShape(mBoxShape);
     totalNbBoxes--;

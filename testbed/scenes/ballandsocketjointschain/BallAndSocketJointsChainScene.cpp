@@ -43,11 +43,7 @@ BallAndSocketJointsChainScene::BallAndSocketJointsChainScene(const std::string& 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
-    // Gravity vector in the physics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
-
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
+    mWorldSettings.worldName = name;
 
     // Logger
     rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
@@ -55,17 +51,29 @@ BallAndSocketJointsChainScene::BallAndSocketJointsChainScene(const std::string& 
             static_cast<uint>(rp3d::Logger::Level::Error);
     defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
     mPhysicsCommon.setLogger(defaultLogger);
+}
+
+// Destructor
+BallAndSocketJointsChainScene::~BallAndSocketJointsChainScene() {
+
+    destroyPhysicsWorld();
+}
+
+// Create the physics world
+void BallAndSocketJointsChainScene::createPhysicsWorld() {
+
+    // Gravity vector in the physics world
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
     // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
-    physicsWorld->setEventListener(this);
-    mPhysicsWorld = physicsWorld;
+    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    mPhysicsWorld->setEventListener(this);
 
     // Create all the spheres of the scene
     for (int i=0; i<NB_SPHERES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        mSpheres[i] = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
+        mSpheres[i] = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the sphere color
         mSpheres[i]->setColor(mObjectColorDemo);
@@ -84,64 +92,14 @@ BallAndSocketJointsChainScene::BallAndSocketJointsChainScene(const std::string& 
     }
 
     // Set the position of the spheres before the joints creation
-    reset();
+    initBodiesPositions();
 
     // Create the Ball-and-Socket joints
     createJoints();
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
-// Destructor
-BallAndSocketJointsChainScene::~BallAndSocketJointsChainScene() {
-
-    // Destroy the joints
-    for (uint i=0; i < mBallAndSocketJoints.size(); i++) {
-
-        mPhysicsWorld->destroyJoint(mBallAndSocketJoints[i]);
-    }
-
-    // Destroy all the rigid bodies of the scene
-    for (int i=0; i<NB_SPHERES; i++) {
-
-        mPhysicsWorld->destroyRigidBody(mSpheres[i]->getRigidBody());
-    }
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
-}
-
-// Create the joints
-void BallAndSocketJointsChainScene::createJoints() {
-
-    for (int i=0; i < NB_SPHERES-1; i++) {
-
-        // Create the joint info object
-        rp3d::RigidBody* body1 = mSpheres[i]->getRigidBody();
-        rp3d::RigidBody* body2 = mSpheres[i+1]->getRigidBody();
-        rp3d::Vector3 body1Position = body1->getTransform().getPosition();
-        rp3d::Vector3 body2Position = body2->getTransform().getPosition();
-        const rp3d::Vector3 anchorPointWorldSpace = body1Position;
-        rp3d::BallAndSocketJointInfo jointInfo(body1, body2, anchorPointWorldSpace);
-        jointInfo.isCollisionEnabled = false;
-        rp3d::BallAndSocketJoint* joint = dynamic_cast<rp3d::BallAndSocketJoint*>( mPhysicsWorld->createJoint(jointInfo));
-        mBallAndSocketJoints.push_back(joint);
-    }
-}
-
-// Reset the scene
-void BallAndSocketJointsChainScene::reset() {
-
-    SceneDemo::reset();
+// Initialize the bodies positions
+void BallAndSocketJointsChainScene::initBodiesPositions() {
 
     const float space = 0.5f;
 
@@ -156,4 +114,51 @@ void BallAndSocketJointsChainScene::reset() {
         // Create a box and a corresponding rigid in the physics world
         mSpheres[i]->setTransform(transform);
     }
+}
+
+// Destroy the physics world
+void BallAndSocketJointsChainScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        // Destroy all the physics objects of the scene
+        for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+
+            // Destroy the object
+            delete (*it);
+        }
+
+        mBallAndSocketJoints.clear();
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
+
+// Create the joints
+void BallAndSocketJointsChainScene::createJoints() {
+
+    for (int i=0; i < NB_SPHERES-1; i++) {
+
+        // Create the joint info object
+        rp3d::RigidBody* body1 = mSpheres[i]->getRigidBody();
+        rp3d::RigidBody* body2 = mSpheres[i+1]->getRigidBody();
+        rp3d::Vector3 body1Position = body1->getTransform().getPosition();
+        const rp3d::Vector3 anchorPointWorldSpace = body1Position;
+        rp3d::BallAndSocketJointInfo jointInfo(body1, body2, anchorPointWorldSpace);
+        jointInfo.isCollisionEnabled = false;
+        rp3d::BallAndSocketJoint* joint = dynamic_cast<rp3d::BallAndSocketJoint*>( mPhysicsWorld->createJoint(jointInfo));
+        mBallAndSocketJoints.push_back(joint);
+    }
+}
+
+// Reset the scene
+void BallAndSocketJointsChainScene::reset() {
+
+    SceneDemo::reset();
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }

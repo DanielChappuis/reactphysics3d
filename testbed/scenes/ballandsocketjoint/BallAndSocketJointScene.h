@@ -57,6 +57,9 @@ class BallAndSocketJointScene : public SceneDemo {
         /// Ball-And-Socket joint
         rp3d::BallAndSocketJoint* mJoint;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Create the  Ball-and-Socket joint
@@ -75,8 +78,14 @@ class BallAndSocketJointScene : public SceneDemo {
         /// Reset the scene
         virtual void reset() override;
 
-        /// Update the scene
-        virtual void update() override;
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

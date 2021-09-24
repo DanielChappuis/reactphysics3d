@@ -45,14 +45,7 @@ RopeScene::RopeScene(const std::string& name, EngineSettings& settings)
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
-    // Gravity vector in the physics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
-
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
-
-    const float linearDamping = 0.03f;
-    const float angularDamping = 0.03f;
+    mWorldSettings.worldName = name;
 
     // Logger
     rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
@@ -60,143 +53,12 @@ RopeScene::RopeScene(const std::string& name, EngineSettings& settings)
             static_cast<uint>(rp3d::Logger::Level::Error);
     defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
     mPhysicsCommon.setLogger(defaultLogger);
-
-    // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
-    physicsWorld->setEventListener(this);
-    mPhysicsWorld = physicsWorld;
-
-    // ---------- Create the ropes  --------- //
-
-    for (int r=0; r < NB_ROPES; r++) {
-
-        // Create all the capsules of the scene
-        for (int i=0; i<NB_CAPSULES_PER_ROPE; i++) {
-
-            const uint capsuleIndex = r * NB_CAPSULES_PER_ROPE + i;
-
-            // Create a capsule and a corresponding rigid in the physics world
-            mCapsules[capsuleIndex] = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-
-            // Set the capsule color
-            mCapsules[capsuleIndex]->setColor(mObjectColorDemo);
-            mCapsules[capsuleIndex]->setSleepingColor(mSleepingColorDemo);
-
-            // Change the material properties of the rigid body
-            rp3d::Material& material = mCapsules[capsuleIndex]->getCollider()->getMaterial();
-            material.setBounciness(rp3d::decimal(0.0));
-            material.setMassDensity(rp3d::decimal(0.1));
-
-            mCapsules[capsuleIndex]->getRigidBody()->setAngularDamping(angularDamping);
-            mCapsules[capsuleIndex]->getRigidBody()->setLinearDamping(linearDamping);
-
-            if (i == 0) {
-                mCapsules[capsuleIndex]->getRigidBody()->setType(rp3d::BodyType::STATIC);
-            }
-
-            // Add the capsule the list of capsules in the scene
-            mPhysicsObjects.push_back(mCapsules[capsuleIndex]);
-        }
-    }
-
-    // ---------- Create the first box --------- //
-
-    // Create a box and a corresponding rigid in the physics world
-    mBox1 = new Box(true, Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE), mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-    mBox1->getRigidBody()->setAngularDamping(angularDamping);
-    mBox1->getRigidBody()->setLinearDamping(linearDamping);
-
-    // Set the box color
-    mBox1->setColor(mObjectColorDemo);
-    mBox1->setSleepingColor(mSleepingColorDemo);
-
-    // Change the material properties of the rigid body
-    rp3d::Material& material1 = mBox1->getCollider()->getMaterial();
-    material1.setBounciness(rp3d::decimal(0.0));
-    material1.setMassDensity(rp3d::decimal(0.02));
-    mBox1->getRigidBody()->updateMassPropertiesFromColliders();
-
-    std::cout << "Mass: " << mBox1->getRigidBody()->getMass() << std::endl;
-
-    mPhysicsObjects.push_back(mBox1);
-
-    // ---------- Create the second box --------- //
-
-    // Create a box and a corresponding rigid in the physics world
-    mBox2 = new Box(true, Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE), mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-    mBox2->getRigidBody()->setAngularDamping(angularDamping);
-    mBox2->getRigidBody()->setLinearDamping(linearDamping);
-
-    // Set the box color
-    mBox2->setColor(mObjectColorDemo);
-    mBox2->setSleepingColor(mSleepingColorDemo);
-
-    // Change the material properties of the rigid body
-    rp3d::Material& material2 = mBox2->getCollider()->getMaterial();
-    material2.setBounciness(rp3d::decimal(0.0));
-    material2.setMassDensity(rp3d::decimal(0.7));
-    mBox2->getRigidBody()->updateMassPropertiesFromColliders();
-
-    mPhysicsObjects.push_back(mBox2);
-
-    // ---------- Create plank box --------- //
-
-    // Create a box and a corresponding rigid in the physics world
-    mPlank = new Box(true, Vector3(10, 2, 15), mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-    mPlank->getRigidBody()->setType(rp3d::BodyType::STATIC);
-
-    // Set the box color
-    mPlank->setColor(mObjectColorDemo);
-    mPlank->setSleepingColor(mSleepingColorDemo);
-
-    // Change the material properties of the rigid body
-    rp3d::Material& material3 = mPlank->getCollider()->getMaterial();
-    material3.setBounciness(rp3d::decimal(0.5));
-
-    mPhysicsObjects.push_back(mPlank);
-
-    // Initialize the bodies positions
-    initializeBodiesPositions();
-
-    // Create the Ball-and-Socket joints
-    createJoints();
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
 // Destructor
 RopeScene::~RopeScene() {
 
-    // Destroy the joints
-    for (uint i=0; i < mBallAndSocketJoints.size(); i++) {
-
-        mPhysicsWorld->destroyJoint(mBallAndSocketJoints[i]);
-    }
-
-    // Destroy all the rigid bodies of the scene
-    for (int r=0; r < NB_ROPES; r++) {
-        for (int i=0; i<NB_CAPSULES_PER_ROPE; i++) {
-
-            const uint capsuleIndex = r * NB_CAPSULES_PER_ROPE + i;
-            mPhysicsWorld->destroyRigidBody(mCapsules[capsuleIndex]->getRigidBody());
-        }
-    }
-
-    // Destroy the boxes
-    mPhysicsWorld->destroyRigidBody(mBox1->getRigidBody());
-    mPhysicsWorld->destroyRigidBody(mBox2->getRigidBody());
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+    destroyPhysicsWorld();
 }
 
 // Create the joints
@@ -232,7 +94,7 @@ void RopeScene::createJoints() {
     }
 }
 
-void RopeScene::initializeBodiesPositions() {
+void RopeScene::initBodiesPositions() {
 
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
 
@@ -274,15 +136,117 @@ void RopeScene::initializeBodiesPositions() {
     mPlank->setTransform(plankTransform);
 }
 
-// Reset the scene
-void RopeScene::reset() {
+// Create the physics world
+void RopeScene::createPhysicsWorld() {
 
-    SceneDemo::reset();
+    // Gravity vector in the physics world
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
+
+    // Create the physics world for the physics simulation
+    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    mPhysicsWorld->setEventListener(this);
+
+    const float linearDamping = 0.03f;
+    const float angularDamping = 0.03f;
+
+    // ---------- Create the ropes  --------- //
+
+    for (int r=0; r < NB_ROPES; r++) {
+
+        // Create all the capsules of the scene
+        for (int i=0; i<NB_CAPSULES_PER_ROPE; i++) {
+
+            const uint capsuleIndex = r * NB_CAPSULES_PER_ROPE + i;
+
+            // Create a capsule and a corresponding rigid in the physics world
+            mCapsules[capsuleIndex] = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+
+            // Set the capsule color
+            mCapsules[capsuleIndex]->setColor(mObjectColorDemo);
+            mCapsules[capsuleIndex]->setSleepingColor(mSleepingColorDemo);
+
+            // Change the material properties of the rigid body
+            rp3d::Material& material = mCapsules[capsuleIndex]->getCollider()->getMaterial();
+            material.setBounciness(rp3d::decimal(0.0));
+            material.setMassDensity(rp3d::decimal(0.1));
+
+            mCapsules[capsuleIndex]->getRigidBody()->setAngularDamping(angularDamping);
+            mCapsules[capsuleIndex]->getRigidBody()->setLinearDamping(linearDamping);
+
+            if (i == 0) {
+                mCapsules[capsuleIndex]->getRigidBody()->setType(rp3d::BodyType::STATIC);
+            }
+
+            // Add the capsule the list of capsules in the scene
+            mPhysicsObjects.push_back(mCapsules[capsuleIndex]);
+        }
+    }
+
+    // ---------- Create the first box --------- //
+
+    // Create a box and a corresponding rigid in the physics world
+    mBox1 = new Box(true, Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox1->getRigidBody()->setAngularDamping(angularDamping);
+    mBox1->getRigidBody()->setLinearDamping(linearDamping);
+
+    // Set the box color
+    mBox1->setColor(mObjectColorDemo);
+    mBox1->setSleepingColor(mSleepingColorDemo);
+
+    // Change the material properties of the rigid body
+    rp3d::Material& material1 = mBox1->getCollider()->getMaterial();
+    material1.setBounciness(rp3d::decimal(0.0));
+    material1.setMassDensity(rp3d::decimal(0.02));
+    mBox1->getRigidBody()->updateMassPropertiesFromColliders();
+
+    std::cout << "Mass: " << mBox1->getRigidBody()->getMass() << std::endl;
+
+    mPhysicsObjects.push_back(mBox1);
+
+    // ---------- Create the second box --------- //
+
+    // Create a box and a corresponding rigid in the physics world
+    mBox2 = new Box(true, Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox2->getRigidBody()->setAngularDamping(angularDamping);
+    mBox2->getRigidBody()->setLinearDamping(linearDamping);
+
+    // Set the box color
+    mBox2->setColor(mObjectColorDemo);
+    mBox2->setSleepingColor(mSleepingColorDemo);
+
+    // Change the material properties of the rigid body
+    rp3d::Material& material2 = mBox2->getCollider()->getMaterial();
+    material2.setBounciness(rp3d::decimal(0.0));
+    material2.setMassDensity(rp3d::decimal(0.7));
+    mBox2->getRigidBody()->updateMassPropertiesFromColliders();
+
+    mPhysicsObjects.push_back(mBox2);
+
+    // ---------- Create plank box --------- //
+
+    // Create a box and a corresponding rigid in the physics world
+    mPlank = new Box(true, Vector3(10, 2, 15), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mPlank->getRigidBody()->setType(rp3d::BodyType::STATIC);
+
+    // Set the box color
+    mPlank->setColor(mObjectColorDemo);
+    mPlank->setSleepingColor(mSleepingColorDemo);
+
+    // Change the material properties of the rigid body
+    rp3d::Material& material3 = mPlank->getCollider()->getMaterial();
+    material3.setBounciness(rp3d::decimal(0.5));
+
+    mPhysicsObjects.push_back(mPlank);
 
     // Initialize the bodies positions
-    initializeBodiesPositions();
+    initBodiesPositions();
 
-    nbIterations = 0;
+    // Create the Ball-and-Socket joints
+    createJoints();
+}
+
+// Move the first rope to an horizontal position
+void RopeScene::moveFirstRopeToHorizontalPosition() {
 
     // ---------- Move the first rope in a horizontal position ---------- //
 
@@ -304,6 +268,39 @@ void RopeScene::reset() {
     rp3d::Vector3 box1Position(-5 - (NB_CAPSULES_PER_ROPE + 0.5) * CAPSULE_HEIGHT - BOX_SIZE * 0.5, 15 - CAPSULE_HEIGHT, 0);
     const rp3d::Transform box1Transform(box1Position, initOrientation);
     mBox1->setTransform(box1Transform);
+}
+
+// Destroy the physics world
+void RopeScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        // Destroy all the physics objects of the scene
+        for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+
+            // Destroy the object
+            delete (*it);
+        }
+
+        mBallAndSocketJoints.clear();
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
+
+// Reset the scene
+void RopeScene::reset() {
+
+    SceneDemo::reset();
+
+    nbIterations = 0;
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
+    moveFirstRopeToHorizontalPosition();
 }
 
 /// Update the physics world (take a simulation step)

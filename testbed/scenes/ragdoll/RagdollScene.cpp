@@ -41,11 +41,7 @@ RagdollScene::RagdollScene(const std::string& name, EngineSettings& settings)
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
-    // Gravity vector in the physics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
-
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
+    mWorldSettings.worldName = name;
 
     // Logger
     rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
@@ -53,11 +49,23 @@ RagdollScene::RagdollScene(const std::string& name, EngineSettings& settings)
             static_cast<uint>(rp3d::Logger::Level::Error);
     defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
     mPhysicsCommon.setLogger(defaultLogger);
+}
+
+// Destructor
+RagdollScene::~RagdollScene() {
+
+    destroyPhysicsWorld();
+}
+
+// Create the physics world
+void RagdollScene::createPhysicsWorld() {
+
+    // Gravity vector in the physics world
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
     // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
-    physicsWorld->setEventListener(this);
-    mPhysicsWorld = physicsWorld;
+    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    mPhysicsWorld->setEventListener(this);
 
     // Create the ragdoll
     createRagdolls();
@@ -100,74 +108,10 @@ RagdollScene::RagdollScene(const std::string& name, EngineSettings& settings)
     mInclinedPlaneBox->setSleepingColor(mFloorColorDemo);
     mInclinedPlaneBox->getRigidBody()->setType(rp3d::BodyType::STATIC);
     mPhysicsObjects.push_back(mInclinedPlaneBox);
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
-// Destructor
-RagdollScene::~RagdollScene() {
-
-    // For each ragdoll
-    for (int i=0; i < NB_RAGDOLLS; i++) {
-
-        // Destroy the joints
-        mPhysicsWorld->destroyJoint(mHeadTorsoJoint[i]);
-        mPhysicsWorld->destroyJoint(mTorsoLeftUpperArmJoint[i]);
-        mPhysicsWorld->destroyJoint(mLeftUpperLeftLowerArmJoint[i]);
-        mPhysicsWorld->destroyJoint(mTorsoLeftUpperLegJoint[i]);
-        mPhysicsWorld->destroyJoint(mLeftUpperLeftLowerLegJoint[i]);
-        mPhysicsWorld->destroyJoint(mTorsoRightUpperArmJoint[i]);
-        mPhysicsWorld->destroyJoint(mRightUpperRightLowerArmJoint[i]);
-        mPhysicsWorld->destroyJoint(mTorsoRightUpperLegJoint[i]);
-        mPhysicsWorld->destroyJoint(mRightUpperRightLowerLegJoint[i]);
-
-        // Destroy all the rigid bodies of the scene
-        mPhysicsWorld->destroyRigidBody(mHeadBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mTorsoBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mLeftUpperArmBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mLeftLowerArmBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mLeftUpperLegBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mLeftLowerLegBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mRightUpperArmBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mRightLowerArmBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mRightUpperLegBox[i]->getRigidBody());
-        mPhysicsWorld->destroyRigidBody(mRightLowerLegBox[i]->getRigidBody());
-
-        delete mHeadBox[i];
-        delete mTorsoBox[i];
-        delete mLeftUpperArmBox[i];
-        delete mLeftLowerArmBox[i];
-        delete mLeftUpperLegBox[i];
-        delete mLeftLowerLegBox[i];
-        delete mRightUpperArmBox[i];
-        delete mRightLowerArmBox[i];
-        delete mRightUpperLegBox[i];
-        delete mRightLowerLegBox[i];
-    }
-
-    mPhysicsWorld->destroyRigidBody(mFloor1->getRigidBody());
-    mPhysicsWorld->destroyRigidBody(mFloor2->getRigidBody());
-
-    delete mFloor1;
-    delete mFloor2;
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
-}
-
-// Reset the scene
-void RagdollScene::reset() {
-
-    SceneDemo::reset();
+// Initialize the bodies positions
+void RagdollScene::initBodiesPositions() {
 
     // For each ragdoll
     for (int i=0; i < NB_RAGDOLLS; i++) {
@@ -183,6 +127,45 @@ void RagdollScene::reset() {
         mRightUpperLegBox[i]->setTransform(rp3d::Transform(mRightUpperLegPos[i], rp3d::Quaternion::identity()));
         mRightLowerLegBox[i]->setTransform(rp3d::Transform(mRightLowerLegPos[i], rp3d::Quaternion::identity()));
     }
+}
+
+// Destroy the physics world
+void RagdollScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        // For each ragdoll
+        for (int i=0; i < NB_RAGDOLLS; i++) {
+
+            delete mHeadBox[i];
+            delete mTorsoBox[i];
+            delete mLeftUpperArmBox[i];
+            delete mLeftLowerArmBox[i];
+            delete mLeftUpperLegBox[i];
+            delete mLeftLowerLegBox[i];
+            delete mRightUpperArmBox[i];
+            delete mRightLowerArmBox[i];
+            delete mRightUpperLegBox[i];
+            delete mRightLowerLegBox[i];
+        }
+
+        delete mFloor1;
+        delete mFloor2;
+
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
+// Reset the scene
+void RagdollScene::reset() {
+
+    SceneDemo::reset();
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }
 
 // Create the boxes and joints for the ragdoll

@@ -42,6 +42,8 @@ class ConcaveMesh : public PhysicsObject {
         rp3d::ConcaveMeshShape* mConcaveShape;
         rp3d::Collider* mCollider;
 
+        rp3d::PhysicsWorld* mPhysicsWorld;
+
         /// Scaling matrix
         openglframework::Matrix4 mScalingMatrix;
 

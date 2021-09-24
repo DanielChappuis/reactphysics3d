@@ -41,11 +41,7 @@ HingeJointScene::HingeJointScene(const std::string& name, EngineSettings& settin
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
-    // Gravity vector in the physics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
-
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
+    mWorldSettings.worldName = name;
 
     // Logger
     rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
@@ -53,51 +49,57 @@ HingeJointScene::HingeJointScene(const std::string& name, EngineSettings& settin
             static_cast<uint>(rp3d::Logger::Level::Error);
     defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
     mPhysicsCommon.setLogger(defaultLogger);
-
-    // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
-    physicsWorld->setEventListener(this);
-    mPhysicsWorld = physicsWorld;
-
-    // Create the Hinge joint
-    createHingeJoint();
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
 // Destructor
 HingeJointScene::~HingeJointScene() {
 
-    // Destroy the joints
-    mPhysicsWorld->destroyJoint(mJoint);
-
-    // Destroy all the rigid bodies of the scene
-    mPhysicsWorld->destroyRigidBody(mBox1->getRigidBody());
-    mPhysicsWorld->destroyRigidBody(mBox2->getRigidBody());
-
-    delete mBox1;
-    delete mBox2;
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+    destroyPhysicsWorld();
 }
 
+// Create the physics world
+void HingeJointScene::createPhysicsWorld() {
+
+    // Gravity vector in the physics world
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
+
+    // Create the physics world for the physics simulation
+    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    mPhysicsWorld->setEventListener(this);
+
+    // Create the Hinge joint
+    createHingeJoint();
+}
+
+// Initialize the bodies positions
+void HingeJointScene::initBodiesPositions() {
+
+    mBox1->setTransform(rp3d::Transform(rp3d::Vector3(0, 4, 0), rp3d::Quaternion::identity()));
+    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(4, 4, 0), rp3d::Quaternion::identity()));
+}
+
+// Destroy the physics world
+void HingeJointScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        delete mBox1;
+        delete mBox2;
+
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
 // Reset the scene
 void HingeJointScene::reset() {
 
     SceneDemo::reset();
 
-    mBox1->setTransform(rp3d::Transform(rp3d::Vector3(0, 4, 0), rp3d::Quaternion::identity()));
-    mBox2->setTransform(rp3d::Transform(rp3d::Vector3(4, 4, 0), rp3d::Quaternion::identity()));
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }
 
 /// Create the hinge joint

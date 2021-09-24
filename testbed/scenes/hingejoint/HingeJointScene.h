@@ -57,6 +57,9 @@ class HingeJointScene : public SceneDemo {
         /// Hinge joint
         rp3d::HingeJoint* mJoint;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Create the boxes and joint for the Hinge joint example
@@ -74,6 +77,15 @@ class HingeJointScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

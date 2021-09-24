@@ -68,6 +68,9 @@ class RopeScene : public SceneDemo {
         int nbIterations;
         int nbTorqueIterations;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Create the joints
@@ -90,8 +93,17 @@ class RopeScene : public SceneDemo {
         /// Can be called several times per frame
         virtual void updatePhysics() override;
 
-        /// Initialize the positions of bodies
-        void initializeBodiesPositions();
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
+
+        /// Move the first rope to an horizontal position
+        void moveFirstRopeToHorizontalPosition();
 };
 
 }

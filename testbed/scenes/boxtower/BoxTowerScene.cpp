@@ -45,8 +45,7 @@ BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings)
     // Gravity vector in the physics world
     rp3d::Vector3 gravity(0, -9.81f, 0);
 
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
+    mWorldSettings.worldName = name;
 
     // Logger
     rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
@@ -54,11 +53,23 @@ BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings)
             static_cast<uint>(rp3d::Logger::Level::Error);
     defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
     mPhysicsCommon.setLogger(defaultLogger);
+}
+
+// Destructor
+BoxTowerScene::~BoxTowerScene() {
+
+    destroyPhysicsWorld();
+}
+
+// Create the physics world
+void BoxTowerScene::createPhysicsWorld() {
+
+    // Gravity vector in the physics world
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
     // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
-    physicsWorld->setEventListener(this);
-    mPhysicsWorld = physicsWorld;
+    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    mPhysicsWorld->setEventListener(this);
 
     // Create all the boxes of the scene
     for (int i=0; i<NB_BOXES; i++) {
@@ -76,13 +87,13 @@ BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings)
 
         // Add the sphere the list of boxes in the scene
         mBoxes.push_back(box);
-		mPhysicsObjects.push_back(box);
+        mPhysicsObjects.push_back(box);
     }
 
     // ---------- Create the floor ---------
 
     mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
-	mPhysicsObjects.push_back(mFloor);
+    mPhysicsObjects.push_back(mFloor);
 
     // Set the box color
     mFloor->setColor(mFloorColorDemo);
@@ -94,40 +105,10 @@ BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings)
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getCollider()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
-// Destructor
-BoxTowerScene::~BoxTowerScene() {
-
-    // Destroy all the physics objects of the scene
-    for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the physics world
-        mPhysicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the object
-        delete (*it);
-    }
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(static_cast<rp3d::PhysicsWorld*>(mPhysicsWorld));
-}
-
-/// Reset the scene
-void BoxTowerScene::reset() {
-
-    SceneDemo::reset();
+// Initialize the bodies positions
+void BoxTowerScene::initBodiesPositions() {
 
     float distFromCenter = 4.0f;
 
@@ -157,4 +138,39 @@ void BoxTowerScene::reset() {
     // ---------- Create the triangular mesh ---------- //
 
     mFloor->setTransform(rp3d::Transform::identity());
+}
+
+// Destroy the physics world
+void BoxTowerScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        // Destroy all the physics objects of the scene
+        for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+
+            // Destroy the object
+            delete (*it);
+        }
+        mBoxes.clear();
+        mSpheres.clear();
+        mCapsules.clear();
+        mConvexMeshes.clear();
+        mDumbbells.clear();
+
+        mPhysicsObjects.clear();
+
+        // Destroy the physics world
+        mPhysicsCommon.destroyPhysicsWorld(static_cast<rp3d::PhysicsWorld*>(mPhysicsWorld));
+        mPhysicsWorld = nullptr;
+    }
+}
+
+/// Reset the scene
+void BoxTowerScene::reset() {
+
+    SceneDemo::reset();
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }

@@ -132,6 +132,9 @@ class RagdollScene : public SceneDemo {
         rp3d::Vector3 mRightUpperLegPos[NB_RAGDOLLS];
         rp3d::Vector3 mRightLowerLegPos[NB_RAGDOLLS];
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Create the bodies and joints for the ragdoll
@@ -149,6 +152,15 @@ class RagdollScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

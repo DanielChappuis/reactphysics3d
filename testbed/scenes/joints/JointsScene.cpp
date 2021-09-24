@@ -44,8 +44,7 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
     // Gravity vector in the physics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
 
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
+    mWorldSettings.worldName = name;
 
     // Logger
     rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
@@ -53,11 +52,33 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
             static_cast<uint>(rp3d::Logger::Level::Error);
     defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
     mPhysicsCommon.setLogger(defaultLogger);
+}
+
+// Destructor
+JointsScene::~JointsScene() {
+
+    destroyPhysicsWorld();
+}
+
+// Update the physics world (take a simulation step)
+void JointsScene::updatePhysics() {
+
+    // Update the motor speed of the Slider Joint (to move up and down)
+    double motorSpeed = 2.0 * std::cos(mEngineSettings.elapsedTime.count() * 1.5);
+    mSliderJoint->setMotorSpeed(rp3d::decimal(motorSpeed));
+
+    SceneDemo::updatePhysics();
+}
+
+// Create the physics world
+void JointsScene::createPhysicsWorld() {
+
+    // Gravity vector in the physics world
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
     // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
-    physicsWorld->setEventListener(this);
-    mPhysicsWorld = physicsWorld;
+    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    mPhysicsWorld->setEventListener(this);
 
     // Create the Ball-and-Socket joint
     createBallAndSocketJoints();
@@ -73,72 +94,10 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings)
 
     // Create the floor
     createFloor();
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
-// Destructor
-JointsScene::~JointsScene() {
-
-    // Destroy the joints
-    mPhysicsWorld->destroyJoint(mSliderJoint);
-    mPhysicsWorld->destroyJoint(mPropellerHingeJoint);
-    mPhysicsWorld->destroyJoint(mFixedJoint1);
-    mPhysicsWorld->destroyJoint(mFixedJoint2);
-    for (int i=0; i<NB_BALLSOCKETJOINT_BOXES-1; i++) {
-        mPhysicsWorld->destroyJoint(mBallAndSocketJoints[i]);
-    }
-
-    // Destroy all the rigid bodies of the scene
-    mPhysicsWorld->destroyRigidBody(mSliderJointBottomBox->getRigidBody());
-    mPhysicsWorld->destroyRigidBody(mSliderJointTopBox->getRigidBody());
-    mPhysicsWorld->destroyRigidBody(mPropellerBox->getRigidBody());
-    mPhysicsWorld->destroyRigidBody(mFixedJointBox1->getRigidBody());
-    mPhysicsWorld->destroyRigidBody(mFixedJointBox2->getRigidBody());
-    for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-        mPhysicsWorld->destroyRigidBody(mBallAndSocketJointChainBoxes[i]->getRigidBody());
-    }
-
-    delete mSliderJointBottomBox;
-    delete mSliderJointTopBox;
-    delete mPropellerBox;
-    delete mFixedJointBox1;
-    delete mFixedJointBox2;
-    for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
-        delete mBallAndSocketJointChainBoxes[i];
-    }
-
-    // Destroy the floor
-    mPhysicsWorld->destroyRigidBody(mFloor->getRigidBody());
-    delete mFloor;
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
-}
-
-// Update the physics world (take a simulation step)
-void JointsScene::updatePhysics() {
-
-    // Update the motor speed of the Slider Joint (to move up and down)
-    double motorSpeed = 2.0 * std::cos(mEngineSettings.elapsedTime.count() * 1.5);
-    mSliderJoint->setMotorSpeed(rp3d::decimal(motorSpeed));
-
-    SceneDemo::updatePhysics();
-}
-
-// Reset the scene
-void JointsScene::reset() {
-
-    SceneDemo::reset();
+// Initialize the bodies positions
+void JointsScene::initBodiesPositions() {
 
     openglframework::Vector3 positionBox(0, 15, 5);
     openglframework::Vector3 boxDimension(1, 1, 1);
@@ -206,6 +165,39 @@ void JointsScene::reset() {
 
     // Create a box and a corresponding rigid in the physics world
     mFixedJointBox2->setTransform(transformFixedBox2);
+}
+
+// Destroy the physics world
+void JointsScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        delete mSliderJointBottomBox;
+        delete mSliderJointTopBox;
+        delete mPropellerBox;
+        delete mFixedJointBox1;
+        delete mFixedJointBox2;
+        for (int i=0; i<NB_BALLSOCKETJOINT_BOXES; i++) {
+            delete mBallAndSocketJointChainBoxes[i];
+        }
+
+        // Destroy the floor
+        delete mFloor;
+
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
+// Reset the scene
+void JointsScene::reset() {
+
+    SceneDemo::reset();
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }
 
 // Create the boxes and joints for the Ball-and-Socket joint example

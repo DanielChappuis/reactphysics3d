@@ -48,6 +48,8 @@ class Dumbbell : public PhysicsObject {
         rp3d::Collider* mColliderSphere1;
         rp3d::Collider* mColliderSphere2;
 
+        rp3d::PhysicsWorld* mPhysicsWorld;
+
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 

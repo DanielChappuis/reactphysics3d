@@ -29,7 +29,7 @@
 
 // Constructor
 HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
-           : PhysicsObject(physicsCommon), mVBOVertices(GL_ARRAY_BUFFER),
+           : PhysicsObject(physicsCommon), mPhysicsWorld(physicsWorld), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
@@ -83,6 +83,13 @@ HeightField::~HeightField() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
+    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
+    if (body != nullptr) {
+        mPhysicsWorld->destroyRigidBody(body);
+    }
+    else {
+        mPhysicsWorld->destroyCollisionBody(mBody);
+    }
     mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
 }
 

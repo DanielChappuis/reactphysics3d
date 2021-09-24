@@ -184,36 +184,14 @@ void CollisionDetectionScene::reset() {
 // Destructor
 CollisionDetectionScene::~CollisionDetectionScene() {
 
-    // Destroy the box rigid body from the physics world
-    //mPhysicsWorld->destroyCollisionBody(mBox->getCollisionBody());
-    //delete mBox;
-
-    // Destroy the spheres
-    mPhysicsWorld->destroyCollisionBody(mSphere1->getCollisionBody());
     delete mSphere1;
-
-    mPhysicsWorld->destroyCollisionBody(mSphere2->getCollisionBody());
     delete mSphere2;
-
-    mPhysicsWorld->destroyCollisionBody(mCapsule1->getCollisionBody());
     delete mCapsule1;
-
-    mPhysicsWorld->destroyCollisionBody(mCapsule2->getCollisionBody());
     delete mCapsule2;
-
-    mPhysicsWorld->destroyCollisionBody(mBox1->getCollisionBody());
     delete mBox1;
-
-    mPhysicsWorld->destroyCollisionBody(mBox2->getCollisionBody());
     delete mBox2;
-
-    mPhysicsWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
     delete mConvexMesh;
-
-    mPhysicsWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
     delete mConcaveMesh;
-
-    mPhysicsWorld->destroyCollisionBody(mHeightField->getCollisionBody());
     delete mHeightField;
 
     // Destroy the static data for the visual contact points

@@ -173,6 +173,10 @@ void TestbedApplication::createScenes() {
     PileScene* pileScene = new PileScene("Pile", mDefaultEngineSettings);
     mScenes.push_back(pileScene);
 
+    // Ball and Socket joint scene
+    BallAndSocketJointScene* ballAndSocketJointScene = new BallAndSocketJointScene("Ball and Socket joint", mDefaultEngineSettings);
+    mScenes.push_back(ballAndSocketJointScene);
+
     // Box Tower scene
     BoxTowerScene* boxTowerScene = new BoxTowerScene("Box Tower", mDefaultEngineSettings);
     mScenes.push_back(boxTowerScene);
@@ -196,10 +200,6 @@ void TestbedApplication::createScenes() {
     // Fixed joint scene
     FixedJointScene* fixedJointScene = new FixedJointScene("Fixed joint", mDefaultEngineSettings);
     mScenes.push_back(fixedJointScene);
-
-    // Ball and Socket joint scene
-    BallAndSocketJointScene* ballAndSocketJointScene = new BallAndSocketJointScene("Ball and Socket joint", mDefaultEngineSettings);
-    mScenes.push_back(ballAndSocketJointScene);
 
     // Hinge joint scene
     HingeJointScene* hingeJointScene = new HingeJointScene("Hinge joint", mDefaultEngineSettings);
@@ -359,6 +359,8 @@ void TestbedApplication::switchScene(Scene* newScene) {
     if (newScene == mCurrentScene) return;
 
     mCurrentScene = newScene;
+
+    mTimer.reset();
 
     // Reset the scene
     mCurrentScene->reset();

@@ -83,6 +83,7 @@ struct EngineSettings {
            defaultSettings.sleepLinearVelocity = worldSettings.defaultSleepLinearVelocity;
            defaultSettings.sleepAngularVelocity = worldSettings.defaultSleepAngularVelocity;
            defaultSettings.isGravityEnabled = true;
+           defaultSettings.gravity = openglframework::Vector3(0, -9.81, 0);
 
            return defaultSettings;
        }
@@ -274,6 +275,7 @@ inline void Scene::reshape(int width, int height) {
 
 // Reset the scene
 inline void Scene::reset() {
+    mEngineSettings.elapsedTime = std::chrono::milliseconds::zero();
     mSnapshotsContactPoints.clear();
 }
 

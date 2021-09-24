@@ -212,42 +212,12 @@ void RaycastScene::reset() {
 // Destructor
 RaycastScene::~RaycastScene() {
 
-    // Destroy the box rigid body from the physics world
-    mPhysicsWorld->destroyCollisionBody(mBox->getCollisionBody());
     delete mBox;
-
-    // Destroy the sphere
-    mPhysicsWorld->destroyCollisionBody(mSphere->getCollisionBody());
     delete mSphere;
-
-    // Destroy the corresponding rigid body from the physics world
-    mPhysicsWorld->destroyCollisionBody(mCapsule->getCollisionBody());
-
-    // Destroy the sphere
     delete mCapsule;
-
-    // Destroy the corresponding rigid body from the physics world
-    mPhysicsWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
-
-    // Destroy the convex mesh
     delete mConvexMesh;
-
-    // Destroy the corresponding rigid body from the physics world
-    mPhysicsWorld->destroyCollisionBody(mDumbbell->getCollisionBody());
-
-    // Destroy the dumbbell
     delete mDumbbell;
-
-    // Destroy the corresponding rigid body from the physics world
-    mPhysicsWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
-
-    // Destroy the convex mesh
     delete mConcaveMesh;
-
-    // Destroy the corresponding rigid body from the physics world
-    mPhysicsWorld->destroyCollisionBody(mHeightField->getCollisionBody());
-
-    // Destroy the convex mesh
     delete mHeightField;
 
     mRaycastManager.resetPoints();
