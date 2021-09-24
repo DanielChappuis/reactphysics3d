@@ -21,6 +21,7 @@ do not hesitate to take a look at the user manual.
  - Method RigidBody::applyLocalTorque() to apply a local-space torque to a rigid body
  - Method RigidBody::getForce() to get the total manually applied force on a rigid body
  - Method RigidBody::getTorque() to get the total manually applied torque on a rigid body
+ - Method RigidBody::setIsSleeping() is now public in order to wake up or put to sleep a rigid body
  - A cone limit can now be set to the ball-and-socket joint (this is useful for ragdolls)
  - Bridge scene has been added to the testbed application
  - Ragdoll scene has been added to the testbed application

@@ -53,9 +53,6 @@ class RigidBody : public CollisionBody {
 
         // -------------------- Methods -------------------- //
 
-        /// Set the variable to know whether or not the body is sleeping
-        void setIsSleeping(bool isSleeping);
-
         /// Update whether the current overlapping pairs where this body is involed are active or not
         void resetOverlappingPairs();
 
@@ -140,6 +137,9 @@ class RigidBody : public CollisionBody {
 
         /// Set the variable to know if the gravity is applied to this rigid body
         void enableGravity(bool isEnabled);
+
+        /// Set the variable to know whether or not the body is sleeping
+        void setIsSleeping(bool isSleeping);
 
         /// Return the linear velocity damping factor
         decimal getLinearDamping() const;
