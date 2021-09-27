@@ -2269,6 +2269,16 @@ debugRenderer.setIsDebugItemDisplayed(DebugRenderer::DebugItem::CONTACT_NORMAL, 
     are defined in world-space coordinates of the physics world.
   \end{sloppypar}
 
+    \section{Determinism}
+    \label{sec:determinism}
+
+    Sometimes, it is important that the simulation of a physics world behaves exactly the same each time we run it. Because of the differences in
+    compilers and computer hardware it is quite difficult to achieve this between different machines. However, ReactPhysics3D should be deterministic when
+    compiled with the same compiler and running on the same machine. In order to obtain two similar runs of the simulation of a physics world, it is
+    adviced to completely destroy and recreate the physics world, the bodies and the joints inside it (in order to reset all the internal data cached
+    for the simulation). You must also create the bodies and joints in the same order each time and make sure that all the calls to the methods
+    of your physics world, bodies and joints happen in the same order.
+
    \section{API Reference Documentation}
 
    ReactPhysics3D contains Doxygen documentation for its API. \\
