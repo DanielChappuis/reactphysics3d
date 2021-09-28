@@ -231,7 +231,7 @@ class TestSet : public Test {
             set3.add(3);
             rp3d_test(set3.size() == 3);
             auto it = set3.begin();
-            set3.remove(it++);
+            it = set3.remove(it);
             rp3d_test(!set3.contains(1));
             rp3d_test(set3.size() == 2);
             rp3d_test(*it == 2);
