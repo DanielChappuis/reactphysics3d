@@ -107,7 +107,7 @@ class Map {
 
         /// Class Iterator
         /**
-         * This class represents an iterator for the Map
+         * This class represents an iterator for the Map.
          */
         class Iterator {
 
@@ -177,13 +177,13 @@ class Map {
                     return &(mMap->mEntries[mCurrentEntryIndex]);
                 }
 
-                /// Post increment (it++)
+                /// Pre increment (++it)
                 Iterator& operator++() {
                     advance();
                     return *this;
                 }
 
-                /// Pre increment (++it)
+                /// Post increment (it++)
                 Iterator operator++(int) {
                     Iterator tmp = *this;
                     advance();

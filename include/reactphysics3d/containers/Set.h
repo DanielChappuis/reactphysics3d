@@ -176,13 +176,13 @@ class Set {
                     return &(mSet->mEntries[mCurrentEntryIndex]);
                 }
 
-                /// Post increment (it++)
+                /// Pre increment (++it)
                 Iterator& operator++() {
                     advance();
                     return *this;
                 }
 
-                /// Pre increment (++it)
+                /// Post increment (it++)
                 Iterator operator++(int) {
                     Iterator tmp = *this;
                     advance();
