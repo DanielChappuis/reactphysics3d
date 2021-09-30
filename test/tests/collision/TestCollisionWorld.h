@@ -2456,10 +2456,7 @@ class TestCollisionWorld : public Test {
             // Get collision data
             const CollisionData* collisionData = mCollisionCallback.getCollisionData(mBoxCollider1, mConcaveMeshCollider);
             rp3d_test(collisionData != nullptr);
-            auto test = collisionData->getNbContactPairs();
             rp3d_test(collisionData->getNbContactPairs() == 1);
-            auto test1 = collisionData->getTotalNbContactPoints();
-
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
 
             for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
