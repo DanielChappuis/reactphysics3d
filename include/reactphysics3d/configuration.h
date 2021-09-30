@@ -124,7 +124,10 @@ constexpr uint8 NB_MAX_CONTACT_MANIFOLDS = 3;
 constexpr uint8 NB_MAX_POTENTIAL_CONTACT_MANIFOLDS = 4 * NB_MAX_CONTACT_MANIFOLDS;
 
 /// Maximum number of contact points in potential contact manifold
-constexpr uint8 NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD = 16;
+constexpr uint16 NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD = 256;
+
+/// Distance threshold to consider that two contact points in a manifold are the same
+constexpr decimal SAME_CONTACT_POINT_DISTANCE_THRESHOLD = decimal(0.01);
 
 /// Current version of ReactPhysics3D
 const std::string RP3D_VERSION = std::string("0.8.0");

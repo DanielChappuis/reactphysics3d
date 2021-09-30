@@ -291,6 +291,9 @@ class CollisionDetectionSystem {
         /// Remove an element in an array (and replace it by the last one in the array)
         void removeItemAtInArray(uint array[], uint8 index, uint8& arraySize) const;
 
+        /// Remove the duplicated contact points in a given contact manifold
+        void removeDuplicatedContactPointsInManifold(ContactManifoldInfo& manifold, const Array<ContactPointInfo>& potentialContactPoints) const;
+
     public :
 
         // -------------------- Methods -------------------- //

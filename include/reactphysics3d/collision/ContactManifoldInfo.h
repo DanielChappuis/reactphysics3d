@@ -49,7 +49,7 @@ struct ContactManifoldInfo {
         uint8 nbPotentialContactPoints;
 
         /// Indices of the contact points in the mPotentialContactPoints array
-        uint potentialContactPointsIndices[NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD];
+        uint32 potentialContactPointsIndices[NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD];
 
 
         /// Overlapping pair id

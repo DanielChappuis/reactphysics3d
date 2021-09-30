@@ -1359,6 +1359,9 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(Array<ContactPair
             }
 
             assert(manifold.nbPotentialContactPoints <= MAX_CONTACT_POINTS_IN_MANIFOLD);
+
+            // Remove the duplicated contact points in the manifold (if any)
+            removeDuplicatedContactPointsInManifold(manifold, potentialContactPoints);
         }
     }
 }
@@ -1573,6 +1576,37 @@ void CollisionDetectionSystem::removeItemAtInArray(uint array[], uint8 index, ui
     assert(arraySize > 0);
     array[index] = array[arraySize - 1];
     arraySize--;
+}
+
+// Remove the duplicated contact points in a given contact manifold
+void CollisionDetectionSystem::removeDuplicatedContactPointsInManifold(ContactManifoldInfo& manifold,
+                                                                       const Array<ContactPointInfo>& potentialContactPoints) const {
+
+    RP3D_PROFILE("CollisionDetectionSystem::removeDuplicatedContactPointsInManifold()", mProfiler);
+
+    const decimal distThresholdSqr = SAME_CONTACT_POINT_DISTANCE_THRESHOLD * SAME_CONTACT_POINT_DISTANCE_THRESHOLD;
+
+    // For each contact point of the manifold
+    for (uint32 i=0; i < manifold.nbPotentialContactPoints; i++) {
+        for (uint32 j=i+1; j < manifold.nbPotentialContactPoints; j++) {
+
+            const ContactPointInfo& point1 = potentialContactPoints[manifold.potentialContactPointsIndices[i]];
+            const ContactPointInfo& point2 = potentialContactPoints[manifold.potentialContactPointsIndices[j]];
+
+            // Compute the distance between the two contact points
+            const decimal distSqr = (point2.localPoint1 - point1.localPoint1).lengthSquare();
+
+            // We have a found a duplicated contact point
+            if (distSqr < distThresholdSqr) {
+
+                // Remove the duplicated contact point
+                manifold.potentialContactPointsIndices[j] = manifold.potentialContactPointsIndices[manifold.nbPotentialContactPoints-1];
+                manifold.nbPotentialContactPoints--;
+
+                j--;
+            }
+        }
+    }
 }
 
 // Report contacts and triggers
