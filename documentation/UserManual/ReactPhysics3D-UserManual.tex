@@ -2185,21 +2185,27 @@ class YourEventListener : public EventListener {
     \section{Logger}
     \label{sec:logger}
 
-    ReactPhysics3D has an internal logger that can be used to get logs while running the application. This can be useful for debugging for instance. \\
+    ReactPhysics3D has an internal logger that can be used to get logs from the library while the application is running. This can be useful for
+    debugging for instance. \\
 
     The logger is part of the \texttt{PhysicsCommon} class. By default there is no logger set. If you want to create your custom logger to receive logs
     from ReactPhysics3D, you can inherit the \texttt{Logger} class and override the \texttt{Logger::log()} method. Then, you have to use the
     \texttt{PhysicsCommon::setLogger()} method to set the logger. \\
 
+    Getting the logs is the way for you to see the errors reported by the library and therefore, you should not just ignore the errors from the logs.
+    You should at least redirect the logs (warnings and errors) in the standard output while debugging your application as described in the example
+    below. \\
+
     \begin{sloppypar}
     If you don't want to create your custom logger class, you can use the default logger of ReactPhysics3D (class \texttt{DefaultLogger}). With this
     logger, you can output the logs into
-    a file or a std::stream. The logs can have different format like raw text of HTML. In order to create a default logger, you need to call the
-    \texttt{PhysicsCommon::createDefaultLogger()} method. Then, you can customize this default logger and finally, you need to set this logger using the
+    a file or a std::stream. The logs can have different format like raw text of HTML. In order to instantiate the default logger, you need to call the
+    \texttt{PhysicsCommon::createDefaultLogger()} method. Then, you can customize this logger and finally, you need to set this logger using the
     \texttt{PhysicsCommon::setLogger()} method. \\
     \end{sloppypar}
 
-    The following code shows how to create a default logger that will output logs (warning and errors) in HTML into a file: \\
+    The following code shows how to create a default logger that will output logs (warning and errors) in HTML into a file and in raw text into
+    the standard output: \\
 
     \begin{lstlisting}
 // Create the default logger
@@ -2209,8 +2215,10 @@ DefaultLogger* logger = physicsCommon.createDefaultLogger();
 uint logLevel = static_cast<uint>(static_cast<uint>(Logger::Level::Warning) | static_cast<uint>(Logger::Level::Error);
 
 // Output the logs into an HTML file
-logger->addFileDestination("rp3d_log_" + name + ".html", logLevel,
-                           DefaultLogger::Format::HTML);
+logger->addFileDestination("rp3d_log_" + name + ".html", logLevel, DefaultLogger::Format::HTML);
+
+// Output the logs into the standard output
+logger->addStreamDestination(std::cout, logLevel, DefaultLogger::Format::Text);
 
 // Set the logger
 physicsCommon.setLogger(logger);
