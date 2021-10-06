@@ -364,14 +364,14 @@ class DefaultLogger : public Logger {
                         throw(std::runtime_error("ReactPhysics3D Logger: Unable to open an output stream to file " + mFilePath));
                     }
 
-                    // Writer the head
+                    // Write the header
                     mFileStream << formatter->getHeader() << std::endl;
                 }
 
                 /// Destructor
                 virtual ~FileDestination() override {
 
-                    // Writer the tail
+                    // Write the tail
                     mFileStream << formatter->getTail() << std::endl;
 
                     if (mFileStream.is_open()) {
@@ -386,7 +386,7 @@ class DefaultLogger : public Logger {
                                    const char* filename, int lineNumber) override {
 
                     if (static_cast<int>(level) <= static_cast<int>(maxLevelFlag)) {
-                        mFileStream << formatter->format(time, physicsWorldName, message, level, category, filename, lineNumber) << std::endl << std::flush;
+                        mFileStream << formatter->format(time, physicsWorldName, message, level, category, filename, lineNumber) << std::endl;
                     }
                 }
 
