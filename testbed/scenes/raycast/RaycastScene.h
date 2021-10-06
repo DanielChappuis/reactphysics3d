@@ -146,7 +146,7 @@ class RaycastScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastScene(const std::string& name, EngineSettings& settings);
+        RaycastScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~RaycastScene() override;

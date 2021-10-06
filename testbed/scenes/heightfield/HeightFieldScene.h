@@ -88,7 +88,7 @@ class HeightFieldScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HeightFieldScene(const std::string& name, EngineSettings& settings);
+        HeightFieldScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~HeightFieldScene() override;

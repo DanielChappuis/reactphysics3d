@@ -91,6 +91,8 @@ set(TESTBED_SOURCES
     src/SceneDemo.h
     src/SceneDemo.cpp
     src/Timer.h
+    src/TestbedLogger.h
+    src/TestbedLogger.cpp
 )
 
 # Common source files

@@ -32,6 +32,7 @@
 #include "Scene.h"
 #include "Timer.h"
 #include <GLFW/glfw3.h>
+#include "TestbedLogger.h"
 
 using namespace nanogui;
 
@@ -55,6 +56,9 @@ class TestbedApplication : public Screen {
 
         /// Timer
         Timer mTimer;
+
+        /// Physics common object
+        rp3d::PhysicsCommon mPhysicsCommon;
 
         /// List of 3D scenes
         std::vector<Scene*> mScenes;
@@ -126,6 +130,9 @@ class TestbedApplication : public Screen {
 
         /// True if the debug renderer is enabled
         bool mIsDebugRendererEnabled;
+
+        /// Logger
+        TestbedLogger mLogger;
 
         // -------------------- Methods -------------------- //
 

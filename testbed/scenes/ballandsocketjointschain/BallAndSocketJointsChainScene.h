@@ -65,7 +65,7 @@ class BallAndSocketJointsChainScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BallAndSocketJointsChainScene(const std::string& name, EngineSettings& settings);
+        BallAndSocketJointsChainScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~BallAndSocketJointsChainScene() override ;

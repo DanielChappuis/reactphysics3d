@@ -31,8 +31,8 @@ using namespace openglframework;
 using namespace trianglemeshscene;
 
 // Constructor
-ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& settings)
-      : SceneDemo(name, settings, true, SCENE_RADIUS) {
+ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+      : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     std::string meshFolderPath("meshes/");
 
@@ -43,13 +43,6 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     setScenePosition(center, SCENE_RADIUS);
 
     mWorldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
 }
 
 // Destructor

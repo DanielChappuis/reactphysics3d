@@ -31,8 +31,8 @@ using namespace openglframework;
 using namespace raycastscene;
 
 // Constructor
-RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
-       : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
+RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+       : SceneDemo(name, settings, physicsCommon, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
          mRaycastManager(mMeshFolderPath, mSnapshotsContactPoints), mCurrentBodyIndex(-1),
          mAreNormalsDisplayed(false), mVBOVertices(GL_ARRAY_BUFFER) {
 
@@ -44,13 +44,6 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings)
 
     rp3d::PhysicsWorld::WorldSettings worldSettings;
     worldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
 
     // Create the physics world for the physics simulation
     mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);

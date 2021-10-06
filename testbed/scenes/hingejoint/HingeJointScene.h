@@ -70,7 +70,7 @@ class HingeJointScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HingeJointScene(const std::string& name, EngineSettings& settings);
+        HingeJointScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~HingeJointScene() override ;

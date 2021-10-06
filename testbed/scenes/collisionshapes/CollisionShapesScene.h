@@ -89,7 +89,7 @@ class CollisionShapesScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShapesScene(const std::string& name, EngineSettings& settings);
+        CollisionShapesScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~CollisionShapesScene() override;

@@ -77,7 +77,7 @@ class BoxTowerScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BoxTowerScene(const std::string& name, EngineSettings& settings);
+        BoxTowerScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon &physicsCommon);
 
         /// Destructor
         virtual ~BoxTowerScene() override;

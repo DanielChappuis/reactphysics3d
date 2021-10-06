@@ -81,7 +81,7 @@ class RopeScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RopeScene(const std::string& name, EngineSettings& settings);
+        RopeScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~RopeScene() override ;

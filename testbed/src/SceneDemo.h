@@ -31,6 +31,7 @@
 #include "VisualContactPoint.h"
 #include <reactphysics3d/reactphysics3d.h>
 #include "PhysicsObject.h"
+#include "TestbedLogger.h"
 
 // Constants
 const int SHADOWMAP_WIDTH = 2048;
@@ -113,7 +114,7 @@ class SceneDemo : public Scene, rp3d::RaycastCallback {
 
         std::string mMeshFolderPath;
 
-        rp3d::PhysicsCommon mPhysicsCommon;
+        rp3d::PhysicsCommon& mPhysicsCommon;
 
 		std::vector<PhysicsObject*> mPhysicsObjects;
 
@@ -168,7 +169,7 @@ class SceneDemo : public Scene, rp3d::RaycastCallback {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SceneDemo(const std::string& name, EngineSettings& settings, bool isPhysicsWorldSimulated, float sceneRadius, bool isShadowMappingEnabled = true);
+        SceneDemo(const std::string& name, EngineSettings& settings, rp3d::PhysicsCommon& physicsCommon, bool isPhysicsWorldSimulated, bool isShadowMappingEnabled = true);
 
         /// Destructor
         virtual ~SceneDemo() override;

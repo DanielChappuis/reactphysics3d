@@ -23,71 +23,52 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef BALL_AND_SOCKET_JOINT_SCENE_H
-#define BALL_AND_SOCKET_JOINT_SCENE_H
+#ifndef TESTBED_LOGGER_H
+#define	TESTBED_LOGGER_H
 
 // Libraries
-#include "openglframework.h"
-#include <reactphysics3d/reactphysics3d.h>
-#include "Box.h"
-#include "SceneDemo.h"
+#include <reactphysics3d/utils/DefaultLogger.h>
+#include <unordered_map>
+#include <string>
 
-namespace ballandsocketjointscene {
+/// Class TestbedApplication
+class TestbedLogger : public reactphysics3d::Logger {
 
-// Constants
-const float SCENE_RADIUS = 30.0f;
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);    // Floor dimensions in meters
-const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-And-Socket chain boxes
-const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes
+    private:
 
-// Class BallAndSocketJointScene
-class BallAndSocketJointScene : public SceneDemo {
+        /// Map a log format to the given formatter object
+        std::unordered_map<reactphysics3d::DefaultLogger::Format, reactphysics3d::DefaultLogger::Formatter*> mFormatters;
 
-    protected :
+        /// Map the name of a world with the corresponding log destination
+        std::unordered_map<std::string, reactphysics3d::DefaultLogger::Destination*> mMapWorldToDestinations;
 
-        // -------------------- Attributes -------------------- //
+        reactphysics3d::DefaultLogger::StreamDestination* mStandardOutputDestination;
 
-        /// First box
-        Box* mBox1;
-
-        /// Second box
-        Box* mBox2;
-
-        /// Ball-And-Socket joint
-        rp3d::BallAndSocketJoint* mJoint;
-
-        /// World settings
-        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+        /// Mutex
+        std::mutex mMutex;
 
         // -------------------- Methods -------------------- //
 
-        /// Create the  Ball-and-Socket joint
-        void createBallAndSocketJoint();
+        /// Return the corresponding formatter
+        reactphysics3d::DefaultLogger::Formatter* getFormatter(reactphysics3d::DefaultLogger::Format format) const;
+
+        /// Add a stream destination to the logger
+        void addStreamDestination(std::ostream& outputStream, uint logLevelFlag, reactphysics3d::DefaultLogger::Format format);
 
     public:
 
-        // -------------------- Methods -------------------- //
-
         /// Constructor
-        BallAndSocketJointScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
+        TestbedLogger();
 
         /// Destructor
-        virtual ~BallAndSocketJointScene() override ;
+        ~TestbedLogger();
 
-        /// Reset the scene
-        virtual void reset() override;
+        /// Add a log file destination to the logger
+        void addFileDestination(const std::string& worldName, uint logLevelFlag, reactphysics3d::DefaultLogger::Format format);
 
-        /// Create the physics world
-        void createPhysicsWorld();
 
-        /// Destroy the physics world
-        void destroyPhysicsWorld();
-
-        /// Initialize the bodies positions
-        void initBodiesPositions();
+        /// Log something
+        virtual void log(Level level, const std::string& physicsWorldName, Category category, const std::string& message, const char* filename, int lineNumber) override;
 };
-
-}
 
 #endif

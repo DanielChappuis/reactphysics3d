@@ -87,7 +87,7 @@ class ConcaveMeshScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMeshScene(const std::string& name, EngineSettings& settings);
+        ConcaveMeshScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~ConcaveMeshScene() override;

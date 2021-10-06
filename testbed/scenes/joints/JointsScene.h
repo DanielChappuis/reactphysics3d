@@ -115,7 +115,7 @@ class JointsScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        JointsScene(const std::string& name, EngineSettings& settings);
+        JointsScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~JointsScene() override ;

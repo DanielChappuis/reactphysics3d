@@ -31,8 +31,8 @@ using namespace openglframework;
 using namespace boxtowerscene;
 
 // Constructor
-BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings)
-       : SceneDemo(name, settings, true, SCENE_RADIUS) {
+BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+       : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     std::string meshFolderPath("meshes/");
 
@@ -46,13 +46,6 @@ BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings)
     rp3d::Vector3 gravity(0, -9.81f, 0);
 
     mWorldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
 }
 
 // Destructor

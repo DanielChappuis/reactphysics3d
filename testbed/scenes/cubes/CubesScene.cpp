@@ -31,8 +31,8 @@ using namespace openglframework;
 using namespace cubesscene;
 
 // Constructor
-CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
-      : SceneDemo(name, settings, true, SCENE_RADIUS) {
+CubesScene::CubesScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+      : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     iter = 0;
 
@@ -43,13 +43,6 @@ CubesScene::CubesScene(const std::string& name, EngineSettings& settings)
     setScenePosition(center, SCENE_RADIUS);
 
     mWorldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
 }
 
 // Destructor

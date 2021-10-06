@@ -145,7 +145,7 @@ class RagdollScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RagdollScene(const std::string& name, EngineSettings& settings);
+        RagdollScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~RagdollScene() override ;

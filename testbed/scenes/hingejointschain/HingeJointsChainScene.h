@@ -65,7 +65,7 @@ class HingeJointsChainScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HingeJointsChainScene(const std::string& name, EngineSettings& settings);
+        HingeJointsChainScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~HingeJointsChainScene() override ;

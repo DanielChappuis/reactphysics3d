@@ -67,7 +67,7 @@ class SliderJointScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        SliderJointScene(const std::string& name, EngineSettings& settings);
+        SliderJointScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~SliderJointScene() override ;

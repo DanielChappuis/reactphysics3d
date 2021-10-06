@@ -65,7 +65,7 @@ class BallAndSocketJointsNetScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BallAndSocketJointsNetScene(const std::string& name, EngineSettings& settings);
+        BallAndSocketJointsNetScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~BallAndSocketJointsNetScene() override ;

@@ -105,6 +105,9 @@ TestbedApplication::~TestbedApplication() {
 // Initialize the viewer
 void TestbedApplication::init() {
 
+    // Logger
+    rp3d::PhysicsCommon::setLogger(&mLogger);
+
     // Create all the scenes
     createScenes();
 
@@ -137,85 +140,128 @@ void TestbedApplication::init() {
 // Create all the scenes
 void TestbedApplication::createScenes() {
 
+    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information);
+
     // Cubes scene
-    CubesScene* cubeScene = new CubesScene("Cubes", mDefaultEngineSettings);
+    std::string sceneName = "Cubes";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CubesScene* cubeScene = new CubesScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(cubeScene);
 
     // Cube Stack scene
-    CubeStackScene* cubeStackScene = new CubeStackScene("Cube Stack", mDefaultEngineSettings);
+    sceneName = "Cube Stack";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CubeStackScene* cubeStackScene = new CubeStackScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(cubeStackScene);
 
     // Joints scene
-    JointsScene* jointsScene = new JointsScene("Joints", mDefaultEngineSettings);
+    sceneName = "Joints";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    JointsScene* jointsScene = new JointsScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(jointsScene);
 
     // Collision shapes scene
-    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes", mDefaultEngineSettings);
+    sceneName = "Collision Shapes";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(collisionShapesScene);
 
     // Heightfield shape scene
-    HeightFieldScene* heightFieldScene = new HeightFieldScene("Heightfield", mDefaultEngineSettings);
+    sceneName = "Heightfield";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    HeightFieldScene* heightFieldScene = new HeightFieldScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(heightFieldScene);
 
     // Raycast scene
-    RaycastScene* raycastScene = new RaycastScene("Raycast", mDefaultEngineSettings);
+    sceneName = "Raycast";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    RaycastScene* raycastScene = new RaycastScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(raycastScene);
 
     // Collision Detection scene
-    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene("Collision Detection", mDefaultEngineSettings);
+    sceneName = "Collision Detection";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(collisionDetectionScene);
 
     // Concave Mesh scene
-    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh", mDefaultEngineSettings);
+    sceneName = "Concave Mesh";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(concaveMeshScene);
 
     // Pile scene
-    PileScene* pileScene = new PileScene("Pile", mDefaultEngineSettings);
+    sceneName = "Pile";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    PileScene* pileScene = new PileScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(pileScene);
 
     // Ball and Socket joint scene
-    BallAndSocketJointScene* ballAndSocketJointScene = new BallAndSocketJointScene("Ball and Socket joint", mDefaultEngineSettings);
+    sceneName = "Ball and Socket joint";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BallAndSocketJointScene* ballAndSocketJointScene = new BallAndSocketJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(ballAndSocketJointScene);
 
     // Box Tower scene
-    BoxTowerScene* boxTowerScene = new BoxTowerScene("Box Tower", mDefaultEngineSettings);
+    sceneName = "Box Tower";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BoxTowerScene* boxTowerScene = new BoxTowerScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(boxTowerScene);
 
     // Ball and Socket joints Net scene
-    BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene("BallAndSocket Joints Net", mDefaultEngineSettings);
+    sceneName = "BallAndSocket Joints Net";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(ballAndSocketJointsNetScene);
 
     // Ball and Socket joints chain scene
-    BallAndSocketJointsChainScene* ballAndSocketJointsChainScene = new BallAndSocketJointsChainScene("BallAndSocket Joints Chain", mDefaultEngineSettings);
+    sceneName = "BallAndSoket Joints Chain";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BallAndSocketJointsChainScene* ballAndSocketJointsChainScene = new BallAndSocketJointsChainScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(ballAndSocketJointsChainScene);
 
     // Hinge joints chain scene
-    HingeJointsChainScene* hingeJointsChainScene = new HingeJointsChainScene("Hinge Joints Chain", mDefaultEngineSettings);
+    sceneName = "Hinge Joints Chain";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    HingeJointsChainScene* hingeJointsChainScene = new HingeJointsChainScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(hingeJointsChainScene);
 
     // Bridge scene
-    BridgeScene* bridgeScene = new BridgeScene("Bridge", mDefaultEngineSettings);
+    sceneName = "Bridge";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BridgeScene* bridgeScene = new BridgeScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(bridgeScene);
 
     // Fixed joint scene
-    FixedJointScene* fixedJointScene = new FixedJointScene("Fixed joint", mDefaultEngineSettings);
+    sceneName = "Fixed joint";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    FixedJointScene* fixedJointScene = new FixedJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(fixedJointScene);
 
     // Hinge joint scene
-    HingeJointScene* hingeJointScene = new HingeJointScene("Hinge joint", mDefaultEngineSettings);
+    sceneName = "Hinge joint";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    HingeJointScene* hingeJointScene = new HingeJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(hingeJointScene);
 
     // Slider joint scene
-    SliderJointScene* sliderJointScene = new SliderJointScene("Slider joint", mDefaultEngineSettings);
+    sceneName = "Slider joint";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    SliderJointScene* sliderJointScene = new SliderJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(sliderJointScene);
 
     // Ragdoll scene
-    RagdollScene* ragdollScene = new RagdollScene("Ragdoll", mDefaultEngineSettings);
+    sceneName = "Ragdoll";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    RagdollScene* ragdollScene = new RagdollScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(ragdollScene);
 
     // Rope scene
-    RopeScene* ropeScene = new RopeScene("Rope", mDefaultEngineSettings);
+    sceneName = "Rope";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    RopeScene* ropeScene = new RopeScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(ropeScene);
+
     assert(mScenes.size() > 0);
 }
 

@@ -70,7 +70,7 @@ class FixedJointScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        FixedJointScene(const std::string& name, EngineSettings& settings);
+        FixedJointScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~FixedJointScene() override ;

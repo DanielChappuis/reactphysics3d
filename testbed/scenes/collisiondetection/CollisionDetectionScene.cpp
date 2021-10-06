@@ -33,8 +33,8 @@ using namespace openglframework;
 using namespace collisiondetectionscene;
 
 // Constructor
-CollisionDetectionScene::CollisionDetectionScene(const std::string& name, EngineSettings& settings)
-       : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
+CollisionDetectionScene::CollisionDetectionScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+       : SceneDemo(name, settings, physicsCommon, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
          mContactManager(mPhongShader, mMeshFolderPath, mSnapshotsContactPoints),
          mAreNormalsDisplayed(false) {
 
@@ -51,13 +51,6 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
 
     rp3d::PhysicsWorld::WorldSettings worldSettings;
     worldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
 
     // Create the physics world for the physics simulation
     mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);

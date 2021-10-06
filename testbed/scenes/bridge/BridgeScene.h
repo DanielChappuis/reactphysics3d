@@ -72,7 +72,7 @@ class BridgeScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        BridgeScene(const std::string& name, EngineSettings& settings);
+        BridgeScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~BridgeScene() override ;

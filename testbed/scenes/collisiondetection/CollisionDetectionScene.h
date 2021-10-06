@@ -121,7 +121,7 @@ class CollisionDetectionScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetectionScene(const std::string& name, EngineSettings& settings);
+        CollisionDetectionScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~CollisionDetectionScene() override;

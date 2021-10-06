@@ -89,7 +89,7 @@ class PileScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        PileScene(const std::string& name, EngineSettings& settings);
+        PileScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~PileScene() override;

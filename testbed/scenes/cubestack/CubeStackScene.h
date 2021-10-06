@@ -61,7 +61,7 @@ class CubeStackScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CubeStackScene(const std::string& name, EngineSettings& settings);
+        CubeStackScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~CubeStackScene() override;

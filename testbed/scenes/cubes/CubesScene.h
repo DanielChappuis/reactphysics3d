@@ -63,7 +63,7 @@ class CubesScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CubesScene(const std::string& name, EngineSettings& settings);
+        CubesScene(const std::string& name, EngineSettings& settings, rp3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~CubesScene() override;
