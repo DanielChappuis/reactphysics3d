@@ -232,9 +232,11 @@ class TestSet : public Test {
             rp3d_test(set3.size() == 3);
             auto it = set3.begin();
             it = set3.remove(it);
-            rp3d_test(!set3.contains(1));
             rp3d_test(set3.size() == 2);
-            rp3d_test(*it == 2);
+            it = set3.remove(it);
+            rp3d_test(set3.size() == 1);
+            it = set3.remove(it);
+            rp3d_test(set3.size() == 0);
 
             set3.add(6);
             set3.add(7);

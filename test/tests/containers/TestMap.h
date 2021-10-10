@@ -222,9 +222,11 @@ class TestMap : public Test {
             rp3d_test(map3.size() == 3);
             it = map3.begin();
             it = map3.remove(it);
-            rp3d_test(!map3.containsKey(1));
             rp3d_test(map3.size() == 2);
-            rp3d_test(it->second == 20);
+            it = map3.remove(it);
+            rp3d_test(map3.size() == 1);
+            it = map3.remove(it);
+            rp3d_test(map3.size() == 0);
 
             map3.add(Pair<int, int>(56, 32));
             map3.add(Pair<int, int>(23, 89));
