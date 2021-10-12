@@ -232,7 +232,7 @@ jobs:
         run: sudo cmake --install build/ 
 
       - name: Install Library on Windows
-        if: startsWith(matrix.config.name, 'Windows / MinGW')
+        if: startsWith(matrix.config.os, 'windows')
         shell: bash
         run: cmake --install build/ 
 
