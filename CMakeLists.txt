@@ -245,12 +245,6 @@ add_library(ReactPhysics3D::reactphysics3d ALIAS reactphysics3d)
 target_compile_features(reactphysics3d PUBLIC cxx_std_11)
 set_target_properties(reactphysics3d PROPERTIES CXX_EXTENSIONS OFF)
 
-# Compile with warning messages
-target_compile_options(reactphysics3d PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/W4>                                # for Visual Studio
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic>     # Other compilers
-)
-
 # Library headers
 target_include_directories(reactphysics3d PUBLIC
               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
