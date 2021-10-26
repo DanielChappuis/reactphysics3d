@@ -225,7 +225,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: cmake --build build/ --config ${{ matrix.config.build_type }} -DCMAKE_CXX_FLAGS="-Wall -Wextra -pedantic"
+        run: cmake --build build/ --config ${{ matrix.config.build_type }}
 
       - name: Install Library on Linux/MacOS
         if: ${{ !startsWith(matrix.config.os, 'windows') }}
