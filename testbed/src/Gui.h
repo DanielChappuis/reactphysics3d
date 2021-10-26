@@ -56,6 +56,11 @@ class Gui {
         // Pointer to the application
         TestbedApplication* mApp;
 
+        // Screen
+        Screen* mScreen;
+
+        GLFWwindow* mWindow;
+
         static double mScrollX, mScrollY;
 
         // Simulation panel
@@ -81,7 +86,11 @@ class Gui {
         TextBox* mTextboxSleepLinearVel;
         TextBox* mTextboxSleepAngularVel;
 
+        ToolButton* mButtonPause;
+        Widget* mPanelControls;
+
         std::vector<CheckBox*> mCheckboxesScenes;
+        ComboBox* mComboBoxScenes;
 
         // -------------------- Methods -------------------- //
 
@@ -124,18 +133,31 @@ class Gui {
         ~Gui();
 
         /// Initialize the GUI
-        void init();
+        void init(GLFWwindow* window);
 
         /// Update the GUI
         void update();
 
-        /// Display the GUI
-        void render();
+        void drawAll();
+
+        void draw();
+
+        void drawTearDown();
 
         /// Update the GUI values with the engine settings from the current scene
         void resetWithValuesFromCurrentScene();
 
         static void setScroll(double scrollX, double scrollY);
+
+        void onWindowResizeEvent(int width, int height);
+
+        void onMouseMotionEvent(double x, double y);
+
+        bool onScrollEvent(double x, double y);
+
+        void onMouseButtonEvent(int button, int action, int modifiers);
+
+        void onKeyboardEvent(int key, int scancode, int action, int modifiers);
 };
 
 inline void Gui::resetScroll() {

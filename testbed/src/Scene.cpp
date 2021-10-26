@@ -31,7 +31,8 @@ using namespace openglframework;
 
 // Constructor
 Scene::Scene(const std::string& name, EngineSettings& engineSettings, bool isShadowMappingEnabled)
-      : mName(name), mEngineSettings(engineSettings), mLastMouseX(0), mLastMouseY(0), mInterpolationFactor(0.0f), mViewportX(0), mViewportY(0),
+      : mName(name), mEngineSettings(engineSettings), mLastMouseX(0), mLastMouseY(0), mInterpolationFactor(0.0f),
+        mCurrentCameraVerticalAngle(0.0), mViewportX(0), mViewportY(0),
         mViewportWidth(0), mViewportHeight(0), mIsShadowMappingEnabled(isShadowMappingEnabled),
         mAreContactPointsDisplayed(true), mAreContactNormalsDisplayed(false), mAreBroadPhaseAABBsDisplayed(false),
         mAreCollidersAABBsDisplayed(false), mAreCollisionShapesDisplayed(false), mIsWireframeEnabled(false) {
@@ -97,10 +98,6 @@ bool Scene::mouseButtonEvent(int button, bool down, int mods, double mousePosX, 
     if (down) {
         mLastMouseX = mousePosX;
         mLastMouseY = mousePosY;
-        mIsLastPointOnSphereValid = mapMouseCoordinatesToSphere(mousePosX, mousePosY, mLastPointOnSphere);
-    }
-    else {  // If the mouse button is released
-        mIsLastPointOnSphereValid = false;
     }
 
     return true;
@@ -133,7 +130,6 @@ bool Scene::mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
     // Remember the mouse position
     mLastMouseX = xMouse;
     mLastMouseY = yMouse;
-    mIsLastPointOnSphereValid = mapMouseCoordinatesToSphere(xMouse, yMouse, mLastPointOnSphere);
 
     return true;
 }
@@ -165,23 +161,25 @@ void Scene::translate(int xMouse, int yMouse) {
 // Rotate the camera
 void Scene::rotate(int xMouse, int yMouse) {
 
-    if (mIsLastPointOnSphereValid) {
+    const double deltaXMouse = mLastMouseX - xMouse;
+    const double deltaYMouse = mLastMouseY - yMouse;
 
-        Vector3 newPoint3D;
-        bool isNewPointOK = mapMouseCoordinatesToSphere(xMouse, yMouse, newPoint3D);
+    double deltaHorizRotationAngle = deltaXMouse / mWindowWidth * MOUSE_CAMERA_ROTATION_SCALING_FACTOR * M_PI;
+    double deltaVertRotationAngle = deltaYMouse / mWindowHeight * MOUSE_CAMERA_ROTATION_SCALING_FACTOR * M_PI;
 
-        if (isNewPointOK) {
-            Vector3 axis = mLastPointOnSphere.cross(newPoint3D);
-            float cosAngle = mLastPointOnSphere.dot(newPoint3D);
+    const double newVerticalAngle = mCurrentCameraVerticalAngle + deltaVertRotationAngle;
 
-            float epsilon = std::numeric_limits<float>::epsilon();
-            if (std::abs(cosAngle) < 1.0f && axis.length() > epsilon) {
-                axis.normalize();
-                float angle = 2.0f * std::acos(cosAngle);
-
-                // Rotate the camera around the center of the scene
-                mCamera.rotateAroundLocalPoint(axis, -angle, mCenterScene);
-            }
-        }
+    // Limit Vertical angle
+    constexpr double piOver2 = M_PI * 0.5f;
+    if (newVerticalAngle > piOver2 || newVerticalAngle < -piOver2) {
+        deltaVertRotationAngle = 0;
     }
+
+    Vector3 localVertAxis = mCamera.getTransformMatrix().getUpperLeft3x3Matrix().getInverse() * Vector3(0, 1, 0);
+    mCamera.rotateAroundLocalPoint(Vector3(1, 0, 0), deltaVertRotationAngle, mCenterScene);
+    mCamera.rotateAroundLocalPoint(localVertAxis, deltaHorizRotationAngle, mCenterScene);
+
+    mCurrentCameraVerticalAngle += deltaVertRotationAngle;
+    std::cout << "Delta angle: " << deltaVertRotationAngle << std::endl;
+    std::cout << "Horizon angle: " << mCurrentCameraVerticalAngle << std::endl;
 }

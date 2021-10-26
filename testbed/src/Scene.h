@@ -95,6 +95,10 @@ class Scene : public rp3d::EventListener {
 
     protected:
 
+        // -------------------- Constants -------------------- //
+
+        static constexpr float MOUSE_CAMERA_ROTATION_SCALING_FACTOR = 1.0f;
+
         // -------------------- Attributes -------------------- //
 
         /// Scene name
@@ -118,11 +122,11 @@ class Scene : public rp3d::EventListener {
         /// Last point computed on a sphere (for camera rotation)
         openglframework::Vector3 mLastPointOnSphere;
 
-        /// True if the last point computed on a sphere (for camera rotation) is valid
-        bool mIsLastPointOnSphereValid;
-
         /// Interpolation factor for the bodies in the current frame
         float mInterpolationFactor;
+
+        /// Current camera vertical angle around the horizontal axis (in radians)
+        double mCurrentCameraVerticalAngle;
 
         /// Viewport x,y, width and height values
         int mViewportX, mViewportY, mViewportWidth, mViewportHeight;

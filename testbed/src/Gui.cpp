@@ -55,7 +55,12 @@ Gui::~Gui() {
 }
 
 /// Initialize the GUI
-void Gui::init() {
+void Gui::init(GLFWwindow* window) {
+
+    mWindow = window;
+
+    mScreen = new Screen();
+    mScreen->initialize(window, true);
 
     // Create the Simulation panel
     createSimulationPanel();
@@ -66,11 +71,30 @@ void Gui::init() {
     // Create the Profiling panel
     createProfilingPanel();
 
-    mApp->set_visible(true);
-    mApp->perform_layout();
+    mScreen->set_visible(true);
+    mScreen->perform_layout();
 
     mTimeSinceLastProfilingDisplay = glfwGetTime();
 }
+
+void Gui::drawAll() {
+    mScreen->clear();
+    mScreen->draw_all();
+}
+
+void Gui::draw() {
+
+  mScreen->draw_setup();
+  mScreen->clear();
+  mScreen->draw_contents();
+}
+
+void Gui::drawTearDown() {
+
+  mScreen->draw_widgets();
+  mScreen->draw_teardown();
+}
+
 
 // Update the GUI values with the engine settings from the current scene
 void Gui::resetWithValuesFromCurrentScene() {
@@ -126,7 +150,7 @@ void Gui::update() {
 
 void Gui::createSimulationPanel() {
 
-    mSimulationPanel = new Window(mApp, "Simulation");
+    mSimulationPanel = new Window(mScreen, "Simulation");
     mSimulationPanel->set_position(Vector2i(15, 15));
     mSimulationPanel->set_layout(new GroupLayout(10, 5, 10 , 20));
     //mSimulationPanel->setId("SimulationPanel");
@@ -164,17 +188,16 @@ void Gui::createSimulationPanel() {
         scenesNames.push_back(scenes[i]->getName().c_str());
     }
     new Label(mSimulationPanel, "Scene","sans-bold");
-    ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
-    comboBoxScenes->set_fixed_width(150);
-    comboBoxScenes->popup()->child_at(0)->set_fixed_height(800);
-    comboBoxScenes->set_callback([&, scenes](int index) {
+
+    mComboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
+    mComboBoxScenes->set_callback([&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });
 }
 
 void Gui::createSettingsPanel() {
 
-    mSettingsPanel = new Window(mApp, "Settings");
+    mSettingsPanel = new Window(mScreen, "Settings");
     mSettingsPanel->set_position(Vector2i(15, 180));
     mSettingsPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle, 10, 5));
     //mSettingsPanel->setId("SettingsPanel");
@@ -189,14 +212,14 @@ void Gui::createSettingsPanel() {
     buttonPhysics->set_change_callback([&](bool state) {
         mPhysicsPanel->set_visible(true);
         mRenderingPanel->set_visible(false);
-        mApp->perform_layout();
+        mScreen->perform_layout();
     });
     Button* buttonRendering = new Button(buttonsPanel, "Rendering");
     buttonRendering->set_flags(Button::RadioButton);
     buttonRendering->set_change_callback([&](bool state) {
         mRenderingPanel->set_visible(true);
         mPhysicsPanel->set_visible(false);
-        mApp->perform_layout();
+        mScreen->perform_layout();
     });
 
     // ---------- Physics Panel ----------
@@ -509,7 +532,7 @@ void Gui::createSettingsPanel() {
 
 void Gui::createProfilingPanel() {
 
-    Widget* profilingPanel = new Window(mApp, "Profiling");
+    Widget* profilingPanel = new Window(mScreen, "Profiling");
     profilingPanel->set_position(Vector2i(15, 525));
     profilingPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 10, 5));
     //profilingPanel->setId("SettingsPanel");
@@ -530,3 +553,33 @@ void Gui::createProfilingPanel() {
     profilingPanel->set_visible(true);
 }
 
+void Gui::onWindowResizeEvent(int width, int height) {
+    mScreen->resize_callback_event(width, height);
+}
+
+void Gui::onMouseMotionEvent(double x, double y) {
+    mScreen->cursor_pos_callback_event(x, y);
+}
+
+bool Gui::onScrollEvent(double x, double y) {
+
+    double xMouse, yMouse;
+    glfwGetCursorPos(mWindow, &xMouse, &yMouse);
+
+    // If the mouse cursor is over the scenes choice scrolling menu
+    const float pixelRatio = mScreen->pixel_ratio();
+    if (mComboBoxScenes->visible() && mComboBoxScenes->popup()->contains(Vector2i(xMouse, yMouse) / pixelRatio)) {
+        mScreen->scroll_callback_event(x, y);
+        return true;
+    }
+
+    return false;
+}
+
+void Gui::onMouseButtonEvent(int button, int action, int modifiers) {
+    mScreen->mouse_button_callback_event(button, action, modifiers);
+}
+
+void Gui::onKeyboardEvent(int key, int scancode, int action, int modifiers) {
+    mScreen->key_callback_event(key, scancode, action, modifiers);
+}
