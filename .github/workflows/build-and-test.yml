@@ -235,7 +235,7 @@ jobs:
             -DRP3D_CODE_COVERAGE_ENABLED=${{ matrix.config.coverage }} \
             -DCODE_COVERAGE_VERBOSE=True \
             -DRP3D_COMPILE_TESTS=True \
-            -DCMAKE_CXX_FLAGS=${{ matrix.config.cxx_flags }} \
+            -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
             -G "${{ matrix.config.generators }}" \
 
       - name: Build
