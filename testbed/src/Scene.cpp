@@ -24,6 +24,8 @@
 ********************************************************************************/
 
 // Libraries
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "Scene.h"
 #include <GLFW/glfw3.h>
 

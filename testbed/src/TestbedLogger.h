@@ -53,7 +53,7 @@ class TestbedLogger : public reactphysics3d::Logger {
         reactphysics3d::DefaultLogger::Formatter* getFormatter(reactphysics3d::DefaultLogger::Format format) const;
 
         /// Add a stream destination to the logger
-        void addStreamDestination(std::ostream& outputStream, uint logLevelFlag, reactphysics3d::DefaultLogger::Format format);
+        void addStreamDestination(std::ostream& outputStream, reactphysics3d::uint logLevelFlag, reactphysics3d::DefaultLogger::Format format);
 
     public:
 
@@ -64,7 +64,7 @@ class TestbedLogger : public reactphysics3d::Logger {
         ~TestbedLogger();
 
         /// Add a log file destination to the logger
-        void addFileDestination(const std::string& worldName, uint logLevelFlag, reactphysics3d::DefaultLogger::Format format);
+        void addFileDestination(const std::string& worldName, reactphysics3d::uint logLevelFlag, reactphysics3d::DefaultLogger::Format format);
 
 
         /// Log something
