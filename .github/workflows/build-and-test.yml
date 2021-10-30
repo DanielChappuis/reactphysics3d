@@ -262,7 +262,7 @@ jobs:
         shell: bash
         run: "./build/test/${{ matrix.config.build_type }}/tests.exe"
 
-      - name: Build and Run Hello World
+      - name: Build Hello World
         if: ${{ !matrix.config.coverage }}
         shell: bash
         env:
@@ -278,12 +278,11 @@ jobs:
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
             -G "${{ matrix.config.generators }}"
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
-          ./build_hello_world/helloworld
 
       - name: Run Hello World (Linux / MacOS / Windows MinGW)
         if: ${{ !startsWith(matrix.config.name, 'Windows / MSVC') }}
         shell: bash
-        run: "./build_hello_world/helloworld/helloworld"
+        run: "./build_hello_world/helloworld"
         
       - name: Run Hello World (Windows MSVC)
         if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
