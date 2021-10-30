@@ -287,7 +287,7 @@ jobs:
       - name: Run Hello World (Windows MSVC)
         if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
         shell: bash
-        run: "./build_hello_world/helloworld/${{ matrix.config.build_type }}/helloworld.exe"
+        run: "./build_hello_world/${{ matrix.config.build_type }}/helloworld.exe"
 
       - name: Memory Leaks Test
         if: ${{ startsWith(matrix.config.name, 'Linux / GCC (Debug, Single Precision)') }}
