@@ -280,7 +280,7 @@ jobs:
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
 
       - name: Run Hello World (Linux / MacOS / Windows MinGW)
-        if: ${{ !startsWith(matrix.config.name, 'Windows / MSVC') }} && ${{ !matrix.config.coverage }}
+        if: ${{ !startsWith(matrix.config.name, 'Windows / MSVC') && !matrix.config.coverage }}
         shell: bash
         run: "./build_hello_world/helloworld"
         
