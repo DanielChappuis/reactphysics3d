@@ -211,16 +211,23 @@ void HeightFieldShape::computeMinMaxGridCoordinates(int* minCoords, int* maxCoor
     minPoint += translateVec;
     maxPoint += translateVec;
 
+    assert(minPoint.x >= 0);
+    assert(minPoint.y >= 0);
+    assert(minPoint.z >= 0);
+    assert(maxPoint.x >= 0);
+    assert(maxPoint.y >= 0);
+    assert(maxPoint.z >= 0);
+
     // Convert the floating min/max coords of the AABB into closest integer
     // grid values (note that we use the closest grid coordinate that is out
     // of the AABB)
-    minCoords[0] = computeIntegerGridValue(minPoint.x) - 1;
-    minCoords[1] = computeIntegerGridValue(minPoint.y) - 1;
-    minCoords[2] = computeIntegerGridValue(minPoint.z) - 1;
+    minCoords[0] = static_cast<int>(minPoint.x + 0.5) - 1;
+    minCoords[1] = static_cast<int>(minPoint.y + 0.5) - 1;
+    minCoords[2] = static_cast<int>(minPoint.z + 0.5) - 1;
 
-    maxCoords[0] = computeIntegerGridValue(maxPoint.x) + 1;
-    maxCoords[1] = computeIntegerGridValue(maxPoint.y) + 1;
-    maxCoords[2] = computeIntegerGridValue(maxPoint.z) + 1;
+    maxCoords[0] = static_cast<int>(maxPoint.x + 0.5) + 1;
+    maxCoords[1] = static_cast<int>(maxPoint.y + 0.5) + 1;
+    maxCoords[2] = static_cast<int>(maxPoint.z + 0.5) + 1;
 }
 
 // Raycast method with feedback information

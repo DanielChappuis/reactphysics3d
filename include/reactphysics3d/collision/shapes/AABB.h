@@ -302,7 +302,7 @@ RP3D_FORCE_INLINE bool AABB::raycast(const Ray& ray, Vector3& hitPoint) const {
     decimal tMin = decimal(0.0);
     decimal tMax = DECIMAL_LARGEST;
 
-    const decimal epsilon = 0.00001;
+    const decimal epsilon = decimal(0.00001);
 
     const Vector3 rayDirection = ray.point2 - ray.point1;
 

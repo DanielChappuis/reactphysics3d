@@ -36,7 +36,7 @@ namespace reactphysics3d {
 // Declarations
 class CapsuleShape;
 class SphereShape;
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 struct NarrowPhaseInfoBatch;
 class ConvexPolyhedronShape;
 class MemoryAllocator;

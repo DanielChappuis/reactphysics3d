@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 struct NarrowPhaseInfoBatch;
 class ConvexShape;
 class Profiler;

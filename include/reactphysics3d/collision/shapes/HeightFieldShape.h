@@ -117,9 +117,6 @@ class HeightFieldShape : public ConcaveShape {
         void getTriangleVerticesWithIndexPointer(int32 subPart, int32 triangleIndex,
                                                  Vector3* outTriangleVertices) const;
 
-        /// Return the closest inside integer grid value of a given floating grid value
-        int computeIntegerGridValue(decimal value) const;
-
         /// Compute the min/max grid coords corresponding to the intersection of the AABB of the height field and the AABB to collide
         void computeMinMaxGridCoordinates(int* minCoords, int* maxCoords, const AABB& aabbToCollide) const;
 
@@ -200,16 +197,11 @@ RP3D_FORCE_INLINE decimal HeightFieldShape::getHeightAt(int x, int y) const {
     assert(y >= 0 && y < mNbRows);
 
     switch(mHeightDataType) {
-        case HeightDataType::HEIGHT_FLOAT_TYPE : return ((float*)mHeightFieldData)[y * mNbColumns + x];
-        case HeightDataType::HEIGHT_DOUBLE_TYPE : return ((double*)mHeightFieldData)[y * mNbColumns + x];
-        case HeightDataType::HEIGHT_INT_TYPE : return ((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale;
+        case HeightDataType::HEIGHT_FLOAT_TYPE : return decimal(((float*)mHeightFieldData)[y * mNbColumns + x]);
+        case HeightDataType::HEIGHT_DOUBLE_TYPE : return decimal(((double*)mHeightFieldData)[y * mNbColumns + x]);
+        case HeightDataType::HEIGHT_INT_TYPE : return decimal(((int*)mHeightFieldData)[y * mNbColumns + x] * mIntegerHeightScale);
         default: assert(false); return 0;
     }
-}
-
-// Return the closest inside integer grid value of a given floating grid value
-RP3D_FORCE_INLINE int HeightFieldShape::computeIntegerGridValue(decimal value) const {
-    return (value < decimal(0.0)) ? value - decimal(0.5) : value + decimal(0.5);
 }
 
 // Compute the shape Id for a given triangle
