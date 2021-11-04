@@ -50,6 +50,8 @@ SliderJoint::SliderJoint(Entity entity, PhysicsWorld& world, const SliderJointIn
     const Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
     const Transform& transform2 = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
 
+    const Transform transform2Inverse = transform2.getInverse();
+
     if (jointInfo.isUsingLocalSpaceAnchors) {
 
         anchorPointBody1Local = jointInfo.anchorPointBody1LocalSpace;
@@ -60,13 +62,12 @@ SliderJoint::SliderJoint(Entity entity, PhysicsWorld& world, const SliderJointIn
     else {
 
         // Compute the local-space anchor point for each body
-        anchorPointBody1Local = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
-        anchorPointBody2Local = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
+        const Transform transform1Inverse = transform1.getInverse();
+        anchorPointBody1Local = transform1Inverse * jointInfo.anchorPointWorldSpace;
+        anchorPointBody2Local = transform2Inverse * jointInfo.anchorPointWorldSpace;
 
         // Compute the slider axis in local-space of body 1
-        // TODO : Do not compute the inverse here, it has already been computed above
-        sliderLocalAxisBody1 = transform1.getOrientation().getInverse() *
-                           jointInfo.sliderAxisWorldSpace;
+        sliderLocalAxisBody1 = transform1Inverse.getOrientation() * jointInfo.sliderAxisWorldSpace;
         sliderLocalAxisBody1.normalize();
     }
 
@@ -86,8 +87,7 @@ SliderJoint::SliderJoint(Entity entity, PhysicsWorld& world, const SliderJointIn
 	// q20 = initial orientation of body 2
 	// q10 = initial orientation of body 1
 	// r0 = initial rotation rotation from body 1 to body 2
-    // TODO : Do not compute the inverse here, it has already been computed above
-    mWorld.mSliderJointsComponents.setInitOrientationDifferenceInv(mEntity, transform2.getOrientation().getInverse() * transform1.getOrientation());
+    mWorld.mSliderJointsComponents.setInitOrientationDifferenceInv(mEntity, transform2Inverse.getOrientation() * transform1.getOrientation());
 }
 
 // Enable/Disable the limits of the joint
