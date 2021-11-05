@@ -235,7 +235,6 @@ class TestMathematicsFunctions : public Test {
             clipSegmentVertices = clipSegmentWithPlanes(segmentVertices[0], segmentVertices[1], planesPoints, planesNormals, mAllocator);
             rp3d_test(clipSegmentVertices.size() == 0);
 
-            /* TODO : UNCOMMENT THIS
             // Test clipPolygonWithPlanes()
             Array<Vector3> polygonVertices(mAllocator);
             polygonVertices.add(Vector3(-4, 2, 0));
@@ -255,7 +254,12 @@ class TestMathematicsFunctions : public Test {
             polygonPlanesPoints.add(Vector3(10, 5, 0));
 
             Array<Vector3> clipPolygonVertices(mAllocator);
-            clipPolygonWithPlanes(polygonVertices, polygonPlanesPoints, polygonPlanesNormals, clipPolygonVertices, mAllocator);
+            for (int i=0; i < polygonPlanesPoints.size(); i++) {
+
+                clipPolygonVertices.clear();
+                clipPolygonWithPlane(polygonVertices, polygonPlanesPoints[i], polygonPlanesNormals[i], clipPolygonVertices);
+                polygonVertices = clipPolygonVertices;
+            }
             rp3d_test(clipPolygonVertices.size() == 4);
             rp3d_test(approxEqual(clipPolygonVertices[0].x, 0, 0.000001));
             rp3d_test(approxEqual(clipPolygonVertices[0].y, 2, 0.000001));
@@ -269,7 +273,6 @@ class TestMathematicsFunctions : public Test {
             rp3d_test(approxEqual(clipPolygonVertices[3].x, 0, 0.000001));
             rp3d_test(approxEqual(clipPolygonVertices[3].y, 4, 0.000001));
             rp3d_test(approxEqual(clipPolygonVertices[3].z, 0, 0.000001));
-            */
 
             // Test isPowerOfTwo()
             rp3d_test(!isPowerOfTwo(0));
