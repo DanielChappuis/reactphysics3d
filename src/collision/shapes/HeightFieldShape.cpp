@@ -262,8 +262,8 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
         switch(mUpAxis) {
             case 0 : stepI = rayDirection.y > 0 ? 1 : (rayDirection.y < 0 ? -1 : 0);
                      stepJ = rayDirection.z > 0 ? 1 : (rayDirection.z < 0 ? -1 : 0);
-                     nextI = stepI >= 0 ? i + 1 : i;
-                     nextJ = stepJ >= 0 ? j + 1 : j;
+                     nextI = static_cast<decimal>(stepI >= 0 ? i + 1 : i);
+                     nextJ = static_cast<decimal>(stepJ >= 0 ? j + 1 : j);
                      sizeI = aabbSize.y / nbCellsI;
                      sizeJ = aabbSize.z / nbCellsJ;
                      tMaxI = ((nextI * sizeI) - outHitGridPoint.y) / rayDirection.y;
@@ -273,8 +273,8 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
                      break;
             case 1 : stepI = rayDirection.x > 0 ? 1 : (rayDirection.x < 0 ? -1 : 0);
                      stepJ = rayDirection.z > 0 ? 1 : (rayDirection.z < 0 ? -1 : 0);
-                     nextI = stepI >= 0 ? i + 1 : i;
-                     nextJ = stepJ >= 0 ? j + 1 : j;
+                     nextI = static_cast<decimal>(stepI >= 0 ? i + 1 : i);
+                     nextJ = static_cast<decimal>(stepJ >= 0 ? j + 1 : j);
                      sizeI = aabbSize.x / nbCellsI;
                      sizeJ = aabbSize.z / nbCellsJ;
                      tMaxI = ((nextI * sizeI) - outHitGridPoint.x) / rayDirection.x;
@@ -284,8 +284,8 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
                      break;
             case 2 : stepI = rayDirection.x > 0 ? 1 : (rayDirection.x < 0 ? -1 : 0);
                      stepJ = rayDirection.y > 0 ? 1 : (rayDirection.y < 0 ? -1 : 0);
-                     nextI = stepI >= 0 ? i + 1 : i;
-                     nextJ = stepJ >= 0 ? j + 1 : j;
+                     nextI = static_cast<decimal>(stepI >= 0 ? i + 1 : i);
+                     nextJ = static_cast<decimal>(stepJ >= 0 ? j + 1 : j);
                      sizeI = aabbSize.x / nbCellsI;
                      sizeJ = aabbSize.y / nbCellsJ;
                      tMaxI = ((nextI * sizeI) - outHitGridPoint.x) / rayDirection.x;

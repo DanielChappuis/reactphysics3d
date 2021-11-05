@@ -276,7 +276,7 @@ class Map {
             uint32* newBuckets = static_cast<uint32*>(mAllocator.allocate(capacity * sizeof(uint32)));
 
             // Allocate memory for the entries
-            const uint32 nbAllocatedEntries = capacity * DEFAULT_LOAD_FACTOR;
+            const uint32 nbAllocatedEntries = static_cast<uint32>(capacity * DEFAULT_LOAD_FACTOR);
             assert(nbAllocatedEntries > 0);
             Pair<K, V>* newEntries = static_cast<Pair<K, V>*>(mAllocator.allocate(nbAllocatedEntries * sizeof(Pair<K, V>)));
             uint32* newNextEntries = static_cast<uint32*>(mAllocator.allocate(nbAllocatedEntries * sizeof(uint32)));
@@ -352,7 +352,7 @@ class Map {
         /// Returns true if the item has been inserted and false otherwise.
         bool add(const Pair<K,V>& keyValue, bool insertIfAlreadyPresent = false) {
 
-            uint32 bucket;
+            uint32 bucket = INVALID_INDEX;
 
             // Compute the hash code of the value
             const size_t hashCode = Hash()(keyValue.first);
@@ -389,7 +389,7 @@ class Map {
                 }
             }
 
-            size_t entryIndex;
+            uint32 entryIndex;
 
             // If there are no more free entries to use
             if (mFreeIndex == INVALID_INDEX) {
@@ -411,6 +411,7 @@ class Map {
 
             mNbEntries++;
 
+            assert(bucket != INVALID_INDEX);
             mNextEntries[entryIndex] = mBuckets[bucket];
             new (mEntries + entryIndex) Pair<K, V>(keyValue);
             mBuckets[bucket] = entryIndex;
@@ -543,7 +544,7 @@ class Map {
 
                const size_t hashCode = Hash()(key);
                const size_t divider = mHashSize - 1;
-               bucket = hashCode & divider;
+               bucket = static_cast<uint32>(hashCode & divider);
                auto keyEqual = KeyEqual();
 
                for (uint32 i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {

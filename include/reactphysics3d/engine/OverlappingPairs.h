@@ -399,10 +399,10 @@ RP3D_FORCE_INLINE void OverlappingPairs::setNeedToTestOverlap(uint64 pairId, boo
 
     auto it = mMapConvexPairIdToPairIndex.find(pairId);
     if (it != mMapConvexPairIdToPairIndex.end()) {
-        mConvexPairs[it->second].needToTestOverlap = needToTestOverlap;
+        mConvexPairs[static_cast<uint32>(it->second)].needToTestOverlap = needToTestOverlap;
     }
     else {
-        mConcavePairs[mMapConcavePairIdToPairIndex[pairId]].needToTestOverlap = needToTestOverlap;
+        mConcavePairs[static_cast<uint32>(mMapConcavePairIdToPairIndex[pairId])].needToTestOverlap = needToTestOverlap;
     }
 }
 
@@ -411,11 +411,11 @@ RP3D_FORCE_INLINE OverlappingPairs::OverlappingPair* OverlappingPairs::getOverla
 
     auto it = mMapConvexPairIdToPairIndex.find(pairId);
     if (it != mMapConvexPairIdToPairIndex.end()) {
-        return &(mConvexPairs[it->second]);
+        return &(mConvexPairs[static_cast<uint32>(it->second)]);
     }
     it = mMapConcavePairIdToPairIndex.find(pairId);
     if (it != mMapConcavePairIdToPairIndex.end()) {
-        return &(mConcavePairs[it->second]);
+        return &(mConcavePairs[static_cast<uint32>(it->second)]);
     }
 
     return nullptr;

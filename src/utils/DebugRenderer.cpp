@@ -171,7 +171,7 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
 
     Vector3 vertices[(NB_SECTORS_SPHERE + 1) * (NB_STACKS_SPHERE + 1) + (NB_SECTORS_SPHERE + 1)];
 
-	const decimal halfHeight = 0.5 * height;
+    const decimal halfHeight = decimal(0.5) * height;
 
 	// Use an even number of stacks
     const uint32 nbStacks = NB_STACKS_SPHERE % 2 == 0 ? NB_STACKS_SPHERE : NB_STACKS_SPHERE - 1;

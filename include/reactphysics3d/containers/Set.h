@@ -275,7 +275,7 @@ class Set {
             uint32* newBuckets = static_cast<uint32*>(mAllocator.allocate(capacity * sizeof(uint32)));
 
             // Allocate memory for the entries
-            const uint32 nbAllocatedEntries = capacity * DEFAULT_LOAD_FACTOR;
+            const uint32 nbAllocatedEntries = static_cast<uint32>(capacity * DEFAULT_LOAD_FACTOR);
             assert(nbAllocatedEntries > 0);
             V* newEntries = static_cast<V*>(mAllocator.allocate(nbAllocatedEntries * sizeof(V)));
             uint32* newNextEntries = static_cast<uint32*>(mAllocator.allocate(nbAllocatedEntries * sizeof(uint32)));
@@ -375,7 +375,7 @@ class Set {
                 }
             }
 
-            size_t entryIndex;
+            uint32 entryIndex;
 
             // If there are no more free entries to use
             if (mFreeIndex == INVALID_INDEX) {
