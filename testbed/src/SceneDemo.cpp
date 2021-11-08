@@ -467,13 +467,13 @@ void SceneDemo::updateSnapshotContactPoints() {
     for (it = mSnapshotsContactPoints.begin(); it != mSnapshotsContactPoints.end(); ++it) {
 
         // Create a visual contact point for rendering
-        VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath, it->point + it->normal, it->color);
+        VisualContactPoint* point = new VisualContactPoint(it->point, it->point + it->normal, it->color);
         mVisualContactPoints.push_back(point);
     }
 }
 
 // Render the contact points
-void SceneDemo::renderSnapshotsContactPoints(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+void SceneDemo::renderSnapshotsContactPoints(openglframework::Shader& /*shader*/, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Render all the contact points
     for (std::vector<VisualContactPoint*>::iterator it = mVisualContactPoints.begin();

@@ -544,8 +544,8 @@ void TestbedApplication::notifyEngineSetttingsChanged() {
    mCurrentScene->updateEngineSettings();
 }
 
-void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-                              const GLchar* message, const void* userParam ) {
+void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/,
+                              const GLchar* /*message*/, const void* /*userParam*/ ) {
 
 #ifdef GL_DEBUG_OUTPUT
     if (type == GL_DEBUG_TYPE_ERROR) {

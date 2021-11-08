@@ -268,7 +268,7 @@ class Scene : public rp3d::EventListener {
 };
 
 // Called when a keyboard event occurs
-inline bool Scene::keyboardEvent(int key, int scancode, int action, int mods) {
+inline bool Scene::keyboardEvent(int /*key*/, int /*scancode*/, int /*action*/, int /*mods*/) {
     return false;
 }
 

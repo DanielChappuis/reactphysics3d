@@ -49,7 +49,7 @@ namespace std {
 
   template <> struct hash<reactphysics3d::TestValueSet> {
 
-    size_t operator()(const reactphysics3d::TestValueSet& value) const {
+    size_t operator()(const reactphysics3d::TestValueSet& /*value*/) const {
         return 1;
     }
   };
@@ -415,7 +415,7 @@ class TestSet : public Test {
 
             rp3d_test(itBegin == it);
 
-            int size = 0;
+            size_t size = 0;
             for (auto it = set1.begin(); it != set1.end(); ++it) {
                 rp3d_test(set1.contains(*it));
                 size++;

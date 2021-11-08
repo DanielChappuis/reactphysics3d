@@ -94,7 +94,7 @@ bool Scene::mapMouseCoordinatesToSphere(double xMouse, double yMouse,
 }
 
 // Called when a mouse button event occurs
-bool Scene::mouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY) {
+bool Scene::mouseButtonEvent(int /*button*/, bool down, int /*mods*/, double mousePosX, double mousePosY) {
 
     // If the mouse button is pressed
     if (down) {
@@ -137,7 +137,7 @@ bool Scene::mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
 }
 
 // Called when a scrolling event occurs
-bool Scene::scrollingEvent(float xAxis, float yAxis, float scrollSensitivy) {
+bool Scene::scrollingEvent(float /*xAxis*/, float yAxis, float scrollSensitivy) {
     zoom(yAxis * scrollSensitivy);
 
     return true;

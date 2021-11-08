@@ -209,14 +209,14 @@ void Gui::createSettingsPanel() {
     Button* buttonPhysics = new Button(buttonsPanel, "Physics");
     buttonPhysics->set_flags(Button::RadioButton);
     buttonPhysics->set_pushed(true);
-    buttonPhysics->set_change_callback([&](bool state) {
+    buttonPhysics->set_change_callback([&](bool /*state*/) {
         mPhysicsPanel->set_visible(true);
         mRenderingPanel->set_visible(false);
         mScreen->perform_layout();
     });
     Button* buttonRendering = new Button(buttonsPanel, "Rendering");
     buttonRendering->set_flags(Button::RadioButton);
-    buttonRendering->set_change_callback([&](bool state) {
+    buttonRendering->set_change_callback([&](bool /*state*/) {
         mRenderingPanel->set_visible(true);
         mPhysicsPanel->set_visible(false);
         mScreen->perform_layout();

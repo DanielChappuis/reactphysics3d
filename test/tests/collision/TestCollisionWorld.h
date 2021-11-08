@@ -79,8 +79,7 @@ struct ContactPairData {
 		std::vector<CollisionPointData>::const_iterator it;
 		for (it = contactPoints.cbegin(); it != contactPoints.cend(); ++it) {
 
-			Vector3 vec = it->localPointBody1;
-			if (it->isContactPointSimilarTo(localPointBody1, localPointBody2, penetrationDepth)) {
+            if (it->isContactPointSimilarTo(localPointBody1, localPointBody2, penetrationDepth, epsilon)) {
 				return true;
 			}
 		}
@@ -127,7 +126,7 @@ struct CollisionData {
         std::vector<ContactPairData>::const_iterator it;
         for (it = contactPairs.cbegin(); it != contactPairs.cend(); ++it) {
 
-			if (it->hasContactPointSimilarTo(localPointBody1, localPointBody2, penetrationDepth)) {
+            if (it->hasContactPointSimilarTo(localPointBody1, localPointBody2, penetrationDepth, epsilon)) {
 				return true;
 			}
 		}

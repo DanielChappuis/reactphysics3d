@@ -88,8 +88,8 @@ class VisualContactPoint : public openglframework::Object3D {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        VisualContactPoint(const openglframework::Vector3& position, const std::string &meshFolderPath,
-						   const openglframework::Vector3& normalLineEndPointLocal, const openglframework::Color& color);
+        VisualContactPoint(const openglframework::Vector3& position, const openglframework::Vector3& normalLineEndPointLocal,
+                           const openglframework::Color& color);
 
         /// Destructor
         ~VisualContactPoint();

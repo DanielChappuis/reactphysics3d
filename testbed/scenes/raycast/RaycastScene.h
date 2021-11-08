@@ -183,12 +183,12 @@ inline void RaycastScene::showHideNormals() {
 }
 
 // Enabled/Disable the shadow mapping
-inline void RaycastScene::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
+inline void RaycastScene::setIsShadowMappingEnabled(bool /*isShadowMappingEnabled*/) {
     SceneDemo::setIsShadowMappingEnabled(false);
 }
 
 // Display/Hide the contact points
-inline void RaycastScene::setAreContactPointsDisplayed(bool display) {
+inline void RaycastScene::setAreContactPointsDisplayed(bool /*display*/) {
     SceneDemo::setAreContactPointsDisplayed(true);
 }
 

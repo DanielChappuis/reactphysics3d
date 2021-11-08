@@ -225,7 +225,7 @@ class BallAndSocketJointComponents : public Components {
         void setConeLimitImpulse(Entity jointEntity, decimal impulse);
 
         /// Return the cone limit half angle
-        bool getConeLimitHalfAngle(Entity jointEntity) const;
+        decimal getConeLimitHalfAngle(Entity jointEntity) const;
 
         /// Set the cone limit half angle
         void setConeLimitHalfAngle(Entity jointEntity, decimal halfAngle);
@@ -423,7 +423,7 @@ RP3D_FORCE_INLINE void BallAndSocketJointComponents::setConeLimitImpulse(Entity 
 }
 
 // Return the cone limit half angle
-RP3D_FORCE_INLINE bool BallAndSocketJointComponents::getConeLimitHalfAngle(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal BallAndSocketJointComponents::getConeLimitHalfAngle(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mConeLimitHalfAngle[mMapEntityToComponentIndex[jointEntity]];

@@ -111,30 +111,30 @@ class Array {
                     return &(mBuffer[mCurrentIndex]);
                 }
 
-                /// Post increment (it++)
+                /// Pre increment (++it)
                 Iterator& operator++() {
                     assert(mCurrentIndex < mSize);
                     mCurrentIndex++;
                     return *this;
                 }
 
-                /// Pre increment (++it)
-                Iterator operator++(int number) {
+                /// Post increment (it++)
+                Iterator operator++(int) {
                     assert(mCurrentIndex < mSize);
                     Iterator tmp = *this;
                     mCurrentIndex++;
                     return tmp;
                 }
 
-                /// Post decrement (it--)
+                /// Pre decrement (--it)
                 Iterator& operator--() {
                     assert(mCurrentIndex > 0);
                     mCurrentIndex--;
                     return *this;
                 }
 
-                /// Pre decrement (--it)
-                Iterator operator--(int number) {
+                /// Post decrement (it--)
+                Iterator operator--(int) {
                     assert(mCurrentIndex > 0);
                     Iterator tmp = *this;
                     mCurrentIndex--;

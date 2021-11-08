@@ -36,7 +36,7 @@ openglframework::Mesh VisualContactPoint::mMesh;
 bool VisualContactPoint::mStaticDataCreated = false;
 
 // Constructor
-VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position, const std::string& meshFolderPath,
+VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
 									   const openglframework::Vector3& normalLineEndPointLocal, const openglframework::Color& color)
                    : mVBOVerticesNormalLine(GL_ARRAY_BUFFER), mColor(color) {
 

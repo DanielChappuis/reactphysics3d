@@ -254,7 +254,7 @@ class TestMathematicsFunctions : public Test {
             polygonPlanesPoints.add(Vector3(10, 5, 0));
 
             Array<Vector3> clipPolygonVertices(mAllocator);
-            for (int i=0; i < polygonPlanesPoints.size(); i++) {
+            for (size_t i=0; i < polygonPlanesPoints.size(); i++) {
 
                 clipPolygonVertices.clear();
                 clipPolygonWithPlane(polygonVertices, polygonPlanesPoints[i], polygonPlanesNormals[i], clipPolygonVertices);

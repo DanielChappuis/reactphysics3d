@@ -239,7 +239,7 @@ void ConvexMesh::createVBOAndVAO() {
 // Return the index of a given vertex in the mesh
 int ConvexMesh::findVertexIndex(const std::vector<openglframework::Vector3>& vertices, const openglframework::Vector3& vertex) {
 
-	for (int i = 0; i < vertices.size(); i++) {
+    for (size_t i = 0; i < vertices.size(); i++) {
 		if (vertices[i] == vertex) {
 			return i;
 		}

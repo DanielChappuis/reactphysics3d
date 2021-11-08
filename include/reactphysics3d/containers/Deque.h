@@ -197,15 +197,7 @@ class Deque {
                 using iterator_category = std::random_access_iterator_tag;
 
                 /// Constructor
-                Iterator() = default;
-
-                /// Constructor
                 Iterator(const Deque<T>* deque, size_t virtualIndex) : mVirtualIndex(virtualIndex), mDeque(deque) {
-
-                }
-
-                /// Copy constructor
-                Iterator(const Iterator& it) : mVirtualIndex(it.mVirtualIndex), mDeque(it.mDeque) {
 
                 }
 
@@ -227,29 +219,29 @@ class Deque {
                     return &(mDeque->getItem(mVirtualIndex));
                 }
 
-                /// Post increment (it++)
+                /// Pre increment (++it)
                 Iterator& operator++() {
                     assert(mVirtualIndex < mDeque->mSize);
                     mVirtualIndex++;
                     return *this;
                 }
 
-                /// Pre increment (++it)
-                Iterator operator++(int number) {
+                /// Post increment (it++)
+                Iterator operator++(int /*number*/) {
                     assert(mVirtualIndex < mDeque->mSize);
                     Iterator tmp = *this;
                     mVirtualIndex++;
                     return tmp;
                 }
 
-                /// Post decrement (it--)
+                /// Pre decrement (--it)
                 Iterator& operator--() {
                     mVirtualIndex--;
                     return *this;
                 }
 
-                /// Pre decrement (--it)
-                Iterator operator--(int number) {
+                /// Post decrement (it--)
+                Iterator operator--(int /*number*/) {
                     Iterator tmp = *this;
                     mVirtualIndex--;
                     return tmp;

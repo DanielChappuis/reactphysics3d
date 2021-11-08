@@ -220,7 +220,7 @@ void CollisionDetectionScene::selectNextShape() {
 }
 
 // Called when a keyboard event occurs
-bool CollisionDetectionScene::keyboardEvent(int key, int scancode, int action, int mods) {
+bool CollisionDetectionScene::keyboardEvent(int key, int /*scancode*/, int action, int /*mods*/) {
 
     // If the space key has been pressed
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {

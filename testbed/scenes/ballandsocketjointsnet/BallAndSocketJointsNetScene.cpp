@@ -142,9 +142,7 @@ void BallAndSocketJointsNetScene::createJoints() {
                 // Create the joint info object
                 rp3d::RigidBody* body1 = mNetSpheres[i-1][j]->getRigidBody();
                 rp3d::RigidBody* body2 = mNetSpheres[i][j]->getRigidBody();
-                rp3d::Vector3 body1Position = body1->getTransform().getPosition();
                 rp3d::Vector3 body2Position = body2->getTransform().getPosition();
-                //const rp3d::Vector3 anchorPointWorldSpace = 0.5 * (body1Position + body2Position);
                 const rp3d::Vector3 anchorPointWorldSpace = body2Position;
                 rp3d::BallAndSocketJointInfo jointInfo(body1, body2, anchorPointWorldSpace);
                 jointInfo.isCollisionEnabled = false;
@@ -157,7 +155,6 @@ void BallAndSocketJointsNetScene::createJoints() {
                 // Create the joint info object
                 rp3d::RigidBody* body1 = mNetSpheres[i][j-1]->getRigidBody();
                 rp3d::RigidBody* body2 = mNetSpheres[i][j]->getRigidBody();
-                rp3d::Vector3 body1Position = body1->getTransform().getPosition();
                 rp3d::Vector3 body2Position = body2->getTransform().getPosition();
                 const rp3d::Vector3 anchorPointWorldSpace = body2Position;
                 rp3d::BallAndSocketJointInfo jointInfo(body1, body2, anchorPointWorldSpace);
