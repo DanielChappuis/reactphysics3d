@@ -51,15 +51,15 @@ class Stack {
         T* mArray;
 
         /// Number of elements in the stack
-        uint32 mNbElements;
+        size_t mNbElements;
 
         /// Number of allocated elements in the stack
-        uint32 mCapacity;
+        size_t mCapacity;
 
         // -------------------- Methods -------------------- //
 
         /// Allocate more memory
-        void allocate(uint32 capacity) {
+        void allocate(size_t capacity) {
 
             T* newArray = static_cast<T*>(mAllocator.allocate(capacity * sizeof(T)));
             assert(newArray != nullptr);
@@ -87,7 +87,7 @@ class Stack {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Stack(MemoryAllocator& allocator, uint32 capacity = 0)
+        Stack(MemoryAllocator& allocator, size_t capacity = 0)
               :mAllocator(allocator), mArray(nullptr), mNbElements(0), mCapacity(0) {
 
             if (capacity > 0) {
@@ -130,7 +130,7 @@ class Stack {
         void clear() {
 
             // Destruct the items
-            for (uint32 i = 0; i < mNbElements; i++) {
+            for (size_t i = 0; i < mNbElements; i++) {
                 mArray[i].~T();
             }
 
@@ -169,12 +169,12 @@ class Stack {
         }
 
         /// Return the number of items in the stack
-        uint32 size() const {
+        size_t size() const {
             return mNbElements;
         }
 
         /// Return the capacity of the stack
-        uint32 capacity() const {
+        size_t capacity() const {
             return mCapacity;
         }
 };

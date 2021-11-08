@@ -55,10 +55,10 @@ class Deque {
         // -------------------- Constants -------------------- //
 
         /// Number of items in a chunk
-        const uint32 CHUNK_NB_ITEMS = 17;
+        const size_t CHUNK_NB_ITEMS = 17;
 
         /// First item index in a chunk
-        const uint32 CHUNK_FIRST_ITEM_INDEX = CHUNK_NB_ITEMS / 2;
+        const size_t CHUNK_FIRST_ITEM_INDEX = CHUNK_NB_ITEMS / 2;
 
         // -------------------- Attributes -------------------- //
 
@@ -66,16 +66,16 @@ class Deque {
         T** mChunks;
 
         /// Number of current elements in the deque
-        uint32 mSize;
+        size_t mSize;
 
         /// Number of chunks
-        uint32 mNbChunks;
+        size_t mNbChunks;
 
         /// Index of the chunk with the first element of the deque
-        uint32 mFirstChunkIndex;
+        size_t mFirstChunkIndex;
 
         /// Index of the chunk with the last element of the deque
-        uint32 mLastChunkIndex;
+        size_t mLastChunkIndex;
 
         /// Index of the first element in the first chunk
         uint8 mFirstItemIndex;
@@ -89,15 +89,15 @@ class Deque {
         // -------------------- Methods -------------------- //
 
         /// Return a reference to an item at the given virtual index in range [0; mSize-1]
-        T& getItem(uint32 virtualIndex) const {
+        T& getItem(size_t virtualIndex) const {
 
             // If the virtual index is valid
             if (virtualIndex < mSize) {
 
-                uint32 chunkIndex = mFirstChunkIndex;
-                uint32 itemIndex = mFirstItemIndex;
+                size_t chunkIndex = mFirstChunkIndex;
+                size_t itemIndex = mFirstItemIndex;
 
-                const uint32 nbItemsFirstChunk = CHUNK_NB_ITEMS - mFirstItemIndex;
+                const size_t nbItemsFirstChunk = CHUNK_NB_ITEMS - mFirstItemIndex;
                 if (virtualIndex < nbItemsFirstChunk) {
                    itemIndex += virtualIndex;
                 }
@@ -118,18 +118,18 @@ class Deque {
         }
 
         /// Add more chunks
-        void expandChunks(uint32 atLeastNbChunks = 0) {
+        void expandChunks(size_t atLeastNbChunks = 0) {
 
             // If it is not necessary to expand the chunks
             if (atLeastNbChunks > 0 && atLeastNbChunks <= mNbChunks) {
                 return;
             }
 
-            uint32 newNbChunks = mNbChunks == 0 ? 3 : 2 * mNbChunks - 1;
+            size_t newNbChunks = mNbChunks == 0 ? 3 : 2 * mNbChunks - 1;
             if (atLeastNbChunks > 0 && newNbChunks < atLeastNbChunks) {
-                newNbChunks = uint32(atLeastNbChunks / 2) * 2 + 1;
+                newNbChunks = size_t(atLeastNbChunks / 2) * 2 + 1;
             }
-            const uint32 halfNbChunksToAdd = mNbChunks == 0 ? 1 : (mNbChunks - 1) / 2;
+            const size_t halfNbChunksToAdd = mNbChunks == 0 ? 1 : (mNbChunks - 1) / 2;
 
             // Allocate memory for the new array of pointers to chunk
             void* newMemory = mAllocator.allocate(newNbChunks * sizeof(T*));
@@ -157,7 +157,7 @@ class Deque {
             mNbChunks = newNbChunks;
 
             // Allocate memory for each new chunk
-            for (uint32 i=0; i < halfNbChunksToAdd; i++) {
+            for (size_t i=0; i < halfNbChunksToAdd; i++) {
 
                 // Allocate memory for the new chunk
                 mChunks[i] = static_cast<T*>(mAllocator.allocate(sizeof(T) * CHUNK_NB_ITEMS));
@@ -182,7 +182,7 @@ class Deque {
 
             private:
 
-                uint32 mVirtualIndex;
+                size_t mVirtualIndex;
                 const Deque<T>* mDeque;
 
             public:
@@ -200,7 +200,7 @@ class Deque {
                 Iterator() = default;
 
                 /// Constructor
-                Iterator(const Deque<T>* deque, uint32 virtualIndex) : mVirtualIndex(virtualIndex), mDeque(deque) {
+                Iterator(const Deque<T>* deque, size_t virtualIndex) : mVirtualIndex(virtualIndex), mDeque(deque) {
 
                 }
 
@@ -345,14 +345,14 @@ class Deque {
 
             if (deque.mSize > 0) {
 
-                const uint32 dequeHalfSize1 = std::ceil(deque.mSize / 2.0f);
-                const uint32 dequeHalfSize2 = deque.mSize - dequeHalfSize1;
+                const size_t dequeHalfSize1 = std::ceil(deque.mSize / 2.0f);
+                const size_t dequeHalfSize2 = deque.mSize - dequeHalfSize1;
 
                 // Add the items into the deque
-                for(uint32 i=0; i < dequeHalfSize1; i++) {
+                for(size_t i=0; i < dequeHalfSize1; i++) {
                    addFront(deque[dequeHalfSize1 - 1 - i]);
                 }
-                for(uint32 i=0; i < dequeHalfSize2; i++) {
+                for(size_t i=0; i < dequeHalfSize2; i++) {
                    addBack(deque[dequeHalfSize1 + i]);
                 }
             }
@@ -364,7 +364,7 @@ class Deque {
             clear();
 
             // Release each chunk
-            for (uint32 i=0; i < mNbChunks; i++) {
+            for (size_t i=0; i < mNbChunks; i++) {
 
                 mAllocator.release(mChunks[i], sizeof(T) * CHUNK_NB_ITEMS);
             }
@@ -519,7 +519,7 @@ class Deque {
             if (mSize > 0) {
 
                 // Call the destructor of every items
-                for (uint32 i=0; i < mSize; i++) {
+                for (size_t i=0; i < mSize; i++) {
                     getItem(i).~T();
                 }
 
@@ -533,18 +533,18 @@ class Deque {
         }
 
         /// Return the number of elements in the deque
-        uint32 size() const {
+        size_t size() const {
             return mSize;
         }
 
         /// Overloaded index operator
-        T& operator[](const uint32 index) {
+        T& operator[](const size_t index) {
            assert(index < mSize);
            return getItem(index);
         }
 
         /// Overloaded const index operator
-        const T& operator[](const uint32 index) const {
+        const T& operator[](const size_t index) const {
            assert(index < mSize);
            return getItem(index);
         }
@@ -554,7 +554,7 @@ class Deque {
 
             if (mSize != deque.mSize) return false;
 
-            for (uint32 i=0; i < mSize; i++) {
+            for (size_t i=0; i < mSize; i++) {
                 if (getItem(i) != deque.getItem(i)) {
                     return false;
                 }
@@ -580,19 +580,19 @@ class Deque {
                 if (deque.mSize > 0) {
 
                     // Number of used chunks
-                    const uint32 nbUsedChunks = deque.mLastChunkIndex - deque.mFirstChunkIndex + 1;
+                    const size_t nbUsedChunks = deque.mLastChunkIndex - deque.mFirstChunkIndex + 1;
 
                     // Expand the chunk if necessary
                     expandChunks(nbUsedChunks);
 
-                    const uint32 dequeHalfSize1 = std::ceil(deque.mSize / 2.0f);
-                    const uint32 dequeHalfSize2 = deque.mSize - dequeHalfSize1;
+                    const size_t dequeHalfSize1 = std::ceil(deque.mSize / 2.0f);
+                    const size_t dequeHalfSize2 = deque.mSize - dequeHalfSize1;
 
                     // Add the items into the deque
-                    for(uint32 i=0; i < dequeHalfSize1; i++) {
+                    for(size_t i=0; i < dequeHalfSize1; i++) {
                        addFront(deque[dequeHalfSize1 - 1 - i]);
                     }
-                    for(uint32 i=0; i < dequeHalfSize2; i++) {
+                    for(size_t i=0; i < dequeHalfSize2; i++) {
                        addBack(deque[dequeHalfSize1 + i]);
                     }
                 }

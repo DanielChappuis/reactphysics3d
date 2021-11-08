@@ -51,10 +51,10 @@ class Array {
         T* mBuffer;
 
         /// Number of elements in the array
-        uint32 mSize;
+        size_t mSize;
 
         /// Number of allocated elements in the array
-        uint32 mCapacity;
+        size_t mCapacity;
 
         /// Memory allocator
         MemoryAllocator& mAllocator;
@@ -69,9 +69,9 @@ class Array {
 
             private:
 
-                uint32 mCurrentIndex;
+                size_t mCurrentIndex;
                 T* mBuffer;
-                uint32 mSize;
+                size_t mSize;
 
             public:
 
@@ -88,7 +88,7 @@ class Array {
                 Iterator() = default;
 
                 /// Constructor
-                Iterator(void* buffer, uint32 index, uint32 size)
+                Iterator(void* buffer, size_t index, size_t size)
                      :mCurrentIndex(index), mBuffer(static_cast<T*>(buffer)), mSize(size) {
 
                 }
@@ -213,7 +213,7 @@ class Array {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Array(MemoryAllocator& allocator, uint32 capacity = 0)
+        Array(MemoryAllocator& allocator, size_t capacity = 0)
             : mBuffer(nullptr), mSize(0), mCapacity(0), mAllocator(allocator) {
 
             if (capacity > 0) {
@@ -247,7 +247,7 @@ class Array {
         }
 
         /// Allocate memory for a given number of elements
-        void reserve(uint32 capacity) {
+        void reserve(size_t capacity) {
 
             if (capacity <= mCapacity) return;
 
@@ -263,7 +263,7 @@ class Array {
                     std::uninitialized_copy(mBuffer, mBuffer + mSize, destination);
 
                     // Destruct the previous items
-                    for (uint32 i=0; i<mSize; i++) {
+                    for (size_t i=0; i<mSize; i++) {
                         mBuffer[i].~T();
                     }
                 }
@@ -308,7 +308,7 @@ class Array {
         }
 
         /// Add a given numbers of elements at the end of the array but do not init them
-        void addWithoutInit(uint32 nbElements) {
+        void addWithoutInit(size_t nbElements) {
 
             // If we need to allocate more memory
             if ((mSize + nbElements) > mCapacity) {
@@ -323,7 +323,7 @@ class Array {
         /// this method returns the end() iterator
         Iterator find(const T& element) {
 
-            for (uint32 i=0; i<mSize; i++) {
+            for (size_t i=0; i<mSize; i++) {
                 if (element == mBuffer[i]) {
                     return Iterator(mBuffer, i, mSize);
                 }
@@ -345,7 +345,7 @@ class Array {
         }
 
         /// Remove an element from the array at a given index (all the following items will be moved)
-        Iterator removeAt(uint32 index) {
+        Iterator removeAt(size_t index) {
 
           assert(index < mSize);
 
@@ -367,7 +367,7 @@ class Array {
         }
 
         /// Remove an element from the list at a given index and replace it by the last one of the list (if any)
-        void removeAtAndReplaceByLast(uint32 index) {
+        void removeAtAndReplaceByLast(size_t index) {
 
             assert(index < mSize);
 
@@ -381,7 +381,7 @@ class Array {
 
         /// Remove an element from the array at a given index and replace it by the last one of the array (if any)
         /// Append another array at the end of the current one
-        void addRange(const Array<T>& array, uint32 startIndex = 0) {
+        void addRange(const Array<T>& array, size_t startIndex = 0) {
 
             assert(startIndex <= array.size());
 
@@ -393,7 +393,7 @@ class Array {
             }
 
             // Add the elements of the array to the current one
-            for(uint32 i=startIndex; i<array.size(); i++) {
+            for(size_t i=startIndex; i<array.size(); i++) {
 
                 new (reinterpret_cast<void*>(mBuffer + mSize)) T(array[i]);
                 mSize++;
@@ -404,7 +404,7 @@ class Array {
         void clear(bool releaseMemory = false) {
 
             // Call the destructor of each element
-            for (uint32 i=0; i < mSize; i++) {
+            for (size_t i=0; i < mSize; i++) {
                 mBuffer[i].~T();
             }
 
@@ -422,23 +422,23 @@ class Array {
         }
 
         /// Return the number of elements in the array
-        uint32 size() const {
+        size_t size() const {
             return mSize;
         }
 
         /// Return the capacity of the array
-        uint32 capacity() const {
+        size_t capacity() const {
             return mCapacity;
         }
 
         /// Overloaded index operator
-        T& operator[](const uint32 index) {
+        T& operator[](const size_t index) {
            assert(index >= 0 && index < mSize);
            return mBuffer[index];
         }
 
         /// Overloaded const index operator
-        const T& operator[](const uint32 index) const {
+        const T& operator[](const size_t index) const {
            assert(index >= 0 && index < mSize);
            return mBuffer[index];
         }
@@ -448,7 +448,7 @@ class Array {
 
            if (mSize != array.mSize) return false;
 
-            for (uint32 i=0; i < mSize; i++) {
+            for (size_t i=0; i < mSize; i++) {
                 if (mBuffer[i] != array[i]) {
                     return false;
                 }

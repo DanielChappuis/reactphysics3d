@@ -52,47 +52,47 @@ class Set {
         static constexpr float DEFAULT_LOAD_FACTOR = 0.75;
 
         /// Invalid index in the array
-        static constexpr uint32 INVALID_INDEX = 0xffffffff;
+        static constexpr size_t INVALID_INDEX = -1;
 
         // -------------------- Attributes -------------------- //
 
         /// Total number of allocated entries
-        uint32 mNbAllocatedEntries;
+        size_t mNbAllocatedEntries;
 
         /// Number of items in the set
-        uint32 mNbEntries;
+        size_t mNbEntries;
 
         /// Number of buckets and size of the hash table (nbEntries = loadFactor * mHashSize)
-        uint32 mHashSize ;
+        size_t mHashSize ;
 
         /// Array with all the buckets
-        uint32* mBuckets;
+        size_t* mBuckets;
 
         /// Array with all the entries (nbEntries = loadFactor * mHashSize)
         V* mEntries;
 
         /// For each entry, index of the next entry at the same bucket
-        uint32* mNextEntries;
+        size_t* mNextEntries;
 
         /// Memory allocator
         MemoryAllocator& mAllocator;
 
         /// Index to the fist free entry
-        uint32 mFreeIndex;
+        size_t mFreeIndex;
 
         // -------------------- Methods -------------------- //
 
         /// Return the index of the entry with a given value or -1 if there is no entry with this value
-        uint32 findEntry(const V& value) const {
+        size_t findEntry(const V& value) const {
 
             if (mHashSize > 0) {
 
                const size_t hashCode = Hash()(value);
                const size_t divider = mHashSize - 1;
-               const uint32 bucket = static_cast<uint32>(hashCode & divider);
+               const size_t bucket = hashCode & divider;
                auto keyEqual = KeyEqual();
 
-               for (uint32 i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {
+               for (size_t i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {
                    if (Hash()(mEntries[i]) == hashCode && keyEqual(mEntries[i], value)) {
                        return i;
                    }
@@ -116,10 +116,10 @@ class Set {
                 const Set* mSet;
 
                 /// Index of the current bucket
-                uint32 mCurrentBucketIndex;
+                size_t mCurrentBucketIndex;
 
                 /// Index of the current entry
-                uint32 mCurrentEntryIndex;
+                size_t mCurrentEntryIndex;
 
                 /// Advance the iterator
                 void advance() {
@@ -157,7 +157,7 @@ class Set {
                 Iterator() = default;
 
                 /// Constructor
-                Iterator(const Set* set, uint32 bucketIndex, uint32 entryIndex)
+                Iterator(const Set* set, size_t bucketIndex, size_t entryIndex)
                      :mSet(set), mCurrentBucketIndex(bucketIndex), mCurrentEntryIndex(entryIndex) {
 
                 }
@@ -204,7 +204,7 @@ class Set {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Set(MemoryAllocator& allocator, uint32 capacity = 0)
+        Set(MemoryAllocator& allocator, size_t capacity = 0)
             : mNbAllocatedEntries(0), mNbEntries(0), mHashSize(0), mBuckets(nullptr),
               mEntries(nullptr), mNextEntries(nullptr), mAllocator(allocator), mFreeIndex(INVALID_INDEX) {
 
@@ -222,22 +222,22 @@ class Set {
             if (mHashSize > 0) {
 
                 // Allocate memory for the buckets
-                mBuckets = static_cast<uint32*>(mAllocator.allocate(mHashSize * sizeof(uint32)));
+                mBuckets = static_cast<size_t*>(mAllocator.allocate(mHashSize * sizeof(size_t)));
 
                 // Allocate memory for the entries
                 mEntries = static_cast<V*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(V)));
-                mNextEntries = static_cast<uint32*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(uint32)));
+                mNextEntries = static_cast<size_t*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(size_t)));
 
                 // Copy the buckets array
-                std::memcpy(mBuckets, set.mBuckets, mHashSize * sizeof(uint32));
+                std::memcpy(mBuckets, set.mBuckets, mHashSize * sizeof(size_t));
 
                 // Copy the next entries indices
-                std::memcpy(mNextEntries, set.mNextEntries, mNbAllocatedEntries * sizeof(uint32));
+                std::memcpy(mNextEntries, set.mNextEntries, mNbAllocatedEntries * sizeof(size_t));
 
                 // Copy the entries
-                for (uint32 i=0; i<mHashSize; i++) {
+                for (size_t i=0; i<mHashSize; i++) {
 
-                    uint32 entryIndex = mBuckets[i];
+                    size_t entryIndex = mBuckets[i];
                     while(entryIndex != INVALID_INDEX) {
 
                         // Copy the entry to the new location and destroy the previous one
@@ -256,7 +256,7 @@ class Set {
         }
 
         /// Allocate memory for a given number of elements
-        void reserve(uint32 capacity) {
+        void reserve(size_t capacity) {
 
             if (capacity <= mHashSize) return;
 
@@ -272,19 +272,19 @@ class Set {
             assert(capacity > mHashSize);
 
             // Allocate memory for the buckets
-            uint32* newBuckets = static_cast<uint32*>(mAllocator.allocate(capacity * sizeof(uint32)));
+            size_t* newBuckets = static_cast<size_t*>(mAllocator.allocate(capacity * sizeof(size_t)));
 
             // Allocate memory for the entries
-            const uint32 nbAllocatedEntries = static_cast<uint32>(capacity * DEFAULT_LOAD_FACTOR);
+            const size_t nbAllocatedEntries = static_cast<size_t>(capacity * DEFAULT_LOAD_FACTOR);
             assert(nbAllocatedEntries > 0);
             V* newEntries = static_cast<V*>(mAllocator.allocate(nbAllocatedEntries * sizeof(V)));
-            uint32* newNextEntries = static_cast<uint32*>(mAllocator.allocate(nbAllocatedEntries * sizeof(uint32)));
+            size_t* newNextEntries = static_cast<size_t*>(mAllocator.allocate(nbAllocatedEntries * sizeof(size_t)));
 
             assert(newEntries != nullptr);
             assert(newNextEntries != nullptr);
 
             // Initialize the new buckets
-            for (uint32 i=0; i<capacity; i++) {
+            for (size_t i=0; i<capacity; i++) {
                 newBuckets[i] = INVALID_INDEX;
             }
 
@@ -293,19 +293,19 @@ class Set {
                 assert(mNextEntries != nullptr);
 
                 // Copy the free nodes indices in the nextEntries array
-                std::memcpy(newNextEntries, mNextEntries, mNbAllocatedEntries * sizeof(uint32));
+                std::memcpy(newNextEntries, mNextEntries, mNbAllocatedEntries * sizeof(size_t));
             }
 
             // Recompute the buckets (hash) with the new hash size
-            for (uint32 i=0; i<mHashSize; i++) {
+            for (size_t i=0; i<mHashSize; i++) {
 
-                uint32 entryIndex = mBuckets[i];
+                size_t entryIndex = mBuckets[i];
                 while(entryIndex != INVALID_INDEX) {
 
                     // Get the corresponding bucket
                     const size_t hashCode = Hash()(mEntries[entryIndex]);
                     const size_t divider = capacity - 1;
-                    const uint32 bucketIndex = static_cast<uint32>(hashCode & divider);
+                    const size_t bucketIndex = hashCode & divider;
 
                     newNextEntries[entryIndex] = newBuckets[bucketIndex];
                     newBuckets[bucketIndex] = entryIndex;
@@ -321,13 +321,13 @@ class Set {
             if (mNbAllocatedEntries > 0) {
 
                 // Release previously allocated memory
-                mAllocator.release(mBuckets, mHashSize * sizeof(uint32));
+                mAllocator.release(mBuckets, mHashSize * sizeof(size_t));
                 mAllocator.release(mEntries, mNbAllocatedEntries * sizeof(V));
-                mAllocator.release(mNextEntries, mNbAllocatedEntries * sizeof(uint32));
+                mAllocator.release(mNextEntries, mNbAllocatedEntries * sizeof(size_t));
             }
 
             // Add the new entries to the free list
-            for (uint32 i=mNbAllocatedEntries; i < nbAllocatedEntries-1; i++) {
+            for (size_t i=mNbAllocatedEntries; i < nbAllocatedEntries-1; i++) {
                 newNextEntries[i] = i + 1;
             }
             newNextEntries[nbAllocatedEntries - 1] = mFreeIndex;
@@ -351,7 +351,7 @@ class Set {
         /// Returns true if the item has been inserted and false otherwise.
         bool add(const V& value) {
 
-            uint32 bucket;
+            size_t bucket;
 
             // Compute the hash code of the value
             const size_t hashCode = Hash()(value);
@@ -360,12 +360,12 @@ class Set {
 
                 // Compute the corresponding bucket index
                 const size_t divider = mHashSize - 1;
-                bucket = static_cast<uint32>(hashCode & divider);
+                bucket = hashCode & divider;
 
                 auto keyEqual  = KeyEqual();
 
                 // Check if the item is already in the set
-                for (uint32 i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {
+                for (size_t i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {
 
                     // If there is already an item with the same value in the set
                     if (Hash()(mEntries[i]) == hashCode && keyEqual(mEntries[i], value)) {
@@ -375,7 +375,7 @@ class Set {
                 }
             }
 
-            uint32 entryIndex;
+            size_t entryIndex;
 
             // If there are no more free entries to use
             if (mFreeIndex == INVALID_INDEX) {
@@ -385,7 +385,7 @@ class Set {
 
                 // Recompute the bucket index
                 const size_t divider = mHashSize - 1;
-                bucket = static_cast<uint32>(hashCode & divider);
+                bucket = hashCode & divider;
             }
 
             assert(mNbEntries < mNbAllocatedEntries);
@@ -422,9 +422,9 @@ class Set {
                 const size_t hashcode = Hash()(value);
                 auto keyEqual = KeyEqual();
                 const size_t divider = mHashSize - 1;
-                const uint32 bucket = static_cast<uint32>(hashcode & divider);
-                uint32 last = INVALID_INDEX;
-                for (uint32 i = mBuckets[bucket]; i != INVALID_INDEX; last = i, i = mNextEntries[i]) {
+                const size_t bucket = hashcode & divider;
+                size_t last = INVALID_INDEX;
+                for (size_t i = mBuckets[bucket]; i != INVALID_INDEX; last = i, i = mNextEntries[i]) {
 
                     // If we have found the item
                     if (Hash()(mEntries[i]) == hashcode && keyEqual(mEntries[i], value)) {
@@ -436,8 +436,8 @@ class Set {
                            mNextEntries[last] = mNextEntries[i];
                         }
 
-                        uint32 nextEntryIndex = mNextEntries[i];
-                        uint32 nextBucketIndex = bucket;
+                        size_t nextEntryIndex = mNextEntries[i];
+                        size_t nextBucketIndex = bucket;
 
                         mEntries[i].~V();
                         mNextEntries[i] = mFreeIndex;
@@ -480,15 +480,15 @@ class Set {
         /// Clear the set
         void clear(bool releaseMemory = false) {
 
-            for (uint32 i=0; i<mHashSize; i++) {
+            for (size_t i=0; i<mHashSize; i++) {
 
-                uint32 entryIndex = mBuckets[i];
+                size_t entryIndex = mBuckets[i];
                 while(entryIndex != INVALID_INDEX) {
 
                     // Destroy the entry
                     mEntries[entryIndex].~V();
 
-                    uint32 nextEntryIndex = mNextEntries[entryIndex];
+                    size_t nextEntryIndex = mNextEntries[entryIndex];
 
                     // Add entry to the free list
                     mNextEntries[entryIndex] = mFreeIndex;
@@ -503,9 +503,9 @@ class Set {
             if (releaseMemory && mNbAllocatedEntries > 0) {
 
                 // Release previously allocated memory
-                mAllocator.release(mBuckets, mHashSize * sizeof(uint32));
+                mAllocator.release(mBuckets, mHashSize * sizeof(size_t));
                 mAllocator.release(mEntries, mNbAllocatedEntries * sizeof(V));
-                mAllocator.release(mNextEntries, mNbAllocatedEntries * sizeof(uint32));
+                mAllocator.release(mNextEntries, mNbAllocatedEntries * sizeof(size_t));
 
                 mBuckets = nullptr;
                 mEntries = nullptr;
@@ -519,12 +519,12 @@ class Set {
         }
 
         /// Return the number of elements in the set
-        uint32 size() const {
+        size_t size() const {
             return mNbEntries;
         }
 
         /// Return the capacity of the set
-        uint32 capacity() const {
+        size_t capacity() const {
             return mHashSize;
         }
 
@@ -533,17 +533,17 @@ class Set {
         /// an iterator pointing to the end if not found
         Iterator find(const V& value) const {
 
-            uint32 bucket;
-            uint32 entry = INVALID_INDEX;
+            size_t bucket;
+            size_t entry = INVALID_INDEX;
 
             if (mHashSize > 0) {
 
                const size_t hashCode = Hash()(value);
                const size_t divider = mHashSize - 1;
-               bucket = static_cast<uint32>(hashCode & divider);
+               bucket = hashCode & divider;
                auto keyEqual = KeyEqual();
 
-               for (uint32 i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {
+               for (size_t i = mBuckets[bucket]; i != INVALID_INDEX; i = mNextEntries[i]) {
                    if (Hash()(mEntries[i]) == hashCode && keyEqual(mEntries[i], value)) {
                        entry = i;
                        break;
@@ -595,22 +595,22 @@ class Set {
                 if (mHashSize > 0) {
 
                     // Allocate memory for the buckets
-                    mBuckets = static_cast<uint32*>(mAllocator.allocate(mHashSize * sizeof(uint32)));
+                    mBuckets = static_cast<size_t*>(mAllocator.allocate(mHashSize * sizeof(size_t)));
 
                     // Allocate memory for the entries
                     mEntries = static_cast<V*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(V)));
-                    mNextEntries = static_cast<uint32*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(uint32)));
+                    mNextEntries = static_cast<size_t*>(mAllocator.allocate(mNbAllocatedEntries * sizeof(size_t)));
 
                     // Copy the buckets array
-                    std::memcpy(mBuckets, set.mBuckets, mHashSize * sizeof(uint32));
+                    std::memcpy(mBuckets, set.mBuckets, mHashSize * sizeof(size_t));
 
                     // Copy the next entries indices
-                    std::memcpy(mNextEntries, set.mNextEntries, mNbAllocatedEntries * sizeof(uint32));
+                    std::memcpy(mNextEntries, set.mNextEntries, mNbAllocatedEntries * sizeof(size_t));
 
                     // Copy the entries
-                    for (uint32 i=0; i<mHashSize; i++) {
+                    for (size_t i=0; i<mHashSize; i++) {
 
-                        uint32 entryIndex = mBuckets[i];
+                        size_t entryIndex = mBuckets[i];
                         while(entryIndex != INVALID_INDEX) {
 
                             // Copy the entry to the new location and destroy the previous one
@@ -636,7 +636,7 @@ class Set {
             }
 
             // Find the first used entry
-            uint32 bucketIndex = 0;
+            size_t bucketIndex = 0;
             while (mBuckets[bucketIndex] == INVALID_INDEX) {
 
                 bucketIndex++;
