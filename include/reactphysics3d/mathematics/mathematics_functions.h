@@ -403,18 +403,19 @@ RP3D_FORCE_INLINE decimal computePointToPlaneDistance(const Vector3& point, cons
 }
 
 /// Return true if a number is a power of two
-RP3D_FORCE_INLINE bool isPowerOfTwo(uint32 number) {
+RP3D_FORCE_INLINE bool isPowerOfTwo(uint64 number) {
    return number != 0 && !(number & (number -1));
 }
 
 /// Return the next power of two larger than the number in parameter
-RP3D_FORCE_INLINE uint32 nextPowerOfTwo32Bits(uint32 number) {
+RP3D_FORCE_INLINE uint32 nextPowerOfTwo64Bits(uint64 number) {
     number--;
     number |= number >> 1;
     number |= number >> 2;
     number |= number >> 4;
     number |= number >> 8;
     number |= number >> 16;
+    number |= number >> 32;
     number++;
     number += (number == 0);
     return number;

@@ -291,16 +291,16 @@ class TestMathematicsFunctions : public Test {
             rp3d_test(isPowerOfTwo(2048));
 
             // Test nextPowerOfTwo32Bits()
-            rp3d_test(nextPowerOfTwo32Bits(0) == 1);
-            rp3d_test(nextPowerOfTwo32Bits(1) == 1);
-            rp3d_test(nextPowerOfTwo32Bits(2) == 2);
-            rp3d_test(nextPowerOfTwo32Bits(3) == 4);
-            rp3d_test(nextPowerOfTwo32Bits(5) == 8);
-            rp3d_test(nextPowerOfTwo32Bits(6) == 8);
-            rp3d_test(nextPowerOfTwo32Bits(7) == 8);
-            rp3d_test(nextPowerOfTwo32Bits(1000) == 1024);
-            rp3d_test(nextPowerOfTwo32Bits(129) == 256);
-            rp3d_test(nextPowerOfTwo32Bits(260) == 512);
+            rp3d_test(nextPowerOfTwo64Bits(0) == 1);
+            rp3d_test(nextPowerOfTwo64Bits(1) == 1);
+            rp3d_test(nextPowerOfTwo64Bits(2) == 2);
+            rp3d_test(nextPowerOfTwo64Bits(3) == 4);
+            rp3d_test(nextPowerOfTwo64Bits(5) == 8);
+            rp3d_test(nextPowerOfTwo64Bits(6) == 8);
+            rp3d_test(nextPowerOfTwo64Bits(7) == 8);
+            rp3d_test(nextPowerOfTwo64Bits(1000) == 1024);
+            rp3d_test(nextPowerOfTwo64Bits(129) == 256);
+            rp3d_test(nextPowerOfTwo64Bits(260) == 512);
         }
 
  };
