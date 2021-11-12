@@ -264,7 +264,7 @@ class DebugRenderer : public EventListener {
  * @return The number of lines in the array of lines to draw
  */
 RP3D_FORCE_INLINE uint32 DebugRenderer::getNbLines() const {
-	return mLines.size();
+    return static_cast<uint32>(mLines.size());
 }
 
 // Return a reference to the array of lines
@@ -288,7 +288,7 @@ RP3D_FORCE_INLINE const DebugRenderer::DebugLine* DebugRenderer::getLinesArray()
  * @return The number of triangles in the array of triangles to draw
  */
 RP3D_FORCE_INLINE uint32 DebugRenderer::getNbTriangles() const {
-	return mTriangles.size();
+    return static_cast<uint32>(mTriangles.size());
 }
 
 // Return a reference to the array of triangles

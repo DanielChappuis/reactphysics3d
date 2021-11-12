@@ -97,7 +97,7 @@ RP3D_FORCE_INLINE TriangleVertexArray* TriangleMesh::getSubpart(uint32 indexSubp
  * @return The number of sub-parts of the mesh
  */
 RP3D_FORCE_INLINE uint32 TriangleMesh::getNbSubparts() const {
-    return mTriangleArrays.size();
+    return static_cast<uint32>(mTriangleArrays.size());
 }
 
 }

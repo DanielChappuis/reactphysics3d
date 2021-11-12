@@ -142,7 +142,7 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, Array<
     Array<int> overlappingNodes(allocator, 64);
     mDynamicAABBTree.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
 
-    const uint32 nbOverlappingNodes = overlappingNodes.size();
+    const uint32 nbOverlappingNodes = static_cast<uint32>(overlappingNodes.size());
 
     // Add space in the array of triangles vertices/normals for the new triangles
     triangleVertices.addWithoutInit(nbOverlappingNodes * 3);

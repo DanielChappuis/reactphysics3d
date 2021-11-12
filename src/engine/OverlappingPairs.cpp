@@ -81,7 +81,7 @@ void OverlappingPairs::removePair(uint64 pairIndex, bool isConvexVsConvex) {
 
     if (isConvexVsConvex) {
 
-        const uint32 nbConvexPairs = mConvexPairs.size();
+        const uint64 nbConvexPairs = mConvexPairs.size();
 
         assert(pairIndex < nbConvexPairs);
 
@@ -106,7 +106,7 @@ void OverlappingPairs::removePair(uint64 pairIndex, bool isConvexVsConvex) {
     }
     else {
 
-        const uint32 nbConcavePairs = mConcavePairs.size();
+        const uint64 nbConcavePairs = mConcavePairs.size();
 
         assert(pairIndex < nbConcavePairs);
 

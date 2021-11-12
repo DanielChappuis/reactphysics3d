@@ -146,7 +146,7 @@ struct NarrowPhaseInfoBatch {
 
 /// Return the number of objects in the batch
 RP3D_FORCE_INLINE uint32 NarrowPhaseInfoBatch::getNbObjects() const {
-    return narrowPhaseInfos.size();
+    return static_cast<uint32>(narrowPhaseInfos.size());
 }
 
 // Add shapes to be tested during narrow-phase collision detection into the batch

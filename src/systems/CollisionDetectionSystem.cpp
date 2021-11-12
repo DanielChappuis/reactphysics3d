@@ -191,7 +191,7 @@ void CollisionDetectionSystem::addLostContactPair(OverlappingPairs::OverlappingP
     const bool isTrigger = isCollider1Trigger || isCollider2Trigger;
 
     // Create a lost contact pair
-    ContactPair lostContactPair(overlappingPair.pairID, body1Entity, body2Entity, overlappingPair.collider1, overlappingPair.collider2, mLostContactPairs.size(),
+    ContactPair lostContactPair(overlappingPair.pairID, body1Entity, body2Entity, overlappingPair.collider1, overlappingPair.collider2, static_cast<uint32>(mLostContactPairs.size()),
                                 true, isTrigger);
     mLostContactPairs.add(lostContactPair);
 }
@@ -202,7 +202,7 @@ void CollisionDetectionSystem::updateOverlappingPairs(const Array<Pair<int32, in
     RP3D_PROFILE("CollisionDetectionSystem::updateOverlappingPairs()", mProfiler);
 
     // For each overlapping pair of nodes
-    const uint32 nbOverlappingNodes = overlappingNodes.size();
+    const uint32 nbOverlappingNodes = static_cast<uint32>(overlappingNodes.size());
     for (uint32 i=0; i < nbOverlappingNodes; i++) {
 
         Pair<int32, int32> nodePair = overlappingNodes[i];
@@ -402,7 +402,7 @@ void CollisionDetectionSystem::computeMiddlePhaseCollisionSnapshot(Array<uint64>
     }
 
     // For each possible convex vs concave pair of bodies
-    const uint32 nbConcavePairs = concavePairs.size();
+    const uint32 nbConcavePairs = static_cast<uint32>(concavePairs.size());
     for (uint32 p=0; p < nbConcavePairs; p++) {
 
         const uint64 pairId = concavePairs[p];
@@ -480,7 +480,7 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
     }
 
     // For each overlapping triangle
-    const uint32 nbShapeIds = shapeIds.size();
+    const uint32 nbShapeIds = static_cast<uint32>(shapeIds.size());
     for (uint32 i=0; i < nbShapeIds; i++) {
 
         // Create a triangle collision shape (the allocated memory for the TriangleShape will be released in the
@@ -619,7 +619,7 @@ void CollisionDetectionSystem::computeNarrowPhase() {
 // Add the contact pairs to the corresponding bodies
 void CollisionDetectionSystem::addContactPairsToBodies() {
 
-    const uint32 nbContactPairs = mCurrentContactPairs->size();
+    const uint32 nbContactPairs = static_cast<uint32>(mCurrentContactPairs->size());
     for (uint32 p=0 ; p < nbContactPairs; p++) {
 
         ContactPair& contactPair = (*mCurrentContactPairs)[p];
@@ -648,7 +648,7 @@ void CollisionDetectionSystem::addContactPairsToBodies() {
 void CollisionDetectionSystem::computeMapPreviousContactPairs() {
 
     mPreviousMapPairIdToContactPairIndex.clear();
-    const uint32 nbCurrentContactPairs = mCurrentContactPairs->size();
+    const uint32 nbCurrentContactPairs = static_cast<uint32>(mCurrentContactPairs->size());
     for (uint32 i=0; i < nbCurrentContactPairs; i++) {
         mPreviousMapPairIdToContactPairIndex.add(Pair<uint64, uint>((*mCurrentContactPairs)[i].pairId, i));
     }
@@ -707,7 +707,7 @@ void CollisionDetectionSystem::notifyOverlappingPairsToTestOverlap(Collider* col
     // Get the overlapping pairs involved with this collider
     Array<uint64>& overlappingPairs = mCollidersComponents.getOverlappingPairs(collider->getEntity());
 
-    const uint32 nbPairs = overlappingPairs.size();
+    const uint32 nbPairs = static_cast<uint32>(overlappingPairs.size());
     for (uint32 i=0; i < nbPairs; i++) {
 
         // Notify that the overlapping pair needs to be testbed for overlap
@@ -742,7 +742,7 @@ void CollisionDetectionSystem::computeOverlapSnapshotContactPairs(NarrowPhaseInf
                 const bool isTrigger = mCollidersComponents.mIsTrigger[collider1Index] || mCollidersComponents.mIsTrigger[collider2Index];
 
                 // Create a new contact pair
-                ContactPair contactPair(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId, body1Entity, body2Entity, collider1Entity, collider2Entity, contactPairs.size(), isTrigger, false);
+                ContactPair contactPair(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId, body1Entity, body2Entity, collider1Entity, collider2Entity, static_cast<uint32>(contactPairs.size()), isTrigger, false);
                 contactPairs.add(contactPair);
 
                 setOverlapContactPairId.add(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId);
@@ -832,16 +832,16 @@ void CollisionDetectionSystem::createContacts() {
 
     // Process the contact pairs in the order defined by the islands such that the contact manifolds and
     // contact points of a given island are packed together in the array of manifolds and contact points
-    const uint32 nbContactPairsToProcess = mWorld->mProcessContactPairsOrderIslands.size();
+    const uint32 nbContactPairsToProcess = static_cast<uint32>(mWorld->mProcessContactPairsOrderIslands.size());
     for (uint32 p=0; p < nbContactPairsToProcess; p++) {
 
         uint32 contactPairIndex = mWorld->mProcessContactPairsOrderIslands[p];
 
         ContactPair& contactPair = (*mCurrentContactPairs)[contactPairIndex];
 
-        contactPair.contactManifoldsIndex = mCurrentContactManifolds->size();
+        contactPair.contactManifoldsIndex = static_cast<uint32>(mCurrentContactManifolds->size());
         contactPair.nbContactManifolds = contactPair.nbPotentialContactManifolds;
-        contactPair.contactPointsIndex = mCurrentContactPoints->size();
+        contactPair.contactPointsIndex = static_cast<uint32>(mCurrentContactPoints->size());
 
         // For each potential contact manifold of the pair
         for (uint32 m=0; m < contactPair.nbPotentialContactManifolds; m++) {
@@ -849,7 +849,7 @@ void CollisionDetectionSystem::createContacts() {
             ContactManifoldInfo& potentialManifold = mPotentialContactManifolds[contactPair.potentialContactManifoldsIndices[m]];
 
             // Start index and number of contact points for this manifold
-            const uint32 contactPointsIndex = mCurrentContactPoints->size();
+            const uint32 contactPointsIndex = static_cast<uint32>(mCurrentContactPoints->size());
             const int8 nbContactPoints = static_cast<int8>(potentialManifold.nbPotentialContactPoints);
             contactPair.nbToTalContactPoints += nbContactPoints;
 
@@ -880,8 +880,8 @@ void CollisionDetectionSystem::createContacts() {
     mPreviousContactManifolds->clear();
     mPreviousContactPairs->clear();
 
-    mNbPreviousPotentialContactManifolds = mPotentialContactManifolds.capacity();
-    mNbPreviousPotentialContactPoints = mPotentialContactPoints.capacity();
+    mNbPreviousPotentialContactManifolds = static_cast<uint32>(mPotentialContactManifolds.capacity());
+    mNbPreviousPotentialContactPoints = static_cast<uint32>(mPotentialContactPoints.capacity());
 
     // Reset the potential contacts
     mPotentialContactPoints.clear(true);
@@ -899,7 +899,7 @@ void CollisionDetectionSystem::createContacts() {
 void CollisionDetectionSystem::computeLostContactPairs() {
 
     // For each convex pair
-    const uint32 nbConvexPairs = mOverlappingPairs.mConvexPairs.size();
+    const uint32 nbConvexPairs = static_cast<uint32>(mOverlappingPairs.mConvexPairs.size());
     for (uint32 i=0; i < nbConvexPairs; i++) {
 
         // If the two colliders of the pair were colliding in the previous frame but not in the current one
@@ -915,7 +915,7 @@ void CollisionDetectionSystem::computeLostContactPairs() {
     }
 
     // For each convex pair
-    const uint32 nbConcavePairs = mOverlappingPairs.mConcavePairs.size();
+    const uint32 nbConcavePairs = static_cast<uint32>(mOverlappingPairs.mConcavePairs.size());
     for (uint32 i=0; i < nbConcavePairs; i++) {
 
         // If the two colliders of the pair were colliding in the previous frame but not in the current one
@@ -944,15 +944,15 @@ void CollisionDetectionSystem::createSnapshotContacts(Array<ContactPair>& contac
     contactPoints.reserve(contactManifolds.size());
 
     // For each contact pair
-    const uint32 nbContactPairs = contactPairs.size();
+    const uint32 nbContactPairs = static_cast<uint32>(contactPairs.size());
     for (uint32 p=0; p < nbContactPairs; p++) {
 
         ContactPair& contactPair = contactPairs[p];
         assert(contactPair.nbPotentialContactManifolds > 0);
 
-        contactPair.contactManifoldsIndex = contactManifolds.size();
+        contactPair.contactManifoldsIndex = static_cast<uint32>(contactManifolds.size());
         contactPair.nbContactManifolds = contactPair.nbPotentialContactManifolds;
-        contactPair.contactPointsIndex = contactPoints.size();
+        contactPair.contactPointsIndex = static_cast<uint32>(contactPoints.size());
 
         // For each potential contact manifold of the pair
         for (uint32 m=0; m < contactPair.nbPotentialContactManifolds; m++) {
@@ -960,7 +960,7 @@ void CollisionDetectionSystem::createSnapshotContacts(Array<ContactPair>& contac
             ContactManifoldInfo& potentialManifold = potentialContactManifolds[contactPair.potentialContactManifoldsIndices[m]];
 
             // Start index and number of contact points for this manifold
-            const uint32 contactPointsIndex = contactPoints.size();
+            const uint32 contactPointsIndex = static_cast<uint32>(contactPoints.size());
             const uint8 nbContactPoints = potentialManifold.nbPotentialContactPoints;
             contactPair.nbToTalContactPoints += nbContactPoints;
 
@@ -991,7 +991,7 @@ void CollisionDetectionSystem::initContactsWithPreviousOnes() {
     const decimal persistentContactDistThresholdSqr = mWorld->mConfig.persistentContactDistanceThreshold * mWorld->mConfig.persistentContactDistanceThreshold;
 
     // For each contact pair of the current frame
-    const uint32 nbCurrentContactPairs = mCurrentContactPairs->size();
+    const uint32 nbCurrentContactPairs = static_cast<uint32>(mCurrentContactPairs->size());
     for (uint32 i=0; i < nbCurrentContactPairs; i++) {
 
         ContactPair& currentContactPair = (*mCurrentContactPairs)[i];
@@ -1168,7 +1168,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
                 assert(!mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) || !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity));
 
-                const uint32 newContactPairIndex = contactPairs->size();
+                const uint32 newContactPairIndex = static_cast<uint32>(contactPairs->size());
 
                 contactPairs->emplace(pairId, body1Entity, body2Entity, collider1Entity, collider2Entity,
                                       newContactPairIndex, overlappingPair->collidingInPreviousFrame, isTrigger);
@@ -1216,7 +1216,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
                     assert(!mWorld->mCollisionBodyComponents.getIsEntityDisabled(body1Entity) || !mWorld->mCollisionBodyComponents.getIsEntityDisabled(body2Entity));
 
-                    const uint32 newContactPairIndex = contactPairs->size();
+                    const uint32 newContactPairIndex = static_cast<uint32>(contactPairs->size());
                     contactPairs->emplace(pairId, body1Entity, body2Entity, collider1Entity, collider2Entity,
                                                        newContactPairIndex, overlappingPair->collidingInPreviousFrame , isTrigger);
                     pairContact = &((*contactPairs)[newContactPairIndex]);
@@ -1239,7 +1239,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                     const ContactPointInfo& contactPoint = narrowPhaseInfoBatch.narrowPhaseInfos[i].contactPoints[j];
 
                     // Add the contact point to the array of potential contact points
-                    const uint32 contactPointIndex = potentialContactPoints.size();
+                    const uint32 contactPointIndex = static_cast<uint32>(potentialContactPoints.size());
 
                     potentialContactPoints.add(contactPoint);
 
@@ -1276,7 +1276,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                     if (!similarManifoldFound && pairContact->nbPotentialContactManifolds < NB_MAX_POTENTIAL_CONTACT_MANIFOLDS) {
 
                         // Create a new potential contact manifold for the overlapping pair
-                        uint32 contactManifoldIndex = potentialContactManifolds.size();
+                        uint32 contactManifoldIndex = static_cast<uint32>(potentialContactManifolds.size());
                         potentialContactManifolds.emplace(pairId);
                         ContactManifoldInfo& contactManifoldInfo = potentialContactManifolds[contactManifoldIndex];
 
@@ -1309,7 +1309,7 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(Array<ContactPair
     RP3D_PROFILE("CollisionDetectionSystem::reducePotentialContactManifolds()", mProfiler);
 
     // Reduce the number of potential contact manifolds in a contact pair
-    const uint32 nbContactPairs = contactPairs->size();
+    const uint32 nbContactPairs = static_cast<uint32>(contactPairs->size());
     for (uint32 i=0; i < nbContactPairs; i++) {
 
         ContactPair& contactPair = (*contactPairs)[i];
@@ -1804,7 +1804,7 @@ void CollisionDetectionSystem::testCollision(CollisionCallback& callback) {
 void CollisionDetectionSystem::filterOverlappingPairs(Entity bodyEntity, Array<uint64>& convexPairs, Array<uint64>& concavePairs) const {
 
     // For each convex pairs
-    const uint32 nbConvexPairs = mOverlappingPairs.mConvexPairs.size();
+    const uint32 nbConvexPairs = static_cast<uint32>(mOverlappingPairs.mConvexPairs.size());
     for (uint32 i=0; i < nbConvexPairs; i++) {
 
         if (mCollidersComponents.getBody(mOverlappingPairs.mConvexPairs[i].collider1) == bodyEntity ||
@@ -1815,7 +1815,7 @@ void CollisionDetectionSystem::filterOverlappingPairs(Entity bodyEntity, Array<u
     }
 
     // For each concave pairs
-    const uint32 nbConcavePairs = mOverlappingPairs.mConcavePairs.size();
+    const uint32 nbConcavePairs = static_cast<uint32>(mOverlappingPairs.mConcavePairs.size());
     for (uint32 i=0; i < nbConcavePairs; i++) {
 
         if (mCollidersComponents.getBody(mOverlappingPairs.mConcavePairs[i].collider1) == bodyEntity ||
@@ -1830,7 +1830,7 @@ void CollisionDetectionSystem::filterOverlappingPairs(Entity bodyEntity, Array<u
 void CollisionDetectionSystem::filterOverlappingPairs(Entity body1Entity, Entity body2Entity, Array<uint64>& convexPairs, Array<uint64>& concavePairs) const {
 
     // For each convex pair
-    const uint32 nbConvexPairs = mOverlappingPairs.mConvexPairs.size();
+    const uint32 nbConvexPairs = static_cast<uint32>(mOverlappingPairs.mConvexPairs.size());
     for (uint32 i=0; i < nbConvexPairs; i++) {
 
         const Entity collider1Body = mCollidersComponents.getBody(mOverlappingPairs.mConvexPairs[i].collider1);
@@ -1844,7 +1844,7 @@ void CollisionDetectionSystem::filterOverlappingPairs(Entity body1Entity, Entity
     }
 
     // For each concave pair
-    const uint32 nbConcavePairs = mOverlappingPairs.mConcavePairs.size();
+    const uint32 nbConcavePairs = static_cast<uint32>(mOverlappingPairs.mConcavePairs.size());
     for (uint32 i=0; i < nbConcavePairs; i++) {
 
         const Entity collider1Body = mCollidersComponents.getBody(mOverlappingPairs.mConcavePairs[i].collider1);

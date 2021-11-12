@@ -297,7 +297,7 @@ class CollisionCallback {
  * @return The number of contact pairs
  */
 RP3D_FORCE_INLINE uint32 CollisionCallback::CallbackData::getNbContactPairs() const {
-    return mContactPairsIndices.size() + mLostContactPairsIndices.size();
+    return static_cast<uint32>(mContactPairsIndices.size() + mLostContactPairsIndices.size());
 }
 
 // Return the number of contact points in the contact pair

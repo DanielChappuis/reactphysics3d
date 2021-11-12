@@ -429,7 +429,7 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint32 referenceFac
     bool contactFound = false;
 
 	// For each of the two clipped points
-    const uint32 nbClipSegments = clipSegment.size();
+    const uint32 nbClipSegments = static_cast<uint32>(clipSegment.size());
     for (uint32 i = 0; i < nbClipSegments; i++) {
 
 		// Compute the penetration depth of the two clipped points (to filter out the points that does not correspond to the penetration depth)
@@ -924,8 +924,8 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     // Get the incident face
     const HalfEdgeStructure::Face& incidentFace = incidentPolyhedron->getFace(incidentFaceIndex);
 
-    const uint32 nbIncidentFaceVertices = incidentFace.faceVertices.size();
-    const uint32 nbMaxElements = nbIncidentFaceVertices * 2 * referenceFace.faceVertices.size();
+    const uint32 nbIncidentFaceVertices = static_cast<uint32>(incidentFace.faceVertices.size());
+    const uint32 nbMaxElements = nbIncidentFaceVertices * 2 * static_cast<uint32>(referenceFace.faceVertices.size());
     Array<Vector3> verticesTemp1(mMemoryAllocator, nbMaxElements);
     Array<Vector3> verticesTemp2(mMemoryAllocator, nbMaxElements);
 
@@ -976,11 +976,11 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
         // Clear the input array of vertices before the next loop
         if (areVertices1Input) {
             verticesTemp1.clear();
-            nbOutputVertices = verticesTemp2.size();
+            nbOutputVertices = static_cast<uint32>(verticesTemp2.size());
         }
         else {
             verticesTemp2.clear();
-            nbOutputVertices = verticesTemp1.size();
+            nbOutputVertices = static_cast<uint32>(verticesTemp1.size());
         }
 
     } while (currentEdgeIndex != firstEdgeIndex && nbOutputVertices > 0);
@@ -991,7 +991,7 @@ bool SATAlgorithm::computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPene
     // We only keep the clipped points that are below the reference face
     const Vector3 referenceFaceVertex = referencePolyhedron->getVertexPosition(referencePolyhedron->getHalfEdge(firstEdgeIndex).vertexIndex);
     bool contactPointsFound = false;
-    const uint32 nbClipPolygonVertices = clippedPolygonVertices.size();
+    const uint32 nbClipPolygonVertices = static_cast<uint32>(clippedPolygonVertices.size());
     for (uint32 i=0; i < nbClipPolygonVertices; i++) {
 
         // Compute the penetration depth of this contact point (can be different from the minPenetration depth which is

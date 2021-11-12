@@ -132,7 +132,7 @@ class HalfEdgeStructure {
 RP3D_FORCE_INLINE uint32 HalfEdgeStructure::addVertex(uint32 vertexPointIndex) {
     Vertex vertex(vertexPointIndex);
     mVertices.add(vertex);
-    return mVertices.size() - 1;
+    return static_cast<uint32>(mVertices.size()) - 1;
 }
 
 // Add a face
@@ -152,7 +152,7 @@ RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(Array<uint32> faceVertices) {
  * @return The number of faces in the polyhedron
  */
 RP3D_FORCE_INLINE uint32 HalfEdgeStructure::getNbFaces() const {
-    return mFaces.size();
+    return static_cast<uint32>(mFaces.size());
 }
 
 // Return the number of edges
@@ -160,7 +160,7 @@ RP3D_FORCE_INLINE uint32 HalfEdgeStructure::getNbFaces() const {
  * @return The number of edges in the polyhedron
  */
 RP3D_FORCE_INLINE uint32 HalfEdgeStructure::getNbHalfEdges() const {
-    return mEdges.size();
+    return static_cast<uint32>(mEdges.size());
 }
 
 // Return the number of vertices
@@ -168,7 +168,7 @@ RP3D_FORCE_INLINE uint32 HalfEdgeStructure::getNbHalfEdges() const {
  * @return The number of vertices in the polyhedron
  */
 RP3D_FORCE_INLINE uint32 HalfEdgeStructure::getNbVertices() const {
-    return mVertices.size();
+    return static_cast<uint32>(mVertices.size());
 }
 
 // Return a given face

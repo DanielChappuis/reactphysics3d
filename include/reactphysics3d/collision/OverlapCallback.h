@@ -186,7 +186,7 @@ class OverlapCallback {
 
 // Return the number of overlapping pairs of bodies
 RP3D_FORCE_INLINE uint32 OverlapCallback::CallbackData::getNbOverlappingPairs() const {
-    return mContactPairsIndices.size() + mLostContactPairsIndices.size();
+    return static_cast<uint32>(mContactPairsIndices.size() + mLostContactPairsIndices.size());
 }
 
 // Return a given overlapping pair of bodies

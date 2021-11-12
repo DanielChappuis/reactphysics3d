@@ -71,8 +71,8 @@ void ContactSolverSystem::init(Array<ContactManifold>* contactManifolds, Array<C
 
     mTimeStep = timeStep;
 
-    const uint32 nbContactManifolds = mAllContactManifolds->size();
-    const uint32 nbContactPoints = mAllContactPoints->size();
+    const uint32 nbContactManifolds = static_cast<uint32>(mAllContactManifolds->size());
+    const uint32 nbContactPoints = static_cast<uint32>(mAllContactPoints->size());
 
     mNbContactManifolds = 0;
     mNbContactPoints = 0;

@@ -53,7 +53,7 @@ Entity EntityManager::createEntity() {
         mGenerations.add(0);
 
         // Create a new indice
-        index = mGenerations.size() - 1;
+        index = static_cast<uint32>(mGenerations.size()) - 1;
 
         assert(index < (uint32(1) << Entity::ENTITY_INDEX_BITS));
     }

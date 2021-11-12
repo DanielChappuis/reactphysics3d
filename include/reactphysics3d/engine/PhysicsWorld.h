@@ -685,7 +685,7 @@ RP3D_FORCE_INLINE void PhysicsWorld::setEventListener(EventListener* eventListen
  * @return The number of collision bodies in the physics world
  */
 RP3D_FORCE_INLINE uint32 PhysicsWorld::getNbCollisionBodies() const {
-   return mCollisionBodies.size();
+   return static_cast<uint32>(mCollisionBodies.size());
 }
 
 // Return the number of RigidBody in the physics world
@@ -693,7 +693,7 @@ RP3D_FORCE_INLINE uint32 PhysicsWorld::getNbCollisionBodies() const {
  * @return The number of rigid bodies in the physics world
  */
 RP3D_FORCE_INLINE uint32 PhysicsWorld::getNbRigidBodies() const {
-   return mRigidBodies.size();
+   return static_cast<uint32>(mRigidBodies.size());
 }
 
 // Return true if the debug rendering is enabled

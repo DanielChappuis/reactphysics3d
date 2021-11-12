@@ -132,7 +132,7 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
 * @return The number of colliders associated with this body
 */
 uint32 CollisionBody::getNbColliders() const {
-    return mWorld.mCollisionBodyComponents.getColliders(mEntity).size();
+    return static_cast<uint32>(mWorld.mCollisionBodyComponents.getColliders(mEntity).size());
 }
 
 // Return a const pointer to a given collider of the body
@@ -223,7 +223,7 @@ void CollisionBody::updateBroadPhaseState() const {
 
     // For all the colliders of the body
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    const uint32 nbColliderEntities = colliderEntities.size();
+    const uint32 nbColliderEntities = static_cast<uint32>(colliderEntities.size());
     for (uint32 i=0; i < nbColliderEntities; i++) {
 
         // Update the local-to-world transform of the collider
@@ -293,7 +293,7 @@ void CollisionBody::askForBroadPhaseCollisionCheck() const {
 
     // For all the colliders of the body
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    const uint32 nbColliderEntities = colliderEntities.size();
+    const uint32 nbColliderEntities = static_cast<uint32>(colliderEntities.size());
     for (uint32 i=0; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
@@ -341,7 +341,7 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 
     // For each collider of the body
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    const uint32 nbColliderEntities = colliderEntities.size();
+    const uint32 nbColliderEntities = static_cast<uint32>(colliderEntities.size());
     for (uint32 i=0; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
@@ -373,7 +373,7 @@ AABB CollisionBody::getAABB() const {
     collider->getCollisionShape()->computeAABB(bodyAABB, transform * collider->getLocalToBodyTransform());
 
     // For each collider of the body
-    const uint32 nbColliderEntities = colliderEntities.size();
+    const uint32 nbColliderEntities = static_cast<uint32>(colliderEntities.size());
     for (uint32 i=1; i < nbColliderEntities; i++) {
 
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);

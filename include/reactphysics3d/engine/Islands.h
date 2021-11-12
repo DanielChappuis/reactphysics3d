@@ -99,17 +99,17 @@ struct Islands {
 
         /// Return the number of islands
         uint32 getNbIslands() const {
-            return contactManifoldsIndices.size();
+            return static_cast<uint32>(contactManifoldsIndices.size());
         }
 
         /// Add an island and return its index
         uint32 addIsland(uint32 contactManifoldStartIndex) {
 
-            const uint32 islandIndex = contactManifoldsIndices.size();
+            const uint32 islandIndex = static_cast<uint32>(contactManifoldsIndices.size());
 
             contactManifoldsIndices.add(contactManifoldStartIndex);
             nbContactManifolds.add(0);
-            startBodyEntitiesIndex.add(bodyEntities.size());
+            startBodyEntitiesIndex.add(static_cast<uint32>(bodyEntities.size()));
             nbBodiesInIsland.add(0);
 
             if (islandIndex > 0 && nbBodiesInIsland[islandIndex-1] > mNbMaxBodiesInIslandCurrentFrame) {
@@ -121,7 +121,7 @@ struct Islands {
 
         void addBodyToIsland(Entity bodyEntity) {
 
-            const uint32 islandIndex = contactManifoldsIndices.size();
+            const uint32 islandIndex = static_cast<uint32>(contactManifoldsIndices.size());
             assert(islandIndex > 0);
 
             bodyEntities.add(bodyEntity);
@@ -142,7 +142,7 @@ struct Islands {
         /// Clear all the islands
         void clear() {
 
-            const uint32 nbIslands = nbContactManifolds.size();
+            const uint32 nbIslands = static_cast<uint32>(nbContactManifolds.size());
 
             if (nbIslands > 0 && nbBodiesInIsland[nbIslands-1] > mNbMaxBodiesInIslandCurrentFrame) {
                 mNbMaxBodiesInIslandCurrentFrame = nbBodiesInIsland[nbIslands-1];
@@ -151,7 +151,7 @@ struct Islands {
             mNbMaxBodiesInIslandPreviousFrame = mNbMaxBodiesInIslandCurrentFrame;
             mNbIslandsPreviousFrame = nbIslands;
             mNbMaxBodiesInIslandCurrentFrame = 0;
-            mNbBodyEntitiesPreviousFrame = bodyEntities.size();
+            mNbBodyEntitiesPreviousFrame = static_cast<uint32>(bodyEntities.size());
 
             contactManifoldsIndices.clear(true);
             nbContactManifolds.clear(true);

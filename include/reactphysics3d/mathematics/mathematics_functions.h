@@ -266,7 +266,7 @@ RP3D_FORCE_INLINE Array<Vector3> clipSegmentWithPlanes(const Vector3& segA, cons
     inputVertices.add(segB);
 
     // For each clipping plane
-    const uint32 nbPlanesPoints = planesPoints.size();
+    const uint32 nbPlanesPoints = static_cast<uint32>(planesPoints.size());
     for (uint32 p=0; p < nbPlanesPoints; p++) {
 
         // If there is no more vertices, stop
@@ -332,7 +332,7 @@ RP3D_FORCE_INLINE Array<Vector3> clipSegmentWithPlanes(const Vector3& segA, cons
 RP3D_FORCE_INLINE void clipPolygonWithPlane(const Array<Vector3>& polygonVertices, const Vector3& planePoint,
                                             const Vector3& planeNormal, Array<Vector3>& outClippedPolygonVertices) {
 
-    uint32 nbInputVertices = polygonVertices.size();
+    uint32 nbInputVertices = static_cast<uint32>(polygonVertices.size());
 
     assert(outClippedPolygonVertices.size() == 0);
 
@@ -408,7 +408,7 @@ RP3D_FORCE_INLINE bool isPowerOfTwo(uint64 number) {
 }
 
 /// Return the next power of two larger than the number in parameter
-RP3D_FORCE_INLINE uint32 nextPowerOfTwo64Bits(uint64 number) {
+RP3D_FORCE_INLINE uint64 nextPowerOfTwo64Bits(uint64 number) {
     number--;
     number |= number >> 1;
     number |= number >> 2;

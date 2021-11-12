@@ -123,7 +123,9 @@ PhysicsWorld::~PhysicsWorld() {
              "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);
 
     // Destroy all the collision bodies that have not been removed
-    for (int i=mCollisionBodies.size() - 1 ; i >= 0; i--) {
+    uint32 i = static_cast<uint32>(mCollisionBodies.size());
+    while (i != 0) {
+        i--;
         destroyCollisionBody(mCollisionBodies[i]);
     }
 
@@ -141,7 +143,9 @@ PhysicsWorld::~PhysicsWorld() {
     }
 
     // Destroy all the rigid bodies that have not been removed
-    for (int i=mRigidBodies.size() - 1; i >= 0; i--) {
+    i = static_cast<uint32>(mRigidBodies.size());
+    while (i != 0) {
+        i--;
         destroyRigidBody(mRigidBodies[i]);
     }
 
@@ -244,7 +248,7 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
     // For each collider of the body
     const Array<Entity>& collidersEntities = mCollisionBodyComponents.getColliders(bodyEntity);
-    const uint32 nbColliderEntities = collidersEntities.size();
+    const uint32 nbColliderEntities = static_cast<uint32>(collidersEntities.size());
     for (uint32 i=0; i < nbColliderEntities; i++) {
 
         mCollidersComponents.setIsEntityDisabled(collidersEntities[i], isDisabled);
@@ -832,7 +836,7 @@ void PhysicsWorld::createIslands() {
 
             // If the body is involved in contacts with other bodies
             // For each contact pair in which the current body is involded
-            const uint32 nbBodyContactPairs = mRigidBodyComponents.mContactPairs[bodyToVisitIndex].size();
+            const uint32 nbBodyContactPairs = static_cast<uint32>(mRigidBodyComponents.mContactPairs[bodyToVisitIndex].size());
             for (uint32 p=0; p < nbBodyContactPairs; p++) {
 
                 const uint32 contactPairIndex = mRigidBodyComponents.mContactPairs[bodyToVisitIndex][p];
@@ -873,7 +877,7 @@ void PhysicsWorld::createIslands() {
 
             // For each joint in which the current body is involved
             const Array<Entity>& joints = mRigidBodyComponents.getJoints(rigidBodyToVisit->getEntity());
-            const uint32 nbBodyJoints = joints.size();
+            const uint32 nbBodyJoints = static_cast<uint32>(joints.size());
             for (uint32 i=0; i < nbBodyJoints; i++) {
 
                 const uint32 jointComponentIndex = mJointsComponents.getEntityIndex(joints[i]);
@@ -901,7 +905,7 @@ void PhysicsWorld::createIslands() {
 
         // Reset the isAlreadyIsland variable of the static bodies so that they
         // can also be included in the other islands
-        const uint32 nbStaticBodiesAddedToIsland = staticBodiesAddedToIsland.size();
+        const uint32 nbStaticBodiesAddedToIsland = static_cast<uint32>(staticBodiesAddedToIsland.size());
         for (uint32 j=0; j < nbStaticBodiesAddedToIsland; j++) {
 
             assert(mRigidBodyComponents.getBodyType(staticBodiesAddedToIsland[j]) == BodyType::STATIC);
