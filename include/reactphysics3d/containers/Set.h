@@ -275,7 +275,7 @@ class Set {
             uint64* newBuckets = static_cast<uint64*>(mAllocator.allocate(capacity * sizeof(uint64)));
 
             // Allocate memory for the entries
-            const uint64 nbAllocatedEntries = static_cast<uint64>(capacity * DEFAULT_LOAD_FACTOR);
+            const uint64 nbAllocatedEntries = static_cast<uint64>(static_cast<float>(capacity) * DEFAULT_LOAD_FACTOR);
             assert(nbAllocatedEntries > 0);
             V* newEntries = static_cast<V*>(mAllocator.allocate(nbAllocatedEntries * sizeof(V)));
             uint64* newNextEntries = static_cast<uint64*>(mAllocator.allocate(nbAllocatedEntries * sizeof(uint64)));

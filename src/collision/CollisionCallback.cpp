@@ -83,8 +83,8 @@ CollisionCallback::CallbackData::CallbackData(Array<reactphysics3d::ContactPair>
                        mWorld(world) {
 
     // Filter the contact pairs to only keep the contact events (not the overlap/trigger events)
-    const uint32 nbContactPairs = mContactPairs->size();
-    for (uint32 i=0; i < nbContactPairs; i++) {
+    const uint64 nbContactPairs = mContactPairs->size();
+    for (uint64 i=0; i < nbContactPairs; i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
         if (!(*mContactPairs)[i].isTrigger) {
@@ -92,8 +92,8 @@ CollisionCallback::CallbackData::CallbackData(Array<reactphysics3d::ContactPair>
         }
     }
     // Filter the lost contact pairs to only keep the contact events (not the overlap/trigger events)
-    const uint32 nbLostContactPairs = mLostContactPairs.size();
-    for (uint32 i=0; i < nbLostContactPairs; i++) {
+    const uint64 nbLostContactPairs = mLostContactPairs.size();
+    for (uint64 i=0; i < nbLostContactPairs; i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
         if (!mLostContactPairs[i].isTrigger) {

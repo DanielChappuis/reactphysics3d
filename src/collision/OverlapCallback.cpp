@@ -72,8 +72,8 @@ OverlapCallback::CallbackData::CallbackData(Array<ContactPair>& contactPairs, Ar
                  mContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mWorld(world) {
 
     // Filter the contact pairs to only keep the overlap/trigger events (not the contact events)
-    const uint32 nbContactPairs = mContactPairs.size();
-    for (uint32 i=0; i < nbContactPairs; i++) {
+    const uint64 nbContactPairs = mContactPairs.size();
+    for (uint64 i=0; i < nbContactPairs; i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
         if (!onlyReportTriggers || mContactPairs[i].isTrigger) {
@@ -81,8 +81,8 @@ OverlapCallback::CallbackData::CallbackData(Array<ContactPair>& contactPairs, Ar
         }
     }
     // Filter the lost contact pairs to only keep the overlap/trigger events (not the contact events)
-    const uint32 nbLostContactPairs = mLostContactPairs.size();
-    for (uint32 i=0; i < nbLostContactPairs; i++) {
+    const uint64 nbLostContactPairs = mLostContactPairs.size();
+    for (uint i=0; i < nbLostContactPairs; i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
         if (!onlyReportTriggers || mLostContactPairs[i].isTrigger) {

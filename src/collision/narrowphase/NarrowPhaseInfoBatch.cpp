@@ -52,7 +52,7 @@ void NarrowPhaseInfoBatch::reserveMemory() {
 // Clear all the objects in the batch
 void NarrowPhaseInfoBatch::clear() {
 
-    const uint32 nbNarrowPhaseInfos = narrowPhaseInfos.size();
+    const uint32 nbNarrowPhaseInfos = static_cast<uint32>(narrowPhaseInfos.size());
     for (uint32 i=0; i < nbNarrowPhaseInfos; i++) {
 
         assert(narrowPhaseInfos[i].nbContactPoints == 0);
@@ -76,7 +76,7 @@ void NarrowPhaseInfoBatch::clear() {
     // allocated in the next frame at a possibly different location in memory (remember that the
     // location of the allocated memory of a single frame allocator might change between two frames)
 
-    mCachedCapacity = narrowPhaseInfos.capacity();
+    mCachedCapacity = static_cast<uint32>(narrowPhaseInfos.capacity());
 
     narrowPhaseInfos.clear(true);
 }

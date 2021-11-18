@@ -1005,8 +1005,8 @@ void RigidBody::resetOverlappingPairs() {
         // Get the currently overlapping pairs for this collider
         Array<uint64> overlappingPairs = mWorld.mCollidersComponents.getOverlappingPairs(colliderEntities[i]);
 
-        const uint32 nbOverlappingPairs = overlappingPairs.size();
-        for (uint32 j=0; j < nbOverlappingPairs; j++) {
+        const uint64 nbOverlappingPairs = overlappingPairs.size();
+        for (uint64 j=0; j < nbOverlappingPairs; j++) {
 
             mWorld.mCollisionDetection.mOverlappingPairs.removePair(overlappingPairs[j]);
         }

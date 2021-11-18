@@ -241,7 +241,7 @@ class DynamicAABBTree {
         void* getNodeDataPointer(int32 nodeID) const;
 
         /// Report all shapes overlapping with all the shapes in the map in parameter
-        void reportAllShapesOverlappingWithShapes(const Array<int32>& nodesToTest, size_t startIndex,
+        void reportAllShapesOverlappingWithShapes(const Array<int32>& nodesToTest, uint32 startIndex,
                                                   size_t endIndex, Array<Pair<int32, int32>>& outOverlappingNodes) const;
 
         /// Report all shapes overlapping with the AABB given in parameter.

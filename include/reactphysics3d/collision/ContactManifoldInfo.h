@@ -58,7 +58,7 @@ struct ContactManifoldInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifoldInfo(uint64 pairId) : nbPotentialContactPoints(0), pairId(pairId) {
+        ContactManifoldInfo(uint64 pairId) : nbPotentialContactPoints(0), potentialContactPointsIndices{0}, pairId(pairId) {
 
         }
 

@@ -57,10 +57,10 @@ class HalfEdgeStructure {
             Array<uint32> faceVertices;	// Index of the vertices of the face
 
             /// Constructor
-            Face(MemoryAllocator& allocator) : faceVertices(allocator) {}
+            Face(MemoryAllocator& allocator) : edgeIndex(0), faceVertices(allocator) {}
 
             /// Constructor
-            Face(Array<uint32> vertices) : faceVertices(vertices) {}
+            Face(Array<uint32> vertices) : edgeIndex(0), faceVertices(vertices) {}
         };
 
         /// Vertex
@@ -69,7 +69,7 @@ class HalfEdgeStructure {
             uint32 edgeIndex;         // Index of one edge emanting from this vertex
 
             /// Constructor
-            Vertex(uint32 vertexCoordsIndex) : vertexPointIndex(vertexCoordsIndex) { }
+            Vertex(uint32 vertexCoordsIndex) : vertexPointIndex(vertexCoordsIndex), edgeIndex(0) { }
         };
 
     private:

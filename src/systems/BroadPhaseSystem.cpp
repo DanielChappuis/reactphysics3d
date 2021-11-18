@@ -217,7 +217,7 @@ void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, Arr
     Array<int> shapesToTest = mMovedShapes.toArray(memoryManager.getHeapAllocator());
 
     // Ask the dynamic AABB tree to report all collision shapes that overlap with the shapes to test
-    mDynamicAABBTree.reportAllShapesOverlappingWithShapes(shapesToTest, 0, shapesToTest.size(), overlappingNodes);
+    mDynamicAABBTree.reportAllShapesOverlappingWithShapes(shapesToTest, 0, static_cast<uint32>(shapesToTest.size()), overlappingNodes);
 
     // Reset the array of collision shapes that have move (or have been created) during the
     // last simulation step

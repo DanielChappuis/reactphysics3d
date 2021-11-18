@@ -44,7 +44,7 @@ void HalfEdgeStructure::init() {
     Array<VerticesPair> currentFaceEdges(mAllocator, mFaces[0].faceVertices.size());
 
     // For each face
-    const uint32 nbFaces = mFaces.size();
+    const uint32 nbFaces = static_cast<uint32>(mFaces.size());
     for (uint32 f=0; f < nbFaces; f++) {
 
         Face& face = mFaces[f];
@@ -52,7 +52,7 @@ void HalfEdgeStructure::init() {
         VerticesPair firstEdgeKey(0, 0);
 
         // For each vertex of the face
-        const uint32 nbFaceVertices = face.faceVertices.size();
+        const uint32 nbFaceVertices = static_cast<uint32>(face.faceVertices.size());
         for (uint32 v=0; v < nbFaceVertices; v++) {
             uint32 v1Index = face.faceVertices[v];
             uint32 v2Index = face.faceVertices[v == (face.faceVertices.size() - 1) ? 0 : v + 1];
@@ -84,7 +84,7 @@ void HalfEdgeStructure::init() {
             auto itEdge = edges.find(pairV2V1);
             if (itEdge != edges.end()) {
 
-                const uint32 edgeIndex = mEdges.size();
+                const uint32 edgeIndex = static_cast<uint32>(mEdges.size());
 
                 itEdge->second.twinEdgeIndex = edgeIndex + 1;
                 edge.twinEdgeIndex = edgeIndex;
@@ -109,7 +109,7 @@ void HalfEdgeStructure::init() {
     }
 
     // Set next edges
-    const uint32 nbEdges = mEdges.size();
+    const uint32 nbEdges = static_cast<uint32>(mEdges.size());
     for (uint32 i=0; i < nbEdges; i++) {
         mEdges[i].nextEdgeIndex = mapEdgeToIndex[nextEdges[mapEdgeIndexToKey[i]]];
     }

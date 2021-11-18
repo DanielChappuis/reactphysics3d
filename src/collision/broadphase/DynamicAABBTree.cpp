@@ -587,7 +587,7 @@ int32 DynamicAABBTree::balanceSubTreeAtNode(int32 nodeID) {
 }
 
 /// Take an array of shapes to be tested for broad-phase overlap and return an array of pair of overlapping shapes
-void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const Array<int32>& nodesToTest, size_t startIndex,
+void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const Array<int32>& nodesToTest, uint32 startIndex,
                                                            size_t endIndex, Array<Pair<int32, int32>>& outOverlappingNodes) const {
 
     RP3D_PROFILE("DynamicAABBTree::reportAllShapesOverlappingWithAABB()", mProfiler);
