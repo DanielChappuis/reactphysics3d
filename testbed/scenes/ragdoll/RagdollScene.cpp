@@ -36,10 +36,12 @@ RagdollScene::RagdollScene(const std::string& name, EngineSettings& settings, re
       : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 10, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(2.1);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }

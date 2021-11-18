@@ -37,7 +37,8 @@ Scene::Scene(const std::string& name, EngineSettings& engineSettings, bool isSha
         mCurrentCameraVerticalAngle(0.0), mViewportX(0), mViewportY(0),
         mViewportWidth(0), mViewportHeight(0), mIsShadowMappingEnabled(isShadowMappingEnabled),
         mAreContactPointsDisplayed(true), mAreContactNormalsDisplayed(false), mAreBroadPhaseAABBsDisplayed(false),
-        mAreCollidersAABBsDisplayed(false), mAreCollisionShapesDisplayed(false), mIsWireframeEnabled(false) {
+        mAreCollidersAABBsDisplayed(false), mAreCollisionShapesDisplayed(false), mIsWireframeEnabled(false),
+        mInitZoom(2.0f) {
 
 }
 
@@ -63,12 +64,12 @@ void Scene::resetCameraToViewAll() {
     // Move the camera to the origin of the scene
     mCamera.translateWorld(-mCamera.getOrigin());
 
-    // Move the camera to the center of the scene
+    // Move the camera
     mCamera.translateWorld(mCenterScene);
 
     // Set the zoom of the camera so that the scene center is
     // in negative view direction of the camera
-    mCamera.setZoom(1.0);
+    mCamera.setZoom(mInitZoom);
 }
 
 // Map the mouse x,y coordinates to a point on a sphere
@@ -182,6 +183,4 @@ void Scene::rotate(int xMouse, int yMouse) {
     mCamera.rotateAroundLocalPoint(localVertAxis, deltaHorizRotationAngle, mCenterScene);
 
     mCurrentCameraVerticalAngle += deltaVertRotationAngle;
-    std::cout << "Delta angle: " << deltaVertRotationAngle << std::endl;
-    std::cout << "Horizon angle: " << mCurrentCameraVerticalAngle << std::endl;
 }

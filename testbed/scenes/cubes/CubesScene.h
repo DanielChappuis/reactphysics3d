@@ -38,7 +38,7 @@ namespace cubesscene {
 const float SCENE_RADIUS = 30.0f;                       // Radius of the scene in meters
 const int NB_CUBES = 30;                                // Number of boxes in the scene
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);       // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 1, 50);   // Floor dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(30, 1, 30);   // Floor dimensions in meters
 
 // Class CubesScene
 class CubesScene : public SceneDemo {
@@ -52,8 +52,6 @@ class CubesScene : public SceneDemo {
 
         /// Box for the floor
         Box* mFloor;
-
-        unsigned int iter;
 
         /// World settings
         rp3d::PhysicsWorld::WorldSettings mWorldSettings;

@@ -84,7 +84,7 @@ DefaultLogger::Formatter* TestbedLogger::getFormatter(DefaultLogger::Format form
 }
 
 // Add a log file destination to the logger
-void TestbedLogger::addFileDestination(const std::string& worldName, uint logLevelFlag, reactphysics3d::DefaultLogger::Format format) {
+void TestbedLogger::addFileDestination(const std::string& worldName, reactphysics3d::uint logLevelFlag, reactphysics3d::DefaultLogger::Format format) {
 
     std::string filePath = "rp3d_log_" + worldName + ".html";
     reactphysics3d::DefaultLogger::FileDestination* destination = new reactphysics3d::DefaultLogger::FileDestination(filePath, logLevelFlag, getFormatter(format));
@@ -92,7 +92,7 @@ void TestbedLogger::addFileDestination(const std::string& worldName, uint logLev
 }
 
 // Add a stream destination to the logger
-void TestbedLogger::addStreamDestination(std::ostream& outputStream, uint logLevelFlag, reactphysics3d::DefaultLogger::Format format) {
+void TestbedLogger::addStreamDestination(std::ostream& outputStream, reactphysics3d::uint logLevelFlag, reactphysics3d::DefaultLogger::Format format) {
 
     mStandardOutputDestination = new reactphysics3d::DefaultLogger::StreamDestination(outputStream, logLevelFlag, getFormatter(format));
 }

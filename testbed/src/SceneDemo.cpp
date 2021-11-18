@@ -34,51 +34,51 @@ using namespace openglframework;
 
 int SceneDemo::shadowMapTextureLevel = 0;
 //openglframework::Color SceneDemo::mObjectColorDemo = Color(0.76f, 0.67f, 0.47f, 1.0f);
-openglframework::Color SceneDemo::mObjectColorDemo = Color(0.35f, 0.65f, 0.78f, 1.0f);
+openglframework::Color SceneDemo::mObjectColorDemo = Color(0.21f, 0.65f, 1.0f, 1.0f);
 openglframework::Color SceneDemo::mFloorColorDemo = Color(0.47f, 0.48f, 0.49f, 1.0f);
 openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.25f, 0.25f, 1.0f);
-openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.59f, 0.88f, 1.0f);
+openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.88f, 0.09f, 1.0f);
 
 // Constructor
 SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon, bool isPhysicsWorldSimulated, bool isShadowMappingEnabled)
-          : Scene(name, settings, isShadowMappingEnabled), mIsShadowMappingInitialized(false),
+          : Scene(name, settings, isShadowMappingEnabled), mBackgroundColor(0.15, 0.15, 0.15, 1),
+                     mIsShadowMappingInitialized(false),
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
 					 mColorShader("shaders/color.vert", "shaders/color.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
                      mVBOQuad(GL_ARRAY_BUFFER), mDebugVBOLinesVertices(GL_ARRAY_BUFFER), mDebugVBOTrianglesVertices(GL_ARRAY_BUFFER),
                      mMeshFolderPath("meshes/"), mPhysicsCommon(physicsCommon), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated),
-                    mIsMovingBody(false), mMovingBody(nullptr) {
+                     mIsMovingBody(false), mMovingBody(nullptr) {
 
     shadowMapTextureLevel++;
 
     // Move the lights
-	float lightsRadius = 30.0f;
-	float lightsHeight = 20.0f;
-    mLight0.translateWorld(Vector3(0 * lightsRadius, lightsHeight, 1 * lightsRadius));
-    mLight1.translateWorld(Vector3(0.95f * lightsRadius, lightsHeight, -0.3f * lightsRadius));
-    mLight2.translateWorld(Vector3(-0.58f * lightsRadius, lightsHeight, -0.81f * lightsRadius));
+    float lightsRadius = 40.0f;
+    float lightsHeight = 50.0f;
+    mLight0.translateWorld(Vector3(0.4f * lightsRadius, 0.6 * lightsHeight, 0.4f * lightsRadius));
+    mLight1.translateWorld(Vector3(-0.4 * lightsRadius, 0.6 * lightsHeight, 0.4 * lightsRadius));
+    mLight2.translateWorld(Vector3(-0.40f * lightsRadius, -lightsHeight, -0.4f * lightsRadius));
 
 	// Set the lights colors
-	mLight0.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
-	mLight1.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
-	mLight2.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
+    float lightIntensity = 0.6f;
+    Color lightColor(lightIntensity * 1.0, lightIntensity * 1.0f, lightIntensity * 1.0f, 1.0f);
+    mLight0.setDiffuseColor(lightColor);
+    mLight1.setDiffuseColor(lightColor);
+    mLight2.setDiffuseColor(lightColor);
 
-	mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
-	mShadowMapLightCameras[0].rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
+    mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
+    mShadowMapLightCameras[0].rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
+    mShadowMapLightCameras[0].rotateLocal(Vector3(0, 1, 0), PI / 4.0f);
 
 	mShadowMapLightCameras[1].translateWorld(mLight1.getOrigin());
-	mShadowMapLightCameras[1].rotateLocal(Vector3(0, 1, 0), -5.0f * PI/3.7f);
 	mShadowMapLightCameras[1].rotateLocal(Vector3(1, 0, 0), -PI/4.0f);
-
-	mShadowMapLightCameras[2].translateWorld(mLight2.getOrigin());
-	mShadowMapLightCameras[2].rotateLocal(Vector3(0, 1, 0), 5 * PI/4.0f);
-	mShadowMapLightCameras[2].rotateLocal(Vector3(1, 0 , 0), -PI/4.0f);
+    mShadowMapLightCameras[1].rotateLocal(Vector3(0, 1, 0), -PI / 4.0f);
 
 	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
 		mShadowMapLightCameras[i].setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
 		mShadowMapLightCameras[i].setFieldOfView(100.0f);
-		mShadowMapLightCameras[i].setSceneRadius(100);
+        mShadowMapLightCameras[i].setSceneRadius(100);
 	}
 
     mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
@@ -168,6 +168,8 @@ void SceneDemo::render() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
+    glClearColor(mBackgroundColor.r, mBackgroundColor.g, mBackgroundColor.b, mBackgroundColor.a);
+
 	Matrix4 shadowMapProjMatrix[NB_SHADOW_MAPS];
 	openglframework::Matrix4 worldToLightCameraMatrix[NB_SHADOW_MAPS];
 	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
@@ -241,20 +243,17 @@ void SceneDemo::render() {
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
     mPhongShader.setMatrix4x4Uniform("shadowMapLight0ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[0]);
     mPhongShader.setMatrix4x4Uniform("shadowMapLight1ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[1]);
-    mPhongShader.setMatrix4x4Uniform("shadowMapLight2ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[2]);
     mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix[0]);
     mPhongShader.setMatrix4x4Uniform("worldToLight1CameraMatrix", worldToLightCameraMatrix[1]);
-    mPhongShader.setMatrix4x4Uniform("worldToLight2CameraMatrix", worldToLightCameraMatrix[2]);
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("light1PosCameraSpace", worldToCameraMatrix * mLight1.getOrigin());
     mPhongShader.setVector3Uniform("light2PosCameraSpace", worldToCameraMatrix * mLight2.getOrigin());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
+    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.2f, 0.2f, 0.2f));
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(mLight0.getDiffuseColor().r, mLight0.getDiffuseColor().g, mLight0.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light1DiffuseColor", Vector3(mLight1.getDiffuseColor().r, mLight1.getDiffuseColor().g, mLight1.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light2DiffuseColor", Vector3(mLight2.getDiffuseColor().r, mLight2.getDiffuseColor().g, mLight2.getDiffuseColor().b));
     mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
     mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
-    mPhongShader.setIntUniform("shadowMapSampler2", textureUnits[2]);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
     mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 	mPhongShader.unbind();

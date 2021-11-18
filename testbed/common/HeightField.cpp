@@ -35,7 +35,7 @@ HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
 
     // Compute the scaling matrix
     //mScalingMatrix = openglframework::Matrix4::identity();
-    mScalingMatrix = openglframework::Matrix4(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1);
+    mScalingMatrix = openglframework::Matrix4(0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1);
 
     // Generate the height field
     generateHeightField();
@@ -47,7 +47,7 @@ HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
     // do not forget to delete it at the end
     mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
                                                    mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
-    mHeightFieldShape->setScale(rp3d::Vector3(2, 2, 2));
+    mHeightFieldShape->setScale(rp3d::Vector3(0.5, 0.5, 0.5));
 
     mPreviousTransform = rp3d::Transform::identity();
 

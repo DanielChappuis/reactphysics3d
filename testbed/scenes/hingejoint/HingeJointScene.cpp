@@ -40,6 +40,8 @@ HingeJointScene::HingeJointScene(const std::string& name, EngineSettings& settin
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.1);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }

@@ -44,7 +44,7 @@ namespace boxtowerscene {
 const float SCENE_RADIUS = 30.0f;
 const int NB_BOXES = 16;
 const openglframework::Vector3 BOX_SIZE(2, 2, 16);
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);        // Floor dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(30, 0.5f, 30);        // Floor dimensions in meters
 
 // Class BoxTowerScene
 class BoxTowerScene : public SceneDemo {

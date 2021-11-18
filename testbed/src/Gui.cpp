@@ -533,7 +533,7 @@ void Gui::createSettingsPanel() {
 void Gui::createProfilingPanel() {
 
     Widget* profilingPanel = new Window(mScreen, "Profiling");
-    profilingPanel->set_position(Vector2i(15, 525));
+    profilingPanel->set_position(Vector2i(15, 505));
     profilingPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 10, 5));
     //profilingPanel->setId("SettingsPanel");
     profilingPanel->set_fixed_width(220);
@@ -568,7 +568,7 @@ bool Gui::onScrollEvent(double x, double y) {
 
     // If the mouse cursor is over the scenes choice scrolling menu
     const float pixelRatio = mScreen->pixel_ratio();
-    if (mComboBoxScenes->visible() && mComboBoxScenes->popup()->contains(Vector2i(xMouse, yMouse) / pixelRatio)) {
+    if (mComboBoxScenes->popup()->visible() && mComboBoxScenes->popup()->contains(Vector2i(xMouse, yMouse) / pixelRatio)) {
         mScreen->scroll_callback_event(x, y);
         return true;
     }

@@ -42,19 +42,15 @@ namespace pilescene {
 
 // Constants
 const float SCENE_RADIUS = 30.0f;
-const int NB_BOXES = 150;
-const int NB_SPHERES = 80;
-const int NB_CAPSULES = 5;
-const int NB_MESHES = 0;
+const int NB_BOXES = 100;
+const int NB_SPHERES = 40;
+const int NB_CAPSULES = 30;
+const int NB_MESHES = 30;
 const int NB_COMPOUND_SHAPES = 0;
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);
-const float SPHERE_RADIUS = 1.5f;
-const float CONE_RADIUS = 2.0f;
-const float CONE_HEIGHT = 3.0f;
-const float CYLINDER_RADIUS = 1.0f;
-const float CYLINDER_HEIGHT = 5.0f;
-const float CAPSULE_RADIUS = 1.0f;
-const float CAPSULE_HEIGHT = 1.0f;
+const openglframework::Vector3 BOX_SIZE(3, 3, 3);
+const float SPHERE_RADIUS = 2.5f;
+const float CAPSULE_RADIUS = 1.5f;
+const float CAPSULE_HEIGHT = 3.0f;
 const float DUMBBELL_HEIGHT = 1.0f;
 const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);        // Floor dimensions in meters
 

@@ -39,10 +39,12 @@ BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings, 
     std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 10, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.5);
+    resetCameraToViewAll();
 
     // Gravity vector in the physics world
     rp3d::Vector3 gravity(0, -9.81f, 0);

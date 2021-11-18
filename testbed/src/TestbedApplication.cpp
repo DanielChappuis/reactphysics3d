@@ -300,12 +300,6 @@ void TestbedApplication::createScenes() {
     RaycastScene* raycastScene = new RaycastScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(raycastScene);
 
-    // Collision Detection scene
-    sceneName = "Collision Detection";
-    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
-    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
-    mScenes.push_back(collisionDetectionScene);
-
     // Concave Mesh scene
     sceneName = "Concave Mesh";
     mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
@@ -331,13 +325,13 @@ void TestbedApplication::createScenes() {
     mScenes.push_back(boxTowerScene);
 
     // Ball and Socket joints Net scene
-    sceneName = "BallAndSocket Joints Net";
+    sceneName = "BallSocket Joints Net";
     mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
     BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(ballAndSocketJointsNetScene);
 
     // Ball and Socket joints chain scene
-    sceneName = "BallAndSoket Joints Chain";
+    sceneName = "BallSocket Joints Chain";
     mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
     BallAndSocketJointsChainScene* ballAndSocketJointsChainScene = new BallAndSocketJointsChainScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(ballAndSocketJointsChainScene);
@@ -383,6 +377,12 @@ void TestbedApplication::createScenes() {
     mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
     RopeScene* ropeScene = new RopeScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(ropeScene);
+
+    // Collision Detection scene
+    sceneName = "Collision Detection";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(collisionDetectionScene);
 
     assert(mScenes.size() > 0);
 }

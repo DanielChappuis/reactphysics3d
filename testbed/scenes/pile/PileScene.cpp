@@ -37,7 +37,7 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings, reactphy
     std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 15, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
@@ -146,7 +146,7 @@ void PileScene::createPhysicsWorld() {
     for (int i=0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj", rp3d::Vector3(2, 2, 2));
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -164,7 +164,7 @@ void PileScene::createPhysicsWorld() {
     // ---------- Create the triangular mesh ---------- //
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mSandbox = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "sandbox.obj");
+    mSandbox = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "pile.obj");
 
     // Set the mesh as beeing static
     mSandbox->getRigidBody()->setType(rp3d::BodyType::STATIC);
@@ -191,7 +191,7 @@ void PileScene::initBodiesPositions() {
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            125 + i * (DUMBBELL_HEIGHT + 0.3f),
+            90 + i * (DUMBBELL_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
         mDumbbells[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -203,7 +203,7 @@ void PileScene::initBodiesPositions() {
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            85 + i * (BOX_SIZE.y + 0.8f),
+            70 + i * (BOX_SIZE.y + 0.8f),
             radius * std::sin(angle));
 
         mBoxes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -215,7 +215,7 @@ void PileScene::initBodiesPositions() {
         // Position
         float angle = i * 35.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            75 + i * (SPHERE_RADIUS + 0.8f),
+            50 + i * (SPHERE_RADIUS + 0.8f),
             radius * std::sin(angle));
 
         mSpheres[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -227,7 +227,7 @@ void PileScene::initBodiesPositions() {
         // Position
         float angle = i * 45.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            40 + i * (CAPSULE_HEIGHT + 0.3f),
+            30 + i * (CAPSULE_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
         mCapsules[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -239,7 +239,7 @@ void PileScene::initBodiesPositions() {
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            30 + i * (CAPSULE_HEIGHT + 0.3f),
+            10 + i * (CAPSULE_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
         mConvexMeshes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));

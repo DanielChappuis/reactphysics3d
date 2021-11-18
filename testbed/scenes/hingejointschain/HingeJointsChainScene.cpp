@@ -42,6 +42,8 @@ HingeJointsChainScene::HingeJointsChainScene(const std::string& name, EngineSett
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.3);
+    resetCameraToViewAll();
 
     // Gravity vector in the physics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);

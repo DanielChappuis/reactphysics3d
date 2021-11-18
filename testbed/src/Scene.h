@@ -155,6 +155,9 @@ class Scene : public rp3d::EventListener {
         /// Snapshots Contact points (computed with PhysicsWorld::testCollision() or PhysicsWorld::raycast() methods)
         std::vector<SceneContactPoint> mSnapshotsContactPoints;
 
+        /// Initial zoom factor
+        float mInitZoom;
+
         // -------------------- Methods -------------------- //
 
         /// Set the scene position (where the camera needs to look at)
@@ -220,6 +223,12 @@ class Scene : public rp3d::EventListener {
 
         /// Set the viewport to render the scene
         void setViewport(int x, int y, int width, int height);
+
+        /// Return the initial zoom factor
+        float getInitZoom() const;
+
+        /// Set the initial zoom factor
+        void setInitZoom(float zoom);
 
         /// Return a reference to the camera
         const openglframework::Camera& getCamera() const;
@@ -300,6 +309,16 @@ inline void Scene::setViewport(int x, int y, int width, int height) {
     mViewportY = y;
     mViewportWidth = width;
     mViewportHeight = height;
+}
+
+// Return the initial zoom factor
+inline float Scene::getInitZoom() const {
+   return mInitZoom;
+}
+
+// Set the initial zoom factor
+inline void Scene::setInitZoom(float zoom) {
+    mInitZoom = zoom;
 }
 
 // Set the interpolation factor

@@ -37,10 +37,12 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 20, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.5);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }
@@ -248,7 +250,8 @@ void ConcaveMeshScene::initBodiesPositions() {
 
     // ---------- Create the triangular mesh ---------- //
 
-    mConcaveMesh->setTransform(rp3d::Transform::identity());
+
+    mConcaveMesh->setTransform(rp3d::Transform(rp3d::Vector3(15, 0, -5), rp3d::Quaternion::identity()));
 }
 
 // Destroy the physics world

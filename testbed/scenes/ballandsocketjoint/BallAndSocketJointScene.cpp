@@ -40,6 +40,8 @@ BallAndSocketJointScene::BallAndSocketJointScene(const std::string& name, Engine
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }

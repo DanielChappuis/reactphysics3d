@@ -44,6 +44,8 @@ RopeScene::RopeScene(const std::string& name, EngineSettings& settings, reactphy
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }
@@ -192,8 +194,6 @@ void RopeScene::createPhysicsWorld() {
     material1.setMassDensity(rp3d::decimal(0.02));
     mBox1->getRigidBody()->updateMassPropertiesFromColliders();
 
-    std::cout << "Mass: " << mBox1->getRigidBody()->getMass() << std::endl;
-
     mPhysicsObjects.push_back(mBox1);
 
     // ---------- Create the second box --------- //
@@ -220,9 +220,7 @@ void RopeScene::createPhysicsWorld() {
     // Create a box and a corresponding rigid in the physics world
     mPlank = new Box(true, Vector3(10, 2, 15), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mPlank->getRigidBody()->setType(rp3d::BodyType::STATIC);
-
-    // Set the box color
-    mPlank->setColor(mObjectColorDemo);
+    mPlank->setColor(mFloorColorDemo);
     mPlank->setSleepingColor(mSleepingColorDemo);
 
     // Change the material properties of the rigid body

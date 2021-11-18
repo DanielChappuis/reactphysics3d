@@ -36,10 +36,12 @@ JointsScene::JointsScene(const std::string& name, EngineSettings& settings, reac
       : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 8, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1);
+    resetCameraToViewAll();
 
     // Gravity vector in the physics world
     rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);

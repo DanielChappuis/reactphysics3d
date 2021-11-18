@@ -35,10 +35,12 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
       : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 16, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.9);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }

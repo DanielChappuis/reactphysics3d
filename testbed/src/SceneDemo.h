@@ -47,9 +47,12 @@ class SceneDemo : public Scene, rp3d::RaycastCallback {
 
         // -------------------- Constants -------------------- //
 
-		static constexpr int NB_SHADOW_MAPS = 3;
+        static constexpr int NB_SHADOW_MAPS = 2;
 
         // -------------------- Attributes -------------------- //
+
+        /// Background color
+        openglframework::Color mBackgroundColor;
 
         /// Light 0
         openglframework::Light mLight0;

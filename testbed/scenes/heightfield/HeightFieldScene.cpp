@@ -39,10 +39,12 @@ HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& sett
 	std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 17, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.5);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }

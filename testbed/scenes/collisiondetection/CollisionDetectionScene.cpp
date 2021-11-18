@@ -48,6 +48,8 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.9);
+    resetCameraToViewAll();
 
     rp3d::PhysicsWorld::WorldSettings worldSettings;
     worldSettings.worldName = name;

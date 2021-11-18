@@ -41,6 +41,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(2);
+    resetCameraToViewAll();
 
     rp3d::PhysicsWorld::WorldSettings worldSettings;
     worldSettings.worldName = name;

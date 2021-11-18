@@ -34,13 +34,13 @@ using namespace cubesscene;
 CubesScene::CubesScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
       : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
-    iter = 0;
-
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 10, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.5);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }
@@ -95,7 +95,7 @@ void CubesScene::createPhysicsWorld() {
 // Initialize the bodies positions
 void CubesScene::initBodiesPositions() {
 
-    float radius = 2.0f;
+    const float radius = 2.0f;
 
     // Create all the cubes of the scene
     std::vector<Box*>::iterator it;

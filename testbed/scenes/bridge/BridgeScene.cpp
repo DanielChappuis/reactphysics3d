@@ -38,10 +38,12 @@ BridgeScene::BridgeScene(const std::string& name, EngineSettings& settings, reac
     std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 0, 0);
+    openglframework::Vector3 center(0, 5, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.1);
+    resetCameraToViewAll();
 
     mWorldSettings.worldName = name;
 }
