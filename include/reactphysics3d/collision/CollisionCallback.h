@@ -239,10 +239,10 @@ class CollisionCallback {
                 Array<reactphysics3d::ContactPair>& mLostContactPairs;
 
                 /// Array of indices in the mContactPairs array that are contact events (not overlap/triggers)
-                Array<uint> mContactPairsIndices;
+                Array<uint64> mContactPairsIndices;
 
                 /// Array of indices in the mLostContactPairs array that are contact events (not overlap/triggers)
-                Array<uint> mLostContactPairsIndices;
+                Array<uint64> mLostContactPairsIndices;
 
                 /// Reference to the physics world
                 PhysicsWorld& mWorld;
@@ -278,7 +278,7 @@ class CollisionCallback {
                  * @param index Index of the contact pair to retrieve
                  * @return A contact pair object
                  */
-                ContactPair getContactPair(uint32 index) const;
+                ContactPair getContactPair(uint64 index) const;
 
                 // -------------------- Friendship -------------------- //
 

@@ -427,7 +427,9 @@ RP3D_FORCE_INLINE uint64 nextPowerOfTwo64Bits(uint64 number) {
 /// http://szudzik.com/ElegantPairing.pdf
 RP3D_FORCE_INLINE uint64 pairNumbers(uint32 number1, uint32 number2) {
     assert(number1 == std::max(number1, number2));
-    return number1 * number1 + number1 + number2;
+    uint64 nb1 = number1;
+    uint64 nb2 = number2;
+    return nb1 * nb1 + nb1 + nb2;
 }
 
 

@@ -117,7 +117,7 @@ CollisionCallback::ContactPoint CollisionCallback::ContactPair::getContactPoint(
 /// Note that the returned ContactPair object is only valid during the call of the CollisionCallback::onContact()
 /// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the ContactPair
 /// object itself because it won't be valid after the CollisionCallback::onContact() call.
-CollisionCallback::ContactPair CollisionCallback::CallbackData::getContactPair(uint32 index) const {
+CollisionCallback::ContactPair CollisionCallback::CallbackData::getContactPair(uint64 index) const {
 
     assert(index < getNbContactPairs());
 

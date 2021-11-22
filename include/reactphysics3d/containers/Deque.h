@@ -491,18 +491,14 @@ class Deque {
 
         /// Return a reference to the first item of the deque
         const T& getFront() const {
-            if (mSize > 0) {
-                return mChunks[mFirstChunkIndex][mFirstItemIndex];
-            }
-            assert(false);
+            assert(mSize > 0);
+            return mChunks[mFirstChunkIndex][mFirstItemIndex];
         }
 
         /// Return a reference to the last item of the deque
         const T& getBack() const {
-            if (mSize > 0) {
-                return mChunks[mLastChunkIndex][mLastItemIndex];
-            }
-            assert(false);
+            assert(mSize > 0);
+            return mChunks[mLastChunkIndex][mLastItemIndex];
         }
 
         /// Clear the elements of the deque

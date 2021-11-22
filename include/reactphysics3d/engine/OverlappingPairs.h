@@ -84,15 +84,11 @@ struct LastFrameCollisionInfo {
     uint8 satMinEdge2Index;
 
     /// Constructor
-    LastFrameCollisionInfo() {
+    LastFrameCollisionInfo()
+        :isValid(false), isObsolete(false), wasColliding(false), wasUsingGJK(false), gjkSeparatingAxis(Vector3(0, 1, 0)),
+         satIsAxisFacePolyhedron1(false), satIsAxisFacePolyhedron2(false), satMinAxisFaceIndex(0),
+         satMinEdge1Index(0), satMinEdge2Index(0) {
 
-        isValid = false;
-        isObsolete = false;
-        wasColliding = false;
-        wasUsingSAT = false;
-        wasUsingGJK = false;
-
-        gjkSeparatingAxis = Vector3(0, 1, 0);
     }
 };
 

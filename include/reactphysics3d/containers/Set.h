@@ -275,7 +275,7 @@ class Set {
             uint64* newBuckets = static_cast<uint64*>(mAllocator.allocate(capacity * sizeof(uint64)));
 
             // Allocate memory for the entries
-            const uint64 nbAllocatedEntries = static_cast<uint64>(static_cast<float>(capacity) * DEFAULT_LOAD_FACTOR);
+            const uint64 nbAllocatedEntries = static_cast<uint64>(capacity * double(DEFAULT_LOAD_FACTOR));
             assert(nbAllocatedEntries > 0);
             V* newEntries = static_cast<V*>(mAllocator.allocate(nbAllocatedEntries * sizeof(V)));
             uint64* newNextEntries = static_cast<uint64*>(mAllocator.allocate(nbAllocatedEntries * sizeof(uint64)));
@@ -351,7 +351,7 @@ class Set {
         /// Returns true if the item has been inserted and false otherwise.
         bool add(const V& value) {
 
-            uint64 bucket;
+            uint64 bucket = INVALID_INDEX;
 
             // Compute the hash code of the value
             const size_t hashCode = Hash()(value);
@@ -396,6 +396,8 @@ class Set {
             mFreeIndex = mNextEntries[entryIndex];
 
             mNbEntries++;
+
+            assert(bucket != INVALID_INDEX);
 
             mNextEntries[entryIndex] = mBuckets[bucket];
             new (mEntries + entryIndex) V(value);

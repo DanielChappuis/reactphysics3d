@@ -138,10 +138,10 @@ class OverlapCallback {
                 Array<ContactPair>& mLostContactPairs;
 
                 /// Array of indices of the mContactPairs array that are overlap/triggers events (not contact events)
-                Array<uint> mContactPairsIndices;
+                Array<uint64> mContactPairsIndices;
 
                 /// Array of indices of the mLostContactPairs array that are overlap/triggers events (not contact events)
-                Array<uint> mLostContactPairsIndices;
+                Array<uint64> mLostContactPairsIndices;
 
                 /// Reference to the physics world
                 PhysicsWorld& mWorld;

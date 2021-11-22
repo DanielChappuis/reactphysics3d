@@ -68,7 +68,7 @@ struct ConstraintSolverData {
 
         /// Constructor
         ConstraintSolverData(RigidBodyComponents& rigidBodyComponents, JointComponents& jointComponents)
-                   :rigidBodyComponents(rigidBodyComponents), jointComponents(jointComponents) {
+                   :timeStep(0), isWarmStartingActive(true), rigidBodyComponents(rigidBodyComponents), jointComponents(jointComponents) {
 
         }
 
