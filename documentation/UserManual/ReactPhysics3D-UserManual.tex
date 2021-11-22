@@ -1037,6 +1037,28 @@ transform.getOpenGLMatrix(matrix);
     \texttt{RigidBody::updateMassPropertiesFromColliders()}.
     \end{sloppypar}
 
+    \subsection{Restricting linear/angular motion of a Rigid Body}
+
+    It is possible to use the \texttt{RigidBody::setLinearLockAxisFactor()} method to restrict the linear motion of a rigid body along the world-space
+    X,Y and Z axes. For instance, the following code shows how to disable the linear motion of a rigid body along the world-space Y axis by setting the lock
+    factor to zero for this axis. \\
+
+    \begin{lstlisting}
+// Disable motion along the Y axis
+rigidBody->setLinearAxisFactor(Vector3(1, 0, 1));
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    In the same way, you can use the \texttt{RigidBody::setAngularLockAxisFactor()} method to restrict the angular motion of a rigid body around the
+    world-space X,Y and Z axes. For instance, the following code shows how to disable the angular motion of a rigid body around the world-space Y axis
+    by setting the lock factor to zero for this axis. \\
+
+    \begin{lstlisting}
+// Disable rotation around the Y axis
+rigidBody->setAngularAxisFactor(Vector3(1, 0, 1));
+  \end{lstlisting}
+
     \subsection{Destroying a Rigid Body}
 
     \begin{sloppypar}
@@ -1511,12 +1533,15 @@ bombCollider->setIsTrigger(true);
 
     \subsection{Ball and Socket Joint}
 
-    The \texttt{BallAndSocketJoint} class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot translate with respect to each other.
-    However, they can rotate freely around a common anchor point. This joint has three degrees of freedom and can be used to simulate a chain of bodies for instance. \\
+    The \texttt{BallAndSocketJoint} class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot
+    translate with respect to each other. However, they can rotate freely around a common anchor point. This joint has three degrees of freedom
+    and can be used to simulate a chain of bodies for instance. \\
 
-    In order to create a ball and socket joint, you first need to create an instance of the \texttt{BallAndSocketJointInfo} class with the necessary information. You need to provide the pointers to the
-    two rigid bodies and also the coordinates of the anchor point (in world-space). At the joint creation, the world-space anchor point will be converted into the local-space of the two rigid
-    bodies and then, the joint will make sure that the two local-space anchor points match in world-space. Therefore, the two bodies need to be in a correct position at the joint creation. \\
+    In order to create a ball and socket joint, you first need to create an instance of the \texttt{BallAndSocketJointInfo} class with the necessary
+    information. You need to provide the pointers to the two rigid bodies and also the coordinates of the anchor point. The \texttt{BallAndSocketJointInfo}
+    class contains different constructors that you can use whether you want to specify the anchor point in world-space or local-space coordinates.
+    The joint will make sure that the two local-space anchor points match in world-space. Make sure that the two bodies are in a valid position (with
+    respect to the joint constraint) at the beginning of the simulation. \\
 
     Here is the code to create the \texttt{BallAndSocketJointInfo} object: \\
 
@@ -1552,8 +1577,9 @@ joint = dynamic_cast<BallAndSocketJoint*>(world->createJoint(jointInfo));
     anchor point and around a single axis (the hinge axis). This joint can be used to simulate doors or pendulums for instance. \\
 
     In order to create a hinge joint, you first need to create a \texttt{HingeJointInfo} object with the necessary information. You need to provide
-    the pointers to the two rigid bodies, the coordinates of the anchor point (in world-space) and also the hinge rotation axis (in world-space). The
-    two bodies need to be in a correct position when the joint is created. \\
+    the pointers to the two rigid bodies, the coordinates of the anchor point and also the hinge rotation axis. The \texttt{HingeJointInfo} class contains
+    different constructors that you can use whether you want to specify the anchor point or the rotation axis in local-space or world-space.
+    Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning of the simulation. \\
 
     Here is the code to create the \texttt{HingeJointInfo} object: \\
 
@@ -1586,10 +1612,11 @@ joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
 
      \subsubsection{Limits}
 
-     With the hinge joint, you can constrain the motion range using limits. The limits of the hinge joint are the minimum and maximum angle of rotation allowed with respect to the initial
-     angle between the bodies when the joint is created. The limits are disabled by default. If you want to use the limits, you first need to enable them by setting the
-     \texttt{isLimitEnabled} variable of the \texttt{HingeJointInfo} object to \emph{true} before you create the joint. You also have to specify the minimum and maximum limit
-     angles (in radians) using the \texttt{minAngleLimit} and \texttt{maxAngleLimit} variables of the joint info object. Note that the minimum limit angle must be in the
+     With the hinge joint, you can constrain the motion range using limits. The limits of the hinge joint are the minimum and maximum angle of
+     rotation allowed with respect to the initial angle between the bodies when the joint is created. The limits are disabled by default.
+     If you want to use the limits, you first need to enable them by setting the \texttt{isLimitEnabled} variable of the \texttt{HingeJointInfo}
+     object to \emph{true} before you create the joint. You also have to specify the minimum and maximum limit angles (in radians) using
+     the \texttt{minAngleLimit} and \texttt{maxAngleLimit} variables of the joint info object. Note that the minimum limit angle must be in the
      range $[ -2 \pi; 0 ]$ and the maximum limit angle must be in the range $[ 0; 2 \pi ]$. \\
 
      For instance, here is the way to use the limits for a hinge joint when the joint is created: \\
@@ -1656,10 +1683,14 @@ joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
 
     \subsection{Slider Joint}
 
-    The \texttt{SliderJoint} class describes a slider joint (or prismatic joint) that only allows relative translation along a single direction. It has a single degree of freedom and allows no
-    relative rotation. In order to create a slider joint, you first need to specify the anchor point (in world-space) and the slider axis direction (in world-space). The constructor of the
-    \texttt{SliderJointInfo} object needs two pointers to the bodies of the joint, the anchor point and the axis direction. Note that the two bodies have to be in a correct initial position when
-    the joint is created. \\
+    The \texttt{SliderJoint} class describes a slider joint (or prismatic joint) that only allows relative translation along a single direction.
+    It has a single degree of freedom and allows no relative rotation. \\
+
+    In order to create a slider joint, you first need to specify the anchor point and the slider axis direction.
+    The constructor of the \texttt{SliderJointInfo} object needs two pointers to the bodies of the joint, the anchor point and the axis direction.
+    The \texttt{SliderJointInfo} class contains different constructors that you can use whether you want to specify the anchor point and the direction axis
+    in local-space or world-space. Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning
+    of the simulation.\\
 
     You can see in the following code how to specify the information to create a slider joint: \\
 
@@ -1760,9 +1791,12 @@ joint = dynamic_cast<SliderJoint*>(world->createJoint(jointInfo));
 
     \subsection{Fixed Joint}
 
-    The \texttt{FixedJoint} class describes a fixed joint between two bodies. In a fixed joint, there is no degree of freedom, the bodies are not allowed to translate
-    or rotate with respect to each other. In order to create a fixed joint, you simply need to specify an anchor point (in world-space) to create the \texttt{FixedJointInfo}
-    object. \\
+    The \texttt{FixedJoint} class describes a fixed joint between two bodies. In a fixed joint, there is no degree of freedom, the bodies are not
+    allowed to translate or rotate with respect to each other. \\
+
+    In order to create a fixed joint, you simply need to specify an anchor point to create the \texttt{FixedJointInfo}
+    object. The \texttt{FixedJointInfo} class contains different constructors that you can use whether you want to specify the anchor point in local-space
+    or world-space. Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning of the simulation.\\
 
     For instance, here is how to create the joint info object for a fixed joint: \\
 
