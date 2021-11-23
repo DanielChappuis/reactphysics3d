@@ -864,21 +864,43 @@ bool RigidBody::isGravityEnabled() const {
 }
 
 // Return the linear lock axis factor
+/// The linear lock axis factor specify whether linear motion along world-space axes X,Y,Z is
+/// restricted or not.
+/**
+ * @return A Vector3 with the linear lock axis factor for each X,Y,Z world-space axis
+ */
 const Vector3& RigidBody::getLinearLockAxisFactor() const {
     return mWorld.mRigidBodyComponents.getLinearLockAxisFactor(mEntity);
 }
 
 // Set the linear lock axis factor
+/// This method allows to restrict the linear motion of a rigid body along the world-space
+/// axes X,Y and Z. For instance, it's possible to disable the linear motion of a body
+/// along a given axis by setting a lock axis factor of zero.
+/**
+ * @param linearLockAxisFactor A Vector3 with the lock factor for each world-space axis X,Y,Z
+ */
 void RigidBody::setLinearLockAxisFactor(const Vector3& linearLockAxisFactor) const {
     mWorld.mRigidBodyComponents.setLinearLockAxisFactor(mEntity, linearLockAxisFactor);
 }
 
 // Return the angular lock axis factor
+/// The angular lock axis factor specify whether angular motion around world-space axes X,Y,Z is
+/// restricted or not.
+/**
+ * @return A Vector3 with the angular lock axis factor for each X,Y,Z world-space axis
+ */
 const Vector3& RigidBody::getAngularLockAxisFactor() const {
     return mWorld.mRigidBodyComponents.getAngularLockAxisFactor(mEntity);
 }
 
 // Set the angular lock axis factor
+/// This method allows to restrict the angular motion of a rigid body around the world-space
+/// axes X,Y and Z. For instance, it's possible to disable the angular motion of a body
+/// around a given axis by setting a lock axis factor of zero.
+/**
+ * @param angularLockAxisFactor A Vector3 with the lock factor for each world-space axis X,Y,Z
+ */
 void RigidBody::setAngularLockAxisFactor(const Vector3& angularLockAxisFactor) const {
     mWorld.mRigidBodyComponents.setAngularLockAxisFactor(mEntity, angularLockAxisFactor);
 }
@@ -943,11 +965,17 @@ void RigidBody::resetTorque() {
 }
 
 // Return the total manually applied force on the body (in world-space)
+/**
+ * @return The total manually applied force on the body (in world-space)
+ */
 const Vector3& RigidBody::getForce() const {
     return mWorld.mRigidBodyComponents.getExternalForce(mEntity);
 }
 
 // Return the total manually applied torque on the body (in world-space)
+/**
+ * @return The total manually applied torque on the body (in world-space)
+ */
 const Vector3& RigidBody::getTorque() const {
     return mWorld.mRigidBodyComponents.getExternalTorque(mEntity);
 }

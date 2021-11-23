@@ -151,10 +151,10 @@ class RigidBodyComponents : public Components {
         /// For each body, the array of the indices of contact pairs in which the body is involved
         Array<uint>* mContactPairs;
 
-        /// For each body, the array of lock translation vectors
+        /// For each body, the vector of lock translation vectors
         Vector3* mLinearLockAxisFactors;
 
-        /// For each body, the array of lock rotation vectors
+        /// For each body, the vector of lock rotation vectors
         Vector3* mAngularLockAxisFactors;
 
         // -------------------- Methods -------------------- //

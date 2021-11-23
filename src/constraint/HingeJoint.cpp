@@ -162,6 +162,9 @@ void HingeJoint::resetLimits() {
 }
 
 // Set the motor speed
+/**
+ * @param motorSpeed The speed of the motor
+ */
 void HingeJoint::setMotorSpeed(decimal motorSpeed) {
 
     if (motorSpeed != mWorld.mHingeJointsComponents.getMotorSpeed(mEntity)) {
@@ -267,12 +270,18 @@ decimal HingeJoint::getAngle() const {
 }
 
 // Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current force (in Newtons) applied on body 2
+ */
 Vector3 HingeJoint::getReactionForce(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);
     return mWorld.mHingeJointsComponents.getImpulseTranslation(mEntity) / timeStep;
 }
 
 // Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current torque (in Newtons * meters) applied on body 2
+ */
 Vector3 HingeJoint::getReactionTorque(decimal timeStep) const {
 
     assert(timeStep > MACHINE_EPSILON);

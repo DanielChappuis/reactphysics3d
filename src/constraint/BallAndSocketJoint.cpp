@@ -62,6 +62,12 @@ BallAndSocketJoint::BallAndSocketJoint(Entity entity, PhysicsWorld& world, const
 }
 
 // Enable/disable the cone limit of the joint
+/// It is possible to enable a cone-limit for the BallAndSocketJoint in order to
+/// restrict the angular motion between the two bodies. Use this method to enable/disable
+/// the cone-limit.
+/**
+ * @param isLimitEnabled True if the limit must be enabled and false otherwise
+ */
 void BallAndSocketJoint::enableConeLimit(bool isLimitEnabled) {
     mWorld.mBallAndSocketJointsComponents.setIsConeLimitEnabled(mEntity, isLimitEnabled);
 
@@ -69,6 +75,9 @@ void BallAndSocketJoint::enableConeLimit(bool isLimitEnabled) {
 }
 
 // Return true if the cone limit or the joint is enabled
+/**
+ * @return True if the cone-limit is enabled for this joint
+ */
 bool BallAndSocketJoint::isConeLimitEnabled() const {
     return mWorld.mBallAndSocketJointsComponents.getIsConeLimitEnabled(mEntity);
 }
@@ -88,6 +97,9 @@ void BallAndSocketJoint::setConeLimitHalfAngle(decimal coneHalfAngle) {
 }
 
 // Set the normalized cone limit axis of body 1 in local-space of body 1
+/**
+ * @param localAxisBody1 The normalized axis for the cone-limit in local-space of body 1
+ */
 void BallAndSocketJoint::setConeLimitLocalAxisBody1(const Vector3& localAxisBody1) {
     mWorld.mBallAndSocketJointsComponents.setConeLimitLocalAxisBody1(mEntity, localAxisBody1);
 
@@ -95,6 +107,9 @@ void BallAndSocketJoint::setConeLimitLocalAxisBody1(const Vector3& localAxisBody
 }
 
 // Set the normalized cone limit axis of body 2 in local-space of body 2
+/**
+ * @param localAxisBody1 The normalized axis for the cone-limit in local-space of body 2
+ */
 void BallAndSocketJoint::setConeLimitLocalAxisBody2(const Vector3& localAxisBody2) {
     mWorld.mBallAndSocketJointsComponents.setConeLimitLocalAxisBody2(mEntity, localAxisBody2);
 
@@ -102,11 +117,17 @@ void BallAndSocketJoint::setConeLimitLocalAxisBody2(const Vector3& localAxisBody
 }
 
 // Return the cone angle limit (in radians) from [0; PI]
+/**
+ * @return The half-angle (in radians) of the cone-limit
+ */
 decimal BallAndSocketJoint::getConeLimitHalfAngle() const {
     return mWorld.mBallAndSocketJointsComponents.getConeLimitHalfAngle(mEntity);
 }
 
 // Return the current cone angle in radians (in [0, pi])
+/**
+ * @return The current half-angle (in radians) of the joint with respect to the cone-limit axis
+ */
 decimal BallAndSocketJoint::getConeHalfAngle() const {
 
     // Get the bodies entities
@@ -124,12 +145,18 @@ decimal BallAndSocketJoint::getConeHalfAngle() const {
 }
 
 // Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current force (in Newtons) applied on body 2
+ */
 Vector3 BallAndSocketJoint::getReactionForce(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);
     return mWorld.mBallAndSocketJointsComponents.getImpulse(mEntity) / timeStep;
 }
 
 // Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current torque (in Newtons * meters) on body 2
+ */
 Vector3 BallAndSocketJoint::getReactionTorque(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);
     return Vector3(0, 0, 0);

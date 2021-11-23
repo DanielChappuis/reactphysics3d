@@ -72,12 +72,18 @@ FixedJoint::FixedJoint(Entity entity, PhysicsWorld& world, const FixedJointInfo&
 }
 
 // Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current force (in Newtons) applied on body 2
+ */
 Vector3 FixedJoint::getReactionForce(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);
     return mWorld.mFixedJointsComponents.getImpulseTranslation(mEntity) / timeStep;
 }
 
 // Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current torque (in Newtons * meters) applied on body 2
+ */
 Vector3 FixedJoint::getReactionTorque(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);
     return mWorld.mFixedJointsComponents.getImpulseRotation(mEntity) / timeStep;

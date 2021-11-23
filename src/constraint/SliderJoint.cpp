@@ -295,6 +295,9 @@ decimal SliderJoint::getMaxTranslationLimit() const {
 }
 
 // Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current force (in Newtons) applied on body 2
+ */
 Vector3 SliderJoint::getReactionForce(decimal timeStep) const {
     assert(timeStep > MACHINE_EPSILON);
 
@@ -314,6 +317,9 @@ Vector3 SliderJoint::getReactionForce(decimal timeStep) const {
 }
 
 // Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current torque (in Newtons * meters) applied on body 2
+ */
 Vector3 SliderJoint::getReactionTorque(decimal timeStep) const {
 
     assert(timeStep > MACHINE_EPSILON);
