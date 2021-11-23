@@ -158,6 +158,9 @@ class Scene : public rp3d::EventListener {
         /// Initial zoom factor
         float mInitZoom;
 
+        /// True if the automatic camera rotation animation is enabled
+        bool mIsCameraRotationAnimationEnabled;
+
         // -------------------- Methods -------------------- //
 
         /// Set the scene position (where the camera needs to look at)
@@ -274,6 +277,13 @@ class Scene : public rp3d::EventListener {
 
         /// Return a reference to the engine settings of the scene
         EngineSettings& getEngineSettings();
+
+        /// Return true if the camera rotation animation is enabled
+        bool getIsCameraRotationAnimationEnabled() const;
+
+        /// Set whether the camera rotation animation is enabled or not
+        void setIsCameraRotationAnimationEnabled(bool isRotationEnabled);
+
 };
 
 // Called when a keyboard event occurs
@@ -379,6 +389,16 @@ inline void Scene::setIsWireframeEnabled(bool isEnabled) {
 // Return a reference to the engine settings of the scene
 inline EngineSettings& Scene::getEngineSettings() {
     return mEngineSettings;
+}
+
+// Return true if the scene rotation is enabled
+inline bool Scene::getIsCameraRotationAnimationEnabled() const {
+    return mIsCameraRotationAnimationEnabled;
+}
+
+// Set whether the scene rotation is enabled or no
+inline void Scene::setIsCameraRotationAnimationEnabled(bool isRotationEnabled) {
+    mIsCameraRotationAnimationEnabled = isRotationEnabled;
 }
 
 #endif

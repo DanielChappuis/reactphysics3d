@@ -604,7 +604,19 @@ void TestbedApplication::keyboard_event(int key, int scancode, int action, int m
         return;
     }
 
-    // Close application on escape key
+    // Show/hide the GUI with "i" key
+    if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+        mGui.setIsDisplayed(!mGui.getIsDisplayed());
+        return;
+    }
+
+    // Start/Stop camera rotation animation with "r" key
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        mCurrentScene->setIsCameraRotationAnimationEnabled(!mCurrentScene->getIsCameraRotationAnimationEnabled());
+        return;
+    }
+
+    // Pause the application on "p" key
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
 
         if (mTimer.isRunning()) {

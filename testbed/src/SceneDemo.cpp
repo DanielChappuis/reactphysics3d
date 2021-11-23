@@ -49,7 +49,7 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, reactphy
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
                      mVBOQuad(GL_ARRAY_BUFFER), mDebugVBOLinesVertices(GL_ARRAY_BUFFER), mDebugVBOTrianglesVertices(GL_ARRAY_BUFFER),
                      mMeshFolderPath("meshes/"), mPhysicsCommon(physicsCommon), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated),
-                     mIsMovingBody(false), mMovingBody(nullptr) {
+                     mIsMovingBody(false), mMovingBody(nullptr), mCameraRotationAngle(0) {
 
     shadowMapTextureLevel++;
 
@@ -143,6 +143,16 @@ void SceneDemo::update() {
 		// Update the transform used for the rendering
 		(*it)->updateTransform(mInterpolationFactor);
 	}
+
+    if (mIsCameraRotationAnimationEnabled) {
+        rotateCameraAnimation();
+    }
+}
+
+void SceneDemo::rotateCameraAnimation() {
+
+   const float angle  = 0.1f * (PI / 180.0);
+   mCamera.rotateAroundWorldPoint(Vector3(0, 1, 0), angle, mCenterScene);
 }
 
 // Update the physics world (take a simulation step)

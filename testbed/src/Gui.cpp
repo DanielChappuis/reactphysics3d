@@ -43,7 +43,7 @@ double Gui::mCachedPhysicsStepTime = 0;
 Gui::Gui(TestbedApplication* app)
     : mApp(app), mSimulationPanel(nullptr), mSettingsPanel(nullptr), mPhysicsPanel(nullptr),
       mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mTotalPhysicsTimeLabel(nullptr),
-      mPhysicsStepTimeLabel(nullptr)
+      mPhysicsStepTimeLabel(nullptr), mIsDisplayed(true)
 {
 
 }
@@ -84,14 +84,18 @@ void Gui::drawAll() {
 
 void Gui::draw() {
 
-  mScreen->draw_setup();
-  mScreen->clear();
-  mScreen->draw_contents();
+  if (mIsDisplayed) {
+      mScreen->draw_setup();
+      mScreen->draw_contents();
+  }
 }
 
 void Gui::drawTearDown() {
 
-  mScreen->draw_widgets();
+  if (mIsDisplayed) {
+      mScreen->draw_widgets();
+  }
+
   mScreen->draw_teardown();
 }
 

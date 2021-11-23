@@ -92,6 +92,9 @@ class Gui {
         std::vector<CheckBox*> mCheckboxesScenes;
         ComboBox* mComboBoxScenes;
 
+        /// True if the GUI is displayed
+        bool mIsDisplayed;
+
         // -------------------- Methods -------------------- //
 
         static void resetScroll();
@@ -158,6 +161,10 @@ class Gui {
         void onMouseButtonEvent(int button, int action, int modifiers);
 
         void onKeyboardEvent(int key, int scancode, int action, int modifiers);
+
+        bool getIsDisplayed() const;
+
+        void setIsDisplayed(bool isDisplayed);
 };
 
 inline void Gui::resetScroll() {
@@ -174,6 +181,14 @@ inline std::string Gui::floatToString(float value, int precision) {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(precision) << value;
     return ss.str();
+}
+
+inline bool Gui::getIsDisplayed() const {
+    return mIsDisplayed;
+}
+
+inline void Gui::setIsDisplayed(bool isDisplayed) {
+    mIsDisplayed = isDisplayed;
 }
 
 #endif

@@ -135,6 +135,8 @@ class SceneDemo : public Scene, rp3d::RaycastCallback {
         /// Pointer to the body that is currently moved with the mouse by the user
         rp3d::RigidBody* mMovingBody;
 
+        float mCameraRotationAngle;
+
         // -------------------- Methods -------------------- //
 
         /// Create the Shadow map FBO and texture
@@ -208,6 +210,8 @@ class SceneDemo : public Scene, rp3d::RaycastCallback {
 
         /// Called when a raycast hit occurs (used to move a body with the mouse)
         virtual rp3d::decimal notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) override;
+
+        void rotateCameraAnimation();
 };
 
 // Enabled/Disable the shadow mapping
