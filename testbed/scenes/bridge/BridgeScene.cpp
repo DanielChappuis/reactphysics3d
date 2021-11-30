@@ -119,7 +119,7 @@ void BridgeScene::createPhysicsWorld() {
             mBoxes[boxIndex] = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
             // Set the box color
-            mBoxes[boxIndex]->setColor(mObjectColorDemo);
+            mBoxes[boxIndex]->setColor(mFloorColorDemo);
             mBoxes[boxIndex]->setSleepingColor(mSleepingColorDemo);
 
             // Change the material properties of the rigid body

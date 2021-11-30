@@ -36,7 +36,7 @@
 // Constants
 const int SHADOWMAP_WIDTH = 2048;
 const int SHADOWMAP_HEIGHT = 2048;
-const float MOUSE_MOVE_BODY_FORCE = 100000.0f;
+const float MOUSE_MOVE_BODY_FORCE = 200000.0f;
 
 // Class SceneDemo
 // Abstract class that represents a 3D scene for the ReactPhysics3D examples.

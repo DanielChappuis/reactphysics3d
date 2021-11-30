@@ -59,3 +59,5 @@ If you find any issue with the library, you can report it on the issue tracker [
 Thanks a lot to Erin Catto, Dirk Gregorius, Erwin Coumans, Pierre Terdiman and Christer Ericson for their amazing GDC presentations,
 their physics engines, their books or articles and their contributions on many physics engine forums.
 
+ - [Artbake Graphics](https://sketchfab.com/ismir) for the static castle 3D model used in testbed application ([CC license](https://creativecommons.org/licenses/by/4.0))
+

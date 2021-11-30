@@ -37,7 +37,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 20, 0);
+    openglframework::Vector3 center(0, 15, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
@@ -167,7 +167,7 @@ void ConcaveMeshScene::createPhysicsWorld() {
     // ---------- Create the triangular mesh ---------- //
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mConcaveMesh = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.5, 0.5, 0.5));
 
     // Set the mesh as beeing static
     mConcaveMesh->getRigidBody()->setType(rp3d::BodyType::STATIC);

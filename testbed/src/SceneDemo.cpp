@@ -34,14 +34,14 @@ using namespace openglframework;
 
 int SceneDemo::shadowMapTextureLevel = 0;
 //openglframework::Color SceneDemo::mObjectColorDemo = Color(0.76f, 0.67f, 0.47f, 1.0f);
-openglframework::Color SceneDemo::mObjectColorDemo = Color(0.21f, 0.65f, 1.0f, 1.0f);
-openglframework::Color SceneDemo::mFloorColorDemo = Color(0.47f, 0.48f, 0.49f, 1.0f);
-openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.25f, 0.25f, 1.0f);
+openglframework::Color SceneDemo::mObjectColorDemo = Color(0.0f, 0.68f, 0.99f, 1.0f);
+openglframework::Color SceneDemo::mFloorColorDemo = Color(0.7f, 0.7f, 0.7f, 1.0f);
+openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.0f, 0.0f, 1.0f);
 openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.88f, 0.09f, 1.0f);
 
 // Constructor
 SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon, bool isPhysicsWorldSimulated, bool isShadowMappingEnabled)
-          : Scene(name, settings, isShadowMappingEnabled), mBackgroundColor(0.15, 0.15, 0.15, 1),
+          : Scene(name, settings, isShadowMappingEnabled), mBackgroundColor(0.75, 0.75, 0.75, 1),
                      mIsShadowMappingInitialized(false),
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
@@ -54,18 +54,19 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, reactphy
     shadowMapTextureLevel++;
 
     // Move the lights
-    float lightsRadius = 40.0f;
+    float lightsRadius = 80.0f;
     float lightsHeight = 50.0f;
     mLight0.translateWorld(Vector3(0.4f * lightsRadius, 0.6 * lightsHeight, 0.4f * lightsRadius));
     mLight1.translateWorld(Vector3(-0.4 * lightsRadius, 0.6 * lightsHeight, 0.4 * lightsRadius));
-    mLight2.translateWorld(Vector3(-0.40f * lightsRadius, -lightsHeight, -0.4f * lightsRadius));
+    mLight2.translateWorld(Vector3(0.40f * lightsRadius, -5, -0.4f * lightsRadius));
 
 	// Set the lights colors
-    float lightIntensity = 0.6f;
+    float lightIntensity = 0.5;
     Color lightColor(lightIntensity * 1.0, lightIntensity * 1.0f, lightIntensity * 1.0f, 1.0f);
+    Color noLightColor(0, 0, 0, 1);
     mLight0.setDiffuseColor(lightColor);
     mLight1.setDiffuseColor(lightColor);
-    mLight2.setDiffuseColor(lightColor);
+    mLight2.setDiffuseColor(noLightColor);
 
     mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
     mShadowMapLightCameras[0].rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
@@ -151,7 +152,7 @@ void SceneDemo::update() {
 
 void SceneDemo::rotateCameraAnimation() {
 
-   const float angle  = 0.1f * (PI / 180.0);
+   const float angle  = 0.12f * (PI / 180.0);
    mCamera.rotateAroundWorldPoint(Vector3(0, 1, 0), angle, mCenterScene);
 }
 
@@ -258,7 +259,7 @@ void SceneDemo::render() {
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("light1PosCameraSpace", worldToCameraMatrix * mLight1.getOrigin());
     mPhongShader.setVector3Uniform("light2PosCameraSpace", worldToCameraMatrix * mLight2.getOrigin());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.2f, 0.2f, 0.2f));
+    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.1f, 0.1f, 0.1f));
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(mLight0.getDiffuseColor().r, mLight0.getDiffuseColor().g, mLight0.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light1DiffuseColor", Vector3(mLight1.getDiffuseColor().r, mLight1.getDiffuseColor().g, mLight1.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light2DiffuseColor", Vector3(mLight2.getDiffuseColor().r, mLight2.getDiffuseColor().g, mLight2.getDiffuseColor().b));
