@@ -74,8 +74,8 @@ void SolveHingeJointSystem::initBeforeSolve() {
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Compute the vector from body center to the anchor point in world-space
-        mHingeJointComponents.mR1World[i] = orientationBody1 * mHingeJointComponents.mLocalAnchorPointBody1[i];
-        mHingeJointComponents.mR2World[i] = orientationBody2 * mHingeJointComponents.mLocalAnchorPointBody2[i];
+        mHingeJointComponents.mR1World[i] = orientationBody1 * (mHingeJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mHingeJointComponents.mR2World[i] = orientationBody2 * (mHingeJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Compute vectors needed in the Jacobian
         Vector3& a1 = mHingeJointComponents.mA1[i];
@@ -497,8 +497,8 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                                                     mHingeJointComponents.mI2[i]);
 
         // Compute the vector from body center to the anchor point in world-space
-        mHingeJointComponents.mR1World[i] = q1 * mHingeJointComponents.mLocalAnchorPointBody1[i];
-        mHingeJointComponents.mR2World[i] = q2 * mHingeJointComponents.mLocalAnchorPointBody2[i];
+        mHingeJointComponents.mR1World[i] = q1 * (mHingeJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mHingeJointComponents.mR2World[i] = q2 * (mHingeJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Compute the corresponding skew-symmetric matrices
         Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR1World[i]);
