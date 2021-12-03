@@ -151,7 +151,7 @@ class TriangleShape : public ConvexPolyhedronShape {
         virtual uint32 getNbVertices() const override;
 
         /// Return a given vertex of the polyhedron
-        virtual HalfEdgeStructure::Vertex getVertex(uint32 vertexIndex) const override;
+        virtual const HalfEdgeStructure::Vertex& getVertex(uint32 vertexIndex) const override;
 
         /// Return the position of a given vertex
         virtual Vector3 getVertexPosition(uint32 vertexIndex) const override;
@@ -244,16 +244,9 @@ RP3D_FORCE_INLINE uint32 TriangleShape::getNbVertices() const {
 }
 
 // Return a given vertex of the polyhedron
-RP3D_FORCE_INLINE HalfEdgeStructure::Vertex TriangleShape::getVertex(uint32 vertexIndex) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Vertex& TriangleShape::getVertex(uint32 vertexIndex) const {
     assert(vertexIndex < 3);
-
-    HalfEdgeStructure::Vertex vertex(vertexIndex);
-    switch (vertexIndex) {
-        case 0: vertex.edgeIndex = 0; break;
-        case 1: vertex.edgeIndex = 2; break;
-        case 2: vertex.edgeIndex = 4; break;
-    }
-    return vertex;
+    return mTriangleHalfEdgeStructure.getVertex(vertexIndex);
 }
 
 // Return the position of a given vertex
