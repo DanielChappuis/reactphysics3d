@@ -413,11 +413,6 @@ RP3D_FORCE_INLINE void CollisionDetectionSystem::addCollider(Collider* collider,
     mMapBroadPhaseIdToColliderEntity.add(Pair<int, Entity>(broadPhaseId, collider->getEntity()));
 }
 
-// Add a pair of bodies that cannot collide with each other
-RP3D_FORCE_INLINE void CollisionDetectionSystem::addNoCollisionPair(Entity body1Entity, Entity body2Entity) {
-    mNoCollisionPairs.add(OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity));
-}
-
 // Remove a pair of bodies that cannot collide with each other
 RP3D_FORCE_INLINE void CollisionDetectionSystem::removeNoCollisionPair(Entity body1Entity, Entity body2Entity) {
     mNoCollisionPairs.remove(OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity));
