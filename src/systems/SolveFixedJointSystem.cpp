@@ -74,8 +74,8 @@ void SolveFixedJointSystem::initBeforeSolve() {
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Compute the vector from body center to the anchor point in world-space
-        mFixedJointComponents.mR1World[i] = orientationBody1 * mFixedJointComponents.mLocalAnchorPointBody1[i];
-        mFixedJointComponents.mR2World[i] = orientationBody2 * mFixedJointComponents.mLocalAnchorPointBody2[i];
+        mFixedJointComponents.mR1World[i] = orientationBody1 * (mFixedJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mFixedJointComponents.mR2World[i] = orientationBody2 * (mFixedJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Compute the corresponding skew-symmetric matrices
         Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mFixedJointComponents.mR1World[i]);
@@ -318,8 +318,8 @@ void SolveFixedJointSystem::solvePositionConstraint() {
                                                     mFixedJointComponents.mI2[i]);
 
         // Compute the vector from body center to the anchor point in world-space
-        mFixedJointComponents.mR1World[i] = q1 * mFixedJointComponents.mLocalAnchorPointBody1[i];
-        mFixedJointComponents.mR2World[i] = q2 * mFixedJointComponents.mLocalAnchorPointBody2[i];
+        mFixedJointComponents.mR1World[i] = q1 * (mFixedJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mFixedJointComponents.mR2World[i] = q2 * (mFixedJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Get the inverse mass and inverse inertia tensors of the bodies
         decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];

@@ -77,8 +77,8 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
         const Quaternion& orientationBody2 = transformBody2.getOrientation();
 
         // Compute the vector from body center to the anchor point in world-space
-        mBallAndSocketJointComponents.mR1World[i] = orientationBody1 * mBallAndSocketJointComponents.mLocalAnchorPointBody1[i];
-        mBallAndSocketJointComponents.mR2World[i] = orientationBody2 * mBallAndSocketJointComponents.mLocalAnchorPointBody2[i];
+        mBallAndSocketJointComponents.mR1World[i] = orientationBody1 * (mBallAndSocketJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mBallAndSocketJointComponents.mR2World[i] = orientationBody2 * (mBallAndSocketJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Compute the corresponding skew-symmetric matrices
         const Vector3& r1World = mBallAndSocketJointComponents.mR1World[i];
@@ -329,9 +329,9 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
 
         // Compute the vector from body center to the anchor point in world-space
         mBallAndSocketJointComponents.mR1World[i] = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1] *
-                                                    mBallAndSocketJointComponents.mLocalAnchorPointBody1[i];
+                                                    (mBallAndSocketJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
         mBallAndSocketJointComponents.mR2World[i] = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2] *
-                                                    mBallAndSocketJointComponents.mLocalAnchorPointBody2[i];
+                                                    (mBallAndSocketJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         const Vector3& r1World = mBallAndSocketJointComponents.mR1World[i];
         const Vector3& r2World = mBallAndSocketJointComponents.mR2World[i];
