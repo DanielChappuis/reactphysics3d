@@ -74,8 +74,8 @@ void SolveSliderJointSystem::initBeforeSolve() {
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Vector from body center to the anchor point
-        mSliderJointComponents.mR1[i] = orientationBody1 * mSliderJointComponents.mLocalAnchorPointBody1[i];
-        mSliderJointComponents.mR2[i] = orientationBody2 * mSliderJointComponents.mLocalAnchorPointBody2[i];
+        mSliderJointComponents.mR1[i] = orientationBody1 * (mSliderJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mSliderJointComponents.mR2[i] = orientationBody2 * (mSliderJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Compute the two orthogonal vectors to the slider axis in world-space
         mSliderJointComponents.mSliderAxisWorld[i] = orientationBody1 * mSliderJointComponents.mSliderAxisBody1[i];
@@ -545,8 +545,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                                                     mSliderJointComponents.mI2[i]);
 
         // Vector from body center to the anchor point
-        mSliderJointComponents.mR1[i] = q1 * mSliderJointComponents.mLocalAnchorPointBody1[i];
-        mSliderJointComponents.mR2[i] = q2 * mSliderJointComponents.mLocalAnchorPointBody2[i];
+        mSliderJointComponents.mR1[i] = q1 * (mSliderJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mSliderJointComponents.mR2[i] = q2 * (mSliderJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Get the inverse mass and inverse inertia tensors of the bodies
         const decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
