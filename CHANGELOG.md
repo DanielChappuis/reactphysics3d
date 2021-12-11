@@ -56,6 +56,7 @@ do not hesitate to take a look at the user manual.
 - Issue with sphere radius in DebugRenderer
 - Issue where changing the transform of a Collider attached to a sleeping RigidBody caused the body to remain asleep
 - Issue with wrong calculation performed in the ContactSolverSystem
+- Issue with joints when center of mass is not at the center of the rigid body local-space
 - Issue [#157](https://github.com/DanielChappuis/reactphysics3d/issues/157) with matrix to quaternion conversion has been fixed
 - Issue [#184](https://github.com/DanielChappuis/reactphysics3d/issues/184) with update of mass/inertia properties of static bodies
 - Issue with the computation of the two friction vectors in the contact solver
