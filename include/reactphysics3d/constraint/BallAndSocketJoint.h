@@ -107,6 +107,8 @@ class BallAndSocketJoint : public Joint {
         /// Return the number of bytes used by the joint
         virtual size_t getSizeInBytes() const override;
 
+        /// Reset the limits
+        void resetLimits();
 
     public :
 
@@ -129,12 +131,6 @@ class BallAndSocketJoint : public Joint {
 
         /// Set the cone limit half angle
         void setConeLimitHalfAngle(decimal coneHalfAngle);
-
-        /// Set the normalized cone limit axis of body 1 in local-space of body 1
-        void setConeLimitLocalAxisBody1(const Vector3& localAxisBody1);
-
-        /// Set the normalized cone limit axis of body 2 in local-space of body 2
-        void setConeLimitLocalAxisBody2(const Vector3& localAxisBody2);
 
         /// Return the cone limit half angle (in radians)
         decimal getConeLimitHalfAngle() const;

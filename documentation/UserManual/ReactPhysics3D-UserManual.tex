@@ -1571,17 +1571,14 @@ joint = dynamic_cast<BallAndSocketJoint*>(world->createJoint(jointInfo));
 
     \subsubsection{Cone limit}
 
-    With the ball and socket joint, it is possible to enable a cone limit. The idea is to constrain the rotation of body 2 around the anchor point
-    in to stay inside a cone. This can be used to limit the rotation angle of body 2 with respect to the main cone axis. \\
-    
-    In the following example, we enable the cone limit for a given ball and socket joint. We limit the rotation with a maximum angle with respect to
-    the main axis of the cone (here the local-space Y axis of each body). \\
+    With the ball and socket joint, it is possible to enable a cone limit. Let's call the \texttt{anchor axis} for body 1 the axis from body 1 center of mass
+    to the joint anchor point. The cone limit can be used to constraint the angle between the anchor axis of body 1 and the anchor axis of body 2.
+    The idea is to limit the angle of the anchor axis of body 2 inside a cone around the anchor axis of body 1. The cone is defined by its main axis
+    which is the anchor axis of body 1 and is also defined by the cone half angle. \\
+
+    In the following example, we enable the cone limit for a given ball and socket joint. \\
 
     \begin{lstlisting}
-// Set the main axis of the cone (in both local-spaces of body 1 and 2)
-joint->setConeLimitLocalAxisBody1(rp3d::Vector3(0, 1, 0));
-joint->setConeLimitLocalAxisBody2(rp3d::Vector3(0, 1, 0));
-
 // Set the maximum half angle (in radians) 
 joint->setConeLimitHalfAngle(45.0 * PI / 180.0);
 

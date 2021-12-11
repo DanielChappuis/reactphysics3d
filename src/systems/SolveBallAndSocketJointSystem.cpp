@@ -117,14 +117,12 @@ void SolveBallAndSocketJointSystem::initBeforeSolve() {
             mBallAndSocketJointComponents.mBiasVector[i] = biasFactor * (x2 + r2World - x1 - r1World);
         }
 
-        // Convert local-space cone axis of bodies to world-space
-        const Vector3 coneAxisBody1World = orientationBody1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[i];
-        const Vector3 coneAxisBody2World = orientationBody2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[i];
-
-        mBallAndSocketJointComponents.mConeLimitACrossB[i] = coneAxisBody1World.cross(coneAxisBody2World);
+        const Vector3 r1WorldUnit = r1World.getUnit();
+        const Vector3 r2WorldUnit = r2World.getUnit();
+        mBallAndSocketJointComponents.mConeLimitACrossB[i] = r1WorldUnit.cross(-r2WorldUnit);
 
         // Compute the current angle around the hinge axis
-        decimal coneAngle = computeCurrentConeHalfAngle(coneAxisBody1World, coneAxisBody2World);
+        decimal coneAngle = computeCurrentConeHalfAngle(r1WorldUnit, -r2WorldUnit);
 
         // Check if the cone limit constraints is violated or not
         decimal coneLimitError = mBallAndSocketJointComponents.mConeLimitHalfAngle[i] - coneAngle;
@@ -349,10 +347,10 @@ void SolveBallAndSocketJointSystem::solvePositionConstraint() {
         if (mBallAndSocketJointComponents.mIsConeLimitEnabled[i]) {
 
             // Check if the cone limit constraints is violated or not
-            const Vector3 coneAxisBody1World = q1 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody1[i];
-            const Vector3 coneAxisBody2World = q2 * mBallAndSocketJointComponents.mConeLimitLocalAxisBody2[i];
-            mBallAndSocketJointComponents.mConeLimitACrossB[i] = coneAxisBody1World.cross(coneAxisBody2World);
-            decimal coneAngle = computeCurrentConeHalfAngle(coneAxisBody1World, coneAxisBody2World);
+            const Vector3 r1WorldUnit = r1World.getUnit();
+            const Vector3 r2WorldUnit = r2World.getUnit();
+            mBallAndSocketJointComponents.mConeLimitACrossB[i] = r1WorldUnit.cross(-r2WorldUnit);
+            decimal coneAngle = computeCurrentConeHalfAngle(r1WorldUnit, -r2WorldUnit);
             decimal coneLimitError = mBallAndSocketJointComponents.mConeLimitHalfAngle[i] - coneAngle;
             mBallAndSocketJointComponents.mIsConeLimitViolated[i] = coneLimitError < 0;
 

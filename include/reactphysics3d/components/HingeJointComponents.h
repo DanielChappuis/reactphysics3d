@@ -140,10 +140,10 @@ class HingeJointComponents : public Components {
         /// True if the motor of the joint in enabled
         bool* mIsMotorEnabled;
 
-        /// Lower limit (minimum allowed rotation angle in radian)
+        /// Lower limit (minimum allowed rotation angle in radians)
         decimal* mLowerLimit;
 
-        /// Upper limit (maximum translation distance)
+        /// Upper limit (maximum allowed rotation angle in radians)
         decimal* mUpperLimit;
 
         /// True if the lower limit is violated
