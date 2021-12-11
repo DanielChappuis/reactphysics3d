@@ -30,6 +30,8 @@
 #include "openglframework.h"
 #include <reactphysics3d/reactphysics3d.h>
 #include "Box.h"
+#include "Capsule.h"
+#include "Sphere.h"
 #include "SceneDemo.h"
 
 namespace ragdollscene {
@@ -52,35 +54,41 @@ class RagdollScene : public SceneDemo {
 
         // -------------------- Attributes -------------------- //
 
-        /// Head box
-        Box* mHeadBox[NB_RAGDOLLS];
+        /// Head sphere
+        Sphere* mHeadBox[NB_RAGDOLLS];
 
-        /// Torso box
-        Box* mTorsoBox[NB_RAGDOLLS];
+        /// Chest
+        Capsule* mChestCapsule[NB_RAGDOLLS];
 
-        /// Left upper arm box
-        Box* mLeftUpperArmBox[NB_RAGDOLLS];
+        /// Waist capsule
+        Capsule* mWaistCapsule[NB_RAGDOLLS];
 
-        /// Left lower arm box
-        Box* mLeftLowerArmBox[NB_RAGDOLLS];
+        /// Hip capsule
+        Capsule* mHipCapsule[NB_RAGDOLLS];
 
-        /// Left upper leg box
-        Box* mLeftUpperLegBox[NB_RAGDOLLS];
+        /// Left upper arm capsule
+        Capsule* mLeftUpperArmCapsule[NB_RAGDOLLS];
 
-        /// Left lower leg box
-        Box* mLeftLowerLegBox[NB_RAGDOLLS];
+        /// Left lower arm capsule
+        Capsule* mLeftLowerArmCapsule[NB_RAGDOLLS];
 
-        /// Right upper arm box
-        Box* mRightUpperArmBox[NB_RAGDOLLS];
+        /// Left upper leg capsule
+        Capsule* mLeftUpperLegCapsule[NB_RAGDOLLS];
 
-        /// Right lower arm box
-        Box* mRightLowerArmBox[NB_RAGDOLLS];
+        /// Left lower leg capsule
+        Capsule* mLeftLowerLegCapsule[NB_RAGDOLLS];
 
-        /// Right upper leg box
-        Box* mRightUpperLegBox[NB_RAGDOLLS];
+        /// Right upper arm capsule
+        Capsule* mRightUpperArmCapsule[NB_RAGDOLLS];
 
-        /// Right lower leg box
-        Box* mRightLowerLegBox[NB_RAGDOLLS];
+        /// Right lower arm capsule
+        Capsule* mRightLowerArmCapsule[NB_RAGDOLLS];
+
+        /// Right upper leg capsule
+        Capsule* mRightUpperLegCapsule[NB_RAGDOLLS];
+
+        /// Right lower leg capsule
+        Capsule* mRightLowerLegCapsule[NB_RAGDOLLS];
 
         /// Box for the floor 1
         Box* mFloor1;
@@ -95,34 +103,42 @@ class RagdollScene : public SceneDemo {
         Box* mInclinedPlaneBox;
 
         /// Ball-And-Socket joint between head and torso
-        rp3d::BallAndSocketJoint* mHeadTorsoJoint[NB_RAGDOLLS];
+        rp3d::BallAndSocketJoint* mHeadChestJoint[NB_RAGDOLLS];
 
         /// Ball-And-Socket joint between torso and left upper arm
-        rp3d::BallAndSocketJoint* mTorsoLeftUpperArmJoint[NB_RAGDOLLS];
+        rp3d::BallAndSocketJoint* mChestLeftUpperArmJoint[NB_RAGDOLLS];
 
         /// Hinge joint between left upper and left lower arm
         rp3d::HingeJoint* mLeftUpperLeftLowerArmJoint[NB_RAGDOLLS];
 
+        /// Fixed joint between chest and waist
+        rp3d::FixedJoint* mChestWaistJoint[NB_RAGDOLLS];
+
+        /// Fixed joint between waist and hips
+        rp3d::FixedJoint* mWaistHipsJoint[NB_RAGDOLLS];
+
         /// Ball-And-Socket joint between torso and left upper leg
-        rp3d::BallAndSocketJoint* mTorsoLeftUpperLegJoint[NB_RAGDOLLS];
+        rp3d::BallAndSocketJoint* mHipLeftUpperLegJoint[NB_RAGDOLLS];
 
         /// Hinge joint between left upper and left lower leg
         rp3d::HingeJoint* mLeftUpperLeftLowerLegJoint[NB_RAGDOLLS];
 
         /// Ball-And-Socket joint between torso and right upper arm
-        rp3d::BallAndSocketJoint* mTorsoRightUpperArmJoint[NB_RAGDOLLS];
+        rp3d::BallAndSocketJoint* mChestRightUpperArmJoint[NB_RAGDOLLS];
 
         /// Hinge joint between left upper and right lower arm
         rp3d::HingeJoint* mRightUpperRightLowerArmJoint[NB_RAGDOLLS];
 
         /// Ball-And-Socket joint between torso and right upper leg
-        rp3d::BallAndSocketJoint* mTorsoRightUpperLegJoint[NB_RAGDOLLS];
+        rp3d::BallAndSocketJoint* mHipRightUpperLegJoint[NB_RAGDOLLS];
 
         /// Hinge joint between left upper and left lower leg
         rp3d::HingeJoint* mRightUpperRightLowerLegJoint[NB_RAGDOLLS];
 
+        rp3d::Vector3 mChestPos[NB_RAGDOLLS];
+        rp3d::Vector3 mWaistPos[NB_RAGDOLLS];
+        rp3d::Vector3 mHipPos[NB_RAGDOLLS];
         rp3d::Vector3 mHeadPos[NB_RAGDOLLS];
-        rp3d::Vector3 mTorsoPos[NB_RAGDOLLS];
         rp3d::Vector3 mLeftUpperArmPos[NB_RAGDOLLS];
         rp3d::Vector3 mLeftLowerArmPos[NB_RAGDOLLS];
         rp3d::Vector3 mLeftUpperLegPos[NB_RAGDOLLS];
