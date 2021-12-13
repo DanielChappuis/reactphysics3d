@@ -7,6 +7,7 @@ do not hesitate to take a look at the user manual.
 
 ### Added
 
+ - The performance of the collision detection and rigid bodies simulation has been improved a lot
  - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has been added
  - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has been added
  - Constructors with local-space anchor/axis have been added to BallAndSocketJointInfo, HingeJointInfo, FixedJointInfo and SliderJointInfo classes
@@ -23,8 +24,9 @@ do not hesitate to take a look at the user manual.
  - Method RigidBody::getTorque() to get the total manually applied torque on a rigid body
  - Method RigidBody::setIsSleeping() is now public in order to wake up or put to sleep a rigid body
  - A cone limit can now be set to the ball-and-socket joint (this is useful for ragdolls)
- - Bridge scene has been added to the testbed application
- - Ragdoll scene has been added to the testbed application
+ - New scenes have been added to the testbed application (Box Tower, Ragdoll, Rope, Ball And Socket Joint, Bridge, Hinge Joint, Hinge Joint chain, Ball and
+   Socket Joint chain, Ball and Socket Joint net, ...)
+ - It is now possible to move bodies using the mouse (CTRL + click and drag) in the testbed application
 
 ### Changed
 
@@ -65,7 +67,9 @@ do not hesitate to take a look at the user manual.
 - Issue with wrong linear velocity update computed in RigidBody::updateLocalCenterOfMassFromColliders() method
 - Issue with wrong linear velocity update computed in RigidBody::updateMassPropertiesFromColliders() method
 - Issue in copy-constructors in Map and Set classes
-- A lot of code warnings have been fixed
+- A lot of code warnings have been fixed [#221](https://github.com/DanielChappuis/reactphysics3d/issues/221)[#222](https://github.com/DanielChappuis/reactphysics3d/issues/222)[#223](https://github.com/DanielChappuis/reactphysics3d/issues/223)[#224](https://github.com/DanielChappuis/reactphysics3d/issues/224)
+- The default warning level is not set anymore in CMakeLists.txt file (Issue [#220](https://github.com/DanielChappuis/reactphysics3d/issues/220)) 
+- Issue with collision not working when setting a body to be static before calling updateMassPropertiesFromColliders() (Issue [#225](https://github.com/DanielChappuis/reactphysics3d/issues/225)) 
 
 ## Version 0.8.0 (May 31, 2020)
 
