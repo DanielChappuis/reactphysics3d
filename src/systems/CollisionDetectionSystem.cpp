@@ -770,7 +770,7 @@ void CollisionDetectionSystem::computeOverlapSnapshotContactPairs(NarrowPhaseInf
                 const bool isTrigger = mCollidersComponents.mIsTrigger[collider1Index] || mCollidersComponents.mIsTrigger[collider2Index];
 
                 // Create a new contact pair
-                ContactPair contactPair(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId, body1Entity, body2Entity, collider1Entity, collider2Entity, static_cast<uint32>(contactPairs.size()), isTrigger, false);
+                ContactPair contactPair(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId, body1Entity, body2Entity, collider1Entity, collider2Entity, static_cast<uint32>(contactPairs.size()), false, isTrigger);
                 contactPairs.add(contactPair);
 
                 setOverlapContactPairId.add(narrowPhaseInfoBatch.narrowPhaseInfos[i].overlappingPairId);
