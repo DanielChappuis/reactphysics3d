@@ -58,15 +58,16 @@ SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, reactphy
     float lightsHeight = 50.0f;
     mLight0.translateWorld(Vector3(0.4f * lightsRadius, 0.6 * lightsHeight, 0.4f * lightsRadius));
     mLight1.translateWorld(Vector3(-0.4 * lightsRadius, 0.6 * lightsHeight, 0.4 * lightsRadius));
-    mLight2.translateWorld(Vector3(0.40f * lightsRadius, -5, -0.4f * lightsRadius));
+    mLight2.translateWorld(Vector3(0, 0.6 * lightsHeight, -0.4f * lightsRadius));
 
 	// Set the lights colors
     float lightIntensity = 0.5;
     Color lightColor(lightIntensity * 1.0, lightIntensity * 1.0f, lightIntensity * 1.0f, 1.0f);
-    Color noLightColor(0, 0, 0, 1);
+    float lightIntensity2 = 0.1;
+    Color lightColor2(lightIntensity2 * 1.0, lightIntensity2 * 1.0f, lightIntensity2 * 1.0f, 1.0f);
     mLight0.setDiffuseColor(lightColor);
     mLight1.setDiffuseColor(lightColor);
-    mLight2.setDiffuseColor(noLightColor);
+    mLight2.setDiffuseColor(lightColor2);
 
     mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
     mShadowMapLightCameras[0].rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
