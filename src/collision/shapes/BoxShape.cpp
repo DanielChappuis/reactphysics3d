@@ -130,7 +130,7 @@ const HalfEdgeStructure::Face& BoxShape::getFace(uint32 faceIndex) const {
 }
 
 // Return a given vertex of the polyhedron
-HalfEdgeStructure::Vertex BoxShape::getVertex(uint32 vertexIndex) const {
+const HalfEdgeStructure::Vertex& BoxShape::getVertex(uint32 vertexIndex) const {
     assert(vertexIndex < getNbVertices());
     return mPhysicsCommon.mBoxShapeHalfEdgeStructure.getVertex(vertexIndex);
 }

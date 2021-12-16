@@ -68,7 +68,7 @@ class ConvexPolyhedronShape : public ConvexShape {
         virtual uint32 getNbVertices() const=0;
 
         /// Return a given vertex of the polyhedron
-        virtual HalfEdgeStructure::Vertex getVertex(uint32 vertexIndex) const=0;
+        virtual const HalfEdgeStructure::Vertex& getVertex(uint32 vertexIndex) const=0;
 
         /// Return the position of a given vertex
         virtual Vector3 getVertexPosition(uint32 vertexIndex) const=0;

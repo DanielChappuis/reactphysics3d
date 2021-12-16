@@ -118,7 +118,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         virtual uint32 getNbVertices() const override;
 
         /// Return a given vertex of the polyhedron
-        virtual HalfEdgeStructure::Vertex getVertex(uint32 vertexIndex) const override;
+        virtual const HalfEdgeStructure::Vertex& getVertex(uint32 vertexIndex) const override;
 
         /// Return the number of half-edges of the polyhedron
         virtual uint32 getNbHalfEdges() const override;
@@ -208,7 +208,7 @@ RP3D_FORCE_INLINE uint32 ConvexMeshShape::getNbVertices() const {
 }
 
 // Return a given vertex of the polyhedron
-RP3D_FORCE_INLINE HalfEdgeStructure::Vertex ConvexMeshShape::getVertex(uint32 vertexIndex) const {
+RP3D_FORCE_INLINE const HalfEdgeStructure::Vertex& ConvexMeshShape::getVertex(uint32 vertexIndex) const {
     assert(vertexIndex < getNbVertices());
     return mPolyhedronMesh->getHalfEdgeStructure().getVertex(vertexIndex);
 }
