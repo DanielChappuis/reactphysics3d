@@ -112,7 +112,7 @@ class BoxShape : public ConvexPolyhedronShape {
         virtual uint32 getNbVertices() const override;
 
         /// Return a given vertex of the polyhedron
-        virtual HalfEdgeStructure::Vertex getVertex(uint32 vertexIndex) const override;
+        virtual const HalfEdgeStructure::Vertex& getVertex(uint32 vertexIndex) const override;
 
         /// Return the number of half-edges of the polyhedron
         virtual uint32 getNbHalfEdges() const override;
