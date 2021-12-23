@@ -1,20 +1,35 @@
-[![Build](https://github.com/DanielChappuis/reactphysics3d/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/DanielChappuis/reactphysics3d/actions/workflows/build-and-test.yml)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ae24e998e304e4da78ec848eade9e3a)](https://www.codacy.com/app/chappuis.daniel/reactphysics3d?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DanielChappuis/reactphysics3d&amp;utm_campaign=Badge_Grade)
-[![codecov.io](https://codecov.io/github/DanielChappuis/reactphysics3d/coverage.svg?branch=master)](https://codecov.io/github/DanielChappuis/reactphysics3d?branch=master)
+<h1 align="center">
+  <a href="https://www.reactphysics3d.com"><img src="https://github.com/DanielChappuis/reactphysics3d/blob/62e17155e3fc187f4a90f7328c1154fc47e41d69/documentation/UserManual/images/ReactPhysics3DLogo.png" alt="ReactPhysics3D" width="300"></a>
+  <br>
+  ReactPhysics3D
+  <br>
+</h1>
 
-## ReactPhysics3D
+<h4 align="center">ReactPhysics3D is an open source C++ physics engine library that can be used in 3D simulations and games.</h4>
 
-ReactPhysics3D is an open source C++ physics engine library that can be used in 3D simulations and games.
+<p align="center">
+  <a href="https://github.com/DanielChappuis/reactphysics3d/actions/workflows/build-and-test.yml">
+    <img src="https://github.com/DanielChappuis/reactphysics3d/actions/workflows/build-and-test.yml/badge.svg"
+         alt="Build">
+  </a>
+  <a href="https://www.codacy.com/app/chappuis.daniel/reactphysics3d?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DanielChappuis/reactphysics3d&amp;utm_campaign=Badge_Grade"><img src="https://api.codacy.com/project/badge/Grade/3ae24e998e304e4da78ec848eade9e3a"></a>
+  <a href="https://codecov.io/github/DanielChappuis/reactphysics3d?branch=master">
+      <img src="https://codecov.io/github/DanielChappuis/reactphysics3d/coverage.svg?branch=master">
+  </a>
+</p>
 
-Website : [https://www.reactphysics3d.com](https://www.reactphysics3d.com)
-
-Author : Daniel Chappuis
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#License">License</a> •
+  <a href="#documentation">Documentation</a> •
+  <a href="#branches">Branches</a> •
+  <a href="#issues">Issues</a> •
+  <a href="#credits">Credits</a>
+</p>
 
 <img src="https://raw.githubusercontent.com/DanielChappuis/reactphysics3d/master/documentation/UserManual/images/testbed.png" alt="Drawing" height="400" />
 
 ## Features
-
-ReactPhysics3D has the following features:
 
  - Rigid body dynamics
  - Discrete collision detection
