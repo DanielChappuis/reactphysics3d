@@ -6,7 +6,7 @@
 </h1>
 
 <h4 align="center">ReactPhysics3D is an open source C++ physics engine library that can be used in 3D simulations and games.</h4>
-
+<p align="center"><a href="https://www.reactphysics3d.com">www.reactphysics3d.com</a></p>
 <p align="center">
   <a href="https://github.com/DanielChappuis/reactphysics3d/actions/workflows/build-and-test.yml">
     <img src="https://github.com/DanielChappuis/reactphysics3d/actions/workflows/build-and-test.yml/badge.svg"
@@ -20,10 +20,13 @@
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="#License">License</a> •
   <a href="#documentation">Documentation</a> •
   <a href="#branches">Branches</a> •
+  <a href="#questions">Questions</a> •
   <a href="#issues">Issues</a> •
+  <a href="#author">Author</a> •
+  <a href="#license">License</a> •
+  <a href="#support">Support</a> •
   <a href="#credits">Credits</a>
 </p>
 
@@ -51,10 +54,6 @@
  - Logs
  - Unit tests
 
-## License
-
-The ReactPhysics3D library is released under the open-source [ZLib license](http://opensource.org/licenses/zlib).
-
 ## Documentation
 
 You can find the user manual and the Doxygen API documentation [here](https://www.reactphysics3d.com/documentation.html)
@@ -65,9 +64,23 @@ The "master" branch always contains the last released version of the library and
 the "develop" branch is used for development. This branch is frequently updated and can be quite unstable. Therefore, if you want to use the library in
 your application, it is recommended to checkout the "master" branch.
 
+## Questions
+
 ## Issues
 
 If you find any issue with the library, you can report it on the issue tracker [here](https://github.com/DanielChappuis/reactphysics3d/issues).
+
+## Author
+
+The ReactPhysics3D library has been created and is maintained by [Daniel Chappuis](https://github.com/DanielChappuis).
+
+## License
+
+The ReactPhysics3D library is released under the open-source [ZLib license](http://opensource.org/licenses/zlib).
+
+## Support
+
+...
 
 ## Credits
 
