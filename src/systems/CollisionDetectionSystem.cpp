@@ -277,7 +277,6 @@ void CollisionDetectionSystem::updateOverlappingPairs(const Array<Pair<int32, in
                 if (isBody1Active || isBody2Active) {
 
                     // Check if the bodies are in the set of bodies that cannot collide between each other
-                    // TODO OPTI : What not use the pairId here ??
                     const bodypair bodiesIndex = OverlappingPairs::computeBodiesIndexPair(body1Entity, body2Entity);
                     if (!mNoCollisionPairs.contains(bodiesIndex)) {
 
