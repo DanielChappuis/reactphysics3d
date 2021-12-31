@@ -46,7 +46,7 @@
 
 ## :book: Documentation
 
-You can find the user manual and the Doxygen API documentation [here](https://www.reactphysics3d.com/documentation.html)
+You can find the user manual and the Doxygen API documentation <a href="https://www.reactphysics3d.com/documentation.html" target="_blank">here</a>.
 
 ## :information_source: Branches
 
@@ -56,23 +56,23 @@ your application, it is recommended to checkout the "master" branch.
 
 ## :question: Questions
 
-If you have any questions about the library and how to use it, you should use [Github Discussions](https://github.com/DanielChappuis/reactphysics3d/discussions) to read previous questions and answers or to ask new questions. If you want, you can also share your project there if you are using the ReactPhysics3D library.
+If you have any questions about the library and how to use it, you should use <a href="https://github.com/DanielChappuis/reactphysics3d/discussions" target="_blank">Github Discussions</a> to read previous questions and answers or to ask new questions. If you want, you can also share your project there if you are using the ReactPhysics3D library.
 
 ## :warning: Issues
 
-If you find any issue with the library, you can report it on the issue tracker [here](https://github.com/DanielChappuis/reactphysics3d/issues).
+If you find any issue with the library, you can report it on the issue tracker <a href="https://github.com/DanielChappuis/reactphysics3d/issues" target="_blank">here</a>.
 
 ## :man: Author
 
-The ReactPhysics3D library has been created and is maintained by [Daniel Chappuis](https://github.com/DanielChappuis).
+The ReactPhysics3D library has been created and is maintained by <a href="https://github.com/DanielChappuis" target="_blank">Daniel Chappuis</a>.
 
 ## :copyright: License
 
-The ReactPhysics3D library is released under the open-source [ZLib license](http://opensource.org/licenses/zlib).
+The ReactPhysics3D library is released under the open-source <a href="http://opensource.org/licenses/zlib" target="_blank">ZLib license</a>.
 
 ## :+1: Sponsorship
 
-If you are using this library and want to support its development, you can sponsor it [here](https://github.com/sponsors/DanielChappuis)
+If you are using this library and want to support its development, you can sponsor it <a href="https://github.com/sponsors/DanielChappuis" target="_blank">here</a>.
 
 ## :clap: Credits
 
