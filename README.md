@@ -19,20 +19,10 @@
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#documentation">Documentation</a> •
-  <a href="#branches">Branches</a> •
-  <a href="#questions">Questions</a> •
-  <a href="#issues">Issues</a> •
-  <a href="#author">Author</a> •
-  <a href="#license">License</a> •
-  <a href="#support">Support</a> •
-  <a href="#credits">Credits</a>
+  <img src="https://github.com/DanielChappuis/reactphysics3d/blob/images/showreel.gif?raw=true" alt="Drawing" />
 </p>
 
-<img src="https://raw.githubusercontent.com/DanielChappuis/reactphysics3d/master/documentation/UserManual/images/testbed.png" alt="Drawing" height="400" />
-
-## Features
+## :dart: Features
 
  - Rigid body dynamics
  - Discrete collision detection
@@ -54,38 +44,42 @@
  - Logs
  - Unit tests
 
-## Documentation
+## :book: Documentation
 
 You can find the user manual and the Doxygen API documentation [here](https://www.reactphysics3d.com/documentation.html)
 
-## Branches
+## :information_source: Branches
 
-The "master" branch always contains the last released version of the library and some possible bug fixes. This is the most stable version. On the other side,
+The "master" branch always contains the last released version of the library and some possible hot fixes. This is the most stable version. On the other side,
 the "develop" branch is used for development. This branch is frequently updated and can be quite unstable. Therefore, if you want to use the library in
 your application, it is recommended to checkout the "master" branch.
 
-## Questions
+## :question: Questions
 
-## Issues
+If you have any questions about the library and how to use it, you should use [Github Discussions](https://github.com/DanielChappuis/reactphysics3d/discussions) to read previous questions and answers or to ask new questions. If you want, you can also share your project there if you are using the ReactPhysics3D library.
+
+## :warning: Issues
 
 If you find any issue with the library, you can report it on the issue tracker [here](https://github.com/DanielChappuis/reactphysics3d/issues).
 
-## Author
+## :man: Author
 
 The ReactPhysics3D library has been created and is maintained by [Daniel Chappuis](https://github.com/DanielChappuis).
 
-## License
+## :copyright: License
 
 The ReactPhysics3D library is released under the open-source [ZLib license](http://opensource.org/licenses/zlib).
 
-## Support
+## :+1: Sponsorship
 
-...
+If you are using this library and want to support its development, you can sponsor it [here](https://github.com/sponsors/DanielChappuis)
 
-## Credits
+## :clap: Credits
 
 Thanks a lot to Erin Catto, Dirk Gregorius, Erwin Coumans, Pierre Terdiman and Christer Ericson for their amazing GDC presentations,
 their physics engines, their books or articles and their contributions on many physics engine forums.
+
+Thanks to all the contributors that have reported issues or have taken the time to send pull requests.
 
  - [Artbake Graphics](https://sketchfab.com/ismir) for the static castle 3D model used in testbed application ([CC license](https://creativecommons.org/licenses/by/4.0))
 
