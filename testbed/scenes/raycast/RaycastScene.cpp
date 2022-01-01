@@ -105,7 +105,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj");
 
     // Set the color
     mConcaveMesh->setColor(mObjectColorDemo);
@@ -285,7 +285,7 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader, const openg
 	mColorShader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
 
     // Set the vertex color
-    openglframework::Vector4 color(1, 0.55f, 0, 1);
+    openglframework::Vector4 color(0, 0.0, 0, 1);
     mColorShader.setIntUniform("isGlobalVertexColorEnabled", 1, false);
     mColorShader.setVector4Uniform("globalVertexColor", color, false);
 

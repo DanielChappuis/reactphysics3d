@@ -106,7 +106,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.3, 0.3, 0.3));
     mAllShapes.push_back(mConcaveMesh);
 
     // Set the color
