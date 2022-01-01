@@ -52,7 +52,7 @@
 - Issue [#195](https://github.com/DanielChappuis/reactphysics3d/issues/195) in RigidBodyComponents
 - Issue with concave vs convex shape collision detection has been fixed
 - Issue with edge vs edge collision has been fixed in SAT algorithm (wrong contact normal was computed)
-- Issue with sphere radius in DebugRenderer
+- Issue with sphere radius in DebugRenderer
 - Issue where changing the transform of a Collider attached to a sleeping RigidBody caused the body to remain asleep
 - Issue with wrong calculation performed in the ContactSolverSystem
 - Issue with joints when center of mass is not at the center of the rigid body local-space
