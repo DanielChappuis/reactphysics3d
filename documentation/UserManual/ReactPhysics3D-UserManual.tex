@@ -924,8 +924,7 @@ float factor = accumulator / timeStep;
 
     \begin{lstlisting}
 // Compute the interpolated transform of the rigid body
-Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform,
-                                                          currTransform, factor);
+Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -967,8 +966,7 @@ decimal factor = accumulator / timeStep;
 Transform currTransform = body->getTransform();
 
 // Compute the interpolated transform of the rigid body
-Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform,
-                                                           currTransform, factor);
+Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
 
 // Now you can render your body using the interpolated transform here
 
@@ -2052,51 +2050,6 @@ bool isHit = collider->raycast(ray, raycastInfo);
     The testbed application can be found in the \texttt{testbed/} folder of
     the ReactPhysics3D library. Do not hesitate to take a look at the code of the demo scenes to better understand how
     to use the library in your application. \\
-
-    The following subsections describe the demo scenes that can be found in the testbed application.
-
-    \subsection{Cubes Scene}
-
-    In this scene, you will see how to create a floor and some cubes using the Box Shape for collision detection. Because of gravity,
-    the cubes will fall down on the floor. After falling down, the cubes will come to rest and start sleeping (become inactive). In this scene,
-    the cubes will become red as they get inactive (sleeping).
-
-   \subsection{Cubes Stack Scene}
-
-    This scene has a physics world and a pyramid of cubes.
-
-    \subsection{Joints Scene}
-
-    In this scene, you will learn how to create different joints (ball and socket, hinge, slider, fixed) into the physics world. You can also see how
-    to set the motor or limits of the joints.
-
-    \subsection{Collision Shapes Scene}
-
-    In this scene, you will see how to create a floor (using the Box Shape) and some other bodies using the different collision shapes available
-    in the ReactPhysics3D library like capsules, spheres, boxes and convex meshes. Those bodies will fall down to the floor.
-
-    \subsection{Heightfield Scene}
-
-    In this scene, you will see how to use the Height field collision shape of the library. Several bodies will fall
-    down to the height field.
-
-   \subsection{Raycast Scene}
-
-    In this scene, you will see how to use the ray casting methods of the library. Several rays are thrown against the different collision shapes.
-    It is possible to switch from a collision shape to another using the spacebar key.
-
-   \subsection{Collision Detection Scene}
-
-    This scene has a physics world and several collision bodies that can be move around with keyboard keys. This scene shows how to manually compute
-    collision detection in a physics world.
-
-    \subsection{Concave Mesh Scene}
-
-    In this scene, you will see how to use the static concave mesh collision shape of the library.
-
-    \subsection{Pile Scene}
-
-    This demo is basically a pile of many bodies with different types of shapes.
 
     \section{Receiving Feedback}
     \label{sec:receiving_feedback}
