@@ -1,13 +1,10 @@
 # Changelog
 
-## Release candidate
-
-Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
-do not hesitate to take a look at the user manual.
+## Version 0.9.0 (January 3, 2022)
 
 ### Added
 
- - The performance of the collision detection and rigid bodies simulation (PhysicsWorld::update() method) has been improved significantly (1.7x speedup measured in [PEEL](https://github.com/Pierre-Terdiman/PEEL) scenes) 
+ - The performance of the collision detection and rigid bodies simulation (PhysicsWorld::update() method) has been improved significantly (1.7x speedup on average measured in [PEEL](https://github.com/Pierre-Terdiman/PEEL) scenes) 
  - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has been added
  - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has been added
  - Constructors with local-space anchor/axis have been added to BallAndSocketJointInfo, HingeJointInfo, FixedJointInfo and SliderJointInfo classes
@@ -67,9 +64,9 @@ do not hesitate to take a look at the user manual.
 - Issue with wrong linear velocity update computed in RigidBody::updateLocalCenterOfMassFromColliders() method
 - Issue with wrong linear velocity update computed in RigidBody::updateMassPropertiesFromColliders() method
 - Issue in copy-constructors in Map and Set classes
-- A lot of code warnings have been fixed [#221](https://github.com/DanielChappuis/reactphysics3d/issues/221)[#222](https://github.com/DanielChappuis/reactphysics3d/issues/222)[#223](https://github.com/DanielChappuis/reactphysics3d/issues/223)[#224](https://github.com/DanielChappuis/reactphysics3d/issues/224)
+- A lot of code warnings have been fixed [#221](https://github.com/DanielChappuis/reactphysics3d/issues/221), [#222](https://github.com/DanielChappuis/reactphysics3d/issues/222), [#223](https://github.com/DanielChappuis/reactphysics3d/issues/223) and [#224](https://github.com/DanielChappuis/reactphysics3d/issues/224)
 - The default warning level is not set anymore in CMakeLists.txt file (Issue [#220](https://github.com/DanielChappuis/reactphysics3d/issues/220)) 
-- Issue with collision not working when setting a body to be static before calling updateMassPropertiesFromColliders() (Issue [#225](https://github.com/DanielChappuis/reactphysics3d/issues/225)) 
+- Issue [#225](https://github.com/DanielChappuis/reactphysics3d/issues/225) with collision not working when setting a body to be static before calling updateMassPropertiesFromColliders() 
 
 ## Version 0.8.0 (May 31, 2020)
 
