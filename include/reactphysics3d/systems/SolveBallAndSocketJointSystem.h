@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -111,6 +111,9 @@ class SolveBallAndSocketJointSystem {
         /// Set to true to enable warm starting
         void setIsWarmStartingActive(bool isWarmStartingActive);
 
+        /// Return the current cone angle (for the cone limit)
+        static decimal computeCurrentConeHalfAngle(const Vector3& coneLimitWorldAxisBody1, const Vector3& coneLimitWorldAxisBody2);
+
 #ifdef IS_RP3D_PROFILING_ENABLED
 
         /// Set the profiler
@@ -123,23 +126,32 @@ class SolveBallAndSocketJointSystem {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void SolveBallAndSocketJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 
 #endif
 
 // Set the time step
-inline void SolveBallAndSocketJointSystem::setTimeStep(decimal timeStep) {
+RP3D_FORCE_INLINE void SolveBallAndSocketJointSystem::setTimeStep(decimal timeStep) {
     assert(timeStep > decimal(0.0));
     mTimeStep = timeStep;
 }
 
 // Set to true to enable warm starting
-inline void SolveBallAndSocketJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
+RP3D_FORCE_INLINE void SolveBallAndSocketJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
     mIsWarmStartingActive = isWarmStartingActive;
 }
 
+// Return the current cone angle (for the cone limit)
+/**
+ * @return The positive cone angle in radian in range [0, PI]
+ */
+RP3D_FORCE_INLINE decimal SolveBallAndSocketJointSystem::computeCurrentConeHalfAngle(const Vector3& coneLimitWorldAxisBody1,
+                                                                                     const Vector3& coneLimitWorldAxisBody2) {
+
+    return std::acos(coneLimitWorldAxisBody1.dot(coneLimitWorldAxisBody2));
+}
 
 }
 

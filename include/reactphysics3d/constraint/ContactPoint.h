@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -144,7 +144,7 @@ class ContactPoint {
 /**
  * @return The contact normal
  */
-inline const Vector3& ContactPoint::getNormal() const {
+RP3D_FORCE_INLINE const Vector3& ContactPoint::getNormal() const {
     return mNormal;
 }
 
@@ -152,7 +152,7 @@ inline const Vector3& ContactPoint::getNormal() const {
 /**
  * @return The contact point on the first collider in the local-space of the collider
  */
-inline const Vector3& ContactPoint::getLocalPointOnShape1() const {
+RP3D_FORCE_INLINE const Vector3& ContactPoint::getLocalPointOnShape1() const {
     return mLocalPointOnShape1;
 }
 
@@ -160,7 +160,7 @@ inline const Vector3& ContactPoint::getLocalPointOnShape1() const {
 /**
  * @return The contact point on the second collider in the local-space of the collider
  */
-inline const Vector3& ContactPoint::getLocalPointOnShape2() const {
+RP3D_FORCE_INLINE const Vector3& ContactPoint::getLocalPointOnShape2() const {
     return mLocalPointOnShape2;
 }
 
@@ -168,12 +168,12 @@ inline const Vector3& ContactPoint::getLocalPointOnShape2() const {
 /**
  * @return The penetration impulse
  */
-inline decimal ContactPoint::getPenetrationImpulse() const {
+RP3D_FORCE_INLINE decimal ContactPoint::getPenetrationImpulse() const {
     return mPenetrationImpulse;
 }
 
 // Return true if the contact point is similar (close enougth) to another given contact point
-inline bool ContactPoint::isSimilarWithContactPoint(const ContactPointInfo* localContactPointBody1) const {
+RP3D_FORCE_INLINE bool ContactPoint::isSimilarWithContactPoint(const ContactPointInfo* localContactPointBody1) const {
     return (localContactPointBody1->localPoint1 - mLocalPointOnShape1).lengthSquare() <= (mPersistentContactDistanceThreshold *
             mPersistentContactDistanceThreshold);
 }
@@ -182,7 +182,7 @@ inline bool ContactPoint::isSimilarWithContactPoint(const ContactPointInfo* loca
 /**
  * @param impulse Penetration impulse
  */
-inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
+RP3D_FORCE_INLINE void ContactPoint::setPenetrationImpulse(decimal impulse) {
     mPenetrationImpulse = impulse;
 }
 
@@ -190,7 +190,7 @@ inline void ContactPoint::setPenetrationImpulse(decimal impulse) {
 /**
  * @return True if it is a resting contact
  */
-inline bool ContactPoint::getIsRestingContact() const {
+RP3D_FORCE_INLINE bool ContactPoint::getIsRestingContact() const {
     return mIsRestingContact;
 }
 
@@ -198,7 +198,7 @@ inline bool ContactPoint::getIsRestingContact() const {
 /**
  * @param isRestingContact True if it is a resting contact
  */
-inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
+RP3D_FORCE_INLINE void ContactPoint::setIsRestingContact(bool isRestingContact) {
     mIsRestingContact = isRestingContact;
 }
 
@@ -206,7 +206,7 @@ inline void ContactPoint::setIsRestingContact(bool isRestingContact) {
 /**
  * @return the penetration depth (in meters)
  */
-inline decimal ContactPoint::getPenetrationDepth() const {
+RP3D_FORCE_INLINE decimal ContactPoint::getPenetrationDepth() const {
     return mPenetrationDepth;
 }
 
@@ -214,7 +214,7 @@ inline decimal ContactPoint::getPenetrationDepth() const {
 /**
  * @return The size of the contact point in memory (in bytes)
  */
-inline size_t ContactPoint::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t ContactPoint::getSizeInBytes() const {
     return sizeof(ContactPoint);
 }
 

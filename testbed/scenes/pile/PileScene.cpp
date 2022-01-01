@@ -31,37 +31,41 @@ using namespace openglframework;
 using namespace pilescene;
 
 // Constructor
-PileScene::PileScene(const std::string& name, EngineSettings& settings)
-       : SceneDemo(name, settings, true, SCENE_RADIUS) {
+PileScene::PileScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+       : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 15, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
 
+    mWorldSettings.worldName = name;
+}
+
+// Destructor
+PileScene::~PileScene() {
+
+    destroyPhysicsWorld();
+}
+
+// Create the physics world
+void PileScene::createPhysicsWorld() {
+
     // Gravity vector in the physics world
-    rp3d::Vector3 gravity(0, -9.81f, 0);
-
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
     // Create the physics world for the physics simulation
-    mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
+    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
+    physicsWorld->setEventListener(this);
+    mPhysicsWorld = physicsWorld;
 
     for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        Dumbbell* dumbbell = new Dumbbell(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
+        Dumbbell* dumbbell = new Dumbbell(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         dumbbell->setColor(mObjectColorDemo);
@@ -103,10 +107,7 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
     for (int i=0; i<NB_SPHERES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-
-        // Add some rolling resistance
-        sphere->getCollider()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
+        Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         sphere->setColor(mObjectColorDemo);
@@ -126,9 +127,7 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
 
         // Create a cylinder and a corresponding rigid in the physics world
         Capsule* capsule = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT,
-                                       mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-
-        capsule->getCollider()->getMaterial().setRollingResistance(rp3d::decimal(0.08f));
+                                       mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         capsule->setColor(mObjectColorDemo);
@@ -147,7 +146,7 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
     for (int i=0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj", rp3d::Vector3(2, 2, 2));
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -165,7 +164,7 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
     // ---------- Create the triangular mesh ---------- //
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mSandbox = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "sandbox.obj");
+    mSandbox = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "pile.obj");
 
     // Set the mesh as beeing static
     mSandbox->getRigidBody()->setType(rp3d::BodyType::STATIC);
@@ -180,38 +179,10 @@ PileScene::PileScene(const std::string& name, EngineSettings& settings)
     rp3d::Material& material = mSandbox->getCollider()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
     material.setFrictionCoefficient(rp3d::decimal(0.1));
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
-// Destructor
-PileScene::~PileScene() {
-
-    // Destroy all the physics objects of the scene
-    for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the physics world
-        mPhysicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the object
-        delete (*it);
-    }
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
-}
-
-/// Reset the scene
-void PileScene::reset() {
+// Initialize the bodies positions
+void PileScene::initBodiesPositions() {
 
     const float radius = 3.0f;
 
@@ -220,7 +191,7 @@ void PileScene::reset() {
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            125 + i * (DUMBBELL_HEIGHT + 0.3f),
+            90 + i * (DUMBBELL_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
         mDumbbells[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -232,7 +203,7 @@ void PileScene::reset() {
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            85 + i * (BOX_SIZE.y + 0.8f),
+            70 + i * (BOX_SIZE.y + 0.8f),
             radius * std::sin(angle));
 
         mBoxes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -244,7 +215,7 @@ void PileScene::reset() {
         // Position
         float angle = i * 35.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            75 + i * (SPHERE_RADIUS + 0.8f),
+            50 + i * (SPHERE_RADIUS + 0.8f),
             radius * std::sin(angle));
 
         mSpheres[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -256,7 +227,7 @@ void PileScene::reset() {
         // Position
         float angle = i * 45.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            40 + i * (CAPSULE_HEIGHT + 0.3f),
+            30 + i * (CAPSULE_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
         mCapsules[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -268,7 +239,7 @@ void PileScene::reset() {
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            30 + i * (CAPSULE_HEIGHT + 0.3f),
+            10 + i * (CAPSULE_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
         mConvexMeshes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
@@ -277,4 +248,37 @@ void PileScene::reset() {
     // ---------- Create the triangular mesh ---------- //
 
     mSandbox->setTransform(rp3d::Transform::identity());
+}
+
+// Destroy the physics world
+void PileScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        // Destroy all the physics objects of the scene
+        for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+
+            // Destroy the object
+            delete (*it);
+        }
+        mBoxes.clear();
+        mSpheres.clear();
+        mCapsules.clear();
+        mConvexMeshes.clear();
+        mDumbbells.clear();
+
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
+/// Reset the scene
+void PileScene::reset() {
+
+    SceneDemo::reset();
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }

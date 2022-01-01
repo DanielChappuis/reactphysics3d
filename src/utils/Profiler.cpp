@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -36,7 +36,7 @@ using namespace reactphysics3d;
 
 // Constructor
 ProfileNode::ProfileNode(const char* name, ProfileNode* parentNode)
-    :mName(name), mNbTotalCalls(0), mStartingTime(0), mTotalTime(0),
+    :mName(name), mNbTotalCalls(0), mStartingTime(), mTotalTime(0),
      mRecursionCounter(0), mParentNode(parentNode), mChildNode(nullptr),
      mSiblingNode(nullptr) {
     reset();
@@ -79,7 +79,7 @@ void ProfileNode::enterBlockOfCode() {
 
         // Get the current system time to initialize the starting time of
         // the profiling of the current block of code
-        mStartingTime = Timer::getCurrentSystemTime() * 1000.0L;
+        mStartingTime = clock::now();
     }
 
     mRecursionCounter++;
@@ -92,7 +92,7 @@ bool ProfileNode::exitBlockOfCode() {
     if (mRecursionCounter == 0 && mNbTotalCalls != 0) {
 
         // Get the current system time
-        long double currentTime = Timer::getCurrentSystemTime() * 1000.0L;
+        std::chrono::time_point<std::chrono::high_resolution_clock> currentTime = std::chrono::high_resolution_clock::now();
 
         // Increase the total elasped time in the current block of code
         mTotalTime += currentTime - mStartingTime;
@@ -105,7 +105,7 @@ bool ProfileNode::exitBlockOfCode() {
 // Reset the profiling of the node
 void ProfileNode::reset() {
     mNbTotalCalls = 0;
-    mTotalTime = 0.0L;
+    mTotalTime = std::chrono::duration<double, std::milli>::zero();
 
     // Reset the child node
     if (mChildNode != nullptr) {
@@ -161,7 +161,7 @@ Profiler::Profiler() :mRootNode("Root", nullptr) {
 	mCurrentNode = &mRootNode;
     mNbDestinations = 0;
     mNbAllocatedDestinations = 0;
-    mProfilingStartTime = Timer::getCurrentSystemTime() * 1000.0L;
+    mProfilingStartTime = clock::now();
 	mFrameCounter = 0;
 
     allocatedDestinations(1);
@@ -215,7 +215,7 @@ void Profiler::reset() {
     mRootNode.reset();
     mRootNode.enterBlockOfCode();
     mFrameCounter = 0;
-    mProfilingStartTime = Timer::getCurrentSystemTime() * 1000.0L;
+    mProfilingStartTime = clock::now();
 }
 
 // Print the report of the profiler in a given output stream
@@ -283,27 +283,27 @@ void Profiler::printRecursiveNodeReport(ProfileNodeIterator* iterator,
         return;
     }
 
-    long double parentTime = iterator->isRoot() ? getElapsedTimeSinceStart() :
+    std::chrono::duration<double, std::milli> parentTime = iterator->isRoot() ? getElapsedTimeSinceStart() :
                                                   iterator->getCurrentParentTotalTime();
-    long double accumulatedTime = 0.0L;
+    std::chrono::duration<double, std::milli> accumulatedTime = std::chrono::duration<double, std::milli>::zero();
     uint nbFrames = Profiler::getNbFrames();
     for (int i=0; i<spacing; i++) outputStream << " ";
     outputStream << "---------------" << std::endl;
     for (int i=0; i<spacing; i++) outputStream << " ";
     outputStream << "| Profiling : " << iterator->getCurrentParentName() <<
-                    " (total running time : " << parentTime << " ms) ---" << std::endl;
+                    " (total running time : " << parentTime.count() << " ms) ---" << std::endl;
 
     // Recurse over the children of the current node
     int nbChildren = 0;
     for (int i=0; !iterator->isEnd(); i++, iterator->next()) {
         nbChildren++;
-        long double currentTotalTime = iterator->getCurrentTotalTime();
+        std::chrono::duration<double, std::milli> currentTotalTime = iterator->getCurrentTotalTime();
         accumulatedTime += currentTotalTime;
-        long double fraction = parentTime > std::numeric_limits<long double>::epsilon() ?
-                               (currentTotalTime / parentTime) * 100.0L : 0.0L;
+        long double fraction = parentTime.count() > std::numeric_limits<long double>::epsilon() ?
+                               (currentTotalTime.count() / parentTime.count()) * 100.0L : 0.0L;
         for (int j=0; j<spacing; j++) outputStream << " ";
         outputStream << "|   " << i << " -- " << iterator->getCurrentName() << " : " <<
-                        fraction << " % | " << (currentTotalTime / (long double) (nbFrames)) <<
+                        fraction << " % | " << (currentTotalTime.count() / (long double) (nbFrames)) <<
                         " ms/frame (" << iterator->getCurrentNbTotalCalls() << " calls)" <<
                         std::endl;
     }
@@ -312,10 +312,10 @@ void Profiler::printRecursiveNodeReport(ProfileNodeIterator* iterator,
         outputStream << "Something is wrong !" << std::endl;
     }
     for (int i=0; i<spacing; i++) outputStream << " ";
-    long double percentage = parentTime > std::numeric_limits<long double>::epsilon() ?
+    long double percentage = parentTime.count() > std::numeric_limits<long double>::epsilon() ?
                 ((parentTime - accumulatedTime) / parentTime) * 100.0L : 0.0L;
-    long double difference = parentTime - accumulatedTime;
-    outputStream << "| Unaccounted : " << difference << " ms (" << percentage << " %)" << std::endl;
+    std::chrono::duration<double, std::milli> difference = parentTime - accumulatedTime;
+    outputStream << "| Unaccounted : " << difference.count() << " ms (" << percentage << " %)" << std::endl;
 
     for (int i=0; i<nbChildren; i++){
         iterator->enterChild(i);

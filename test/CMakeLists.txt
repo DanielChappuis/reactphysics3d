@@ -15,7 +15,7 @@ set (RP3D_TESTS_HEADERS
     "tests/collision/TestPointInside.h"
     "tests/collision/TestRaycast.h"
     "tests/collision/TestTriangleVertexArray.h"
-    "tests/containers/TestList.h"
+    "tests/containers/TestArray.h"
     "tests/containers/TestMap.h"
     "tests/containers/TestSet.h"
     "tests/containers/TestStack.h"
@@ -27,6 +27,7 @@ set (RP3D_TESTS_HEADERS
     "tests/mathematics/TestTransform.h"
     "tests/mathematics/TestVector2.h"
     "tests/mathematics/TestVector3.h"
+    "tests/engine/TestRigidBody.h"
 )
 
 # Source files

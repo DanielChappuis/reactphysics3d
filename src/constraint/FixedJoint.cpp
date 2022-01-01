@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -32,15 +32,30 @@
 using namespace reactphysics3d;
 
 // Constructor
-FixedJoint::FixedJoint(Entity entity, PhysicsWorld &world, const FixedJointInfo& jointInfo)
+FixedJoint::FixedJoint(Entity entity, PhysicsWorld& world, const FixedJointInfo& jointInfo)
            : Joint(entity, world) {
 
-    // Compute the local-space anchor point for each body
+
+    Vector3 anchorPointBody1LocalSpace;
+    Vector3 anchorPointBody2LocalSpace;
+
     const Transform& transform1 = mWorld.mTransformComponents.getTransform(jointInfo.body1->getEntity());
     const Transform& transform2 = mWorld.mTransformComponents.getTransform(jointInfo.body2->getEntity());
 
-    mWorld.mFixedJointsComponents.setLocalAnchorPointBody1(mEntity, transform1.getInverse() * jointInfo.anchorPointWorldSpace);
-    mWorld.mFixedJointsComponents.setLocalAnchorPointBody2(mEntity, transform2.getInverse() * jointInfo.anchorPointWorldSpace);
+    if (jointInfo.isUsingLocalSpaceAnchors) {
+
+        anchorPointBody1LocalSpace = jointInfo.anchorPointBody1LocalSpace;
+        anchorPointBody2LocalSpace = jointInfo.anchorPointBody2LocalSpace;
+    }
+    else {
+
+        // Compute the local-space anchor point for each body
+        anchorPointBody1LocalSpace = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
+        anchorPointBody2LocalSpace = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
+    }
+
+    mWorld.mFixedJointsComponents.setLocalAnchorPointBody1(mEntity, anchorPointBody1LocalSpace);
+    mWorld.mFixedJointsComponents.setLocalAnchorPointBody2(mEntity, anchorPointBody2LocalSpace);
 
 	// Store inverse of initial rotation from body 1 to body 2 in body 1 space:
 	//
@@ -54,6 +69,24 @@ FixedJoint::FixedJoint(Entity entity, PhysicsWorld &world, const FixedJointInfo&
 	// q10 = initial orientation of body 1
 	// r0 = initial rotation rotation from body 1 to body 2
     mWorld.mFixedJointsComponents.setInitOrientationDifferenceInv(mEntity, transform2.getOrientation().getInverse() * transform1.getOrientation());
+}
+
+// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current force (in Newtons) applied on body 2
+ */
+Vector3 FixedJoint::getReactionForce(decimal timeStep) const {
+    assert(timeStep > MACHINE_EPSILON);
+    return mWorld.mFixedJointsComponents.getImpulseTranslation(mEntity) / timeStep;
+}
+
+// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+/**
+ * @return The current torque (in Newtons * meters) applied on body 2
+ */
+Vector3 FixedJoint::getReactionTorque(decimal timeStep) const {
+    assert(timeStep > MACHINE_EPSILON);
+    return mWorld.mFixedJointsComponents.getImpulseRotation(mEntity) / timeStep;
 }
 
 // Return a string representation

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -47,7 +47,8 @@ void DynamicsSystem::integrateRigidBodiesPositions(decimal timeStep, bool isSpli
 
     const decimal isSplitImpulseFactor = isSplitImpulseActive ? decimal(1.0) : decimal(0.0);
 
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbRigidBodyComponents = mRigidBodyComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbRigidBodyComponents; i++) {
 
         // Get the constrained velocity
         Vector3 newLinVelocity = mRigidBodyComponents.mConstrainedLinearVelocities[i];
@@ -74,7 +75,8 @@ void DynamicsSystem::updateBodiesState() {
 
     RP3D_PROFILE("DynamicsSystem::updateBodiesState()", mProfiler);
 
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbRigidBodyComponents = mRigidBodyComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbRigidBodyComponents; i++) {
 
         // Update the linear and angular velocity of the body
         mRigidBodyComponents.mLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i];
@@ -89,7 +91,7 @@ void DynamicsSystem::updateBodiesState() {
     }
 
     // Update the position of the body (using the new center of mass and new orientation)
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    for (uint32 i=0; i < nbRigidBodyComponents; i++) {
 
         Transform& transform = mTransformComponents.getTransform(mRigidBodyComponents.mBodiesEntities[i]);
         const Vector3& centerOfMassWorld = mRigidBodyComponents.mCentersOfMassWorld[i];
@@ -98,7 +100,8 @@ void DynamicsSystem::updateBodiesState() {
     }
 
     // Update the local-to-world transform of the colliders
-    for (uint32 i=0; i < mColliderComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbColliderComponents = mColliderComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbColliderComponents; i++) {
 
         // Update the local-to-world transform of the collider
         mColliderComponents.mLocalToWorldTransforms[i] = mTransformComponents.getTransform(mColliderComponents.mBodiesEntities[i]) *
@@ -119,7 +122,8 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
     resetSplitVelocities();
 
     // Integration component velocities using force/torque
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbEnabledRigidBodyComponents = mRigidBodyComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbEnabledRigidBodyComponents; i++) {
 
         assert(mRigidBodyComponents.mSplitLinearVelocities[i] == Vector3(0, 0, 0));
         assert(mRigidBodyComponents.mSplitAngularVelocities[i] == Vector3(0, 0, 0));
@@ -128,46 +132,51 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
         const Vector3& angularVelocity = mRigidBodyComponents.mAngularVelocities[i];
 
         // Integrate the external force to get the new velocity of the body
-        mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + timeStep *
-                                                              mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mExternalForces[i];
-        mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep *
-                                                 RigidBody::getWorldInertiaTensorInverse(mWorld, mRigidBodyComponents.mBodiesEntities[i]) * mRigidBodyComponents.mExternalTorques[i];
+        mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + timeStep * mRigidBodyComponents.mInverseMasses[i] *
+                                                               mRigidBodyComponents.mLinearLockAxisFactors[i] * mRigidBodyComponents.mExternalForces[i];
+        mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep * mRigidBodyComponents.mAngularLockAxisFactors[i] *
+                                                                (mRigidBodyComponents.mInverseInertiaTensorsWorld[i] * mRigidBodyComponents.mExternalTorques[i]);
     }
 
     // Apply gravity force
     if (mIsGravityEnabled) {
 
-        for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+        const uint32 nbRigidBodyComponents = mRigidBodyComponents.getNbEnabledComponents();
+        for (uint32 i=0; i < nbRigidBodyComponents; i++) {
 
             // If the gravity has to be applied to this rigid body
             if (mRigidBodyComponents.mIsGravityEnabled[i]) {
 
                 // Integrate the gravity force
                 mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] + timeStep *
-                                                                       mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mMasses[i] * mGravity;
+                                                                       mRigidBodyComponents.mInverseMasses[i] * mRigidBodyComponents.mLinearLockAxisFactors[i] *
+                                                                       mRigidBodyComponents.mMasses[i] * mGravity;
             }
         }
     }
 
     // Apply the velocity damping
     // Damping force : F_c = -c' * v (c=damping factor)
-    // Equation      : m * dv/dt = -c' * v
-    //                 => dv/dt = -c * v (with c=c'/m)
-    //                 => dv/dt + c * v = 0
+    // Differential Equation      : m * dv/dt = -c' * v
+    //                              => dv/dt = -c * v (with c=c'/m)
+    //                              => dv/dt + c * v = 0
     // Solution      : v(t) = v0 * e^(-c * t)
     //                 => v(t + dt) = v0 * e^(-c(t + dt))
-    //                              = v0 * e^(-ct) * e^(-c * dt)
+    //                              = v0 * e^(-c * t) * e^(-c * dt)
     //                              = v(t) * e^(-c * dt)
     //                 => v2 = v1 * e^(-c * dt)
-    // Using Taylor Serie for e^(-x) : e^x ~ 1 + x + x^2/2! + ...
-    //                              => e^(-x) ~ 1 - x
-    //                 => v2 = v1 * (1 - c * dt)
-    for (uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    // Using Padé's approximation of the exponential function:
+    // Reference: https://mathworld.wolfram.com/PadeApproximant.html
+    //                   e^x ~ 1 / (1 - x)
+    //                      => e^(-c * dt) ~ 1 / (1 + c * dt)
+    //                      => v2 = v1 * 1 / (1 + c * dt)
+    const uint32 nbRigidBodyComponents = mRigidBodyComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbRigidBodyComponents; i++) {
 
         const decimal linDampingFactor = mRigidBodyComponents.mLinearDampings[i];
         const decimal angDampingFactor = mRigidBodyComponents.mAngularDampings[i];
-        const decimal linearDamping = std::pow(decimal(1.0) - linDampingFactor, timeStep);
-        const decimal angularDamping = std::pow(decimal(1.0) - angDampingFactor, timeStep);
+        const decimal linearDamping = decimal(1.0) / (decimal(1.0) + linDampingFactor * timeStep);
+        const decimal angularDamping = decimal(1.0) / (decimal(1.0) + angDampingFactor * timeStep);
         mRigidBodyComponents.mConstrainedLinearVelocities[i] = mRigidBodyComponents.mConstrainedLinearVelocities[i] * linearDamping;
         mRigidBodyComponents.mConstrainedAngularVelocities[i] = mRigidBodyComponents.mConstrainedAngularVelocities[i] * angularDamping;
     }
@@ -177,7 +186,8 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
 void DynamicsSystem::resetBodiesForceAndTorque() {
 
     // For each body of the world
-    for (uint32 i=0; i < mRigidBodyComponents.getNbComponents(); i++) {
+    const uint32 nbRigidBodyComponents = mRigidBodyComponents.getNbComponents();
+    for (uint32 i=0; i < nbRigidBodyComponents; i++) {
         mRigidBodyComponents.mExternalForces[i].setToZero();
         mRigidBodyComponents.mExternalTorques[i].setToZero();
     }
@@ -186,7 +196,8 @@ void DynamicsSystem::resetBodiesForceAndTorque() {
 // Reset the split velocities of the bodies
 void DynamicsSystem::resetSplitVelocities() {
 
-    for(uint32 i=0; i < mRigidBodyComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbRigidBodyComponents = mRigidBodyComponents.getNbEnabledComponents();
+    for(uint32 i=0; i < nbRigidBodyComponents; i++) {
         mRigidBodyComponents.mSplitLinearVelocities[i].setToZero();
         mRigidBodyComponents.mSplitAngularVelocities[i].setToZero();
     }

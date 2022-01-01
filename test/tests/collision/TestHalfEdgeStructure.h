@@ -71,17 +71,17 @@ class TestHalfEdgeStructure : public Test {
             cubeStructure.addVertex(7);
 
             // Faces
-            List<uint> face0(mAllocator, 4);
+            Array<uint32> face0(mAllocator, 4);
             face0.add(0); face0.add(1); face0.add(2); face0.add(3);
-            List<uint> face1(mAllocator, 4);
+            Array<uint32> face1(mAllocator, 4);
             face1.add(1); face1.add(5); face1.add(6); face1.add(2);
-            List<uint> face2(mAllocator, 4);
+            Array<uint32> face2(mAllocator, 4);
             face2.add(5); face2.add(4); face2.add(7); face2.add(6);
-            List<uint> face3(mAllocator, 4);
+            Array<uint32> face3(mAllocator, 4);
             face3.add(4); face3.add(0); face3.add(3); face3.add(7);
-            List<uint> face4(mAllocator, 4);
+            Array<uint32> face4(mAllocator, 4);
             face4.add(0); face4.add(4); face4.add(5); face4.add(1);
-            List<uint> face5(mAllocator, 4);
+            Array<uint32> face5(mAllocator, 4);
             face5.add(2); face5.add(6); face5.add(7); face5.add(3);
 
             cubeStructure.addFace(face0);
@@ -141,19 +141,19 @@ class TestHalfEdgeStructure : public Test {
             rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getVertex(7).edgeIndex).vertexIndex == 7);
 
             // Test faces
-            for (uint f=0; f<6; f++) {
+            for (uint32 f=0; f<6; f++) {
                 rp3d_test(cubeStructure.getHalfEdge(cubeStructure.getFace(f).edgeIndex).faceIndex == f);
             }
 
             // Test edges
-            for (uint f=0; f<6; f++) {
+            for (uint32 f=0; f<6; f++) {
 
 
-                uint edgeIndex = cubeStructure.getFace(f).edgeIndex;
-                const uint firstEdgeIndex = edgeIndex;
+                uint32 edgeIndex = cubeStructure.getFace(f).edgeIndex;
+                const uint32 firstEdgeIndex = edgeIndex;
 
                 // For each half-edge of the face
-                for (uint e=0; e<4; e++) {
+                for (uint32 e=0; e<4; e++) {
 
                     rp3d::HalfEdgeStructure::Edge edge = cubeStructure.getHalfEdge(edgeIndex);
 
@@ -171,7 +171,7 @@ class TestHalfEdgeStructure : public Test {
         void testTetrahedron() {
 
             // Create the half-edge structure for a tetrahedron
-            std::vector<std::vector<uint>> faces;
+            std::vector<std::vector<uint32>> faces;
             rp3d::HalfEdgeStructure tetrahedron(mAllocator, 4, 4, 12);
 
             // Vertices
@@ -188,13 +188,13 @@ class TestHalfEdgeStructure : public Test {
             tetrahedron.addVertex(3);
 
             // Faces
-            List<uint> face0(mAllocator, 3);
+            Array<uint32> face0(mAllocator, 3);
             face0.add(0); face0.add(1); face0.add(2);
-            List<uint> face1(mAllocator, 3);
+            Array<uint32> face1(mAllocator, 3);
             face1.add(0); face1.add(3); face1.add(1);
-            List<uint> face2(mAllocator, 3);
+            Array<uint32> face2(mAllocator, 3);
             face2.add(1); face2.add(3); face2.add(2);
-            List<uint> face3(mAllocator, 3);
+            Array<uint32> face3(mAllocator, 3);
             face3.add(0); face3.add(2); face3.add(3);
 
             tetrahedron.addFace(face0);
@@ -232,18 +232,18 @@ class TestHalfEdgeStructure : public Test {
             rp3d_test(tetrahedron.getHalfEdge(tetrahedron.getVertex(3).edgeIndex).vertexIndex == 3);
 
             // Test faces
-            for (uint f=0; f<4; f++) {
+            for (uint32 f=0; f<4; f++) {
                 rp3d_test(tetrahedron.getHalfEdge(tetrahedron.getFace(f).edgeIndex).faceIndex == f);
             }
 
             // Test edges
-            for (uint f=0; f<4; f++) {
+            for (uint32 f=0; f<4; f++) {
 
-                uint edgeIndex = tetrahedron.getFace(f).edgeIndex;
-                const uint firstEdgeIndex = edgeIndex;
+                uint32 edgeIndex = tetrahedron.getFace(f).edgeIndex;
+                const uint32 firstEdgeIndex = edgeIndex;
 
                 // For each half-edge of the face
-                for (uint e=0; e<3; e++) {
+                for (uint32 e=0; e<3; e++) {
 
                     rp3d::HalfEdgeStructure::Edge edge = tetrahedron.getHalfEdge(edgeIndex);
 

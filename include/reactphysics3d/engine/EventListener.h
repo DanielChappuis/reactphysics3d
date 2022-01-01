@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -55,13 +55,13 @@ class EventListener : public CollisionCallback {
         /**
          * @param callbackData Contains information about all the contacts
          */
-        virtual void onContact(const CollisionCallback::CallbackData& callbackData) override {}
+        virtual void onContact(const CollisionCallback::CallbackData& /*callbackData*/) override {}
 
         /// Called when some trigger events occur
         /**
          * @param callbackData Contains information about all the triggers that are colliding
          */
-        virtual void onTrigger(const OverlapCallback::CallbackData& callbackData) {}
+        virtual void onTrigger(const OverlapCallback::CallbackData& /*callbackData*/) {}
 };
 
 }

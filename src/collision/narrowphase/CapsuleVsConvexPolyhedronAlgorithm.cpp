@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -40,7 +40,7 @@ using namespace reactphysics3d;
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
 bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                                       uint batchStartIndex, uint batchNbItems,
+                                                       uint32 batchStartIndex, uint32 batchNbItems,
                                                        bool clipWithPreviousAxisIfStillColliding,
                                                        MemoryAllocator& memoryAllocator) {
 
@@ -59,28 +59,28 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
 #endif
 
     // Run the GJK algorithm
-    List<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
+    Array<GJKAlgorithm::GJKResult> gjkResults(memoryAllocator);
     gjkAlgorithm.testCollision(narrowPhaseInfoBatch, batchStartIndex, batchNbItems, gjkResults);
     assert(gjkResults.size() == batchNbItems);
 
-    for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
+    for (uint32 batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
         // Get the last frame collision info
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].lastFrameCollisionInfo;
 
         lastFrameCollisionInfo->wasUsingGJK = true;
         lastFrameCollisionInfo->wasUsingSAT = false;
 
-        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
-               narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
-        assert(narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CAPSULE ||
-               narrowPhaseInfoBatch.collisionShapes2[batchIndex]->getType() == CollisionShapeType::CAPSULE);
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1->getType() == CollisionShapeType::CONVEX_POLYHEDRON ||
+               narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2->getType() == CollisionShapeType::CONVEX_POLYHEDRON);
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1->getType() == CollisionShapeType::CAPSULE ||
+               narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2->getType() == CollisionShapeType::CAPSULE);
 
         // If we have found a contact point inside the margins (shallow penetration)
         if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::COLLIDE_IN_MARGIN) {
 
             // If we need to report contacts
-            if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
+            if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
 
                 bool noContact = false;
 
@@ -89,20 +89,20 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
                 // two contact points instead of a single one (as in the deep contact case with SAT algorithm)
 
                 // Get the contact point created by GJK
-                assert(narrowPhaseInfoBatch.contactPoints[batchIndex].size() > 0);
-                ContactPointInfo*& contactPoint = narrowPhaseInfoBatch.contactPoints[batchIndex][0];
+                assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].nbContactPoints > 0);
+                ContactPointInfo& contactPoint = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].contactPoints[0];
 
-                bool isCapsuleShape1 = narrowPhaseInfoBatch.collisionShapes1[batchIndex]->getType() == CollisionShapeType::CAPSULE;
+                bool isCapsuleShape1 = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1->getType() == CollisionShapeType::CAPSULE;
 
                 // Get the collision shapes
-                const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(isCapsuleShape1 ? narrowPhaseInfoBatch.collisionShapes1[batchIndex] : narrowPhaseInfoBatch.collisionShapes2[batchIndex]);
-                const ConvexPolyhedronShape* polyhedron = static_cast<const ConvexPolyhedronShape*>(isCapsuleShape1 ? narrowPhaseInfoBatch.collisionShapes2[batchIndex] : narrowPhaseInfoBatch.collisionShapes1[batchIndex]);
+                const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(isCapsuleShape1 ? narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1 : narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2);
+                const ConvexPolyhedronShape* polyhedron = static_cast<const ConvexPolyhedronShape*>(isCapsuleShape1 ? narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2 : narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1);
 
                 // For each face of the polyhedron
-                for (uint f = 0; f < polyhedron->getNbFaces(); f++) {
+                for (uint32 f = 0; f < polyhedron->getNbFaces(); f++) {
 
-                    const Transform polyhedronToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex] : narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex];
-                    const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex] : narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex];
+                    const Transform polyhedronToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform : narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape1ToWorldTransform;
+                    const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape1ToWorldTransform : narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform;
 
                     // Get the face normal
                     const Vector3 faceNormal = polyhedron->getFaceNormal(f);
@@ -113,18 +113,18 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
                     Vector3 capsuleInnerSegmentDirection = capsuleToWorld.getOrientation() * (capsuleSegB - capsuleSegA);
                     capsuleInnerSegmentDirection.normalize();
 
-                    bool isFaceNormalInDirectionOfContactNormal = faceNormalWorld.dot(contactPoint->normal) > decimal(0.0);
+                    bool isFaceNormalInDirectionOfContactNormal = faceNormalWorld.dot(contactPoint.normal) > decimal(0.0);
                     bool isFaceNormalInContactDirection = (isCapsuleShape1 && !isFaceNormalInDirectionOfContactNormal) || (!isCapsuleShape1 && isFaceNormalInDirectionOfContactNormal);
 
                     // If the polyhedron face normal is orthogonal to the capsule inner segment and parallel to the contact point normal and the face normal
                     // is in direction of the contact normal (from the polyhedron point of view).
                     if (isFaceNormalInContactDirection && areOrthogonalVectors(faceNormalWorld, capsuleInnerSegmentDirection)
-                        && areParallelVectors(faceNormalWorld, contactPoint->normal)) {
+                        && areParallelVectors(faceNormalWorld, contactPoint.normal)) {
 
                         // Remove the previous contact point computed by GJK
                         narrowPhaseInfoBatch.resetContactPoints(batchIndex);
 
-                        const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex] : narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex];
+                        const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape1ToWorldTransform : narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform;
                         const Transform polyhedronToCapsuleTransform = capsuleToWorld.getInverse() * polyhedronToWorld;
 
                         // Compute the end-points of the inner segment of the capsule
@@ -143,13 +143,13 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
                         }
 
                         // Compute and create two contact points
-                        bool contactsFound = satAlgorithm.computeCapsulePolyhedronFaceContactPoints(f, capsuleShape->getRadius(), polyhedron, contactPoint->penetrationDepth,
+                        bool contactsFound = satAlgorithm.computeCapsulePolyhedronFaceContactPoints(f, capsuleShape->getRadius(), polyhedron, contactPoint.penetrationDepth,
                                                                   polyhedronToCapsuleTransform, faceNormalWorld, separatingAxisCapsuleSpace,
                                                                   capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
                                                                   narrowPhaseInfoBatch, batchIndex, isCapsuleShape1);
                         if (!contactsFound) {
                             noContact = true;
-                            narrowPhaseInfoBatch.isColliding[batchIndex] = false;
+                            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = false;
                             break;
                         }
 
@@ -166,7 +166,7 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
             lastFrameCollisionInfo->wasUsingGJK = false;
 
             // Colision found
-            narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
             isCollisionFound = true;
             continue;
         }
@@ -175,12 +175,12 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
         if (gjkResults[batchIndex] == GJKAlgorithm::GJKResult::INTERPENETRATE) {
 
             // Run the SAT algorithm to find the separating axis and compute contact point
-            narrowPhaseInfoBatch.isColliding[batchIndex] = satAlgorithm.testCollisionCapsuleVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex);
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = satAlgorithm.testCollisionCapsuleVsConvexPolyhedron(narrowPhaseInfoBatch, batchIndex);
 
             lastFrameCollisionInfo->wasUsingGJK = false;
             lastFrameCollisionInfo->wasUsingSAT = true;
 
-            if (narrowPhaseInfoBatch.isColliding[batchIndex]) {
+            if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding) {
                 isCollisionFound = true;
             }
         }

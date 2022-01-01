@@ -48,6 +48,8 @@ class ConvexMesh : public PhysicsObject {
         rp3d::ConvexMeshShape* mConvexShape;
         rp3d::Collider* mCollider;
 
+        rp3d::PhysicsWorld* mPhysicsWorld;
+
         /// Scaling matrix
         openglframework::Matrix4 mScalingMatrix;
 
@@ -86,7 +88,8 @@ class ConvexMesh : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath);
+        ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+                   const std::string& meshPath, const reactphysics3d::Vector3& scaling = rp3d::Vector3(1, 1, 1));
 
         /// Destructor
         virtual ~ConvexMesh() override;

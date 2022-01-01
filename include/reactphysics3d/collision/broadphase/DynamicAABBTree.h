@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -58,7 +58,7 @@ struct TreeNode {
 
     // -------------------- Attributes -------------------- //
 
-    // A node is either in the tree (has a parent) or in the free nodes list
+    // A node is either in the tree (has a parent) or in the free nodes array
     // (has a next node)
     union {
 
@@ -89,6 +89,11 @@ struct TreeNode {
     AABB aabb;
 
     // -------------------- Methods -------------------- //
+
+    /// Constructor
+    TreeNode() : nextNodeID(NULL_TREE_NODE), height(-1) {
+
+    }
 
     /// Return true if the node is a leaf of the tree
     bool isLeaf() const;
@@ -149,7 +154,7 @@ class DynamicAABBTree {
         /// ID of the root node of the tree
         int32 mRootNodeID;
 
-        /// ID of the first node of the list of free (allocated) nodes in the tree that we can use
+        /// ID of the first node of the array of free (allocated) nodes in the tree that we can use
         int32 mFreeNodeID;
 
         /// Number of allocated nodes in the tree
@@ -236,11 +241,11 @@ class DynamicAABBTree {
         void* getNodeDataPointer(int32 nodeID) const;
 
         /// Report all shapes overlapping with all the shapes in the map in parameter
-        void reportAllShapesOverlappingWithShapes(const List<int32>& nodesToTest, size_t startIndex,
-                                                  size_t endIndex, List<Pair<int32, int32>>& outOverlappingNodes) const;
+        void reportAllShapesOverlappingWithShapes(const Array<int32>& nodesToTest, uint32 startIndex,
+                                                  size_t endIndex, Array<Pair<int32, int32>>& outOverlappingNodes) const;
 
         /// Report all shapes overlapping with the AABB given in parameter.
-        void reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int>& overlappingNodes) const;
+        void reportAllShapesOverlappingWithAABB(const AABB& aabb, Array<int>& overlappingNodes) const;
 
         /// Ray casting method
         void raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& callback) const;
@@ -264,38 +269,38 @@ class DynamicAABBTree {
 };
 
 // Return true if the node is a leaf of the tree
-inline bool TreeNode::isLeaf() const {
+RP3D_FORCE_INLINE bool TreeNode::isLeaf() const {
     return (height == 0);
 }
 
 // Return the fat AABB corresponding to a given node ID
-inline const AABB& DynamicAABBTree::getFatAABB(int32 nodeID) const {
+RP3D_FORCE_INLINE const AABB& DynamicAABBTree::getFatAABB(int32 nodeID) const {
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     return mNodes[nodeID].aabb;
 }
 
 // Return the pointer to the data array of a given leaf node of the tree
-inline int32* DynamicAABBTree::getNodeDataInt(int32 nodeID) const {
+RP3D_FORCE_INLINE int32* DynamicAABBTree::getNodeDataInt(int32 nodeID) const {
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
     return mNodes[nodeID].dataInt;
 }
 
 // Return the pointer to the data pointer of a given leaf node of the tree
-inline void* DynamicAABBTree::getNodeDataPointer(int32 nodeID) const {
+RP3D_FORCE_INLINE void* DynamicAABBTree::getNodeDataPointer(int32 nodeID) const {
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
     return mNodes[nodeID].dataPointer;
 }
 
 // Return the root AABB of the tree
-inline AABB DynamicAABBTree::getRootAABB() const {
+RP3D_FORCE_INLINE AABB DynamicAABBTree::getRootAABB() const {
     return getFatAABB(mRootNodeID);
 }
 
 // Add an object into the tree. This method creates a new leaf node in the tree and
 // returns the ID of the corresponding node.
-inline int32 DynamicAABBTree::addObject(const AABB& aabb, int32 data1, int32 data2) {
+RP3D_FORCE_INLINE int32 DynamicAABBTree::addObject(const AABB& aabb, int32 data1, int32 data2) {
 
     int32 nodeId = addObjectInternal(aabb);
 
@@ -307,7 +312,7 @@ inline int32 DynamicAABBTree::addObject(const AABB& aabb, int32 data1, int32 dat
 
 // Add an object into the tree. This method creates a new leaf node in the tree and
 // returns the ID of the corresponding node.
-inline int32 DynamicAABBTree::addObject(const AABB& aabb, void* data) {
+RP3D_FORCE_INLINE int32 DynamicAABBTree::addObject(const AABB& aabb, void* data) {
 
     int32 nodeId = addObjectInternal(aabb);
 
@@ -319,7 +324,7 @@ inline int32 DynamicAABBTree::addObject(const AABB& aabb, void* data) {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void DynamicAABBTree::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void DynamicAABBTree::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 }
 

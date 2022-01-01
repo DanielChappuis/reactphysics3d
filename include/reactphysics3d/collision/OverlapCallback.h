@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_OVERLAP_CALLBACK_H
 
 // Libraries
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/collision/ContactPair.h>
 
 /// ReactPhysics3D namespace
@@ -131,17 +131,17 @@ class OverlapCallback {
 
                 // -------------------- Attributes -------------------- //
 
-                /// Reference to the list of contact pairs (contains contacts and triggers events)
-                List<ContactPair>& mContactPairs;
+                /// Reference to the array of contact pairs (contains contacts and triggers events)
+                Array<ContactPair>& mContactPairs;
 
-                /// Reference to the list of lost contact pairs (contains contacts and triggers events)
-                List<ContactPair>& mLostContactPairs;
+                /// Reference to the array of lost contact pairs (contains contacts and triggers events)
+                Array<ContactPair>& mLostContactPairs;
 
-                /// List of indices of the mContactPairs list that are overlap/triggers events (not contact events)
-                List<uint> mContactPairsIndices;
+                /// Array of indices of the mContactPairs array that are overlap/triggers events (not contact events)
+                Array<uint64> mContactPairsIndices;
 
-                /// List of indices of the mLostContactPairs list that are overlap/triggers events (not contact events)
-                List<uint> mLostContactPairsIndices;
+                /// Array of indices of the mLostContactPairs array that are overlap/triggers events (not contact events)
+                Array<uint64> mLostContactPairsIndices;
 
                 /// Reference to the physics world
                 PhysicsWorld& mWorld;
@@ -149,7 +149,7 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Constructor
-                CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world);
+                CallbackData(Array<ContactPair>& contactPairs, Array<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world);
 
                 /// Deleted copy constructor
                 CallbackData(const CallbackData& callbackData) = delete;
@@ -165,10 +165,10 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Return the number of overlapping pairs of bodies
-                uint getNbOverlappingPairs() const;
+                uint32 getNbOverlappingPairs() const;
 
                 /// Return a given overlapping pair of bodies
-                OverlapPair getOverlappingPair(uint index) const;
+                OverlapPair getOverlappingPair(uint32 index) const;
 
                 // -------------------- Friendship -------------------- //
 
@@ -185,15 +185,15 @@ class OverlapCallback {
 };
 
 // Return the number of overlapping pairs of bodies
-inline uint OverlapCallback::CallbackData::getNbOverlappingPairs() const {
-    return mContactPairsIndices.size() + mLostContactPairsIndices.size();
+RP3D_FORCE_INLINE uint32 OverlapCallback::CallbackData::getNbOverlappingPairs() const {
+    return static_cast<uint32>(mContactPairsIndices.size() + mLostContactPairsIndices.size());
 }
 
 // Return a given overlapping pair of bodies
 /// Note that the returned OverlapPair object is only valid during the call of the CollisionCallback::onOverlap()
 /// method. Therefore, you need to get contact data from it and make a copy. Do not make a copy of the OverlapPair
 /// object itself because it won't be valid after the CollisionCallback::onOverlap() call.
-inline OverlapCallback::OverlapPair OverlapCallback::CallbackData::getOverlappingPair(uint index) const {
+RP3D_FORCE_INLINE OverlapCallback::OverlapPair OverlapCallback::CallbackData::getOverlappingPair(uint32 index) const {
 
     assert(index < getNbOverlappingPairs());
 

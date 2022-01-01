@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -96,7 +96,8 @@ void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
 /// Notify all the assign colliders that the size of the collision shape has changed
 void CollisionShape::notifyColliderAboutChangedSize() {
 
-    for (uint i=0; i < mColliders.size(); i++) {
+    const uint32 nbColliders = static_cast<uint32>(mColliders.size());
+    for (uint32 i=0; i < nbColliders; i++) {
         mColliders[i]->setHasCollisionShapeChangedSize(true);
     }
 }

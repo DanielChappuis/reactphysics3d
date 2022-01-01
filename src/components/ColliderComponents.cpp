@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -37,8 +37,8 @@ using namespace reactphysics3d;
 ColliderComponents::ColliderComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Collider*) + sizeof(int32) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(unsigned short) +
-                sizeof(unsigned short) + sizeof(Transform) + sizeof(List<uint64>) + sizeof(bool) +
-                sizeof(bool)) {
+                sizeof(unsigned short) + sizeof(Transform) + sizeof(Array<uint64>) + sizeof(bool) +
+                sizeof(bool) + sizeof(Material)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -66,9 +66,10 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     unsigned short* newCollisionCategoryBits = reinterpret_cast<unsigned short*>(newCollisionShapes + nbComponentsToAllocate);
     unsigned short* newCollideWithMaskBits = reinterpret_cast<unsigned short*>(newCollisionCategoryBits + nbComponentsToAllocate);
     Transform* newLocalToWorldTransforms = reinterpret_cast<Transform*>(newCollideWithMaskBits + nbComponentsToAllocate);
-    List<uint64>* newOverlappingPairs = reinterpret_cast<List<uint64>*>(newLocalToWorldTransforms + nbComponentsToAllocate);
+    Array<uint64>* newOverlappingPairs = reinterpret_cast<Array<uint64>*>(newLocalToWorldTransforms + nbComponentsToAllocate);
     bool* hasCollisionShapeChangedSize = reinterpret_cast<bool*>(newOverlappingPairs + nbComponentsToAllocate);
     bool* isTrigger = reinterpret_cast<bool*>(hasCollisionShapeChangedSize + nbComponentsToAllocate);
+    Material* materials = reinterpret_cast<Material*>(isTrigger + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -83,9 +84,10 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newCollisionCategoryBits, mCollisionCategoryBits, mNbComponents * sizeof(unsigned short));
         memcpy(newCollideWithMaskBits, mCollideWithMaskBits, mNbComponents * sizeof(unsigned short));
         memcpy(newLocalToWorldTransforms, mLocalToWorldTransforms, mNbComponents * sizeof(Transform));
-        memcpy(newOverlappingPairs, mOverlappingPairs, mNbComponents * sizeof(List<uint64>));
+        memcpy(newOverlappingPairs, mOverlappingPairs, mNbComponents * sizeof(Array<uint64>));
         memcpy(hasCollisionShapeChangedSize, mHasCollisionShapeChangedSize, mNbComponents * sizeof(bool));
         memcpy(isTrigger, mIsTrigger, mNbComponents * sizeof(bool));
+        memcpy(materials, mMaterials, mNbComponents * sizeof(Material));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -105,6 +107,7 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     mOverlappingPairs = newOverlappingPairs;
     mHasCollisionShapeChangedSize = hasCollisionShapeChangedSize;
     mIsTrigger = isTrigger;
+    mMaterials = materials;
 
     mNbAllocatedComponents = nbComponentsToAllocate;
 }
@@ -125,9 +128,10 @@ void ColliderComponents::addComponent(Entity colliderEntity, bool isSleeping, co
     new (mCollisionCategoryBits + index) unsigned short(component.collisionCategoryBits);
     new (mCollideWithMaskBits + index) unsigned short(component.collideWithMaskBits);
     new (mLocalToWorldTransforms + index) Transform(component.localToWorldTransform);
-    new (mOverlappingPairs + index) List<uint64>(mMemoryAllocator);
+    new (mOverlappingPairs + index) Array<uint64>(mMemoryAllocator);
     mHasCollisionShapeChangedSize[index] = false;
     mIsTrigger[index] = false;
+    mMaterials[index] = component.material;
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(colliderEntity, index));
@@ -153,9 +157,10 @@ void ColliderComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
     new (mCollisionCategoryBits + destIndex) unsigned short(mCollisionCategoryBits[srcIndex]);
     new (mCollideWithMaskBits + destIndex) unsigned short(mCollideWithMaskBits[srcIndex]);
     new (mLocalToWorldTransforms + destIndex) Transform(mLocalToWorldTransforms[srcIndex]);
-    new (mOverlappingPairs + destIndex) List<uint64>(mOverlappingPairs[srcIndex]);
+    new (mOverlappingPairs + destIndex) Array<uint64>(mOverlappingPairs[srcIndex]);
     mHasCollisionShapeChangedSize[destIndex] = mHasCollisionShapeChangedSize[srcIndex];
     mIsTrigger[destIndex] = mIsTrigger[srcIndex];
+    mMaterials[destIndex] = mMaterials[srcIndex];
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -181,9 +186,10 @@ void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
     unsigned short collisionCategoryBits1 = mCollisionCategoryBits[index1];
     unsigned short collideWithMaskBits1 = mCollideWithMaskBits[index1];
     Transform localToWorldTransform1 = mLocalToWorldTransforms[index1];
-    List<uint64> overlappingPairs = mOverlappingPairs[index1];
+    Array<uint64> overlappingPairs = mOverlappingPairs[index1];
     bool hasCollisionShapeChangedSize = mHasCollisionShapeChangedSize[index1];
     bool isTrigger = mIsTrigger[index1];
+    Material material = mMaterials[index1];
 
     // Destroy component 1
     destroyComponent(index1);
@@ -200,9 +206,10 @@ void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mCollisionCategoryBits + index2) unsigned short(collisionCategoryBits1);
     new (mCollideWithMaskBits + index2) unsigned short(collideWithMaskBits1);
     new (mLocalToWorldTransforms + index2) Transform(localToWorldTransform1);
-    new (mOverlappingPairs + index2) List<uint64>(overlappingPairs);
+    new (mOverlappingPairs + index2) Array<uint64>(overlappingPairs);
     mHasCollisionShapeChangedSize[index2] = hasCollisionShapeChangedSize;
     mIsTrigger[index2] = isTrigger;
+    mMaterials[index2] = material;
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(colliderEntity1, index2));
@@ -227,5 +234,6 @@ void ColliderComponents::destroyComponent(uint32 index) {
     mLocalToBodyTransforms[index].~Transform();
     mCollisionShapes[index] = nullptr;
     mLocalToWorldTransforms[index].~Transform();
-    mOverlappingPairs[index].~List<uint64>();
+    mOverlappingPairs[index].~Array<uint64>();
+    mMaterials[index].~Material();
 }

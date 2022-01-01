@@ -34,9 +34,9 @@ openglframework::VertexArrayObject Capsule::mVAO;
 int Capsule::totalNbCapsules = 0;
 
 // Constructor
-Capsule::Capsule(bool createRigidBody, float radius, float height, reactphysics3d::PhysicsCommon &physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+Capsule::Capsule(bool createRigidBody, float radius, float height, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                  const std::string& meshFolderPath)
-        : PhysicsObject(physicsCommon, meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height) {
+        : PhysicsObject(physicsCommon, meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height), mPhysicsWorld(physicsWorld) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -91,7 +91,16 @@ Capsule::~Capsule() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
+
+    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
+    if (body != nullptr) {
+        mPhysicsWorld->destroyRigidBody(body);
+    }
+    else {
+        mPhysicsWorld->destroyCollisionBody(mBody);
+    }
     mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
+
     totalNbCapsules--;
 }
 

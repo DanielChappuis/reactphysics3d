@@ -53,6 +53,8 @@ class TestTransform : public Test {
         /// Second example transform
         Transform mTransform2;
 
+        const float mEpsilon = 0.0001;
+
     public :
 
         // ---------- Methods ---------- //
@@ -65,12 +67,12 @@ class TestTransform : public Test {
             Vector3 unitVec(1, 1, 1);
             unitVec.normalize();
 
-            decimal sinA = std::sin(PI/8.0f);
-            decimal cosA = std::cos(PI/8.0f);
+            decimal sinA = std::sin(PI_RP3D/8.0f);
+            decimal cosA = std::cos(PI_RP3D/8.0f);
             mTransform1 = Transform(Vector3(4, 5, 6), Quaternion(sinA * unitVec, cosA));
 
-            decimal sinB = std::sin(PI/3.0f);
-            decimal cosB = std::cos(PI/3.0f);
+            decimal sinB = std::sin(PI_RP3D/3.0f);
+            decimal cosB = std::cos(PI_RP3D/3.0f);
             mTransform2 = Transform(Vector3(8, 45, -6), Quaternion(sinB * unitVec, cosB));
         }
 
@@ -137,22 +139,22 @@ class TestTransform : public Test {
             transform.setFromOpenGL(openglMatrix);
             decimal openglMatrix2[16];
             transform.getOpenGLMatrix(openglMatrix2);
-            rp3d_test(approxEqual(openglMatrix2[0], orientation[0][0]));
-            rp3d_test(approxEqual(openglMatrix2[1], orientation[1][0]));
-            rp3d_test(approxEqual(openglMatrix2[2], orientation[2][0]));
-            rp3d_test(approxEqual(openglMatrix2[3], 0));
-            rp3d_test(approxEqual(openglMatrix2[4], orientation[0][1]));
-            rp3d_test(approxEqual(openglMatrix2[5], orientation[1][1]));
-            rp3d_test(approxEqual(openglMatrix2[6], orientation[2][1]));
-            rp3d_test(approxEqual(openglMatrix2[7], 0));
-            rp3d_test(approxEqual(openglMatrix2[8], orientation[0][2]));
-            rp3d_test(approxEqual(openglMatrix2[9], orientation[1][2]));
-            rp3d_test(approxEqual(openglMatrix2[10], orientation[2][2]));
-            rp3d_test(approxEqual(openglMatrix2[11], 0));
-            rp3d_test(approxEqual(openglMatrix2[12], position.x));
-            rp3d_test(approxEqual(openglMatrix2[13], position.y));
-            rp3d_test(approxEqual(openglMatrix2[14], position.z));
-            rp3d_test(approxEqual(openglMatrix2[15], 1));
+            rp3d_test(approxEqual(openglMatrix2[0], orientation[0][0], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[1], orientation[1][0], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[2], orientation[2][0], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[3], 0, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[4], orientation[0][1], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[5], orientation[1][1], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[6], orientation[2][1], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[7], 0, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[8], orientation[0][2], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[9], orientation[1][2], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[10], orientation[2][2], mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[11], 0, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[12], position.x, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[13], position.y, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[14], position.z, mEpsilon));
+            rp3d_test(approxEqual(openglMatrix2[15], 1, mEpsilon));
         }
 
         /// Test the method to interpolate transforms
@@ -162,10 +164,10 @@ class TestTransform : public Test {
             rp3d_test(transformStart == mTransform1);
             rp3d_test(transformEnd == mTransform2);
 
-            decimal sinA = sin(PI/3.0f);
-            decimal cosA = cos(PI/3.0f);
-            decimal sinB = sin(PI/6.0f);
-            decimal cosB = cos(PI/6.0f);
+            decimal sinA = sin(PI_RP3D/3.0f);
+            decimal cosA = cos(PI_RP3D/3.0f);
+            decimal sinB = sin(PI_RP3D/6.0f);
+            decimal cosB = cos(PI_RP3D/6.0f);
             Transform transform1(Vector3(4, 5, 6), Quaternion::identity());
             Transform transform2(Vector3(8, 11, 16), Quaternion(sinA, sinA, sinA, cosA));
             Transform transform = Transform::interpolateTransforms(transform1, transform2, 0.5);

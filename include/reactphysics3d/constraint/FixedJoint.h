@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -43,8 +43,17 @@ struct FixedJointInfo : public JointInfo {
 
         // -------------------- Attributes -------------------- //
 
+        /// True if this object has been constructed using local-space anchors
+        bool isUsingLocalSpaceAnchors;
+
         /// Anchor point (in world-space coordinates)
         Vector3 anchorPointWorldSpace;
+
+        /// Anchor point on body 1 (in local-space coordinates)
+        Vector3 anchorPointBody1LocalSpace;
+
+        /// Anchor point on body 2 (in local-space coordinates)
+        Vector3 anchorPointBody2LocalSpace;
 
         /// Constructor
         /**
@@ -56,7 +65,23 @@ struct FixedJointInfo : public JointInfo {
         FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
                        const Vector3& initAnchorPointWorldSpace)
                        : JointInfo(rigidBody1, rigidBody2, JointType::FIXEDJOINT),
+                         isUsingLocalSpaceAnchors(false),
                          anchorPointWorldSpace(initAnchorPointWorldSpace){}
+
+        /// Constructor
+        /**
+         * @param rigidBody1 Pointer to the first body of the joint
+         * @param rigidBody2 Pointer to the second body of the joint
+         * @param anchorPointBody1LocalSpace The anchor point on body 1 in local-space coordinates
+         * @param anchorPointBody2LocalSpace The anchor point on body 2 in local-space coordinates
+         */
+        FixedJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                               const Vector3& anchorPointBody1LocalSpace,
+                               const Vector3& anchorPointBody2LocalSpace)
+                              : JointInfo(rigidBody1, rigidBody2, JointType::FIXEDJOINT),
+                                isUsingLocalSpaceAnchors(true),
+                                anchorPointBody1LocalSpace(anchorPointBody1LocalSpace),
+                                anchorPointBody2LocalSpace(anchorPointBody2LocalSpace) {}
 };
 
 // Class FixedJoint
@@ -86,6 +111,12 @@ class FixedJoint : public Joint {
         /// Deleted copy-constructor
         FixedJoint(const FixedJoint& constraint) = delete;
 
+        /// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+        virtual Vector3 getReactionForce(decimal timeStep) const override;
+
+        /// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+        virtual Vector3 getReactionTorque(decimal timeStep) const override;
+
         /// Return a string representation
         virtual std::string to_string() const override;
 
@@ -94,7 +125,7 @@ class FixedJoint : public Joint {
 };
 
 // Return the number of bytes used by the joint
-inline size_t FixedJoint::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t FixedJoint::getSizeInBytes() const {
     return sizeof(FixedJoint);
 }
 

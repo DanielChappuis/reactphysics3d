@@ -30,12 +30,10 @@ uniform mat4 localToWorldMatrix;        // Local-space to world-space matrix
 uniform mat4 worldToCameraMatrix;       // World-space to camera-space matrix
 uniform mat4 worldToLight0CameraMatrix; // World-space to light0 camera-space matrix (for shadow mapping)
 uniform mat4 worldToLight1CameraMatrix; // World-space to light1 camera-space matrix (for shadow mapping)
-uniform mat4 worldToLight2CameraMatrix; // World-space to light2 camera-space matrix (for shadow mapping)
 uniform mat4 projectionMatrix;          // Projection matrix
 uniform mat3 normalMatrix;              // Normal matrix
 uniform mat4 shadowMapLight0ProjectionMatrix; // Shadow map projection matrix for light 0
 uniform mat4 shadowMapLight1ProjectionMatrix; // Shadow map projection matrix for light 1
-uniform mat4 shadowMapLight2ProjectionMatrix; // Shadow map projection matrix for light 2
 
 // In variables
 in vec4 vertexPosition;
@@ -46,7 +44,7 @@ in vec2 textureCoords;
 out vec3 vertexPosCameraSpace;      // Camera-space position of the vertex
 out vec3 vertexNormalCameraSpace;   // Vertex normal in camera-space
 out vec2 texCoords;                 // Texture coordinates
-out vec4 shadowMapCoords[3];        // Shadow map texture coords
+out vec4 shadowMapCoords[2];        // Shadow map texture coords
 
 void main() {
 
@@ -61,17 +59,15 @@ void main() {
     texCoords = textureCoords;
 
     // Compute the texture coords of the vertex in the shadow map
-	mat4 worldToLightCameraMatrix[3];
-	worldToLightCameraMatrix[0] = worldToLight0CameraMatrix;
-	worldToLightCameraMatrix[1] = worldToLight1CameraMatrix;
-	worldToLightCameraMatrix[2] = worldToLight2CameraMatrix;
-	mat4 shadowMapProjectionMatrix[3];
-	shadowMapProjectionMatrix[0] = shadowMapLight0ProjectionMatrix;
-	shadowMapProjectionMatrix[1] = shadowMapLight1ProjectionMatrix;
-	shadowMapProjectionMatrix[2] = shadowMapLight2ProjectionMatrix;
-	for (int l=0; l < 3; l++) {
-		shadowMapCoords[l] = shadowMapProjectionMatrix[l] * worldToLightCameraMatrix[l] * localToWorldMatrix * vertexPosition;
-	}
+    mat4 worldToLightCameraMatrix[2];
+    worldToLightCameraMatrix[0] = worldToLight0CameraMatrix;
+    worldToLightCameraMatrix[1] = worldToLight1CameraMatrix;
+    mat4 shadowMapProjectionMatrix[2];
+    shadowMapProjectionMatrix[0] = shadowMapLight0ProjectionMatrix;
+    shadowMapProjectionMatrix[1] = shadowMapLight1ProjectionMatrix;
+    for (int l=0; l < 2; l++) {
+        shadowMapCoords[l] = shadowMapProjectionMatrix[l] * worldToLightCameraMatrix[l] * localToWorldMatrix * vertexPosition;
+    }
 
     // Compute the clip-space vertex coordinates
     gl_Position = projectionMatrix * positionCameraSpace;

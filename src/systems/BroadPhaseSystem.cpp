@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -37,9 +37,9 @@ using namespace reactphysics3d;
 // Constructor
 BroadPhaseSystem::BroadPhaseSystem(CollisionDetectionSystem& collisionDetection, ColliderComponents& collidersComponents,
                                    TransformComponents& transformComponents, RigidBodyComponents& rigidBodyComponents)
-                    :mDynamicAABBTree(collisionDetection.getMemoryManager().getPoolAllocator(), DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE),
+                    :mDynamicAABBTree(collisionDetection.getMemoryManager().getHeapAllocator(), DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE),
                      mCollidersComponents(collidersComponents), mTransformsComponents(transformComponents),
-                     mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getPoolAllocator()),
+                     mRigidBodyComponents(rigidBodyComponents), mMovedShapes(collisionDetection.getMemoryManager().getHeapAllocator()),
                      mCollisionDetection(collisionDetection) {
 
 #ifdef IS_RP3D_PROFILING_ENABLED
@@ -67,12 +67,15 @@ bool BroadPhaseSystem::testOverlappingShapes(int32 shape1BroadPhaseId, int32 sha
 }
 
 // Ray casting method
-void BroadPhaseSystem::raycast(const Ray& ray, RaycastTest& raycastTest,
-                                         unsigned short raycastWithCategoryMaskBits) const {
+void BroadPhaseSystem::raycast(const Ray& ray, RaycastTest& raycastTest, unsigned short raycastWithCategoryMaskBits) const {
 
     RP3D_PROFILE("BroadPhaseSystem::raycast()", mProfiler);
 
     BroadPhaseRaycastCallback broadPhaseRaycastCallback(mDynamicAABBTree, raycastWithCategoryMaskBits, raycastTest);
+
+    // Compute the inverse ray direction
+    const Vector3 rayDirection = ray.point2 - ray.point1;
+    const Vector3 rayDirectionInverse(decimal(1.0) / rayDirection.x, decimal(1.0) / rayDirection.y, decimal(1.0) / rayDirection.z);
 
     mDynamicAABBTree.raycast(ray, broadPhaseRaycastCallback);
 }
@@ -111,7 +114,7 @@ void BroadPhaseSystem::removeCollider(Collider* collider) {
 }
 
 // Update the broad-phase state of a single collider
-void BroadPhaseSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
+void BroadPhaseSystem::updateCollider(Entity colliderEntity) {
 
     assert(mCollidersComponents.mMapEntityToComponentIndex.containsKey(colliderEntity));
 
@@ -119,17 +122,17 @@ void BroadPhaseSystem::updateCollider(Entity colliderEntity, decimal timeStep) {
     uint32 index = mCollidersComponents.mMapEntityToComponentIndex[colliderEntity];
 
     // Update the collider component
-    updateCollidersComponents(index, 1, timeStep);
+    updateCollidersComponents(index, 1);
 }
 
 // Update the broad-phase state of all the enabled colliders
-void BroadPhaseSystem::updateColliders(decimal timeStep) {
+void BroadPhaseSystem::updateColliders() {
 
     RP3D_PROFILE("BroadPhaseSystem::updateColliders()", mProfiler);
 
     // Update all the enabled collider components
     if (mCollidersComponents.getNbEnabledComponents() > 0) {
-        updateCollidersComponents(0, mCollidersComponents.getNbEnabledComponents(), timeStep);
+        updateCollidersComponents(0, mCollidersComponents.getNbEnabledComponents());
     }
 }
 
@@ -153,7 +156,7 @@ void BroadPhaseSystem::updateColliderInternal(int32 broadPhaseId, Collider* coll
 }
 
 // Update the broad-phase state of some colliders components
-void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal timeStep) {
+void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbItems) {
 
     RP3D_PROFILE("BroadPhaseSystem::updateCollidersComponents()", mProfiler);
 
@@ -206,15 +209,15 @@ void BroadPhaseSystem::addMovedCollider(int broadPhaseID, Collider* collider) {
 }
 
 // Compute all the overlapping pairs of collision shapes
-void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int32, int32>>& overlappingNodes) {
+void BroadPhaseSystem::computeOverlappingPairs(MemoryManager& memoryManager, Array<Pair<int32, int32>>& overlappingNodes) {
 
     RP3D_PROFILE("BroadPhaseSystem::computeOverlappingPairs()", mProfiler);
 
-    // Get the list of the colliders that have moved or have been created in the last frame
-    List<int> shapesToTest = mMovedShapes.toList(memoryManager.getPoolAllocator());
+    // Get the array of the colliders that have moved or have been created in the last frame
+    Array<int> shapesToTest = mMovedShapes.toArray(memoryManager.getHeapAllocator());
 
     // Ask the dynamic AABB tree to report all collision shapes that overlap with the shapes to test
-    mDynamicAABBTree.reportAllShapesOverlappingWithShapes(shapesToTest, 0, shapesToTest.size(), overlappingNodes);
+    mDynamicAABBTree.reportAllShapesOverlappingWithShapes(shapesToTest, 0, static_cast<uint32>(shapesToTest.size()), overlappingNodes);
 
     // Reset the array of collision shapes that have move (or have been created) during the
     // last simulation step

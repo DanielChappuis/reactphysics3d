@@ -36,7 +36,7 @@ int Sphere::totalNbSpheres = 0;
 // Constructor
 Sphere::Sphere(bool createRigidBody, float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world,
                const std::string& meshFolderPath)
-       : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius) {
+       : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius), mPhysicsWorld(world) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,
@@ -80,6 +80,7 @@ Sphere::Sphere(bool createRigidBody, float radius, rp3d::PhysicsCommon& physicsC
 Sphere::~Sphere() {
 
     if (totalNbSpheres == 1) {
+
         // Destroy the mesh
         destroy();
 
@@ -89,6 +90,13 @@ Sphere::~Sphere() {
         mVBONormals.destroy();
         mVBOTextureCoords.destroy();
         mVAO.destroy();
+    }
+    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
+    if (body != nullptr) {
+        mPhysicsWorld->destroyRigidBody(body);
+    }
+    else {
+        mPhysicsWorld->destroyCollisionBody(mBody);
     }
     mPhysicsCommon.destroySphereShape(mCollisionShape);
     totalNbSpheres--;

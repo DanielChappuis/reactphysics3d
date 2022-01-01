@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,50 +23,57 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_SPHERE_NARROW_PHASE_INFO_BATCH_H
-#define REACTPHYSICS3D_SPHERE_VS_SPHERE_NARROW_PHASE_INFO_BATCH_H
+#ifndef BALL_AND_SOCKET_JOINTS_NET_SCENE_H
+#define BALL_AND_SOCKET_JOINTS_NET_SCENE_H
 
 // Libraries
-#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
+#include "openglframework.h"
+#include <reactphysics3d/reactphysics3d.h>
+#include "Sphere.h"
+#include "SceneDemo.h"
 
-/// Namespace ReactPhysics3D
-namespace reactphysics3d {
+namespace ballandsocketjointsnetscene {
 
-// Struct SphereVsSphereNarrowPhaseInfoBatch
-/**
- * This structure collects all the potential collisions from the middle-phase algorithm
- * that have to be tested during narrow-phase collision detection. This class collects all the
- * sphere vs sphere collision detection tests.
- */
-struct SphereVsSphereNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
+// Constants
+const float SCENE_RADIUS = 40.0f;
+const float SPHERE_RADIUS = 0.5f;
+const int NB_ROWS_NET_SPHERES = 20;
+
+// Class JointsScene
+class BallAndSocketJointsNetScene : public SceneDemo {
+
+    protected :
+
+        // -------------------- Attributes -------------------- //
+
+        /// Spheres in the Ball-And-Socket joint net
+        Sphere* mNetSpheres[NB_ROWS_NET_SPHERES][NB_ROWS_NET_SPHERES];
+
+        /// Main sphere
+        Sphere* mMainSphere;
+
+        /// Ball-And-Socket joints of the chain
+        std::vector<rp3d::BallAndSocketJoint*> mBallAndSocketJoints;
+
+        // -------------------- Methods -------------------- //
+
+        /// Create the joints
+        void createJoints();
 
     public:
 
-        /// List of radiuses for the first spheres
-        List<decimal> sphere1Radiuses;
-
-        /// List of radiuses for the second spheres
-        List<decimal> sphere2Radiuses;
+        // -------------------- Methods -------------------- //
 
         /// Constructor
-        SphereVsSphereNarrowPhaseInfoBatch(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs);
+        BallAndSocketJointsNetScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
-        virtual ~SphereVsSphereNarrowPhaseInfoBatch() override = default;
+        virtual ~BallAndSocketJointsNetScene() override ;
 
-        /// Add shapes to be tested during narrow-phase collision detection into the batch
-        virtual void addNarrowPhaseInfo(uint64 airId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
-                                        CollisionShape* shape2, const Transform& shape1Transform,
-                                        const Transform& shape2Transform, bool needToReportContacts, MemoryAllocator& shapeAllocator) override;
-
-        // Initialize the containers using cached capacity
-        virtual void reserveMemory() override;
-
-        /// Clear all the objects in the batch
-        virtual void clear() override;
+        /// Reset the scene
+        virtual void reset() override;
 };
 
 }
 
 #endif
-

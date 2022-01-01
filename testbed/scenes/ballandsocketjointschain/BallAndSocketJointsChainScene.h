@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,39 +23,66 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef BALL_AND_SOCKET_JOINTS_CHAIN_SCENE_H
+#define BALL_AND_SOCKET_JOINTS_CHAIN_SCENE_H
+
 // Libraries
-#include <reactphysics3d/engine/Timer.h>
+#include "openglframework.h"
+#include <reactphysics3d/reactphysics3d.h>
+#include "Sphere.h"
+#include "SceneDemo.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+namespace ballandsocketjointschainscene {
 
-// Constructor
-Timer::Timer(double timeStep) : mTimeStep(timeStep), mLastUpdateTime(0), mDeltaTime(0), mIsRunning(false) {
-    assert(timeStep > 0.0);
+// Constants
+const float SCENE_RADIUS = 60.0f;
+const float SPHERE_RADIUS = 1.0f;
+const int NB_SPHERES = 20;
+
+// Class BallAndSocketJointsChain scene
+class BallAndSocketJointsChainScene : public SceneDemo {
+
+    protected :
+
+        // -------------------- Attributes -------------------- //
+
+        /// Spheres in the Ball-And-Socket joint net
+        Sphere* mSpheres[NB_SPHERES];
+
+        /// Ball-And-Socket joints of the chain
+        std::vector<rp3d::BallAndSocketJoint*> mBallAndSocketJoints;
+
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
+        // -------------------- Methods -------------------- //
+
+        /// Create the joints
+        void createJoints();
+
+    public:
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        BallAndSocketJointsChainScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
+
+        /// Destructor
+        virtual ~BallAndSocketJointsChainScene() override ;
+
+        /// Reset the scene
+        virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
+};
+
 }
 
-// Return the current time of the system in seconds
-long double Timer::getCurrentSystemTime() {
-
-    #if defined(WINDOWS_OS)
-        LARGE_INTEGER ticksPerSecond;
-        LARGE_INTEGER ticks;
-        QueryPerformanceFrequency(&ticksPerSecond);
-        QueryPerformanceCounter(&ticks);
-        return ((long double)(ticks.QuadPart) / (long double)(ticksPerSecond.QuadPart));
-    #else
-        // Initialize the lastUpdateTime with the current time in seconds
-        timeval timeValue;
-        gettimeofday(&timeValue, nullptr);
-        return (timeValue.tv_sec + (timeValue.tv_usec / 1000000.0));
-    #endif
-}
-
-
-
-
-
-
-
-
-
+#endif

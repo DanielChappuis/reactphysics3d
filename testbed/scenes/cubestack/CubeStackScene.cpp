@@ -31,30 +31,28 @@ using namespace openglframework;
 using namespace cubestackscene;
 
 // Constructor
-CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings)
-      : SceneDemo(name, settings, true, SCENE_RADIUS) {
+CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+      : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 16, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.9);
+    resetCameraToViewAll();
+
+    mWorldSettings.worldName = name;
+}
+
+// Create the physics world
+void CubeStackScene::createPhysicsWorld() {
 
     // Gravity vector in the physics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
-
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
     // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
+    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
     physicsWorld->setEventListener(this);
     mPhysicsWorld = physicsWorld;
 
@@ -90,46 +88,10 @@ CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings
     // The floor must be a static rigid body
     mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
     mPhysicsObjects.push_back(mFloor);
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
-// Destructor
-CubeStackScene::~CubeStackScene() {
-
-    // Destroy all the cubes of the scene
-    for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the physics world
-        mPhysicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the cube
-        delete (*it);
-    }
-
-    // Destroy the rigid body of the floor
-    mPhysicsWorld->destroyRigidBody(mFloor->getRigidBody());
-
-    // Destroy the floor
-    delete mFloor;
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
-}
-
-// Reset the scene
-void CubeStackScene::reset() {
-
-    SceneDemo::reset();
+// Initialize the bodies positions
+void CubeStackScene::initBodiesPositions() {
 
     int index = 0;
     for (int i=NB_FLOORS; i > 0; i--) {
@@ -151,4 +113,42 @@ void CubeStackScene::reset() {
     }
 
     mFloor->setTransform(rp3d::Transform(rp3d::Vector3::zero(), rp3d::Quaternion::identity()));
+}
+
+// Destroy the physics world
+void CubeStackScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        // Destroy all the cubes of the scene
+        for (std::vector<Box*>::iterator it = mBoxes.begin(); it != mBoxes.end(); ++it) {
+
+            // Destroy the cube
+            delete (*it);
+        }
+        mBoxes.clear();
+
+        // Destroy the floor
+        delete mFloor;
+
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
+
+// Destructor
+CubeStackScene::~CubeStackScene() {
+    destroyPhysicsWorld();
+}
+
+// Reset the scene
+void CubeStackScene::reset() {
+
+    SceneDemo::reset();
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }

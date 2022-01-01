@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,11 +27,9 @@
 #define REACTPHYSICS3D_NARROW_PHASE_INPUT_H
 
 // Libraries
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
-#include <reactphysics3d/collision/narrowphase/SphereVsSphereNarrowPhaseInfoBatch.h>
-#include <reactphysics3d/collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.h>
-#include <reactphysics3d/collision/narrowphase/SphereVsCapsuleNarrowPhaseInfoBatch.h>
+#include <reactphysics3d/collision/narrowphase/CollisionDispatch.h>
 
 /// Namespace ReactPhysics3D
 namespace reactphysics3d {
@@ -55,9 +53,9 @@ class NarrowPhaseInput {
 
     private:
 
-        SphereVsSphereNarrowPhaseInfoBatch mSphereVsSphereBatch;
-        SphereVsCapsuleNarrowPhaseInfoBatch mSphereVsCapsuleBatch;
-        CapsuleVsCapsuleNarrowPhaseInfoBatch mCapsuleVsCapsuleBatch;
+        NarrowPhaseInfoBatch mSphereVsSphereBatch;
+        NarrowPhaseInfoBatch mSphereVsCapsuleBatch;
+        NarrowPhaseInfoBatch mCapsuleVsCapsuleBatch;
         NarrowPhaseInfoBatch mSphereVsConvexPolyhedronBatch;
         NarrowPhaseInfoBatch mCapsuleVsConvexPolyhedronBatch;
         NarrowPhaseInfoBatch mConvexPolyhedronVsConvexPolyhedronBatch;
@@ -68,19 +66,19 @@ class NarrowPhaseInput {
         NarrowPhaseInput(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs);
 
         /// Add shapes to be tested during narrow-phase collision detection into the batch
-        void addNarrowPhaseTest(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
+        void addNarrowPhaseTest(uint64 pairId, Entity collider1, Entity collider2, CollisionShape* shape1,
                         CollisionShape* shape2, const Transform& shape1Transform,
                         const Transform& shape2Transform, NarrowPhaseAlgorithmType narrowPhaseAlgorithmType, bool reportContacts,
-                        MemoryAllocator& shapeAllocator);
+                        LastFrameCollisionInfo* lastFrameInfo, MemoryAllocator& shapeAllocator);
 
         /// Get a reference to the sphere vs sphere batch
-        SphereVsSphereNarrowPhaseInfoBatch& getSphereVsSphereBatch();
+        NarrowPhaseInfoBatch& getSphereVsSphereBatch();
 
         /// Get a reference to the sphere vs capsule batch
-        SphereVsCapsuleNarrowPhaseInfoBatch& getSphereVsCapsuleBatch();
+        NarrowPhaseInfoBatch& getSphereVsCapsuleBatch();
 
         /// Get a reference to the capsule vs capsule batch
-        CapsuleVsCapsuleNarrowPhaseInfoBatch& getCapsuleVsCapsuleBatch();
+        NarrowPhaseInfoBatch& getCapsuleVsCapsuleBatch();
 
         /// Get a reference to the sphere vs convex polyhedron batch
         NarrowPhaseInfoBatch& getSphereVsConvexPolyhedronBatch();
@@ -100,34 +98,65 @@ class NarrowPhaseInput {
 
 
 // Get a reference to the sphere vs sphere batch contacts
-inline SphereVsSphereNarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsSphereBatch() {
+RP3D_FORCE_INLINE NarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsSphereBatch() {
     return mSphereVsSphereBatch;
 }
 
 // Get a reference to the sphere vs capsule batch contacts
-inline SphereVsCapsuleNarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsCapsuleBatch() {
+RP3D_FORCE_INLINE NarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsCapsuleBatch() {
    return mSphereVsCapsuleBatch;
 }
 
 // Get a reference to the capsule vs capsule batch contacts
-inline CapsuleVsCapsuleNarrowPhaseInfoBatch& NarrowPhaseInput::getCapsuleVsCapsuleBatch() {
+RP3D_FORCE_INLINE NarrowPhaseInfoBatch& NarrowPhaseInput::getCapsuleVsCapsuleBatch() {
    return mCapsuleVsCapsuleBatch;
 }
 
 // Get a reference to the sphere vs convex polyhedron batch contacts
-inline NarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsConvexPolyhedronBatch() {
+RP3D_FORCE_INLINE NarrowPhaseInfoBatch& NarrowPhaseInput::getSphereVsConvexPolyhedronBatch() {
    return mSphereVsConvexPolyhedronBatch;
 }
 
 // Get a reference to the capsule vs convex polyhedron batch contacts
-inline NarrowPhaseInfoBatch& NarrowPhaseInput::getCapsuleVsConvexPolyhedronBatch() {
+RP3D_FORCE_INLINE NarrowPhaseInfoBatch& NarrowPhaseInput::getCapsuleVsConvexPolyhedronBatch() {
    return mCapsuleVsConvexPolyhedronBatch;
 }
 
 // Get a reference to the convex polyhedron vs convex polyhedron batch contacts
-inline NarrowPhaseInfoBatch& NarrowPhaseInput::getConvexPolyhedronVsConvexPolyhedronBatch() {
+RP3D_FORCE_INLINE NarrowPhaseInfoBatch &NarrowPhaseInput::getConvexPolyhedronVsConvexPolyhedronBatch() {
    return mConvexPolyhedronVsConvexPolyhedronBatch;
 }
 
+// Add shapes to be tested during narrow-phase collision detection into the batch
+RP3D_FORCE_INLINE void NarrowPhaseInput::addNarrowPhaseTest(uint64 pairId, Entity collider1, Entity collider2, CollisionShape* shape1, CollisionShape* shape2,
+                                          const Transform& shape1Transform, const Transform& shape2Transform,
+                                          NarrowPhaseAlgorithmType narrowPhaseAlgorithmType, bool reportContacts, LastFrameCollisionInfo* lastFrameInfo,
+                                          MemoryAllocator& shapeAllocator) {
+
+    switch (narrowPhaseAlgorithmType) {
+        case NarrowPhaseAlgorithmType::SphereVsSphere:
+            mSphereVsSphereBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
+            break;
+        case NarrowPhaseAlgorithmType::SphereVsCapsule:
+            mSphereVsCapsuleBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
+            break;
+        case NarrowPhaseAlgorithmType::CapsuleVsCapsule:
+            mCapsuleVsCapsuleBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
+            break;
+        case NarrowPhaseAlgorithmType::SphereVsConvexPolyhedron:
+            mSphereVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
+            break;
+        case NarrowPhaseAlgorithmType::CapsuleVsConvexPolyhedron:
+            mCapsuleVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
+            break;
+        case NarrowPhaseAlgorithmType::ConvexPolyhedronVsConvexPolyhedron:
+            mConvexPolyhedronVsConvexPolyhedronBatch.addNarrowPhaseInfo(pairId, collider1, collider2, shape1, shape2, shape1Transform, shape2Transform, reportContacts, lastFrameInfo, shapeAllocator);
+            break;
+        case NarrowPhaseAlgorithmType::None:
+            // Must never happen
+            assert(false);
+            break;
+    }
+}
 }
 #endif

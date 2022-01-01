@@ -42,20 +42,16 @@ namespace trianglemeshscene {
 
 // Constants
 const float SCENE_RADIUS = 70.0f;                           // Radius of the scene in meters
-static const int NB_BOXES = 50;
-static const int NB_SPHERES = 40;
-static const int NB_CAPSULES = 20;
-static const int NB_MESHES = 15;
+static const int NB_BOXES = 20;
+static const int NB_SPHERES = 20;
+static const int NB_CAPSULES = 10;
+static const int NB_MESHES = 5;
 static const int NB_COMPOUND_SHAPES = 3;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);
-const float SPHERE_RADIUS = 1.5f;
-const float CONE_RADIUS = 2.0f;
-const float CONE_HEIGHT = 3.0f;
-const float CYLINDER_RADIUS = 1.0f;
-const float CYLINDER_HEIGHT = 5.0f;
-const float CAPSULE_RADIUS = 1.0f;
-const float CAPSULE_HEIGHT = 1.0f;
-const float DUMBBELL_HEIGHT = 1.0f;
+const float SPHERE_RADIUS = 0.5f;
+const float CAPSULE_RADIUS = 0.5f;
+const float CAPSULE_HEIGHT = 0.5f;
+const float DUMBBELL_HEIGHT = 0.5f;
 
 // Class TriangleMeshScene
 class ConcaveMeshScene : public SceneDemo {
@@ -79,18 +75,30 @@ class ConcaveMeshScene : public SceneDemo {
         /// Concave triangles mesh
         ConcaveMesh* mConcaveMesh;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMeshScene(const std::string& name, EngineSettings& settings);
+        ConcaveMeshScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~ConcaveMeshScene() override;
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

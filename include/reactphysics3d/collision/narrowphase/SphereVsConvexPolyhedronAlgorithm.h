@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -34,6 +34,7 @@ namespace reactphysics3d {
 
 // Declarations
 class ContactPoint;
+struct NarrowPhaseInfoBatch;
 
 // Class SphereVsConvexPolyhedronAlgorithm
 /**
@@ -70,7 +71,7 @@ class SphereVsConvexPolyhedronAlgorithm : public NarrowPhaseAlgorithm {
         SphereVsConvexPolyhedronAlgorithm& operator=(const SphereVsConvexPolyhedronAlgorithm& algorithm) = delete;
 
         /// Compute the narrow-phase collision detection between a sphere and a convex polyhedron
-        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
+        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchStartIndex, uint32 batchNbItems,
                            bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator);
 };
 

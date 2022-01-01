@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -42,8 +42,7 @@ using namespace reactphysics3d;
  */
 Collider::Collider(Entity entity, CollisionBody* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mEntity(entity), mBody(body),
-            mMaterial(body->mWorld.mConfig.defaultFrictionCoefficient, body->mWorld.mConfig.defaultRollingRestistance,
-                      body->mWorld.mConfig.defaultBounciness), mUserData(nullptr) {
+            mUserData(nullptr) {
 
 }
 
@@ -115,10 +114,10 @@ void Collider::setLocalToBodyTransform(const Transform& transform) {
 
     RigidBody* rigidBody = static_cast<RigidBody*>(mBody);
     if (rigidBody != nullptr) {
-        mBody->mWorld.mRigidBodyComponents.setIsSleeping(mBody->getEntity(), false);
+        rigidBody->setIsSleeping(false);
     }
 
-    mBody->mWorld.mCollisionDetection.updateCollider(mEntity, 0);
+    mBody->mWorld.mCollisionDetection.updateCollider(mEntity);
 
     RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
              "Collider " + std::to_string(getBroadPhaseId()) + ": Set localToBodyTransform=" +
@@ -168,7 +167,7 @@ const Transform& Collider::getLocalToBodyTransform() const {
 
 // Raycast method with feedback information
 /**
- * @param ray Ray to use for the raycasting
+ * @param ray Ray to use for the raycasting in world-space
  * @param[out] raycastInfo Result of the raycasting that is valid only if the
  *             methods returned true
  * @return True if the ray hits the collision shape
@@ -181,9 +180,7 @@ bool Collider::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     // Convert the ray into the local-space of the collision shape
     const Transform localToWorldTransform = mBody->mWorld.mCollidersComponents.getLocalToWorldTransform(mEntity);
     const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    Ray rayLocal(worldToLocalTransform * ray.point1,
-                 worldToLocalTransform * ray.point2,
-                 ray.maxFraction);
+    Ray rayLocal(worldToLocalTransform * ray.point1, worldToLocalTransform * ray.point2, ray.maxFraction);
 
     const CollisionShape* collisionShape = mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
     bool isHit = collisionShape->raycast(rayLocal, raycastInfo, this, mMemoryManager.getPoolAllocator());
@@ -223,10 +220,10 @@ void Collider::setHasCollisionShapeChangedSize(bool hasCollisionShapeChangedSize
  */
 void Collider::setMaterial(const Material& material) {
 
-    mMaterial = material;
+    mBody->mWorld.mCollidersComponents.setMaterial(mEntity, material);
 
     RP3D_LOG(mBody->mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Collider,
-             "Collider " + std::to_string(mEntity.id) + ": Set Material" + mMaterial.to_string(),  __FILE__, __LINE__);
+             "Collider " + std::to_string(mEntity.id) + ": Set Material" + material.to_string(),  __FILE__, __LINE__);
 }
 
 // Return the local to world transform
@@ -252,6 +249,14 @@ bool Collider::getIsTrigger() const {
  */
 void Collider::setIsTrigger(bool isTrigger) const {
    mBody->mWorld.mCollidersComponents.setIsTrigger(mEntity, isTrigger);
+}
+
+// Return a reference to the material properties of the collider
+/**
+ * @return A reference to the material of the body
+ */
+Material& Collider::getMaterial() {
+    return mBody->mWorld.mCollidersComponents.getMaterial(mEntity);
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED

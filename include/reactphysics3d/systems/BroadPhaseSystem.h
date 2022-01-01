@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -51,10 +51,10 @@ class AABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
     public:
 
-        List<int>& mOverlappingNodes;
+        Array<int>& mOverlappingNodes;
 
         // Constructor
-        AABBOverlapCallback(List<int>& overlappingNodes) : mOverlappingNodes(overlappingNodes) {
+        AABBOverlapCallback(Array<int>& overlappingNodes) : mOverlappingNodes(overlappingNodes) {
 
         }
 
@@ -144,7 +144,7 @@ class BroadPhaseSystem {
                                     bool forceReInsert);
 
         /// Update the broad-phase state of some colliders components
-        void updateCollidersComponents(uint32 startIndex, uint32 nbItems, decimal timeStep);
+        void updateCollidersComponents(uint32 startIndex, uint32 nbItems);
 
     public :
 
@@ -170,10 +170,10 @@ class BroadPhaseSystem {
         void removeCollider(Collider* collider);
 
         /// Update the broad-phase state of a single collider
-        void updateCollider(Entity colliderEntity, decimal timeStep);
+        void updateCollider(Entity colliderEntity);
 
         /// Update the broad-phase state of all the enabled colliders
-        void updateColliders(decimal timeStep);
+        void updateColliders();
 
         /// Add a collider in the array of colliders that have moved in the last simulation step
         /// and that need to be tested again for broad-phase overlapping.
@@ -184,7 +184,7 @@ class BroadPhaseSystem {
         void removeMovedCollider(int broadPhaseID);
 
         /// Compute all the overlapping pairs of collision shapes
-        void computeOverlappingPairs(MemoryManager& memoryManager, List<Pair<int32, int32>>& overlappingNodes);
+        void computeOverlappingPairs(MemoryManager& memoryManager, Array<Pair<int32, int32>>& overlappingNodes);
 
         /// Return the collider corresponding to the broad-phase node id in parameter
         Collider* getColliderForBroadPhaseId(int broadPhaseId) const;
@@ -208,27 +208,27 @@ class BroadPhaseSystem {
 };
 
 // Return the fat AABB of a given broad-phase shape
-inline const AABB& BroadPhaseSystem::getFatAABB(int broadPhaseId) const  {
+RP3D_FORCE_INLINE const AABB& BroadPhaseSystem::getFatAABB(int broadPhaseId) const  {
     return mDynamicAABBTree.getFatAABB(broadPhaseId);
 }
 
 // Remove a collider from the array of colliders that have moved in the last simulation step
 // and that need to be tested again for broad-phase overlapping.
-inline void BroadPhaseSystem::removeMovedCollider(int broadPhaseID) {
+RP3D_FORCE_INLINE void BroadPhaseSystem::removeMovedCollider(int broadPhaseID) {
 
     // Remove the broad-phase ID from the set
     mMovedShapes.remove(broadPhaseID);
 }
 
 // Return the collider corresponding to the broad-phase node id in parameter
-inline Collider* BroadPhaseSystem::getColliderForBroadPhaseId(int broadPhaseId) const {
+RP3D_FORCE_INLINE Collider* BroadPhaseSystem::getColliderForBroadPhaseId(int broadPhaseId) const {
     return static_cast<Collider*>(mDynamicAABBTree.getNodeDataPointer(broadPhaseId));
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void BroadPhaseSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void BroadPhaseSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 	mDynamicAABBTree.setProfiler(profiler);
 }

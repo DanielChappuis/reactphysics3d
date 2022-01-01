@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -79,7 +79,7 @@ void DefaultLogger::addStreamDestination(std::ostream& outputStream, uint logLev
 void DefaultLogger::removeAllDestinations() {
 
     // Delete all the destinations
-    for (uint i=0; i<mDestinations.size(); i++) {
+    for (uint32 i=0; i<mDestinations.size(); i++) {
 
         size_t size = mDestinations[i]->getSizeBytes();
 

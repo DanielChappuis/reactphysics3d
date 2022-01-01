@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -42,15 +42,4 @@ Entity::Entity(uint32 index, uint32 generation)
 
     assert(getIndex() == index);
     assert(getGeneration() == generation);
-}
-
-// Assignment operator
-Entity& Entity::operator=(const Entity& entity) {
-
-    if (&entity != this) {
-
-        id = entity.id;
-    }
-
-    return *this;
 }

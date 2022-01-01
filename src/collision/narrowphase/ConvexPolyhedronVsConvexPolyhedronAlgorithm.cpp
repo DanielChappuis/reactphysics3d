@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -35,8 +35,8 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two convex polyhedra
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                                                uint batchStartIndex, uint batchNbItems,
+bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch &narrowPhaseInfoBatch,
+                                                                uint32 batchStartIndex, uint32 batchNbItems,
                                                                 bool clipWithPreviousAxisIfStillColliding, MemoryAllocator& memoryAllocator) {
 
     // Run the SAT algorithm to find the separating axis and compute contact point
@@ -51,10 +51,10 @@ bool ConvexPolyhedronVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoB
 
     bool isCollisionFound = satAlgorithm.testCollisionConvexPolyhedronVsConvexPolyhedron(narrowPhaseInfoBatch, batchStartIndex, batchNbItems);
 
-    for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
+    for (uint32 batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
         // Get the last frame collision info
-        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.lastFrameCollisionInfos[batchIndex];
+        LastFrameCollisionInfo* lastFrameCollisionInfo = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].lastFrameCollisionInfo;
 
         lastFrameCollisionInfo->wasUsingSAT = true;
         lastFrameCollisionInfo->wasUsingGJK = false;

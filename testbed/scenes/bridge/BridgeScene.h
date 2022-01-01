@@ -23,42 +23,76 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef BRIDGE_SCENE_H
+#define BRIDGE_SCENE_H
+
 // Libraries
-#include "Timer.h"
+#include "openglframework.h"
+#include <reactphysics3d/reactphysics3d.h>
+#include "Box.h"
+#include "Sphere.h"
+#include "SceneDemo.h"
 
+namespace bridgescene {
 
-// Constructor
-Timer::Timer() : mLastUpdateTime(0), mDeltaTime(0), mAccumulator(0), mIsRunning(false) {
+// Constants
+const float SCENE_RADIUS = 60.0f;
+const float SPHERE_RADIUS = 2.0f;
+const float SPHERE_MASS = 40.0f;
+const openglframework::Vector3 BOX_SIZE = openglframework::Vector3(2, 0.5, 4);
+const int NB_BRIDGES = 4;
+const int NB_BOXES = 16;
+
+// Class BridgeScene scene
+class BridgeScene : public SceneDemo {
+
+    protected :
+
+        // -------------------- Attributes -------------------- //
+
+        /// Boxes
+        Box* mBoxes[NB_BOXES * NB_BRIDGES];
+
+        /// Spheres
+        Sphere* mSpheres[NB_BRIDGES];
+
+        /// Hinge joints of the bridge
+        std::vector<rp3d::HingeJoint*> mHingeJoints;
+
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
+        // -------------------- Methods -------------------- //
+
+        /// Create the joints
+        void createJoints();
+
+    public:
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        BridgeScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
+
+        /// Destructor
+        virtual ~BridgeScene() override ;
+
+        /// Update the physics simulation
+        virtual void updatePhysics() override;
+
+        /// Reset the scene
+        virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
+};
 
 }
 
-// Destructor
-Timer::~Timer() {
-
-}
-
-// Return the current time of the system in seconds
-long double Timer::getCurrentSystemTime() {
-
-    #if defined(WINDOWS_OS)
-        LARGE_INTEGER ticksPerSecond;
-        LARGE_INTEGER ticks;
-        QueryPerformanceFrequency(&ticksPerSecond);
-        QueryPerformanceCounter(&ticks);
-        return (long double(ticks.QuadPart) / long double(ticksPerSecond.QuadPart));
-    #else
-        // Initialize the lastUpdateTime with the current time in seconds
-        timeval timeValue;
-        gettimeofday(&timeValue, NULL);
-        return (timeValue.tv_sec + (timeValue.tv_usec / 1000000.0));
-    #endif
-}
-
-
-
-
-
-
-
-
-
+#endif

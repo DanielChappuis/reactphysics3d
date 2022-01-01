@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -224,133 +224,133 @@ class FixedJointComponents : public Components {
 };
 
 // Return a pointer to a given joint
-inline FixedJoint* FixedJointComponents::getJoint(Entity jointEntity) const {
+RP3D_FORCE_INLINE FixedJoint* FixedJointComponents::getJoint(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mJoints[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the joint pointer to a given joint
-inline void FixedJointComponents::setJoint(Entity jointEntity, FixedJoint* joint) const {
+RP3D_FORCE_INLINE void FixedJointComponents::setJoint(Entity jointEntity, FixedJoint* joint) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mJoints[mMapEntityToComponentIndex[jointEntity]] = joint;
 }
 
 // Return the local anchor point of body 1 for a given joint
-inline const Vector3& FixedJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& FixedJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 1 for a given joint
-inline void FixedJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchorPointBody1) {
+RP3D_FORCE_INLINE void FixedJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchorPointBody1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]] = localAnchorPointBody1;
 }
 
 // Return the local anchor point of body 2 for a given joint
-inline const Vector3& FixedJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& FixedJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 2 for a given joint
-inline void FixedJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchorPointBody2) {
+RP3D_FORCE_INLINE void FixedJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchorPointBody2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]] = localAnchorPointBody2;
 }
 
 // Return the vector from center of body 1 to anchor point in world-space
-inline const Vector3& FixedJointComponents::getR1World(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& FixedJointComponents::getR1World(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR1World[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the vector from center of body 1 to anchor point in world-space
-inline void FixedJointComponents::setR1World(Entity jointEntity, const Vector3& r1World) {
+RP3D_FORCE_INLINE void FixedJointComponents::setR1World(Entity jointEntity, const Vector3& r1World) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR1World[mMapEntityToComponentIndex[jointEntity]] = r1World;
 }
 
 // Return the vector from center of body 2 to anchor point in world-space
-inline const Vector3& FixedJointComponents::getR2World(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& FixedJointComponents::getR2World(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR2World[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the vector from center of body 2 to anchor point in world-space
-inline void FixedJointComponents::setR2World(Entity jointEntity, const Vector3& r2World) {
+RP3D_FORCE_INLINE void FixedJointComponents::setR2World(Entity jointEntity, const Vector3& r2World) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR2World[mMapEntityToComponentIndex[jointEntity]] = r2World;
 }
 
 // Return the inertia tensor of body 1 (in world-space coordinates)
-inline const Matrix3x3& FixedJointComponents::getI1(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Matrix3x3& FixedJointComponents::getI1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mI1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inertia tensor of body 1 (in world-space coordinates)
-inline void FixedJointComponents::setI1(Entity jointEntity, const Matrix3x3& i1) {
+RP3D_FORCE_INLINE void FixedJointComponents::setI1(Entity jointEntity, const Matrix3x3& i1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mI1[mMapEntityToComponentIndex[jointEntity]] = i1;
 }
 
 // Return the inertia tensor of body 2 (in world-space coordinates)
-inline const Matrix3x3& FixedJointComponents::getI2(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Matrix3x3& FixedJointComponents::getI2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mI2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inertia tensor of body 2 (in world-space coordinates)
-inline void FixedJointComponents::setI2(Entity jointEntity, const Matrix3x3& i2) {
+RP3D_FORCE_INLINE void FixedJointComponents::setI2(Entity jointEntity, const Matrix3x3& i2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mI2[mMapEntityToComponentIndex[jointEntity]] = i2;
 }
 
 // Return the translation impulse
-inline Vector3& FixedJointComponents::getImpulseTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& FixedJointComponents::getImpulseTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseTranslation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void FixedJointComponents::setImpulseTranslation(Entity jointEntity, const Vector3& impulseTranslation) {
+RP3D_FORCE_INLINE void FixedJointComponents::setImpulseTranslation(Entity jointEntity, const Vector3& impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseTranslation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the translation impulse
-inline Vector3& FixedJointComponents::getImpulseRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& FixedJointComponents::getImpulseRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void FixedJointComponents::setImpulseRotation(Entity jointEntity, const Vector3& impulseTranslation) {
+RP3D_FORCE_INLINE void FixedJointComponents::setImpulseRotation(Entity jointEntity, const Vector3& impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseRotation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the translation inverse mass matrix of the constraint
-inline Matrix3x3& FixedJointComponents::getInverseMassMatrixTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Matrix3x3& FixedJointComponents::getInverseMassMatrixTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixTranslation[mMapEntityToComponentIndex[jointEntity]];
@@ -358,63 +358,63 @@ inline Matrix3x3& FixedJointComponents::getInverseMassMatrixTranslation(Entity j
 
 
 // Set the translation inverse mass matrix of the constraint
-inline void FixedJointComponents::setInverseMassMatrixTranslation(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
+RP3D_FORCE_INLINE void FixedJointComponents::setInverseMassMatrixTranslation(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixTranslation[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
 }
 
 // Return the rotation inverse mass matrix of the constraint
-inline Matrix3x3& FixedJointComponents::getInverseMassMatrixRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Matrix3x3& FixedJointComponents::getInverseMassMatrixRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation inverse mass matrix of the constraint
-inline void FixedJointComponents::setInverseMassMatrixRotation(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
+RP3D_FORCE_INLINE void FixedJointComponents::setInverseMassMatrixRotation(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixRotation[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
 }
 
 // Return the translation bias
-inline Vector3& FixedJointComponents::getBiasTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& FixedJointComponents::getBiasTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBiasTranslation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void FixedJointComponents::setBiasTranslation(Entity jointEntity, const Vector3 &impulseTranslation) {
+RP3D_FORCE_INLINE void FixedJointComponents::setBiasTranslation(Entity jointEntity, const Vector3 &impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBiasTranslation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the rotation bias
-inline Vector3& FixedJointComponents::getBiasRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& FixedJointComponents::getBiasRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBiasRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation impulse
-inline void FixedJointComponents::setBiasRotation(Entity jointEntity, const Vector3& impulseRotation) {
+RP3D_FORCE_INLINE void FixedJointComponents::setBiasRotation(Entity jointEntity, const Vector3& impulseRotation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBiasRotation[mMapEntityToComponentIndex[jointEntity]] = impulseRotation;
 }
 
 // Return the initial orientation difference
-inline Quaternion& FixedJointComponents::getInitOrientationDifferenceInv(Entity jointEntity) {
+RP3D_FORCE_INLINE Quaternion& FixedJointComponents::getInitOrientationDifferenceInv(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInitOrientationDifferenceInv[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation impulse
-inline void FixedJointComponents::setInitOrientationDifferenceInv(Entity jointEntity, const Quaternion& initOrientationDifferenceInv) {
+RP3D_FORCE_INLINE void FixedJointComponents::setInitOrientationDifferenceInv(Entity jointEntity, const Quaternion& initOrientationDifferenceInv) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInitOrientationDifferenceInv[mMapEntityToComponentIndex[jointEntity]] = initOrientationDifferenceInv;

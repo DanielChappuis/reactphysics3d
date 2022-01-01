@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -34,12 +34,12 @@
 namespace reactphysics3d {
 
 // Declarations
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 struct NarrowPhaseInfoBatch;
 class ConvexShape;
 class Profiler;
 class VoronoiSimplex;
-template<typename T> class List;
+template<typename T> class Array;
 
 // Constants
 constexpr decimal REL_ERROR = decimal(1.0e-3);
@@ -97,8 +97,8 @@ class GJKAlgorithm {
         GJKAlgorithm& operator=(const GJKAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volumes collide.
-        void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, List<GJKResult>& gjkResults);
+        void testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchStartIndex,
+                           uint32 batchNbItems, Array<GJKResult>& gjkResults);
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -112,7 +112,7 @@ class GJKAlgorithm {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void GJKAlgorithm::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void GJKAlgorithm::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -68,7 +68,7 @@ struct ConstraintSolverData {
 
         /// Constructor
         ConstraintSolverData(RigidBodyComponents& rigidBodyComponents, JointComponents& jointComponents)
-                   :rigidBodyComponents(rigidBodyComponents), jointComponents(jointComponents) {
+                   :timeStep(0), isWarmStartingActive(true), rigidBodyComponents(rigidBodyComponents), jointComponents(jointComponents) {
 
         }
 
@@ -203,12 +203,6 @@ class ConstraintSolverSystem {
         /// Solve the position constraints
         void solvePositionConstraints();
 
-        /// Return true if the Non-Linear-Gauss-Seidel position correction technique is active
-        bool getIsNonLinearGaussSeidelPositionCorrectionActive() const;
-
-        /// Enable/Disable the Non-Linear-Gauss-Seidel position correction technique.
-        void setIsNonLinearGaussSeidelPositionCorrectionActive(bool isActive);
-
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Set the profiler
@@ -224,7 +218,7 @@ class ConstraintSolverSystem {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void ConstraintSolverSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void ConstraintSolverSystem::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
     mSolveBallAndSocketJointSystem.setProfiler(profiler);
     mSolveFixedJointSystem.setProfiler(profiler);

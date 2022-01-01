@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -202,8 +202,8 @@ NarrowPhaseAlgorithmType CollisionDispatch::selectNarrowPhaseAlgorithm(const Col
 
     RP3D_PROFILE("CollisionDispatch::selectNarrowPhaseAlgorithm()", mProfiler);
 
-    uint shape1Index = static_cast<unsigned int>(shape1Type);
-    uint shape2Index = static_cast<unsigned int>(shape2Type);
+    uint32 shape1Index = static_cast<uint32>(shape1Type);
+    uint shape2Index = static_cast<uint32>(shape2Type);
 
     // Swap the shape types if necessary
     if (shape1Index > shape2Index) {

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -140,10 +140,10 @@ class HingeJointComponents : public Components {
         /// True if the motor of the joint in enabled
         bool* mIsMotorEnabled;
 
-        /// Lower limit (minimum allowed rotation angle in radian)
+        /// Lower limit (minimum allowed rotation angle in radians)
         decimal* mLowerLimit;
 
-        /// Upper limit (maximum translation distance)
+        /// Upper limit (maximum allowed rotation angle in radians)
         decimal* mUpperLimit;
 
         /// True if the lower limit is violated
@@ -412,136 +412,137 @@ class HingeJointComponents : public Components {
 
         friend class BroadPhaseSystem;
         friend class SolveHingeJointSystem;
+        friend class HingeJoint;
 };
 
 // Return a pointer to a given joint
-inline HingeJoint* HingeJointComponents::getJoint(Entity jointEntity) const {
+RP3D_FORCE_INLINE HingeJoint* HingeJointComponents::getJoint(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mJoints[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the joint pointer to a given joint
-inline void HingeJointComponents::setJoint(Entity jointEntity, HingeJoint* joint) const {
+RP3D_FORCE_INLINE void HingeJointComponents::setJoint(Entity jointEntity, HingeJoint* joint) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mJoints[mMapEntityToComponentIndex[jointEntity]] = joint;
 }
 
 // Return the local anchor point of body 1 for a given joint
-inline const Vector3& HingeJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& HingeJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 1 for a given joint
-inline void HingeJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchoirPointBody1) {
+RP3D_FORCE_INLINE void HingeJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchoirPointBody1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]] = localAnchoirPointBody1;
 }
 
 // Return the local anchor point of body 2 for a given joint
-inline const Vector3& HingeJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& HingeJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 2 for a given joint
-inline void HingeJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2) {
+RP3D_FORCE_INLINE void HingeJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]] = localAnchoirPointBody2;
 }
 
 // Return the vector from center of body 1 to anchor point in world-space
-inline const Vector3& HingeJointComponents::getR1World(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& HingeJointComponents::getR1World(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR1World[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the vector from center of body 1 to anchor point in world-space
-inline void HingeJointComponents::setR1World(Entity jointEntity, const Vector3& r1World) {
+RP3D_FORCE_INLINE void HingeJointComponents::setR1World(Entity jointEntity, const Vector3& r1World) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR1World[mMapEntityToComponentIndex[jointEntity]] = r1World;
 }
 
 // Return the vector from center of body 2 to anchor point in world-space
-inline const Vector3& HingeJointComponents::getR2World(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& HingeJointComponents::getR2World(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR2World[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the vector from center of body 2 to anchor point in world-space
-inline void HingeJointComponents::setR2World(Entity jointEntity, const Vector3& r2World) {
+RP3D_FORCE_INLINE void HingeJointComponents::setR2World(Entity jointEntity, const Vector3& r2World) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR2World[mMapEntityToComponentIndex[jointEntity]] = r2World;
 }
 
 // Return the inertia tensor of body 1 (in world-space coordinates)
-inline const Matrix3x3& HingeJointComponents::getI1(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Matrix3x3& HingeJointComponents::getI1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mI1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inertia tensor of body 1 (in world-space coordinates)
-inline void HingeJointComponents::setI1(Entity jointEntity, const Matrix3x3& i1) {
+RP3D_FORCE_INLINE void HingeJointComponents::setI1(Entity jointEntity, const Matrix3x3& i1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mI1[mMapEntityToComponentIndex[jointEntity]] = i1;
 }
 
 // Return the inertia tensor of body 2 (in world-space coordinates)
-inline const Matrix3x3& HingeJointComponents::getI2(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Matrix3x3& HingeJointComponents::getI2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mI2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inertia tensor of body 2 (in world-space coordinates)
-inline void HingeJointComponents::setI2(Entity jointEntity, const Matrix3x3& i2) {
+RP3D_FORCE_INLINE void HingeJointComponents::setI2(Entity jointEntity, const Matrix3x3& i2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mI2[mMapEntityToComponentIndex[jointEntity]] = i2;
 }
 
 // Return the translation impulse
-inline Vector3& HingeJointComponents::getImpulseTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& HingeJointComponents::getImpulseTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseTranslation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void HingeJointComponents::setImpulseTranslation(Entity jointEntity, const Vector3& impulseTranslation) {
+RP3D_FORCE_INLINE void HingeJointComponents::setImpulseTranslation(Entity jointEntity, const Vector3& impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseTranslation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the translation impulse
-inline Vector2& HingeJointComponents::getImpulseRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector2& HingeJointComponents::getImpulseRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void HingeJointComponents::setImpulseRotation(Entity jointEntity, const Vector2& impulseTranslation) {
+RP3D_FORCE_INLINE void HingeJointComponents::setImpulseRotation(Entity jointEntity, const Vector2& impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseRotation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the translation inverse mass matrix of the constraint
-inline Matrix3x3& HingeJointComponents::getInverseMassMatrixTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Matrix3x3& HingeJointComponents::getInverseMassMatrixTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixTranslation[mMapEntityToComponentIndex[jointEntity]];
@@ -549,91 +550,91 @@ inline Matrix3x3& HingeJointComponents::getInverseMassMatrixTranslation(Entity j
 
 
 // Set the translation inverse mass matrix of the constraint
-inline void HingeJointComponents::setInverseMassMatrixTranslation(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
+RP3D_FORCE_INLINE void HingeJointComponents::setInverseMassMatrixTranslation(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixTranslation[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
 }
 
 // Return the rotation inverse mass matrix of the constraint
-inline Matrix2x2& HingeJointComponents::getInverseMassMatrixRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Matrix2x2& HingeJointComponents::getInverseMassMatrixRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation inverse mass matrix of the constraint
-inline void HingeJointComponents::setInverseMassMatrixRotation(Entity jointEntity, const Matrix2x2& inverseMassMatrix) {
+RP3D_FORCE_INLINE void HingeJointComponents::setInverseMassMatrixRotation(Entity jointEntity, const Matrix2x2& inverseMassMatrix) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixRotation[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
 }
 
 // Return the translation bias
-inline Vector3& HingeJointComponents::getBiasTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& HingeJointComponents::getBiasTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBiasTranslation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void HingeJointComponents::setBiasTranslation(Entity jointEntity, const Vector3 &impulseTranslation) {
+RP3D_FORCE_INLINE void HingeJointComponents::setBiasTranslation(Entity jointEntity, const Vector3 &impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBiasTranslation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the rotation bias
-inline Vector2 &HingeJointComponents::getBiasRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector2 &HingeJointComponents::getBiasRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBiasRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation impulse
-inline void HingeJointComponents::setBiasRotation(Entity jointEntity, const Vector2& impulseRotation) {
+RP3D_FORCE_INLINE void HingeJointComponents::setBiasRotation(Entity jointEntity, const Vector2& impulseRotation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBiasRotation[mMapEntityToComponentIndex[jointEntity]] = impulseRotation;
 }
 
 // Return the initial orientation difference
-inline Quaternion& HingeJointComponents::getInitOrientationDifferenceInv(Entity jointEntity) {
+RP3D_FORCE_INLINE Quaternion& HingeJointComponents::getInitOrientationDifferenceInv(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInitOrientationDifferenceInv[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation impulse
-inline void HingeJointComponents::setInitOrientationDifferenceInv(Entity jointEntity, const Quaternion& initOrientationDifferenceInv) {
+RP3D_FORCE_INLINE void HingeJointComponents::setInitOrientationDifferenceInv(Entity jointEntity, const Quaternion& initOrientationDifferenceInv) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInitOrientationDifferenceInv[mMapEntityToComponentIndex[jointEntity]] = initOrientationDifferenceInv;
 }
 
 // Return the hinge rotation axis (in local-space coordinates of body 1)
-inline Vector3& HingeJointComponents::getHingeLocalAxisBody1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& HingeJointComponents::getHingeLocalAxisBody1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mHingeLocalAxisBody1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the hinge rotation axis (in local-space coordinates of body 1)
-inline void HingeJointComponents::setHingeLocalAxisBody1(Entity jointEntity, const Vector3& hingeLocalAxisBody1) {
+RP3D_FORCE_INLINE void HingeJointComponents::setHingeLocalAxisBody1(Entity jointEntity, const Vector3& hingeLocalAxisBody1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mHingeLocalAxisBody1[mMapEntityToComponentIndex[jointEntity]] = hingeLocalAxisBody1;
 }
 
 // Return the hinge rotation axis (in local-space coordiantes of body 2)
-inline Vector3& HingeJointComponents::getHingeLocalAxisBody2(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& HingeJointComponents::getHingeLocalAxisBody2(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mHingeLocalAxisBody2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the hinge rotation axis (in local-space coordiantes of body 2)
-inline void HingeJointComponents::setHingeLocalAxisBody2(Entity jointEntity, const Vector3& hingeLocalAxisBody2) {
+RP3D_FORCE_INLINE void HingeJointComponents::setHingeLocalAxisBody2(Entity jointEntity, const Vector3& hingeLocalAxisBody2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mHingeLocalAxisBody2[mMapEntityToComponentIndex[jointEntity]] = hingeLocalAxisBody2;
@@ -641,56 +642,56 @@ inline void HingeJointComponents::setHingeLocalAxisBody2(Entity jointEntity, con
 
 
 // Return the hinge rotation axis (in world-space coordinates) computed from body 1
-inline Vector3& HingeJointComponents::getA1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& HingeJointComponents::getA1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mA1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the hinge rotation axis (in world-space coordinates) computed from body 1
-inline void HingeJointComponents::setA1(Entity jointEntity, const Vector3& a1) {
+RP3D_FORCE_INLINE void HingeJointComponents::setA1(Entity jointEntity, const Vector3& a1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mA1[mMapEntityToComponentIndex[jointEntity]] = a1;
 }
 
 // Return the cross product of vector b2 and a1
-inline Vector3& HingeJointComponents::getB2CrossA1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& HingeJointComponents::getB2CrossA1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mB2CrossA1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the cross product of vector b2 and a1
-inline void HingeJointComponents::setB2CrossA1(Entity jointEntity, const Vector3& b2CrossA1) {
+RP3D_FORCE_INLINE void HingeJointComponents::setB2CrossA1(Entity jointEntity, const Vector3& b2CrossA1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mB2CrossA1[mMapEntityToComponentIndex[jointEntity]] = b2CrossA1;
 }
 
 // Return the cross product of vector c2 and a1;
-inline Vector3& HingeJointComponents::getC2CrossA1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& HingeJointComponents::getC2CrossA1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mC2CrossA1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the cross product of vector c2 and a1;
-inline void HingeJointComponents::setC2CrossA1(Entity jointEntity, const Vector3& c2CrossA1) {
+RP3D_FORCE_INLINE void HingeJointComponents::setC2CrossA1(Entity jointEntity, const Vector3& c2CrossA1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mC2CrossA1[mMapEntityToComponentIndex[jointEntity]] = c2CrossA1;
 }
 
 // Return the accumulated impulse for the lower limit constraint
-inline decimal HingeJointComponents::getImpulseLowerLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getImpulseLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the lower limit constraint
-inline void HingeJointComponents::setImpulseLowerLimit(Entity jointEntity, decimal impulseLowerLimit) {
+RP3D_FORCE_INLINE void HingeJointComponents::setImpulseLowerLimit(Entity jointEntity, decimal impulseLowerLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseLowerLimit[mMapEntityToComponentIndex[jointEntity]] = impulseLowerLimit;
@@ -698,14 +699,14 @@ inline void HingeJointComponents::setImpulseLowerLimit(Entity jointEntity, decim
 
 
 // Return the accumulated impulse for the upper limit constraint
-inline decimal HingeJointComponents::getImpulseUpperLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getImpulseUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the upper limit constraint
-inline void HingeJointComponents::setImpulseUpperLimit(Entity jointEntity, decimal impulseUpperLimit) const {
+RP3D_FORCE_INLINE void HingeJointComponents::setImpulseUpperLimit(Entity jointEntity, decimal impulseUpperLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseUpperLimit[mMapEntityToComponentIndex[jointEntity]] = impulseUpperLimit;
@@ -713,182 +714,182 @@ inline void HingeJointComponents::setImpulseUpperLimit(Entity jointEntity, decim
 
 
 // Return the accumulated impulse for the motor constraint;
-inline decimal HingeJointComponents::getImpulseMotor(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getImpulseMotor(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseMotor[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the motor constraint;
-inline void HingeJointComponents::setImpulseMotor(Entity jointEntity, decimal impulseMotor) {
+RP3D_FORCE_INLINE void HingeJointComponents::setImpulseMotor(Entity jointEntity, decimal impulseMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseMotor[mMapEntityToComponentIndex[jointEntity]] = impulseMotor;
 }
 
 // Return the inverse of mass matrix K=JM^-1J^t for the limits and motor constraints (1x1 matrix)
-inline decimal HingeJointComponents::getInverseMassMatrixLimitMotor(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getInverseMassMatrixLimitMotor(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixLimitMotor[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inverse of mass matrix K=JM^-1J^t for the limits and motor constraints (1x1 matrix)
-inline void HingeJointComponents::setInverseMassMatrixLimitMotor(Entity jointEntity, decimal inverseMassMatrixLimitMotor) {
+RP3D_FORCE_INLINE void HingeJointComponents::setInverseMassMatrixLimitMotor(Entity jointEntity, decimal inverseMassMatrixLimitMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixLimitMotor[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrixLimitMotor;
 }
 
 // Return the inverse of mass matrix K=JM^-1J^t for the motor
-inline decimal HingeJointComponents::getInverseMassMatrixMotor(Entity jointEntity) {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getInverseMassMatrixMotor(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixMotor[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Return the inverse of mass matrix K=JM^-1J^t for the motor
-inline void HingeJointComponents::setInverseMassMatrixMotor(Entity jointEntity, decimal inverseMassMatrixMotor) {
+RP3D_FORCE_INLINE void HingeJointComponents::setInverseMassMatrixMotor(Entity jointEntity, decimal inverseMassMatrixMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixMotor[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrixMotor;
 }
 
 // Return the bias of the lower limit constraint
-inline decimal HingeJointComponents::getBLowerLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getBLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the bias of the lower limit constraint
-inline void HingeJointComponents::setBLowerLimit(Entity jointEntity, decimal bLowerLimit) const {
+RP3D_FORCE_INLINE void HingeJointComponents::setBLowerLimit(Entity jointEntity, decimal bLowerLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBLowerLimit[mMapEntityToComponentIndex[jointEntity]] = bLowerLimit;
 }
 
 // Return the bias of the upper limit constraint
-inline decimal HingeJointComponents::getBUpperLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getBUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the bias of the upper limit constraint
-inline void HingeJointComponents::setBUpperLimit(Entity jointEntity, decimal bUpperLimit) {
+RP3D_FORCE_INLINE void HingeJointComponents::setBUpperLimit(Entity jointEntity, decimal bUpperLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBUpperLimit[mMapEntityToComponentIndex[jointEntity]] = bUpperLimit;
 }
 
 // Return true if the joint limits are enabled
-inline bool HingeJointComponents::getIsLimitEnabled(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool HingeJointComponents::getIsLimitEnabled(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsLimitEnabled[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the joint limits are enabled
-inline void HingeJointComponents::setIsLimitEnabled(Entity jointEntity, bool isLimitEnabled) {
+RP3D_FORCE_INLINE void HingeJointComponents::setIsLimitEnabled(Entity jointEntity, bool isLimitEnabled) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsLimitEnabled[mMapEntityToComponentIndex[jointEntity]] = isLimitEnabled;
 }
 
 // Return true if the motor of the joint in enabled
-inline bool HingeJointComponents::getIsMotorEnabled(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool HingeJointComponents::getIsMotorEnabled(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsMotorEnabled[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the motor of the joint in enabled
-inline void HingeJointComponents::setIsMotorEnabled(Entity jointEntity, bool isMotorEnabled) const {
+RP3D_FORCE_INLINE void HingeJointComponents::setIsMotorEnabled(Entity jointEntity, bool isMotorEnabled) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsMotorEnabled[mMapEntityToComponentIndex[jointEntity]] = isMotorEnabled;
 }
 
 // Return the Lower limit (minimum allowed rotation angle in radian)
-inline decimal HingeJointComponents::getLowerLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the Lower limit (minimum allowed rotation angle in radian)
-inline void HingeJointComponents::setLowerLimit(Entity jointEntity, decimal lowerLimit) const {
+RP3D_FORCE_INLINE void HingeJointComponents::setLowerLimit(Entity jointEntity, decimal lowerLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLowerLimit[mMapEntityToComponentIndex[jointEntity]] = lowerLimit;
 }
 
 // Return the upper limit (maximum translation distance)
-inline decimal HingeJointComponents::getUpperLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the upper limit (maximum translation distance)
-inline void HingeJointComponents::setUpperLimit(Entity jointEntity, decimal upperLimit) {
+RP3D_FORCE_INLINE void HingeJointComponents::setUpperLimit(Entity jointEntity, decimal upperLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mUpperLimit[mMapEntityToComponentIndex[jointEntity]] = upperLimit;
 }
 
 // Return true if the lower limit is violated
-inline bool HingeJointComponents::getIsLowerLimitViolated(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool HingeJointComponents::getIsLowerLimitViolated(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsLowerLimitViolated[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the lower limit is violated
-inline void HingeJointComponents::setIsLowerLimitViolated(Entity jointEntity, bool isLowerLimitViolated) {
+RP3D_FORCE_INLINE void HingeJointComponents::setIsLowerLimitViolated(Entity jointEntity, bool isLowerLimitViolated) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsLowerLimitViolated[mMapEntityToComponentIndex[jointEntity]] = isLowerLimitViolated;
 }
 
 // Return true if the upper limit is violated
-inline bool HingeJointComponents::getIsUpperLimitViolated(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool HingeJointComponents::getIsUpperLimitViolated(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsUpperLimitViolated[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the upper limit is violated
-inline void HingeJointComponents::setIsUpperLimitViolated(Entity jointEntity, bool isUpperLimitViolated) const {
+RP3D_FORCE_INLINE void HingeJointComponents::setIsUpperLimitViolated(Entity jointEntity, bool isUpperLimitViolated) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsUpperLimitViolated[mMapEntityToComponentIndex[jointEntity]] = isUpperLimitViolated;
 }
 
 // Return the motor speed (in rad/s)
-inline decimal HingeJointComponents::getMotorSpeed(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getMotorSpeed(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mMotorSpeed[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the motor speed (in rad/s)
-inline void HingeJointComponents::setMotorSpeed(Entity jointEntity, decimal motorSpeed) {
+RP3D_FORCE_INLINE void HingeJointComponents::setMotorSpeed(Entity jointEntity, decimal motorSpeed) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mMotorSpeed[mMapEntityToComponentIndex[jointEntity]] = motorSpeed;
 }
 
 // Return the maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-inline decimal HingeJointComponents::getMaxMotorTorque(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal HingeJointComponents::getMaxMotorTorque(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mMaxMotorTorque[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-inline void HingeJointComponents::setMaxMotorTorque(Entity jointEntity, decimal maxMotorTorque) {
+RP3D_FORCE_INLINE void HingeJointComponents::setMaxMotorTorque(Entity jointEntity, decimal maxMotorTorque) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mMaxMotorTorque[mMapEntityToComponentIndex[jointEntity]] = maxMotorTorque;

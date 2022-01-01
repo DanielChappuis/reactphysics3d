@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -457,269 +457,270 @@ class SliderJointComponents : public Components {
 
         friend class BroadPhaseSystem;
         friend class SolveSliderJointSystem;
+        friend class SliderJoint;
 };
 
 // Return a pointer to a given joint
-inline SliderJoint* SliderJointComponents::getJoint(Entity jointEntity) const {
+RP3D_FORCE_INLINE SliderJoint* SliderJointComponents::getJoint(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mJoints[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the joint pointer to a given joint
-inline void SliderJointComponents::setJoint(Entity jointEntity, SliderJoint* joint) const {
+RP3D_FORCE_INLINE void SliderJointComponents::setJoint(Entity jointEntity, SliderJoint* joint) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mJoints[mMapEntityToComponentIndex[jointEntity]] = joint;
 }
 
 // Return the local anchor point of body 1 for a given joint
-inline const Vector3& SliderJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& SliderJointComponents::getLocalAnchorPointBody1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 1 for a given joint
-inline void SliderJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchoirPointBody1) {
+RP3D_FORCE_INLINE void SliderJointComponents::setLocalAnchorPointBody1(Entity jointEntity, const Vector3& localAnchoirPointBody1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLocalAnchorPointBody1[mMapEntityToComponentIndex[jointEntity]] = localAnchoirPointBody1;
 }
 
 // Return the local anchor point of body 2 for a given joint
-inline const Vector3& SliderJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Vector3& SliderJointComponents::getLocalAnchorPointBody2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the local anchor point of body 2 for a given joint
-inline void SliderJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2) {
+RP3D_FORCE_INLINE void SliderJointComponents::setLocalAnchorPointBody2(Entity jointEntity, const Vector3& localAnchoirPointBody2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLocalAnchorPointBody2[mMapEntityToComponentIndex[jointEntity]] = localAnchoirPointBody2;
 }
 
 // Return the inertia tensor of body 1 (in world-space coordinates)
-inline const Matrix3x3& SliderJointComponents::getI1(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Matrix3x3& SliderJointComponents::getI1(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mI1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inertia tensor of body 1 (in world-space coordinates)
-inline void SliderJointComponents::setI1(Entity jointEntity, const Matrix3x3& i1) {
+RP3D_FORCE_INLINE void SliderJointComponents::setI1(Entity jointEntity, const Matrix3x3& i1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mI1[mMapEntityToComponentIndex[jointEntity]] = i1;
 }
 
 // Return the inertia tensor of body 2 (in world-space coordinates)
-inline const Matrix3x3& SliderJointComponents::getI2(Entity jointEntity) const {
+RP3D_FORCE_INLINE const Matrix3x3& SliderJointComponents::getI2(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mI2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inertia tensor of body 2 (in world-space coordinates)
-inline void SliderJointComponents::setI2(Entity jointEntity, const Matrix3x3& i2) {
+RP3D_FORCE_INLINE void SliderJointComponents::setI2(Entity jointEntity, const Matrix3x3& i2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mI2[mMapEntityToComponentIndex[jointEntity]] = i2;
 }
 
 // Return the translation impulse
-inline Vector2& SliderJointComponents::getImpulseTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector2& SliderJointComponents::getImpulseTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseTranslation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void SliderJointComponents::setImpulseTranslation(Entity jointEntity, const Vector2& impulseTranslation) {
+RP3D_FORCE_INLINE void SliderJointComponents::setImpulseTranslation(Entity jointEntity, const Vector2& impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseTranslation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the translation impulse
-inline Vector3& SliderJointComponents::getImpulseRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getImpulseRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void SliderJointComponents::setImpulseRotation(Entity jointEntity, const Vector3& impulseTranslation) {
+RP3D_FORCE_INLINE void SliderJointComponents::setImpulseRotation(Entity jointEntity, const Vector3& impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseRotation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the translation inverse mass matrix of the constraint
-inline Matrix2x2& SliderJointComponents::getInverseMassMatrixTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Matrix2x2& SliderJointComponents::getInverseMassMatrixTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixTranslation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation inverse mass matrix of the constraint
-inline void SliderJointComponents::setInverseMassMatrixTranslation(Entity jointEntity, const Matrix2x2& inverseMassMatrix) {
+RP3D_FORCE_INLINE void SliderJointComponents::setInverseMassMatrixTranslation(Entity jointEntity, const Matrix2x2& inverseMassMatrix) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixTranslation[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
 }
 
 // Return the rotation inverse mass matrix of the constraint
-inline Matrix3x3& SliderJointComponents::getInverseMassMatrixRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Matrix3x3& SliderJointComponents::getInverseMassMatrixRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation inverse mass matrix of the constraint
-inline void SliderJointComponents::setInverseMassMatrixRotation(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
+RP3D_FORCE_INLINE void SliderJointComponents::setInverseMassMatrixRotation(Entity jointEntity, const Matrix3x3& inverseMassMatrix) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixRotation[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrix;
 }
 
 // Return the translation bias
-inline Vector2& SliderJointComponents::getBiasTranslation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector2& SliderJointComponents::getBiasTranslation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBiasTranslation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the translation impulse
-inline void SliderJointComponents::setBiasTranslation(Entity jointEntity, const Vector2& impulseTranslation) {
+RP3D_FORCE_INLINE void SliderJointComponents::setBiasTranslation(Entity jointEntity, const Vector2& impulseTranslation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBiasTranslation[mMapEntityToComponentIndex[jointEntity]] = impulseTranslation;
 }
 
 // Return the rotation bias
-inline Vector3& SliderJointComponents::getBiasRotation(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getBiasRotation(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBiasRotation[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation impulse
-inline void SliderJointComponents::setBiasRotation(Entity jointEntity, const Vector3& impulseRotation) {
+RP3D_FORCE_INLINE void SliderJointComponents::setBiasRotation(Entity jointEntity, const Vector3& impulseRotation) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBiasRotation[mMapEntityToComponentIndex[jointEntity]] = impulseRotation;
 }
 
 // Return the initial orientation difference
-inline Quaternion& SliderJointComponents::getInitOrientationDifferenceInv(Entity jointEntity) {
+RP3D_FORCE_INLINE Quaternion& SliderJointComponents::getInitOrientationDifferenceInv(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInitOrientationDifferenceInv[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the rotation impulse
-inline void SliderJointComponents::setInitOrientationDifferenceInv(Entity jointEntity, const Quaternion& initOrientationDifferenceInv) {
+RP3D_FORCE_INLINE void SliderJointComponents::setInitOrientationDifferenceInv(Entity jointEntity, const Quaternion& initOrientationDifferenceInv) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInitOrientationDifferenceInv[mMapEntityToComponentIndex[jointEntity]] = initOrientationDifferenceInv;
 }
 
 // Return the slider axis (in local-space coordinates of body 1)
-inline Vector3& SliderJointComponents::getSliderAxisBody1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getSliderAxisBody1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mSliderAxisBody1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the slider axis (in local-space coordinates of body 1)
-inline void SliderJointComponents::setSliderAxisBody1(Entity jointEntity, const Vector3& sliderAxisBody1) {
+RP3D_FORCE_INLINE void SliderJointComponents::setSliderAxisBody1(Entity jointEntity, const Vector3& sliderAxisBody1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mSliderAxisBody1[mMapEntityToComponentIndex[jointEntity]] = sliderAxisBody1;
 }
 
 // Retunr the slider axis in world-space coordinates
-inline Vector3& SliderJointComponents::getSliderAxisWorld(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getSliderAxisWorld(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mSliderAxisWorld[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the slider axis in world-space coordinates
-inline void SliderJointComponents::setSliderAxisWorld(Entity jointEntity, const Vector3& sliderAxisWorld) {
+RP3D_FORCE_INLINE void SliderJointComponents::setSliderAxisWorld(Entity jointEntity, const Vector3& sliderAxisWorld) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mSliderAxisWorld[mMapEntityToComponentIndex[jointEntity]] = sliderAxisWorld;
 }
 
 // Return the vector r1 in world-space coordinates
-inline Vector3& SliderJointComponents::getR1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getR1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the vector r1 in world-space coordinates
-inline void SliderJointComponents::setR1(Entity jointEntity, const Vector3& r1) {
+RP3D_FORCE_INLINE void SliderJointComponents::setR1(Entity jointEntity, const Vector3& r1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR1[mMapEntityToComponentIndex[jointEntity]] = r1;
 }
 
 // Return the vector r2 in world-space coordinates
-inline Vector3& SliderJointComponents::getR2(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getR2(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the vector r2 in world-space coordinates
-inline void SliderJointComponents::setR2(Entity jointEntity, const Vector3& r2) {
+RP3D_FORCE_INLINE void SliderJointComponents::setR2(Entity jointEntity, const Vector3& r2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR2[mMapEntityToComponentIndex[jointEntity]] = r2;
 }
 
 // Return the first vector orthogonal to the slider axis local-space of body 1
-inline Vector3& SliderJointComponents::getN1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getN1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mN1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the first vector orthogonal to the slider axis local-space of body 1
-inline void SliderJointComponents::setN1(Entity jointEntity, const Vector3& n1) {
+RP3D_FORCE_INLINE void SliderJointComponents::setN1(Entity jointEntity, const Vector3& n1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mN1[mMapEntityToComponentIndex[jointEntity]] = n1;
 }
 
 // Return the second vector orthogonal to the slider axis and mN1 in local-space of body 1
-inline Vector3& SliderJointComponents::getN2(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getN2(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mN2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the second vector orthogonal to the slider axis and mN1 in local-space of body 1
-inline void SliderJointComponents::setN2(Entity jointEntity, const Vector3& n2) {
+RP3D_FORCE_INLINE void SliderJointComponents::setN2(Entity jointEntity, const Vector3& n2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mN2[mMapEntityToComponentIndex[jointEntity]] = n2;
 }
 
 // Return the accumulated impulse for the lower limit constraint
-inline decimal SliderJointComponents::getImpulseLowerLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getImpulseLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the lower limit constraint
-inline void SliderJointComponents::setImpulseLowerLimit(Entity jointEntity, decimal impulseLowerLimit) {
+RP3D_FORCE_INLINE void SliderJointComponents::setImpulseLowerLimit(Entity jointEntity, decimal impulseLowerLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseLowerLimit[mMapEntityToComponentIndex[jointEntity]] = impulseLowerLimit;
@@ -727,14 +728,14 @@ inline void SliderJointComponents::setImpulseLowerLimit(Entity jointEntity, deci
 
 
 // Return the accumulated impulse for the upper limit constraint
-inline decimal SliderJointComponents::getImpulseUpperLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getImpulseUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the upper limit constraint
-inline void SliderJointComponents::setImpulseUpperLimit(Entity jointEntity, decimal impulseUpperLimit) const {
+RP3D_FORCE_INLINE void SliderJointComponents::setImpulseUpperLimit(Entity jointEntity, decimal impulseUpperLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseUpperLimit[mMapEntityToComponentIndex[jointEntity]] = impulseUpperLimit;
@@ -742,266 +743,266 @@ inline void SliderJointComponents::setImpulseUpperLimit(Entity jointEntity, deci
 
 
 // Return the accumulated impulse for the motor constraint;
-inline decimal SliderJointComponents::getImpulseMotor(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getImpulseMotor(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mImpulseMotor[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the accumulated impulse for the motor constraint;
-inline void SliderJointComponents::setImpulseMotor(Entity jointEntity, decimal impulseMotor) {
+RP3D_FORCE_INLINE void SliderJointComponents::setImpulseMotor(Entity jointEntity, decimal impulseMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mImpulseMotor[mMapEntityToComponentIndex[jointEntity]] = impulseMotor;
 }
 
 // Return the inverse of mass matrix K=JM^-1J^t for the limits (1x1 matrix)
-inline decimal SliderJointComponents::getInverseMassMatrixLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getInverseMassMatrixLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the inverse of mass matrix K=JM^-1J^t for the limits (1x1 matrix)
-inline void SliderJointComponents::setInverseMassMatrixLimit(Entity jointEntity, decimal inverseMassMatrixLimitMotor) {
+RP3D_FORCE_INLINE void SliderJointComponents::setInverseMassMatrixLimit(Entity jointEntity, decimal inverseMassMatrixLimitMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixLimit[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrixLimitMotor;
 }
 
 // Return the inverse of mass matrix K=JM^-1J^t for the motor
-inline decimal SliderJointComponents::getInverseMassMatrixMotor(Entity jointEntity) {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getInverseMassMatrixMotor(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mInverseMassMatrixMotor[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Return the inverse of mass matrix K=JM^-1J^t for the motor
-inline void SliderJointComponents::setInverseMassMatrixMotor(Entity jointEntity, decimal inverseMassMatrixMotor) {
+RP3D_FORCE_INLINE void SliderJointComponents::setInverseMassMatrixMotor(Entity jointEntity, decimal inverseMassMatrixMotor) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mInverseMassMatrixMotor[mMapEntityToComponentIndex[jointEntity]] = inverseMassMatrixMotor;
 }
 
 // Return the bias of the lower limit constraint
-inline decimal SliderJointComponents::getBLowerLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getBLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the bias of the lower limit constraint
-inline void SliderJointComponents::setBLowerLimit(Entity jointEntity, decimal bLowerLimit) const {
+RP3D_FORCE_INLINE void SliderJointComponents::setBLowerLimit(Entity jointEntity, decimal bLowerLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBLowerLimit[mMapEntityToComponentIndex[jointEntity]] = bLowerLimit;
 }
 
 // Return the bias of the upper limit constraint
-inline decimal SliderJointComponents::getBUpperLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getBUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the bias of the upper limit constraint
-inline void SliderJointComponents::setBUpperLimit(Entity jointEntity, decimal bUpperLimit) {
+RP3D_FORCE_INLINE void SliderJointComponents::setBUpperLimit(Entity jointEntity, decimal bUpperLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mBUpperLimit[mMapEntityToComponentIndex[jointEntity]] = bUpperLimit;
 }
 
 // Return true if the joint limits are enabled
-inline bool SliderJointComponents::getIsLimitEnabled(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool SliderJointComponents::getIsLimitEnabled(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsLimitEnabled[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the joint limits are enabled
-inline void SliderJointComponents::setIsLimitEnabled(Entity jointEntity, bool isLimitEnabled) {
+RP3D_FORCE_INLINE void SliderJointComponents::setIsLimitEnabled(Entity jointEntity, bool isLimitEnabled) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsLimitEnabled[mMapEntityToComponentIndex[jointEntity]] = isLimitEnabled;
 }
 
 // Return true if the motor of the joint in enabled
-inline bool SliderJointComponents::getIsMotorEnabled(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool SliderJointComponents::getIsMotorEnabled(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsMotorEnabled[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the motor of the joint in enabled
-inline void SliderJointComponents::setIsMotorEnabled(Entity jointEntity, bool isMotorEnabled) const {
+RP3D_FORCE_INLINE void SliderJointComponents::setIsMotorEnabled(Entity jointEntity, bool isMotorEnabled) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsMotorEnabled[mMapEntityToComponentIndex[jointEntity]] = isMotorEnabled;
 }
 
 // Return the Lower limit (minimum allowed rotation angle in radian)
-inline decimal SliderJointComponents::getLowerLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getLowerLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mLowerLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the Lower limit (minimum allowed rotation angle in radian)
-inline void SliderJointComponents::setLowerLimit(Entity jointEntity, decimal lowerLimit) const {
+RP3D_FORCE_INLINE void SliderJointComponents::setLowerLimit(Entity jointEntity, decimal lowerLimit) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mLowerLimit[mMapEntityToComponentIndex[jointEntity]] = lowerLimit;
 }
 
 // Return the upper limit (maximum translation distance)
-inline decimal SliderJointComponents::getUpperLimit(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getUpperLimit(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mUpperLimit[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the upper limit (maximum translation distance)
-inline void SliderJointComponents::setUpperLimit(Entity jointEntity, decimal upperLimit) {
+RP3D_FORCE_INLINE void SliderJointComponents::setUpperLimit(Entity jointEntity, decimal upperLimit) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mUpperLimit[mMapEntityToComponentIndex[jointEntity]] = upperLimit;
 }
 
 // Return true if the lower limit is violated
-inline bool SliderJointComponents::getIsLowerLimitViolated(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool SliderJointComponents::getIsLowerLimitViolated(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsLowerLimitViolated[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the lower limit is violated
-inline void SliderJointComponents::setIsLowerLimitViolated(Entity jointEntity, bool isLowerLimitViolated) {
+RP3D_FORCE_INLINE void SliderJointComponents::setIsLowerLimitViolated(Entity jointEntity, bool isLowerLimitViolated) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsLowerLimitViolated[mMapEntityToComponentIndex[jointEntity]] = isLowerLimitViolated;
 }
 
 // Return true if the upper limit is violated
-inline bool SliderJointComponents::getIsUpperLimitViolated(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool SliderJointComponents::getIsUpperLimitViolated(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsUpperLimitViolated[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the upper limit is violated
-inline void SliderJointComponents::setIsUpperLimitViolated(Entity jointEntity, bool isUpperLimitViolated) const {
+RP3D_FORCE_INLINE void SliderJointComponents::setIsUpperLimitViolated(Entity jointEntity, bool isUpperLimitViolated) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsUpperLimitViolated[mMapEntityToComponentIndex[jointEntity]] = isUpperLimitViolated;
 }
 
 // Return the motor speed (in rad/s)
-inline decimal SliderJointComponents::getMotorSpeed(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getMotorSpeed(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mMotorSpeed[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the motor speed (in rad/s)
-inline void SliderJointComponents::setMotorSpeed(Entity jointEntity, decimal motorSpeed) {
+RP3D_FORCE_INLINE void SliderJointComponents::setMotorSpeed(Entity jointEntity, decimal motorSpeed) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mMotorSpeed[mMapEntityToComponentIndex[jointEntity]] = motorSpeed;
 }
 
 // Return the maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-inline decimal SliderJointComponents::getMaxMotorForce(Entity jointEntity) const {
+RP3D_FORCE_INLINE decimal SliderJointComponents::getMaxMotorForce(Entity jointEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mMaxMotorForce[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the maximum motor torque (in Newtons) that can be applied to reach to desired motor speed
-inline void SliderJointComponents::setMaxMotorForce(Entity jointEntity, decimal maxMotorForce) {
+RP3D_FORCE_INLINE void SliderJointComponents::setMaxMotorForce(Entity jointEntity, decimal maxMotorForce) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mMaxMotorForce[mMapEntityToComponentIndex[jointEntity]] = maxMotorForce;
 }
 
 // Return the cross product of r2 and n1
-inline Vector3& SliderJointComponents::getR2CrossN1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getR2CrossN1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR2CrossN1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the cross product of r2 and n1
-inline void SliderJointComponents::setR2CrossN1(Entity jointEntity, const Vector3& r2CrossN1) {
+RP3D_FORCE_INLINE void SliderJointComponents::setR2CrossN1(Entity jointEntity, const Vector3& r2CrossN1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR2CrossN1[mMapEntityToComponentIndex[jointEntity]] = r2CrossN1;
 }
 
 // Return the cross product of r2 and n2
-inline Vector3& SliderJointComponents::getR2CrossN2(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getR2CrossN2(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR2CrossN2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the cross product of r2 and n2
-inline void SliderJointComponents::setR2CrossN2(Entity jointEntity, const Vector3& r2CrossN2) {
+RP3D_FORCE_INLINE void SliderJointComponents::setR2CrossN2(Entity jointEntity, const Vector3& r2CrossN2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR2CrossN2[mMapEntityToComponentIndex[jointEntity]] = r2CrossN2;
 }
 
 // Return the cross product of r2 and the slider axis
-inline Vector3& SliderJointComponents::getR2CrossSliderAxis(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getR2CrossSliderAxis(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR2CrossSliderAxis[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the cross product of r2 and the slider axis
-inline void SliderJointComponents::setR2CrossSliderAxis(Entity jointEntity, const Vector3& r2CrossSliderAxis) {
+RP3D_FORCE_INLINE void SliderJointComponents::setR2CrossSliderAxis(Entity jointEntity, const Vector3& r2CrossSliderAxis) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR2CrossSliderAxis[mMapEntityToComponentIndex[jointEntity]] = r2CrossSliderAxis;
 }
 
 // Return the cross product of vector (r1 + u) and n1
-inline Vector3& SliderJointComponents::getR1PlusUCrossN1(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getR1PlusUCrossN1(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR1PlusUCrossN1[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the cross product of vector (r1 + u) and n1
-inline void SliderJointComponents::setR1PlusUCrossN1(Entity jointEntity, const Vector3& r1PlusUCrossN1) {
+RP3D_FORCE_INLINE void SliderJointComponents::setR1PlusUCrossN1(Entity jointEntity, const Vector3& r1PlusUCrossN1) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR1PlusUCrossN1[mMapEntityToComponentIndex[jointEntity]] = r1PlusUCrossN1;
 }
 
 // Return the cross product of vector (r1 + u) and n2
-inline Vector3& SliderJointComponents::getR1PlusUCrossN2(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getR1PlusUCrossN2(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR1PlusUCrossN2[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the cross product of vector (r1 + u) and n2
-inline void SliderJointComponents::setR1PlusUCrossN2(Entity jointEntity, const Vector3& r1PlusUCrossN2) {
+RP3D_FORCE_INLINE void SliderJointComponents::setR1PlusUCrossN2(Entity jointEntity, const Vector3& r1PlusUCrossN2) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR1PlusUCrossN2[mMapEntityToComponentIndex[jointEntity]] = r1PlusUCrossN2;
 }
 
 // Return the cross product of vector (r1 + u) and the slider axis
-inline Vector3& SliderJointComponents::getR1PlusUCrossSliderAxis(Entity jointEntity) {
+RP3D_FORCE_INLINE Vector3& SliderJointComponents::getR1PlusUCrossSliderAxis(Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mR1PlusUCrossSliderAxis[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the cross product of vector (r1 + u) and the slider axis
-inline void SliderJointComponents::setR1PlusUCrossSliderAxis(Entity jointEntity, const Vector3& r1PlusUCrossSliderAxis) {
+RP3D_FORCE_INLINE void SliderJointComponents::setR1PlusUCrossSliderAxis(Entity jointEntity, const Vector3& r1PlusUCrossSliderAxis) {
 
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mR1PlusUCrossSliderAxis[mMapEntityToComponentIndex[jointEntity]] = r1PlusUCrossSliderAxis;

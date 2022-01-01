@@ -34,50 +34,53 @@ using namespace openglframework;
 
 int SceneDemo::shadowMapTextureLevel = 0;
 //openglframework::Color SceneDemo::mObjectColorDemo = Color(0.76f, 0.67f, 0.47f, 1.0f);
-openglframework::Color SceneDemo::mObjectColorDemo = Color(0.35f, 0.65f, 0.78f, 1.0f);
-openglframework::Color SceneDemo::mFloorColorDemo = Color(0.47f, 0.48f, 0.49f, 1.0f);
-openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.25f, 0.25f, 1.0f);
-openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.59f, 0.88f, 1.0f);
+openglframework::Color SceneDemo::mObjectColorDemo = Color(0.0f, 0.68f, 0.99f, 1.0f);
+openglframework::Color SceneDemo::mFloorColorDemo = Color(0.7f, 0.7f, 0.7f, 1.0f);
+openglframework::Color SceneDemo::mSleepingColorDemo = Color(1.0f, 0.0f, 0.0f, 1.0f);
+openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.88f, 0.09f, 1.0f);
 
 // Constructor
-SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, bool isPhysicsWorldSimulated, float sceneRadius, bool isShadowMappingEnabled)
-          : Scene(name, settings, isShadowMappingEnabled), mIsShadowMappingInitialized(false),
+SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon, bool isPhysicsWorldSimulated, bool isShadowMappingEnabled)
+          : Scene(name, settings, isShadowMappingEnabled), mBackgroundColor(0.75, 0.75, 0.75, 1),
+                     mIsShadowMappingInitialized(false),
                      mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
                      mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
 					 mColorShader("shaders/color.vert", "shaders/color.frag"),
                      mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
                      mVBOQuad(GL_ARRAY_BUFFER), mDebugVBOLinesVertices(GL_ARRAY_BUFFER), mDebugVBOTrianglesVertices(GL_ARRAY_BUFFER),
-                     mMeshFolderPath("meshes/"), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated) {
+                     mMeshFolderPath("meshes/"), mPhysicsCommon(physicsCommon), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated),
+                     mIsMovingBody(false), mMovingBody(nullptr), mCameraRotationAngle(0) {
 
     shadowMapTextureLevel++;
 
     // Move the lights
-	float lightsRadius = 30.0f;
-	float lightsHeight = 20.0f;
-    mLight0.translateWorld(Vector3(0 * lightsRadius, lightsHeight, 1 * lightsRadius));
-    mLight1.translateWorld(Vector3(0.95f * lightsRadius, lightsHeight, -0.3f * lightsRadius));
-    mLight2.translateWorld(Vector3(-0.58f * lightsRadius, lightsHeight, -0.81f * lightsRadius));
+    float lightsRadius = 80.0f;
+    float lightsHeight = 50.0f;
+    mLight0.translateWorld(Vector3(0.4f * lightsRadius, 0.6 * lightsHeight, 0.4f * lightsRadius));
+    mLight1.translateWorld(Vector3(-0.4 * lightsRadius, 0.6 * lightsHeight, 0.4 * lightsRadius));
+    mLight2.translateWorld(Vector3(0, 0.6 * lightsHeight, -0.4f * lightsRadius));
 
 	// Set the lights colors
-	mLight0.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
-	mLight1.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
-	mLight2.setDiffuseColor(Color(0.6f, 0.6f, 0.6f, 1.0f));
+    float lightIntensity = 0.5;
+    Color lightColor(lightIntensity * 1.0, lightIntensity * 1.0f, lightIntensity * 1.0f, 1.0f);
+    float lightIntensity2 = 0.1;
+    Color lightColor2(lightIntensity2 * 1.0, lightIntensity2 * 1.0f, lightIntensity2 * 1.0f, 1.0f);
+    mLight0.setDiffuseColor(lightColor);
+    mLight1.setDiffuseColor(lightColor);
+    mLight2.setDiffuseColor(lightColor2);
 
-	mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
-	mShadowMapLightCameras[0].rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
+    mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
+    mShadowMapLightCameras[0].rotateLocal(Vector3(1, 0, 0), -PI / 4.0f);
+    mShadowMapLightCameras[0].rotateLocal(Vector3(0, 1, 0), PI / 4.0f);
 
 	mShadowMapLightCameras[1].translateWorld(mLight1.getOrigin());
-	mShadowMapLightCameras[1].rotateLocal(Vector3(0, 1, 0), -5.0f * PI/3.7f);
 	mShadowMapLightCameras[1].rotateLocal(Vector3(1, 0, 0), -PI/4.0f);
-
-	mShadowMapLightCameras[2].translateWorld(mLight2.getOrigin());
-	mShadowMapLightCameras[2].rotateLocal(Vector3(0, 1, 0), 5 * PI/4.0f);
-	mShadowMapLightCameras[2].rotateLocal(Vector3(1, 0 , 0), -PI/4.0f);
+    mShadowMapLightCameras[1].rotateLocal(Vector3(0, 1, 0), -PI / 4.0f);
 
 	for (int i = 0; i < NB_SHADOW_MAPS; i++) {
 		mShadowMapLightCameras[i].setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
 		mShadowMapLightCameras[i].setFieldOfView(100.0f);
-		mShadowMapLightCameras[i].setSceneRadius(100);
+        mShadowMapLightCameras[i].setSceneRadius(100);
 	}
 
     mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
@@ -142,6 +145,16 @@ void SceneDemo::update() {
 		// Update the transform used for the rendering
 		(*it)->updateTransform(mInterpolationFactor);
 	}
+
+    if (mIsCameraRotationAnimationEnabled) {
+        rotateCameraAnimation();
+    }
+}
+
+void SceneDemo::rotateCameraAnimation() {
+
+   const float angle  = 0.12f * (PI / 180.0);
+   mCamera.rotateAroundWorldPoint(Vector3(0, 1, 0), angle, mCenterScene);
 }
 
 // Update the physics world (take a simulation step)
@@ -154,7 +167,7 @@ void SceneDemo::updatePhysics() {
     if (mIsPhysicsWorldSimulated) {
 
         // Take a simulation step
-        mPhysicsWorld->update(mEngineSettings.timeStep);
+        mPhysicsWorld->update(mEngineSettings.timeStep.count());
     }
 }
 
@@ -166,6 +179,8 @@ void SceneDemo::render() {
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+
+    glClearColor(mBackgroundColor.r, mBackgroundColor.g, mBackgroundColor.b, mBackgroundColor.a);
 
 	Matrix4 shadowMapProjMatrix[NB_SHADOW_MAPS];
 	openglframework::Matrix4 worldToLightCameraMatrix[NB_SHADOW_MAPS];
@@ -240,20 +255,17 @@ void SceneDemo::render() {
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
     mPhongShader.setMatrix4x4Uniform("shadowMapLight0ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[0]);
     mPhongShader.setMatrix4x4Uniform("shadowMapLight1ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[1]);
-    mPhongShader.setMatrix4x4Uniform("shadowMapLight2ProjectionMatrix", mShadowMapBiasMatrix * shadowMapProjMatrix[2]);
     mPhongShader.setMatrix4x4Uniform("worldToLight0CameraMatrix", worldToLightCameraMatrix[0]);
     mPhongShader.setMatrix4x4Uniform("worldToLight1CameraMatrix", worldToLightCameraMatrix[1]);
-    mPhongShader.setMatrix4x4Uniform("worldToLight2CameraMatrix", worldToLightCameraMatrix[2]);
     mPhongShader.setVector3Uniform("light0PosCameraSpace", worldToCameraMatrix * mLight0.getOrigin());
     mPhongShader.setVector3Uniform("light1PosCameraSpace", worldToCameraMatrix * mLight1.getOrigin());
     mPhongShader.setVector3Uniform("light2PosCameraSpace", worldToCameraMatrix * mLight2.getOrigin());
-    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.3f, 0.3f, 0.3f));
+    mPhongShader.setVector3Uniform("lightAmbientColor", Vector3(0.1f, 0.1f, 0.1f));
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(mLight0.getDiffuseColor().r, mLight0.getDiffuseColor().g, mLight0.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light1DiffuseColor", Vector3(mLight1.getDiffuseColor().r, mLight1.getDiffuseColor().g, mLight1.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light2DiffuseColor", Vector3(mLight2.getDiffuseColor().r, mLight2.getDiffuseColor().g, mLight2.getDiffuseColor().b));
     mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
     mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
-    mPhongShader.setIntUniform("shadowMapSampler2", textureUnits[2]);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
     mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 	mPhongShader.unbind();
@@ -466,13 +478,13 @@ void SceneDemo::updateSnapshotContactPoints() {
     for (it = mSnapshotsContactPoints.begin(); it != mSnapshotsContactPoints.end(); ++it) {
 
         // Create a visual contact point for rendering
-        VisualContactPoint* point = new VisualContactPoint(it->point, mMeshFolderPath, it->point + it->normal, it->color);
+        VisualContactPoint* point = new VisualContactPoint(it->point, it->point + it->normal, it->color);
         mVisualContactPoints.push_back(point);
     }
 }
 
 // Render the contact points
-void SceneDemo::renderSnapshotsContactPoints(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+void SceneDemo::renderSnapshotsContactPoints(openglframework::Shader& /*shader*/, const openglframework::Matrix4& worldToCameraMatrix) {
 
     // Render all the contact points
     for (std::vector<VisualContactPoint*>::iterator it = mVisualContactPoints.begin();
@@ -612,21 +624,87 @@ void SceneDemo::removeAllVisualContactPoints() {
     mVisualContactPoints.clear();
 }
 
+// Called when the user is moving a body with the mouse
+void SceneDemo::moveBodyWithMouse(double mousePosX, double mousePosY) {
+
+    if (!mIsMovingBody) {
+
+        // Find the body and the position of the mouse on that body (with raycasting)
+        openglframework::Vector4 screenPoint1((mousePosX / mWindowWidth) * 2.0 - 1.0, ((mWindowHeight - mousePosY) / mWindowHeight) * 2.0 - 1.0, -1, 1);
+        openglframework::Vector4 screenPoint2((mousePosX / mWindowWidth) * 2.0 - 1.0, ((mWindowHeight - mousePosY) / mWindowHeight) * 2.0 - 1.0, 1, 1);
+        openglframework::Vector4 worldP1 = (mCamera.getTransformMatrix() * mCamera.getProjectionMatrix().getInverse()) * screenPoint1;
+        openglframework::Vector4 worldP2 = (mCamera.getTransformMatrix() * mCamera.getProjectionMatrix().getInverse()) * screenPoint2;
+        openglframework::Vector3 cameraPos = mCamera.getOrigin();
+        rp3d::Vector3 worldPoint1(worldP1.x, worldP1.y, worldP1.z);
+        rp3d::Vector3 worldPoint2(worldP2.x, worldP2.y, worldP2.z);
+        rp3d::Ray ray(worldPoint1, worldPoint2);
+        mPhysicsWorld->raycast(ray, this);
+    }
+
+    if (mMovingBody != nullptr) {
+        openglframework::Vector4 previousScreenPos(mLastMouseX / mWindowWidth, (mWindowHeight - mLastMouseY) / mWindowHeight, 0, 0);
+        openglframework::Vector4 currentScreenPos(mousePosX / mWindowWidth, (mWindowHeight - mousePosY) / mWindowHeight, 0, 0);
+        openglframework::Vector4 forceScreen = currentScreenPos - previousScreenPos;
+        openglframework::Vector4 f = mCamera.getTransformMatrix() * forceScreen * MOUSE_MOVE_BODY_FORCE;
+        rp3d::Vector3 force(f.x, f.y, f.z);
+        mMovingBody->applyWorldForceAtLocalPosition(force, mMovingBodyLocalPoint);
+    }
+
+    mLastMouseX = mousePosX;
+    mLastMouseY = mousePosY;
+    mIsMovingBody = true;
+}
+
+// Called when a mouse button event occurs
+bool SceneDemo::mouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY) {
+
+    // Left mouse click with CTRL key pressed on keyboard (moving a body)
+    if (down && (mods & GLFW_MOD_CONTROL)) {
+
+        moveBodyWithMouse(mousePosX, mousePosY);
+        return true;
+    }
+
+    mIsMovingBody = false;
+    mMovingBody = nullptr;
+
+    return Scene::mouseButtonEvent(button, down, mods, mousePosX, mousePosY);
+}
+
+// Called when a mouse motion event occurs
+bool SceneDemo::mouseMotionEvent(double xMouse, double yMouse, int leftButtonState, int rightButtonState, int middleButtonState, int altKeyState) {
+
+    if (mIsMovingBody) {
+        moveBodyWithMouse(xMouse, yMouse);
+        return true;
+    }
+
+    return Scene::mouseMotionEvent(xMouse, yMouse, leftButtonState, rightButtonState, middleButtonState, altKeyState);
+}
+
+// Called when a raycast hit occurs (used to move a body with the mouse)
+rp3d::decimal SceneDemo::notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) {
+
+    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(raycastInfo.body);
+    mMovingBody = body;
+    const rp3d::Transform localToWorldTransform = raycastInfo.collider->getLocalToWorldTransform();
+    mMovingBodyLocalPoint = localToWorldTransform.getInverse() * raycastInfo.worldPoint;
+
+    return raycastInfo.hitFraction;
+}
+
 // Update the engine settings
 void SceneDemo::updateEngineSettings() {
 
-    if (mIsPhysicsWorldSimulated) {
-
-        // Update the physics engine parameters
-        mPhysicsWorld->setIsGravityEnabled(mEngineSettings.isGravityEnabled);
-        rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
-                         mEngineSettings.gravity.z);
-        mPhysicsWorld->setGravity(gravity);
-        mPhysicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
-        mPhysicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
-        mPhysicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
-        mPhysicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
-        mPhysicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
-        mPhysicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
-    }
+    // Update the physics engine parameters
+    mPhysicsWorld->setIsGravityEnabled(mEngineSettings.isGravityEnabled);
+    rp3d::Vector3 gravity(mEngineSettings.gravity.x, mEngineSettings.gravity.y,
+                     mEngineSettings.gravity.z);
+    mPhysicsWorld->setGravity(gravity);
+    mPhysicsWorld->enableSleeping(mEngineSettings.isSleepingEnabled);
+    mPhysicsWorld->setSleepLinearVelocity(mEngineSettings.sleepLinearVelocity);
+    mPhysicsWorld->setSleepAngularVelocity(mEngineSettings.sleepAngularVelocity);
+    mPhysicsWorld->setNbIterationsPositionSolver(mEngineSettings.nbPositionSolverIterations);
+    mPhysicsWorld->setNbIterationsVelocitySolver(mEngineSettings.nbVelocitySolverIterations);
+    mPhysicsWorld->setTimeBeforeSleep(mEngineSettings.timeBeforeSleep);
 }

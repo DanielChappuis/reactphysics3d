@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -35,13 +35,24 @@
 #include <reactphysics3d/decimal.h>
 #include <reactphysics3d/containers/Pair.h>
 
-// Windows platform
-#if defined(WIN32) ||defined(_WIN32) || defined(_WIN64) ||defined(__WIN32__) || defined(__WINDOWS__)
-    #define WINDOWS_OS
-#elif defined(__APPLE__)     // Apple platform
-    #define APPLE_OS
-#elif defined(__linux__) || defined(linux) || defined(__linux)    // Linux platform
-    #define LINUX_OS
+// Compilers
+#if defined(_MSC_VER)
+    #define RP3D_COMPILER_VISUAL_STUDIO
+#elif defined(__clang__)
+    #define RP3D_COMPILER_CLANG
+#elif defined(__GNUC__)
+    #define RP3D_COMPILER_GCC
+#else
+    #define RP3D_COMPILER_UNKNOWN
+#endif
+
+// Force RP3D_FORCE_INLINE macro
+#if defined(RP3D_COMPILER_VISUAL_STUDIO)
+    #define RP3D_FORCE_INLINE __forceinline
+#elif defined(RP3D_COMPILER_GCC) || defined(RP3D_COMPILER_CLANG)
+    #define RP3D_FORCE_INLINE inline __attribute__((always_inline))
+#else
+    #define RP3D_FORCE_INLINE inline
 #endif
 
 /// Namespace reactphysics3d
@@ -93,7 +104,7 @@ const decimal DECIMAL_LARGEST = std::numeric_limits<decimal>::max();
 const decimal MACHINE_EPSILON = std::numeric_limits<decimal>::epsilon();
 
 /// Pi constant
-constexpr decimal PI = decimal(3.14159265);
+constexpr decimal PI_RP3D = decimal(3.141592653589);
 
 /// 2*Pi constant
 constexpr decimal PI_TIMES_2 = decimal(6.28318530);
@@ -103,8 +114,23 @@ constexpr decimal PI_TIMES_2 = decimal(6.28318530);
 /// without triggering a large modification of the tree each frame which can be costly
 constexpr decimal DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE = decimal(0.08);
 
+/// Maximum number of contact points in a narrow phase info object
+constexpr uint8 NB_MAX_CONTACT_POINTS_IN_NARROWPHASE_INFO = 16;
+
+/// Maximum number of contact manifolds in an overlapping pair
+constexpr uint8 NB_MAX_CONTACT_MANIFOLDS = 3;
+
+/// Maximum number of potential contact manifolds in an overlapping pair
+constexpr uint8 NB_MAX_POTENTIAL_CONTACT_MANIFOLDS = 4 * NB_MAX_CONTACT_MANIFOLDS;
+
+/// Maximum number of contact points in potential contact manifold
+constexpr uint16 NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD = 256;
+
+/// Distance threshold to consider that two contact points in a manifold are the same
+constexpr decimal SAME_CONTACT_POINT_DISTANCE_THRESHOLD = decimal(0.01);
+
 /// Current version of ReactPhysics3D
-const std::string RP3D_VERSION = std::string("0.8.0");
+const std::string RP3D_VERSION = std::string("0.9.0");
 
 }
 

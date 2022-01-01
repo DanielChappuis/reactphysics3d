@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -43,11 +43,26 @@ struct HingeJointInfo : public JointInfo {
 
         // -------------------- Attributes -------------------- //
 
+        /// True if this object has been constructed using local-space anchors
+        bool isUsingLocalSpaceAnchors;
+
         /// Anchor point (in world-space coordinates)
         Vector3 anchorPointWorldSpace;
 
+        /// Anchor point on body 1 (in local-space coordinates)
+        Vector3 anchorPointBody1LocalSpace;
+
+        /// Anchor point on body 2 (in local-space coordinates)
+        Vector3 anchorPointBody2LocalSpace;
+
         /// Hinge rotation axis (in world-space coordinates)
         Vector3 rotationAxisWorld;
+
+        /// Hinge rotation axis of body 1 (in local-space coordinates)
+        Vector3 rotationAxisBody1Local;
+
+        /// Hinge rotation axis of body 2 (in local-space coordinates)
+        Vector3 rotationAxisBody2Local;
 
         /// True if the hinge joint limits are enabled
         bool isLimitEnabled;
@@ -70,7 +85,7 @@ struct HingeJointInfo : public JointInfo {
         /// to desired motor speed
         decimal maxMotorTorque;
 
-        /// Constructor without limits and without motor
+        /// Constructor without limits and without motor with world-space anchor
         /**
          * @param rigidBody1 The first body of the joint
          * @param rigidBody2 The second body of the joint
@@ -83,12 +98,13 @@ struct HingeJointInfo : public JointInfo {
                                const Vector3& initAnchorPointWorldSpace,
                                const Vector3& initRotationAxisWorld)
                               : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
+                                isUsingLocalSpaceAnchors(false),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(false),
                                 isMotorEnabled(false), minAngleLimit(-1), maxAngleLimit(1),
                                 motorSpeed(0), maxMotorTorque(0) {}
 
-        /// Constructor with limits but without motor
+        /// Constructor with limits but without motor with world-space anchor
         /**
          * @param rigidBody1 The first body of the joint
          * @param rigidBody2 The second body of the joint
@@ -102,13 +118,14 @@ struct HingeJointInfo : public JointInfo {
                                const Vector3& initRotationAxisWorld,
                                decimal initMinAngleLimit, decimal initMaxAngleLimit)
                               : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
+                                isUsingLocalSpaceAnchors(false),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
                                 maxAngleLimit(initMaxAngleLimit), motorSpeed(0),
                                 maxMotorTorque(0) {}
 
-        /// Constructor with limits and motor
+        /// Constructor with limits and motor with world-space anchor
         /**
          * @param rigidBody1 The first body of the joint
          * @param rigidBody2 The second body of the joint
@@ -125,8 +142,92 @@ struct HingeJointInfo : public JointInfo {
                                decimal initMinAngleLimit, decimal initMaxAngleLimit,
                                decimal initMotorSpeed, decimal initMaxMotorTorque)
                               : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
+                                isUsingLocalSpaceAnchors(false),
                                 anchorPointWorldSpace(initAnchorPointWorldSpace),
                                 rotationAxisWorld(initRotationAxisWorld), isLimitEnabled(true),
+                                isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
+                                maxAngleLimit(initMaxAngleLimit), motorSpeed(initMotorSpeed),
+                                maxMotorTorque(initMaxMotorTorque) {}
+
+        /// Constructor without limits and without motor with local-space anchors
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param anchorPointBody1Local The initial anchor point on body 1 in local-space
+         * @param anchorPointBody2Local The initial anchor point on body 2 in local-space
+         * @param rotationBody1AxisLocal The initial rotation axis on body 1 in local-space
+         * @param rotationBody2AxisLocal The initial rotation axis on body 2 in local-space
+         */
+        HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                               const Vector3& anchorPointBody1Local,
+                               const Vector3& anchorPointBody2Local,
+                               const Vector3& rotationBody1AxisLocal,
+                               const Vector3& rotationBody2AxisLocal)
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
+                                isUsingLocalSpaceAnchors(true),
+                                anchorPointBody1LocalSpace(anchorPointBody1Local),
+                                anchorPointBody2LocalSpace(anchorPointBody2Local),
+                                rotationAxisBody1Local(rotationBody1AxisLocal),
+                                rotationAxisBody2Local(rotationBody2AxisLocal),
+                                isLimitEnabled(false),
+                                isMotorEnabled(false), minAngleLimit(-1), maxAngleLimit(1),
+                                motorSpeed(0), maxMotorTorque(0) {}
+
+        /// Constructor with limits but without motor with local-space anchors
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param anchorPointBody1Local The initial anchor point on body 1 in local-space
+         * @param anchorPointBody2Local The initial anchor point on body 2 in local-space
+         * @param rotationBody1AxisLocal The initial rotation axis on body 1 in local-space
+         * @param rotationBody2AxisLocal The initial rotation axis on body 2 in local-space
+         * @param initMinAngleLimit The initial minimum limit angle (in radian)
+         * @param initMaxAngleLimit The initial maximum limit angle (in radian)
+         */
+        HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                               const Vector3& anchorPointBody1Local,
+                               const Vector3& anchorPointBody2Local,
+                               const Vector3& rotationBody1AxisLocal,
+                               const Vector3& rotationBody2AxisLocal,
+                               decimal initMinAngleLimit, decimal initMaxAngleLimit)
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
+                                isUsingLocalSpaceAnchors(true),
+                                anchorPointBody1LocalSpace(anchorPointBody1Local),
+                                anchorPointBody2LocalSpace(anchorPointBody2Local),
+                                rotationAxisBody1Local(rotationBody1AxisLocal),
+                                rotationAxisBody2Local(rotationBody2AxisLocal),
+                                isLimitEnabled(true),
+                                isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
+                                maxAngleLimit(initMaxAngleLimit), motorSpeed(0),
+                                maxMotorTorque(0) {}
+
+        /// Constructor with limits and motor with local-space anchors
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param anchorPointBody1Local The initial anchor point on body 1 in local-space
+         * @param anchorPointBody2Local The initial anchor point on body 2 in local-space
+         * @param rotationBody1AxisLocal The initial rotation axis on body 1 in local-space
+         * @param rotationBody2AxisLocal The initial rotation axis on body 2 in local-space
+         * @param initMinAngleLimit The initial minimum limit angle (in radian)
+         * @param initMaxAngleLimit The initial maximum limit angle (in radian)
+         * @param initMotorSpeed The initial motor speed of the joint (in radian per second)
+         * @param initMaxMotorTorque The initial maximum motor torque (in Newtons)
+         */
+        HingeJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                               const Vector3& anchorPointBody1Local,
+                               const Vector3& anchorPointBody2Local,
+                               const Vector3& rotationBody1AxisLocal,
+                               const Vector3& rotationBody2AxisLocal,
+                               decimal initMinAngleLimit, decimal initMaxAngleLimit,
+                               decimal initMotorSpeed, decimal initMaxMotorTorque)
+                              : JointInfo(rigidBody1, rigidBody2, JointType::HINGEJOINT),
+                                isUsingLocalSpaceAnchors(true),
+                                anchorPointBody1LocalSpace(anchorPointBody1Local),
+                                anchorPointBody2LocalSpace(anchorPointBody2Local),
+                                rotationAxisBody1Local(rotationBody1AxisLocal),
+                                rotationAxisBody2Local(rotationBody2AxisLocal),
+                                isLimitEnabled(true),
                                 isMotorEnabled(false), minAngleLimit(initMinAngleLimit),
                                 maxAngleLimit(initMaxAngleLimit), motorSpeed(initMotorSpeed),
                                 maxMotorTorque(initMaxMotorTorque) {}
@@ -210,8 +311,14 @@ class HingeJoint : public Joint {
         /// Return the intensity of the current torque applied for the joint motor
         decimal getMotorTorque(decimal timeStep) const;
 
-        /// Return the current hinge angle
+        /// Return the current hinge angle (in radians)
         decimal getAngle() const;
+
+        /// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+        virtual Vector3 getReactionForce(decimal timeStep) const override;
+
+        /// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+        virtual Vector3 getReactionTorque(decimal timeStep) const override;
 
         /// Return a string representation
         virtual std::string to_string() const override;

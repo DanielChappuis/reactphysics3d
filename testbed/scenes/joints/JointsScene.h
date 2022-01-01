@@ -37,7 +37,7 @@ namespace jointsscene {
 // Constants
 const float SCENE_RADIUS = 30.0f;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);    // Floor dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(15, 0.5f, 15);    // Floor dimensions in meters
 const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-And-Socket chain boxes
 const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes
 
@@ -90,6 +90,9 @@ class JointsScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
         // -------------------- Methods -------------------- //
 
         /// Create the boxes and joints for the Ball-and-Socket joint example
@@ -112,7 +115,7 @@ class JointsScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        JointsScene(const std::string& name, EngineSettings& settings);
+        JointsScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~JointsScene() override ;
@@ -123,6 +126,15 @@ class JointsScene : public SceneDemo {
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

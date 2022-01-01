@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -46,7 +46,7 @@ class TriangleCallback {
         virtual ~TriangleCallback() = default;
 
         /// Report a triangle
-        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint shapeId)=0;
+        virtual void testTriangle(const Vector3* trianglePoints, const Vector3* verticesNormals, uint32 shapeId)=0;
 
 };
 
@@ -111,8 +111,8 @@ class ConcaveShape : public CollisionShape {
         virtual bool isPolyhedron() const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
-        virtual void computeOverlappingTriangles(const AABB& localAABB, List<Vector3>& triangleVertices,
-                                                 List<Vector3>& triangleVerticesNormals, List<uint>& shapeIds,
+        virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
+                                                 Array<Vector3>& triangleVerticesNormals, Array<uint32>& shapeIds,
                                                  MemoryAllocator& allocator) const=0;
 
         /// Compute and return the volume of the collision shape
@@ -120,22 +120,22 @@ class ConcaveShape : public CollisionShape {
 };
 
 // Return true if the collision shape is convex, false if it is concave
-inline bool ConcaveShape::isConvex() const {
+RP3D_FORCE_INLINE bool ConcaveShape::isConvex() const {
     return false;
 }
 
 // Return true if the collision shape is a polyhedron
-inline bool ConcaveShape::isPolyhedron() const {
+RP3D_FORCE_INLINE bool ConcaveShape::isPolyhedron() const {
     return true;
 }
 
 // Return true if a point is inside the collision shape
-inline bool ConcaveShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+RP3D_FORCE_INLINE bool ConcaveShape::testPointInside(const Vector3& /*localPoint*/, Collider* /*collider*/) const {
     return false;
 }
 
 // Return the raycast test type (front, back, front-back)
-inline TriangleRaycastSide ConcaveShape::getRaycastTestType() const {
+RP3D_FORCE_INLINE TriangleRaycastSide ConcaveShape::getRaycastTestType() const {
     return mRaycastTestType;
 }
 
@@ -143,19 +143,19 @@ inline TriangleRaycastSide ConcaveShape::getRaycastTestType() const {
 /**
  * @param testType Raycast test type for the triangle (front, back, front-back)
  */
-inline void ConcaveShape::setRaycastTestType(TriangleRaycastSide testType) {
+RP3D_FORCE_INLINE void ConcaveShape::setRaycastTestType(TriangleRaycastSide testType) {
     mRaycastTestType = testType;
 }
 
 // Return the scale of the shape
-inline const Vector3& ConcaveShape::getScale() const {
+RP3D_FORCE_INLINE const Vector3& ConcaveShape::getScale() const {
     return mScale;
 }
 
 // Set the scale of the shape
 /// Note that you might want to recompute the inertia tensor and center of mass of the body
 /// after changing the scale of a collision shape
-inline void ConcaveShape::setScale(const Vector3& scale) {
+RP3D_FORCE_INLINE void ConcaveShape::setScale(const Vector3& scale) {
     mScale = scale;
 
     notifyColliderAboutChangedSize();
@@ -165,7 +165,7 @@ inline void ConcaveShape::setScale(const Vector3& scale) {
 /**
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-inline Vector3 ConcaveShape::getLocalInertiaTensor(decimal mass) const {
+RP3D_FORCE_INLINE Vector3 ConcaveShape::getLocalInertiaTensor(decimal mass) const {
 
     // Default inertia tensor
     // Note that this is not very realistic for a concave triangle mesh.

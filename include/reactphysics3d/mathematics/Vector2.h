@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -57,12 +57,6 @@ struct Vector2 {
 
         /// Constructor with arguments
         Vector2(decimal newX, decimal newY);
-
-        /// Copy-constructor
-        Vector2(const Vector2& vector);
-
-        /// Destructor
-        ~Vector2() = default;
 
         /// Set all the values of the vector
         void setAllValues(decimal newX, decimal newY);
@@ -130,9 +124,6 @@ struct Vector2 {
         /// Overloaded operator for value access
         const decimal& operator[] (int index) const;
 
-        /// Overloaded operator
-        Vector2& operator=(const Vector2& vector);
-
         /// Overloaded less than operator for ordering to be used inside std::set for instance
         bool operator<(const Vector2& vector) const;
 
@@ -161,50 +152,44 @@ struct Vector2 {
 };
 
 // Constructor
-inline Vector2::Vector2() : x(0.0), y(0.0) {
+RP3D_FORCE_INLINE Vector2::Vector2() : x(0.0), y(0.0) {
 
 }
 
 // Constructor with arguments
-inline Vector2::Vector2(decimal newX, decimal newY) : x(newX), y(newY) {
+RP3D_FORCE_INLINE Vector2::Vector2(decimal newX, decimal newY) : x(newX), y(newY) {
 
 }
-
-// Copy-constructor
-inline Vector2::Vector2(const Vector2& vector) : x(vector.x), y(vector.y) {
-
-}
-
 
 // Set the vector to zero
-inline void Vector2::setToZero() {
+RP3D_FORCE_INLINE void Vector2::setToZero() {
     x = 0;
     y = 0;
 }
 
 // Set all the values of the vector
-inline void Vector2::setAllValues(decimal newX, decimal newY) {
+RP3D_FORCE_INLINE void Vector2::setAllValues(decimal newX, decimal newY) {
     x = newX;
     y = newY;
 }
 
 // Return the length of the vector
-inline decimal Vector2::length() const {
+RP3D_FORCE_INLINE decimal Vector2::length() const {
     return std::sqrt(x*x + y*y);
 }
 
 // Return the square of the length of the vector
-inline decimal Vector2::lengthSquare() const {
+RP3D_FORCE_INLINE decimal Vector2::lengthSquare() const {
     return x*x + y*y;
 }
 
-// Scalar product of two vectors (inline)
-inline decimal Vector2::dot(const Vector2& vector) const {
+// Scalar product of two vectors (RP3D_FORCE_INLINE)
+RP3D_FORCE_INLINE decimal Vector2::dot(const Vector2& vector) const {
     return (x*vector.x + y*vector.y);
 }
 
 // Normalize the vector
-inline void Vector2::normalize() {
+RP3D_FORCE_INLINE void Vector2::normalize() {
     decimal l = length();
     if (l < MACHINE_EPSILON) {
         return;
@@ -214,68 +199,68 @@ inline void Vector2::normalize() {
 }
 
 // Return the corresponding absolute value vector
-inline Vector2 Vector2::getAbsoluteVector() const {
+RP3D_FORCE_INLINE Vector2 Vector2::getAbsoluteVector() const {
     return Vector2(std::abs(x), std::abs(y));
 }
 
 // Return the axis with the minimal value
-inline int Vector2::getMinAxis() const {
+RP3D_FORCE_INLINE int Vector2::getMinAxis() const {
     return (x < y ? 0 : 1);
 }
 
 // Return the axis with the maximal value
-inline int Vector2::getMaxAxis() const {
+RP3D_FORCE_INLINE int Vector2::getMaxAxis() const {
     return (x < y ? 1 : 0);
 }
 
 // Return true if the vector is unit and false otherwise
-inline bool Vector2::isUnit() const {
-    return approxEqual(lengthSquare(), 1.0);
+RP3D_FORCE_INLINE bool Vector2::isUnit() const {
+    return reactphysics3d::approxEqual(lengthSquare(), decimal(1.0));
 }
 
 // Return true if the values are not NAN OR INF
-inline bool Vector2::isFinite() const {
+RP3D_FORCE_INLINE bool Vector2::isFinite() const {
     return std::isfinite(x) && std::isfinite(y);
 }
 
 // Return true if the vector is the zero vector
-inline bool Vector2::isZero() const {
-    return approxEqual(lengthSquare(), 0.0);
+RP3D_FORCE_INLINE bool Vector2::isZero() const {
+    return reactphysics3d::approxEqual(lengthSquare(), decimal(0.0));
 }
 
 // Overloaded operator for the equality condition
-inline bool Vector2::operator== (const Vector2& vector) const {
+RP3D_FORCE_INLINE bool Vector2::operator== (const Vector2& vector) const {
     return (x == vector.x && y == vector.y);
 }
 
 // Overloaded operator for the is different condition
-inline bool Vector2::operator!= (const Vector2& vector) const {
+RP3D_FORCE_INLINE bool Vector2::operator!= (const Vector2& vector) const {
     return !(*this == vector);
 }
 
 // Overloaded operator for addition with assignment
-inline Vector2& Vector2::operator+=(const Vector2& vector) {
+RP3D_FORCE_INLINE Vector2& Vector2::operator+=(const Vector2& vector) {
     x += vector.x;
     y += vector.y;
     return *this;
 }
 
 // Overloaded operator for substraction with assignment
-inline Vector2& Vector2::operator-=(const Vector2& vector) {
+RP3D_FORCE_INLINE Vector2& Vector2::operator-=(const Vector2& vector) {
     x -= vector.x;
     y -= vector.y;
     return *this;
 }
 
 // Overloaded operator for multiplication with a number with assignment
-inline Vector2& Vector2::operator*=(decimal number) {
+RP3D_FORCE_INLINE Vector2& Vector2::operator*=(decimal number) {
     x *= number;
     y *= number;
     return *this;
 }
 
 // Overloaded operator for division by a number with assignment
-inline Vector2& Vector2::operator/=(decimal number) {
+RP3D_FORCE_INLINE Vector2& Vector2::operator/=(decimal number) {
     assert(number > std::numeric_limits<decimal>::epsilon());
     x /= number;
     y /= number;
@@ -283,92 +268,88 @@ inline Vector2& Vector2::operator/=(decimal number) {
 }
 
 // Overloaded operator for value access
-inline decimal& Vector2::operator[] (int index) {
+RP3D_FORCE_INLINE decimal& Vector2::operator[] (int index) {
     return (&x)[index];
 }
 
 // Overloaded operator for value access
-inline const decimal& Vector2::operator[] (int index) const {
+RP3D_FORCE_INLINE const decimal& Vector2::operator[] (int index) const {
     return (&x)[index];
 }
 
 // Overloaded operator for addition
-inline Vector2 operator+(const Vector2& vector1, const Vector2& vector2) {
+RP3D_FORCE_INLINE Vector2 operator+(const Vector2& vector1, const Vector2& vector2) {
     return Vector2(vector1.x + vector2.x, vector1.y + vector2.y);
 }
 
 // Overloaded operator for substraction
-inline Vector2 operator-(const Vector2& vector1, const Vector2& vector2) {
+RP3D_FORCE_INLINE Vector2 operator-(const Vector2& vector1, const Vector2& vector2) {
     return Vector2(vector1.x - vector2.x, vector1.y - vector2.y);
 }
 
 // Overloaded operator for the negative of a vector
-inline Vector2 operator-(const Vector2& vector) {
+RP3D_FORCE_INLINE Vector2 operator-(const Vector2& vector) {
     return Vector2(-vector.x, -vector.y);
 }
 
 // Overloaded operator for multiplication with a number
-inline Vector2 operator*(const Vector2& vector, decimal number) {
+RP3D_FORCE_INLINE Vector2 operator*(const Vector2& vector, decimal number) {
     return Vector2(number * vector.x, number * vector.y);
 }
 
 // Overloaded operator for multiplication of two vectors
-inline Vector2 operator*(const Vector2& vector1, const Vector2& vector2) {
+RP3D_FORCE_INLINE Vector2 operator*(const Vector2& vector1, const Vector2& vector2) {
     return Vector2(vector1.x * vector2.x, vector1.y * vector2.y);
 }
 
 // Overloaded operator for division by a number
-inline Vector2 operator/(const Vector2& vector, decimal number) {
+RP3D_FORCE_INLINE Vector2 operator/(const Vector2& vector, decimal number) {
     assert(number > MACHINE_EPSILON);
     return Vector2(vector.x / number, vector.y / number);
 }
 
 // Overload operator for division between two vectors
-inline Vector2 operator/(const Vector2& vector1, const Vector2& vector2) {
+RP3D_FORCE_INLINE Vector2 operator/(const Vector2& vector1, const Vector2& vector2) {
     assert(vector2.x > MACHINE_EPSILON);
     assert(vector2.y > MACHINE_EPSILON);
     return Vector2(vector1.x / vector2.x, vector1.y / vector2.y);
 }
 
 // Overloaded operator for multiplication with a number
-inline Vector2 operator*(decimal number, const Vector2& vector) {
+RP3D_FORCE_INLINE Vector2 operator*(decimal number, const Vector2& vector) {
     return vector * number;
 }
 
-// Assignment operator
-inline Vector2& Vector2::operator=(const Vector2& vector) {
-    if (&vector != this) {
-        x = vector.x;
-        y = vector.y;
-    }
-    return *this;
-}
-
 // Overloaded less than operator for ordering to be used inside std::set for instance
-inline bool Vector2::operator<(const Vector2& vector) const {
+RP3D_FORCE_INLINE bool Vector2::operator<(const Vector2& vector) const {
     return (x == vector.x ? y < vector.y : x < vector.x);
 }
 
 // Return a vector taking the minimum components of two vectors
-inline Vector2 Vector2::min(const Vector2& vector1, const Vector2& vector2) {
+RP3D_FORCE_INLINE Vector2 Vector2::min(const Vector2& vector1, const Vector2& vector2) {
     return Vector2(std::min(vector1.x, vector2.x),
                    std::min(vector1.y, vector2.y));
 }
 
 // Return a vector taking the maximum components of two vectors
-inline Vector2 Vector2::max(const Vector2& vector1, const Vector2& vector2) {
+RP3D_FORCE_INLINE Vector2 Vector2::max(const Vector2& vector1, const Vector2& vector2) {
     return Vector2(std::max(vector1.x, vector2.x),
                    std::max(vector1.y, vector2.y));
 }
 
 // Get the string representation
-inline std::string Vector2::to_string() const {
+RP3D_FORCE_INLINE std::string Vector2::to_string() const {
     return "Vector2(" + std::to_string(x) + "," + std::to_string(y) + ")";
 }
 
 // Return the zero vector
-inline Vector2 Vector2::zero() {
+RP3D_FORCE_INLINE Vector2 Vector2::zero() {
     return Vector2(0, 0);
+}
+
+// Function to test if two vectors are (almost) equal
+RP3D_FORCE_INLINE bool approxEqual(const Vector2& vec1, const Vector2& vec2, decimal epsilon = MACHINE_EPSILON) {
+    return approxEqual(vec1.x, vec2.x, epsilon) && approxEqual(vec1.y, vec2.y, epsilon);
 }
 
 }

@@ -42,6 +42,8 @@ class ConcaveMesh : public PhysicsObject {
         rp3d::ConcaveMeshShape* mConcaveShape;
         rp3d::Collider* mCollider;
 
+        rp3d::PhysicsWorld* mPhysicsWorld;
+
         /// Scaling matrix
         openglframework::Matrix4 mScalingMatrix;
 
@@ -73,7 +75,8 @@ class ConcaveMesh : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath);
+        ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+                    const std::string& meshPath, const reactphysics3d::Vector3& scaling = rp3d::Vector3(1, 1, 1));
 
         /// Destructor
         virtual ~ConcaveMesh() override;

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,6 +30,8 @@
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/mathematics/Matrix3x3.h>
+#include <reactphysics3d/containers/Array.h>
+#include <reactphysics3d/engine/Material.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -186,8 +188,20 @@ class ContactSolverSystem {
             /// Inverse of the mass of body 1
             decimal massInverseBody1;
 
-            // Inverse of the mass of body 2
+            /// Inverse of the mass of body 2
             decimal massInverseBody2;
+
+            /// Linear lock axis factor of body 1
+            Vector3 linearLockAxisFactorBody1;
+
+            /// Linear lock axis factor of body 2
+            Vector3 linearLockAxisFactorBody2;
+
+            /// Angular lock axis factor of body 1
+            Vector3 angularLockAxisFactorBody1;
+
+            /// Angular lock axis factor of body 2
+            Vector3 angularLockAxisFactorBody2;
 
             /// Inverse inertia tensor of body 1
             Matrix3x3 inverseInertiaTensorBody1;
@@ -197,9 +211,6 @@ class ContactSolverSystem {
 
             /// Mix friction coefficient for the two bodies
             decimal frictionCoefficient;
-
-            /// Rolling resistance factor between the two bodies
-            decimal rollingResistanceFactor;
 
             // - Variables used when friction constraints are apply at the center of the manifold-//
 
@@ -239,9 +250,6 @@ class ContactSolverSystem {
             /// Matrix K for the twist friction constraint
             decimal inverseTwistFrictionMass;
 
-            /// Matrix K for the rolling resistance constraint
-            Matrix3x3 inverseRollingResistance;
-
             /// First friction direction at contact manifold center
             Vector3 frictionVector1;
 
@@ -262,9 +270,6 @@ class ContactSolverSystem {
 
             /// Twist friction impulse at contact manifold center
             decimal frictionTwistImpulse;
-
-            /// Rolling resistance impulse
-            Vector3 rollingResistanceImpulse;
 
             /// Number of contact points
             int8 nbContacts;
@@ -302,19 +307,19 @@ class ContactSolverSystem {
         ContactPointSolver* mContactPoints;
 
         /// Number of contact point constraints
-        uint mNbContactPoints;
+        uint32 mNbContactPoints;
 
         /// Number of contact constraints
-        uint mNbContactManifolds;
+        uint32 mNbContactManifolds;
 
         /// Reference to the islands
         Islands& mIslands;
 
-        /// Pointer to the list of contact manifolds from narrow-phase
-        List<ContactManifold>* mAllContactManifolds;
+        /// Pointer to the array of contact manifolds from narrow-phase
+        Array<ContactManifold>* mAllContactManifolds;
 
-        /// Pointer to the list of contact points from narrow-phase
-        List<ContactPoint>* mAllContactPoints;
+        /// Pointer to the array of contact points from narrow-phase
+        Array<ContactPoint>* mAllContactPoints;
 
         /// Reference to the body components
         CollisionBodyComponents& mBodyComponents;
@@ -338,14 +343,10 @@ class ContactSolverSystem {
         // -------------------- Methods -------------------- //
 
         /// Compute the collision restitution factor from the restitution factor of each collider
-        decimal computeMixedRestitutionFactor(Collider* collider1,
-                                              Collider* collider2) const;
+        decimal computeMixedRestitutionFactor(const Material& material1, const Material& material2) const;
 
         /// Compute the mixed friction coefficient from the friction coefficient of each collider
-        decimal computeMixedFrictionCoefficient(Collider* collider1, Collider* collider2) const;
-
-        /// Compute th mixed rolling resistance factor between two colliders
-        decimal computeMixedRollingResistance(Collider* collider1, Collider* collider2) const;
+        decimal computeMixedFrictionCoefficient(const Material &material1, const Material &material2) const;
 
         /// Compute the two unit orthogonal vectors "t1" and "t2" that span the tangential friction
         /// plane for a contact manifold. The two vectors have to be
@@ -368,10 +369,10 @@ class ContactSolverSystem {
         ~ContactSolverSystem() = default;
 
         /// Initialize the contact constraints
-        void init(List<ContactManifold>* contactManifolds, List<ContactPoint>* contactPoints, decimal timeStep);
+        void init(Array<ContactManifold>* contactManifolds, Array<ContactPoint>* contactPoints, decimal timeStep);
 
         /// Initialize the constraint solver for a given island
-        void initializeForIsland(uint islandIndex);
+        void initializeForIsland(uint32 islandIndex);
 
         /// Store the computed impulses to use them to
         /// warm start the solver at the next iteration
@@ -398,19 +399,36 @@ class ContactSolverSystem {
 };
 
 // Return true if the split impulses position correction technique is used for contacts
-inline bool ContactSolverSystem::isSplitImpulseActive() const {
+RP3D_FORCE_INLINE bool ContactSolverSystem::isSplitImpulseActive() const {
     return mIsSplitImpulseActive;
 }
 
 // Activate or Deactivate the split impulses for contacts
-inline void ContactSolverSystem::setIsSplitImpulseActive(bool isActive) {
+RP3D_FORCE_INLINE void ContactSolverSystem::setIsSplitImpulseActive(bool isActive) {
     mIsSplitImpulseActive = isActive;
+}
+
+// Compute the collision restitution factor from the restitution factor of each collider
+RP3D_FORCE_INLINE decimal ContactSolverSystem::computeMixedRestitutionFactor(const Material& material1, const Material& material2) const {
+
+    const decimal restitution1 = material1.getBounciness();
+    const decimal restitution2 = material2.getBounciness();
+
+    // Return the largest restitution factor
+    return (restitution1 > restitution2) ? restitution1 : restitution2;
+}
+
+// Compute the mixed friction coefficient from the friction coefficient of each collider
+RP3D_FORCE_INLINE decimal ContactSolverSystem::computeMixedFrictionCoefficient(const Material& material1, const Material& material2) const {
+
+    // Use the geometric mean to compute the mixed friction coefficient
+    return material1.getFrictionCoefficientSqrt() * material2.getFrictionCoefficientSqrt();
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void ContactSolverSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void ContactSolverSystem::setProfiler(Profiler* profiler) {
 
 	mProfiler = profiler;
 }

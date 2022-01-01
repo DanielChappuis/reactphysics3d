@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -57,8 +57,8 @@ class CollisionBodyComponents : public Components {
         /// Array of pointers to the corresponding bodies
         CollisionBody** mBodies;
 
-        /// Array with the list of colliders of each body
-        List<Entity>* mColliders;
+        /// Array with the colliders of each body
+        Array<Entity>* mColliders;
 
         /// Array of boolean values to know if the body is active.
         bool* mIsActive;
@@ -113,8 +113,8 @@ class CollisionBodyComponents : public Components {
         /// Return a pointer to a body
         CollisionBody* getBody(Entity bodyEntity);
 
-        /// Return the list of colliders of a body
-        const List<Entity>& getColliders(Entity bodyEntity) const;
+        /// Return the array of colliders of a body
+        const Array<Entity>& getColliders(Entity bodyEntity) const;
 
         /// Return true if the body is active
         bool getIsActive(Entity bodyEntity) const;
@@ -130,7 +130,7 @@ class CollisionBodyComponents : public Components {
 };
 
 // Add a collider to a body component
-inline void CollisionBodyComponents::addColliderToBody(Entity bodyEntity, Entity colliderEntity) {
+RP3D_FORCE_INLINE void CollisionBodyComponents::addColliderToBody(Entity bodyEntity, Entity colliderEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -138,7 +138,7 @@ inline void CollisionBodyComponents::addColliderToBody(Entity bodyEntity, Entity
 }
 
 // Remove a collider from a body component
-inline void CollisionBodyComponents::removeColliderFromBody(Entity bodyEntity, Entity colliderEntity) {
+RP3D_FORCE_INLINE void CollisionBodyComponents::removeColliderFromBody(Entity bodyEntity, Entity colliderEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -146,15 +146,15 @@ inline void CollisionBodyComponents::removeColliderFromBody(Entity bodyEntity, E
 }
 
 // Return a pointer to a body
-inline CollisionBody *CollisionBodyComponents::getBody(Entity bodyEntity) {
+RP3D_FORCE_INLINE CollisionBody *CollisionBodyComponents::getBody(Entity bodyEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
     return mBodies[mMapEntityToComponentIndex[bodyEntity]];
 }
 
-// Return the list of colliders of a body
-inline const List<Entity>& CollisionBodyComponents::getColliders(Entity bodyEntity) const {
+// Return the array of colliders of a body
+RP3D_FORCE_INLINE const Array<Entity>& CollisionBodyComponents::getColliders(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -162,7 +162,7 @@ inline const List<Entity>& CollisionBodyComponents::getColliders(Entity bodyEnti
 }
 
 // Return true if the body is active
-inline bool CollisionBodyComponents::getIsActive(Entity bodyEntity) const {
+RP3D_FORCE_INLINE bool CollisionBodyComponents::getIsActive(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -170,7 +170,7 @@ inline bool CollisionBodyComponents::getIsActive(Entity bodyEntity) const {
 }
 
 // Set the value to know if the body is active
-inline void CollisionBodyComponents::setIsActive(Entity bodyEntity, bool isActive) const {
+RP3D_FORCE_INLINE void CollisionBodyComponents::setIsActive(Entity bodyEntity, bool isActive) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -178,7 +178,7 @@ inline void CollisionBodyComponents::setIsActive(Entity bodyEntity, bool isActiv
 }
 
 // Return the user data associated with the body
-inline void* CollisionBodyComponents::getUserData(Entity bodyEntity) const {
+RP3D_FORCE_INLINE void* CollisionBodyComponents::getUserData(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -186,7 +186,7 @@ inline void* CollisionBodyComponents::getUserData(Entity bodyEntity) const {
 }
 
 // Set the user data associated with the body
-inline void CollisionBodyComponents::setUserData(Entity bodyEntity, void* userData) const {
+RP3D_FORCE_INLINE void CollisionBodyComponents::setUserData(Entity bodyEntity, void* userData) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 

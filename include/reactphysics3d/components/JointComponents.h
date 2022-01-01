@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -138,7 +138,7 @@ class JointComponents : public Components {
         JointsPositionCorrectionTechnique getPositionCorrectionTechnique(Entity jointEntity) const;
 
         /// Set the position correction technique of a joint
-        void getPositionCorrectionTechnique(Entity jointEntity, JointsPositionCorrectionTechnique positionCorrectionTechnique);
+        void setPositionCorrectionTechnique(Entity jointEntity, JointsPositionCorrectionTechnique positionCorrectionTechnique);
 
         /// Return true if the collision is enabled between the two bodies of a joint
         bool getIsCollisionEnabled(Entity jointEntity) const;
@@ -157,64 +157,69 @@ class JointComponents : public Components {
         friend class BroadPhaseSystem;
         friend class ConstraintSolverSystem;
         friend class PhysicsWorld;
+        friend class SolveBallAndSocketJointSystem;
+        friend class SolveFixedJointSystem;
+        friend class SolveHingeJointSystem;
+        friend class SolveSliderJointSystem;
+
 };
 
 // Return the entity of the first body of a joint
-inline Entity JointComponents::getBody1Entity(Entity jointEntity) const {
+RP3D_FORCE_INLINE Entity JointComponents::getBody1Entity(Entity jointEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBody1Entities[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Return the entity of the second body of a joint
-inline Entity JointComponents::getBody2Entity(Entity jointEntity) const {
+RP3D_FORCE_INLINE Entity JointComponents::getBody2Entity(Entity jointEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mBody2Entities[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Return a pointer to the joint
-inline Joint* JointComponents::getJoint(Entity jointEntity) const {
+RP3D_FORCE_INLINE Joint* JointComponents::getJoint(Entity jointEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mJoints[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Return the type of a joint
-inline JointType JointComponents::getType(Entity jointEntity) const {
+RP3D_FORCE_INLINE JointType JointComponents::getType(Entity jointEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mTypes[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Return the position correction technique of a joint
-inline JointsPositionCorrectionTechnique JointComponents::getPositionCorrectionTechnique(Entity jointEntity) const {
+RP3D_FORCE_INLINE JointsPositionCorrectionTechnique JointComponents::getPositionCorrectionTechnique(Entity jointEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mPositionCorrectionTechniques[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set the position correction technique of a joint
-inline void JointComponents::getPositionCorrectionTechnique(Entity jointEntity, JointsPositionCorrectionTechnique positionCorrectionTechnique) {
+RP3D_FORCE_INLINE void JointComponents::setPositionCorrectionTechnique(Entity jointEntity, JointsPositionCorrectionTechnique positionCorrectionTechnique) {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mPositionCorrectionTechniques[mMapEntityToComponentIndex[jointEntity]] = positionCorrectionTechnique;
 }
 
 // Return true if the collision is enabled between the two bodies of a joint
-inline bool JointComponents::getIsCollisionEnabled(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool JointComponents::getIsCollisionEnabled(Entity jointEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsCollisionEnabled[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set whether the collision is enabled between the two bodies of a joint
-inline void JointComponents::setIsCollisionEnabled(Entity jointEntity, bool isCollisionEnabled) {
+RP3D_FORCE_INLINE void JointComponents::setIsCollisionEnabled(Entity jointEntity, bool isCollisionEnabled) {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsCollisionEnabled[mMapEntityToComponentIndex[jointEntity]] = isCollisionEnabled;
 }
 
 // Return true if the joint has already been added into an island during island creation
-inline bool JointComponents::getIsAlreadyInIsland(Entity jointEntity) const {
+RP3D_FORCE_INLINE bool JointComponents::getIsAlreadyInIsland(Entity jointEntity) const {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     return mIsAlreadyInIsland[mMapEntityToComponentIndex[jointEntity]];
 }
 
 // Set to true if the joint has already been added into an island during island creation
-inline void JointComponents::setIsAlreadyInIsland(Entity jointEntity, bool isAlreadyInIsland) {
+RP3D_FORCE_INLINE void JointComponents::setIsAlreadyInIsland(Entity jointEntity, bool isAlreadyInIsland) {
     assert(mMapEntityToComponentIndex.containsKey(jointEntity));
     mIsAlreadyInIsland[mMapEntityToComponentIndex[jointEntity]] = isAlreadyInIsland;
 }

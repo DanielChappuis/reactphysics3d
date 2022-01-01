@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -45,8 +45,12 @@ struct ContactManifoldInfo {
 
         // -------------------- Attributes -------------------- //
 
+        /// Number of potential contact points
+        uint8 nbPotentialContactPoints;
+
         /// Indices of the contact points in the mPotentialContactPoints array
-        List<uint> potentialContactPointsIndices;
+        uint32 potentialContactPointsIndices[NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD];
+
 
         /// Overlapping pair id
         uint64 pairId;
@@ -54,8 +58,7 @@ struct ContactManifoldInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ContactManifoldInfo(uint64 pairId, MemoryAllocator& allocator)
-               : potentialContactPointsIndices(allocator), pairId(pairId) {
+        ContactManifoldInfo(uint64 pairId) : nbPotentialContactPoints(0), potentialContactPointsIndices{0}, pairId(pairId) {
 
         }
 

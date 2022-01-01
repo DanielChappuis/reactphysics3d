@@ -49,7 +49,7 @@ namespace std {
 
   template <> struct hash<reactphysics3d::TestValueSet> {
 
-    size_t operator()(const reactphysics3d::TestValueSet& value) const {
+    size_t operator()(const reactphysics3d::TestValueSet& /*value*/) const {
         return 1;
     }
   };
@@ -231,10 +231,12 @@ class TestSet : public Test {
             set3.add(3);
             rp3d_test(set3.size() == 3);
             auto it = set3.begin();
-            set3.remove(it++);
-            rp3d_test(!set3.contains(1));
+            it = set3.remove(it);
             rp3d_test(set3.size() == 2);
-            rp3d_test(*it == 2);
+            it = set3.remove(it);
+            rp3d_test(set3.size() == 1);
+            it = set3.remove(it);
+            rp3d_test(set3.size() == 0);
 
             set3.add(6);
             set3.add(7);
@@ -413,7 +415,7 @@ class TestSet : public Test {
 
             rp3d_test(itBegin == it);
 
-            int size = 0;
+            size_t size = 0;
             for (auto it = set1.begin(); it != set1.end(); ++it) {
                 rp3d_test(set1.contains(*it));
                 size++;
@@ -432,18 +434,18 @@ class TestSet : public Test {
             set1.add(3);
             set1.add(4);
 
-            List<int> list1 = set1.toList(mAllocator);
-            rp3d_test(list1.size() == 4);
-            rp3d_test(list1.find(1) != list1.end());
-            rp3d_test(list1.find(2) != list1.end());
-            rp3d_test(list1.find(3) != list1.end());
-            rp3d_test(list1.find(4) != list1.end());
-            rp3d_test(list1.find(5) == list1.end());
-            rp3d_test(list1.find(6) == list1.end());
+            Array<int> array1 = set1.toArray(mAllocator);
+            rp3d_test(array1.size() == 4);
+            rp3d_test(array1.find(1) != array1.end());
+            rp3d_test(array1.find(2) != array1.end());
+            rp3d_test(array1.find(3) != array1.end());
+            rp3d_test(array1.find(4) != array1.end());
+            rp3d_test(array1.find(5) == array1.end());
+            rp3d_test(array1.find(6) == array1.end());
 
             Set<int> set2(mAllocator);
-            List<int> list2 = set2.toList(mAllocator);
-            rp3d_test(list2.size() == 0);
+            Array<int> array2 = set2.toArray(mAllocator);
+            rp3d_test(array2.size() == 0);
         }
  };
 

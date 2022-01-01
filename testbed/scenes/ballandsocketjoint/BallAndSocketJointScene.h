@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,56 +23,71 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_CAPSULE_VS_CAPSULE_NARROW_PHASE_INFO_BATCH_H
-#define REACTPHYSICS3D_CAPSULE_VS_CAPSULE_NARROW_PHASE_INFO_BATCH_H
+#ifndef BALL_AND_SOCKET_JOINT_SCENE_H
+#define BALL_AND_SOCKET_JOINT_SCENE_H
 
 // Libraries
-#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
+#include "openglframework.h"
+#include <reactphysics3d/reactphysics3d.h>
+#include "Box.h"
+#include "SceneDemo.h"
 
-/// Namespace ReactPhysics3D
-namespace reactphysics3d {
+namespace ballandsocketjointscene {
 
-// Struct CapsuleVsCapsuleNarrowPhaseInfoBatch
-/**
- * This structure collects all the potential collisions from the middle-phase algorithm
- * that have to be tested during narrow-phase collision detection. This class collects all the
- * capsule vs capsule collision detection tests.
- */
-struct CapsuleVsCapsuleNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
+// Constants
+const float SCENE_RADIUS = 30.0f;
+const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);    // Floor dimensions in meters
+const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-And-Socket chain boxes
+const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes
+
+// Class BallAndSocketJointScene
+class BallAndSocketJointScene : public SceneDemo {
+
+    protected :
+
+        // -------------------- Attributes -------------------- //
+
+        /// First box
+        Box* mBox1;
+
+        /// Second box
+        Box* mBox2;
+
+        /// Ball-And-Socket joint
+        rp3d::BallAndSocketJoint* mJoint;
+
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
+        // -------------------- Methods -------------------- //
+
+        /// Create the  Ball-and-Socket joint
+        void createBallAndSocketJoint();
 
     public:
 
-        /// List of radiuses for the first capsules
-        List<decimal> capsule1Radiuses;
-
-        /// List of radiuses for the second capsules
-        List<decimal> capsule2Radiuses;
-
-        /// List of heights for the first capsules
-        List<decimal> capsule1Heights;
-
-        /// List of heights for the second capsules
-        List<decimal> capsule2Heights;
+        // -------------------- Methods -------------------- //
 
         /// Constructor
-        CapsuleVsCapsuleNarrowPhaseInfoBatch(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs);
+        BallAndSocketJointScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
-        virtual ~CapsuleVsCapsuleNarrowPhaseInfoBatch() override = default;
+        virtual ~BallAndSocketJointScene() override ;
 
-        /// Add shapes to be tested during narrow-phase collision detection into the batch
-        virtual void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
-                                        CollisionShape* shape2, const Transform& shape1Transform,
-                                        const Transform& shape2Transform, bool needToReportContacts, MemoryAllocator& shapeAllocator) override;
+        /// Reset the scene
+        virtual void reset() override;
 
-        // Initialize the containers using cached capacity
-        virtual void reserveMemory() override;
+        /// Create the physics world
+        void createPhysicsWorld();
 
-        /// Clear all the objects in the batch
-        virtual void clear() override;
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }
 
 #endif
-

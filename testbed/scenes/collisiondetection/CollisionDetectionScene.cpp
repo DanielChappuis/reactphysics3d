@@ -33,8 +33,8 @@ using namespace openglframework;
 using namespace collisiondetectionscene;
 
 // Constructor
-CollisionDetectionScene::CollisionDetectionScene(const std::string& name, EngineSettings& settings)
-       : SceneDemo(name, settings, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
+CollisionDetectionScene::CollisionDetectionScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+       : SceneDemo(name, settings, physicsCommon, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
          mContactManager(mPhongShader, mMeshFolderPath, mSnapshotsContactPoints),
          mAreNormalsDisplayed(false) {
 
@@ -48,16 +48,11 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.9);
+    resetCameraToViewAll();
 
     rp3d::PhysicsWorld::WorldSettings worldSettings;
     worldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
 
     // Create the physics world for the physics simulation
     mPhysicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
@@ -184,36 +179,14 @@ void CollisionDetectionScene::reset() {
 // Destructor
 CollisionDetectionScene::~CollisionDetectionScene() {
 
-    // Destroy the box rigid body from the physics world
-    //mPhysicsWorld->destroyCollisionBody(mBox->getCollisionBody());
-    //delete mBox;
-
-    // Destroy the spheres
-    mPhysicsWorld->destroyCollisionBody(mSphere1->getCollisionBody());
     delete mSphere1;
-
-    mPhysicsWorld->destroyCollisionBody(mSphere2->getCollisionBody());
     delete mSphere2;
-
-    mPhysicsWorld->destroyCollisionBody(mCapsule1->getCollisionBody());
     delete mCapsule1;
-
-    mPhysicsWorld->destroyCollisionBody(mCapsule2->getCollisionBody());
     delete mCapsule2;
-
-    mPhysicsWorld->destroyCollisionBody(mBox1->getCollisionBody());
     delete mBox1;
-
-    mPhysicsWorld->destroyCollisionBody(mBox2->getCollisionBody());
     delete mBox2;
-
-    mPhysicsWorld->destroyCollisionBody(mConvexMesh->getCollisionBody());
     delete mConvexMesh;
-
-    mPhysicsWorld->destroyCollisionBody(mConcaveMesh->getCollisionBody());
     delete mConcaveMesh;
-
-    mPhysicsWorld->destroyCollisionBody(mHeightField->getCollisionBody());
     delete mHeightField;
 
     // Destroy the static data for the visual contact points
@@ -249,7 +222,7 @@ void CollisionDetectionScene::selectNextShape() {
 }
 
 // Called when a keyboard event occurs
-bool CollisionDetectionScene::keyboardEvent(int key, int scancode, int action, int mods) {
+bool CollisionDetectionScene::keyboardEvent(int key, int /*scancode*/, int action, int /*mods*/) {
 
     // If the space key has been pressed
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {

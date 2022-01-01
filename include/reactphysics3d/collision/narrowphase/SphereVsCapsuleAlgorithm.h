@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -34,7 +34,7 @@ namespace reactphysics3d {
 
 // Declarations
 class ContactPoint;
-struct SphereVsCapsuleNarrowPhaseInfoBatch;
+struct NarrowPhaseInfoBatch;
 
 // Class SphereVsCapsuleAlgorithm
 /**
@@ -65,8 +65,8 @@ class SphereVsCapsuleAlgorithm : public NarrowPhaseAlgorithm {
 		SphereVsCapsuleAlgorithm& operator=(const SphereVsCapsuleAlgorithm& algorithm) = delete;
 
         /// Compute the narrow-phase collision detection between a sphere and a capsule
-        bool testCollision(SphereVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, MemoryAllocator& memoryAllocator);
+        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchStartIndex,
+                           uint32 batchNbItems, MemoryAllocator& memoryAllocator);
 };
 
 }

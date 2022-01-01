@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -102,7 +102,7 @@ class MemoryManager {
 };
 
 // Allocate memory of a given type
-inline void* MemoryManager::allocate(AllocationType allocationType, size_t size) {
+RP3D_FORCE_INLINE void* MemoryManager::allocate(AllocationType allocationType, size_t size) {
 
     switch (allocationType) {
        case AllocationType::Base: return mBaseAllocator->allocate(size);
@@ -115,7 +115,7 @@ inline void* MemoryManager::allocate(AllocationType allocationType, size_t size)
 }
 
 // Release previously allocated memory.
-inline void MemoryManager::release(AllocationType allocationType, void* pointer, size_t size) {
+RP3D_FORCE_INLINE void MemoryManager::release(AllocationType allocationType, void* pointer, size_t size) {
 
     switch (allocationType) {
        case AllocationType::Base: mBaseAllocator->release(pointer, size); break;
@@ -126,22 +126,22 @@ inline void MemoryManager::release(AllocationType allocationType, void* pointer,
 }
 
 // Return the pool allocator
-inline PoolAllocator& MemoryManager::getPoolAllocator() {
+RP3D_FORCE_INLINE PoolAllocator& MemoryManager::getPoolAllocator() {
    return mPoolAllocator;
 }
 
 // Return the single frame stack allocator
-inline SingleFrameAllocator& MemoryManager::getSingleFrameAllocator() {
+RP3D_FORCE_INLINE SingleFrameAllocator& MemoryManager::getSingleFrameAllocator() {
    return mSingleFrameAllocator;
 }
 
 // Return the heap allocator
-inline HeapAllocator& MemoryManager::getHeapAllocator() {
+RP3D_FORCE_INLINE HeapAllocator& MemoryManager::getHeapAllocator() {
    return mHeapAllocator;
 }
 
 // Reset the single frame allocator
-inline void MemoryManager::resetFrameAllocator() {
+RP3D_FORCE_INLINE void MemoryManager::resetFrameAllocator() {
    mSingleFrameAllocator.reset();
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -117,7 +117,7 @@ void FixedJointComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void FixedJointComponents::addComponent(Entity jointEntity, bool isSleeping, const FixedJointComponent& component) {
+void FixedJointComponents::addComponent(Entity jointEntity, bool isSleeping, const FixedJointComponent& /*component*/) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
     uint32 index = prepareAddComponent(isSleeping);

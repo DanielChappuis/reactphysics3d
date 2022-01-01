@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,7 +26,7 @@
 
 /********************************************************************************
 * ReactPhysics3D                                                                *
-* Version 0.8.0                                                                 *
+* Version 0.9.0                                                                 *
 * http://www.reactphysics3d.com                                                 *
 * Daniel Chappuis                                                               *
 ********************************************************************************/
@@ -64,7 +64,7 @@
 #include <reactphysics3d/constraint/SliderJoint.h>
 #include <reactphysics3d/constraint/HingeJoint.h>
 #include <reactphysics3d/constraint/FixedJoint.h>
-#include <reactphysics3d/containers/List.h>
+#include <reactphysics3d/containers/Array.h>
 
 /// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;

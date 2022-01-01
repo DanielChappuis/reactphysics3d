@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -56,7 +56,7 @@ class DefaultAllocator : public MemoryAllocator {
         }
 
         /// Release previously allocated memory.
-        virtual void release(void* pointer, size_t size) override {
+        virtual void release(void* pointer, size_t /*size*/) override {
             std::free(pointer);
         }
 };

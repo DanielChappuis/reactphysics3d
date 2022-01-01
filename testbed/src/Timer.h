@@ -29,16 +29,9 @@
 // Libraries
 #include <stdexcept>
 #include <iostream>
-#include <ctime>
+#include <chrono>
 #include <cassert>
 #include <reactphysics3d/configuration.h>
-
-#if defined(WINDOWS_OS)   // For Windows platform
-   #define NOMINMAX       // This is used to avoid definition of max() and min() macros
-   #include <windows.h>
-#else                                   // For Mac OS or Linux platform
-   #include <sys/time.h>
-#endif
 
 // Class Timer
 /**
@@ -48,18 +41,20 @@
  */
 class Timer {
 
+    using clock = std::chrono::high_resolution_clock;
+
     private :
 
         // -------------------- Attributes -------------------- //
 
-        /// Last time the timer has been updated
-        long double mLastUpdateTime;
+        /// Start physics time
+        std::chrono::time_point<clock> mStartTime;
 
-        /// Time difference between the two last timer update() calls
-        long double mDeltaTime;
+        /// Last time the timer has been updated
+        std::chrono::time_point<clock> mLastUpdateTime;
 
         /// Used to fix the time step and avoid strange time effects
-        double mAccumulator;
+        std::chrono::duration<double> mAccumulator;
 
         /// True if the timer is running
         bool mIsRunning;
@@ -77,13 +72,12 @@ class Timer {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Timer();
+        Timer() : mAccumulator(0), mIsRunning(false) {
 
-        /// Destructor
-        ~Timer();
+        }
 
-        /// Return the current time of the physics engine
-        long double getPhysicsTime() const;
+        /// Return the elapsed physics time
+        std::chrono::duration<double> getElapsedPhysicsTime() const;
 
         /// Start the timer
         void start();
@@ -91,28 +85,31 @@ class Timer {
         /// Stop the timer
         void stop();
 
+        /// Reset the timer to zero
+        void reset();
+
         /// Return true if the timer is running
         bool isRunning() const;
 
         /// True if it's possible to take a new step
-        bool isPossibleToTakeStep(float timeStep) const;
+        bool isPossibleToTakeStep(std::chrono::duration<double> timeStep) const;
 
         /// Compute the time since the last update() call and add it to the accumulator
         void update();
 
         /// Take a new step => update the timer by adding the timeStep value to the current time
-        void nextStep(float timeStep);
+        void nextStep(std::chrono::duration<double> timeStep);
 
         /// Compute the interpolation factor
-        float computeInterpolationFactor(float timeStep);
+        float computeInterpolationFactor(std::chrono::duration<double> timeStep);
 
         /// Return the current time of the system in seconds
-        static long double getCurrentSystemTime();
+        static std::chrono::time_point<clock> getCurrentSystemTime();
 };
 
-// Return the current time
-inline long double Timer::getPhysicsTime() const {
-    return mLastUpdateTime;
+// Return the elapsed physics time
+inline std::chrono::duration<double> Timer::getElapsedPhysicsTime() const {
+    return mLastUpdateTime - mStartTime;
 }
 
 // Return if the timer is running
@@ -122,12 +119,13 @@ inline bool Timer::isRunning() const {
 
 // Start the timer
 inline void Timer::start() {
+
     if (!mIsRunning) {
 
         // Get the current system time
-        mLastUpdateTime = getCurrentSystemTime();
+        mLastUpdateTime = clock::now();
         
-        mAccumulator = 0.0;
+        mAccumulator = std::chrono::duration<double>::zero();
         mIsRunning = true;
     }
 }
@@ -137,13 +135,20 @@ inline void Timer::stop() {
     mIsRunning = false;
 }
 
+// Reset the timer to zero
+inline void Timer::reset() {
+    mAccumulator = std::chrono::milliseconds::zero();
+    mStartTime = clock::now();
+    mLastUpdateTime = mStartTime;
+}
+
 // True if it's possible to take a new step
-inline bool Timer::isPossibleToTakeStep(float timeStep) const {
+inline bool Timer::isPossibleToTakeStep(std::chrono::duration<double> timeStep) const {
     return (mAccumulator >= timeStep);
 }
 
 // Take a new step => update the timer by adding the timeStep value to the current time
-inline void Timer::nextStep(float timeStep) {
+inline void Timer::nextStep(std::chrono::duration<double> timeStep) {
     assert(mIsRunning);
 
     // Update the accumulator value
@@ -151,24 +156,24 @@ inline void Timer::nextStep(float timeStep) {
 }
 
 // Compute the interpolation factor
-inline float Timer::computeInterpolationFactor(float timeStep) {
-    return (float(mAccumulator) / timeStep);
+inline float Timer::computeInterpolationFactor(std::chrono::duration<double> timeStep) {
+    return float(mAccumulator.count() / timeStep.count());
 }
 
 // Compute the time since the last update() call and add it to the accumulator
 inline void Timer::update() {
 
     // Get the current system time
-    long double currentTime = getCurrentSystemTime();
+    std::chrono::time_point<clock> currentTime = clock::now();
     
     // Compute the delta display time between two display frames
-    mDeltaTime = currentTime - mLastUpdateTime;
+    std::chrono::duration<double> deltaTime = currentTime - mLastUpdateTime;
 
     // Update the current display time
     mLastUpdateTime = currentTime;
 
     // Update the accumulator value
-    mAccumulator += mDeltaTime;
+    mAccumulator += deltaTime;
 }
 
  #endif

@@ -47,6 +47,8 @@ class Box : public PhysicsObject {
         /// Scaling matrix (applied to a cube to obtain the correct box dimensions)
         openglframework::Matrix4 mScalingMatrix;
 
+        rp3d::PhysicsWorld* mPhysicsWorld;
+
         /// Vertex Buffer Object for the vertices data
         static openglframework::VertexBufferObject mVBOVertices;
 

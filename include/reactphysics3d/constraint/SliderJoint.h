@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -47,11 +47,23 @@ struct SliderJointInfo : public JointInfo {
 
         // -------------------- Attributes -------------------- //
 
+        /// True if this object has been constructed using local-space anchors
+        bool isUsingLocalSpaceAnchors;
+
         /// Anchor point (in world-space coordinates)
         Vector3 anchorPointWorldSpace;
 
+        /// Anchor point on body 1 (in local-space coordinates)
+        Vector3 anchorPointBody1LocalSpace;
+
+        /// Anchor point on body 2 (in local-space coordinates)
+        Vector3 anchorPointBody2LocalSpace;
+
         /// Slider axis (in world-space coordinates)
         Vector3 sliderAxisWorldSpace;
+
+        /// Hinge slider axis of body 1 (in local-space coordinates)
+        Vector3 sliderAxisBody1Local;
 
         /// True if the slider limits are enabled
         bool isLimitEnabled;
@@ -71,7 +83,7 @@ struct SliderJointInfo : public JointInfo {
         /// Maximum motor force (in Newtons) that can be applied to reach to desired motor speed
         decimal maxMotorForce;
 
-        /// Constructor without limits and without motor
+        /// Constructor without limits and without motor with world-space anchor
         /**
          * @param rigidBody1 The first body of the joint
          * @param rigidBody2 The second body of the joint
@@ -82,12 +94,13 @@ struct SliderJointInfo : public JointInfo {
                         const Vector3& initAnchorPointWorldSpace,
                         const Vector3& initSliderAxisWorldSpace)
                        : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
+                         isUsingLocalSpaceAnchors(false),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(false), isMotorEnabled(false), minTranslationLimit(-1.0),
                          maxTranslationLimit(1.0), motorSpeed(0), maxMotorForce(0) {}
 
-        /// Constructor with limits and no motor
+        /// Constructor with limits and no motor with world-space anchor
         /**
          * @param rigidBody1 The first body of the joint
          * @param rigidBody2 The second body of the joint
@@ -101,6 +114,7 @@ struct SliderJointInfo : public JointInfo {
                         const Vector3& initSliderAxisWorldSpace,
                         decimal initMinTranslationLimit, decimal initMaxTranslationLimit)
                        : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
+                         isUsingLocalSpaceAnchors(false),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
                          isLimitEnabled(true), isMotorEnabled(false),
@@ -108,7 +122,7 @@ struct SliderJointInfo : public JointInfo {
                          maxTranslationLimit(initMaxTranslationLimit), motorSpeed(0),
                          maxMotorForce(0) {}
 
-        /// Constructor with limits and motor
+        /// Constructor with limits and motor with world-space anchor
         /**
          * @param rigidBody1 The first body of the joint
          * @param rigidBody2 The second body of the joint
@@ -125,8 +139,82 @@ struct SliderJointInfo : public JointInfo {
                         decimal initMinTranslationLimit, decimal initMaxTranslationLimit,
                         decimal initMotorSpeed, decimal initMaxMotorForce)
                        : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
+                         isUsingLocalSpaceAnchors(false),
                          anchorPointWorldSpace(initAnchorPointWorldSpace),
                          sliderAxisWorldSpace(initSliderAxisWorldSpace),
+                         isLimitEnabled(true), isMotorEnabled(true),
+                         minTranslationLimit(initMinTranslationLimit),
+                         maxTranslationLimit(initMaxTranslationLimit), motorSpeed(initMotorSpeed),
+                         maxMotorForce(initMaxMotorForce) {}
+
+        /// Constructor without limits and without motor with local-space anchor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param anchorPointBody1Local The initial anchor point on body 1 in local-space
+         * @param anchorPointBody2Local The initial anchor point on body 2 in local-space
+         * @param sliderAxisBody1Local The initial slider axis in body 1 local-space
+         */
+        SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                        const Vector3& anchorPointBody1Local,
+                        const Vector3& anchorPointBody2Local,
+                        const Vector3& sliderAxisBody1Local)
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
+                         isUsingLocalSpaceAnchors(true),
+                         anchorPointBody1LocalSpace(anchorPointBody1Local),
+                         anchorPointBody2LocalSpace(anchorPointBody2Local),
+                         sliderAxisBody1Local(sliderAxisBody1Local),
+                         isLimitEnabled(false), isMotorEnabled(false), minTranslationLimit(-1.0),
+                         maxTranslationLimit(1.0), motorSpeed(0), maxMotorForce(0) {}
+
+        /// Constructor with limits and no motor with local-space anchor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param anchorPointBody1Local The initial anchor point on body 1 in local-space
+         * @param anchorPointBody2Local The initial anchor point on body 2 in local-space
+         * @param sliderAxisBody1Local The initial slider axis in body 1 local-space
+         * @param initMinTranslationLimit The initial minimum translation limit (in meters)
+         * @param initMaxTranslationLimit The initial maximum translation limit (in meters)
+         */
+        SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                        const Vector3& anchorPointBody1Local,
+                        const Vector3& anchorPointBody2Local,
+                        const Vector3& sliderAxisBody1Local,
+                        decimal initMinTranslationLimit, decimal initMaxTranslationLimit)
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
+                         isUsingLocalSpaceAnchors(true),
+                         anchorPointBody1LocalSpace(anchorPointBody1Local),
+                         anchorPointBody2LocalSpace(anchorPointBody2Local),
+                         sliderAxisBody1Local(sliderAxisBody1Local),
+                         isLimitEnabled(true), isMotorEnabled(false),
+                         minTranslationLimit(initMinTranslationLimit),
+                         maxTranslationLimit(initMaxTranslationLimit), motorSpeed(0),
+                         maxMotorForce(0) {}
+
+        /// Constructor with limits and motor with local-space anchor
+        /**
+         * @param rigidBody1 The first body of the joint
+         * @param rigidBody2 The second body of the joint
+         * @param anchorPointBody1Local The initial anchor point on body 1 in local-space
+         * @param anchorPointBody2Local The initial anchor point on body 2 in local-space
+         * @param sliderAxisBody1Local The initial slider axis in body 1 local-space
+         * @param initMinTranslationLimit The initial minimum translation limit (in meters)
+         * @param initMaxTranslationLimit The initial maximum translation limit (in meters)
+         * @param initMotorSpeed The initial speed of the joint motor (in meters per second)
+         * @param initMaxMotorForce The initial maximum motor force of the joint (in Newtons x meters)
+         */
+        SliderJointInfo(RigidBody* rigidBody1, RigidBody* rigidBody2,
+                        const Vector3& anchorPointBody1Local,
+                        const Vector3& anchorPointBody2Local,
+                        const Vector3& sliderAxisBody1Local,
+                        decimal initMinTranslationLimit, decimal initMaxTranslationLimit,
+                        decimal initMotorSpeed, decimal initMaxMotorForce)
+                       : JointInfo(rigidBody1, rigidBody2, JointType::SLIDERJOINT),
+                         isUsingLocalSpaceAnchors(true),
+                         anchorPointBody1LocalSpace(anchorPointBody1Local),
+                         anchorPointBody2LocalSpace(anchorPointBody2Local),
+                         sliderAxisBody1Local(sliderAxisBody1Local),
                          isLimitEnabled(true), isMotorEnabled(true),
                          minTranslationLimit(initMinTranslationLimit),
                          maxTranslationLimit(initMaxTranslationLimit), motorSpeed(initMotorSpeed),
@@ -216,12 +304,18 @@ class SliderJoint : public Joint {
         /// Return the intensity of the current force applied for the joint motor
         decimal getMotorForce(decimal timeStep) const;
 
+        /// Return the force (in Newtons) on body 2 required to satisfy the joint constraint in world-space
+        virtual Vector3 getReactionForce(decimal timeStep) const override;
+
+        /// Return the torque (in Newtons * meters) on body 2 required to satisfy the joint constraint in world-space
+        virtual Vector3 getReactionTorque(decimal timeStep) const override;
+
         /// Return a string representation
         virtual std::string to_string() const override;
 };
 
 // Return the number of bytes used by the joint
-inline size_t SliderJoint::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t SliderJoint::getSizeInBytes() const {
     return sizeof(SliderJoint);
 }
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -36,7 +36,7 @@ namespace reactphysics3d {
 // Declarations
 class CapsuleShape;
 class SphereShape;
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 struct NarrowPhaseInfoBatch;
 class ConvexPolyhedronShape;
 class MemoryAllocator;
@@ -107,7 +107,7 @@ class SATAlgorithm {
         decimal testSingleFaceDirectionPolyhedronVsPolyhedron(const ConvexPolyhedronShape* polyhedron1,
                                                               const ConvexPolyhedronShape* polyhedron2,
                                                               const Transform& polyhedron1ToPolyhedron2,
-                                                              uint faceIndex) const;
+                                                              uint32 faceIndex) const;
 
 
         /// Test all the normals of a polyhedron for separating axis in the polyhedron vs polyhedron case
@@ -115,11 +115,11 @@ class SATAlgorithm {
                                                         const Transform& polyhedron1ToPolyhedron2, uint& minFaceIndex) const;
 
         /// Compute the penetration depth between a face of the polyhedron and a sphere along the polyhedron face normal direction
-        decimal computePolyhedronFaceVsSpherePenetrationDepth(uint faceIndex, const ConvexPolyhedronShape* polyhedron,
+        decimal computePolyhedronFaceVsSpherePenetrationDepth(uint32 faceIndex, const ConvexPolyhedronShape* polyhedron,
                                                               const SphereShape* sphere, const Vector3& sphereCenter) const;
 
         /// Compute the penetration depth between the face of a polyhedron and a capsule along the polyhedron face normal direction
-        decimal computePolyhedronFaceVsCapsulePenetrationDepth(uint polyhedronFaceIndex, const ConvexPolyhedronShape* polyhedron,
+        decimal computePolyhedronFaceVsCapsulePenetrationDepth(uint32 polyhedronFaceIndex, const ConvexPolyhedronShape* polyhedron,
                                                                const CapsuleShape* capsule, const Transform& polyhedronToCapsuleTransform,
                                                                Vector3& outFaceNormalCapsuleSpace) const;
 
@@ -132,8 +132,8 @@ class SATAlgorithm {
         /// Compute the contact points between two faces of two convex polyhedra.
         bool computePolyhedronVsPolyhedronFaceContactPoints(bool isMinPenetrationFaceNormalPolyhedron1, const ConvexPolyhedronShape* polyhedron1,
                                                             const ConvexPolyhedronShape* polyhedron2, const Transform& polyhedron1ToPolyhedron2,
-                                                            const Transform& polyhedron2ToPolyhedron1, uint minFaceIndex,
-                                                            NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) const;
+                                                            const Transform& polyhedron2ToPolyhedron1, uint32 minFaceIndex,
+                                                            NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchIndex) const;
 
 
     public :
@@ -154,24 +154,24 @@ class SATAlgorithm {
 
         /// Test collision between a sphere and a convex mesh
         bool testCollisionSphereVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch,
-                                                   uint batchStartIndex, uint batchNbItems) const;
+                                                   uint32 batchStartIndex, uint32 batchNbItems) const;
 
         /// Test collision between a capsule and a convex mesh
-        bool testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex) const;
+        bool testCollisionCapsuleVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchIndex) const;
 
         /// Compute the two contact points between a polyhedron and a capsule when the separating axis is a face normal of the polyhedron
-        bool computeCapsulePolyhedronFaceContactPoints(uint referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
+        bool computeCapsulePolyhedronFaceContactPoints(uint32 referenceFaceIndex, decimal capsuleRadius, const ConvexPolyhedronShape* polyhedron,
                                                        decimal penetrationDepth, const Transform& polyhedronToCapsuleTransform,
                                                        Vector3& normalWorld, const Vector3& separatingAxisCapsuleSpace,
                                                        const Vector3& capsuleSegAPolyhedronSpace, const Vector3& capsuleSegBPolyhedronSpace,
-                                                       NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchIndex, bool isCapsuleShape1) const;
+                                                       NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchIndex, bool isCapsuleShape1) const;
 
         // This method returns true if an edge of a polyhedron and a capsule forms a face of the Minkowski Difference
         bool isMinkowskiFaceCapsuleVsEdge(const Vector3& capsuleSegment, const Vector3& edgeAdjacentFace1Normal,
                                           const Vector3& edgeAdjacentFace2Normal) const;
 
         /// Test collision between two convex meshes
-        bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems) const;
+        bool testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchStartIndex, uint32 batchNbItems) const;
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -185,7 +185,7 @@ class SATAlgorithm {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void SATAlgorithm::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void SATAlgorithm::setProfiler(Profiler* profiler) {
 
 	mProfiler = profiler;
 }

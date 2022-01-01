@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -59,24 +59,6 @@ struct Ray {
         Ray(const Vector3& p1, const Vector3& p2, decimal maxFrac = decimal(1.0))
            : point1(p1), point2(p2), maxFraction(maxFrac) {
 
-        }
-
-        /// Copy-constructor
-        Ray(const Ray& ray) : point1(ray.point1), point2(ray.point2), maxFraction(ray.maxFraction) {
-
-        }
-
-        /// Destructor
-        ~Ray() = default;
-
-        /// Overloaded assignment operator
-        Ray& operator=(const Ray& ray) {
-            if (&ray != this) {
-                point1 = ray.point1;
-                point2 = ray.point2;
-                maxFraction = ray.maxFraction;
-            }
-            return *this;
         }
 };
 

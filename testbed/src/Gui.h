@@ -56,6 +56,11 @@ class Gui {
         // Pointer to the application
         TestbedApplication* mApp;
 
+        // Screen
+        Screen* mScreen;
+
+        GLFWwindow* mWindow;
+
         static double mScrollX, mScrollY;
 
         // Simulation panel
@@ -72,7 +77,23 @@ class Gui {
         Label* mTotalPhysicsTimeLabel;
         Label* mPhysicsStepTimeLabel;
 
+        CheckBox* mCheckboxSleeping;
+        CheckBox* mCheckboxGravity;
+        TextBox* mTextboxTimeStep;
+        TextBox* mTextboxVelocityIterations;
+        TextBox* mTextboxPositionIterations;
+        TextBox* mTextboxTimeSleep;
+        TextBox* mTextboxSleepLinearVel;
+        TextBox* mTextboxSleepAngularVel;
+
+        ToolButton* mButtonPause;
+        Widget* mPanelControls;
+
         std::vector<CheckBox*> mCheckboxesScenes;
+        ComboBox* mComboBoxScenes;
+
+        /// True if the GUI is displayed
+        bool mIsDisplayed;
 
         // -------------------- Methods -------------------- //
 
@@ -115,15 +136,35 @@ class Gui {
         ~Gui();
 
         /// Initialize the GUI
-        void init();
+        void init(GLFWwindow* window);
 
         /// Update the GUI
         void update();
 
-        /// Display the GUI
-        void render();
+        void drawAll();
+
+        void draw();
+
+        void drawTearDown();
+
+        /// Update the GUI values with the engine settings from the current scene
+        void resetWithValuesFromCurrentScene();
 
         static void setScroll(double scrollX, double scrollY);
+
+        void onWindowResizeEvent(int width, int height);
+
+        void onMouseMotionEvent(double x, double y);
+
+        bool onScrollEvent(double x, double y);
+
+        void onMouseButtonEvent(int button, int action, int modifiers);
+
+        void onKeyboardEvent(int key, int scancode, int action, int modifiers);
+
+        bool getIsDisplayed() const;
+
+        void setIsDisplayed(bool isDisplayed);
 };
 
 inline void Gui::resetScroll() {
@@ -140,6 +181,14 @@ inline std::string Gui::floatToString(float value, int precision) {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(precision) << value;
     return ss.str();
+}
+
+inline bool Gui::getIsDisplayed() const {
+    return mIsDisplayed;
+}
+
+inline void Gui::setIsDisplayed(bool isDisplayed) {
+    mIsDisplayed = isDisplayed;
 }
 
 #endif

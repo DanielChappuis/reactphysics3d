@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -47,53 +47,35 @@ SolveHingeJointSystem::SolveHingeJointSystem(PhysicsWorld& world, RigidBodyCompo
 // Initialize before solving the constraint
 void SolveHingeJointSystem::initBeforeSolve() {
 
+    const decimal biasFactor = (BETA / mTimeStep);
+
     // For each joint
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbJoints = mHingeJointComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbJoints; i++) {
 
         const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
+        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
+        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
+
+        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
+        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity));
         assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
 
         // Get the inertia tensor of bodies
-        mHingeJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
-        mHingeJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        mHingeJointComponents.mI1[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody1];
+        mHingeJointComponents.mI2[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody2];
 
         const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Compute the vector from body center to the anchor point in world-space
-        mHingeJointComponents.mR1World[i] = orientationBody1 * mHingeJointComponents.mLocalAnchorPointBody1[i];
-        mHingeJointComponents.mR2World[i] = orientationBody2 * mHingeJointComponents.mLocalAnchorPointBody2[i];
-    }
-
-    const decimal biasFactor = (BETA / mTimeStep);
-
-    // For each joint
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
-        const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
+        mHingeJointComponents.mR1World[i] = orientationBody1 * (mHingeJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mHingeJointComponents.mR2World[i] = orientationBody2 * (mHingeJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Compute vectors needed in the Jacobian
         Vector3& a1 = mHingeJointComponents.mA1[i];
@@ -109,26 +91,13 @@ void SolveHingeJointSystem::initBeforeSolve() {
 
         // Compute the bias "b" of the rotation constraints
         mHingeJointComponents.mBiasRotation[i].setToZero();
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mHingeJointComponents.mBiasRotation[i] = biasFactor * Vector2(a1.dot(b2), a1.dot(c2));
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
         // Compute the corresponding skew-symmetric matrices
         Matrix3x3 skewSymmetricMatrixU1= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR1World[i]);
         Matrix3x3 skewSymmetricMatrixU2= Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR2World[i]);
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         // Compute the inverse mass matrix K=JM^-1J^t for the 3 translation constraints (3x3 matrix)
         decimal body1MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
@@ -141,40 +110,23 @@ void SolveHingeJointSystem::initBeforeSolve() {
                                skewSymmetricMatrixU2 * mHingeJointComponents.mI2[i] * skewSymmetricMatrixU2.getTranspose();
         Matrix3x3& inverseMassMatrixTranslation = mHingeJointComponents.mInverseMassMatrixTranslation[i];
         inverseMassMatrixTranslation.setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mHingeJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse();
+        decimal massMatrixDeterminant = massMatrix.getDeterminant();
+        if (std::abs(massMatrixDeterminant) > MACHINE_EPSILON) {
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mHingeJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse(massMatrixDeterminant);
+            }
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
         // Get the bodies positions and orientations
-        const Vector3& x1 = mRigidBodyComponents.getCenterOfMassWorld(body1Entity);
-        const Vector3& x2 = mRigidBodyComponents.getCenterOfMassWorld(body2Entity);
+        const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody1];
+        const Vector3& x2 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody2];
 
         // Compute the bias "b" of the translation constraints
         mHingeJointComponents.mBiasTranslation[i].setToZero();
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mHingeJointComponents.mBiasTranslation[i] = biasFactor * (x2 + mHingeJointComponents.mR2World[i] - x1 - mHingeJointComponents.mR1World[i]);
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
         const Matrix3x3& i1 = mHingeJointComponents.mI1[i];
         const Matrix3x3& i2 = mHingeJointComponents.mI2[i];
@@ -192,17 +144,16 @@ void SolveHingeJointSystem::initBeforeSolve() {
         const decimal el22 = c2CrossA1.dot(i1C2CrossA1) + c2CrossA1.dot(i2C2CrossA1);
         const Matrix2x2 matrixKRotation(el11, el12, el21, el22);
         mHingeJointComponents.mInverseMassMatrixRotation[i].setToZero();
-        if (mRigidBodyComponents.getBodyType(body1Entity) == BodyType::DYNAMIC ||
-            mRigidBodyComponents.getBodyType(body2Entity) == BodyType::DYNAMIC) {
-            mHingeJointComponents.mInverseMassMatrixRotation[i] = matrixKRotation.getInverse();
+        decimal matrixKRotationDeterminant = matrixKRotation.getDeterminant();
+        if (std::abs(matrixKRotationDeterminant) > MACHINE_EPSILON) {
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mHingeJointComponents.mInverseMassMatrixRotation[i] = matrixKRotation.getInverse(matrixKRotationDeterminant);
+            }
         }
-    }
 
-    // If warm-starting is not enabled
-    if (!mIsWarmStartingActive) {
-
-        // For each joint
-        for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
+        // If warm-starting is not enabled
+        if (!mIsWarmStartingActive) {
 
             // Reset all the accumulated impulses
             mHingeJointComponents.mImpulseTranslation[i].setToZero();
@@ -211,19 +162,6 @@ void SolveHingeJointSystem::initBeforeSolve() {
             mHingeJointComponents.mImpulseUpperLimit[i] = decimal(0.0);
             mHingeJointComponents.mImpulseMotor[i] = decimal(0.0);
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
-        const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Compute the current angle around the hinge axis
         decimal hingeAngle = computeCurrentHingeAngle(jointEntity, orientationBody1, orientationBody2);
@@ -261,13 +199,13 @@ void SolveHingeJointSystem::initBeforeSolve() {
 
                 // Compute the bias "b" of the lower limit constraint
                 mHingeJointComponents.mBLowerLimit[i] = decimal(0.0);
-                if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+                if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
                     mHingeJointComponents.mBLowerLimit[i] = biasFactor * lowerLimitError;
                 }
 
                 // Compute the bias "b" of the upper limit constraint
                 mHingeJointComponents.mBUpperLimit[i] = decimal(0.0);
-                if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+                if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
                     mHingeJointComponents.mBUpperLimit[i] = biasFactor * upperLimitError;
                 }
             }
@@ -279,13 +217,15 @@ void SolveHingeJointSystem::initBeforeSolve() {
 void SolveHingeJointSystem::warmstart() {
 
     // For each joint component
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbJoints = mHingeJointComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbJoints; i++) {
 
         const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
+        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
+        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
@@ -332,8 +272,8 @@ void SolveHingeJointSystem::warmstart() {
         angularImpulseBody1 += motorImpulse;
 
         // Apply the impulse to the body 1
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mHingeJointComponents.mI1[i] * angularImpulseBody1;
+        v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the 3 translation constraints of body 2
         Vector3 angularImpulseBody2 = -impulseTranslation.cross(mHingeJointComponents.mR2World[i]);
@@ -348,8 +288,8 @@ void SolveHingeJointSystem::warmstart() {
         angularImpulseBody2 += -motorImpulse;
 
         // Apply the impulse to the body 2
-        v2 += inverseMassBody2 * impulseTranslation;
-        w2 += mHingeJointComponents.mI2[i] * angularImpulseBody2;
+        v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * impulseTranslation;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
     }
 }
 
@@ -357,13 +297,15 @@ void SolveHingeJointSystem::warmstart() {
 void SolveHingeJointSystem::solveVelocityConstraint() {
 
     // For each joint component
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbJoints = mHingeJointComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbJoints; i++) {
 
         const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
+        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
+        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
@@ -388,57 +330,6 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
 
         const decimal inverseMassMatrixLimitMotor = mHingeJointComponents.mInverseMassMatrixLimitMotor[i];
 
-        // --------------- Translation Constraints --------------- //
-
-        // Compute J*v
-        const Vector3 JvTranslation = v2 + w2.cross(r2World) - v1 - w1.cross(r1World);
-
-        // Compute the Lagrange multiplier lambda
-        const Vector3 deltaLambdaTranslation = mHingeJointComponents.mInverseMassMatrixTranslation[i] *
-                                               (-JvTranslation - mHingeJointComponents.mBiasTranslation[i]);
-        mHingeJointComponents.mImpulseTranslation[i] += deltaLambdaTranslation;
-
-        // Compute the impulse P=J^T * lambda of body 1
-        const Vector3 linearImpulseBody1 = -deltaLambdaTranslation;
-        Vector3 angularImpulseBody1 = deltaLambdaTranslation.cross(r1World);
-
-        // Apply the impulse to the body 1
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += i1 * angularImpulseBody1;
-
-        // Compute the impulse P=J^T * lambda of body 2
-        Vector3 angularImpulseBody2 = -deltaLambdaTranslation.cross(r2World);
-
-        // Apply the impulse to the body 2
-        v2 += inverseMassBody2 * deltaLambdaTranslation;
-        w2 += i2 * angularImpulseBody2;
-
-        // --------------- Rotation Constraints --------------- //
-
-        const Vector3& b2CrossA1 = mHingeJointComponents.mB2CrossA1[i];
-        const Vector3& c2CrossA1 = mHingeJointComponents.mC2CrossA1[i];
-
-        // Compute J*v for the 2 rotation constraints
-        const Vector2 JvRotation(-b2CrossA1.dot(w1) + b2CrossA1.dot(w2),
-                                 -c2CrossA1.dot(w1) + c2CrossA1.dot(w2));
-
-        // Compute the Lagrange multiplier lambda for the 2 rotation constraints
-        Vector2 deltaLambdaRotation = mHingeJointComponents.mInverseMassMatrixRotation[i] *
-                                      (-JvRotation - mHingeJointComponents.mBiasRotation[i]);
-        mHingeJointComponents.mImpulseRotation[i] += deltaLambdaRotation;
-
-        // Compute the impulse P=J^T * lambda for the 2 rotation constraints of body 1
-        angularImpulseBody1 = -b2CrossA1 * deltaLambdaRotation.x - c2CrossA1 * deltaLambdaRotation.y;
-
-        // Apply the impulse to the body 1
-        w1 += i1 * angularImpulseBody1;
-
-        // Compute the impulse P=J^T * lambda for the 2 rotation constraints of body 2
-        angularImpulseBody2 = b2CrossA1 * deltaLambdaRotation.x + c2CrossA1 * deltaLambdaRotation.y;
-
-        // Apply the impulse to the body 2
-        w2 += i2 * angularImpulseBody2;
-
         // --------------- Limits Constraints --------------- //
 
         if (mHingeJointComponents.mIsLimitEnabled[i]) {
@@ -459,13 +350,13 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
                 const Vector3 angularImpulseBody1 = -deltaLambdaLower * a1;
 
                 // Apply the impulse to the body 1
-                w1 += i1 * angularImpulseBody1;
+                w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
                 const Vector3 angularImpulseBody2 = deltaLambdaLower * a1;
 
                 // Apply the impulse to the body 2
-                w2 += i2 * angularImpulseBody2;
+                w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
             }
 
             // If the upper limit is violated
@@ -484,13 +375,13 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
                 const Vector3 angularImpulseBody1 = deltaLambdaUpper * a1;
 
                 // Apply the impulse to the body 1
-                w1 += i1 * angularImpulseBody1;
+                w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
                 const Vector3 angularImpulseBody2 = -deltaLambdaUpper * a1;
 
                 // Apply the impulse to the body 2
-                w2 += i2 * angularImpulseBody2;
+                w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
             }
         }
 
@@ -513,14 +404,65 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
             const Vector3 angularImpulseBody1 = -deltaLambdaMotor * a1;
 
             // Apply the impulse to the body 1
-            w1 += i1 * angularImpulseBody1;
+            w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
             // Compute the impulse P=J^T * lambda for the motor of body 2
             const Vector3 angularImpulseBody2 = deltaLambdaMotor * a1;
 
             // Apply the impulse to the body 2
-            w2 += i2 * angularImpulseBody2;
+            w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
         }
+
+        // --------------- Joint Rotation Constraints --------------- //
+
+        const Vector3& b2CrossA1 = mHingeJointComponents.mB2CrossA1[i];
+        const Vector3& c2CrossA1 = mHingeJointComponents.mC2CrossA1[i];
+
+        // Compute J*v for the 2 rotation constraints
+        const Vector2 JvRotation(-b2CrossA1.dot(w1) + b2CrossA1.dot(w2),
+                                 -c2CrossA1.dot(w1) + c2CrossA1.dot(w2));
+
+        // Compute the Lagrange multiplier lambda for the 2 rotation constraints
+        Vector2 deltaLambdaRotation = mHingeJointComponents.mInverseMassMatrixRotation[i] *
+                                      (-JvRotation - mHingeJointComponents.mBiasRotation[i]);
+        mHingeJointComponents.mImpulseRotation[i] += deltaLambdaRotation;
+
+        // Compute the impulse P=J^T * lambda for the 2 rotation constraints of body 1
+        Vector3 angularImpulseBody1 = -b2CrossA1 * deltaLambdaRotation.x - c2CrossA1 * deltaLambdaRotation.y;
+
+        // Apply the impulse to the body 1
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
+
+        // Compute the impulse P=J^T * lambda for the 2 rotation constraints of body 2
+        Vector3 angularImpulseBody2 = b2CrossA1 * deltaLambdaRotation.x + c2CrossA1 * deltaLambdaRotation.y;
+
+        // Apply the impulse to the body 2
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
+
+        // --------------- Joint Translation Constraints --------------- //
+
+        // Compute J*v
+        const Vector3 JvTranslation = v2 + w2.cross(r2World) - v1 - w1.cross(r1World);
+
+        // Compute the Lagrange multiplier lambda
+        const Vector3 deltaLambdaTranslation = mHingeJointComponents.mInverseMassMatrixTranslation[i] *
+                                               (-JvTranslation - mHingeJointComponents.mBiasTranslation[i]);
+        mHingeJointComponents.mImpulseTranslation[i] += deltaLambdaTranslation;
+
+        // Compute the impulse P=J^T * lambda of body 1
+        const Vector3 linearImpulseBody1 = -deltaLambdaTranslation;
+        angularImpulseBody1 = deltaLambdaTranslation.cross(r1World);
+
+        // Apply the impulse to the body 1
+        v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
+
+        // Compute the impulse P=J^T * lambda of body 2
+        angularImpulseBody2 = -deltaLambdaTranslation.cross(r2World);
+
+        // Apply the impulse to the body 2
+        v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * deltaLambdaTranslation;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
     }
 }
 
@@ -528,96 +470,40 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
 void SolveHingeJointSystem::solvePositionConstraint() {
 
     // For each joint component
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbEnabledJoints = mHingeJointComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbEnabledJoints; i++) {
 
         const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
+        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
+        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
 
         // Get the bodies entities
-        Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        // Recompute the inverse inertia tensors
-        mHingeJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
-        mHingeJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const Quaternion& q1 = mRigidBodyComponents.getConstrainedOrientation(body1Entity);
-        const Quaternion& q2 = mRigidBodyComponents.getConstrainedOrientation(body2Entity);
-
-        // Compute the vector from body center to the anchor point in world-space
-        mHingeJointComponents.mR1World[i] = q1 * mHingeJointComponents.mLocalAnchorPointBody1[i];
-        mHingeJointComponents.mR2World[i] = q2 * mHingeJointComponents.mLocalAnchorPointBody2[i];
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        // Compute the corresponding skew-symmetric matrices
-        Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR1World[i]);
-        Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR2World[i]);
-
-        // --------------- Translation Constraints --------------- //
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
-
-        // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
-        const decimal body1InverseMass = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
-        const decimal body2InverseMass = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
-        decimal inverseMassBodies = body1InverseMass + body2InverseMass;
-        Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
-                                        0, inverseMassBodies, 0,
-                                        0, 0, inverseMassBodies) +
-                               skewSymmetricMatrixU1 * mHingeJointComponents.mI1[i] * skewSymmetricMatrixU1.getTranspose() +
-                               skewSymmetricMatrixU2 * mHingeJointComponents.mI2[i] * skewSymmetricMatrixU2.getTranspose();
-        mHingeJointComponents.mInverseMassMatrixTranslation[i].setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mHingeJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse();
-        }
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
+        Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
         Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
+
+        // Recompute the world inverse inertia tensors
+        RigidBody::computeWorldInertiaTensorInverse(q1.getMatrix(), mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody1],
+                                                    mHingeJointComponents.mI1[i]);
+
+        RigidBody::computeWorldInertiaTensorInverse(q2.getMatrix(), mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody2],
+                                                    mHingeJointComponents.mI2[i]);
+
+        // Compute the vector from body center to the anchor point in world-space
+        mHingeJointComponents.mR1World[i] = q1 * (mHingeJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mHingeJointComponents.mR2World[i] = q2 * (mHingeJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
+
+        // Compute the corresponding skew-symmetric matrices
+        Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR1World[i]);
+        Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3::computeSkewSymmetricMatrixForCrossProduct(mHingeJointComponents.mR2World[i]);
+
 
         Vector3& b2CrossA1 = mHingeJointComponents.mB2CrossA1[i];
         Vector3& c2CrossA1 = mHingeJointComponents.mC2CrossA1[i];
@@ -636,108 +522,6 @@ void SolveHingeJointSystem::solvePositionConstraint() {
         mHingeJointComponents.mB2CrossA1[i] = b2CrossA1;
         c2CrossA1 = c2.cross(a1);
         mHingeJointComponents.mC2CrossA1[i] = c2CrossA1;
-
-        Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
-        Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
-
-        // Compute position error for the 3 translation constraints
-        const Vector3 errorTranslation = x2 + mHingeJointComponents.mR2World[i] - x1 - mHingeJointComponents.mR1World[i];
-
-        // Compute the Lagrange multiplier lambda
-        const Vector3 lambdaTranslation = mHingeJointComponents.mInverseMassMatrixTranslation[i] * (-errorTranslation);
-
-        // Compute the impulse of body 1
-        Vector3 linearImpulseBody1 = -lambdaTranslation;
-        Vector3 angularImpulseBody1 = lambdaTranslation.cross(mHingeJointComponents.mR1World[i]);
-
-        // Get the inverse mass and inverse inertia tensors of the bodies
-        decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
-        decimal inverseMassBody2 = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
-
-        // Compute the pseudo velocity of body 1
-        const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        Vector3 w1 = mHingeJointComponents.mI1[i] * angularImpulseBody1;
-
-        // Update the body position/orientation of body 1
-        x1 += v1;
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-
-        // Compute the impulse of body 2
-        Vector3 angularImpulseBody2 = -lambdaTranslation.cross(mHingeJointComponents.mR2World[i]);
-
-        // Compute the pseudo velocity of body 2
-        const Vector3 v2 = inverseMassBody2 * lambdaTranslation;
-        Vector3 w2 = mHingeJointComponents.mI2[i] * angularImpulseBody2;
-
-        // Update the body position/orientation of body 2
-        x2 += v2;
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
-
-        // --------------- Rotation Constraints --------------- //
-
-        // Compute the inverse mass matrix K=JM^-1J^t for the 2 rotation constraints (2x2 matrix)
-        Vector3 I1B2CrossA1 = mHingeJointComponents.mI1[i] * b2CrossA1;
-        Vector3 I1C2CrossA1 = mHingeJointComponents.mI1[i] * c2CrossA1;
-        Vector3 I2B2CrossA1 = mHingeJointComponents.mI2[i] * b2CrossA1;
-        Vector3 I2C2CrossA1 = mHingeJointComponents.mI2[i] * c2CrossA1;
-        const decimal el11 = b2CrossA1.dot(I1B2CrossA1) +
-                             b2CrossA1.dot(I2B2CrossA1);
-        const decimal el12 = b2CrossA1.dot(I1C2CrossA1) +
-                             b2CrossA1.dot(I2C2CrossA1);
-        const decimal el21 = c2CrossA1.dot(I1B2CrossA1) +
-                             c2CrossA1.dot(I2B2CrossA1);
-        const decimal el22 = c2CrossA1.dot(I1C2CrossA1) +
-                             c2CrossA1.dot(I2C2CrossA1);
-        const Matrix2x2 matrixKRotation(el11, el12, el21, el22);
-        mHingeJointComponents.mInverseMassMatrixRotation[i].setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-            mHingeJointComponents.mInverseMassMatrixRotation[i] = matrixKRotation.getInverse();
-        }
-
-        // Compute the position error for the 3 rotation constraints
-        const Vector2 errorRotation = Vector2(a1.dot(b2), a1.dot(c2));
-
-        // Compute the Lagrange multiplier lambda for the 3 rotation constraints
-        Vector2 lambdaRotation = mHingeJointComponents.mInverseMassMatrixRotation[i] * (-errorRotation);
-
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
-        angularImpulseBody1 = -b2CrossA1 * lambdaRotation.x - c2CrossA1 * lambdaRotation.y;
-
-        // Compute the pseudo velocity of body 1
-        w1 = mHingeJointComponents.mI1[i] * angularImpulseBody1;
-
-        // Update the body position/orientation of body 1
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-
-        // Compute the impulse of body 2
-        angularImpulseBody2 = b2CrossA1 * lambdaRotation.x + c2CrossA1 * lambdaRotation.y;
-
-        // Compute the pseudo velocity of body 2
-        w2 = mHingeJointComponents.mI2[i] * angularImpulseBody2;
-
-        // Update the body position/orientation of body 2
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mHingeJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mHingeJointComponents.mJointEntities[i];
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) continue;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        Quaternion& q1 = mRigidBodyComponents.getConstrainedOrientation(body1Entity);
-        Quaternion& q2 = mRigidBodyComponents.getConstrainedOrientation(body2Entity);
 
         // Compute the current angle around the hinge axis
         const decimal hingeAngle = computeCurrentHingeAngle(jointEntity, q1, q2);
@@ -774,7 +558,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody1 = -lambdaLowerLimit * a1;
 
                 // Compute the pseudo velocity of body 1
-                const Vector3 w1 = mHingeJointComponents.mI1[i] * angularImpulseBody1;
+                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
 
                 // Update the body position/orientation of body 1
                 q1 += Quaternion(0, w1) * q1 * decimal(0.5);
@@ -784,7 +568,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody2 = lambdaLowerLimit * a1;
 
                 // Compute the pseudo velocity of body 2
-                const Vector3 w2 = mHingeJointComponents.mI2[i] * angularImpulseBody2;
+                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
 
                 // Update the body position/orientation of body 2
                 q2 += Quaternion(0, w2) * q2 * decimal(0.5);
@@ -801,7 +585,7 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody1 = lambdaUpperLimit * a1;
 
                 // Compute the pseudo velocity of body 1
-                const Vector3 w1 = mHingeJointComponents.mI1[i] * angularImpulseBody1;
+                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
 
                 // Update the body position/orientation of body 1
                 q1 += Quaternion(0, w1) * q1 * decimal(0.5);
@@ -811,12 +595,123 @@ void SolveHingeJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody2 = -lambdaUpperLimit * a1;
 
                 // Compute the pseudo velocity of body 2
-                const Vector3 w2 = mHingeJointComponents.mI2[i] * angularImpulseBody2;
+                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
 
                 // Update the body position/orientation of body 2
                 q2 += Quaternion(0, w2) * q2 * decimal(0.5);
                 q2.normalize();
             }
+        }
+
+        // --------------- Rotation Constraints --------------- //
+
+        // Compute the inverse mass matrix K=JM^-1J^t for the 2 rotation constraints (2x2 matrix)
+        Vector3 I1B2CrossA1 = mHingeJointComponents.mI1[i] * b2CrossA1;
+        Vector3 I1C2CrossA1 = mHingeJointComponents.mI1[i] * c2CrossA1;
+        Vector3 I2B2CrossA1 = mHingeJointComponents.mI2[i] * b2CrossA1;
+        Vector3 I2C2CrossA1 = mHingeJointComponents.mI2[i] * c2CrossA1;
+        const decimal el11 = b2CrossA1.dot(I1B2CrossA1) +
+                             b2CrossA1.dot(I2B2CrossA1);
+        const decimal el12 = b2CrossA1.dot(I1C2CrossA1) +
+                             b2CrossA1.dot(I2C2CrossA1);
+        const decimal el21 = c2CrossA1.dot(I1B2CrossA1) +
+                             c2CrossA1.dot(I2B2CrossA1);
+        const decimal el22 = c2CrossA1.dot(I1C2CrossA1) +
+                             c2CrossA1.dot(I2C2CrossA1);
+        const Matrix2x2 matrixKRotation(el11, el12, el21, el22);
+        mHingeJointComponents.mInverseMassMatrixRotation[i].setToZero();
+        decimal matrixDeterminant = matrixKRotation.getDeterminant();
+        if (std::abs(matrixDeterminant) > MACHINE_EPSILON) {
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mHingeJointComponents.mInverseMassMatrixRotation[i] = matrixKRotation.getInverse(matrixDeterminant);
+            }
+
+            // Compute the position error for the 3 rotation constraints
+            const Vector2 errorRotation = Vector2(a1.dot(b2), a1.dot(c2));
+
+            // Compute the Lagrange multiplier lambda for the 3 rotation constraints
+            Vector2 lambdaRotation = mHingeJointComponents.mInverseMassMatrixRotation[i] * (-errorRotation);
+
+            // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
+            Vector3 angularImpulseBody1 = -b2CrossA1 * lambdaRotation.x - c2CrossA1 * lambdaRotation.y;
+
+            // Compute the pseudo velocity of body 1
+            Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
+
+            // Update the body position/orientation of body 1
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
+
+            // Compute the impulse of body 2
+            Vector3 angularImpulseBody2 = b2CrossA1 * lambdaRotation.x + c2CrossA1 * lambdaRotation.y;
+
+            // Compute the pseudo velocity of body 2
+            Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
+
+            // Update the body position/orientation of body 2
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
+        }
+
+        // --------------- Translation Constraints --------------- //
+
+        // Compute the matrix K=JM^-1J^t (3x3 matrix) for the 3 translation constraints
+        const decimal body1InverseMass = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
+        const decimal body2InverseMass = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
+        decimal inverseMassBodies = body1InverseMass + body2InverseMass;
+        Matrix3x3 massMatrix = Matrix3x3(inverseMassBodies, 0, 0,
+                                        0, inverseMassBodies, 0,
+                                        0, 0, inverseMassBodies) +
+                               skewSymmetricMatrixU1 * mHingeJointComponents.mI1[i] * skewSymmetricMatrixU1.getTranspose() +
+                               skewSymmetricMatrixU2 * mHingeJointComponents.mI2[i] * skewSymmetricMatrixU2.getTranspose();
+        mHingeJointComponents.mInverseMassMatrixTranslation[i].setToZero();
+        matrixDeterminant = massMatrix.getDeterminant();
+        if (std::abs(matrixDeterminant) > MACHINE_EPSILON) {
+
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+                mHingeJointComponents.mInverseMassMatrixTranslation[i] = massMatrix.getInverse(matrixDeterminant);
+            }
+
+
+            Vector3& x1 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody1];
+            Vector3& x2 = mRigidBodyComponents.mConstrainedPositions[componentIndexBody2];
+
+            // Compute position error for the 3 translation constraints
+            const Vector3 errorTranslation = x2 + mHingeJointComponents.mR2World[i] - x1 - mHingeJointComponents.mR1World[i];
+
+            // Compute the Lagrange multiplier lambda
+            const Vector3 lambdaTranslation = mHingeJointComponents.mInverseMassMatrixTranslation[i] * (-errorTranslation);
+
+            // Compute the impulse of body 1
+            Vector3 linearImpulseBody1 = -lambdaTranslation;
+            Vector3 angularImpulseBody1 = lambdaTranslation.cross(mHingeJointComponents.mR1World[i]);
+
+            // Get the inverse mass and inverse inertia tensors of the bodies
+            decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
+            decimal inverseMassBody2 = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
+
+            // Compute the pseudo velocity of body 1
+            const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+            Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mHingeJointComponents.mI1[i] * angularImpulseBody1);
+
+            // Update the body position/orientation of body 1
+            x1 += v1;
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
+
+            // Compute the impulse of body 2
+            Vector3 angularImpulseBody2 = -lambdaTranslation.cross(mHingeJointComponents.mR2World[i]);
+
+            // Compute the pseudo velocity of body 2
+            const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * lambdaTranslation;
+            Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mHingeJointComponents.mI2[i] * angularImpulseBody2);
+
+            // Update the body position/orientation of body 2
+            x2 += v2;
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
         }
     }
 }
@@ -828,10 +723,10 @@ decimal SolveHingeJointSystem::computeNormalizedAngle(decimal angle) const {
     angle = std::fmod(angle, PI_TIMES_2);
 
     // Convert it into the range [-pi; pi]
-    if (angle < -PI) {
+    if (angle < -PI_RP3D) {
         return angle + PI_TIMES_2;
     }
-    else if (angle > PI) {
+    else if (angle > PI_RP3D) {
         return angle - PI_TIMES_2;
     }
     else {
@@ -847,13 +742,13 @@ decimal SolveHingeJointSystem::computeCorrespondingAngleNearLimits(decimal input
         return inputAngle;
     }
     else if (inputAngle > upperLimitAngle) {
-        decimal diffToUpperLimit = std::fabs(computeNormalizedAngle(inputAngle - upperLimitAngle));
-        decimal diffToLowerLimit = std::fabs(computeNormalizedAngle(inputAngle - lowerLimitAngle));
+        decimal diffToUpperLimit = std::abs(computeNormalizedAngle(inputAngle - upperLimitAngle));
+        decimal diffToLowerLimit = std::abs(computeNormalizedAngle(inputAngle - lowerLimitAngle));
         return (diffToUpperLimit > diffToLowerLimit) ? (inputAngle - PI_TIMES_2) : inputAngle;
     }
     else if (inputAngle < lowerLimitAngle) {
-        decimal diffToUpperLimit = std::fabs(computeNormalizedAngle(upperLimitAngle - inputAngle));
-        decimal diffToLowerLimit = std::fabs(computeNormalizedAngle(lowerLimitAngle - inputAngle));
+        decimal diffToUpperLimit = std::abs(computeNormalizedAngle(upperLimitAngle - inputAngle));
+        decimal diffToLowerLimit = std::abs(computeNormalizedAngle(lowerLimitAngle - inputAngle));
         return (diffToUpperLimit > diffToLowerLimit) ? inputAngle : (inputAngle + PI_TIMES_2);
     }
     else {

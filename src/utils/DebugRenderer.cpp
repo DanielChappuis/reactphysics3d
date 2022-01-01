@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -124,16 +124,16 @@ void DebugRenderer::drawSphere(const Vector3& position, decimal radius, uint32 c
     Vector3 vertices[(NB_SECTORS_SPHERE + 1) * (NB_STACKS_SPHERE + 1) + (NB_SECTORS_SPHERE + 1)];
 	
 	// Vertices
-	const decimal sectorStep = 2 * PI / NB_SECTORS_SPHERE;
-	const decimal stackStep = PI / NB_STACKS_SPHERE;
+    const decimal sectorStep = 2 * PI_RP3D / NB_SECTORS_SPHERE;
+    const decimal stackStep = PI_RP3D / NB_STACKS_SPHERE;
 	
-	for (uint i = 0; i <= NB_STACKS_SPHERE; i++) {
+    for (uint32 i = 0; i <= NB_STACKS_SPHERE; i++) {
 
-		const decimal stackAngle = PI / 2 - i * stackStep;
+        const decimal stackAngle = PI_RP3D / 2 - i * stackStep;
 		const decimal radiusCosStackAngle = radius * std::cos(stackAngle);
 		const decimal z = radius * std::sin(stackAngle);
 
-        for (uint j = 0; j <= NB_SECTORS_SPHERE; j++) {
+        for (uint32 j = 0; j <= NB_SECTORS_SPHERE; j++) {
 		
 			const decimal sectorAngle = j * sectorStep;
 			const decimal x = radiusCosStackAngle * std::cos(sectorAngle);
@@ -144,12 +144,12 @@ void DebugRenderer::drawSphere(const Vector3& position, decimal radius, uint32 c
 	}
 
 	// Faces
-	for (uint i = 0; i < NB_STACKS_SPHERE; i++) {
+    for (uint32 i = 0; i < NB_STACKS_SPHERE; i++) {
 
-		uint a1 = i * (NB_SECTORS_SPHERE + 1);
-		uint a2 = a1 + NB_SECTORS_SPHERE + 1;
+        uint32 a1 = i * (NB_SECTORS_SPHERE + 1);
+        uint32 a2 = a1 + NB_SECTORS_SPHERE + 1;
 
-		for (uint j = 0; j < NB_SECTORS_SPHERE; j++, a1++, a2++) {
+        for (uint32 j = 0; j < NB_SECTORS_SPHERE; j++, a1++, a2++) {
 		
 			// 2 triangles per sector except for the first and last stacks
 
@@ -171,26 +171,26 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
 
     Vector3 vertices[(NB_SECTORS_SPHERE + 1) * (NB_STACKS_SPHERE + 1) + (NB_SECTORS_SPHERE + 1)];
 
-	const decimal halfHeight = 0.5 * height;
+    const decimal halfHeight = decimal(0.5) * height;
 
 	// Use an even number of stacks
-    const uint nbStacks = NB_STACKS_SPHERE % 2 == 0 ? NB_STACKS_SPHERE : NB_STACKS_SPHERE - 1;
-	const uint nbHalfStacks = nbStacks / 2;
+    const uint32 nbStacks = NB_STACKS_SPHERE % 2 == 0 ? NB_STACKS_SPHERE : NB_STACKS_SPHERE - 1;
+    const uint32 nbHalfStacks = nbStacks / 2;
 	
 	// Vertices
-	const decimal sectorStep = 2 * PI / NB_SECTORS_SPHERE;
-	const decimal stackStep = PI / nbStacks;
+    const decimal sectorStep = 2 * PI_RP3D / NB_SECTORS_SPHERE;
+    const decimal stackStep = PI_RP3D / nbStacks;
 	
-	uint vertexIndex = 0;
+    uint32 vertexIndex = 0;
 	
 	// Top cap sphere vertices
-    for (uint i = 0; i <= nbHalfStacks; i++) {
+    for (uint32 i = 0; i <= nbHalfStacks; i++) {
 
-		const decimal stackAngle = PI / 2 - i * stackStep;
+        const decimal stackAngle = PI_RP3D / 2 - i * stackStep;
 		const decimal radiusCosStackAngle = radius * std::cos(stackAngle);
         const decimal y = radius * std::sin(stackAngle);
 
-        for (uint j = 0; j <= NB_SECTORS_SPHERE; j++) {
+        for (uint32 j = 0; j <= NB_SECTORS_SPHERE; j++) {
 		
 			const decimal sectorAngle = j * sectorStep;
             const decimal x = radiusCosStackAngle * std::sin(sectorAngle);
@@ -204,13 +204,13 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
 	}
 
 	// Bottom cap sphere vertices
-    for (uint i = 0; i <= nbHalfStacks; i++) {
+    for (uint32 i = 0; i <= nbHalfStacks; i++) {
 
-        const decimal stackAngle = PI / 2 - (nbHalfStacks + i) * stackStep;
+        const decimal stackAngle = PI_RP3D / 2 - (nbHalfStacks + i) * stackStep;
 		const decimal radiusCosStackAngle = radius * std::cos(stackAngle);
         const decimal y = radius * std::sin(stackAngle);
 
-        for (uint j = 0; j <= NB_SECTORS_SPHERE; j++) {
+        for (uint32 j = 0; j <= NB_SECTORS_SPHERE; j++) {
 		
 			const decimal sectorAngle = j * sectorStep;
             const decimal x = radiusCosStackAngle * std::sin(sectorAngle);
@@ -224,12 +224,12 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
 	}
 
 	// Faces of the top cap sphere
-	for (uint i = 0; i < nbHalfStacks; i++) {
+    for (uint32 i = 0; i < nbHalfStacks; i++) {
 
-		uint a1 = i * (NB_SECTORS_SPHERE + 1);
-		uint a2 = a1 + NB_SECTORS_SPHERE + 1;
+        uint32 a1 = i * (NB_SECTORS_SPHERE + 1);
+        uint32 a2 = a1 + NB_SECTORS_SPHERE + 1;
 
-		for (uint j = 0; j < NB_SECTORS_SPHERE; j++, a1++, a2++) {
+        for (uint32 j = 0; j < NB_SECTORS_SPHERE; j++, a1++, a2++) {
 		
 			// 2 triangles per sector except for the first stack
 
@@ -243,12 +243,12 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
 	}
 
 	// Faces of the bottom cap sphere
-	for (uint i = 0; i < nbHalfStacks; i++) {
+    for (uint32 i = 0; i < nbHalfStacks; i++) {
 
-        uint a1 = (nbHalfStacks + 1) * (NB_SECTORS_SPHERE + 1) + i * (NB_SECTORS_SPHERE + 1);
-		uint a2 = a1 + NB_SECTORS_SPHERE + 1;
+        uint32 a1 = (nbHalfStacks + 1) * (NB_SECTORS_SPHERE + 1) + i * (NB_SECTORS_SPHERE + 1);
+        uint32 a2 = a1 + NB_SECTORS_SPHERE + 1;
 
-		for (uint j = 0; j < NB_SECTORS_SPHERE; j++, a1++, a2++) {
+        for (uint32 j = 0; j < NB_SECTORS_SPHERE; j++, a1++, a2++) {
 		
 			// 2 triangles per sector except for the last stack
 
@@ -262,11 +262,12 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
 	}
 
 	// Faces of the cylinder between the two spheres
-    uint a1 = nbHalfStacks * (NB_SECTORS_SPHERE + 1);
-    uint a2 = a1 + NB_SECTORS_SPHERE + 1;
-    for (uint i = 0; i < NB_SECTORS_SPHERE; i++, a1++, a2++) {
+    uint32 a1 = nbHalfStacks * (NB_SECTORS_SPHERE + 1);
+    uint32 a2 = a1 + NB_SECTORS_SPHERE + 1;
+    for (uint32 i = 0; i < NB_SECTORS_SPHERE; i++, a1++, a2++) {
 
 		mTriangles.add(DebugTriangle(vertices[a1 + 1], vertices[a2], vertices[a2 + 1], color));
+		mTriangles.add(DebugTriangle(vertices[a1], vertices[a2], vertices[a1 + 1], color));
 	}
 }
 
@@ -280,11 +281,12 @@ void DebugRenderer::drawConvexMesh(const Transform& transform, const ConvexMeshS
 		assert(face.faceVertices.size() >= 3);
 
 		// Perform a fan triangulation of the convex polygon face
-		for (uint32 v = 2; v < face.faceVertices.size(); v++) {
+        const uint32 nbFaceVertices = static_cast<uint32>(face.faceVertices.size());
+        for (uint32 v = 2; v < nbFaceVertices; v++) {
 
-			uint v1Index = face.faceVertices[v - 2];
-			uint v2Index = face.faceVertices[v - 1];
-			uint v3Index = face.faceVertices[v];
+            uint32 v1Index = face.faceVertices[v - 2];
+            uint32 v2Index = face.faceVertices[v - 1];
+            uint32 v3Index = face.faceVertices[v];
 
             Vector3 v1 = convexMesh->getVertexPosition(v1Index);
             Vector3 v2 = convexMesh->getVertexPosition(v2Index);
@@ -303,10 +305,10 @@ void DebugRenderer::drawConvexMesh(const Transform& transform, const ConvexMeshS
 void DebugRenderer::drawConcaveMeshShape(const Transform& transform, const ConcaveMeshShape* concaveMeshShape, uint32 color) {
 
 	// For each sub-part of the mesh
-	for (uint p = 0; p < concaveMeshShape->getNbSubparts(); p++) {
+    for (uint32 p = 0; p < concaveMeshShape->getNbSubparts(); p++) {
 
 		// For each triangle of the sub-part
-		for (uint t = 0; t < concaveMeshShape->getNbTriangles(p); t++) {
+        for (uint32 t = 0; t < concaveMeshShape->getNbTriangles(p); t++) {
 			
 			Vector3 triangleVertices[3];
 			concaveMeshShape->getTriangleVertices(p, t, triangleVertices);
@@ -399,11 +401,11 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
 	const bool drawColliderBroadphaseAABB = getIsDebugItemDisplayed(DebugItem::COLLIDER_BROADPHASE_AABB);
 	const bool drawCollisionShape = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE);
 	
-    const uint nbCollisionBodies = world.getNbCollisionBodies();
-    const uint nbRigidBodies = world.getNbRigidBodies();
+    const uint32 nbCollisionBodies = world.getNbCollisionBodies();
+    const uint32 nbRigidBodies = world.getNbRigidBodies();
 
     // For each body of the world
-    for (uint b = 0; b < nbCollisionBodies + nbRigidBodies; b++) {
+    for (uint32 b = 0; b < nbCollisionBodies + nbRigidBodies; b++) {
 
 		// Get a body
         const CollisionBody* body = b < nbCollisionBodies ? world.getCollisionBody(b) : world.getRigidBody(b - nbCollisionBodies);
@@ -411,7 +413,7 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
         if (body->isActive()) {
 
             // For each collider of the body
-            for (uint c = 0; c < body->getNbColliders(); c++) {
+            for (uint32 c = 0; c < body->getNbColliders(); c++) {
 
                 // Get a collider
                 const Collider* collider = body->getCollider(c);
@@ -447,14 +449,14 @@ void DebugRenderer::onContact(const CollisionCallback::CallbackData& callbackDat
     if (getIsDebugItemDisplayed(DebugItem::CONTACT_POINT) || getIsDebugItemDisplayed(DebugItem::CONTACT_NORMAL)) {
 
 		// For each contact pair
-		for (uint p = 0; p < callbackData.getNbContactPairs(); p++) {
+        for (uint32 p = 0; p < callbackData.getNbContactPairs(); p++) {
 
 			CollisionCallback::ContactPair contactPair = callbackData.getContactPair(p);
 
             if (contactPair.getEventType() != CollisionCallback::ContactPair::EventType::ContactExit) {
 
                 // For each contact point of the contact pair
-                for (uint c = 0; c < contactPair.getNbContactPoints(); c++) {
+                for (uint32 c = 0; c < contactPair.getNbContactPoints(); c++) {
 
                     CollisionCallback::ContactPoint contactPoint = contactPair.getContactPoint(c);
 

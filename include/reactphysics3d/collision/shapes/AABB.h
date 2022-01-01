@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -61,12 +61,6 @@ class AABB {
         /// Constructor
         AABB(const Vector3& minCoordinates, const Vector3& maxCoordinates);
 
-        /// Copy-constructor
-        AABB(const AABB& aabb);
-
-        /// Destructor
-        ~AABB() = default;
-
         /// Return the center point
         Vector3 getCenter() const;
 
@@ -110,7 +104,10 @@ class AABB {
         bool testCollisionTriangleAABB(const Vector3* trianglePoints) const;
 
         /// Return true if the ray intersects the AABB
-        bool testRayIntersect(const Ray& ray) const;
+        bool testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInv, decimal rayMaxFraction) const;
+
+        /// Compute the intersection of a ray and the AABB
+        bool raycast(const Ray& ray, Vector3& hitPoint) const;
 
         /// Apply a scale factor to the AABB
         void applyScale(const Vector3& scale);
@@ -118,53 +115,50 @@ class AABB {
         /// Create and return an AABB for a triangle
         static AABB createAABBForTriangle(const Vector3* trianglePoints);
 
-        /// Assignment operator
-        AABB& operator=(const AABB& aabb);
-
         // -------------------- Friendship -------------------- //
 
         friend class DynamicAABBTree;
 };
 
 // Return the center point of the AABB in world coordinates
-inline Vector3 AABB::getCenter() const {
+RP3D_FORCE_INLINE Vector3 AABB::getCenter() const {
     return (mMinCoordinates + mMaxCoordinates) * decimal(0.5);
 }
 
 // Return the minimum coordinates of the AABB
-inline const Vector3& AABB::getMin() const {
+RP3D_FORCE_INLINE const Vector3& AABB::getMin() const {
     return mMinCoordinates;
 }
 
 // Set the minimum coordinates of the AABB
-inline void AABB::setMin(const Vector3& min) {
+RP3D_FORCE_INLINE void AABB::setMin(const Vector3& min) {
     mMinCoordinates = min;
 }
 
 // Return the maximum coordinates of the AABB
-inline const Vector3& AABB::getMax() const {
+RP3D_FORCE_INLINE const Vector3& AABB::getMax() const {
     return mMaxCoordinates;
 }
 
 // Set the maximum coordinates of the AABB
-inline void AABB::setMax(const Vector3& max) {
+RP3D_FORCE_INLINE void AABB::setMax(const Vector3& max) {
     mMaxCoordinates = max;
 }
 
 // Return the size of the AABB in the three dimension x, y and z
-inline Vector3 AABB::getExtent() const {
+RP3D_FORCE_INLINE Vector3 AABB::getExtent() const {
   return  mMaxCoordinates - mMinCoordinates;
 }
 
 // Inflate each side of the AABB by a given size
-inline void AABB::inflate(decimal dx, decimal dy, decimal dz) {
+RP3D_FORCE_INLINE void AABB::inflate(decimal dx, decimal dy, decimal dz) {
     mMaxCoordinates += Vector3(dx, dy, dz);
     mMinCoordinates -= Vector3(dx, dy, dz);
 }
 
 // Return true if the current AABB is overlapping with the AABB in argument.
 /// Two AABBs overlap if they overlap in the three x, y and z axis at the same time
-inline bool AABB::testCollision(const AABB& aabb) const {
+RP3D_FORCE_INLINE bool AABB::testCollision(const AABB& aabb) const {
     if (mMaxCoordinates.x < aabb.mMinCoordinates.x ||
         aabb.mMaxCoordinates.x < mMinCoordinates.x) return false;
     if (mMaxCoordinates.y < aabb.mMinCoordinates.y ||
@@ -175,13 +169,13 @@ inline bool AABB::testCollision(const AABB& aabb) const {
 }
 
 // Return the volume of the AABB
-inline decimal AABB::getVolume() const {
+RP3D_FORCE_INLINE decimal AABB::getVolume() const {
     const Vector3 diff = mMaxCoordinates - mMinCoordinates;
     return (diff.x * diff.y * diff.z);
 }
 
 // Return true if the AABB of a triangle intersects the AABB
-inline bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const {
+RP3D_FORCE_INLINE bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const {
 
     if (min3(trianglePoints[0].x, trianglePoints[1].x, trianglePoints[2].x) > mMaxCoordinates.x) return false;
     if (min3(trianglePoints[0].y, trianglePoints[1].y, trianglePoints[2].y) > mMaxCoordinates.y) return false;
@@ -195,7 +189,7 @@ inline bool AABB::testCollisionTriangleAABB(const Vector3* trianglePoints) const
 }
 
 // Return true if a point is inside the AABB
-inline bool AABB::contains(const Vector3& point) const {
+RP3D_FORCE_INLINE bool AABB::contains(const Vector3& point) const {
 
     return (point.x >= mMinCoordinates.x - MACHINE_EPSILON && point.x <= mMaxCoordinates.x + MACHINE_EPSILON &&
             point.y >= mMinCoordinates.y - MACHINE_EPSILON && point.y <= mMaxCoordinates.y + MACHINE_EPSILON &&
@@ -203,18 +197,150 @@ inline bool AABB::contains(const Vector3& point) const {
 }
 
 // Apply a scale factor to the AABB
-inline void AABB::applyScale(const Vector3& scale) {
+RP3D_FORCE_INLINE void AABB::applyScale(const Vector3& scale) {
     mMinCoordinates = mMinCoordinates * scale;
     mMaxCoordinates = mMaxCoordinates * scale;
 }
 
-// Assignment operator
-inline AABB& AABB::operator=(const AABB& aabb) {
-    if (this != &aabb) {
-        mMinCoordinates = aabb.mMinCoordinates;
-        mMaxCoordinates = aabb.mMaxCoordinates;
+// Merge the AABB in parameter with the current one
+RP3D_FORCE_INLINE void AABB::mergeWithAABB(const AABB& aabb) {
+    mMinCoordinates.x = std::min(mMinCoordinates.x, aabb.mMinCoordinates.x);
+    mMinCoordinates.y = std::min(mMinCoordinates.y, aabb.mMinCoordinates.y);
+    mMinCoordinates.z = std::min(mMinCoordinates.z, aabb.mMinCoordinates.z);
+
+    mMaxCoordinates.x = std::max(mMaxCoordinates.x, aabb.mMaxCoordinates.x);
+    mMaxCoordinates.y = std::max(mMaxCoordinates.y, aabb.mMaxCoordinates.y);
+    mMaxCoordinates.z = std::max(mMaxCoordinates.z, aabb.mMaxCoordinates.z);
+}
+
+// Replace the current AABB with a new AABB that is the union of two AABBs in parameters
+RP3D_FORCE_INLINE void AABB::mergeTwoAABBs(const AABB& aabb1, const AABB& aabb2) {
+    mMinCoordinates.x = std::min(aabb1.mMinCoordinates.x, aabb2.mMinCoordinates.x);
+    mMinCoordinates.y = std::min(aabb1.mMinCoordinates.y, aabb2.mMinCoordinates.y);
+    mMinCoordinates.z = std::min(aabb1.mMinCoordinates.z, aabb2.mMinCoordinates.z);
+
+    mMaxCoordinates.x = std::max(aabb1.mMaxCoordinates.x, aabb2.mMaxCoordinates.x);
+    mMaxCoordinates.y = std::max(aabb1.mMaxCoordinates.y, aabb2.mMaxCoordinates.y);
+    mMaxCoordinates.z = std::max(aabb1.mMaxCoordinates.z, aabb2.mMaxCoordinates.z);
+}
+
+// Return true if the current AABB contains the AABB given in parameter
+RP3D_FORCE_INLINE bool AABB::contains(const AABB& aabb) const {
+
+    bool isInside = true;
+    isInside = isInside && mMinCoordinates.x <= aabb.mMinCoordinates.x;
+    isInside = isInside && mMinCoordinates.y <= aabb.mMinCoordinates.y;
+    isInside = isInside && mMinCoordinates.z <= aabb.mMinCoordinates.z;
+
+    isInside = isInside && mMaxCoordinates.x >= aabb.mMaxCoordinates.x;
+    isInside = isInside && mMaxCoordinates.y >= aabb.mMaxCoordinates.y;
+    isInside = isInside && mMaxCoordinates.z >= aabb.mMaxCoordinates.z;
+    return isInside;
+}
+
+// Create and return an AABB for a triangle
+RP3D_FORCE_INLINE AABB AABB::createAABBForTriangle(const Vector3* trianglePoints) {
+
+    Vector3 minCoords(trianglePoints[0].x, trianglePoints[0].y, trianglePoints[0].z);
+    Vector3 maxCoords(trianglePoints[0].x, trianglePoints[0].y, trianglePoints[0].z);
+
+    if (trianglePoints[1].x < minCoords.x) minCoords.x = trianglePoints[1].x;
+    if (trianglePoints[1].y < minCoords.y) minCoords.y = trianglePoints[1].y;
+    if (trianglePoints[1].z < minCoords.z) minCoords.z = trianglePoints[1].z;
+
+    if (trianglePoints[2].x < minCoords.x) minCoords.x = trianglePoints[2].x;
+    if (trianglePoints[2].y < minCoords.y) minCoords.y = trianglePoints[2].y;
+    if (trianglePoints[2].z < minCoords.z) minCoords.z = trianglePoints[2].z;
+
+    if (trianglePoints[1].x > maxCoords.x) maxCoords.x = trianglePoints[1].x;
+    if (trianglePoints[1].y > maxCoords.y) maxCoords.y = trianglePoints[1].y;
+    if (trianglePoints[1].z > maxCoords.z) maxCoords.z = trianglePoints[1].z;
+
+    if (trianglePoints[2].x > maxCoords.x) maxCoords.x = trianglePoints[2].x;
+    if (trianglePoints[2].y > maxCoords.y) maxCoords.y = trianglePoints[2].y;
+    if (trianglePoints[2].z > maxCoords.z) maxCoords.z = trianglePoints[2].z;
+
+    return AABB(minCoords, maxCoords);
+}
+
+// Return true if the ray intersects the AABB
+RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInverse, decimal rayMaxFraction) const {
+
+    // This algorithm relies on the IEE floating point properties (division by zero). If the rayDirection is zero, rayDirectionInverse and
+    // therfore t1 and t2 will be +-INFINITY. If the i coordinate of the ray's origin is inside the AABB (mMinCoordinates[i] < rayOrigin[i] < mMaxCordinates[i)), we have
+    // t1 = -t2 = +- INFINITY. Since max(n, -INFINITY) = min(n, INFINITY) = n for all n, tMin and tMax will stay unchanged. Secondly, if the i
+    // coordinate of the ray's origin is outside the box (rayOrigin[i] < mMinCoordinates[i] or rayOrigin[i] > mMaxCoordinates[i]) we have
+    // t1 = t2 = +- INFINITY and therefore either tMin = +INFINITY or tMax = -INFINITY. One of those values will stay until the end and make the
+    // method to return false. Unfortunately, if the ray lies exactly on a slab (rayOrigin[i] = mMinCoordinates[i] or rayOrigin[i] = mMaxCoordinates[i]) we
+    // have t1 = (mMinCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i] = 0 * INFINITY = NaN which is a problem for the remaining of the algorithm.
+    // This will cause the method to return true when the ray is not intersecting the AABB and therefore cause to traverse more nodes than necessary in
+    // the BVH tree. Because this should be rare, it is not really a big issue.
+    // Reference: https://tavianator.com/2011/ray_box.html
+
+    decimal t1 = (mMinCoordinates[0] - rayOrigin[0]) * rayDirectionInverse[0];
+    decimal t2 = (mMaxCoordinates[0] - rayOrigin[0]) * rayDirectionInverse[0];
+
+    decimal tMin = std::min(t1, t2);
+    decimal tMax = std::max(t1, t2);
+    tMax = std::min(tMax, rayMaxFraction);
+
+    for (int i = 1; i < 3; i++) {
+
+        t1 = (mMinCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
+        t2 = (mMaxCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
+
+        tMin = std::max(tMin, std::min(t1, t2));
+        tMax = std::min(tMax, std::max(t1, t2));
     }
-    return *this;
+
+    return tMax >= std::max(tMin, decimal(0.0));
+}
+
+// Compute the intersection of a ray and the AABB
+RP3D_FORCE_INLINE bool AABB::raycast(const Ray& ray, Vector3& hitPoint) const {
+
+    decimal tMin = decimal(0.0);
+    decimal tMax = DECIMAL_LARGEST;
+
+    const decimal epsilon = decimal(0.00001);
+
+    const Vector3 rayDirection = ray.point2 - ray.point1;
+
+    // For all three slabs
+    for (int i=0; i < 3; i++) {
+
+        // If the ray is parallel to the slab
+        if (std::abs(rayDirection[i]) < epsilon) {
+
+            // If origin of the ray is not inside the slab, no hit
+            if (ray.point1[i] < mMinCoordinates[i] || ray.point1[i] > mMaxCoordinates[i]) return false;
+        }
+        else {
+
+            decimal rayDirectionInverse = decimal(1.0) / rayDirection[i];
+            decimal t1 = (mMinCoordinates[i] - ray.point1[i]) * rayDirectionInverse;
+            decimal t2 = (mMaxCoordinates[i] - ray.point1[i]) * rayDirectionInverse;
+
+            if (t1 > t2) {
+
+                // Swap t1 and t2
+                decimal tTemp = t2;
+                t2 = t1;
+                t1 = tTemp;
+            }
+            
+            tMin = std::max(tMin, t1);
+            tMax = std::min(tMax, t2);
+            
+            // Exit with no collision 
+            if (tMin > tMax) return false;
+        }
+    }
+
+    // Compute the hit point
+    hitPoint = ray.point1 + tMin * rayDirection;
+
+    return true;
 }
 
 }

@@ -80,18 +80,30 @@ class HeightFieldScene : public SceneDemo {
         /// Height field
         HeightField* mHeightField;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        HeightFieldScene(const std::string& name, EngineSettings& settings);
+        HeightFieldScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~HeightFieldScene() override;
 
         /// Reset the scene
         virtual void reset() override ;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

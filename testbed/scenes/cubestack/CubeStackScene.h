@@ -38,7 +38,7 @@ namespace cubestackscene {
 const float SCENE_RADIUS = 30.0f;                           // Radius of the scene in meters
 const int NB_FLOORS = 15;                                    // Number of boxes in the scene
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);          // Box dimensions in meters
-const openglframework::Vector3 FLOOR_SIZE(50, 1, 50);   // Floor dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(50, 1, 20);   // Floor dimensions in meters
 
 // Class CubeStackScene
 class CubeStackScene : public SceneDemo {
@@ -53,18 +53,30 @@ class CubeStackScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CubeStackScene(const std::string& name, EngineSettings& settings);
+        CubeStackScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~CubeStackScene() override;
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

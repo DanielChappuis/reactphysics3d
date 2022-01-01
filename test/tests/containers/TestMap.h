@@ -49,7 +49,7 @@ namespace std {
 
   template <> struct hash<reactphysics3d::TestKey> {
 
-    size_t operator()(const reactphysics3d::TestKey& key) const {
+    size_t operator()(const reactphysics3d::TestKey& /*key*/) const {
         return 1;
     }
   };
@@ -221,10 +221,12 @@ class TestMap : public Test {
             map3.add(Pair<int, int>(3, 30));
             rp3d_test(map3.size() == 3);
             it = map3.begin();
-            map3.remove(it++);
-            rp3d_test(!map3.containsKey(1));
+            it = map3.remove(it);
             rp3d_test(map3.size() == 2);
-            rp3d_test(it->second == 20);
+            it = map3.remove(it);
+            rp3d_test(map3.size() == 1);
+            it = map3.remove(it);
+            rp3d_test(map3.size() == 0);
 
             map3.add(Pair<int, int>(56, 32));
             map3.add(Pair<int, int>(23, 89));
@@ -419,7 +421,7 @@ class TestMap : public Test {
 
             rp3d_test(itBegin == it);
 
-            int size = 0;
+            size_t size = 0;
             for (auto it = map1.begin(); it != map1.end(); ++it) {
                 rp3d_test(map1.containsKey(it->first));
                 size++;

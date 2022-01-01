@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -109,8 +109,11 @@ class RigidBodyComponents : public Components {
         /// Array with the inertia tensor of each component
         Vector3* mLocalInertiaTensors;
 
-        /// Array with the inverse of the inertia tensor of each component
+        /// Array with the inverse of the local inertia tensor of each component
         Vector3* mInverseInertiaTensorsLocal;
+
+        /// Array with the inverse of the world inertia tensor of each component
+        Matrix3x3* mInverseInertiaTensorsWorld;
 
         /// Array with the constrained linear velocity of each component
         Vector3* mConstrainedLinearVelocities;
@@ -142,8 +145,17 @@ class RigidBodyComponents : public Components {
         /// Array with the boolean value to know if the body has already been added into an island
         bool* mIsAlreadyInIsland;
 
-        /// For each body, the list of joints entities the body is part of
-        List<Entity>* mJoints;
+        /// For each body, the array of joints entities the body is part of
+        Array<Entity>* mJoints;
+
+        /// For each body, the array of the indices of contact pairs in which the body is involved
+        Array<uint>* mContactPairs;
+
+        /// For each body, the vector of lock translation vectors
+        Vector3* mLinearLockAxisFactors;
+
+        /// For each body, the vector of lock rotation vectors
+        Vector3* mAngularLockAxisFactors;
 
         // -------------------- Methods -------------------- //
 
@@ -258,6 +270,9 @@ class RigidBodyComponents : public Components {
         /// Return the inverse local inertia tensor of an entity
         const Vector3& getInertiaTensorLocalInverse(Entity bodyEntity);
 
+        /// Return the inverse world inertia tensor of an entity
+        const Matrix3x3& getInertiaTensorWorldInverse(Entity bodyEntity);
+
         /// Set the external force of an entity
         void setExternalForce(Entity bodyEntity, const Vector3& externalForce);
 
@@ -303,6 +318,12 @@ class RigidBodyComponents : public Components {
         /// Return true if the entity is already in an island
         bool getIsAlreadyInIsland(Entity bodyEntity) const;
 
+        /// Return the lock translation factor
+        const Vector3& getLinearLockAxisFactor(Entity bodyEntity) const;
+
+        /// Return the lock rotation factor
+        const Vector3& getAngularLockAxisFactor(Entity bodyEntity) const;
+
         /// Set the constrained linear velocity of an entity
         void setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity);
 
@@ -333,8 +354,14 @@ class RigidBodyComponents : public Components {
         /// Set the value to know if the entity is already in an island
         void setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland);
 
-        /// Return the list of joints of a body
-        const List<Entity>& getJoints(Entity bodyEntity) const;
+        /// Set the linear lock axis factor
+        void setLinearLockAxisFactor(Entity bodyEntity, const Vector3& linearLockAxisFactor);
+
+        /// Set the angular lock axis factor
+        void setAngularLockAxisFactor(Entity bodyEntity, const Vector3& rotationTranslationFactor);
+
+        /// Return the array of joints of a body
+        const Array<Entity>& getJoints(Entity bodyEntity) const;
 
         /// Add a joint to a body component
         void addJointToBody(Entity bodyEntity, Entity jointEntity);
@@ -342,10 +369,14 @@ class RigidBodyComponents : public Components {
         /// Remove a joint from a body component
         void removeJointFromBody(Entity bodyEntity, Entity jointEntity);
 
+        /// A an associated contact pairs into the contact pairs array of the body
+        void addContacPair(Entity bodyEntity, uint32 contactPairIndex);
+
         // -------------------- Friendship -------------------- //
 
         friend class PhysicsWorld;
         friend class ContactSolverSystem;
+        friend class CollisionDetectionSystem;
         friend class SolveBallAndSocketJointSystem;
         friend class SolveFixedJointSystem;
         friend class SolveHingeJointSystem;
@@ -358,7 +389,7 @@ class RigidBodyComponents : public Components {
 };
 
 // Return a pointer to a body rigid
-inline RigidBody* RigidBodyComponents::getRigidBody(Entity bodyEntity) {
+RP3D_FORCE_INLINE RigidBody* RigidBodyComponents::getRigidBody(Entity bodyEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -366,7 +397,7 @@ inline RigidBody* RigidBodyComponents::getRigidBody(Entity bodyEntity) {
 }
 
 // Return true if the body is allowed to sleep
-inline bool RigidBodyComponents::getIsAllowedToSleep(Entity bodyEntity) const {
+RP3D_FORCE_INLINE bool RigidBodyComponents::getIsAllowedToSleep(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -374,7 +405,7 @@ inline bool RigidBodyComponents::getIsAllowedToSleep(Entity bodyEntity) const {
 }
 
 // Set the value to know if the body is allowed to sleep
-inline void RigidBodyComponents::setIsAllowedToSleep(Entity bodyEntity, bool isAllowedToSleep) const {
+RP3D_FORCE_INLINE void RigidBodyComponents::setIsAllowedToSleep(Entity bodyEntity, bool isAllowedToSleep) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -382,7 +413,7 @@ inline void RigidBodyComponents::setIsAllowedToSleep(Entity bodyEntity, bool isA
 }
 
 // Return true if the body is sleeping
-inline bool RigidBodyComponents::getIsSleeping(Entity bodyEntity) const {
+RP3D_FORCE_INLINE bool RigidBodyComponents::getIsSleeping(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -390,7 +421,7 @@ inline bool RigidBodyComponents::getIsSleeping(Entity bodyEntity) const {
 }
 
 // Set the value to know if the body is sleeping
-inline void RigidBodyComponents::setIsSleeping(Entity bodyEntity, bool isSleeping) const {
+RP3D_FORCE_INLINE void RigidBodyComponents::setIsSleeping(Entity bodyEntity, bool isSleeping) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -398,7 +429,7 @@ inline void RigidBodyComponents::setIsSleeping(Entity bodyEntity, bool isSleepin
 }
 
 // Return the sleep time
-inline decimal RigidBodyComponents::getSleepTime(Entity bodyEntity) const {
+RP3D_FORCE_INLINE decimal RigidBodyComponents::getSleepTime(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -406,7 +437,7 @@ inline decimal RigidBodyComponents::getSleepTime(Entity bodyEntity) const {
 }
 
 // Set the sleep time
-inline void RigidBodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTime) const {
+RP3D_FORCE_INLINE void RigidBodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTime) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -414,7 +445,7 @@ inline void RigidBodyComponents::setSleepTime(Entity bodyEntity, decimal sleepTi
 }
 
 // Return the body type of a body
-inline BodyType RigidBodyComponents::getBodyType(Entity bodyEntity) {
+RP3D_FORCE_INLINE BodyType RigidBodyComponents::getBodyType(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -422,7 +453,7 @@ inline BodyType RigidBodyComponents::getBodyType(Entity bodyEntity) {
 }
 
 // Set the body type of a body
-inline void RigidBodyComponents::setBodyType(Entity bodyEntity, BodyType bodyType) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setBodyType(Entity bodyEntity, BodyType bodyType) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -430,7 +461,7 @@ inline void RigidBodyComponents::setBodyType(Entity bodyEntity, BodyType bodyTyp
 }
 
 // Return the linear velocity of an entity
-inline const Vector3& RigidBodyComponents::getLinearVelocity(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getLinearVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -438,7 +469,7 @@ inline const Vector3& RigidBodyComponents::getLinearVelocity(Entity bodyEntity) 
 }
 
 // Return the angular velocity of an entity
-inline const Vector3& RigidBodyComponents::getAngularVelocity(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getAngularVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -446,7 +477,7 @@ inline const Vector3& RigidBodyComponents::getAngularVelocity(Entity bodyEntity)
 }
 
 // Set the linear velocity of an entity
-inline void RigidBodyComponents::setLinearVelocity(Entity bodyEntity, const Vector3& linearVelocity) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setLinearVelocity(Entity bodyEntity, const Vector3& linearVelocity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -454,7 +485,7 @@ inline void RigidBodyComponents::setLinearVelocity(Entity bodyEntity, const Vect
 }
 
 // Set the angular velocity of an entity
-inline void RigidBodyComponents::setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setAngularVelocity(Entity bodyEntity, const Vector3& angularVelocity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -462,7 +493,7 @@ inline void RigidBodyComponents::setAngularVelocity(Entity bodyEntity, const Vec
 }
 
 // Return the external force of an entity
-inline const Vector3& RigidBodyComponents::getExternalForce(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getExternalForce(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -470,7 +501,7 @@ inline const Vector3& RigidBodyComponents::getExternalForce(Entity bodyEntity) c
 }
 
 // Return the external torque of an entity
-inline const Vector3& RigidBodyComponents::getExternalTorque(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getExternalTorque(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -478,7 +509,7 @@ inline const Vector3& RigidBodyComponents::getExternalTorque(Entity bodyEntity) 
 }
 
 // Return the linear damping factor of an entity
-inline decimal RigidBodyComponents::getLinearDamping(Entity bodyEntity) const {
+RP3D_FORCE_INLINE decimal RigidBodyComponents::getLinearDamping(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -486,7 +517,7 @@ inline decimal RigidBodyComponents::getLinearDamping(Entity bodyEntity) const {
 }
 
 // Return the angular damping factor of an entity
-inline decimal RigidBodyComponents::getAngularDamping(Entity bodyEntity) const {
+RP3D_FORCE_INLINE decimal RigidBodyComponents::getAngularDamping(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -494,7 +525,7 @@ inline decimal RigidBodyComponents::getAngularDamping(Entity bodyEntity) const {
 }
 
 // Return the mass of an entity
-inline decimal RigidBodyComponents::getMass(Entity bodyEntity) const {
+RP3D_FORCE_INLINE decimal RigidBodyComponents::getMass(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -502,7 +533,7 @@ inline decimal RigidBodyComponents::getMass(Entity bodyEntity) const {
 }
 
 // Return the inverse mass of an entity
-inline decimal RigidBodyComponents::getMassInverse(Entity bodyEntity) const {
+RP3D_FORCE_INLINE decimal RigidBodyComponents::getMassInverse(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -510,15 +541,23 @@ inline decimal RigidBodyComponents::getMassInverse(Entity bodyEntity) const {
 }
 
 // Return the inverse local inertia tensor of an entity
-inline const Vector3& RigidBodyComponents::getInertiaTensorLocalInverse(Entity bodyEntity) {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getInertiaTensorLocalInverse(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    return mInverseInertiaTensorsLocal[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+// Return the inverse world inertia tensor of an entity
+RP3D_FORCE_INLINE const Matrix3x3& RigidBodyComponents::getInertiaTensorWorldInverse(Entity bodyEntity) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the external force of an entity
-inline void RigidBodyComponents::setExternalForce(Entity bodyEntity, const Vector3& externalForce) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setExternalForce(Entity bodyEntity, const Vector3& externalForce) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -526,7 +565,7 @@ inline void RigidBodyComponents::setExternalForce(Entity bodyEntity, const Vecto
 }
 
 // Set the external force of an entity
-inline void RigidBodyComponents::setExternalTorque(Entity bodyEntity, const Vector3& externalTorque) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setExternalTorque(Entity bodyEntity, const Vector3& externalTorque) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -534,7 +573,7 @@ inline void RigidBodyComponents::setExternalTorque(Entity bodyEntity, const Vect
 }
 
 // Set the linear damping factor of an entity
-inline void RigidBodyComponents::setLinearDamping(Entity bodyEntity, decimal linearDamping) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setLinearDamping(Entity bodyEntity, decimal linearDamping) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -542,7 +581,7 @@ inline void RigidBodyComponents::setLinearDamping(Entity bodyEntity, decimal lin
 }
 
 // Set the angular damping factor of an entity
-inline void RigidBodyComponents::setAngularDamping(Entity bodyEntity, decimal angularDamping) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setAngularDamping(Entity bodyEntity, decimal angularDamping) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -550,7 +589,7 @@ inline void RigidBodyComponents::setAngularDamping(Entity bodyEntity, decimal an
 }
 
 // Set the  mass of an entity
-inline void RigidBodyComponents::setMass(Entity bodyEntity, decimal mass) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setMass(Entity bodyEntity, decimal mass) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -558,7 +597,7 @@ inline void RigidBodyComponents::setMass(Entity bodyEntity, decimal mass) {
 }
 
 // Set the mass inverse of an entity
-inline void RigidBodyComponents::setMassInverse(Entity bodyEntity, decimal inverseMass) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setMassInverse(Entity bodyEntity, decimal inverseMass) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -566,7 +605,7 @@ inline void RigidBodyComponents::setMassInverse(Entity bodyEntity, decimal inver
 }
 
 // Return the local inertia tensor of an entity
-inline const Vector3& RigidBodyComponents::getLocalInertiaTensor(Entity bodyEntity) {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getLocalInertiaTensor(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -574,7 +613,7 @@ inline const Vector3& RigidBodyComponents::getLocalInertiaTensor(Entity bodyEnti
 }
 
 // Set the local inertia tensor of an entity
-inline void RigidBodyComponents::setLocalInertiaTensor(Entity bodyEntity, const Vector3& inertiaTensorLocal) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setLocalInertiaTensor(Entity bodyEntity, const Vector3& inertiaTensorLocal) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -582,7 +621,7 @@ inline void RigidBodyComponents::setLocalInertiaTensor(Entity bodyEntity, const 
 }
 
 // Set the inverse local inertia tensor of an entity
-inline void RigidBodyComponents::setInverseInertiaTensorLocal(Entity bodyEntity, const Vector3& inertiaTensorLocalInverse) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setInverseInertiaTensorLocal(Entity bodyEntity, const Vector3& inertiaTensorLocalInverse) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -590,7 +629,7 @@ inline void RigidBodyComponents::setInverseInertiaTensorLocal(Entity bodyEntity,
 }
 
 // Return the constrained linear velocity of an entity
-inline const Vector3& RigidBodyComponents::getConstrainedLinearVelocity(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getConstrainedLinearVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -598,7 +637,7 @@ inline const Vector3& RigidBodyComponents::getConstrainedLinearVelocity(Entity b
 }
 
 // Return the constrained angular velocity of an entity
-inline const Vector3& RigidBodyComponents::getConstrainedAngularVelocity(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getConstrainedAngularVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -606,7 +645,7 @@ inline const Vector3& RigidBodyComponents::getConstrainedAngularVelocity(Entity 
 }
 
 // Return the split linear velocity of an entity
-inline const Vector3& RigidBodyComponents::getSplitLinearVelocity(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getSplitLinearVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -614,7 +653,7 @@ inline const Vector3& RigidBodyComponents::getSplitLinearVelocity(Entity bodyEnt
 }
 
 // Return the split angular velocity of an entity
-inline const Vector3& RigidBodyComponents::getSplitAngularVelocity(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getSplitAngularVelocity(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -622,7 +661,7 @@ inline const Vector3& RigidBodyComponents::getSplitAngularVelocity(Entity bodyEn
 }
 
 // Return the constrained position of an entity
-inline Vector3& RigidBodyComponents::getConstrainedPosition(Entity bodyEntity) {
+RP3D_FORCE_INLINE Vector3& RigidBodyComponents::getConstrainedPosition(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -630,7 +669,7 @@ inline Vector3& RigidBodyComponents::getConstrainedPosition(Entity bodyEntity) {
 }
 
 // Return the constrained orientation of an entity
-inline Quaternion& RigidBodyComponents::getConstrainedOrientation(Entity bodyEntity) {
+RP3D_FORCE_INLINE Quaternion& RigidBodyComponents::getConstrainedOrientation(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -638,7 +677,7 @@ inline Quaternion& RigidBodyComponents::getConstrainedOrientation(Entity bodyEnt
 }
 
 // Return the local center of mass of an entity
-inline const Vector3& RigidBodyComponents::getCenterOfMassLocal(Entity bodyEntity) {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getCenterOfMassLocal(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -646,7 +685,7 @@ inline const Vector3& RigidBodyComponents::getCenterOfMassLocal(Entity bodyEntit
 }
 
 // Return the world center of mass of an entity
-inline const Vector3& RigidBodyComponents::getCenterOfMassWorld(Entity bodyEntity) {
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getCenterOfMassWorld(Entity bodyEntity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -654,7 +693,7 @@ inline const Vector3& RigidBodyComponents::getCenterOfMassWorld(Entity bodyEntit
 }
 
 // Set the constrained linear velocity of an entity
-inline void RigidBodyComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setConstrainedLinearVelocity(Entity bodyEntity, const Vector3& constrainedLinearVelocity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -662,7 +701,7 @@ inline void RigidBodyComponents::setConstrainedLinearVelocity(Entity bodyEntity,
 }
 
 // Set the constrained angular velocity of an entity
-inline void RigidBodyComponents::setConstrainedAngularVelocity(Entity bodyEntity, const Vector3& constrainedAngularVelocity) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setConstrainedAngularVelocity(Entity bodyEntity, const Vector3& constrainedAngularVelocity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -670,7 +709,7 @@ inline void RigidBodyComponents::setConstrainedAngularVelocity(Entity bodyEntity
 }
 
 // Set the split linear velocity of an entity
-inline void RigidBodyComponents::setSplitLinearVelocity(Entity bodyEntity, const Vector3& splitLinearVelocity) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setSplitLinearVelocity(Entity bodyEntity, const Vector3& splitLinearVelocity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -678,7 +717,7 @@ inline void RigidBodyComponents::setSplitLinearVelocity(Entity bodyEntity, const
 }
 
 // Set the split angular velocity of an entity
-inline void RigidBodyComponents::setSplitAngularVelocity(Entity bodyEntity, const Vector3& splitAngularVelocity) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setSplitAngularVelocity(Entity bodyEntity, const Vector3& splitAngularVelocity) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -686,7 +725,7 @@ inline void RigidBodyComponents::setSplitAngularVelocity(Entity bodyEntity, cons
 }
 
 // Set the constrained position of an entity
-inline void RigidBodyComponents::setConstrainedPosition(Entity bodyEntity, const Vector3& constrainedPosition) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setConstrainedPosition(Entity bodyEntity, const Vector3& constrainedPosition) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -694,7 +733,7 @@ inline void RigidBodyComponents::setConstrainedPosition(Entity bodyEntity, const
 }
 
 // Set the constrained orientation of an entity
-inline void RigidBodyComponents::setConstrainedOrientation(Entity bodyEntity, const Quaternion& constrainedOrientation) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setConstrainedOrientation(Entity bodyEntity, const Quaternion& constrainedOrientation) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -702,7 +741,7 @@ inline void RigidBodyComponents::setConstrainedOrientation(Entity bodyEntity, co
 }
 
 // Set the local center of mass of an entity
-inline void RigidBodyComponents::setCenterOfMassLocal(Entity bodyEntity, const Vector3& centerOfMassLocal) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setCenterOfMassLocal(Entity bodyEntity, const Vector3& centerOfMassLocal) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -710,7 +749,7 @@ inline void RigidBodyComponents::setCenterOfMassLocal(Entity bodyEntity, const V
 }
 
 // Set the world center of mass of an entity
-inline void RigidBodyComponents::setCenterOfMassWorld(Entity bodyEntity, const Vector3& centerOfMassWorld) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setCenterOfMassWorld(Entity bodyEntity, const Vector3& centerOfMassWorld) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -718,7 +757,7 @@ inline void RigidBodyComponents::setCenterOfMassWorld(Entity bodyEntity, const V
 }
 
 // Return true if gravity is enabled for this entity
-inline bool RigidBodyComponents::getIsGravityEnabled(Entity bodyEntity) const {
+RP3D_FORCE_INLINE bool RigidBodyComponents::getIsGravityEnabled(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -726,15 +765,32 @@ inline bool RigidBodyComponents::getIsGravityEnabled(Entity bodyEntity) const {
 }
 
 // Return true if the entity is already in an island
-inline bool RigidBodyComponents::getIsAlreadyInIsland(Entity bodyEntity) const {
+RP3D_FORCE_INLINE bool RigidBodyComponents::getIsAlreadyInIsland(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    return mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]];
 }
 
+
+// Return the linear lock axis factor
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getLinearLockAxisFactor(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mLinearLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Return the angular lock axis factor
+RP3D_FORCE_INLINE const Vector3& RigidBodyComponents::getAngularLockAxisFactor(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   return mAngularLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]];
+}
+
 // Set the value to know if the gravity is enabled for this entity
-inline void RigidBodyComponents::setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setIsGravityEnabled(Entity bodyEntity, bool isGravityEnabled) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -742,31 +798,52 @@ inline void RigidBodyComponents::setIsGravityEnabled(Entity bodyEntity, bool isG
 }
 
 // Set the value to know if the entity is already in an island
-inline void RigidBodyComponents::setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland) {
+RP3D_FORCE_INLINE void RigidBodyComponents::setIsAlreadyInIsland(Entity bodyEntity, bool isAlreadyInIsland) {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
    mIsAlreadyInIsland[mMapEntityToComponentIndex[bodyEntity]] = isAlreadyInIsland;
 }
 
-// Return the list of joints of a body
-inline const List<Entity>& RigidBodyComponents::getJoints(Entity bodyEntity) const {
+// Set the linear lock axis factor
+RP3D_FORCE_INLINE void RigidBodyComponents::setLinearLockAxisFactor(Entity bodyEntity, const Vector3& linearLockAxisFactor) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+   mLinearLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]] = linearLockAxisFactor;
+}
+
+// Set the angular lock axis factor
+RP3D_FORCE_INLINE void RigidBodyComponents::setAngularLockAxisFactor(Entity bodyEntity, const Vector3& angularLockAxisFactor) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+   mAngularLockAxisFactors[mMapEntityToComponentIndex[bodyEntity]] = angularLockAxisFactor;
+}
+
+// Return the array of joints of a body
+RP3D_FORCE_INLINE const Array<Entity>& RigidBodyComponents::getJoints(Entity bodyEntity) const {
 
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
    return mJoints[mMapEntityToComponentIndex[bodyEntity]];
 }
 
 // Add a joint to a body component
-inline void RigidBodyComponents::addJointToBody(Entity bodyEntity, Entity jointEntity) {
+RP3D_FORCE_INLINE void RigidBodyComponents::addJointToBody(Entity bodyEntity, Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
     mJoints[mMapEntityToComponentIndex[bodyEntity]].add(jointEntity);
 }
 
 // Remove a joint from a body component
-inline void RigidBodyComponents::removeJointFromBody(Entity bodyEntity, Entity jointEntity) {
+RP3D_FORCE_INLINE void RigidBodyComponents::removeJointFromBody(Entity bodyEntity, Entity jointEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
     mJoints[mMapEntityToComponentIndex[bodyEntity]].remove(jointEntity);
+}
+
+// A an associated contact pairs into the contact pairs array of the body
+RP3D_FORCE_INLINE void RigidBodyComponents::addContacPair(Entity bodyEntity, uint32 contactPairIndex) {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+    mContactPairs[mMapEntityToComponentIndex[bodyEntity]].add(contactPairIndex);
 }
 
 }

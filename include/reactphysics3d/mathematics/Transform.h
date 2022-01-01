@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -63,12 +63,6 @@ class Transform {
         /// Constructor
         Transform(const Vector3& position, const Quaternion& orientation);
 
-        /// Destructor
-        ~Transform() = default;
-
-        /// Copy-constructor
-        Transform(const Transform& transform);
-
         /// Return the origin of the transform
         const Vector3& getPosition() const;
 
@@ -116,71 +110,62 @@ class Transform {
         /// Return true if the two transforms are different
         bool operator!=(const Transform& transform2) const;
 
-        /// Assignment operator
-        Transform& operator=(const Transform& transform);
-
         /// Return the string representation
         std::string to_string() const;
 
 };
 
 // Constructor
-inline Transform::Transform() : mPosition(Vector3(0.0, 0.0, 0.0)), mOrientation(Quaternion::identity()) {
+RP3D_FORCE_INLINE Transform::Transform() : mPosition(Vector3(0.0, 0.0, 0.0)), mOrientation(Quaternion::identity()) {
 
 }
 
 // Constructor
-inline Transform::Transform(const Vector3& position, const Matrix3x3& orientation)
+RP3D_FORCE_INLINE Transform::Transform(const Vector3& position, const Matrix3x3& orientation)
           : mPosition(position), mOrientation(Quaternion(orientation)) {
 
 }
 
 // Constructor
-inline Transform::Transform(const Vector3& position, const Quaternion& orientation)
+RP3D_FORCE_INLINE Transform::Transform(const Vector3& position, const Quaternion& orientation)
           : mPosition(position), mOrientation(orientation) {
 
 }
 
-// Copy-constructor
-inline Transform::Transform(const Transform& transform)
-          : mPosition(transform.mPosition), mOrientation(transform.mOrientation) {
-
-}
-
 // Return the position of the transform
-inline const Vector3& Transform::getPosition() const {
+RP3D_FORCE_INLINE const Vector3& Transform::getPosition() const {
     return mPosition;
 }
 
 // Set the origin of the transform
-inline void Transform::setPosition(const Vector3& position) {
+RP3D_FORCE_INLINE void Transform::setPosition(const Vector3& position) {
     mPosition = position;
 }
 
 // Return the rotation matrix
-inline const Quaternion& Transform::getOrientation() const {
+RP3D_FORCE_INLINE const Quaternion& Transform::getOrientation() const {
     return mOrientation;
 }
 
 // Set the rotation matrix of the transform
-inline void Transform::setOrientation(const Quaternion& orientation) {
+RP3D_FORCE_INLINE void Transform::setOrientation(const Quaternion& orientation) {
     mOrientation = orientation;
 }
 
 // Set the transform to the identity transform
-inline void Transform::setToIdentity() {
+RP3D_FORCE_INLINE void Transform::setToIdentity() {
     mPosition = Vector3(0.0, 0.0, 0.0);
     mOrientation = Quaternion::identity();
 }                                           
 
 // Return the inverse of the transform
-inline Transform Transform::getInverse() const {
+RP3D_FORCE_INLINE Transform Transform::getInverse() const {
     const Quaternion& invQuaternion = mOrientation.getInverse();
     return Transform(invQuaternion * (-mPosition), invQuaternion);
 }
 
 // Return an interpolated transform
-inline Transform Transform::interpolateTransforms(const Transform& oldTransform,
+RP3D_FORCE_INLINE Transform Transform::interpolateTransforms(const Transform& oldTransform,
                                                   const Transform& newTransform,
                                                   decimal interpolationFactor) {
 
@@ -195,22 +180,22 @@ inline Transform Transform::interpolateTransforms(const Transform& oldTransform,
 }
 
 // Return the identity transform
-inline Transform Transform::identity() {
+RP3D_FORCE_INLINE Transform Transform::identity() {
     return Transform(Vector3(0, 0, 0), Quaternion::identity());
 }
 
 // Return true if it is a valid transform
-inline bool Transform::isValid() const {
+RP3D_FORCE_INLINE bool Transform::isValid() const {
     return mPosition.isFinite() && mOrientation.isValid();
 }
 
 // Return the transformed vector
-inline Vector3 Transform::operator*(const Vector3& vector) const {
+RP3D_FORCE_INLINE Vector3 Transform::operator*(const Vector3& vector) const {
     return (mOrientation * vector) + mPosition;
 }
 
 // Operator of multiplication of a transform with another one
-inline Transform Transform::operator*(const Transform& transform2) const {
+RP3D_FORCE_INLINE Transform Transform::operator*(const Transform& transform2) const {
 
     // The following code is equivalent to this
     //return Transform(mPosition + mOrientation * transform2.mPosition,
@@ -239,26 +224,17 @@ inline Transform Transform::operator*(const Transform& transform2) const {
 }
 
 // Return true if the two transforms are equal
-inline bool Transform::operator==(const Transform& transform2) const {
+RP3D_FORCE_INLINE bool Transform::operator==(const Transform& transform2) const {
     return (mPosition == transform2.mPosition) && (mOrientation == transform2.mOrientation);
 }    
 
 // Return true if the two transforms are different
-inline bool Transform::operator!=(const Transform& transform2) const {
+RP3D_FORCE_INLINE bool Transform::operator!=(const Transform& transform2) const {
     return !(*this == transform2);
 }
 
-// Assignment operator
-inline Transform& Transform::operator=(const Transform& transform) {
-    if (&transform != this) {
-        mPosition = transform.mPosition;
-        mOrientation = transform.mOrientation;
-    }
-    return *this;
-}
-
 // Get the string representation
-inline std::string Transform::to_string() const {
+RP3D_FORCE_INLINE std::string Transform::to_string() const {
     return "Transform(" + mPosition.to_string() + "," + mOrientation.to_string() + ")";
 }
 

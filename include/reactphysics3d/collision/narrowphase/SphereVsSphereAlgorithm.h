@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -34,7 +34,7 @@ namespace reactphysics3d {
 
 // Declarations
 class ContactPoint;
-struct SphereVsSphereNarrowPhaseInfoBatch;
+struct NarrowPhaseInfoBatch;
 
 // Class SphereVsSphereAlgorithm
 /**
@@ -65,8 +65,8 @@ class SphereVsSphereAlgorithm : public NarrowPhaseAlgorithm {
         SphereVsSphereAlgorithm& operator=(const SphereVsSphereAlgorithm& algorithm) = delete;
 
         /// Compute a contact info if the two bounding volume collide
-        bool testCollision(SphereVsSphereNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex,
-                           uint batchNbItems, MemoryAllocator& memoryAllocator);
+        bool testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchStartIndex,
+                           uint32 batchNbItems, MemoryAllocator& memoryAllocator);
 };
 
 }

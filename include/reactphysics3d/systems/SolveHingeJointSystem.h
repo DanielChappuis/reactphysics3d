@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -141,20 +141,20 @@ class SolveHingeJointSystem {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void SolveHingeJointSystem::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void SolveHingeJointSystem::setProfiler(Profiler* profiler) {
     mProfiler = profiler;
 }
 
 #endif
 
 // Set the time step
-inline void SolveHingeJointSystem::setTimeStep(decimal timeStep) {
+RP3D_FORCE_INLINE void SolveHingeJointSystem::setTimeStep(decimal timeStep) {
     assert(timeStep > decimal(0.0));
     mTimeStep = timeStep;
 }
 
 // Set to true to enable warm starting
-inline void SolveHingeJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
+RP3D_FORCE_INLINE void SolveHingeJointSystem::setIsWarmStartingActive(bool isWarmStartingActive) {
     mIsWarmStartingActive = isWarmStartingActive;
 }
 

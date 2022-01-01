@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -43,9 +43,9 @@ using namespace reactphysics3d;
  * @param vertexDataType Data type of the vertices data
  * @param indexDataType Data type of the face indices data
  */
-PolygonVertexArray::PolygonVertexArray(uint nbVertices, const void* verticesStart, int verticesStride,
-                                       const void* indexesStart, int indexesStride,
-                                       uint nbFaces, PolygonFace* facesStart,
+PolygonVertexArray::PolygonVertexArray(uint32 nbVertices, const void* verticesStart, uint32 verticesStride,
+                                       const void* indexesStart, uint32 indexesStride,
+                                       uint32 nbFaces, PolygonFace* facesStart,
                                        VertexDataType vertexDataType, IndexDataType indexDataType) {
     mNbVertices = nbVertices;
     mVerticesStart = reinterpret_cast<const unsigned char*>(verticesStart);
@@ -62,12 +62,12 @@ PolygonVertexArray::PolygonVertexArray(uint nbVertices, const void* verticesStar
 /**
  * @return The index of a vertex (in the array of vertices data) of a given vertex in a face
  */
-uint PolygonVertexArray::getVertexIndexInFace(uint faceIndex, uint noVertexInFace) const {
+uint32 PolygonVertexArray::getVertexIndexInFace(uint32 faceIndex32, uint32 noVertexInFace) const {
 
-    assert(faceIndex < mNbFaces);
+    assert(faceIndex32 < mNbFaces);
 
     // Get the face
-    PolygonFace* face = getPolygonFace(faceIndex);
+    PolygonFace* face = getPolygonFace(faceIndex32);
 
     assert(noVertexInFace < face->nbVertices);
 

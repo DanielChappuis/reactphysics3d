@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -102,7 +102,7 @@ void Components::removeComponent(Entity entity) {
 
     assert(mMapEntityToComponentIndex.containsKey(entity));
 
-    uint index = mMapEntityToComponentIndex[entity];
+    uint32 index = mMapEntityToComponentIndex[entity];
 
     assert(index < mNbComponents);
 

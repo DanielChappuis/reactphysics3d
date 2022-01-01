@@ -44,7 +44,7 @@ class DynamicTreeRaycastCallback : public DynamicAABBTreeRaycastCallback {
         std::vector<int> mHitNodes;
 
         // Called when the AABB of a leaf node is hit by a ray
-        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& ray) override {
+        virtual decimal raycastBroadPhaseShape(int32 nodeId, const Ray& /*ray*/) override {
             mHitNodes.push_back(nodeId);
             return 1.0;
         }
@@ -76,7 +76,7 @@ class DefaultTestTreeAllocator : public MemoryAllocator {
         }
 
         /// Release previously allocated memory.
-        virtual void release(void* pointer, size_t size) override {
+        virtual void release(void* pointer, size_t /*size*/) override {
             free(pointer);
         }
 };
@@ -126,7 +126,7 @@ class TestDynamicAABBTree : public Test {
 
         }
 
-        bool isOverlapping(int nodeId, const List<int>& overlappingNodes) const {
+        bool isOverlapping(int nodeId, const Array<int>& overlappingNodes) const {
             return std::find(overlappingNodes.begin(), overlappingNodes.end(), nodeId) != overlappingNodes.end();
         }
 
@@ -223,7 +223,7 @@ class TestDynamicAABBTree : public Test {
 
             // ---------- Tests ---------- //
 
-            List<int> overlappingNodes(mAllocator);
+            Array<int> overlappingNodes(mAllocator);
 
             // AABB overlapping nothing
             overlappingNodes.clear();

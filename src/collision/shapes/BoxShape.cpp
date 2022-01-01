@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -27,6 +27,7 @@
 #include <reactphysics3d/collision/shapes/BoxShape.h>
 #include <reactphysics3d/collision/Collider.h>
 #include <reactphysics3d/configuration.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/memory/MemoryManager.h>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <cassert>
@@ -37,46 +38,12 @@ using namespace reactphysics3d;
 /**
  * @param halfExtents The vector with the three half-extents of the box
  */
-BoxShape::BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator)
-         : ConvexPolyhedronShape(CollisionShapeName::BOX, allocator), mHalfExtents(halfExtents),
-           mHalfEdgeStructure(allocator, 6, 8, 24) {
+BoxShape::BoxShape(const Vector3& halfExtents, MemoryAllocator& allocator, PhysicsCommon& physicsCommon)
+         : ConvexPolyhedronShape(CollisionShapeName::BOX, allocator), mHalfExtents(halfExtents), mPhysicsCommon(physicsCommon) {
 
     assert(halfExtents.x > decimal(0.0));
     assert(halfExtents.y > decimal(0.0));
     assert(halfExtents.z > decimal(0.0));
-
-    // Vertices
-    mHalfEdgeStructure.addVertex(0);
-    mHalfEdgeStructure.addVertex(1);
-    mHalfEdgeStructure.addVertex(2);
-    mHalfEdgeStructure.addVertex(3);
-    mHalfEdgeStructure.addVertex(4);
-    mHalfEdgeStructure.addVertex(5);
-    mHalfEdgeStructure.addVertex(6);
-    mHalfEdgeStructure.addVertex(7);
-
-    // Faces
-    List<uint> face0(allocator, 4);
-    face0.add(0); face0.add(1); face0.add(2); face0.add(3);
-    List<uint> face1(allocator, 4);
-    face1.add(1); face1.add(5); face1.add(6); face1.add(2);
-    List<uint> face2(allocator, 4);
-    face2.add(4); face2.add(7); face2.add(6); face2.add(5);
-    List<uint> face3(allocator, 4);
-    face3.add(4); face3.add(0); face3.add(3); face3.add(7);
-    List<uint> face4(allocator, 4);
-    face4.add(4); face4.add(5); face4.add(1); face4.add(0);
-    List<uint> face5(allocator, 4);
-    face5.add(2); face5.add(6); face5.add(7); face5.add(3);
-
-    mHalfEdgeStructure.addFace(face0);
-    mHalfEdgeStructure.addFace(face1);
-    mHalfEdgeStructure.addFace(face2);
-    mHalfEdgeStructure.addFace(face3);
-    mHalfEdgeStructure.addFace(face4);
-    mHalfEdgeStructure.addFace(face5);
-
-	mHalfEdgeStructure.init();
 }
 
 // Return the local inertia tensor of the collision shape
@@ -92,7 +59,7 @@ Vector3 BoxShape::getLocalInertiaTensor(decimal mass) const {
 }
 
 // Raycast method with feedback information
-bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& allocator) const {
+bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& /*allocator*/) const {
 
     Vector3 rayDirection = ray.point2 - ray.point1;
     decimal tMin = DECIMAL_SMALLEST;
@@ -154,4 +121,22 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* colli
     raycastInfo.worldNormal = normalDirection;
 
     return true;
+}
+
+// Return a given face of the polyhedron
+const HalfEdgeStructure::Face& BoxShape::getFace(uint32 faceIndex) const {
+    assert(faceIndex < mPhysicsCommon.mBoxShapeHalfEdgeStructure.getNbFaces());
+    return mPhysicsCommon.mBoxShapeHalfEdgeStructure.getFace(faceIndex);
+}
+
+// Return a given vertex of the polyhedron
+const HalfEdgeStructure::Vertex& BoxShape::getVertex(uint32 vertexIndex) const {
+    assert(vertexIndex < getNbVertices());
+    return mPhysicsCommon.mBoxShapeHalfEdgeStructure.getVertex(vertexIndex);
+}
+
+// Return a given half-edge of the polyhedron
+const HalfEdgeStructure::Edge& BoxShape::getHalfEdge(uint32 edgeIndex) const {
+    assert(edgeIndex < getNbHalfEdges());
+    return mPhysicsCommon.mBoxShapeHalfEdgeStructure.getHalfEdge(edgeIndex);
 }

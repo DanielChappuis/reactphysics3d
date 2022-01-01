@@ -30,6 +30,8 @@
 #include "openglframework.h"
 #include <reactphysics3d/reactphysics3d.h>
 
+using namespace std::chrono_literals;
+
 // Structure ContactPoint
 struct SceneContactPoint {
 
@@ -51,8 +53,8 @@ struct EngineSettings {
 
     public:
 
-       long double elapsedTime;             // Elapsed time (in seconds)
-       float timeStep;                      // Current time step (in seconds)
+       std::chrono::duration<double> elapsedTime;    // Elapsed time (in seconds)
+       std::chrono::duration<double> timeStep;       // Current time step (in seconds)
        unsigned int nbVelocitySolverIterations;      // Nb of velocity solver iterations
        unsigned int nbPositionSolverIterations;      // Nb of position solver iterations
        bool isSleepingEnabled;              // True if sleeping technique is enabled
@@ -73,7 +75,7 @@ struct EngineSettings {
            EngineSettings defaultSettings;
 
            rp3d::PhysicsWorld::WorldSettings worldSettings;
-           defaultSettings.timeStep = 1.0f / 60.0f;
+           defaultSettings.timeStep = std::chrono::duration<double>(1.0f / 60.0f);
            defaultSettings.nbVelocitySolverIterations = worldSettings.defaultVelocitySolverNbIterations;
            defaultSettings.nbPositionSolverIterations = worldSettings.defaultPositionSolverNbIterations;
            defaultSettings.isSleepingEnabled = worldSettings.isSleepingEnabled;
@@ -81,6 +83,7 @@ struct EngineSettings {
            defaultSettings.sleepLinearVelocity = worldSettings.defaultSleepLinearVelocity;
            defaultSettings.sleepAngularVelocity = worldSettings.defaultSleepAngularVelocity;
            defaultSettings.isGravityEnabled = true;
+           defaultSettings.gravity = openglframework::Vector3(0, -9.81, 0);
 
            return defaultSettings;
        }
@@ -92,13 +95,17 @@ class Scene : public rp3d::EventListener {
 
     protected:
 
+        // -------------------- Constants -------------------- //
+
+        static constexpr float MOUSE_CAMERA_ROTATION_SCALING_FACTOR = 1.0f;
+
         // -------------------- Attributes -------------------- //
 
         /// Scene name
         std::string mName;
 
         /// Physics engine settings
-        EngineSettings& mEngineSettings;
+        EngineSettings mEngineSettings;
 
         /// Camera
         openglframework::Camera mCamera;
@@ -115,11 +122,11 @@ class Scene : public rp3d::EventListener {
         /// Last point computed on a sphere (for camera rotation)
         openglframework::Vector3 mLastPointOnSphere;
 
-        /// True if the last point computed on a sphere (for camera rotation) is valid
-        bool mIsLastPointOnSphereValid;
-
         /// Interpolation factor for the bodies in the current frame
         float mInterpolationFactor;
+
+        /// Current camera vertical angle around the horizontal axis (in radians)
+        double mCurrentCameraVerticalAngle;
 
         /// Viewport x,y, width and height values
         int mViewportX, mViewportY, mViewportWidth, mViewportHeight;
@@ -147,6 +154,12 @@ class Scene : public rp3d::EventListener {
 
         /// Snapshots Contact points (computed with PhysicsWorld::testCollision() or PhysicsWorld::raycast() methods)
         std::vector<SceneContactPoint> mSnapshotsContactPoints;
+
+        /// Initial zoom factor
+        float mInitZoom;
+
+        /// True if the automatic camera rotation animation is enabled
+        bool mIsCameraRotationAnimationEnabled;
 
         // -------------------- Methods -------------------- //
 
@@ -199,8 +212,7 @@ class Scene : public rp3d::EventListener {
         virtual bool keyboardEvent(int key, int scancode, int action, int mods);
 
         /// Called when a mouse button event occurs
-        virtual bool mouseButtonEvent(int button, bool down, int mods,
-                                      double mousePosX, double mousePosY);
+        virtual bool mouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY);
 
         /// Called when a mouse motion event occurs
         virtual bool mouseMotionEvent(double xMouse, double yMouse, int leftButtonState,
@@ -214,6 +226,12 @@ class Scene : public rp3d::EventListener {
 
         /// Set the viewport to render the scene
         void setViewport(int x, int y, int width, int height);
+
+        /// Return the initial zoom factor
+        float getInitZoom() const;
+
+        /// Set the initial zoom factor
+        void setInitZoom(float zoom);
 
         /// Return a reference to the camera
         const openglframework::Camera& getCamera() const;
@@ -256,10 +274,20 @@ class Scene : public rp3d::EventListener {
 
         /// Update the engine settings
         virtual void updateEngineSettings() = 0;
+
+        /// Return a reference to the engine settings of the scene
+        EngineSettings& getEngineSettings();
+
+        /// Return true if the camera rotation animation is enabled
+        bool getIsCameraRotationAnimationEnabled() const;
+
+        /// Set whether the camera rotation animation is enabled or not
+        void setIsCameraRotationAnimationEnabled(bool isRotationEnabled);
+
 };
 
 // Called when a keyboard event occurs
-inline bool Scene::keyboardEvent(int key, int scancode, int action, int mods) {
+inline bool Scene::keyboardEvent(int /*key*/, int /*scancode*/, int /*action*/, int /*mods*/) {
     return false;
 }
 
@@ -270,6 +298,7 @@ inline void Scene::reshape(int width, int height) {
 
 // Reset the scene
 inline void Scene::reset() {
+    mEngineSettings.elapsedTime = std::chrono::milliseconds::zero();
     mSnapshotsContactPoints.clear();
 }
 
@@ -290,6 +319,16 @@ inline void Scene::setViewport(int x, int y, int width, int height) {
     mViewportY = y;
     mViewportWidth = width;
     mViewportHeight = height;
+}
+
+// Return the initial zoom factor
+inline float Scene::getInitZoom() const {
+   return mInitZoom;
+}
+
+// Set the initial zoom factor
+inline void Scene::setInitZoom(float zoom) {
+    mInitZoom = zoom;
 }
 
 // Set the interpolation factor
@@ -345,6 +384,21 @@ inline bool Scene::getIsWireframeEnabled() const {
 // Enable/disable wireframe rendering
 inline void Scene::setIsWireframeEnabled(bool isEnabled) {
     mIsWireframeEnabled = isEnabled;
+}
+
+// Return a reference to the engine settings of the scene
+inline EngineSettings& Scene::getEngineSettings() {
+    return mEngineSettings;
+}
+
+// Return true if the scene rotation is enabled
+inline bool Scene::getIsCameraRotationAnimationEnabled() const {
+    return mIsCameraRotationAnimationEnabled;
+}
+
+// Set whether the scene rotation is enabled or no
+inline void Scene::setIsCameraRotationAnimationEnabled(bool isRotationEnabled) {
+    mIsCameraRotationAnimationEnabled = isRotationEnabled;
 }
 
 #endif

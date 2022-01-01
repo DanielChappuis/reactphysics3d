@@ -31,32 +31,36 @@ using namespace openglframework;
 using namespace trianglemeshscene;
 
 // Constructor
-ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& settings)
-      : SceneDemo(name, settings, true, SCENE_RADIUS) {
+ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
+      : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
 
     std::string meshFolderPath("meshes/");
 
     // Compute the radius and the center of the scene
-    openglframework::Vector3 center(0, 5, 0);
+    openglframework::Vector3 center(0, 15, 0);
 
     // Set the center of the scene
     setScenePosition(center, SCENE_RADIUS);
+    setInitZoom(1.5);
+    resetCameraToViewAll();
+
+    mWorldSettings.worldName = name;
+}
+
+// Destructor
+ConcaveMeshScene::~ConcaveMeshScene() {
+
+    destroyPhysicsWorld();
+}
+
+// Create the physics world
+void ConcaveMeshScene::createPhysicsWorld() {
 
     // Gravity vector in the physics world
-    rp3d::Vector3 gravity(0, rp3d::decimal(-9.81), 0);
-
-    rp3d::PhysicsWorld::WorldSettings worldSettings;
-    worldSettings.worldName = name;
-
-    // Logger
-    rp3d::DefaultLogger* defaultLogger = mPhysicsCommon.createDefaultLogger();
-    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information) | static_cast<uint>(rp3d::Logger::Level::Warning) |
-            static_cast<uint>(rp3d::Logger::Level::Error);
-    defaultLogger->addFileDestination("rp3d_log_" + name + ".html", logLevel, rp3d::DefaultLogger::Format::HTML);
-    mPhysicsCommon.setLogger(defaultLogger);
+    mWorldSettings.gravity = rp3d::Vector3(mEngineSettings.gravity.x, mEngineSettings.gravity.y, mEngineSettings.gravity.z);
 
     // Create the physics world for the physics simulation
-    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(worldSettings);
+    rp3d::PhysicsWorld* physicsWorld = mPhysicsCommon.createPhysicsWorld(mWorldSettings);
     physicsWorld->setEventListener(this);
     mPhysicsWorld = physicsWorld;
 
@@ -64,7 +68,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        Dumbbell* dumbbell = new Dumbbell(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
+        Dumbbell* dumbbell = new Dumbbell(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         dumbbell->setColor(mObjectColorDemo);
@@ -106,10 +110,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     for (int i = 0; i<NB_SPHERES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-
-        // Add some rolling resistance
-        sphere->getCollider()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
+        Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         sphere->setColor(mObjectColorDemo);
@@ -129,9 +130,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
 
         // Create a cylinder and a corresponding rigid in the physics world
         Capsule* capsule = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT,
-                                       mPhysicsCommon, mPhysicsWorld, meshFolderPath);
-
-        capsule->getCollider()->getMaterial().setRollingResistance(rp3d::decimal(0.08));
+                                       mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         capsule->setColor(mObjectColorDemo);
@@ -150,7 +149,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     for (int i = 0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -168,7 +167,7 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     // ---------- Create the triangular mesh ---------- //
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mConcaveMesh = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, meshFolderPath + "city.obj");
+    mConcaveMesh = new ConcaveMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.5, 0.5, 0.5));
 
     // Set the mesh as beeing static
     mConcaveMesh->getRigidBody()->setType(rp3d::BodyType::STATIC);
@@ -183,40 +182,10 @@ ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& sett
     rp3d::Material& material = mConcaveMesh->getCollider()->getMaterial();
     material.setBounciness(rp3d::decimal(0.2));
     material.setFrictionCoefficient(rp3d::decimal(0.1));
-
-    // Get the physics engine parameters
-    mEngineSettings.isGravityEnabled = mPhysicsWorld->isGravityEnabled();
-    rp3d::Vector3 gravityVector = mPhysicsWorld->getGravity();
-    mEngineSettings.gravity = openglframework::Vector3(gravityVector.x, gravityVector.y, gravityVector.z);
-    mEngineSettings.isSleepingEnabled = mPhysicsWorld->isSleepingEnabled();
-    mEngineSettings.sleepLinearVelocity = mPhysicsWorld->getSleepLinearVelocity();
-    mEngineSettings.sleepAngularVelocity = mPhysicsWorld->getSleepAngularVelocity();
-    mEngineSettings.nbPositionSolverIterations = mPhysicsWorld->getNbIterationsPositionSolver();
-    mEngineSettings.nbVelocitySolverIterations = mPhysicsWorld->getNbIterationsVelocitySolver();
-    mEngineSettings.timeBeforeSleep = mPhysicsWorld->getTimeBeforeSleep();
 }
 
-// Destructor
-ConcaveMeshScene::~ConcaveMeshScene() {
-
-    // Destroy all the physics objects of the scene
-    for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
-
-        // Destroy the corresponding rigid body from the physics world
-        mPhysicsWorld->destroyRigidBody((*it)->getRigidBody());
-
-        // Destroy the object
-        delete (*it);
-    }
-
-    // Destroy the physics world
-    mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
-}
-
-// Reset the scene
-void ConcaveMeshScene::reset() {
-
-    SceneDemo::reset();
+// Initialize the bodies positions
+void ConcaveMeshScene::initBodiesPositions() {
 
     const float radius = 15.0f;
 
@@ -281,5 +250,39 @@ void ConcaveMeshScene::reset() {
 
     // ---------- Create the triangular mesh ---------- //
 
-    mConcaveMesh->setTransform(rp3d::Transform::identity());
+
+    mConcaveMesh->setTransform(rp3d::Transform(rp3d::Vector3(15, 0, -5), rp3d::Quaternion::identity()));
+}
+
+// Destroy the physics world
+void ConcaveMeshScene::destroyPhysicsWorld() {
+
+    if (mPhysicsWorld != nullptr) {
+
+        // Destroy all the physics objects of the scene
+        for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
+
+            // Destroy the object
+            delete (*it);
+        }
+        mBoxes.clear();
+        mSpheres.clear();
+        mCapsules.clear();
+        mConvexMeshes.clear();
+        mDumbbells.clear();
+
+        mPhysicsObjects.clear();
+
+        mPhysicsCommon.destroyPhysicsWorld(mPhysicsWorld);
+        mPhysicsWorld = nullptr;
+    }
+}
+// Reset the scene
+void ConcaveMeshScene::reset() {
+
+    SceneDemo::reset();
+
+    destroyPhysicsWorld();
+    createPhysicsWorld();
+    initBodiesPositions();
 }

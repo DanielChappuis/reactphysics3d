@@ -43,7 +43,7 @@ double Gui::mCachedPhysicsStepTime = 0;
 Gui::Gui(TestbedApplication* app)
     : mApp(app), mSimulationPanel(nullptr), mSettingsPanel(nullptr), mPhysicsPanel(nullptr),
       mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mTotalPhysicsTimeLabel(nullptr),
-      mPhysicsStepTimeLabel(nullptr)
+      mPhysicsStepTimeLabel(nullptr), mIsDisplayed(true)
 {
 
 }
@@ -55,7 +55,12 @@ Gui::~Gui() {
 }
 
 /// Initialize the GUI
-void Gui::init() {
+void Gui::init(GLFWwindow* window) {
+
+    mWindow = window;
+
+    mScreen = new Screen();
+    mScreen->initialize(window, true);
 
     // Create the Simulation panel
     createSimulationPanel();
@@ -66,10 +71,60 @@ void Gui::init() {
     // Create the Profiling panel
     createProfilingPanel();
 
-    mApp->set_visible(true);
-    mApp->perform_layout();
+    mScreen->set_visible(true);
+    mScreen->perform_layout();
 
     mTimeSinceLastProfilingDisplay = glfwGetTime();
+}
+
+void Gui::drawAll() {
+    mScreen->clear();
+    mScreen->draw_all();
+}
+
+void Gui::draw() {
+
+  if (mIsDisplayed) {
+      mScreen->draw_setup();
+      mScreen->draw_contents();
+  }
+}
+
+void Gui::drawTearDown() {
+
+  if (mIsDisplayed) {
+      mScreen->draw_widgets();
+  }
+
+  mScreen->draw_teardown();
+}
+
+
+// Update the GUI values with the engine settings from the current scene
+void Gui::resetWithValuesFromCurrentScene() {
+
+    auto test = mApp->getCurrentSceneEngineSettings();
+    mCheckboxSleeping->set_checked(mApp->getCurrentSceneEngineSettings().isSleepingEnabled);
+    mCheckboxGravity->set_checked(mApp->getCurrentSceneEngineSettings().isGravityEnabled);
+
+    std::ostringstream out;
+    out << std::setprecision(1) << std::fixed << (mApp->getCurrentSceneEngineSettings().timeStep.count() * 1000);
+    mTextboxTimeStep->set_value(out.str());
+
+    mTextboxVelocityIterations->set_value(std::to_string(mApp->getCurrentSceneEngineSettings().nbVelocitySolverIterations));
+    mTextboxPositionIterations->set_value(std::to_string(mApp->getCurrentSceneEngineSettings().nbPositionSolverIterations));
+
+    out.str("");
+    out << std::setprecision(0) << std::fixed << (mApp->getCurrentSceneEngineSettings().timeBeforeSleep * 1000);
+    mTextboxTimeSleep->set_value(out.str());
+
+    out.str("");
+    out << std::setprecision(2) << std::fixed << (mApp->getCurrentSceneEngineSettings().sleepLinearVelocity);
+    mTextboxSleepLinearVel->set_value(out.str());
+
+    out.str("");
+    out << std::setprecision(2) << std::fixed << (mApp->getCurrentSceneEngineSettings().sleepAngularVelocity);
+    mTextboxSleepAngularVel->set_value(out.str());
 }
 
 // Update the GUI
@@ -99,7 +154,7 @@ void Gui::update() {
 
 void Gui::createSimulationPanel() {
 
-    mSimulationPanel = new Window(mApp, "Simulation");
+    mSimulationPanel = new Window(mScreen, "Simulation");
     mSimulationPanel->set_position(Vector2i(15, 15));
     mSimulationPanel->set_layout(new GroupLayout(10, 5, 10 , 20));
     //mSimulationPanel->setId("SimulationPanel");
@@ -137,16 +192,16 @@ void Gui::createSimulationPanel() {
         scenesNames.push_back(scenes[i]->getName().c_str());
     }
     new Label(mSimulationPanel, "Scene","sans-bold");
-    ComboBox* comboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
-    comboBoxScenes->set_fixed_width(150);
-    comboBoxScenes->set_callback([&, scenes](int index) {
+
+    mComboBoxScenes = new ComboBox(mSimulationPanel, scenesNames);
+    mComboBoxScenes->set_callback([&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });
 }
 
 void Gui::createSettingsPanel() {
 
-    mSettingsPanel = new Window(mApp, "Settings");
+    mSettingsPanel = new Window(mScreen, "Settings");
     mSettingsPanel->set_position(Vector2i(15, 180));
     mSettingsPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Middle, 10, 5));
     //mSettingsPanel->setId("SettingsPanel");
@@ -158,17 +213,17 @@ void Gui::createSettingsPanel() {
     Button* buttonPhysics = new Button(buttonsPanel, "Physics");
     buttonPhysics->set_flags(Button::RadioButton);
     buttonPhysics->set_pushed(true);
-    buttonPhysics->set_change_callback([&](bool state) {
+    buttonPhysics->set_change_callback([&](bool /*state*/) {
         mPhysicsPanel->set_visible(true);
         mRenderingPanel->set_visible(false);
-        mApp->perform_layout();
+        mScreen->perform_layout();
     });
     Button* buttonRendering = new Button(buttonsPanel, "Rendering");
     buttonRendering->set_flags(Button::RadioButton);
-    buttonRendering->set_change_callback([&](bool state) {
+    buttonRendering->set_change_callback([&](bool /*state*/) {
         mRenderingPanel->set_visible(true);
         mPhysicsPanel->set_visible(false);
-        mApp->perform_layout();
+        mScreen->perform_layout();
     });
 
     // ---------- Physics Panel ----------
@@ -176,18 +231,18 @@ void Gui::createSettingsPanel() {
     mPhysicsPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 0, 5));
 
     // Enable/Disable sleeping
-    CheckBox* checkboxSleeping = new CheckBox(mPhysicsPanel, "Sleeping enabled");
-    checkboxSleeping->set_checked(mApp->mEngineSettings.isSleepingEnabled);
-    checkboxSleeping->set_callback([&](bool value) {
-        mApp->mEngineSettings.isSleepingEnabled = value;
+    mCheckboxSleeping = new CheckBox(mPhysicsPanel, "Sleeping enabled");
+    mCheckboxSleeping->set_checked(true);
+    mCheckboxSleeping->set_callback([&](bool value) {
+        mApp->getCurrentSceneEngineSettings().isSleepingEnabled = value;
         mApp->notifyEngineSetttingsChanged();
     });
 
     // Enabled/Disable Gravity
-    CheckBox* checkboxGravity = new CheckBox(mPhysicsPanel, "Gravity enabled");
-    checkboxGravity->set_checked(mApp->mEngineSettings.isGravityEnabled);
-    checkboxGravity->set_callback([&](bool value) {
-        mApp->mEngineSettings.isGravityEnabled = value;
+    mCheckboxGravity = new CheckBox(mPhysicsPanel, "Gravity enabled");
+    mCheckboxGravity->set_checked(true);
+    mCheckboxGravity->set_callback([&](bool value) {
+        mApp->getCurrentSceneEngineSettings().isGravityEnabled = value;
         mApp->notifyEngineSetttingsChanged();
     });
 
@@ -196,14 +251,14 @@ void Gui::createSettingsPanel() {
     panelTimeStep->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelTimeStep = new Label(panelTimeStep, "Time step","sans-bold");
     labelTimeStep->set_fixed_width(120);
-    TextBox* textboxTimeStep = new TextBox(panelTimeStep);
-    textboxTimeStep->set_fixed_size(Vector2i(70, 25));
-    textboxTimeStep->set_editable(true);
+    mTextboxTimeStep = new TextBox(panelTimeStep);
+    mTextboxTimeStep->set_fixed_size(Vector2i(70, 25));
+    mTextboxTimeStep->set_editable(true);
     std::ostringstream out;
-    out << std::setprecision(1) << std::fixed << (mApp->mEngineSettings.timeStep * 1000);
-    textboxTimeStep->set_value(out.str());
-    textboxTimeStep->set_units("ms");
-    textboxTimeStep->set_callback([&, textboxTimeStep](const std::string &str) {
+    out << std::setprecision(1) << std::fixed << 0;
+    mTextboxTimeStep->set_value(out.str());
+    mTextboxTimeStep->set_units("ms");
+    mTextboxTimeStep->set_callback([&](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -213,9 +268,9 @@ void Gui::createSettingsPanel() {
 
             if (finalValue < 1 || finalValue > 1000) return false;
 
-            mApp->mEngineSettings.timeStep = finalValue / 1000.0f;
+            mApp->getCurrentSceneEngineSettings().timeStep = std::chrono::duration<double>(finalValue / 1000.0f);
             mApp->notifyEngineSetttingsChanged();
-            textboxTimeStep->set_value(out.str());
+            mTextboxTimeStep->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -223,20 +278,20 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxTimeStep->set_font_size(16);
-    textboxTimeStep->set_alignment(TextBox::Alignment::Right);
+    mTextboxTimeStep->set_font_size(16);
+    mTextboxTimeStep->set_alignment(TextBox::Alignment::Right);
 
     // Velocity solver iterations
     Widget* panelVelocityIterations = new Widget(mPhysicsPanel);
     panelVelocityIterations->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelVelocityIterations = new Label(panelVelocityIterations, "Velocity solver","sans-bold");
     labelVelocityIterations->set_fixed_width(120);
-    TextBox* textboxVelocityIterations = new TextBox(panelVelocityIterations);
-    textboxVelocityIterations->set_fixed_size(Vector2i(70, 25));
-    textboxVelocityIterations->set_editable(true);
-    textboxVelocityIterations->set_value(std::to_string(mApp->mEngineSettings.nbVelocitySolverIterations));
-    textboxVelocityIterations->set_units("iter");
-    textboxVelocityIterations->set_callback([&, textboxVelocityIterations](const std::string &str) {
+    mTextboxVelocityIterations = new TextBox(panelVelocityIterations);
+    mTextboxVelocityIterations->set_fixed_size(Vector2i(70, 25));
+    mTextboxVelocityIterations->set_editable(true);
+    mTextboxVelocityIterations->set_value(std::to_string(0));
+    mTextboxVelocityIterations->set_units("iter");
+    mTextboxVelocityIterations->set_callback([&](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -245,9 +300,9 @@ void Gui::createSettingsPanel() {
 
             if (value < 1 || value > 1000) return false;
 
-            mApp->mEngineSettings.nbVelocitySolverIterations = value;
+            mApp->getCurrentSceneEngineSettings().nbVelocitySolverIterations = value;
             mApp->notifyEngineSetttingsChanged();
-            textboxVelocityIterations->set_value(out.str());
+            mTextboxVelocityIterations->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -255,20 +310,20 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxVelocityIterations->set_font_size(16);
-    textboxVelocityIterations->set_alignment(TextBox::Alignment::Right);
+    mTextboxVelocityIterations->set_font_size(16);
+    mTextboxVelocityIterations->set_alignment(TextBox::Alignment::Right);
 
     // Position solver iterations
     Widget* panelPositionIterations = new Widget(mPhysicsPanel);
     panelPositionIterations->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 0, 5));
     Label* labelPositionIterations = new Label(panelPositionIterations, "Position solver","sans-bold");
     labelPositionIterations->set_fixed_width(120);
-    TextBox* textboxPositionIterations = new TextBox(panelPositionIterations);
-    textboxPositionIterations->set_fixed_size(Vector2i(70, 25));
-    textboxPositionIterations->set_editable(true);
-    textboxPositionIterations->set_value(std::to_string(mApp->mEngineSettings.nbPositionSolverIterations));
-    textboxPositionIterations->set_units("iter");
-    textboxPositionIterations->set_callback([&, textboxPositionIterations](const std::string &str) {
+    mTextboxPositionIterations = new TextBox(panelPositionIterations);
+    mTextboxPositionIterations->set_fixed_size(Vector2i(70, 25));
+    mTextboxPositionIterations->set_editable(true);
+    mTextboxPositionIterations->set_value(std::to_string(0));
+    mTextboxPositionIterations->set_units("iter");
+    mTextboxPositionIterations->set_callback([&](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -277,9 +332,9 @@ void Gui::createSettingsPanel() {
 
             if (value < 1 || value > 1000) return false;
 
-            mApp->mEngineSettings.nbPositionSolverIterations = value;
+            mApp->getCurrentSceneEngineSettings().nbPositionSolverIterations = value;
             mApp->notifyEngineSetttingsChanged();
-            textboxPositionIterations->set_value(out.str());
+            mTextboxPositionIterations->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -287,8 +342,8 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxPositionIterations->set_font_size(16);
-    textboxPositionIterations->set_alignment(TextBox::Alignment::Right);
+    mTextboxPositionIterations->set_font_size(16);
+    mTextboxPositionIterations->set_alignment(TextBox::Alignment::Right);
 
     // Time before sleep
     Widget* panelTimeSleep = new Widget(mPhysicsPanel);
@@ -296,13 +351,13 @@ void Gui::createSettingsPanel() {
     Label* labelTimeSleep = new Label(panelTimeSleep, "Time before sleep","sans-bold");
     labelTimeSleep->set_fixed_width(120);
     out.str("");
-    out << std::setprecision(0) << std::fixed << (mApp->mEngineSettings.timeBeforeSleep * 1000);
-    TextBox* textboxTimeSleep = new TextBox(panelTimeSleep);
-    textboxTimeSleep->set_fixed_size(Vector2i(70, 25));
-    textboxTimeSleep->set_editable(true);
-    textboxTimeSleep->set_value(out.str());
-    textboxTimeSleep->set_units("ms");
-    textboxTimeSleep->set_callback([&, textboxTimeSleep](const std::string &str) {
+    out << std::setprecision(0) << std::fixed << 0;
+    mTextboxTimeSleep = new TextBox(panelTimeSleep);
+    mTextboxTimeSleep->set_fixed_size(Vector2i(70, 25));
+    mTextboxTimeSleep->set_editable(true);
+    mTextboxTimeSleep->set_value(out.str());
+    mTextboxTimeSleep->set_units("ms");
+    mTextboxTimeSleep->set_callback([&](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -312,9 +367,9 @@ void Gui::createSettingsPanel() {
 
             if (finalValue < 1 || finalValue > 100000) return false;
 
-            mApp->mEngineSettings.timeBeforeSleep = finalValue / 1000.0f;
+            mApp->getCurrentSceneEngineSettings().timeBeforeSleep = finalValue / 1000.0f;
             mApp->notifyEngineSetttingsChanged();
-            textboxTimeSleep->set_value(out.str());
+            mTextboxTimeSleep->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -322,8 +377,8 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxTimeSleep->set_font_size(16);
-    textboxTimeSleep->set_alignment(TextBox::Alignment::Right);
+    mTextboxTimeSleep->set_font_size(16);
+    mTextboxTimeSleep->set_alignment(TextBox::Alignment::Right);
 
     // Sleep linear velocity
     Widget* panelSleepLinearVel = new Widget(mPhysicsPanel);
@@ -331,13 +386,13 @@ void Gui::createSettingsPanel() {
     Label* labelSleepLinearVel = new Label(panelSleepLinearVel, "Sleep linear velocity","sans-bold");
     labelSleepLinearVel->set_fixed_width(120);
     out.str("");
-    out << std::setprecision(2) << std::fixed << (mApp->mEngineSettings.sleepLinearVelocity);
-    TextBox* textboxSleepLinearVel = new TextBox(panelSleepLinearVel);
-    textboxSleepLinearVel->set_fixed_size(Vector2i(70, 25));
-    textboxSleepLinearVel->set_editable(true);
-    textboxSleepLinearVel->set_value(out.str());
-    textboxSleepLinearVel->set_units("m/s");
-    textboxSleepLinearVel->set_callback([&, textboxSleepLinearVel](const std::string &str) {
+    out << std::setprecision(2) << std::fixed << 0;
+    mTextboxSleepLinearVel = new TextBox(panelSleepLinearVel);
+    mTextboxSleepLinearVel->set_fixed_size(Vector2i(70, 25));
+    mTextboxSleepLinearVel->set_editable(true);
+    mTextboxSleepLinearVel->set_value(out.str());
+    mTextboxSleepLinearVel->set_units("m/s");
+    mTextboxSleepLinearVel->set_callback([&](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -347,9 +402,9 @@ void Gui::createSettingsPanel() {
 
             if (finalValue < 0 || finalValue > 10000) return false;
 
-            mApp->mEngineSettings.sleepLinearVelocity = finalValue;
+            mApp->getCurrentSceneEngineSettings().sleepLinearVelocity = finalValue;
             mApp->notifyEngineSetttingsChanged();
-            textboxSleepLinearVel->set_value(out.str());
+            mTextboxSleepLinearVel->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -357,8 +412,8 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxSleepLinearVel->set_font_size(16);
-    textboxSleepLinearVel->set_alignment(TextBox::Alignment::Right);
+    mTextboxSleepLinearVel->set_font_size(16);
+    mTextboxSleepLinearVel->set_alignment(TextBox::Alignment::Right);
 
     // Sleep angular velocity
     Widget* panelSleepAngularVel = new Widget(mPhysicsPanel);
@@ -366,13 +421,13 @@ void Gui::createSettingsPanel() {
     Label* labelSleepAngularVel = new Label(panelSleepAngularVel, "Sleep angular velocity","sans-bold");
     labelSleepAngularVel->set_fixed_width(120);
     out.str("");
-    out << std::setprecision(2) << std::fixed << (mApp->mEngineSettings.sleepAngularVelocity);
-    TextBox* textboxSleepAngularVel = new TextBox(panelSleepAngularVel);
-    textboxSleepAngularVel->set_fixed_size(Vector2i(70, 25));
-    textboxSleepAngularVel->set_editable(true);
-    textboxSleepAngularVel->set_value(out.str());
-    textboxSleepAngularVel->set_units("rad/s");
-    textboxSleepAngularVel->set_callback([&, textboxSleepAngularVel](const std::string &str) {
+    out << std::setprecision(2) << std::fixed << 0;
+    mTextboxSleepAngularVel = new TextBox(panelSleepAngularVel);
+    mTextboxSleepAngularVel->set_fixed_size(Vector2i(70, 25));
+    mTextboxSleepAngularVel->set_editable(true);
+    mTextboxSleepAngularVel->set_value(out.str());
+    mTextboxSleepAngularVel->set_units("rad/s");
+    mTextboxSleepAngularVel->set_callback([&](const std::string &str) {
 
         try {
             float value = std::stof(str);
@@ -382,9 +437,9 @@ void Gui::createSettingsPanel() {
 
             if (finalValue < 0 || finalValue > 10000) return false;
 
-            mApp->mEngineSettings.sleepAngularVelocity = finalValue;
+            mApp->getCurrentSceneEngineSettings().sleepAngularVelocity = finalValue;
             mApp->notifyEngineSetttingsChanged();
-            textboxSleepAngularVel->set_value(out.str());
+            mTextboxSleepAngularVel->set_value(out.str());
         }
         catch (...) {
             return false;
@@ -392,8 +447,8 @@ void Gui::createSettingsPanel() {
 
         return true;
     });
-    textboxSleepAngularVel->set_font_size(16);
-    textboxSleepAngularVel->set_alignment(TextBox::Alignment::Right);
+    mTextboxSleepAngularVel->set_font_size(16);
+    mTextboxSleepAngularVel->set_alignment(TextBox::Alignment::Right);
 
     // ---------- Rendering Panel ----------
     mRenderingPanel = new Widget(mSettingsPanel);
@@ -481,8 +536,8 @@ void Gui::createSettingsPanel() {
 
 void Gui::createProfilingPanel() {
 
-    Widget* profilingPanel = new Window(mApp, "Profiling");
-    profilingPanel->set_position(Vector2i(15, 525));
+    Widget* profilingPanel = new Window(mScreen, "Profiling");
+    profilingPanel->set_position(Vector2i(15, 505));
     profilingPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 10, 5));
     //profilingPanel->setId("SettingsPanel");
     profilingPanel->set_fixed_width(220);
@@ -502,3 +557,33 @@ void Gui::createProfilingPanel() {
     profilingPanel->set_visible(true);
 }
 
+void Gui::onWindowResizeEvent(int width, int height) {
+    mScreen->resize_callback_event(width, height);
+}
+
+void Gui::onMouseMotionEvent(double x, double y) {
+    mScreen->cursor_pos_callback_event(x, y);
+}
+
+bool Gui::onScrollEvent(double x, double y) {
+
+    double xMouse, yMouse;
+    glfwGetCursorPos(mWindow, &xMouse, &yMouse);
+
+    // If the mouse cursor is over the scenes choice scrolling menu
+    const float pixelRatio = mScreen->pixel_ratio();
+    if (mComboBoxScenes->popup()->visible() && mComboBoxScenes->popup()->contains(Vector2i(xMouse, yMouse) / pixelRatio)) {
+        mScreen->scroll_callback_event(x, y);
+        return true;
+    }
+
+    return false;
+}
+
+void Gui::onMouseButtonEvent(int button, int action, int modifiers) {
+    mScreen->mouse_button_callback_event(button, action, modifiers);
+}
+
+void Gui::onKeyboardEvent(int key, int scancode, int action, int modifiers) {
+    mScreen->key_callback_event(key, scancode, action, modifiers);
+}

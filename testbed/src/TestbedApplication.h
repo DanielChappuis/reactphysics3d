@@ -32,29 +32,38 @@
 #include "Scene.h"
 #include "Timer.h"
 #include <GLFW/glfw3.h>
+#include "TestbedLogger.h"
 
 using namespace nanogui;
+
 
 // Macro for OpenGL errors
 #define checkOpenGLErrors() checkOpenGLErrorsInternal(__FILE__,__LINE__)
 
 /// Class TestbedApplication
-class TestbedApplication : public Screen {
+class TestbedApplication {
 
     private :
 
         // -------------------- Constants -------------------- //
 
         static const float SCROLL_SENSITIVITY;
+        static constexpr bool IS_FULLSCREEN = false;
 
         // -------------------- Attributes -------------------- //
 
         bool mIsInitialized;
 
+        GLFWwindow* mWindow;
+        Screen* mScreen;
+
         Gui mGui;
 
         /// Timer
         Timer mTimer;
+
+        /// Physics common object
+        rp3d::PhysicsCommon mPhysicsCommon;
 
         /// List of 3D scenes
         std::vector<Scene*> mScenes;
@@ -62,8 +71,8 @@ class TestbedApplication : public Screen {
         /// Current 3D scene
         Scene* mCurrentScene;
 
-        /// Physics engine settings
-        EngineSettings mEngineSettings;
+        /// Physics engine default settings
+        EngineSettings mDefaultEngineSettings;
 
         /// Current number of frames per seconds
         double mFPS;
@@ -127,6 +136,9 @@ class TestbedApplication : public Screen {
         /// True if the debug renderer is enabled
         bool mIsDebugRendererEnabled;
 
+        /// Logger
+        TestbedLogger mLogger;
+
         // -------------------- Methods -------------------- //
 
         /// Private copy-constructor (for the singleton class)
@@ -171,36 +183,39 @@ class TestbedApplication : public Screen {
         /// Set the variable to know if we need to take a single physics step
         void toggleTakeSinglePhysicsStep();
 
+        /// Return the engine settings of the current scene
+        EngineSettings& getCurrentSceneEngineSettings();
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Private constructor (for the singleton class)
-        TestbedApplication(bool isFullscreen, int windowWidth, int windowHeight);
+        TestbedApplication();
 
         /// Destructor
-        virtual ~TestbedApplication() override;
+        ~TestbedApplication();
 
         /// Render the content of the application
-        virtual void draw_contents() override;
+        void render();
 
         /// Window resize event handler
-        virtual bool resize_event(const Vector2i& size) override;
+        bool onWindowResized(int width, int height);
 
         /// Default keyboard event handler
-        virtual bool keyboard_event(int key, int scancode, int action, int modifiers) override;
+        void keyboard_event(int key, int scancode, int action, int modifiers);
 
         /// Handle a mouse button event (default implementation: propagate to children)
-        virtual bool mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) override;
+        void mouse_button_event(int button, int action, int modifiers);
 
         /// Handle a mouse motion event (default implementation: propagate to children)
-        virtual bool mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
+        void mouse_motion_event(double x, double y);
 
-        /// Handle a mouse scroll event (default implementation: propagate to children)
-        virtual bool scroll_event(const Vector2i &p, const Vector2f &rel) override;
+        /// Handle a mouse scroll event
+        void scroll_event(double x, double y);
 
-        /// Initialize the application
-        void init();
+        /// Start the application
+        void start();
 
         /// Change the current scene
         void switchScene(Scene* newScene);
@@ -248,6 +263,7 @@ inline void TestbedApplication::pauseSimulation() {
 
 // Restart the simulation
 inline void TestbedApplication::restartSimulation() {
+    mTimer.reset();
     mCurrentScene->reset();
     mTimer.start();
 }
@@ -271,6 +287,11 @@ inline void TestbedApplication::enableVSync(bool enable) {
     else {
         glfwSwapInterval(0);
     }
+}
+
+// Return the engine settings of the current scene
+inline EngineSettings& TestbedApplication::getCurrentSceneEngineSettings() {
+   return mCurrentScene->getEngineSettings();
 }
 
 #endif

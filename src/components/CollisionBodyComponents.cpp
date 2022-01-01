@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 
 // Constructor
 CollisionBodyComponents::CollisionBodyComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(CollisionBody*) + sizeof(List<Entity>) +
+                    :Components(allocator, sizeof(Entity) + sizeof(CollisionBody*) + sizeof(Array<Entity>) +
                                 sizeof(bool) + sizeof(void*)) {
 
     // Allocate memory for the components data
@@ -56,7 +56,7 @@ void CollisionBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     // New pointers to components data
     Entity* newBodiesEntities = static_cast<Entity*>(newBuffer);
     CollisionBody** newBodies = reinterpret_cast<CollisionBody**>(newBodiesEntities + nbComponentsToAllocate);
-    List<Entity>* newColliders = reinterpret_cast<List<Entity>*>(newBodies + nbComponentsToAllocate);
+    Array<Entity>* newColliders = reinterpret_cast<Array<Entity>*>(newBodies + nbComponentsToAllocate);
     bool* newIsActive = reinterpret_cast<bool*>(newColliders + nbComponentsToAllocate);
     void** newUserData = reinterpret_cast<void**>(newIsActive + nbComponentsToAllocate);
 
@@ -66,7 +66,7 @@ void CollisionBodyComponents::allocate(uint32 nbComponentsToAllocate) {
         // Copy component data from the previous buffer to the new one
         memcpy(newBodiesEntities, mBodiesEntities, mNbComponents * sizeof(Entity));
         memcpy(newBodies, mBodies, mNbComponents * sizeof(CollisionBody*));
-        memcpy(newColliders, mColliders, mNbComponents * sizeof(List<Entity>));
+        memcpy(newColliders, mColliders, mNbComponents * sizeof(Array<Entity>));
         memcpy(newIsActive, mIsActive, mNbComponents * sizeof(bool));
         memcpy(newUserData, mUserData, mNbComponents * sizeof(void*));
 
@@ -92,7 +92,7 @@ void CollisionBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, c
     // Insert the new component data
     new (mBodiesEntities + index) Entity(bodyEntity);
     mBodies[index] = component.body;
-    new (mColliders + index) List<Entity>(mMemoryAllocator);
+    new (mColliders + index) Array<Entity>(mMemoryAllocator);
     mIsActive[index] = true;
     mUserData[index] = nullptr;
 
@@ -114,7 +114,7 @@ void CollisionBodyComponents::moveComponentToIndex(uint32 srcIndex, uint32 destI
     // Copy the data of the source component to the destination location
     new (mBodiesEntities + destIndex) Entity(mBodiesEntities[srcIndex]);
     mBodies[destIndex] = mBodies[srcIndex];
-    new (mColliders + destIndex) List<Entity>(mColliders[srcIndex]);
+    new (mColliders + destIndex) Array<Entity>(mColliders[srcIndex]);
     mIsActive[destIndex] = mIsActive[srcIndex];
     mUserData[destIndex] = mUserData[srcIndex];
 
@@ -135,7 +135,7 @@ void CollisionBodyComponents::swapComponents(uint32 index1, uint32 index2) {
     // Copy component 1 data
     Entity entity1(mBodiesEntities[index1]);
     CollisionBody* body1 = mBodies[index1];
-    List<Entity> colliders1(mColliders[index1]);
+    Array<Entity> colliders1(mColliders[index1]);
     bool isActive1 = mIsActive[index1];
     void* userData1 = mUserData[index1];
 
@@ -146,7 +146,7 @@ void CollisionBodyComponents::swapComponents(uint32 index1, uint32 index2) {
 
     // Reconstruct component 1 at component 2 location
     new (mBodiesEntities + index2) Entity(entity1);
-    new (mColliders + index2) List<Entity>(colliders1);
+    new (mColliders + index2) Array<Entity>(colliders1);
     mBodies[index2] = body1;
     mIsActive[index2] = isActive1;
     mUserData[index2] = userData1;
@@ -170,6 +170,6 @@ void CollisionBodyComponents::destroyComponent(uint32 index) {
 
     mBodiesEntities[index].~Entity();
     mBodies[index] = nullptr;
-    mColliders[index].~List<Entity>();
+    mColliders[index].~Array<Entity>();
     mUserData[index] = nullptr;
 }

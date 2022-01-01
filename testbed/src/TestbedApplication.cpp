@@ -38,6 +38,17 @@
 #include "concavemesh/ConcaveMeshScene.h"
 #include "cubestack/CubeStackScene.h"
 #include "pile/PileScene.h"
+#include "boxtower/BoxTowerScene.h"
+#include "ballandsocketjointsnet/BallAndSocketJointsNetScene.h"
+#include "ballandsocketjointschain/BallAndSocketJointsChainScene.h"
+#include "hingejointschain/HingeJointsChainScene.h"
+#include "bridge/BridgeScene.h"
+#include "fixedjoint/FixedJointScene.h"
+#include "ballandsocketjoint/BallAndSocketJointScene.h"
+#include "hingejoint/HingeJointScene.h"
+#include "sliderjoint/SliderJointScene.h"
+#include "ragdoll/RagdollScene.h"
+#include "rope/RopeScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -49,18 +60,27 @@ using namespace heightfieldscene;
 using namespace collisiondetectionscene;
 using namespace cubestackscene;
 using namespace pilescene;
+using namespace boxtowerscene;
+using namespace ballandsocketjointsnetscene;
+using namespace ballandsocketjointschainscene;
+using namespace hingejointschainscene;
+using namespace bridgescene;
+using namespace fixedjointscene;
+using namespace ballandsocketjointscene;
+using namespace hingejointscene;
+using namespace sliderjointscene;
+using namespace ragdollscene;
+using namespace ropescene;
 
 // Initialization of static variables
 const float TestbedApplication::SCROLL_SENSITIVITY = 0.08f;
 
 // Constructor
-TestbedApplication::TestbedApplication(bool isFullscreen, int windowWidth, int windowHeight)
-                   : Screen(Vector2i(windowWidth, windowHeight), "Testbed ReactPhysics3D", true, isFullscreen, true, true, false, 4, 1),
-                     mIsInitialized(false), mGui(this), mCurrentScene(nullptr),
-                     mEngineSettings(EngineSettings::defaultSettings()),
+TestbedApplication::TestbedApplication()
+                   : mIsInitialized(false), mGui(this), mCurrentScene(nullptr),
+                     mDefaultEngineSettings(EngineSettings::defaultSettings()),
                      mFPS(0), mNbFrames(0), mPreviousTime(0),
                      mLastTimeComputedFPS(0), mFrameTime(0), mTotalPhysicsTime(0), mPhysicsStepTime(0),
-                     mWidth(windowWidth), mHeight(windowHeight),
                      mSinglePhysicsStepEnabled(false), mSinglePhysicsStepDone(false),
                      mWindowToFramebufferRatio(Vector2(1, 1)), mIsShadowMappingEnabled(true),
                      mAreContactPointsDisplayed(false), mAreContactNormalsDisplayed(false),
@@ -69,8 +89,6 @@ TestbedApplication::TestbedApplication(bool isFullscreen, int windowWidth, int w
                      mIsVSyncEnabled(false), mIsDebugRendererEnabled(false) {
 
     init();
-
-    resize_event(Vector2i(0, 0));
 }
 
 // Destructor
@@ -81,13 +99,85 @@ TestbedApplication::~TestbedApplication() {
 }
 
 // Initialize the viewer
-void TestbedApplication::init() {
+void TestbedApplication::start() {
+
+    glfwInit();
+    glfwSetTime(0);
+
+    // Get the primary monitor
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    // Window size
+    mWidth = mode->width;
+    mHeight = mode->height;
+
+#if defined(NANOGUI_USE_OPENGL)
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#elif defined(NANOGUI_USE_GLES)
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+#elif defined(NANOGUI_USE_METAL)
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+    metal_init();
+#endif
+
+    glfwWindowHint(GLFW_SAMPLES, 0);
+    glfwWindowHint(GLFW_RED_BITS, 8);
+    glfwWindowHint(GLFW_GREEN_BITS, 8);
+    glfwWindowHint(GLFW_BLUE_BITS, 8);
+    glfwWindowHint(GLFW_ALPHA_BITS, 8);
+    glfwWindowHint(GLFW_STENCIL_BITS, 8);
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+
+    // Create a the GLFW window object
+    std::string title = "Testbed - ReactPhysics3D v" + rp3d::RP3D_VERSION;
+    mWindow = glfwCreateWindow(mWidth, mHeight, title.c_str(), IS_FULLSCREEN ? monitor : nullptr, nullptr);
+    if (mWindow == nullptr) {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+    }
+    glfwMakeContextCurrent(mWindow);
+
+#if defined(NANOGUI_GLAD)
+ if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+     throw std::runtime_error("Could not initialize GLAD!");
+ glGetError(); // pull and ignore unhandled errors like GL_INVALID_ENUM
+#endif
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Logger
+    rp3d::PhysicsCommon::setLogger(&mLogger);
 
     // Create all the scenes
     createScenes();
 
     // Initialize the GUI
-    mGui.init();
+    mGui.init(mWindow);
+
+#if defined(NANOGUI_USE_OPENGL) || defined(NANOGUI_USE_GLES)
+    int width, height;
+    glfwGetFramebufferSize(mWindow, &width, &height);
+    glViewport(0, 0, width, height);
+    glfwSwapInterval(0);
+    glfwSwapBuffers(mWindow);
+#endif
+
+    // Select the initial scene
+    const int firstSceneIndex = 0;
+    switchScene(mScenes[firstSceneIndex]);
+
+    mGui.drawAll();
 
     mTimer.start();
 
@@ -105,52 +195,196 @@ void TestbedApplication::init() {
     }
 #endif
 
+    glfwSetWindowUserPointer(mWindow, this);
+
+    glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double x, double y) {
+         TestbedApplication* app = static_cast<TestbedApplication*>(glfwGetWindowUserPointer(window));
+         app->mouse_motion_event(x, y);
+        }
+    );
+
+    glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int modifiers) {
+         TestbedApplication* app = static_cast<TestbedApplication*>(glfwGetWindowUserPointer(window));
+         app->mouse_button_event(button, action, modifiers);
+        }
+    );
+
+    glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+         TestbedApplication* app = static_cast<TestbedApplication*>(glfwGetWindowUserPointer(window));
+         app->keyboard_event(key, scancode, action, mods);
+        }
+    );
+
+    glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double x, double y) {
+         TestbedApplication* app = static_cast<TestbedApplication*>(glfwGetWindowUserPointer(window));
+         app->scroll_event(x, y);
+       }
+    );
+
+    glfwSetFramebufferSizeCallback(mWindow, [](GLFWwindow* window, int width, int height) {
+            TestbedApplication* app = static_cast<TestbedApplication*>(glfwGetWindowUserPointer(window));
+            app->onWindowResized(width, height);
+        }
+    );
+
+    mCurrentScene->reshape(mWidth, mHeight);
+    mCurrentScene->setWindowDimension(mWidth, mHeight);
+
     mIsInitialized = true;
+
+    // Game loop
+   while (!glfwWindowShouldClose(mWindow)) {
+
+       // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
+       glfwPollEvents();
+
+       update();
+
+       mGui.update();
+
+       // Draw nanogui
+       mGui.draw();
+
+       render();
+
+       mGui.drawTearDown();
+   }
+
+   // Terminate GLFW, clearing any resources allocated by GLFW.
+   glfwTerminate();
+
+#if defined(NANOGUI_USE_METAL)
+    metal_shutdown();
+#endif
+
 }
 
 // Create all the scenes
 void TestbedApplication::createScenes() {
 
+    uint logLevel = static_cast<uint>(rp3d::Logger::Level::Information);
+
     // Cubes scene
-    CubesScene* cubeScene = new CubesScene("Cubes", mEngineSettings);
+    std::string sceneName = "Cubes";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CubesScene* cubeScene = new CubesScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(cubeScene);
 
     // Cube Stack scene
-    CubeStackScene* cubeStackScene = new CubeStackScene("Cube Stack", mEngineSettings);
+    sceneName = "Cube Stack";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CubeStackScene* cubeStackScene = new CubeStackScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(cubeStackScene);
 
     // Joints scene
-    JointsScene* jointsScene = new JointsScene("Joints", mEngineSettings);
+    sceneName = "Joints";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    JointsScene* jointsScene = new JointsScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(jointsScene);
 
     // Collision shapes scene
-    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene("Collision Shapes", mEngineSettings);
+    sceneName = "Collision Shapes";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CollisionShapesScene* collisionShapesScene = new CollisionShapesScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(collisionShapesScene);
 
     // Heightfield shape scene
-    HeightFieldScene* heightFieldScene = new HeightFieldScene("Heightfield", mEngineSettings);
+    sceneName = "Heightfield";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    HeightFieldScene* heightFieldScene = new HeightFieldScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(heightFieldScene);
 
     // Raycast scene
-    RaycastScene* raycastScene = new RaycastScene("Raycast", mEngineSettings);
+    sceneName = "Raycast";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    RaycastScene* raycastScene = new RaycastScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(raycastScene);
 
-    // Collision Detection scene
-    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene("Collision Detection", mEngineSettings);
-    mScenes.push_back(collisionDetectionScene);
-
     // Concave Mesh scene
-    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene("Concave Mesh", mEngineSettings);
+    sceneName = "Concave Mesh";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    ConcaveMeshScene* concaveMeshScene = new ConcaveMeshScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(concaveMeshScene);
 
     // Pile scene
-    PileScene* pileScene = new PileScene("Pile", mEngineSettings);
+    sceneName = "Pile";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    PileScene* pileScene = new PileScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(pileScene);
+
+    // Ball and Socket joint scene
+    sceneName = "Ball and Socket joint";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BallAndSocketJointScene* ballAndSocketJointScene = new BallAndSocketJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(ballAndSocketJointScene);
+
+    // Box Tower scene
+    sceneName = "Box Tower";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BoxTowerScene* boxTowerScene = new BoxTowerScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(boxTowerScene);
+
+    // Ball and Socket joints Net scene
+    sceneName = "BallSocket Joints Net";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BallAndSocketJointsNetScene* ballAndSocketJointsNetScene = new BallAndSocketJointsNetScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(ballAndSocketJointsNetScene);
+
+    // Ball and Socket joints chain scene
+    sceneName = "BallSocket Joints Chain";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BallAndSocketJointsChainScene* ballAndSocketJointsChainScene = new BallAndSocketJointsChainScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(ballAndSocketJointsChainScene);
+
+    // Hinge joints chain scene
+    sceneName = "Hinge Joints Chain";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    HingeJointsChainScene* hingeJointsChainScene = new HingeJointsChainScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(hingeJointsChainScene);
+
+    // Bridge scene
+    sceneName = "Bridge";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    BridgeScene* bridgeScene = new BridgeScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(bridgeScene);
+
+    // Fixed joint scene
+    sceneName = "Fixed joint";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    FixedJointScene* fixedJointScene = new FixedJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(fixedJointScene);
+
+    // Hinge joint scene
+    sceneName = "Hinge joint";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    HingeJointScene* hingeJointScene = new HingeJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(hingeJointScene);
+
+    // Slider joint scene
+    sceneName = "Slider joint";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    SliderJointScene* sliderJointScene = new SliderJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(sliderJointScene);
+
+    // Ragdoll scene
+    sceneName = "Ragdoll";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    RagdollScene* ragdollScene = new RagdollScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(ragdollScene);
+
+    // Rope scene
+    sceneName = "Rope";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    RopeScene* ropeScene = new RopeScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(ropeScene);
+
+    // Collision Detection scene
+    sceneName = "Collision Detection";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CollisionDetectionScene* collisionDetectionScene = new CollisionDetectionScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(collisionDetectionScene);
+
     assert(mScenes.size() > 0);
-
-    const int firstSceneIndex = 0;
-
-    switchScene(mScenes[firstSceneIndex]);
 }
 
 // Remove all the scenes
@@ -174,7 +408,7 @@ void TestbedApplication::updateSinglePhysicsStep() {
 void TestbedApplication::updatePhysics() {
 
     // Update the elapsed time
-    mEngineSettings.elapsedTime = mTimer.getPhysicsTime();
+    mCurrentScene->getEngineSettings().elapsedTime = mTimer.getElapsedPhysicsTime();
 
     if (mTimer.isRunning()) {
 
@@ -182,7 +416,7 @@ void TestbedApplication::updatePhysics() {
         mTimer.update();
 
         // While the time accumulator is not empty
-        while(mTimer.isPossibleToTakeStep(mEngineSettings.timeStep)) {
+        while(mTimer.isPossibleToTakeStep(mCurrentScene->getEngineSettings().timeStep)) {
 
             double currentTime = glfwGetTime();
 
@@ -192,7 +426,7 @@ void TestbedApplication::updatePhysics() {
             mPhysicsStepTime = glfwGetTime() - currentTime;
 
             // Update the timer
-            mTimer.nextStep(mEngineSettings.timeStep);
+            mTimer.nextStep(mCurrentScene->getEngineSettings().timeStep);
         }
     }
 }
@@ -216,7 +450,7 @@ void TestbedApplication::update() {
     mTotalPhysicsTime = glfwGetTime() - currentTime;
 
     // Compute the interpolation factor
-    float factor = mTimer.computeInterpolationFactor(mEngineSettings.timeStep);
+    float factor = mTimer.computeInterpolationFactor(mDefaultEngineSettings.timeStep);
     assert(factor >= 0.0f && factor <= 1.0f);
 
     // Notify the scene about the interpolation factor
@@ -245,44 +479,39 @@ void TestbedApplication::update() {
 
     // Update the scene
     mCurrentScene->update();
+
+    // Compute the current framerate
+    computeFPS();
 }
 
-void TestbedApplication::draw_contents() {
-
-    update();
+void TestbedApplication::render() {
 
     int bufferWidth, bufferHeight;
-    glfwMakeContextCurrent(m_glfw_window);
-    glfwGetFramebufferSize(m_glfw_window, &bufferWidth, &bufferHeight);
+    glfwMakeContextCurrent(mWindow);
+    glfwGetFramebufferSize(mWindow, &bufferWidth, &bufferHeight);
 
     // Set the viewport of the scene
     mCurrentScene->setViewport(0, 0, bufferWidth, bufferHeight);
 
     // Render the scene
     mCurrentScene->render();
-
-    mGui.update();
-
-    // Compute the current framerate
-    computeFPS();
 }
 
 /// Window resize event handler
-bool TestbedApplication::resize_event(const Vector2i &size) {
+bool TestbedApplication::onWindowResized(int width, int height) {
 
     if (!mIsInitialized) return false;
 
-    // Get the framebuffer dimension
-    int width, height;
-    glfwGetFramebufferSize(m_glfw_window, &width, &height);
+    mGui.onWindowResizeEvent(width, height);
 
     // Resize the camera viewport
     mCurrentScene->reshape(width, height);
 
     // Update the window size of the scene
-    int windowWidth, windowHeight;
-    glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight);
-    mCurrentScene->setWindowDimension(windowWidth, windowHeight);
+    mCurrentScene->setWindowDimension(width, height);
+
+    mWidth = width;
+    mHeight = height;
 
     return true;
 }
@@ -294,12 +523,20 @@ void TestbedApplication::switchScene(Scene* newScene) {
 
     mCurrentScene = newScene;
 
+    mTimer.reset();
+
+    // Resize the camera viewport
+    mCurrentScene->reshape(mWidth, mHeight);
+
+    // Update the window size of the scene
+    mCurrentScene->setWindowDimension(mWidth, mHeight);
+
     // Reset the scene
     mCurrentScene->reset();
 
     mCurrentScene->updateEngineSettings();
 
-    resize_event(Vector2i(0, 0));
+    mGui.resetWithValuesFromCurrentScene();
 }
 
 // Notify that the engine settings have changed
@@ -307,8 +544,8 @@ void TestbedApplication::notifyEngineSetttingsChanged() {
    mCurrentScene->updateEngineSettings();
 }
 
-void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-                              const GLchar* message, const void* userParam ) {
+void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/,
+                              const GLchar* /*message*/, const void* /*userParam*/ ) {
 
 #ifdef GL_DEBUG_OUTPUT
     if (type == GL_DEBUG_TYPE_ERROR) {
@@ -357,57 +594,77 @@ void TestbedApplication::computeFPS() {
     mPreviousTime = mCurrentTime;
 }
 
-bool TestbedApplication::keyboard_event(int key, int scancode, int action, int modifiers) {
+void TestbedApplication::keyboard_event(int key, int scancode, int action, int modifiers) {
 
-    if (Screen::keyboard_event(key, scancode, action, modifiers)) {
-        return true;
-    }
+    mGui.onKeyboardEvent(key, scancode, action, modifiers);
 
     // Close application on escape key
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
-        return true;
+        glfwSetWindowShouldClose(mWindow, GL_TRUE);
+        return;
     }
 
-    return mCurrentScene->keyboardEvent(key, scancode, action, modifiers);
+    // Show/hide the GUI with "i" key
+    if (key == GLFW_KEY_I && action == GLFW_PRESS) {
+        mGui.setIsDisplayed(!mGui.getIsDisplayed());
+        return;
+    }
+
+    // Start/Stop camera rotation animation with "r" key
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        mCurrentScene->setIsCameraRotationAnimationEnabled(!mCurrentScene->getIsCameraRotationAnimationEnabled());
+        return;
+    }
+
+    // Pause the application on "p" key
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+
+        if (mTimer.isRunning()) {
+            pauseSimulation();
+        }
+        else {
+           playSimulation();
+        }
+
+        return;
+    }
+
+    mCurrentScene->keyboardEvent(key, scancode, action, modifiers);
 }
 
 // Handle a mouse button event (default implementation: propagate to children)
-bool TestbedApplication::mouse_button_event(const Vector2i &p, int button, bool down, int modifiers) {
+void TestbedApplication::mouse_button_event(int button, int action, int modifiers) {
 
-    if (Screen::mouse_button_event(p, button, down, modifiers)) {
-        return true;
-    }
+    mGui.onMouseButtonEvent(button, action, modifiers);
 
     // Get the mouse cursor position
     double x, y;
-    glfwGetCursorPos(m_glfw_window, &x, &y);
+    glfwGetCursorPos(mWindow, &x, &y);
 
-    return mCurrentScene->mouseButtonEvent(button, down, modifiers, x, y);
+    bool down = action == GLFW_PRESS;
+
+    mCurrentScene->mouseButtonEvent(button, down, modifiers, x, y);
 }
 
 // Handle a mouse motion event (default implementation: propagate to children)
-bool TestbedApplication::mouse_motion_event(const Vector2i &p, const Vector2i &rel, int button, int modifiers) {
+void TestbedApplication::mouse_motion_event(double x, double y) {
 
-    if (Screen::mouse_motion_event(p, rel, button, modifiers)) {
-        return true;
-    }
+    mGui.onMouseMotionEvent(x, y);
 
-    int leftButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_LEFT);
-    int rightButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_RIGHT);
-    int middleButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_MIDDLE);
-    int altKeyState = glfwGetKey(m_glfw_window, GLFW_KEY_LEFT_ALT);
+    int leftButtonState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_LEFT);
+    int rightButtonState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_RIGHT);
+    int middleButtonState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_MIDDLE);
+    int altKeyState = glfwGetKey(mWindow, GLFW_KEY_LEFT_ALT);
 
-    return mCurrentScene->mouseMotionEvent(p[0], p[1], leftButtonState, rightButtonState,
-                                                  middleButtonState, altKeyState);
+    mCurrentScene->mouseMotionEvent(x, y, leftButtonState, rightButtonState, middleButtonState, altKeyState);
 }
 
-// Handle a mouse scroll event (default implementation: propagate to children)
-bool TestbedApplication::scroll_event(const Vector2i &p, const Vector2f &rel) {
+// Handle a mouse scroll event
+void TestbedApplication::scroll_event(double x, double y) {
 
-    if (Screen::scroll_event(p, rel)) {
-        return true;
-    }
+    if (mGui.onScrollEvent(x, y)) {
+        return;
+    };
 
-    return mCurrentScene->scrollingEvent(rel[0], rel[1], SCROLL_SENSITIVITY);
+    mCurrentScene->scrollingEvent(x, y, SCROLL_SENSITIVITY);
 }

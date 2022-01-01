@@ -51,7 +51,9 @@ class Capsule : public PhysicsObject {
         rp3d::CapsuleShape* mCapsuleShape;
         rp3d::Collider* mCollider;
 
-		/// Vertex Buffer Object for the vertices data
+        rp3d::PhysicsWorld* mPhysicsWorld;
+
+        /// Vertex Buffer Object for the vertices data
 		static openglframework::VertexBufferObject mVBOVertices;
 
 		/// Vertex Buffer Object for the normals data

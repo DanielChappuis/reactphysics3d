@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -92,10 +92,55 @@ class PhysicsCommon {
         /// Set of default loggers
         Set<DefaultLogger*> mDefaultLoggers;
 
+        /// Half-edge structure of a box polyhedron
+        HalfEdgeStructure mBoxShapeHalfEdgeStructure;
+
+        /// Half-edge structure of a triangle shape
+        HalfEdgeStructure mTriangleShapeHalfEdgeStructure;
+
         // -------------------- Methods -------------------- //
+
+        /// Initialization
+        void init();
 
         /// Destroy and release everything that has been allocated
         void release();
+
+        /// Delete an instance of PhysicsWorld
+        void deletePhysicsWorld(PhysicsWorld* world);
+
+        /// Delete a sphere collision shape
+        void deleteSphereShape(SphereShape* sphereShape);
+
+        /// Delete a box collision shape
+        void deleteBoxShape(BoxShape* boxShape);
+
+        /// Delete a capsule collision shape
+        void deleteCapsuleShape(CapsuleShape* capsuleShape);
+
+        /// Delete a convex mesh shape
+        void deleteConvexMeshShape(ConvexMeshShape* convexMeshShape);
+
+        /// Delete a height-field shape
+        void deleteHeightFieldShape(HeightFieldShape* heightFieldShape);
+
+        /// Delete a concave mesh shape
+        void deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape);
+
+        /// Delete a polyhedron mesh
+        void deletePolyhedronMesh(PolyhedronMesh* polyhedronMesh);
+
+        /// Delete a triangle mesh
+        void deleteTriangleMesh(TriangleMesh* triangleMesh);
+
+        /// Delete a default logger
+        void deleteDefaultLogger(DefaultLogger* logger);
+
+        /// Initialize the half-edge structure of a BoxShape
+        void initBoxShapeHalfEdgeStructure();
+
+        /// Initialize the static half-edge structure of a TriangleShape
+        void initTriangleShapeHalfEdgeStructure();
 
 // If profiling is enabled
 #ifdef IS_RP3D_PROFILING_ENABLED
@@ -105,6 +150,9 @@ class PhysicsCommon {
 
         /// Destroy a profiler
         void destroyProfiler(Profiler* profiler);
+
+        /// Delete a profiler
+        void deleteProfiler(Profiler* profiler);
 
 #endif
 
@@ -187,13 +235,19 @@ class PhysicsCommon {
         /// Set the logger
         static void setLogger(Logger* logger);
 
+
+        // ---------- Friendship ---------- //
+
+        friend class BoxShape;
+        friend class TriangleShape;
+        friend class PhysicsWorld;
 };
 
 // Return the current logger
 /**
  * @return A pointer to the current logger
  */
-inline Logger* PhysicsCommon::getLogger() {
+RP3D_FORCE_INLINE Logger* PhysicsCommon::getLogger() {
     return mLogger;
 }
 
@@ -201,7 +255,7 @@ inline Logger* PhysicsCommon::getLogger() {
 /**
  * @param logger A pointer to the logger to use
  */
-inline void PhysicsCommon::setLogger(Logger* logger) {
+RP3D_FORCE_INLINE void PhysicsCommon::setLogger(Logger* logger) {
     mLogger = logger;
 }
 

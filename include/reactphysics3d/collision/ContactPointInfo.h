@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -45,10 +45,6 @@ class CollisionBody;
  */
 struct ContactPointInfo {
 
-    private:
-
-        // -------------------- Methods -------------------- //
-
     public:
 
         // -------------------- Attributes -------------------- //
@@ -56,29 +52,15 @@ struct ContactPointInfo {
         /// Normalized normal vector of the collision contact in world space
         Vector3 normal;
 
-        /// Penetration depth of the contact
-        decimal penetrationDepth;
-
         /// Contact point of body 1 in local space of body 1
         Vector3 localPoint1;
 
         /// Contact point of body 2 in local space of body 2
         Vector3 localPoint2;
 
-        // -------------------- Methods -------------------- //
+        /// Penetration depth of the contact
+        decimal penetrationDepth;
 
-        /// Constructor
-        ContactPointInfo(const Vector3& contactNormal, decimal penDepth,
-                         const Vector3& localPt1, const Vector3& localPt2)
-                         : normal(contactNormal), penetrationDepth(penDepth),
-                           localPoint1(localPt1), localPoint2(localPt2) {
-
-            assert(contactNormal.lengthSquare() > decimal(0.8));
-            assert(penDepth > decimal(0.0));
-        }
-
-        /// Destructor
-        ~ContactPointInfo() = default;
 };
 
 }

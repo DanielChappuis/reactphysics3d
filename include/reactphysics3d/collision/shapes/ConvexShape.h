@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -83,7 +83,7 @@ class ConvexShape : public CollisionShape {
 };
 
 // Return true if the collision shape is convex, false if it is concave
-inline bool ConvexShape::isConvex() const {
+RP3D_FORCE_INLINE bool ConvexShape::isConvex() const {
     return true;
 }
 
@@ -91,7 +91,7 @@ inline bool ConvexShape::isConvex() const {
 /**
  * @return The margin (in meters) around the collision shape
  */
-inline decimal ConvexShape::getMargin() const {
+RP3D_FORCE_INLINE decimal ConvexShape::getMargin() const {
     return mMargin;
 }
 

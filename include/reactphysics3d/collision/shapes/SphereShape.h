@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -111,7 +111,7 @@ class SphereShape : public ConvexShape {
 /**
  * @return Radius of the sphere
  */
-inline decimal SphereShape::getRadius() const {
+RP3D_FORCE_INLINE decimal SphereShape::getRadius() const {
     return mMargin;
 }
 
@@ -121,7 +121,7 @@ inline decimal SphereShape::getRadius() const {
 /**
  * @param radius Radius of the sphere
  */
-inline void SphereShape::setRadius(decimal radius) {
+RP3D_FORCE_INLINE void SphereShape::setRadius(decimal radius) {
    assert(radius > decimal(0.0));
    mMargin = radius;
 
@@ -132,7 +132,7 @@ inline void SphereShape::setRadius(decimal radius) {
 /**
  * @return False because the sphere shape is not a polyhedron
  */
-inline bool SphereShape::isPolyhedron() const {
+RP3D_FORCE_INLINE bool SphereShape::isPolyhedron() const {
     return false;
 }
 
@@ -140,12 +140,12 @@ inline bool SphereShape::isPolyhedron() const {
 /**
  * @return The size (in bytes) of the sphere shape
  */
-inline size_t SphereShape::getSizeInBytes() const {
+RP3D_FORCE_INLINE size_t SphereShape::getSizeInBytes() const {
     return sizeof(SphereShape);
 }
 
 // Return a local support point in a given direction without the object margin
-inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& direction) const {
+RP3D_FORCE_INLINE Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& /*direction*/) const {
 
     // Return the center of the sphere (the radius is taken into account in the object margin)
     return Vector3(0.0, 0.0, 0.0);
@@ -157,7 +157,7 @@ inline Vector3 SphereShape::getLocalSupportPointWithoutMargin(const Vector3& dir
  * @param min The minimum bounds of the shape in local-space coordinates
  * @param max The maximum bounds of the shape in local-space coordinates
  */
-inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
+RP3D_FORCE_INLINE void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
 
     // Maximum bounds
     max.x = mMargin;
@@ -174,23 +174,23 @@ inline void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
 /**
  * @param mass Mass to use to compute the inertia tensor of the collision shape
  */
-inline Vector3 SphereShape::getLocalInertiaTensor(decimal mass) const {
+RP3D_FORCE_INLINE Vector3 SphereShape::getLocalInertiaTensor(decimal mass) const {
     decimal diag = decimal(0.4) * mass * mMargin * mMargin;
     return Vector3(diag, diag, diag);
 }
 
 // Compute and return the volume of the collision shape
-inline decimal SphereShape::getVolume() const {
-    return decimal(4.0) / decimal(3.0) * reactphysics3d::PI * mMargin * mMargin * mMargin;
+RP3D_FORCE_INLINE decimal SphereShape::getVolume() const {
+    return decimal(4.0) / decimal(3.0) * reactphysics3d::PI_RP3D * mMargin * mMargin * mMargin;
 }
 
 // Return true if a point is inside the collision shape
-inline bool SphereShape::testPointInside(const Vector3& localPoint, Collider* collider) const {
+RP3D_FORCE_INLINE bool SphereShape::testPointInside(const Vector3& localPoint, Collider* /*collider*/) const {
     return (localPoint.lengthSquare() < mMargin * mMargin);
 }
 
 // Return the string representation of the shape
-inline std::string SphereShape::to_string() const {
+RP3D_FORCE_INLINE std::string SphereShape::to_string() const {
     return "SphereShape{radius=" + std::to_string(getRadius()) + "}";
 }
 

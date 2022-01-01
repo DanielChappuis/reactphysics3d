@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -37,7 +37,8 @@ BallAndSocketJointComponents::BallAndSocketJointComponents(MemoryAllocator& allo
                     :Components(allocator, sizeof(Entity) + sizeof(BallAndSocketJoint*) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Matrix3x3) + sizeof(Matrix3x3) + sizeof(Vector3) +
-                                sizeof(Matrix3x3) + sizeof(Vector3)) {
+                                sizeof(Matrix3x3) + sizeof(Vector3) + sizeof(bool) + sizeof(decimal) +
+                                sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(bool) + sizeof(Vector3)) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -67,6 +68,13 @@ void BallAndSocketJointComponents::allocate(uint32 nbComponentsToAllocate) {
     Vector3* newBiasVector = reinterpret_cast<Vector3*>(newI2 + nbComponentsToAllocate);
     Matrix3x3* newInverseMassMatrix = reinterpret_cast<Matrix3x3*>(newBiasVector + nbComponentsToAllocate);
     Vector3* newImpulse = reinterpret_cast<Vector3*>(newInverseMassMatrix + nbComponentsToAllocate);
+    bool* newIsConeLimitEnabled = reinterpret_cast<bool*>(newImpulse + nbComponentsToAllocate);
+    decimal* newConeLimitImpulse = reinterpret_cast<decimal*>(newIsConeLimitEnabled + nbComponentsToAllocate);
+    decimal* newConeLimitHalfAngle = reinterpret_cast<decimal*>(newConeLimitImpulse + nbComponentsToAllocate);
+    decimal* newInverseMassMatrixConeLimit = reinterpret_cast<decimal*>(newConeLimitHalfAngle + nbComponentsToAllocate);
+    decimal* newBConeLimit = reinterpret_cast<decimal*>(newInverseMassMatrixConeLimit + nbComponentsToAllocate);
+    bool* newIsConeLimitViolated = reinterpret_cast<bool*>(newBConeLimit + nbComponentsToAllocate);
+    Vector3* newConeLimitACrossB = reinterpret_cast<Vector3*>(newIsConeLimitViolated + nbComponentsToAllocate);
 
     // If there was already components before
     if (mNbComponents > 0) {
@@ -83,6 +91,13 @@ void BallAndSocketJointComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newBiasVector, mBiasVector, mNbComponents * sizeof(Vector3));
         memcpy(newInverseMassMatrix, mInverseMassMatrix, mNbComponents * sizeof(Matrix3x3));
         memcpy(newImpulse, mImpulse, mNbComponents * sizeof(Vector3));
+        memcpy(newIsConeLimitEnabled, mIsConeLimitEnabled, mNbComponents * sizeof(bool));
+        memcpy(newConeLimitImpulse, mConeLimitImpulse, mNbComponents * sizeof(decimal));
+        memcpy(newConeLimitHalfAngle, mConeLimitHalfAngle, mNbComponents * sizeof(decimal));
+        memcpy(newInverseMassMatrixConeLimit, mInverseMassMatrixConeLimit, mNbComponents * sizeof(decimal));
+        memcpy(newBConeLimit, mBConeLimit, mNbComponents * sizeof(decimal));
+        memcpy(newIsConeLimitViolated, mIsConeLimitViolated, mNbComponents * sizeof(bool));
+        memcpy(newConeLimitACrossB, mConeLimitACrossB, mNbComponents * sizeof(Vector3));
 
         // Deallocate previous memory
         mMemoryAllocator.release(mBuffer, mNbAllocatedComponents * mComponentDataSize);
@@ -101,6 +116,13 @@ void BallAndSocketJointComponents::allocate(uint32 nbComponentsToAllocate) {
     mBiasVector = newBiasVector;
     mInverseMassMatrix = newInverseMassMatrix;
     mImpulse = newImpulse;
+    mIsConeLimitEnabled = newIsConeLimitEnabled;
+    mConeLimitImpulse = newConeLimitImpulse;
+    mConeLimitHalfAngle = newConeLimitHalfAngle;
+    mInverseMassMatrixConeLimit = newInverseMassMatrixConeLimit;
+    mBConeLimit = newBConeLimit;
+    mIsConeLimitViolated = newIsConeLimitViolated;
+    mConeLimitACrossB = newConeLimitACrossB;
 }
 
 // Add a component
@@ -121,6 +143,13 @@ void BallAndSocketJointComponents::addComponent(Entity jointEntity, bool isSleep
     new (mBiasVector + index) Vector3(0, 0, 0);
     new (mInverseMassMatrix + index) Matrix3x3();
     new (mImpulse + index) Vector3(0, 0, 0);
+    mIsConeLimitEnabled[index] = component.isConeLimitEnabled;
+    mConeLimitImpulse[index] = decimal(0.0);
+    mConeLimitHalfAngle[index] = component.coneLimitHalfAngle;
+    mInverseMassMatrixConeLimit[index] = decimal(0.0);
+    mBConeLimit[index] = decimal(0.0);
+    mIsConeLimitViolated[index] = false;
+    new (mConeLimitACrossB + index) Vector3(0, 0, 0);
 
     // Map the entity with the new component lookup index
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity, index));
@@ -149,6 +178,13 @@ void BallAndSocketJointComponents::moveComponentToIndex(uint32 srcIndex, uint32 
     new (mBiasVector + destIndex) Vector3(mBiasVector[srcIndex]);
     new (mInverseMassMatrix + destIndex) Matrix3x3(mInverseMassMatrix[srcIndex]);
     new (mImpulse + destIndex) Vector3(mImpulse[srcIndex]);
+    mIsConeLimitEnabled[destIndex] = mIsConeLimitEnabled[srcIndex];
+    mConeLimitImpulse[destIndex] = mConeLimitImpulse[srcIndex];
+    mConeLimitHalfAngle[destIndex] = mConeLimitHalfAngle[srcIndex];
+    mInverseMassMatrixConeLimit[destIndex] = mInverseMassMatrixConeLimit[srcIndex];
+    mBConeLimit[destIndex] = mBConeLimit[srcIndex];
+    mIsConeLimitViolated[destIndex] = mIsConeLimitViolated[srcIndex];
+    new (mConeLimitACrossB + destIndex) Vector3(mConeLimitACrossB[srcIndex]);
 
     // Destroy the source component
     destroyComponent(srcIndex);
@@ -176,6 +212,13 @@ void BallAndSocketJointComponents::swapComponents(uint32 index1, uint32 index2) 
     Vector3 biasVector1(mBiasVector[index1]);
     Matrix3x3 inverseMassMatrix1(mInverseMassMatrix[index1]);
     Vector3 impulse1(mImpulse[index1]);
+    bool isConeLimitEnabled1 = mIsConeLimitEnabled[index1];
+    decimal coneLimitImpulse1 = mConeLimitImpulse[index1];
+    decimal coneLimitHalfAngle1 = mConeLimitHalfAngle[index1];
+    decimal inverseMassMatrixConeLimit1 = mInverseMassMatrixConeLimit[index1];
+    decimal bConeLimit = mBConeLimit[index1];
+    bool isConeLimitViolated = mIsConeLimitViolated[index1];
+    Vector3 coneLimitAcrossB(mConeLimitACrossB[index1]);
 
     // Destroy component 1
     destroyComponent(index1);
@@ -194,6 +237,13 @@ void BallAndSocketJointComponents::swapComponents(uint32 index1, uint32 index2) 
     new (mBiasVector + index2) Vector3(biasVector1);
     new (mInverseMassMatrix + index2) Matrix3x3(inverseMassMatrix1);
     new (mImpulse + index2) Vector3(impulse1);
+    mIsConeLimitEnabled[index2] = isConeLimitEnabled1;
+    mConeLimitImpulse[index2] = coneLimitImpulse1;
+    mConeLimitHalfAngle[index2] = coneLimitHalfAngle1;
+    mInverseMassMatrixConeLimit[index2] = inverseMassMatrixConeLimit1;
+    mBConeLimit[index2] = bConeLimit;
+    mIsConeLimitViolated[index2] = isConeLimitViolated;
+    new (mConeLimitACrossB + index2) Vector3(coneLimitAcrossB);
 
     // Update the entity to component index mapping
     mMapEntityToComponentIndex.add(Pair<Entity, uint32>(jointEntity1, index2));
@@ -223,4 +273,5 @@ void BallAndSocketJointComponents::destroyComponent(uint32 index) {
     mBiasVector[index].~Vector3();
     mInverseMassMatrix[index].~Matrix3x3();
     mImpulse[index].~Vector3();
+    mConeLimitACrossB[index].~Vector3();
 }

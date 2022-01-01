@@ -71,7 +71,7 @@ class ContactManager : public rp3d::CollisionCallback {
 
    public:
 
-        ContactManager(openglframework::Shader& shader, const std::string& meshFolderPath,
+        ContactManager(openglframework::Shader& /*shader*/, const std::string& meshFolderPath,
                        std::vector<SceneContactPoint>& contactPoints)
             : mMeshFolderPath(meshFolderPath), mContactPoints(contactPoints) {
 
@@ -121,7 +121,7 @@ class CollisionDetectionScene : public SceneDemo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionDetectionScene(const std::string& name, EngineSettings& settings);
+        CollisionDetectionScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~CollisionDetectionScene() override;
@@ -151,12 +151,12 @@ inline void CollisionDetectionScene::showHideNormals() {
 }
 
 // Enabled/Disable the shadow mapping
-inline void CollisionDetectionScene::setIsShadowMappingEnabled(bool isShadowMappingEnabled) {
+inline void CollisionDetectionScene::setIsShadowMappingEnabled(bool /*isShadowMappingEnabled*/) {
     SceneDemo::setIsShadowMappingEnabled(false);
 }
 
 // Display/Hide the contact points
-inline void CollisionDetectionScene::setAreContactPointsDisplayed(bool display) {
+inline void CollisionDetectionScene::setAreContactPointsDisplayed(bool /*display*/) {
     SceneDemo::setAreContactPointsDisplayed(true);
 }
 

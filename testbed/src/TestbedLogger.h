@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,56 +23,52 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_SPHERE_VS_CAPSULE_NARROW_PHASE_INFO_BATCH_H
-#define REACTPHYSICS3D_SPHERE_VS_CAPSULE_NARROW_PHASE_INFO_BATCH_H
+#ifndef TESTBED_LOGGER_H
+#define	TESTBED_LOGGER_H
 
 // Libraries
-#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
+#include <reactphysics3d/utils/DefaultLogger.h>
+#include <unordered_map>
+#include <string>
 
-/// Namespace ReactPhysics3D
-namespace reactphysics3d {
+/// Class TestbedApplication
+class TestbedLogger : public reactphysics3d::Logger {
 
-// Struct SphereVsCapsuleNarrowPhaseInfoBatch
-/**
- * This structure collects all the potential collisions from the middle-phase algorithm
- * that have to be tested during narrow-phase collision detection. This class collects all the
- * sphere vs capsule collision detection tests.
- */
-struct SphereVsCapsuleNarrowPhaseInfoBatch : public NarrowPhaseInfoBatch {
+    private:
+
+        /// Map a log format to the given formatter object
+        std::unordered_map<reactphysics3d::DefaultLogger::Format, reactphysics3d::DefaultLogger::Formatter*> mFormatters;
+
+        /// Map the name of a world with the corresponding log destination
+        std::unordered_map<std::string, reactphysics3d::DefaultLogger::Destination*> mMapWorldToDestinations;
+
+        reactphysics3d::DefaultLogger::StreamDestination* mStandardOutputDestination;
+
+        /// Mutex
+        std::mutex mMutex;
+
+        // -------------------- Methods -------------------- //
+
+        /// Return the corresponding formatter
+        reactphysics3d::DefaultLogger::Formatter* getFormatter(reactphysics3d::DefaultLogger::Format format) const;
+
+        /// Add a stream destination to the logger
+        void addStreamDestination(std::ostream& outputStream, reactphysics3d::uint logLevelFlag, reactphysics3d::DefaultLogger::Format format);
 
     public:
 
-        /// List of boolean values to know if the the sphere is the first or second shape
-        List<bool> isSpheresShape1;
-
-        /// List of radiuses for the spheres
-        List<decimal> sphereRadiuses;
-
-        /// List of radiuses for the capsules
-        List<decimal> capsuleRadiuses;
-
-        /// List of heights for the capsules
-        List<decimal> capsuleHeights;
-
         /// Constructor
-        SphereVsCapsuleNarrowPhaseInfoBatch(MemoryAllocator& allocator, OverlappingPairs& overlappingPairs);
+        TestbedLogger();
 
         /// Destructor
-        virtual ~SphereVsCapsuleNarrowPhaseInfoBatch() override = default;
+        ~TestbedLogger();
 
-        /// Add shapes to be tested during narrow-phase collision detection into the batch
-        virtual void addNarrowPhaseInfo(uint64 pairId, uint64 pairIndex, Entity collider1, Entity collider2, CollisionShape* shape1,
-                                        CollisionShape* shape2, const Transform& shape1Transform,
-                                        const Transform& shape2Transform, bool needToReportContacts, MemoryAllocator& shapeAllocator) override;
+        /// Add a log file destination to the logger
+        void addFileDestination(const std::string& worldName, reactphysics3d::uint logLevelFlag, reactphysics3d::DefaultLogger::Format format);
 
-        // Initialize the containers using cached capacity
-        virtual void reserveMemory() override;
 
-        /// Clear all the objects in the batch
-        virtual void clear() override;
+        /// Log something
+        virtual void log(Level level, const std::string& physicsWorldName, Category category, const std::string& message, const char* filename, int lineNumber) override;
 };
 
-}
-
 #endif
-

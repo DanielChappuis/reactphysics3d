@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -47,73 +47,42 @@ SolveSliderJointSystem::SolveSliderJointSystem(PhysicsWorld& world, RigidBodyCom
 // Initialize before solving the constraint
 void SolveSliderJointSystem::initBeforeSolve() {
 
+    const decimal biasFactor = (BETA / mTimeStep);
+
     // For each joint
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbJoints = mSliderJointComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbJoints; i++) {
 
         const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
+        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
+        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
+
+        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
+        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity));
         assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
 
         // Get the inertia tensor of bodies
-        mSliderJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
-        mSliderJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        mSliderJointComponents.mI1[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody1];
+        mSliderJointComponents.mI2[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody2];
 
         const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
         const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Vector from body center to the anchor point
-        mSliderJointComponents.mR1[i] = orientationBody1 * mSliderJointComponents.mLocalAnchorPointBody1[i];
-        mSliderJointComponents.mR2[i] = orientationBody2 * mSliderJointComponents.mLocalAnchorPointBody2[i];
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
+        mSliderJointComponents.mR1[i] = orientationBody1 * (mSliderJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mSliderJointComponents.mR2[i] = orientationBody2 * (mSliderJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Compute the two orthogonal vectors to the slider axis in world-space
         mSliderJointComponents.mSliderAxisWorld[i] = orientationBody1 * mSliderJointComponents.mSliderAxisBody1[i];
         mSliderJointComponents.mSliderAxisWorld[i].normalize();
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
 
         mSliderJointComponents.mN1[i] = mSliderJointComponents.mSliderAxisWorld[i].getOneUnitOrthogonalVector();
         mSliderJointComponents.mN2[i] = mSliderJointComponents.mSliderAxisWorld[i].cross(mSliderJointComponents.mN1[i]);
-    }
-
-    const decimal biasFactor = (BETA / mTimeStep);
-
-    // For each joint
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         const Vector3& x1 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody1];
         const Vector3& x2 = mRigidBodyComponents.mCentersOfMassWorld[componentIndexBody2];
@@ -147,7 +116,7 @@ void SolveSliderJointSystem::initBeforeSolve() {
 
         // Compute the bias "b" of the translation constraint
         mSliderJointComponents.mBiasTranslation[i].setToZero();
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             mSliderJointComponents.mBiasTranslation[i].x = u.dot(mSliderJointComponents.mN1[i]);
             mSliderJointComponents.mBiasTranslation[i].y = u.dot(mSliderJointComponents.mN2[i]);
             mSliderJointComponents.mBiasTranslation[i] *= biasFactor;
@@ -173,35 +142,21 @@ void SolveSliderJointSystem::initBeforeSolve() {
 
             // Compute the bias "b" of the lower limit constraint
             mSliderJointComponents.mBLowerLimit[i] = decimal(0.0);
-            if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+            if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
                 mSliderJointComponents.mBLowerLimit[i] = biasFactor * lowerLimitError;
             }
 
             // Compute the bias "b" of the upper limit constraint
             mSliderJointComponents.mBUpperLimit[i] = decimal(0.0);
-            if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+            if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
                 mSliderJointComponents.mBUpperLimit[i] = biasFactor * upperLimitError;
             }
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
 
         // Compute the cross products used in the Jacobians
         mSliderJointComponents.mR2CrossN1[i] = mSliderJointComponents.mR2[i].cross(mSliderJointComponents.mN1[i]);
         mSliderJointComponents.mR2CrossN2[i] = mSliderJointComponents.mR2[i].cross(mSliderJointComponents.mN2[i]);
         mSliderJointComponents.mR2CrossSliderAxis[i] = mSliderJointComponents.mR2[i].cross(mSliderJointComponents.mSliderAxisWorld[i]);
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
 
         const Vector3& r2CrossN1 = mSliderJointComponents.mR2CrossN1[i];
         const Vector3& r2CrossN2 = mSliderJointComponents.mR2CrossN2[i];
@@ -210,9 +165,6 @@ void SolveSliderJointSystem::initBeforeSolve() {
 
         const Matrix3x3& i1 = mSliderJointComponents.mI1[i];
         const Matrix3x3& i2 = mSliderJointComponents.mI2[i];
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
         // constraints (2x2 matrix)
@@ -233,37 +185,30 @@ void SolveSliderJointSystem::initBeforeSolve() {
                              r2CrossN2.dot(I2R2CrossN2);
         Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
         mSliderJointComponents.mInverseMassMatrixTranslation[i].setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+        decimal matrixKTranslationDeterminant = matrixKTranslation.getDeterminant();
+        if (std::abs(matrixKTranslationDeterminant) > MACHINE_EPSILON) {
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
 
-            mSliderJointComponents.mInverseMassMatrixTranslation[i] = matrixKTranslation.getInverse();
+                mSliderJointComponents.mInverseMassMatrixTranslation[i] = matrixKTranslation.getInverse(matrixKTranslationDeterminant);
+            }
         }
 
         // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
         // contraints (3x3 matrix)
         mSliderJointComponents.mInverseMassMatrixRotation[i] = i1 + i2;
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
-            mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+        decimal massMatrixRotationDeterminant = mSliderJointComponents.mInverseMassMatrixRotation[i].getDeterminant();
+        if (std::abs(massMatrixRotationDeterminant) > MACHINE_EPSILON) {
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC ||
+                mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
 
-            mSliderJointComponents.mInverseMassMatrixRotation[i] = mSliderJointComponents.mInverseMassMatrixRotation[i].getInverse();
+                mSliderJointComponents.mInverseMassMatrixRotation[i] = mSliderJointComponents.mInverseMassMatrixRotation[i].getInverse(massMatrixRotationDeterminant);
+            }
         }
-    }
-
-    // For each joint
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const Quaternion& orientationBody1 = mTransformComponents.getTransform(body1Entity).getOrientation();
-        const Quaternion& orientationBody2 = mTransformComponents.getTransform(body2Entity).getOrientation();
 
         // Compute the bias "b" of the rotation constraint
         mSliderJointComponents.mBiasRotation[i].setToZero();
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
             const Quaternion qError = orientationBody2 * mSliderJointComponents.mInitOrientationDifferenceInv[i] * orientationBody1.getInverse();
             mSliderJointComponents.mBiasRotation[i] = biasFactor * decimal(2.0) * qError.getVectorV();
         }
@@ -271,8 +216,8 @@ void SolveSliderJointSystem::initBeforeSolve() {
         // If the motor is enabled
         if (mSliderJointComponents.mIsMotorEnabled[i]) {
 
-            const decimal body1MassInverse = mRigidBodyComponents.getMassInverse(body1Entity);
-            const decimal body2MassInverse = mRigidBodyComponents.getMassInverse(body2Entity);
+            const decimal body1MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
+            const decimal body2MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
             const decimal sumInverseMass = body1MassInverse + body2MassInverse;
 
             // Compute the inverse of mass matrix K=JM^-1J^t for the motor (1x1 matrix)
@@ -280,13 +225,9 @@ void SolveSliderJointSystem::initBeforeSolve() {
             mSliderJointComponents.mInverseMassMatrixMotor[i] = (mSliderJointComponents.mInverseMassMatrixMotor[i] > decimal(0.0)) ?
                         decimal(1.0) / mSliderJointComponents.mInverseMassMatrixMotor[i] : decimal(0.0);
         }
-    }
 
-    // If warm-starting is not enabled
-    if (!mIsWarmStartingActive) {
-
-        // For each joint
-        for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
+        // If warm-starting is not enabled
+        if (!mIsWarmStartingActive) {
 
             // Reset all the accumulated impulses
             mSliderJointComponents.mImpulseTranslation[i].setToZero();
@@ -302,13 +243,15 @@ void SolveSliderJointSystem::initBeforeSolve() {
 void SolveSliderJointSystem::warmstart() {
 
     // For each joint component
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbJoints = mSliderJointComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbJoints; i++) {
 
         const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
+        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
+        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
@@ -352,8 +295,8 @@ void SolveSliderJointSystem::warmstart() {
         linearImpulseBody1 += impulseMotor;
 
         // Apply the impulse to the body 1
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += mSliderJointComponents.mI1[i] * angularImpulseBody1;
+        v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mSliderJointComponents.mI1[i] * angularImpulseBody1);
 
         // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
         Vector3 linearImpulseBody2 = n1 * impulseTranslation.x + n2 * impulseTranslation.y;
@@ -371,8 +314,8 @@ void SolveSliderJointSystem::warmstart() {
         linearImpulseBody2 += -impulseMotor;
 
         // Apply the impulse to the body 2
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += mSliderJointComponents.mI2[i] * angularImpulseBody2;
+        v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mSliderJointComponents.mI2[i] * angularImpulseBody2);
     }
 }
 
@@ -380,13 +323,15 @@ void SolveSliderJointSystem::warmstart() {
 void SolveSliderJointSystem::solveVelocityConstraint() {
 
     // For each joint component
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbJoints = mSliderJointComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbJoints; i++) {
 
         const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
+        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
+        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
@@ -409,93 +354,6 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
         const Vector3& r1PlusUCrossN2 = mSliderJointComponents.mR1PlusUCrossN2[i];
 
         // Get the inverse mass and inverse inertia tensors of the bodies
-        decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
-        decimal inverseMassBody2 = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
-
-        // --------------- Translation Constraints --------------- //
-
-        // Compute J*v for the 2 translation constraints
-        const decimal el1 = -n1.dot(v1) - w1.dot(r1PlusUCrossN1) +
-                             n1.dot(v2) + w2.dot(r2CrossN1);
-        const decimal el2 = -n2.dot(v1) - w1.dot(r1PlusUCrossN2) +
-                             n2.dot(v2) + w2.dot(r2CrossN2);
-        const Vector2 JvTranslation(el1, el2);
-
-        // Compute the Lagrange multiplier lambda for the 2 translation constraints
-        Vector2 deltaLambda = mSliderJointComponents.mInverseMassMatrixTranslation[i] * (-JvTranslation - mSliderJointComponents.mBiasTranslation[i]);
-        mSliderJointComponents.mImpulseTranslation[i] += deltaLambda;
-
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
-        const Vector3 linearImpulseBody1 = -n1 * deltaLambda.x - n2 * deltaLambda.y;
-        Vector3 angularImpulseBody1 = -r1PlusUCrossN1 * deltaLambda.x -
-                r1PlusUCrossN2 * deltaLambda.y;
-
-        // Apply the impulse to the body 1
-        v1 += inverseMassBody1 * linearImpulseBody1;
-        w1 += i1 * angularImpulseBody1;
-
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
-        const Vector3 linearImpulseBody2 = n1 * deltaLambda.x + n2 * deltaLambda.y;
-        Vector3 angularImpulseBody2 = r2CrossN1 * deltaLambda.x + r2CrossN2 * deltaLambda.y;
-
-        // Apply the impulse to the body 2
-        v2 += inverseMassBody2 * linearImpulseBody2;
-        w2 += i2 * angularImpulseBody2;
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
-
-        // --------------- Rotation Constraints --------------- //
-
-        Vector3& w1 = mRigidBodyComponents.mConstrainedAngularVelocities[componentIndexBody1];
-        Vector3& w2 = mRigidBodyComponents.mConstrainedAngularVelocities[componentIndexBody2];
-
-        // Compute J*v for the 3 rotation constraints
-        const Vector3 JvRotation = w2 - w1;
-
-        // Compute the Lagrange multiplier lambda for the 3 rotation constraints
-        Vector3 deltaLambda2 = mSliderJointComponents.mInverseMassMatrixRotation[i] *
-                               (-JvRotation - mSliderJointComponents.getBiasRotation(jointEntity));
-        mSliderJointComponents.mImpulseRotation[i] += deltaLambda2;
-
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
-        Vector3 angularImpulseBody1 = -deltaLambda2;
-
-        // Apply the impulse to the body to body 1
-        w1 += mSliderJointComponents.mI1[i] * angularImpulseBody1;
-
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
-        Vector3 angularImpulseBody2 = deltaLambda2;
-
-        // Apply the impulse to the body 2
-        w2 += mSliderJointComponents.mI2[i] * angularImpulseBody2;
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
-
-        Vector3& v1 = mRigidBodyComponents.mConstrainedLinearVelocities[componentIndexBody1];
-        Vector3& v2 = mRigidBodyComponents.mConstrainedLinearVelocities[componentIndexBody2];
-
         decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
         decimal inverseMassBody2 = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
 
@@ -531,16 +389,16 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
                 const Vector3 angularImpulseBody1 = -deltaLambdaLower * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                v1 += inverseMassBody1 * linearImpulseBody1;
-                w1 += mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+                w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mSliderJointComponents.mI1[i] * angularImpulseBody1);
 
                 // Compute the impulse P=J^T * lambda for the lower limit constraint of body 2
                 const Vector3 linearImpulseBody2 = deltaLambdaLower * sliderAxisWorld;
                 const Vector3 angularImpulseBody2 = deltaLambdaLower * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
-                v2 += inverseMassBody2 * linearImpulseBody2;
-                w2 += mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+                w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mSliderJointComponents.mI2[i] * angularImpulseBody2);
             }
 
             // If the upper limit is violated
@@ -561,16 +419,16 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
                 const Vector3 angularImpulseBody1 = deltaLambdaUpper * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                v1 += inverseMassBody1 * linearImpulseBody1;
-                w1 += mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+                w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mSliderJointComponents.mI1[i] * angularImpulseBody1);
 
                 // Compute the impulse P=J^T * lambda for the upper limit constraint of body 2
                 const Vector3 linearImpulseBody2 = -deltaLambdaUpper * sliderAxisWorld;
                 const Vector3 angularImpulseBody2 = -deltaLambdaUpper * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
-                v2 += inverseMassBody2 * linearImpulseBody2;
-                w2 += mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+                w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mSliderJointComponents.mI2[i] * angularImpulseBody2);
             }
         }
 
@@ -592,14 +450,66 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
             const Vector3 linearImpulseBody1 = deltaLambdaMotor * sliderAxisWorld;
 
             // Apply the impulse to the body 1
-            v1 += inverseMassBody1 * linearImpulseBody1;
+            v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
 
             // Compute the impulse P=J^T * lambda for the motor of body 2
             const Vector3 linearImpulseBody2 = -deltaLambdaMotor * sliderAxisWorld;
 
             // Apply the impulse to the body 2
-            v2 += inverseMassBody2 * linearImpulseBody2;
+            v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
         }
+
+        // --------------- Rotation Constraints --------------- //
+
+        // Compute J*v for the 3 rotation constraints
+        const Vector3 JvRotation = w2 - w1;
+
+        // Compute the Lagrange multiplier lambda for the 3 rotation constraints
+        Vector3 deltaLambda2 = mSliderJointComponents.mInverseMassMatrixRotation[i] *
+                               (-JvRotation - mSliderJointComponents.getBiasRotation(jointEntity));
+        mSliderJointComponents.mImpulseRotation[i] += deltaLambda2;
+
+        // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
+        Vector3 angularImpulseBody1 = -deltaLambda2;
+
+        // Apply the impulse to the body 1
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mSliderJointComponents.mI1[i] * angularImpulseBody1);
+
+        // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
+        Vector3 angularImpulseBody2 = deltaLambda2;
+
+        // Apply the impulse to the body 2
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mSliderJointComponents.mI2[i] * angularImpulseBody2);
+
+        // --------------- Translation Constraints --------------- //
+
+        // Compute J*v for the 2 translation constraints
+        const decimal el1 = -n1.dot(v1) - w1.dot(r1PlusUCrossN1) +
+                             n1.dot(v2) + w2.dot(r2CrossN1);
+        const decimal el2 = -n2.dot(v1) - w1.dot(r1PlusUCrossN2) +
+                             n2.dot(v2) + w2.dot(r2CrossN2);
+        const Vector2 JvTranslation(el1, el2);
+
+        // Compute the Lagrange multiplier lambda for the 2 translation constraints
+        const Vector2 deltaLambda = mSliderJointComponents.mInverseMassMatrixTranslation[i] * (-JvTranslation - mSliderJointComponents.mBiasTranslation[i]);
+        mSliderJointComponents.mImpulseTranslation[i] += deltaLambda;
+
+        // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
+        const Vector3 linearImpulseBody1 = -n1 * deltaLambda.x - n2 * deltaLambda.y;
+        angularImpulseBody1 = -r1PlusUCrossN1 * deltaLambda.x -
+                r1PlusUCrossN2 * deltaLambda.y;
+
+        // Apply the impulse to the body 1
+        v1 += inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+        w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
+
+        // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
+        const Vector3 linearImpulseBody2 = -linearImpulseBody1;
+        angularImpulseBody2 = r2CrossN1 * deltaLambda.x + r2CrossN2 * deltaLambda.y;
+
+        // Apply the impulse to the body 2
+        v2 += inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+        w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
     }
 }
 
@@ -607,59 +517,36 @@ void SolveSliderJointSystem::solveVelocityConstraint() {
 void SolveSliderJointSystem::solvePositionConstraint() {
 
     // For each joint component
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
+    const uint32 nbEnabledJoints = mSliderJointComponents.getNbEnabledComponents();
+    for (uint32 i=0; i < nbEnabledJoints; i++) {
 
         const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
+        const uint32 jointIndex = mJointComponents.getEntityIndex(jointEntity);
 
         // If the error position correction technique is not the non-linear-gauss-seidel, we do
         // do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
+        if (mJointComponents.mPositionCorrectionTechniques[jointIndex] != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
         // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        // Recompute the inverse inertia tensors
-        mSliderJointComponents.mI1[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body1Entity);
-        mSliderJointComponents.mI2[i] = RigidBody::getWorldInertiaTensorInverse(mWorld, body2Entity);
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do
-        // do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const Quaternion& q1 = mRigidBodyComponents.getConstrainedOrientation(body1Entity);
-        const Quaternion& q2 = mRigidBodyComponents.getConstrainedOrientation(body2Entity);
-
-        // Vector from body center to the anchor point
-        mSliderJointComponents.mR1[i] = q1 * mSliderJointComponents.mLocalAnchorPointBody1[i];
-        mSliderJointComponents.mR2[i] = q2 * mSliderJointComponents.mLocalAnchorPointBody2[i];
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do
-        // do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
+        const Entity body1Entity = mJointComponents.mBody1Entities[jointIndex];
+        const Entity body2Entity = mJointComponents.mBody2Entities[jointIndex];
 
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
+
+        Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
+        Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
+
+        // Recompute the world inverse inertia tensors
+        RigidBody::computeWorldInertiaTensorInverse(q1.getMatrix(), mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody1],
+                                                    mSliderJointComponents.mI1[i]);
+
+        RigidBody::computeWorldInertiaTensorInverse(q2.getMatrix(), mRigidBodyComponents.mInverseInertiaTensorsLocal[componentIndexBody2],
+                                                    mSliderJointComponents.mI2[i]);
+
+        // Vector from body center to the anchor point
+        mSliderJointComponents.mR1[i] = q1 * (mSliderJointComponents.mLocalAnchorPointBody1[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody1]);
+        mSliderJointComponents.mR2[i] = q2 * (mSliderJointComponents.mLocalAnchorPointBody2[i] - mRigidBodyComponents.mCentersOfMassLocal[componentIndexBody2]);
 
         // Get the inverse mass and inverse inertia tensors of the bodies
         const decimal inverseMassBody1 = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
@@ -676,9 +563,6 @@ void SolveSliderJointSystem::solvePositionConstraint() {
 
         // Compute the vector u (difference between anchor points)
         const Vector3 u = x2 + r2 - x1 - r1;
-
-        Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
-        Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
 
         // Compute the two orthogonal vectors to the slider axis in world-space
         mSliderJointComponents.mSliderAxisWorld[i] = q1 * mSliderJointComponents.mSliderAxisBody1[i];
@@ -706,153 +590,6 @@ void SolveSliderJointSystem::solvePositionConstraint() {
         const Vector3& r2CrossN2 = mSliderJointComponents.mR2CrossN2[i];
         const Vector3& r1PlusUCrossN1 = mSliderJointComponents.mR1PlusUCrossN1[i];
         const Vector3& r1PlusUCrossN2 = mSliderJointComponents.mR1PlusUCrossN2[i];
-
-        // --------------- Translation Constraints --------------- //
-
-        const Matrix3x3& i1 = mSliderJointComponents.getI1(jointEntity);
-        const Matrix3x3& i2 = mSliderJointComponents.getI2(jointEntity);
-
-        // Recompute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
-        // constraints (2x2 matrix)
-        const decimal body1MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
-        const decimal body2MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
-        decimal sumInverseMass = body1MassInverse + body2MassInverse;
-        Vector3 I1R1PlusUCrossN1 = i1 * r1PlusUCrossN1;
-        Vector3 I1R1PlusUCrossN2 = i1 * r1PlusUCrossN2;
-        Vector3 I2R2CrossN1 = i2 * r2CrossN1;
-        Vector3 I2R2CrossN2 = i2 * r2CrossN2;
-        const decimal el11 = sumInverseMass + r1PlusUCrossN1.dot(I1R1PlusUCrossN1) +
-                             r2CrossN1.dot(I2R2CrossN1);
-        const decimal el12 = r1PlusUCrossN1.dot(I1R1PlusUCrossN2) +
-                             r2CrossN1.dot(I2R2CrossN2);
-        const decimal el21 = r1PlusUCrossN2.dot(I1R1PlusUCrossN1) +
-                             r2CrossN2.dot(I2R2CrossN1);
-        const decimal el22 = sumInverseMass + r1PlusUCrossN2.dot(I1R1PlusUCrossN2) +
-                             r2CrossN2.dot(I2R2CrossN2);
-        Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
-        mSliderJointComponents.mInverseMassMatrixTranslation[i].setToZero();
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC || mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-
-            mSliderJointComponents.mInverseMassMatrixTranslation[i] = matrixKTranslation.getInverse();
-        }
-
-        // Compute the position error for the 2 translation constraints
-        const Vector2 translationError(u.dot(n1), u.dot(n2));
-
-        // Compute the Lagrange multiplier lambda for the 2 translation constraints
-        Vector2 lambdaTranslation = mSliderJointComponents.mInverseMassMatrixTranslation[i] * (-translationError);
-
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
-        const Vector3 linearImpulseBody1 = -n1 * lambdaTranslation.x - n2 * lambdaTranslation.y;
-        Vector3 angularImpulseBody1 = -r1PlusUCrossN1 * lambdaTranslation.x -
-                                            r1PlusUCrossN2 * lambdaTranslation.y;
-
-        // Apply the impulse to the body 1
-        const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-        Vector3 w1 = i1 * angularImpulseBody1;
-
-        // Update the body position/orientation of body 1
-        x1 += v1;
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-
-        // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
-        const Vector3 linearImpulseBody2 = n1 * lambdaTranslation.x + n2 * lambdaTranslation.y;
-        Vector3 angularImpulseBody2 = r2CrossN1 * lambdaTranslation.x + r2CrossN2 * lambdaTranslation.y;
-
-        // Apply the impulse to the body 2
-        const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-        Vector3 w2 = i2 * angularImpulseBody2;
-
-        // Update the body position/orientation of body 2
-        x2 += v2;
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
-    }
-
-    // For each joint component
-    for (uint32 i=0; i < mSliderJointComponents.getNbEnabledComponents(); i++) {
-
-        const Entity jointEntity = mSliderJointComponents.mJointEntities[i];
-
-        // If the error position correction technique is not the non-linear-gauss-seidel, we do
-        // do not execute this method
-        if (mJointComponents.getPositionCorrectionTechnique(jointEntity) != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
-
-        // Get the bodies entities
-        const Entity body1Entity = mJointComponents.getBody1Entity(jointEntity);
-        const Entity body2Entity = mJointComponents.getBody2Entity(jointEntity);
-
-        const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
-        const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
-
-        Quaternion& q1 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody1];
-        Quaternion& q2 = mRigidBodyComponents.mConstrainedOrientations[componentIndexBody2];
-
-        // Get the velocities
-        Vector3& w1 = mRigidBodyComponents.mConstrainedAngularVelocities[componentIndexBody1];
-        Vector3& w2 = mRigidBodyComponents.mConstrainedAngularVelocities[componentIndexBody2];
-
-        // --------------- Rotation Constraints --------------- //
-
-        // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
-        // contraints (3x3 matrix)
-        mSliderJointComponents.mInverseMassMatrixRotation[i] = mSliderJointComponents.mI1[i] + mSliderJointComponents.mI2[i];
-        if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC || mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
-
-            mSliderJointComponents.mInverseMassMatrixRotation[i] = mSliderJointComponents.mInverseMassMatrixRotation[i].getInverse();
-        }
-
-        // Calculate difference in rotation
-        //
-        // The rotation should be:
-        //
-        // q2 = q1 r0
-        //
-        // But because of drift the actual rotation is:
-        //
-        // q2 = qError q1 r0
-        // <=> qError = q2 r0^-1 q1^-1
-        //
-        // Where:
-        // q1 = current rotation of body 1
-        // q2 = current rotation of body 2
-        // qError = error that needs to be reduced to zero
-        Quaternion qError = q2 * mSliderJointComponents.mInitOrientationDifferenceInv[i] * q1.getInverse();
-
-        // A quaternion can be seen as:
-        //
-        // q = [sin(theta / 2) * v, cos(theta/2)]
-        //
-        // Where:
-        // v = rotation vector
-        // theta = rotation angle
-        //
-        // If we assume theta is small (error is small) then sin(x) = x so an approximation of the error angles is:
-        const Vector3 errorRotation = decimal(2.0) * qError.getVectorV();
-
-        // Compute the Lagrange multiplier lambda for the 3 rotation constraints
-        Vector3 lambdaRotation = mSliderJointComponents.mInverseMassMatrixRotation[i] * (-errorRotation);
-
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
-        Vector3 angularImpulseBody1 = -lambdaRotation;
-
-        // Apply the impulse to the body 1
-        w1 = mSliderJointComponents.mI1[i] * angularImpulseBody1;
-
-        // Update the body position/orientation of body 1
-        q1 += Quaternion(0, w1) * q1 * decimal(0.5);
-        q1.normalize();
-
-        // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
-        Vector3 angularImpulseBody2 = lambdaRotation;
-
-        // Apply the impulse to the body 2
-        w2 = mSliderJointComponents.mI2[i] * angularImpulseBody2;
-
-        // Update the body position/orientation of body 2
-        q2 += Quaternion(0, w2) * q2 * decimal(0.5);
-        q2.normalize();
 
         // --------------- Limits Constraints --------------- //
 
@@ -896,8 +633,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody1 = -lambdaLowerLimit * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-                const Vector3 w1 = mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mSliderJointComponents.mI1[i] * angularImpulseBody1);
 
                 // Update the body position/orientation of body 1
                 x1 += v1;
@@ -909,8 +646,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody2 = lambdaLowerLimit * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
-                const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-                const Vector3 w2 = mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mSliderJointComponents.mI2[i] * angularImpulseBody2);
 
                 // Update the body position/orientation of body 2
                 x2 += v2;
@@ -935,8 +672,8 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody1 = lambdaUpperLimit * r1PlusUCrossSliderAxis;
 
                 // Apply the impulse to the body 1
-                const Vector3 v1 = inverseMassBody1 * linearImpulseBody1;
-                const Vector3 w1 = mSliderJointComponents.mI1[i] * angularImpulseBody1;
+                const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+                const Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mSliderJointComponents.mI1[i] * angularImpulseBody1);
 
                 // Update the body position/orientation of body 1
                 x1 += v1;
@@ -948,14 +685,145 @@ void SolveSliderJointSystem::solvePositionConstraint() {
                 const Vector3 angularImpulseBody2 = -lambdaUpperLimit * r2CrossSliderAxis;
 
                 // Apply the impulse to the body 2
-                const Vector3 v2 = inverseMassBody2 * linearImpulseBody2;
-                const Vector3 w2 = mSliderJointComponents.mI2[i] * angularImpulseBody2;
+                const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+                const Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mSliderJointComponents.mI2[i] * angularImpulseBody2);
 
                 // Update the body position/orientation of body 2
                 x2 += v2;
                 q2 += Quaternion(0, w2) * q2 * decimal(0.5);
                 q2.normalize();
             }
+        }
+
+        // --------------- Rotation Constraints --------------- //
+
+        // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
+        // contraints (3x3 matrix)
+        mSliderJointComponents.mInverseMassMatrixRotation[i] = mSliderJointComponents.mI1[i] + mSliderJointComponents.mI2[i];
+        decimal massMatrixRotationDeterminant = mSliderJointComponents.mInverseMassMatrixRotation[i].getDeterminant();
+        if (std::abs(massMatrixRotationDeterminant) > MACHINE_EPSILON) {
+
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC || mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+
+                mSliderJointComponents.mInverseMassMatrixRotation[i] = mSliderJointComponents.mInverseMassMatrixRotation[i].getInverse(massMatrixRotationDeterminant);
+            }
+
+            // Calculate difference in rotation
+            //
+            // The rotation should be:
+            //
+            // q2 = q1 r0
+            //
+            // But because of drift the actual rotation is:
+            //
+            // q2 = qError q1 r0
+            // <=> qError = q2 r0^-1 q1^-1
+            //
+            // Where:
+            // q1 = current rotation of body 1
+            // q2 = current rotation of body 2
+            // qError = error that needs to be reduced to zero
+            Quaternion qError = q2 * mSliderJointComponents.mInitOrientationDifferenceInv[i] * q1.getInverse();
+
+            // A quaternion can be seen as:
+            //
+            // q = [sin(theta / 2) * v, cos(theta/2)]
+            //
+            // Where:
+            // v = rotation vector
+            // theta = rotation angle
+            //
+            // If we assume theta is small (error is small) then sin(x) = x so an approximation of the error angles is:
+            const Vector3 errorRotation = decimal(2.0) * qError.getVectorV();
+
+            // Compute the Lagrange multiplier lambda for the 3 rotation constraints
+            Vector3 lambdaRotation = mSliderJointComponents.mInverseMassMatrixRotation[i] * (-errorRotation);
+
+            // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 1
+            Vector3 angularImpulseBody1 = -lambdaRotation;
+
+            // Apply the impulse to the body 1
+            Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (mSliderJointComponents.mI1[i] * angularImpulseBody1);
+
+            // Update the body position/orientation of body 1
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
+
+            // Compute the impulse P=J^T * lambda for the 3 rotation constraints of body 2
+            Vector3 angularImpulseBody2 = lambdaRotation;
+
+            // Apply the impulse to the body 2
+            Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (mSliderJointComponents.mI2[i] * angularImpulseBody2);
+
+            // Update the body position/orientation of body 2
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
+        }
+
+        // --------------- Translation Constraints --------------- //
+
+        const Matrix3x3& i1 = mSliderJointComponents.getI1(jointEntity);
+        const Matrix3x3& i2 = mSliderJointComponents.getI2(jointEntity);
+
+        // Recompute the inverse of the mass matrix K=JM^-1J^t for the 2 translation
+        // constraints (2x2 matrix)
+        const decimal body1MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody1];
+        const decimal body2MassInverse = mRigidBodyComponents.mInverseMasses[componentIndexBody2];
+        decimal sumInverseMass = body1MassInverse + body2MassInverse;
+        Vector3 I1R1PlusUCrossN1 = i1 * r1PlusUCrossN1;
+        Vector3 I1R1PlusUCrossN2 = i1 * r1PlusUCrossN2;
+        Vector3 I2R2CrossN1 = i2 * r2CrossN1;
+        Vector3 I2R2CrossN2 = i2 * r2CrossN2;
+        const decimal el11 = sumInverseMass + r1PlusUCrossN1.dot(I1R1PlusUCrossN1) +
+                             r2CrossN1.dot(I2R2CrossN1);
+        const decimal el12 = r1PlusUCrossN1.dot(I1R1PlusUCrossN2) +
+                             r2CrossN1.dot(I2R2CrossN2);
+        const decimal el21 = r1PlusUCrossN2.dot(I1R1PlusUCrossN1) +
+                             r2CrossN2.dot(I2R2CrossN1);
+        const decimal el22 = sumInverseMass + r1PlusUCrossN2.dot(I1R1PlusUCrossN2) +
+                             r2CrossN2.dot(I2R2CrossN2);
+        Matrix2x2 matrixKTranslation(el11, el12, el21, el22);
+        mSliderJointComponents.mInverseMassMatrixTranslation[i].setToZero();
+        decimal matrixKTranslationDeterminant = matrixKTranslation.getDeterminant();
+        if (std::abs(matrixKTranslationDeterminant) > MACHINE_EPSILON) {
+
+            if (mRigidBodyComponents.mBodyTypes[componentIndexBody1] == BodyType::DYNAMIC || mRigidBodyComponents.mBodyTypes[componentIndexBody2] == BodyType::DYNAMIC) {
+
+                mSliderJointComponents.mInverseMassMatrixTranslation[i] = matrixKTranslation.getInverse(matrixKTranslationDeterminant);
+            }
+
+            // Compute the position error for the 2 translation constraints
+            const Vector2 translationError(u.dot(n1), u.dot(n2));
+
+            // Compute the Lagrange multiplier lambda for the 2 translation constraints
+            Vector2 lambdaTranslation = mSliderJointComponents.mInverseMassMatrixTranslation[i] * (-translationError);
+
+            // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 1
+            const Vector3 linearImpulseBody1 = -n1 * lambdaTranslation.x - n2 * lambdaTranslation.y;
+            Vector3 angularImpulseBody1 = -r1PlusUCrossN1 * lambdaTranslation.x -
+                                                r1PlusUCrossN2 * lambdaTranslation.y;
+
+            // Apply the impulse to the body 1
+            const Vector3 v1 = inverseMassBody1 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody1] * linearImpulseBody1;
+            Vector3 w1 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
+
+            // Update the body position/orientation of body 1
+            x1 += v1;
+            q1 += Quaternion(0, w1) * q1 * decimal(0.5);
+            q1.normalize();
+
+            // Compute the impulse P=J^T * lambda for the 2 translation constraints of body 2
+            const Vector3 linearImpulseBody2 = n1 * lambdaTranslation.x + n2 * lambdaTranslation.y;
+            Vector3 angularImpulseBody2 = r2CrossN1 * lambdaTranslation.x + r2CrossN2 * lambdaTranslation.y;
+
+            // Apply the impulse to the body 2
+            const Vector3 v2 = inverseMassBody2 * mRigidBodyComponents.mLinearLockAxisFactors[componentIndexBody2] * linearImpulseBody2;
+            Vector3 w2 = mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
+
+            // Update the body position/orientation of body 2
+            x2 += v2;
+            q2 += Quaternion(0, w2) * q2 * decimal(0.5);
+            q2.normalize();
         }
     }
 }

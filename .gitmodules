@@ -1,3 +1,4 @@
 [submodule "testbed/extern/nanogui"]
 	path = testbed/extern/nanogui
 	url = https://github.com/mitsuba-renderer/nanogui.git
+	ignore = dirty

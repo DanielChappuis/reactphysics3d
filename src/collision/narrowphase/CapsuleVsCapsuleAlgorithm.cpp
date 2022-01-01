@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -26,7 +26,7 @@
 // Libraries
 #include <reactphysics3d/collision/narrowphase/CapsuleVsCapsuleAlgorithm.h>
 #include <reactphysics3d/collision/shapes/CapsuleShape.h>
-#include <reactphysics3d/collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.h>
+#include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
 
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;  
@@ -34,30 +34,37 @@ using namespace reactphysics3d;
 // Compute the narrow-phase collision detection between two capsules
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
 // by Dirk Gregorius.
-bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint batchStartIndex, uint batchNbItems,
-                                              MemoryAllocator& memoryAllocator) {
+bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uint32 batchStartIndex, uint32 batchNbItems, MemoryAllocator& /*memoryAllocator*/) {
     
     bool isCollisionFound = false;
 
-    for (uint batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
+    for (uint32 batchIndex = batchStartIndex; batchIndex < batchStartIndex + batchNbItems; batchIndex++) {
 
-        assert(narrowPhaseInfoBatch.contactPoints[batchIndex].size() == 0);
+        assert(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].nbContactPoints == 0);
 
-        assert(!narrowPhaseInfoBatch.isColliding[batchIndex]);
+        assert(!narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding);
 
         // Get the transform from capsule 1 local-space to capsule 2 local-space
-        const Transform capsule1ToCapsule2SpaceTransform = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getInverse() *
-                                                           narrowPhaseInfoBatch.shape1ToWorldTransforms[batchIndex];
+        const Transform capsule1ToCapsule2SpaceTransform = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getInverse() *
+                                                           narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape1ToWorldTransform;
+
+        const CapsuleShape* capsuleShape1 = static_cast<CapsuleShape*>(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape1);
+        const CapsuleShape* capsuleShape2 = static_cast<CapsuleShape*>(narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].collisionShape2);
+
+        const decimal capsule1Height = capsuleShape1->getHeight();
+        const decimal capsule2Height = capsuleShape2->getHeight();
+        const decimal capsule1Radius = capsuleShape1->getRadius();
+        const decimal capsule2Radius = capsuleShape2->getRadius();
 
         // Compute the end-points of the inner segment of the first capsule
-        const decimal capsule1HalfHeight = narrowPhaseInfoBatch.capsule1Heights[batchIndex] * decimal(0.5);
+        const decimal capsule1HalfHeight = capsule1Height * decimal(0.5);
         Vector3 capsule1SegA(0, -capsule1HalfHeight, 0);
         Vector3 capsule1SegB(0, capsule1HalfHeight, 0);
         capsule1SegA = capsule1ToCapsule2SpaceTransform * capsule1SegA;
         capsule1SegB = capsule1ToCapsule2SpaceTransform * capsule1SegB;
 
         // Compute the end-points of the inner segment of the second capsule
-        const decimal capsule2HalfHeight = narrowPhaseInfoBatch.capsule2Heights[batchIndex] * decimal(0.5);
+        const decimal capsule2HalfHeight = capsule2Height * decimal(0.5);
         const Vector3 capsule2SegA(0, -capsule2HalfHeight, 0);
         const Vector3 capsule2SegB(0, capsule2HalfHeight, 0);
 
@@ -66,8 +73,6 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
         const Vector3 seg2 = capsule2SegB - capsule2SegA;
 
         // Compute the sum of the radius of the two capsules (virtual spheres)
-        const decimal capsule1Radius = narrowPhaseInfoBatch.capsule1Radiuses[batchIndex];
-        const decimal capsule2Radius = narrowPhaseInfoBatch.capsule2Radiuses[batchIndex];
         const decimal sumRadius = capsule1Radius + capsule2Radius;
 
         // If the two capsules are parallel (we create two contact points)
@@ -95,7 +100,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
             // If the segments were overlapping (the clip segment is valid)
             if (t1 > decimal(0.0) && t2 > decimal(0.0)) {
 
-                if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
+                if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
 
                     // Clip the inner segment of capsule 2
                     if (t1 > decimal(1.0)) t1 = decimal(1.0);
@@ -145,14 +150,14 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
 
                     decimal penetrationDepth = sumRadius - segmentsPerpendicularDistance;
 
-                    const Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * normalCapsule2SpaceNormalized;
+                    const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * normalCapsule2SpaceNormalized;
 
                     // Create the contact info object
                     narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, penetrationDepth, contactPointACapsule1Local, contactPointACapsule2Local);
                     narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, penetrationDepth, contactPointBCapsule1Local, contactPointBCapsule2Local);
                 }
 
-                narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+                narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
                 isCollisionFound = true;
                 continue;
             }
@@ -171,7 +176,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
         // If the collision shapes overlap
         if (closestPointsDistanceSquare < sumRadius * sumRadius) {
 
-            if (narrowPhaseInfoBatch.reportContacts[batchIndex]) {
+            if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
 
                 // If the distance between the inner segments is not zero
                 if (closestPointsDistanceSquare > MACHINE_EPSILON) {
@@ -182,7 +187,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
                     const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsule1Radius);
                     const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsule2Radius;
 
-                    const Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * closestPointsSeg1ToSeg2;
+                    const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * closestPointsSeg1ToSeg2;
 
                     decimal penetrationDepth = sumRadius - closestPointsDistance;
 
@@ -205,7 +210,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
                         const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsule1Radius);
                         const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsule2Radius;
 
-                        const Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * normalCapsuleSpace2;
+                        const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * normalCapsuleSpace2;
 
                         // Create the contact info object
                         narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, sumRadius, contactPointCapsule1Local, contactPointCapsule2Local);
@@ -221,7 +226,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
                         const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsule1Radius);
                         const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsule2Radius;
 
-                        const Vector3 normalWorld = narrowPhaseInfoBatch.shape2ToWorldTransforms[batchIndex].getOrientation() * normalCapsuleSpace2;
+                        const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * normalCapsuleSpace2;
 
                         // Create the contact info object
                         narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, sumRadius, contactPointCapsule1Local, contactPointCapsule2Local);
@@ -229,7 +234,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(CapsuleVsCapsuleNarrowPhaseInfoBat
                 }
             }
 
-            narrowPhaseInfoBatch.isColliding[batchIndex] = true;
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
             isCollisionFound = true;
         }
     }

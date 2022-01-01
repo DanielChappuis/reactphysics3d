@@ -28,13 +28,17 @@
 #include <unordered_set>
 
 // Constructor
-ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
-           : PhysicsObject(physicsCommon, meshPath), mVBOVertices(GL_ARRAY_BUFFER),
+ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+                       const std::string& meshPath, const rp3d::Vector3& scaling)
+           : PhysicsObject(physicsCommon, meshPath), mPhysicsWorld(physicsWorld), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
     // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4::identity();
+    mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0,
+                                              0, scaling.y, 0, 0,
+                                              0, 0, scaling.z, 0,
+                                              0, 0, 0, 1);
 
     // Polygon faces descriptions for the polyhedron
     mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
@@ -71,7 +75,7 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end
-    mConvexShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh);
+    mConvexShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh, scaling);
 
     mPreviousTransform = rp3d::Transform::identity();
 
@@ -87,7 +91,6 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
         mBody = physicsWorld->createCollisionBody(mPreviousTransform);
         mCollider = mBody->addCollider(mConvexShape, rp3d::Transform::identity());
     }
-
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -107,6 +110,14 @@ ConvexMesh::~ConvexMesh() {
     mVBONormals.destroy();
     mVBOTextureCoords.destroy();
     mVAO.destroy();
+
+    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
+    if (body != nullptr) {
+        mPhysicsWorld->destroyRigidBody(body);
+    }
+    else {
+        mPhysicsWorld->destroyCollisionBody(mBody);
+    }
 
     mPhysicsCommon.destroyConvexMeshShape(mConvexShape);
     mPhysicsCommon.destroyPolyhedronMesh(mPolyhedronMesh);
@@ -232,7 +243,7 @@ void ConvexMesh::createVBOAndVAO() {
 // Return the index of a given vertex in the mesh
 int ConvexMesh::findVertexIndex(const std::vector<openglframework::Vector3>& vertices, const openglframework::Vector3& vertex) {
 
-	for (int i = 0; i < vertices.size(); i++) {
+    for (size_t i = 0; i < vertices.size(); i++) {
 		if (vertices[i] == vertex) {
 			return i;
 		}

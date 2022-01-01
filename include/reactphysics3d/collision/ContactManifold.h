@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -34,7 +34,7 @@ namespace reactphysics3d {
 
 // Class declarations
 class ContactManifold;
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 struct ContactPointInfo;
 class CollisionBody;
 class ContactPoint;
@@ -58,12 +58,12 @@ class ContactManifold {
         // -------------------- Constants -------------------- //
 
         /// Maximum number of contact points in a reduced contact manifold
-        const int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
+        static constexpr int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
 
         // -------------------- Attributes -------------------- //
 
-        /// Index of the first contact point of the manifold in the list of contact points
-        uint contactPointsIndex;
+        /// Index of the first contact point of the manifold in the array of contact points
+        uint32 contactPointsIndex;
 
         /// Entity of the first body in contact
         Entity bodyEntity1;
@@ -78,7 +78,7 @@ class ContactManifold {
         Entity colliderEntity2;
 
         /// Number of contacts in the cache
-        int8 nbContactPoints;
+        uint8 nbContactPoints;
 
         /// First friction vector of the contact manifold
         Vector3 frictionVector1;
@@ -95,9 +95,6 @@ class ContactManifold {
         /// Twist friction constraint accumulated impulse
         decimal frictionTwistImpulse;
 
-        /// Accumulated rolling resistance impulse
-        Vector3 rollingResistanceImpulse;
-
         /// True if the contact manifold has already been added into an island
         bool isAlreadyInIsland;
 
@@ -107,16 +104,7 @@ class ContactManifold {
 
         /// Constructor
         ContactManifold(Entity bodyEntity1, Entity bodyEntity2, Entity colliderEntity1, Entity colliderEntity2,
-                        uint contactPointsIndex, int8 nbContactPoints);
-
-        /// Destructor
-        ~ContactManifold();
-
-        /// Copy-constructor
-        ContactManifold(const ContactManifold& contactManifold) = default;
-
-        /// Assignment operator
-        ContactManifold& operator=(const ContactManifold& contactManifold) = default;
+                        uint32 contactPointsIndex, uint8 nbContactPoints);
 
         // -------------------- Friendship -------------------- //
 

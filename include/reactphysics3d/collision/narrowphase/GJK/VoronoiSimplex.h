@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,6 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/mathematics/Vector3.h>
+#include <reactphysics3d/mathematics/Vector2.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -171,17 +172,17 @@ class VoronoiSimplex {
 };
 
 // Return true if the simplex contains 4 points
-inline bool VoronoiSimplex::isFull() const {
+RP3D_FORCE_INLINE bool VoronoiSimplex::isFull() const {
     return mNbPoints == 4;
 }
 
 // Return true if the simple is empty
-inline bool VoronoiSimplex::isEmpty() const {
+RP3D_FORCE_INLINE bool VoronoiSimplex::isEmpty() const {
     return mNbPoints == 0;
 }
 
 // Set the barycentric coordinates of the closest point
-inline void VoronoiSimplex::setBarycentricCoords(decimal a, decimal b, decimal c, decimal d) {
+RP3D_FORCE_INLINE void VoronoiSimplex::setBarycentricCoords(decimal a, decimal b, decimal c, decimal d) {
     mBarycentricCoords[0] = a;
     mBarycentricCoords[1] = b;
     mBarycentricCoords[2] = c;
@@ -189,7 +190,7 @@ inline void VoronoiSimplex::setBarycentricCoords(decimal a, decimal b, decimal c
 }
 
 // Compute the closest point "v" to the origin of the current simplex.
-inline bool VoronoiSimplex::computeClosestPoint(Vector3& v) {
+RP3D_FORCE_INLINE bool VoronoiSimplex::computeClosestPoint(Vector3& v) {
 
     bool isValid = recomputeClosestPoint();
     v = mClosestPoint;
@@ -197,7 +198,7 @@ inline bool VoronoiSimplex::computeClosestPoint(Vector3& v) {
 }
 
 // Return true if the
-inline bool VoronoiSimplex::checkClosestPointValid() const {
+RP3D_FORCE_INLINE bool VoronoiSimplex::checkClosestPointValid() const {
     return mBarycentricCoords[0] >= decimal(0.0) && mBarycentricCoords[1] >= decimal(0.0) &&
            mBarycentricCoords[2] >= decimal(0.0) && mBarycentricCoords[3] >= decimal(0.0);
 }

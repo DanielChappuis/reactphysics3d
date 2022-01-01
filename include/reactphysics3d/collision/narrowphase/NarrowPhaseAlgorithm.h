@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -33,7 +33,7 @@
 namespace reactphysics3d {
 
 class CollisionDetectionSystem;
-class ContactManifoldInfo;
+struct ContactManifoldInfo;
 class DefaultPoolAllocator;
 class OverlappingPair;
 struct NarrowPhaseInfoBatch;
@@ -106,7 +106,7 @@ class NarrowPhaseAlgorithm {
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void NarrowPhaseAlgorithm::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void NarrowPhaseAlgorithm::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 }
 

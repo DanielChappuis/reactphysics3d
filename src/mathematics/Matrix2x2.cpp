@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -28,22 +28,8 @@
 
 using namespace reactphysics3d;
 
-// Assignment operator
-Matrix2x2& Matrix2x2::operator=(const Matrix2x2& matrix) {
-
-    // Check for self-assignment
-    if (&matrix != this) {
-        setAllValues(matrix.mRows[0][0], matrix.mRows[0][1],
-                     matrix.mRows[1][0], matrix.mRows[1][1]);
-    }
-    return *this;
-}
-
 // Return the inverse matrix
-Matrix2x2 Matrix2x2::getInverse() const {
-
-    // Compute the determinant of the matrix
-    decimal determinant = getDeterminant();
+Matrix2x2 Matrix2x2::getInverse(decimal determinant) const {
 
     // Check if the determinant is equal to zero
     assert(std::abs(determinant) > MACHINE_EPSILON);

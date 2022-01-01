@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -151,7 +151,7 @@ void* PoolAllocator::allocate(size_t size) {
         newBlock->memoryUnits = static_cast<MemoryUnit*>(mBaseAllocator.allocate(BLOCK_SIZE));
         assert(newBlock->memoryUnits != nullptr);
         size_t unitSize = mUnitSizes[indexHeap];
-        uint nbUnits = BLOCK_SIZE / unitSize;
+        size_t nbUnits = BLOCK_SIZE / unitSize;
         assert(nbUnits * unitSize <= BLOCK_SIZE);
         void* memoryUnitsStart = static_cast<void*>(newBlock->memoryUnits);
         char* memoryUnitsStartChar = static_cast<char*>(memoryUnitsStart);

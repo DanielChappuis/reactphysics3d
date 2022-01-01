@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,7 +30,7 @@
 using namespace reactphysics3d;
 
 // Constructor
-Island::Island(uint nbMaxBodies, uint nbMaxContactManifolds, MemoryManager& memoryManager)
+Island::Island(uint32 nbMaxBodies, uint32 nbMaxContactManifolds, MemoryManager& memoryManager)
        : mBodies(nullptr), mContactManifolds(nullptr), mNbBodies(0), mNbContactManifolds(0) {
 
     // Allocate memory for the arrays on the single frame allocator

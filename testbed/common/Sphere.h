@@ -45,6 +45,8 @@ class Sphere : public PhysicsObject {
         rp3d::SphereShape* mCollisionShape;
         rp3d::Collider* mCollider;
 
+        rp3d::PhysicsWorld* mPhysicsWorld;
+
         /// Scaling matrix (applied to a sphere to obtain the correct sphere dimensions)
         openglframework::Matrix4 mScalingMatrix;
 

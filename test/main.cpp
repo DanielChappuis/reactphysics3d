@@ -39,11 +39,12 @@
 #include "tests/collision/TestDynamicAABBTree.h"
 #include "tests/collision/TestHalfEdgeStructure.h"
 #include "tests/collision/TestTriangleVertexArray.h"
-#include "tests/containers/TestList.h"
+#include "tests/containers/TestArray.h"
 #include "tests/containers/TestMap.h"
 #include "tests/containers/TestSet.h"
 #include "tests/containers/TestDeque.h"
 #include "tests/containers/TestStack.h"
+#include "tests/engine/TestRigidBody.h"
 
 using namespace reactphysics3d;
 
@@ -53,9 +54,9 @@ int main() {
 
     // ---------- Containers tests ---------- //
 
-    testSuite.addTest(new TestList("List"));
-    testSuite.addTest(new TestMap("Map"));
     testSuite.addTest(new TestSet("Set"));
+    testSuite.addTest(new TestArray("Array"));
+    testSuite.addTest(new TestMap("Map"));
     testSuite.addTest(new TestDeque("Deque"));
     testSuite.addTest(new TestStack("Stack"));
 
@@ -78,6 +79,11 @@ int main() {
     testSuite.addTest(new TestCollisionWorld("CollisionWorld"));
     testSuite.addTest(new TestDynamicAABBTree("DynamicAABBTree"));
     testSuite.addTest(new TestHalfEdgeStructure("HalfEdgeStructure"));
+
+
+    // ---------- Engine tests ---------- //
+
+    testSuite.addTest(new TestRigidBody("RigidBody"));
 
     // Run the tests
     testSuite.run();

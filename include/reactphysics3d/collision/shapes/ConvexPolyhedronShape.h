@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -59,28 +59,28 @@ class ConvexPolyhedronShape : public ConvexShape {
         ConvexPolyhedronShape& operator=(const ConvexPolyhedronShape& shape) = delete;
 
         /// Return the number of faces of the polyhedron
-        virtual uint getNbFaces() const=0;
+        virtual uint32 getNbFaces() const=0;
 
         /// Return a given face of the polyhedron
-        virtual const HalfEdgeStructure::Face& getFace(uint faceIndex) const=0;
+        virtual const HalfEdgeStructure::Face& getFace(uint32 faceIndex) const=0;
 
         /// Return the number of vertices of the polyhedron
-        virtual uint getNbVertices() const=0;
+        virtual uint32 getNbVertices() const=0;
 
         /// Return a given vertex of the polyhedron
-        virtual HalfEdgeStructure::Vertex getVertex(uint vertexIndex) const=0;
+        virtual const HalfEdgeStructure::Vertex& getVertex(uint32 vertexIndex) const=0;
 
         /// Return the position of a given vertex
-        virtual Vector3 getVertexPosition(uint vertexIndex) const=0;
+        virtual Vector3 getVertexPosition(uint32 vertexIndex) const=0;
 
         /// Return the normal vector of a given face of the polyhedron
-        virtual Vector3 getFaceNormal(uint faceIndex) const=0;
+        virtual Vector3 getFaceNormal(uint32 faceIndex) const=0;
 
         /// Return the number of half-edges of the polyhedron
-        virtual uint getNbHalfEdges() const=0;
+        virtual uint32 getNbHalfEdges() const=0;
 
         /// Return a given half-edge of the polyhedron
-        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint edgeIndex) const=0;
+        virtual const HalfEdgeStructure::Edge& getHalfEdge(uint32 edgeIndex) const=0;
 
         /// Return true if the collision shape is a polyhedron
         virtual bool isPolyhedron() const override;
@@ -90,14 +90,37 @@ class ConvexPolyhedronShape : public ConvexShape {
 
         /// Find and return the index of the polyhedron face with the most anti-parallel face
         /// normal given a direction vector
-        uint findMostAntiParallelFace(const Vector3& direction) const;
+        uint32 findMostAntiParallelFace(const Vector3& direction) const;
 };
 
 // Return true if the collision shape is a polyhedron
-inline bool ConvexPolyhedronShape::isPolyhedron() const {
+RP3D_FORCE_INLINE bool ConvexPolyhedronShape::isPolyhedron() const {
     return true;
 }
 
+
+// Find and return the index of the polyhedron face with the most anti-parallel face
+// normal given a direction vector. This is used to find the incident face on
+// a polyhedron of a given reference face of another polyhedron
+RP3D_FORCE_INLINE uint32 ConvexPolyhedronShape::findMostAntiParallelFace(const Vector3& direction) const {
+
+    decimal minDotProduct = DECIMAL_LARGEST;
+    uint32 mostAntiParallelFace = 0;
+
+    // For each face of the polyhedron
+    const uint32 nbFaces = getNbFaces();
+    for (uint32 i=0; i < nbFaces; i++) {
+
+        // Get the face normal
+        const decimal dotProduct = getFaceNormal(i).dot(direction);
+        if (dotProduct < minDotProduct) {
+            minDotProduct = dotProduct;
+            mostAntiParallelFace = i;
+        }
+    }
+
+    return mostAntiParallelFace;
+}
 
 }
 

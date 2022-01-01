@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -49,12 +49,6 @@ Quaternion Quaternion::fromEulerAngles(const Vector3& eulerAngles) {
     quaternion.initWithEulerAngles(eulerAngles.x, eulerAngles.y, eulerAngles.z);
 
     return quaternion;
-}
-
-// Copy-constructor
-Quaternion::Quaternion(const Quaternion& quaternion)
-           :x(quaternion.x), y(quaternion.y), z(quaternion.z), w(quaternion.w) {
-
 }
 
 // Create a unit quaternion from a rotation matrix

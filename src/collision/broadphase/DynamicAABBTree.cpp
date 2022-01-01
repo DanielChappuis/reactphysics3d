@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -58,7 +58,11 @@ void DynamicAABBTree::init() {
     // Allocate memory for the nodes of the tree
     mNodes = static_cast<TreeNode*>(mAllocator.allocate(static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode)));
     assert(mNodes);
-    std::memset(mNodes, 0, static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode));
+
+    // Construct the nodes
+    for (int32 i=0; i < mNbAllocatedNodes; i++) {
+        new (mNodes + i) TreeNode();
+    }
 
     // Initialize the allocated nodes
     for (int32 i=0; i<mNbAllocatedNodes - 1; i++) {
@@ -72,6 +76,11 @@ void DynamicAABBTree::init() {
 
 // Clear all the nodes and reset the tree
 void DynamicAABBTree::reset() {
+
+    // Call the destructor of all the nodes
+    for (int32 i=0; i < mNbAllocatedNodes; i++) {
+        mNodes[i].~TreeNode();
+    }
 
     // Free the allocated memory for the nodes
     mAllocator.release(mNodes, static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode));
@@ -94,11 +103,15 @@ int32 DynamicAABBTree::allocateNode() {
         TreeNode* oldNodes = mNodes;
         mNodes = static_cast<TreeNode*>(mAllocator.allocate(static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode)));
         assert(mNodes);
-        memcpy(mNodes, oldNodes, static_cast<size_t>(mNbNodes) * sizeof(TreeNode));
+
+        // Copy the elements to the new allocated memory location
+        std::uninitialized_copy(oldNodes, oldNodes + mNbNodes, mNodes);
+
         mAllocator.release(oldNodes, static_cast<size_t>(oldNbAllocatedNodes) * sizeof(TreeNode));
 
         // Initialize the allocated nodes
         for (int32 i=mNbNodes; i<mNbAllocatedNodes - 1; i++) {
+            new (mNodes + i) TreeNode();
             mNodes[i].nextNodeID = i + 1;
             mNodes[i].height = -1;
         }
@@ -573,9 +586,9 @@ int32 DynamicAABBTree::balanceSubTreeAtNode(int32 nodeID) {
     return nodeID;
 }
 
-/// Take a list of shapes to be tested for broad-phase overlap and return a list of pair of overlapping shapes
-void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const List<int32>& nodesToTest, size_t startIndex,
-                                                           size_t endIndex, List<Pair<int32, int32>>& outOverlappingNodes) const {
+/// Take an array of shapes to be tested for broad-phase overlap and return an array of pair of overlapping shapes
+void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const Array<int32>& nodesToTest, uint32 startIndex,
+                                                           size_t endIndex, Array<Pair<int32, int32>>& outOverlappingNodes) const {
 
     RP3D_PROFILE("DynamicAABBTree::reportAllShapesOverlappingWithAABB()", mProfiler);
 
@@ -583,7 +596,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const List<int32>& no
     Stack<int32> stack(mAllocator, 64);
 
     // For each shape to be tested for overlap
-    for (uint i=startIndex; i < endIndex; i++) {
+    for (uint32 i=startIndex; i < endIndex; i++) {
 
         assert(nodesToTest[i] != -1);
 
@@ -609,7 +622,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const List<int32>& no
                 // If the node is a leaf
                 if (nodeToVisit->isLeaf()) {
 
-                    // Add the node in the list of overlapping nodes
+                    // Add the node in the array of overlapping nodes
                     outOverlappingNodes.add(Pair<int32, int32>(nodesToTest[i], nodeIDToVisit));
                 }
                 else {  // If the node is not a leaf
@@ -626,7 +639,7 @@ void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const List<int32>& no
 }
 
 // Report all shapes overlapping with the AABB given in parameter.
-void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, List<int32>& overlappingNodes) const {
+void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, Array<int32>& overlappingNodes) const {
 
     RP3D_PROFILE("DynamicAABBTree::reportAllShapesOverlappingWithAABB()", mProfiler);
 
@@ -639,6 +652,9 @@ void DynamicAABBTree::reportAllShapesOverlappingWithAABB(const AABB& aabb, List<
 
         // Get the next node ID to visit
         const int32 nodeIDToVisit = stack.pop();
+
+        assert(nodeIDToVisit >= 0);
+        assert(nodeIDToVisit < mNbAllocatedNodes);
 
         // Skip it if it is a null node
         if (nodeIDToVisit == TreeNode::NULL_TREE_NODE) continue;
@@ -672,6 +688,10 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& ca
 
     decimal maxFraction = ray.maxFraction;
 
+    // Compute the inverse ray direction
+    const Vector3 rayDirection = ray.point2 - ray.point1;
+    const Vector3 rayDirectionInverse(decimal(1.0) / rayDirection.x, decimal(1.0) / rayDirection.y, decimal(1.0) / rayDirection.z);
+
     Stack<int32> stack(mAllocator, 128);
     stack.push(mRootNodeID);
 
@@ -688,13 +708,13 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& ca
         // Get the corresponding node
         const TreeNode* node = mNodes + nodeID;
 
-        Ray rayTemp(ray.point1, ray.point2, maxFraction);
-
         // Test if the ray intersects with the current node AABB
-        if (!node->aabb.testRayIntersect(rayTemp)) continue;
+        if (!node->aabb.testRayIntersect(ray.point1, rayDirectionInverse, maxFraction)) continue;
 
         // If the node is a leaf of the tree
         if (node->isLeaf()) {
+
+            Ray rayTemp(ray.point1, ray.point2, maxFraction);
 
             // Call the callback that will raycast again the broad-phase shape
             decimal hitFraction = callback.raycastBroadPhaseShape(nodeID, rayTemp);

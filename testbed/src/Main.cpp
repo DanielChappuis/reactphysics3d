@@ -26,39 +26,35 @@
 // Libraries
 #include "TestbedApplication.h"
 #include "nanogui/nanogui.h"
+#include <GLFW/glfw3.h>
 
 using namespace nanogui;
 
+// GLFW
+//
+#if defined(NANOGUI_USE_OPENGL)
+#  if defined(NANOGUI_GLAD)
+#    if defined(NANOGUI_SHARED) && !defined(GLAD_GLAPI_EXPORT)
+#      define GLAD_GLAPI_EXPORT
+#    endif
+#    include <glad/glad.h>
+#  else
+#    if defined(__APPLE__)
+#      define GLFW_INCLUDE_GLCOREARB
+#    else
+#      define GL_GLEXT_PROTOTYPES
+#    endif
+#  endif
+#elif defined(NANOGUI_USE_GLES)
+#  define GLFW_INCLUDE_ES2
+#endif
+
 // Main function
-int main(int argc, char** argv) {
+int main(int /*argc*/, char** /*argv*/) {
 
-    nanogui::init();
-
-    {
-        bool isFullscreen = false;
-
-		// Get the primary monitor
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-
-		// Window size
-		int windowWidth = mode->width;
-		int windowHeight = mode->height;
-
-		if (!isFullscreen) {
-
-			windowWidth *= 0.9;
-			windowHeight *= 0.9;
-		}
-
-        // Create and start the testbed application
-        nanogui::ref<TestbedApplication> application = new TestbedApplication(isFullscreen, windowWidth, windowHeight);
-        application->set_visible(true);
-
-        nanogui::mainloop(10);
-    }
-
-    nanogui::shutdown();
+    // Create and start the testbed application
+    TestbedApplication application;
+    application.start();
 
     return 0;
 }

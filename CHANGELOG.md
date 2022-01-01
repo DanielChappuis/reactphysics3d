@@ -1,5 +1,76 @@
 # Changelog
 
+## Release candidate
+
+Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
+do not hesitate to take a look at the user manual.
+
+### Added
+
+ - The performance of the collision detection and rigid bodies simulation has been improved a lot
+ - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has been added
+ - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has been added
+ - Constructors with local-space anchor/axis have been added to BallAndSocketJointInfo, HingeJointInfo, FixedJointInfo and SliderJointInfo classes
+ - Method HingeJoint::getAngle() to get the current angle of the hinge joint has been added 
+ - Method Joint::getReactionForce() has been added to retrieve the current reaction force of a joint
+ - Method Joint::getReactionTorque() has been added to retrieve the current reaction torque of a joint
+ - Method RigidBody::setLinearLockAxisFactor() to lock the translational movement of a body along the world-space x, y and z axes
+ - Method RigidBody::setAngularLockAxisFactor() to lock the rotational movement of a body around the world-space x, y and z axes
+ - Method RigidBody::applyLocalForceAtWorldPosition() to manually apply a force to a rigid body
+ - Method RigidBody::applyLocalForceAtLocalPosition() to manually apply a force to a rigid body
+ - Method RigidBody::applyLocalForceToCenterOfMass() to manually apply a force to a rigid body
+ - Method RigidBody::applyLocalTorque() to apply a local-space torque to a rigid body
+ - Method RigidBody::getForce() to get the total manually applied force on a rigid body
+ - Method RigidBody::getTorque() to get the total manually applied torque on a rigid body
+ - Method RigidBody::setIsSleeping() is now public in order to wake up or put to sleep a rigid body
+ - A cone limit can now be set to the ball-and-socket joint (this is useful for ragdolls)
+ - New scenes have been added to the testbed application (Box Tower, Ragdoll, Rope, Ball And Socket Joint, Bridge, Hinge Joint, Hinge Joint chain, Ball and
+   Socket Joint chain, Ball and Socket Joint net, ...)
+ - It is now possible to move bodies using the mouse (CTRL + click and drag) in the testbed application
+
+### Changed
+
+ - The PhysicsWorld::setGravity() method now takes a const parameter
+ - Rolling resistance constraint is not solved anymore in the solver. Angular damping needs to be used instead to simulate it.
+ - The List class has been renamed to Array
+ - The default number of iterations for the velocity solver is now 6 instead of 10
+ - The default number of iterations for the position solver is now 3 instead of 5
+ - Rename method RigidBody::applyForceAtWorldPosition() into RigidBody::applyWorldForceAtWorldPosition()
+ - Rename method RigidBody::applyForceAtLocalPosition() into RigidBody::applyWorldForceAtLocalPosition()
+ - Rename method RigidBody::applyForceToCenterOfMass() into RigidBody::applyWorldForceAtCenterOfMass()
+ - Rename method RigidBody::applyTorque() into RigidBody::applyWorldTorque()
+ - The raycasting broad-phase performance has been improved
+ - The raycasting performance against HeighFieldShape has been improved (better middle-phase algorithm)
+ - Robustness of polyhedron vs polyhedron collision detection has been improved in SAT algorithm (face contacts are favored over edge-edge contacts for better stability)
+
+### Removed
+
+ - Method Material::getRollingResistance() has been removed (angular damping has to be used instead of rolling resistance)
+ - Method Material::setRollingResistance() has been removed (angular damping has to be used instead of rolling resistance)
+
+### Fixed
+
+- Issue [#165](https://github.com/DanielChappuis/reactphysics3d/issues/165) with order of contact manifolds in islands creation has been fixed
+- Issue [#179](https://github.com/DanielChappuis/reactphysics3d/issues/179) with FixedJoint constraint 
+- Issue [#195](https://github.com/DanielChappuis/reactphysics3d/issues/195) in RigidBodyComponents
+- Issue with concave vs convex shape collision detection has been fixed
+- Issue with edge vs edge collision has been fixed in SAT algorithm (wrong contact normal was computed)
+- Issue with sphere radius in DebugRenderer
+- Issue where changing the transform of a Collider attached to a sleeping RigidBody caused the body to remain asleep
+- Issue with wrong calculation performed in the ContactSolverSystem
+- Issue with joints when center of mass is not at the center of the rigid body local-space
+- Issue [#157](https://github.com/DanielChappuis/reactphysics3d/issues/157) with matrix to quaternion conversion has been fixed
+- Issue [#184](https://github.com/DanielChappuis/reactphysics3d/issues/184) with update of mass/inertia properties of static bodies
+- Issue with the computation of the two friction vectors in the contact solver
+- Issue with the rendering of the capsule collision shape in the Debug Renderer (missing triangle faces)
+- Issue with wrong linear velocity update computed in RigidBody::setLocalCenterOfMass() method
+- Issue with wrong linear velocity update computed in RigidBody::updateLocalCenterOfMassFromColliders() method
+- Issue with wrong linear velocity update computed in RigidBody::updateMassPropertiesFromColliders() method
+- Issue in copy-constructors in Map and Set classes
+- A lot of code warnings have been fixed [#221](https://github.com/DanielChappuis/reactphysics3d/issues/221)[#222](https://github.com/DanielChappuis/reactphysics3d/issues/222)[#223](https://github.com/DanielChappuis/reactphysics3d/issues/223)[#224](https://github.com/DanielChappuis/reactphysics3d/issues/224)
+- The default warning level is not set anymore in CMakeLists.txt file (Issue [#220](https://github.com/DanielChappuis/reactphysics3d/issues/220)) 
+- Issue with collision not working when setting a body to be static before calling updateMassPropertiesFromColliders() (Issue [#225](https://github.com/DanielChappuis/reactphysics3d/issues/225)) 
+
 ## Version 0.8.0 (May 31, 2020)
 
 Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
@@ -68,6 +139,7 @@ do not hesitate to take a look at the user manual.
  - The RigidBody::recomputeMassInformation() method has been renamed to RigidBody::updateMassPropertiesFromColliders.
  - Now, you need to manually call the RigidBody::updateMassPropertiesFromColliders() method after adding colliders to a rigid body to recompute its inertia tensor, center of mass and mass. There are other methods that you can use form that (see the user manual)
  - The RigidBody::applyForce() method has been renamed to RigidBody::applyForceAtWorldPosition()
+ - The linear and angular damping function of the rigid bodies has been changed
  - The rendering in the testbed application has been improved
  - Many of the data inside the library have been refactored for better caching and easier parallelization in the future
  - The old Logger class has been renamed to DefaultLogger

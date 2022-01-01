@@ -170,11 +170,11 @@
      Now, if you go into the folder you have chosen to build the library, you should find the native build tool files that you will use to build
      the library on your platform.
 
-     \subsection{Bulding the library}
+     \subsection{Building the library}
 
      Now, that you have generated the native build tool files on your system, you will need to build (compile) the library.
 
-     \subsubsection{Bulding the library using \texttt{make} on the command line (Linux, Mac OS X)}
+     \subsubsection{Building the library using \texttt{make} on the command line (Linux, Mac OS X)}
 
      On Linux or Mac OS X, you can compile the library on the command line using the \texttt{make} command. Go into the directory where you have generated the
      native build tool files and run the following command: \\
@@ -183,7 +183,7 @@
 
      The library will start compiling. 
 
-     \subsubsection{Bulding the library with Visual Studio (Windows)}
+     \subsubsection{Building the library with Visual Studio (Windows)}
 
      If you have generated the native build tool files in the previous step on Windows, you should have obtained a Visual Studio solution of ReactPhysics3D.
      Now, you can open the Visual Studio solution (.sln file). Once Visual Studio is open, you first need to change the compilation mode to \emph{Release}
@@ -315,7 +315,7 @@ target_link_libraries(helloworld ReactPhysics3D::ReactPhysics3D)
 # Minimum cmake version required
 cmake_minimum_required(VERSION 3.8)
 
-# Help CMake to find the installed library on Windows or Mac OS X
+# Help CMake to find the installed library on Windows or Mac OS X
 if(WIN32)
   list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")
 elseif(APPLE)
@@ -924,8 +924,7 @@ float factor = accumulator / timeStep;
 
     \begin{lstlisting}
 // Compute the interpolated transform of the rigid body
-Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform,
-                                                          currTransform, factor);
+Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
   \end{lstlisting}
 
     \vspace{0.6cm}
@@ -967,8 +966,7 @@ decimal factor = accumulator / timeStep;
 Transform currTransform = body->getTransform();
 
 // Compute the interpolated transform of the rigid body
-Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform,
-                                                           currTransform, factor);
+Transform interpolatedTransform = Transform::interpolateTransforms(prevTransform, currTransform, factor);
 
 // Now you can render your body using the interpolated transform here
 
@@ -1037,6 +1035,28 @@ transform.getOpenGLMatrix(matrix);
     \texttt{RigidBody::updateMassPropertiesFromColliders()}.
     \end{sloppypar}
 
+    \subsection{Restricting linear/angular motion of a Rigid Body}
+
+    It is possible to use the \texttt{RigidBody::setLinearLockAxisFactor()} method to restrict the linear motion of a rigid body along the world-space
+    X,Y and Z axes. For instance, the following code shows how to disable the linear motion of a rigid body along the world-space Y axis by setting the lock
+    factor to zero for this axis. \\
+
+    \begin{lstlisting}
+// Disable motion along the Y axis
+rigidBody->setLinearAxisFactor(Vector3(1, 0, 1));
+  \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    In the same way, you can use the \texttt{RigidBody::setAngularLockAxisFactor()} method to restrict the angular motion of a rigid body around the
+    world-space X,Y and Z axes. For instance, the following code shows how to disable the angular motion of a rigid body around the world-space Y axis
+    by setting the lock factor to zero for this axis. \\
+
+    \begin{lstlisting}
+// Disable rotation around the Y axis
+rigidBody->setAngularAxisFactor(Vector3(1, 0, 1));
+  \end{lstlisting}
+
     \subsection{Destroying a Rigid Body}
 
     \begin{sloppypar}
@@ -1090,7 +1110,9 @@ collider = body->addCollider(&shape, transform);
     \label{sec:collisionshapes}
 
     As we have just seen, a collision shape is used to describe the shape of a collider for collision detection. They are many types of
-    collision shapes that you can use. They all inherit from the \texttt{CollisionShape} class.
+    collision shapes that you can use. They all inherit from the \texttt{CollisionShape} class. \\
+
+    Note that ReactPhysics3D does not support collision between two concave shapes (\texttt{ConcaveMeshShape} and \texttt{HeightFieldShape}).
 
     \subsubsection{Box Shape}
 
@@ -1215,7 +1237,7 @@ for (int f = 0; f < 6; f++) {
 }
 
 // Create the polygon vertex array
-PolygonVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 x sizeof(float),
+PolygonVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 * sizeof(float),
 indices, sizeof(int), 6, polygonFaces,
 PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
@@ -1235,6 +1257,9 @@ ConvexMeshShape* convexMeshShape = physicsCommon.createConvexMeshShape(polyhedro
     You need to make sure that the mesh you provide is indeed convex. Secondly, you should provide the simplest possible convex mesh. It means
     that you need to avoid coplanar faces in your convex mesh shape. Coplanar faces have to be merged together. Remember that convex meshes are
     not limited to triangular faces, you can create faces with more than three vertices. \\
+
+    Also note that meshes with duplicated vertices are not supported. The number of vertices you pass to create the PolygonVertexArray must be exactly
+    the number of vertices in your convex mesh. \\
 
     When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in
     counter clockwise order as seen from the outside of your convex mesh. \\
@@ -1316,8 +1341,11 @@ ConcaveMeshShape* concaveMesh = physicsCommon.createConcaveMeshShape(triangleMes
   \texttt{TriangleMesh} for multiple \texttt{ConcaveMeshShape} with a different scaling factor each time. \\
   \end{sloppypar}
 
-  In the previous example, the vertex normals that are needed for collision detection are automatically computed. However, if you want to specify your own
-  vertex normals, you can do it by using another constructor for the \texttt{TriangleVertexArray}. \\
+  In the previous example, the vertices normals that are needed for collision detection are automatically computed. However, you can specify your own
+  vertices normals by using another constructor for the \texttt{TriangleVertexArray}. Note that each vertex normal is computed as weighted average
+  of the face normals of all the neighboring triangle faces. Therefore, if you specify your mesh with duplicated vertices when you create the
+  \emph{TriangleVertexArray}, the automatic vertices normals computation will not give correct normals because each vertex of the mesh will only be
+  part of a single triangle face. In this case, you should provide your own vertices normals when you create the \emph{TriangleVertexArray}. \\
 
   \subsubsection{Heightfield Shape}
 
@@ -1440,14 +1468,13 @@ colliderBody4->setCollideWithMaskBits(CATEGORY2);
     \subsection{Material}
     \label{sec:material}
 
-    The material of a rigid body is used to describe the physical properties it is made of. This is represented by the \texttt{Material} class. Each body that
-    you create will have a default material. You can get the material of the rigid body using the \texttt{RigidBody::\allowbreak getMaterial()} method. \\
+    The material of a collider is used to describe the physical properties it is made of. This is represented by the \texttt{Material} class. Each collider that you create will have a default material. You can get the material of the collider using the \texttt{Collider::\allowbreak getMaterial()} method. \\
 
     You can use the material to set those physical properties. \\
 
-    For instance, you can change the bounciness of the rigid body. The bounciness is a value between 0 and 1. The value 1 is used for a very bouncy
-    object and the value 0 means that the body will not be bouncy at all. To change the bounciness of the material, you can use the
-    \texttt{Material::\allowbreak setBounciness()} method. \\
+    For instance, you can change the bounciness of the collider. The bounciness is a value between 0 and 1. The value 1 is used for
+    a very bouncy object and the value 0 means that the collider will not be bouncy at all. To change the bounciness of the material,
+    you can use the \texttt{Material::\allowbreak setBounciness()} method. \\
 
     \begin{sloppypar}
     It is also possible to set the mass density of the collider which has a default value of 1. As described in section \ref{sec:rigidbodymass}, the
@@ -1455,25 +1482,20 @@ colliderBody4->setCollideWithMaskBits(CATEGORY2);
     mass density of a collider, you need to use the \texttt{Material::setMassDensity()} method. \\
     \end{sloppypar}
 
-    You are also able to change the friction coefficient of the body. This value needs to be between 0 and 1. If the value is 0, no friction will be
-    applied when the body is in contact with another body. However, if the value is 1, the friction force will be high. You can change the
-    friction coefficient of the material with the \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
+    You are also able to change the friction coefficient of the collider. This value needs to be between 0 and 1. If the value is 0,
+    no friction will be applied when the collider is in contact with another collider. However, if the value is 1, the friction force will be high. You can
+    change the friction coefficient of the material with the \texttt{Material::\allowbreak setFrictionCoefficient()} method. \\
 
-    You can use the material to add rolling resistance to a rigid body. Rolling resistance can be used to stop
-    a rolling object on a flat surface for instance. You should use this only with SphereShape or
-    CapsuleShape collision shapes. By default, rolling resistance is zero but you can
-    set a positive value using the \texttt{Material::\allowbreak setRollingResistance()} method to increase resistance. \\
-
-    Here is how to get the material of a rigid body and how to modify some of its properties: \\
+    Here is how to get the material of a collider and how to modify some of its properties: \\
 
     \begin{lstlisting}
-// Get the current material of the body
-Material& material = rigidBody->getMaterial();
+// Get the current material of the collider
+Material& material = collider->getMaterial();
 
-// Change the bounciness of the body
+// Change the bounciness of the collider
 material.setBounciness(0.4);
 
-// Change the friction coefficient of the body
+// Change the friction coefficient of the collider
 material.setFrictionCoefficient(0.2);
   \end{lstlisting}
 
@@ -1509,12 +1531,15 @@ bombCollider->setIsTrigger(true);
 
     \subsection{Ball and Socket Joint}
 
-    The \texttt{BallAndSocketJoint} class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot translate with respect to each other.
-    However, they can rotate freely around a common anchor point. This joint has three degrees of freedom and can be used to simulate a chain of bodies for instance. \\
+    The \texttt{BallAndSocketJoint} class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot
+    translate with respect to each other. However, they can rotate freely around a common anchor point. This joint has three degrees of freedom
+    and can be used to simulate a chain of bodies for instance. \\
 
-    In order to create a ball and socket joint, you first need to create an instance of the \texttt{BallAndSocketJointInfo} class with the necessary information. You need to provide the pointers to the
-    two rigid bodies and also the coordinates of the anchor point (in world-space). At the joint creation, the world-space anchor point will be converted into the local-space of the two rigid
-    bodies and then, the joint will make sure that the two local-space anchor points match in world-space. Therefore, the two bodies need to be in a correct position at the joint creation. \\
+    In order to create a ball and socket joint, you first need to create an instance of the \texttt{BallAndSocketJointInfo} class with the necessary
+    information. You need to provide the pointers to the two rigid bodies and also the coordinates of the anchor point. The \texttt{BallAndSocketJointInfo}
+    class contains different constructors that you can use whether you want to specify the anchor point in world-space or local-space coordinates.
+    The joint will make sure that the two local-space anchor points match in world-space. Make sure that the two bodies are in a valid position (with
+    respect to the joint constraint) at the beginning of the simulation. \\
 
     Here is the code to create the \texttt{BallAndSocketJointInfo} object: \\
 
@@ -1542,7 +1567,22 @@ BallAndSocketJoint* joint;
 joint = dynamic_cast<BallAndSocketJoint*>(world->createJoint(jointInfo));
   \end{lstlisting}
 
-    \vspace{0.6cm}
+    \subsubsection{Cone limit}
+
+    With the ball and socket joint, it is possible to enable a cone limit. Let's call the \texttt{anchor axis} for body 1 the axis from body 1 center of mass
+    to the joint anchor point. The cone limit can be used to constraint the angle between the anchor axis of body 1 and the anchor axis of body 2.
+    The idea is to limit the angle of the anchor axis of body 2 inside a cone around the anchor axis of body 1. The cone is defined by its main axis
+    which is the anchor axis of body 1 and is also defined by the cone half angle. \\
+
+    In the following example, we enable the cone limit for a given ball and socket joint. \\
+
+    \begin{lstlisting}
+// Set the maximum half angle (in radians) 
+joint->setConeLimitHalfAngle(45.0 * PI / 180.0);
+
+// Enable the cone limit for this joint
+joint->enableConeLimit(true);
+  \end{lstlisting}
 
     \subsection{Hinge Joint}
 
@@ -1550,8 +1590,9 @@ joint = dynamic_cast<BallAndSocketJoint*>(world->createJoint(jointInfo));
     anchor point and around a single axis (the hinge axis). This joint can be used to simulate doors or pendulums for instance. \\
 
     In order to create a hinge joint, you first need to create a \texttt{HingeJointInfo} object with the necessary information. You need to provide
-    the pointers to the two rigid bodies, the coordinates of the anchor point (in world-space) and also the hinge rotation axis (in world-space). The
-    two bodies need to be in a correct position when the joint is created. \\
+    the pointers to the two rigid bodies, the coordinates of the anchor point and also the hinge rotation axis. The \texttt{HingeJointInfo} class contains
+    different constructors that you can use whether you want to specify the anchor point or the rotation axis in local-space or world-space.
+    Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning of the simulation. \\
 
     Here is the code to create the \texttt{HingeJointInfo} object: \\
 
@@ -1584,10 +1625,11 @@ joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
 
      \subsubsection{Limits}
 
-     With the hinge joint, you can constrain the motion range using limits. The limits of the hinge joint are the minimum and maximum angle of rotation allowed with respect to the initial
-     angle between the bodies when the joint is created. The limits are disabled by default. If you want to use the limits, you first need to enable them by setting the
-     \texttt{isLimitEnabled} variable of the \texttt{HingeJointInfo} object to \emph{true} before you create the joint. You also have to specify the minimum and maximum limit
-     angles (in radians) using the \texttt{minAngleLimit} and \texttt{maxAngleLimit} variables of the joint info object. Note that the minimum limit angle must be in the
+     With the hinge joint, you can constrain the motion range using limits. The limits of the hinge joint are the minimum and maximum angle of
+     rotation allowed with respect to the initial angle between the bodies when the joint is created. The limits are disabled by default.
+     If you want to use the limits, you first need to enable them by setting the \texttt{isLimitEnabled} variable of the \texttt{HingeJointInfo}
+     object to \emph{true} before you create the joint. You also have to specify the minimum and maximum limit angles (in radians) using
+     the \texttt{minAngleLimit} and \texttt{maxAngleLimit} variables of the joint info object. Note that the minimum limit angle must be in the
      range $[ -2 \pi; 0 ]$ and the maximum limit angle must be in the range $[ 0; 2 \pi ]$. \\
 
      For instance, here is the way to use the limits for a hinge joint when the joint is created: \\
@@ -1654,10 +1696,14 @@ joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
 
     \subsection{Slider Joint}
 
-    The \texttt{SliderJoint} class describes a slider joint (or prismatic joint) that only allows relative translation along a single direction. It has a single degree of freedom and allows no
-    relative rotation. In order to create a slider joint, you first need to specify the anchor point (in world-space) and the slider axis direction (in world-space). The constructor of the
-    \texttt{SliderJointInfo} object needs two pointers to the bodies of the joint, the anchor point and the axis direction. Note that the two bodies have to be in a correct initial position when
-    the joint is created. \\
+    The \texttt{SliderJoint} class describes a slider joint (or prismatic joint) that only allows relative translation along a single direction.
+    It has a single degree of freedom and allows no relative rotation. \\
+
+    In order to create a slider joint, you first need to specify the anchor point and the slider axis direction.
+    The constructor of the \texttt{SliderJointInfo} object needs two pointers to the bodies of the joint, the anchor point and the axis direction.
+    The \texttt{SliderJointInfo} class contains different constructors that you can use whether you want to specify the anchor point and the direction axis
+    in local-space or world-space. Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning
+    of the simulation.\\
 
     You can see in the following code how to specify the information to create a slider joint: \\
 
@@ -1758,9 +1804,12 @@ joint = dynamic_cast<SliderJoint*>(world->createJoint(jointInfo));
 
     \subsection{Fixed Joint}
 
-    The \texttt{FixedJoint} class describes a fixed joint between two bodies. In a fixed joint, there is no degree of freedom, the bodies are not allowed to translate
-    or rotate with respect to each other. In order to create a fixed joint, you simply need to specify an anchor point (in world-space) to create the \texttt{FixedJointInfo}
-    object. \\
+    The \texttt{FixedJoint} class describes a fixed joint between two bodies. In a fixed joint, there is no degree of freedom, the bodies are not
+    allowed to translate or rotate with respect to each other. \\
+
+    In order to create a fixed joint, you simply need to specify an anchor point to create the \texttt{FixedJointInfo}
+    object. The \texttt{FixedJointInfo} class contains different constructors that you can use whether you want to specify the anchor point in local-space
+    or world-space. Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning of the simulation.\\
 
     For instance, here is how to create the joint info object for a fixed joint: \\
 
@@ -2002,51 +2051,6 @@ bool isHit = collider->raycast(ray, raycastInfo);
     the ReactPhysics3D library. Do not hesitate to take a look at the code of the demo scenes to better understand how
     to use the library in your application. \\
 
-    The following subsections describe the demo scenes that can be found in the testbed application.
-
-    \subsection{Cubes Scene}
-
-    In this scene, you will see how to create a floor and some cubes using the Box Shape for collision detection. Because of gravity,
-    the cubes will fall down on the floor. After falling down, the cubes will come to rest and start sleeping (become inactive). In this scene,
-    the cubes will become red as they get inactive (sleeping).
-
-   \subsection{Cubes Stack Scene}
-
-    This scene has a physics world and a pyramid of cubes.
-
-    \subsection{Joints Scene}
-
-    In this scene, you will learn how to create different joints (ball and socket, hinge, slider, fixed) into the physics world. You can also see how
-    to set the motor or limits of the joints.
-
-    \subsection{Collision Shapes Scene}
-
-    In this scene, you will see how to create a floor (using the Box Shape) and some other bodies using the different collision shapes available
-    in the ReactPhysics3D library like capsules, spheres, boxes and convex meshes. Those bodies will fall down to the floor.
-
-    \subsection{Heightfield Scene}
-
-    In this scene, you will see how to use the Height field collision shape of the library. Several bodies will fall
-    down to the height field.
-
-   \subsection{Raycast Scene}
-
-    In this scene, you will see how to use the ray casting methods of the library. Several rays are thrown against the different collision shapes.
-    It is possible to switch from a collision shape to another using the spacebar key.
-
-   \subsection{Collision Detection Scene}
-
-    This scene has a physics world and several collision bodies that can be move around with keyboard keys. This scene shows how to manually compute
-    collision detection in a physics world.
-
-    \subsection{Concave Mesh Scene}
-
-    In this scene, you will see how to use the static concave mesh collision shape of the library.
-
-    \subsection{Pile Scene}
-
-    This demo is basically a pile of many bodies with different types of shapes.
-
     \section{Receiving Feedback}
     \label{sec:receiving_feedback}
 
@@ -2090,6 +2094,13 @@ world->setEventListener(&listener);
     colliding. It can be \texttt{ContactStay}, if the two bodies where colliding in the previous frame and are still colliding or it can be
     \texttt{ContactExit} if the two bodies where colliding in the previous frame but are not colliding anymore. Note that in this last situation, there
     will be no contact points in the contact pair. \\
+    \end{sloppypar}
+
+    \begin{sloppypar}
+    As you know, rigid bodies can sleep. During that time, no contacts will be reported using the \texttt{EventListener::onContact()} method. Therefore,
+    If you stop receiving contact notifications for a rigid body, it does not necessarily mean that there is no contacts anymore but it could mean that the
+    body has fallen asleep. You need to use the \texttt{getEventType()} method to know if the body is not colliding anymore (when you receive an event of type
+    \texttt{ContactExit}). \\
     \end{sloppypar}
 
     \begin{sloppypar}
@@ -2148,7 +2159,14 @@ class YourEventListener : public EventListener {
     The overlapping pair also has a \texttt{getEventType()} method that gives information about the type of overlapping event for the pair. It can be
     \texttt{OverlapStart} if the two bodies of the pair where not overlapping in the previous call to \texttt{PhysicsWorld::update()} and are now
     overlapping. It can be \texttt{OverlapStay}, if the two bodies where overlapping in the previous frame and are still overlapping or it can be
-    \texttt{OverlapExit} if the two bodies where overlapping in the previous frame but are not overlapping anymore. 
+    \texttt{OverlapExit} if the two bodies where overlapping in the previous frame but are not overlapping anymore. \\
+    \end{sloppypar}
+
+    \begin{sloppypar}
+    As you know, rigid bodies can sleep. During that time, no overlap will be reported using the \texttt{EventListener::onTrigger()} method. Therefore,
+    If you stop receiving trigger overlap notifications for a rigid body, it does not necessarily mean that there is no overlap anymore but it could mean
+    that the body has fallen asleep. You need to use the \texttt{getEventType()} method to know if the body is not overlapping anymore (when you receive an
+    event of type \texttt{OverlapExit}). \\
     \end{sloppypar}
 
     Note that the \texttt{onTrigger()} method is only called for colliders that you have set as triggers using the \texttt{Collider::setIsTrigger()} method.
@@ -2169,21 +2187,27 @@ class YourEventListener : public EventListener {
     \section{Logger}
     \label{sec:logger}
 
-    ReactPhysics3D has an internal logger that can be used to get logs while running the application. This can be useful for debugging for instance. \\
+    ReactPhysics3D has an internal logger that can be used to get logs from the library while the application is running. This can be useful for
+    debugging for instance. \\
 
     The logger is part of the \texttt{PhysicsCommon} class. By default there is no logger set. If you want to create your custom logger to receive logs
     from ReactPhysics3D, you can inherit the \texttt{Logger} class and override the \texttt{Logger::log()} method. Then, you have to use the
     \texttt{PhysicsCommon::setLogger()} method to set the logger. \\
 
+    Getting the logs is the way for you to see the errors reported by the library and therefore, you should not just ignore the errors from the logs.
+    You should at least redirect the logs (warnings and errors) in the standard output while debugging your application as described in the example
+    below. \\
+
     \begin{sloppypar}
     If you don't want to create your custom logger class, you can use the default logger of ReactPhysics3D (class \texttt{DefaultLogger}). With this
     logger, you can output the logs into
-    a file or a std::stream. The logs can have different format like raw text of HTML. In order to create a default logger, you need to call the
-    \texttt{PhysicsCommon::createDefaultLogger()} method. Then, you can customize this default logger and finally, you need to set this logger using the
+    a file or a std::stream. The logs can have different format like raw text of HTML. In order to instantiate the default logger, you need to call the
+    \texttt{PhysicsCommon::createDefaultLogger()} method. Then, you can customize this logger and finally, you need to set this logger using the
     \texttt{PhysicsCommon::setLogger()} method. \\
     \end{sloppypar}
 
-    The following code shows how to create a default logger that will output logs (warning and errors) in HTML into a file: \\
+    The following code shows how to create a default logger that will output logs (warning and errors) in HTML into a file and in raw text into
+    the standard output: \\
 
     \begin{lstlisting}
 // Create the default logger
@@ -2193,8 +2217,10 @@ DefaultLogger* logger = physicsCommon.createDefaultLogger();
 uint logLevel = static_cast<uint>(static_cast<uint>(Logger::Level::Warning) | static_cast<uint>(Logger::Level::Error);
 
 // Output the logs into an HTML file
-logger->addFileDestination("rp3d_log_" + name + ".html", logLevel,
-                           DefaultLogger::Format::HTML);
+logger->addFileDestination("rp3d_log_" + name + ".html", logLevel, DefaultLogger::Format::HTML);
+
+// Output the logs into the standard output
+logger->addStreamDestination(std::cout, logLevel, DefaultLogger::Format::Text);
 
 // Set the logger
 physicsCommon.setLogger(logger);
@@ -2252,6 +2278,16 @@ debugRenderer.setIsDebugItemDisplayed(DebugRenderer::DebugItem::CONTACT_NORMAL, 
     type \texttt{DebugRenderer:DebugTriangle} with the three points of each triangle and their colors. Note that the vertices of the lines and triangles
     are defined in world-space coordinates of the physics world.
   \end{sloppypar}
+
+    \section{Determinism}
+    \label{sec:determinism}
+
+    Sometimes, it is important that the simulation of a physics world behaves exactly the same each time we run it. Because of the differences in
+    compilers and computer hardware it is quite difficult to achieve this between different machines. However, ReactPhysics3D should be deterministic when
+    compiled with the same compiler and running on the same machine. In order to obtain two similar runs of the simulation of a physics world, it is
+    adviced to completely destroy and recreate the physics world, the bodies and the joints inside it (in order to reset all the internal data cached
+    for the simulation). You must also create the bodies and joints in the same order each time and make sure that all the calls to the methods
+    of your physics world, bodies and joints happen in the same order.
 
    \section{API Reference Documentation}
 

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -75,7 +75,7 @@ class CollisionBody {
         void removeAllColliders();
 
         /// Update the broad-phase state for this body (because it has moved for instance)
-        void updateBroadPhaseState(decimal timeStep) const;
+        void updateBroadPhaseState() const;
 
         /// Ask the broad-phase to test again the collision shapes of the body for collision
         /// (as if the body has moved).
@@ -137,13 +137,13 @@ class CollisionBody {
         AABB getAABB() const;
 
         /// Return a const pointer to a given collider of the body
-        const Collider* getCollider(uint colliderIndex) const;
+        const Collider* getCollider(uint32 colliderIndex) const;
 
         /// Return a pointer to a given collider of the body
-        Collider* getCollider(uint colliderIndex);
+        Collider* getCollider(uint32 colliderIndex);
 
         /// Return the number of colliders associated with this body
-        uint getNbColliders() const;
+        uint32 getNbColliders() const;
 
         /// Return the world-space coordinates of a point given the local-space coordinates of the body
         Vector3 getWorldPoint(const Vector3& localPoint) const;
@@ -178,7 +178,7 @@ class CollisionBody {
 * @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
 * @return True if the given AABB overlaps with the AABB of the collision body
 */
-inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
+RP3D_FORCE_INLINE bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getAABB());
 }
 
@@ -186,14 +186,14 @@ inline bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
 /**
  * @return The entity of the body
  */
-inline Entity CollisionBody::getEntity() const {
+RP3D_FORCE_INLINE Entity CollisionBody::getEntity() const {
     return mEntity;
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 // Set the profiler
-inline void CollisionBody::setProfiler(Profiler* profiler) {
+RP3D_FORCE_INLINE void CollisionBody::setProfiler(Profiler* profiler) {
 	mProfiler = profiler;
 }
 

@@ -56,7 +56,7 @@ const float CYLINDER_HEIGHT = 5.0f;
 const float CAPSULE_RADIUS = 1.0f;
 const float CAPSULE_HEIGHT = 1.0f;
 const float DUMBBELL_HEIGHT = 1.0f;
-const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);        // Floor dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(30, 0.5f, 30);        // Floor dimensions in meters
 
 // Class CollisionShapesScene
 class CollisionShapesScene : public SceneDemo {
@@ -81,18 +81,30 @@ class CollisionShapesScene : public SceneDemo {
         /// Box for the floor
         Box* mFloor;
 
+        /// World settings
+        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
+
     public:
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShapesScene(const std::string& name, EngineSettings& settings);
+        CollisionShapesScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
 
         /// Destructor
         virtual ~CollisionShapesScene() override;
 
         /// Reset the scene
         virtual void reset() override;
+
+        /// Create the physics world
+        void createPhysicsWorld();
+
+        /// Destroy the physics world
+        void destroyPhysicsWorld();
+
+        /// Initialize the bodies positions
+        void initBodiesPositions();
 };
 
 }

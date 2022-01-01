@@ -35,7 +35,7 @@ int Dumbbell::totalNbDumbbells = 0;
 
 // Constructor
 Dumbbell::Dumbbell(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshFolderPath)
-         : PhysicsObject(physicsCommon, meshFolderPath + "dumbbell.obj") {
+         : PhysicsObject(physicsCommon, meshFolderPath + "dumbbell.obj"), mPhysicsWorld(physicsWorld) {
 
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();
@@ -111,6 +111,14 @@ Dumbbell::~Dumbbell() {
         mVBONormals.destroy();
         mVBOTextureCoords.destroy();
         mVAO.destroy();
+    }
+
+    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
+    if (body != nullptr) {
+        mPhysicsWorld->destroyRigidBody(body);
+    }
+    else {
+        mPhysicsWorld->destroyCollisionBody(mBody);
     }
     mPhysicsCommon.destroySphereShape(mSphereShape);
     mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);

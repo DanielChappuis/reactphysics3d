@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -93,20 +93,20 @@ class LinkedList {
 
 // Return the first element of the list
 template<typename T>
-inline typename LinkedList<T>::ListElement* LinkedList<T>::getListHead() const {
+RP3D_FORCE_INLINE typename LinkedList<T>::ListElement* LinkedList<T>::getListHead() const {
     return mListHead;
 }
 
 // Insert an element at the beginning of the linked list
 template<typename T>
-inline void LinkedList<T>::insert(const T& data) {
+RP3D_FORCE_INLINE void LinkedList<T>::insert(const T& data) {
     ListElement* element = new (mAllocator.allocate(sizeof(ListElement))) ListElement(data, mListHead);
     mListHead = element;
 }
 
 // Remove all the elements of the list
 template<typename T>
-inline void LinkedList<T>::reset() {
+RP3D_FORCE_INLINE void LinkedList<T>::reset() {
 
     // Release all the list elements
     ListElement* element = mListHead;

@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 # Project configuration
-project(ReactPhysics3D VERSION 0.8.0 LANGUAGES CXX)
+project(ReactPhysics3D VERSION 0.9.0 LANGUAGES CXX)
 
 # In order to install libraries into correct locations on all platforms.
 include(GNUInstallDirs)
@@ -31,15 +31,15 @@ option(RP3D_PROFILING_ENABLED "Select this if you want to compile for performana
 option(RP3D_CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage calculation" OFF)
 option(RP3D_DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating values" OFF)
 
+# Code Coverage
 if(RP3D_CODE_COVERAGE_ENABLED)
-    if(CMAKE_COMPILER_IS_GNUCXX)
-        INCLUDE(CodeCoverage)
-        SETUP_TARGET_FOR_COVERAGE(${PROJECT_NAME}_coverage tests coverage)
-    endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+    INCLUDE(CodeCoverage)
+    SETUP_TARGET_FOR_COVERAGE_LCOV(NAME coverage EXECUTABLE test/tests)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
 endif()
 
-# Headers filen1s
+# Headers files
 set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/configuration.h"
     "include/reactphysics3d/decimal.h"
@@ -63,9 +63,6 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/collision/narrowphase/ConvexPolyhedronVsConvexPolyhedronAlgorithm.h"
     "include/reactphysics3d/collision/narrowphase/NarrowPhaseInput.h"
     "include/reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h"
-    "include/reactphysics3d/collision/narrowphase/SphereVsSphereNarrowPhaseInfoBatch.h"
-    "include/reactphysics3d/collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.h"
-    "include/reactphysics3d/collision/narrowphase/SphereVsCapsuleNarrowPhaseInfoBatch.h"
     "include/reactphysics3d/collision/shapes/AABB.h"
     "include/reactphysics3d/collision/shapes/ConvexShape.h"
     "include/reactphysics3d/collision/shapes/ConvexPolyhedronShape.h"
@@ -108,7 +105,6 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/engine/Island.h"
     "include/reactphysics3d/engine/Islands.h"
     "include/reactphysics3d/engine/Material.h"
-    "include/reactphysics3d/engine/Timer.h"
     "include/reactphysics3d/engine/OverlappingPairs.h"
     "include/reactphysics3d/systems/BroadPhaseSystem.h"
     "include/reactphysics3d/components/Components.h"
@@ -124,6 +120,7 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/collision/CollisionCallback.h"
     "include/reactphysics3d/collision/OverlapCallback.h"
     "include/reactphysics3d/mathematics/mathematics.h"
+    "include/reactphysics3d/mathematics/mathematics_common.h"
     "include/reactphysics3d/mathematics/mathematics_functions.h"
     "include/reactphysics3d/mathematics/Matrix2x2.h"
     "include/reactphysics3d/mathematics/Matrix3x3.h"
@@ -140,7 +137,7 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/memory/MemoryManager.h"
     "include/reactphysics3d/containers/Stack.h"
     "include/reactphysics3d/containers/LinkedList.h"
-    "include/reactphysics3d/containers/List.h"
+    "include/reactphysics3d/containers/Array.h"
     "include/reactphysics3d/containers/Map.h"
     "include/reactphysics3d/containers/Set.h"
     "include/reactphysics3d/containers/Pair.h"
@@ -168,9 +165,6 @@ set (REACTPHYSICS3D_SOURCES
     "src/collision/narrowphase/ConvexPolyhedronVsConvexPolyhedronAlgorithm.cpp"
     "src/collision/narrowphase/NarrowPhaseInput.cpp"
     "src/collision/narrowphase/NarrowPhaseInfoBatch.cpp"
-    "src/collision/narrowphase/SphereVsSphereNarrowPhaseInfoBatch.cpp"
-    "src/collision/narrowphase/CapsuleVsCapsuleNarrowPhaseInfoBatch.cpp"
-    "src/collision/narrowphase/SphereVsCapsuleNarrowPhaseInfoBatch.cpp"
     "src/collision/shapes/AABB.cpp"
     "src/collision/shapes/ConvexShape.cpp"
     "src/collision/shapes/ConvexPolyhedronShape.cpp"
@@ -209,7 +203,6 @@ set (REACTPHYSICS3D_SOURCES
     "src/engine/PhysicsWorld.cpp"
     "src/engine/Island.cpp"
     "src/engine/Material.cpp"
-    "src/engine/Timer.cpp"
     "src/engine/OverlappingPairs.cpp"
     "src/engine/Entity.cpp"
     "src/engine/EntityManager.cpp"
@@ -226,7 +219,6 @@ set (REACTPHYSICS3D_SOURCES
     "src/components/SliderJointComponents.cpp"
     "src/collision/CollisionCallback.cpp"
     "src/collision/OverlapCallback.cpp"
-    "src/mathematics/mathematics_functions.cpp"
     "src/mathematics/Matrix2x2.cpp"
     "src/mathematics/Matrix3x3.cpp"
     "src/mathematics/Quaternion.cpp"
@@ -252,12 +244,6 @@ add_library(ReactPhysics3D::reactphysics3d ALIAS reactphysics3d)
 # C++11 compiler features
 target_compile_features(reactphysics3d PUBLIC cxx_std_11)
 set_target_properties(reactphysics3d PROPERTIES CXX_EXTENSIONS OFF)
-
-# Compile with warning messages
-target_compile_options(reactphysics3d PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/W4>                                # for Visual Studio
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic>     # Other compilers
-)
 
 # Library headers
 target_include_directories(reactphysics3d PUBLIC
@@ -287,8 +273,8 @@ endif()
 
 # Version number and soname for the library
 set_target_properties(reactphysics3d  PROPERTIES
-          VERSION "0.8.0" 
-          SOVERSION "0.8"
+          VERSION "0.9.0" 
+          SOVERSION "0.9"
 )
 
 # Install target (install library only, not headers)
@@ -333,3 +319,4 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/ReactPhysics3DConfigVersion.cmake
     DESTINATION lib/cmake/ReactPhysics3D
 )
+

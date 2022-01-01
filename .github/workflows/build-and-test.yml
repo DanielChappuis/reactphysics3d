@@ -1,0 +1,312 @@
+# Build and run tests for ReactPhysics3D
+name: build 
+
+# Controls when the action will run. Triggers the workflow on push
+on: 
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+  release:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }} 
+    strategy:
+      fail-fast: false
+      matrix:
+        config: 
+        - {
+            name: "Linux / GCC (Debug, Single Precision)",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "Linux / GCC (Release, Single Precision)",
+            os: ubuntu-latest,
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "Linux / GCC (Debug, Double Precision)",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: true,
+            coverage: false,
+          }
+        - {
+            name: "Linux / GCC (Release, Double Precision)",
+            os: ubuntu-latest,
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: true,
+            coverage: false,
+          }
+        - {
+            name: "Linux / Clang (Debug, Single Precision)",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "Linux / Clang (Release, Single Precision)",
+            os: ubuntu-latest,
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "Linux / Clang (Debug, Double Precision)",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: true,
+            coverage: false,
+          }
+        - {
+            name: "Linux / Clang (Release, Double Precision)",
+            os: ubuntu-latest,
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: true,
+            coverage: false,
+          }
+        - {
+            name: "Windows / MSVC (Debug, Single Precision)",
+            os: windows-latest,
+            build_type: "Debug",
+            cc: "cl",
+            cxx: "cl",
+            cxx_flags: "",
+            generators: "Visual Studio 16 2019",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "Windows / MSVC (Release, Single Precision)",
+            os: windows-latest,
+            build_type: "Release",
+            cc: "cl",
+            cxx: "cl",
+            cxx_flags: "",
+            generators: "Visual Studio 16 2019",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "Windows / MinGW (Debug, Single Precision)",
+            os: windows-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "Windows / MinGW (Release, Single Precision)",
+            os: windows-latest,
+            build_type: "Release",
+            cc: "gcc",
+            cxx: "g++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "MacOS / Clang (Debug, Single Precision)",
+            os: macos-latest,
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "MacOS / Clang (Release, Single Precision)",
+            os: macos-latest,
+            build_type: "Release",
+            cc: "clang",
+            cxx: "clang++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: false,
+          }
+        - {
+            name: "Code Coverage",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "gcc",
+            cxx: "g++",
+            cxx_flags: "-Wall -Wextra -pedantic",
+            generators: "Ninja",
+            double_precision: false,
+            coverage: true,
+          }
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Print env
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
+
+      - name: Install dependencies on Windows
+        if: startsWith(matrix.config.os, 'windows')
+        run: |
+          choco install ninja cmake
+          ninja --version
+          cmake --version
+
+      - name: Install dependencies on Linux
+        if: startsWith(matrix.config.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build cmake lcov valgrind
+          ninja --version
+          cmake --version
+          gcc --version
+          clang --version
+
+      - name: Install dependencies on MacOS
+        if: startsWith(matrix.config.os, 'macos')
+        run: |
+          brew install cmake ninja
+          ninja --version
+          cmake --version
+          
+      - name: CMake Configure
+        shell: bash
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          mkdir build
+          cmake \
+            -S . \
+            -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
+            -DRP3D_CODE_COVERAGE_ENABLED=${{ matrix.config.coverage }} \
+            -DCODE_COVERAGE_VERBOSE=True \
+            -DRP3D_COMPILE_TESTS=True \
+            -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
+            -G "${{ matrix.config.generators }}" \
+
+      - name: Build
+        shell: bash
+        run: cmake --build build/ --config ${{ matrix.config.build_type }}
+
+      - name: Install Library on Linux/MacOS
+        if: ${{ !startsWith(matrix.config.os, 'windows') }}
+        shell: bash
+        run: sudo cmake --install build/ --config ${{ matrix.config.build_type }}
+
+      - name: Install Library on Windows
+        if: startsWith(matrix.config.os, 'windows')
+        shell: bash
+        run: cmake --install build/ --config ${{ matrix.config.build_type }}
+
+      - name: Run Unit Tests (Linux / MacOS / Windows MinGW)
+        if: ${{ !startsWith(matrix.config.os, 'windows') }}
+        shell: bash
+        run: ./build/test/tests
+        
+      - name: Run Unit Tests (Windows MSVC)
+        if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
+        shell: bash
+        run: "./build/test/${{ matrix.config.build_type }}/tests.exe"
+
+      - name: Build Hello World
+        if: ${{ !matrix.config.coverage }}
+        shell: bash
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          mkdir build_hello_world
+          cmake \
+            -S helloworld \
+            -B build_hello_world \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
+            -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
+            -G "${{ matrix.config.generators }}"
+          cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
+
+      - name: Run Hello World (Linux / MacOS / Windows MinGW)
+        if: ${{ !startsWith(matrix.config.name, 'Windows / MSVC') && !matrix.config.coverage }}
+        shell: bash
+        run: "./build_hello_world/helloworld"
+        
+      - name: Run Hello World (Windows MSVC)
+        if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
+        shell: bash
+        run: "./build_hello_world/${{ matrix.config.build_type }}/helloworld.exe"
+
+      - name: Memory Leaks Test
+        if: ${{ startsWith(matrix.config.name, 'Linux / GCC (Debug, Single Precision)') }}
+        shell: bash
+        run: valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1 ./build/test/tests
+
+      - name: Compute Code Coverage
+        if: ${{ matrix.config.coverage }}
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        shell: bash
+        run: |
+          cmake --build build/ --target coverage
+
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.config.coverage }}
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          verbose: false
+

@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -67,12 +67,13 @@ OverlapCallback::OverlapPair::EventType OverlapCallback::OverlapPair::getEventTy
 }
 
 // CollisionCallbackData Constructor
-OverlapCallback::CallbackData::CallbackData(List<ContactPair>& contactPairs, List<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world)
+OverlapCallback::CallbackData::CallbackData(Array<ContactPair>& contactPairs, Array<ContactPair>& lostContactPairs, bool onlyReportTriggers, PhysicsWorld& world)
                 :mContactPairs(contactPairs), mLostContactPairs(lostContactPairs),
                  mContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mLostContactPairsIndices(world.mMemoryManager.getHeapAllocator()), mWorld(world) {
 
     // Filter the contact pairs to only keep the overlap/trigger events (not the contact events)
-    for (uint i=0; i < mContactPairs.size(); i++) {
+    const uint64 nbContactPairs = mContactPairs.size();
+    for (uint64 i=0; i < nbContactPairs; i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
         if (!onlyReportTriggers || mContactPairs[i].isTrigger) {
@@ -80,7 +81,8 @@ OverlapCallback::CallbackData::CallbackData(List<ContactPair>& contactPairs, Lis
         }
     }
     // Filter the lost contact pairs to only keep the overlap/trigger events (not the contact events)
-    for (uint i=0; i < mLostContactPairs.size(); i++) {
+    const uint64 nbLostContactPairs = mLostContactPairs.size();
+    for (uint64 i=0; i < nbLostContactPairs; i++) {
 
         // If the contact pair contains contacts (and is therefore not an overlap/trigger event)
         if (!onlyReportTriggers || mLostContactPairs[i].isTrigger) {

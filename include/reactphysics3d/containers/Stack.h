@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -51,15 +51,15 @@ class Stack {
         T* mArray;
 
         /// Number of elements in the stack
-        uint mNbElements;
+        uint64 mNbElements;
 
         /// Number of allocated elements in the stack
-        uint mCapacity;
+        uint64 mCapacity;
 
         // -------------------- Methods -------------------- //
 
         /// Allocate more memory
-        void allocate(size_t capacity) {
+        void allocate(uint64 capacity) {
 
             T* newArray = static_cast<T*>(mAllocator.allocate(capacity * sizeof(T)));
             assert(newArray != nullptr);
@@ -87,7 +87,7 @@ class Stack {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Stack(MemoryAllocator& allocator, size_t capacity = 0)
+        Stack(MemoryAllocator& allocator, uint64 capacity = 0)
               :mAllocator(allocator), mArray(nullptr), mNbElements(0), mCapacity(0) {
 
             if (capacity > 0) {
@@ -130,7 +130,7 @@ class Stack {
         void clear() {
 
             // Destruct the items
-            for (size_t i = 0; i < mNbElements; i++) {
+            for (uint64 i = 0; i < mNbElements; i++) {
                 mArray[i].~T();
             }
 
@@ -169,12 +169,12 @@ class Stack {
         }
 
         /// Return the number of items in the stack
-        size_t size() const {
+        uint64 size() const {
             return mNbElements;
         }
 
         /// Return the capacity of the stack
-        size_t capacity() const {
+        uint64 capacity() const {
             return mCapacity;
         }
 };
