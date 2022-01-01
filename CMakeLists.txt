@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 # Project configuration
-project(ReactPhysics3D VERSION 0.8.0 LANGUAGES CXX)
+project(ReactPhysics3D VERSION 0.9.0 LANGUAGES CXX)
 
 # In order to install libraries into correct locations on all platforms.
 include(GNUInstallDirs)
@@ -273,8 +273,8 @@ endif()
 
 # Version number and soname for the library
 set_target_properties(reactphysics3d  PROPERTIES
-          VERSION "0.8.0" 
-          SOVERSION "0.8"
+          VERSION "0.9.0" 
+          SOVERSION "0.9"
 )
 
 # Install target (install library only, not headers)

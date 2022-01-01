@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2020 Daniel Chappuis                                       *
+* Copyright (c) 2010-2022 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -130,7 +130,7 @@ constexpr uint16 NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD = 256;
 constexpr decimal SAME_CONTACT_POINT_DISTANCE_THRESHOLD = decimal(0.01);
 
 /// Current version of ReactPhysics3D
-const std::string RP3D_VERSION = std::string("0.8.0");
+const std::string RP3D_VERSION = std::string("0.9.0");
 
 }
 
