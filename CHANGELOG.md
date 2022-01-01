@@ -7,7 +7,7 @@ do not hesitate to take a look at the user manual.
 
 ### Added
 
- - The performance of the collision detection and rigid bodies simulation has been improved a lot
+ - The performance of the collision detection and rigid bodies simulation (PhysicsWorld::update() method) has been improved significantly (1.7x speedup measured in [PEEL](https://github.com/Pierre-Terdiman/PEEL) scenes) 
  - Method RigidBody::resetForce() to reset the accumulated external force on a rigid body has been added
  - Method RigidBody::resetTorque() to reset the accumulated external torque on a rigid body has been added
  - Constructors with local-space anchor/axis have been added to BallAndSocketJointInfo, HingeJointInfo, FixedJointInfo and SliderJointInfo classes
