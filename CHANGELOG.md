@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.9.0 (January 3, 2022)
+## Version 0.9.0 (January 4, 2022)
 
 ### Added
 
