@@ -32,7 +32,7 @@
 using namespace reactphysics3d;
 
 // Initialize the structure (when all vertices and faces have been added)
-void HalfEdgeStructure::init() {
+void HalfEdgeStructure::computeHalfEdges() {
 
     Map<VerticesPair, Edge> edges(mAllocator);
     Map<VerticesPair, VerticesPair> nextEdges(mAllocator);
@@ -118,4 +118,34 @@ void HalfEdgeStructure::init() {
     for (uint32 f=0; f < nbFaces; f++) {
         mFaces[f].edgeIndex = mapEdgeToIndex[mapFaceIndexToEdgeKey[f]];
     }
+}
+
+// Return a string representation of the half-edge structure
+std::string HalfEdgeStructure::to_string() const {
+
+    std::string faces;
+
+    for (uint32 i=0; i < mFaces.size(); i++) {
+
+       faces += "Face(";
+
+       const Face& face = mFaces[i];
+
+       for (uint32 v=0; v < face.faceVertices.size(); v++) {
+
+           faces += std::to_string(mVertices[face.faceVertices[v]].vertexPointIndex);
+
+           if (v < face.faceVertices.size() - 1) {
+               faces += ",";
+           }
+       }
+
+       faces += ")";
+
+       if (i < mFaces.size() - 1) {
+           faces += ",";
+       }
+    }
+
+    return "HalfEdgeStructure(" + faces + ")";
 }

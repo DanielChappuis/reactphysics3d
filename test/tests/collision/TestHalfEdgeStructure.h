@@ -91,7 +91,7 @@ class TestHalfEdgeStructure : public Test {
             cubeStructure.addFace(face4);
             cubeStructure.addFace(face5);
 
-            cubeStructure.init();
+            cubeStructure.computeHalfEdges();
 
             // --- Test that the half-edge structure of the cube is valid --- //
 
@@ -202,7 +202,7 @@ class TestHalfEdgeStructure : public Test {
             tetrahedron.addFace(face2);
             tetrahedron.addFace(face3);
 
-            tetrahedron.init();
+            tetrahedron.computeHalfEdges();
 
             // --- Test that the half-edge structure of the tetrahedron is valid --- //
 

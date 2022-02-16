@@ -45,6 +45,7 @@
 #include "tests/containers/TestDeque.h"
 #include "tests/containers/TestStack.h"
 #include "tests/engine/TestRigidBody.h"
+#include "tests/utils/TestQuickHull.h"
 
 using namespace reactphysics3d;
 
@@ -80,6 +81,9 @@ int main() {
     testSuite.addTest(new TestDynamicAABBTree("DynamicAABBTree"));
     testSuite.addTest(new TestHalfEdgeStructure("HalfEdgeStructure"));
 
+    // ---------- Utils tests ---------- //
+
+    testSuite.addTest(new TestQuickHull("QuickHull"));
 
     // ---------- Engine tests ---------- //
 

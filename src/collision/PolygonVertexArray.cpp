@@ -25,6 +25,7 @@
 
 // Libraries
 #include <reactphysics3d/collision/PolygonVertexArray.h>
+#include <reactphysics3d/mathematics/Vector3.h>
 
 using namespace reactphysics3d;
 
@@ -84,4 +85,28 @@ uint32 PolygonVertexArray::getVertexIndexInFace(uint32 faceIndex32, uint32 noVer
     }
 
     return 0;
+}
+
+// Return the coordinates of a given vertex
+Vector3 PolygonVertexArray::getVertex(uint32 vertexIndex) const {
+
+    Vector3 vertex;
+
+    if (mVertexDataType == PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
+        const float* vertices = (float*)(mVerticesStart + vertexIndex * mVerticesStride);
+        vertex.x = decimal(vertices[0]);
+        vertex.y = decimal(vertices[1]);
+        vertex.z = decimal(vertices[2]);
+    }
+    else if (mVertexDataType == PolygonVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
+        const double* vertices = (double*)(mVerticesStart + vertexIndex * mVerticesStride);
+        vertex.x = decimal(vertices[0]);
+        vertex.y = decimal(vertices[1]);
+        vertex.z = decimal(vertices[2]);
+    }
+    else {
+        assert(false);
+    }
+
+    return vertex;
 }
