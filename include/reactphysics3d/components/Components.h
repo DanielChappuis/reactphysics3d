@@ -137,7 +137,7 @@ RP3D_FORCE_INLINE bool Components::hasComponent(Entity entity) const {
     return mMapEntityToComponentIndex.containsKey(entity);
 }
 
-// Return true if there is a component for a given entiy and if so set the entity index
+// Return true if there is a component for a given entity and if so set the entity index
 RP3D_FORCE_INLINE bool Components::hasComponentGetIndex(Entity entity, uint32& entityIndex) const {
 
     auto it = mMapEntityToComponentIndex.find(entity);

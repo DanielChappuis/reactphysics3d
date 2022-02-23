@@ -665,7 +665,7 @@ void CollisionDetectionSystem::addContactPairsToBodies() {
            mRigidBodyComponents.addContacPair(contactPair.body2Entity, p);
         }
 
-        // If at least of body is a CollisionBody
+        // If at least one of the two bodies is a CollisionBody
         if (!isBody1Rigid || !isBody2Rigid) {
 
             // Add the pair index to the array of pairs with CollisionBody
@@ -857,8 +857,6 @@ void CollisionDetectionSystem::createContacts() {
     // mProcessContactPairsOrderIslands array because those pairs have not been added during the islands
     // creation (only the pairs with two RigidBodies are added during island creation)
     mWorld->mProcessContactPairsOrderIslands.addRange(mCollisionBodyContactPairsIndices);
-
-    assert(mWorld->mProcessContactPairsOrderIslands.size() == (*mCurrentContactPairs).size());
 
     // Process the contact pairs in the order defined by the islands such that the contact manifolds and
     // contact points of a given island are packed together in the array of manifolds and contact points
