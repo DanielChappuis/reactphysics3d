@@ -1,5 +1,17 @@
 # Changelog
 
+## Release Candidate
+
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+- Issue [#237](https://github.com/DanielChappuis/reactphysics3d/issues/237) Wrong assert has been removed 
+
 ## Version 0.9.0 (January 4, 2022)
 
 ### Added
