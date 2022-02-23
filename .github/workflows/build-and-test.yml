@@ -116,7 +116,7 @@ jobs:
             cc: "cl",
             cxx: "cl",
             cxx_flags: "",
-            generators: "Visual Studio 16 2019",
+            generators: "Visual Studio 17 2022",
             double_precision: false,
             coverage: false,
           }
@@ -127,7 +127,7 @@ jobs:
             cc: "cl",
             cxx: "cl",
             cxx_flags: "",
-            generators: "Visual Studio 16 2019",
+            generators: "Visual Studio 17 2022",
             double_precision: false,
             coverage: false,
           }
