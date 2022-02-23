@@ -73,6 +73,7 @@ class TestQuickHull : public Test {
             points.add(Vector3(6, 6, -5));
             points.add(Vector3(2, -2, -8));
             points.add(Vector3(-4, 8, -1));
+            points.add(Vector3(4, 8, 4));
 
             std::cout << "---------- QuickHull ----------" << std::endl;
 

@@ -30,6 +30,7 @@
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/containers/Map.h>
+#include <reactphysics3d/collision/HalfEdgeStructure.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -38,13 +39,25 @@ namespace reactphysics3d {
 class PolyhedronMesh;
 template<typename T>
 class Array;
-class HalfEdgeStructure;
 
 // Class QuickHull
 // This algorithm is based on 'Implementing Quickhull' presentation at GDC from Dirk Gregorius
 class QuickHull {
 
     private:
+
+        // Structure Candidate
+        // This is used during the process to find the horizon
+        struct CandidateFace {
+
+            uint32 faceIndex;
+            uint32 startEdgeIndex;
+            uint32 currentEdgeIndex;
+
+            // Constructor
+            CandidateFace(uint32 faceIndex, uint32 startEdgeIndex, uint32 currentEdgeIndex)
+                :faceIndex(faceIndex), startEdgeIndex(startEdgeIndex), currentEdgeIndex(currentEdgeIndex) {}
+        };
 
         // -------------------- Constants -------------------- //
 
@@ -63,10 +76,16 @@ class QuickHull {
                                   PolygonVertexArray::VertexDataType pointDataType, Array<Vector3>& outArray);
 
         /// Add a vertex to the current convex hull to expand it
-        static void addVertexToHull(uint32 vertexIndex, Array<Vector3>& points, HalfEdgeStructure& convexHullHalfEdgeStructure, MemoryAllocator &allocator);
+        static void addVertexToHull(uint32 vertexIndex, uint32 faceIndex, Array<Vector3>& points, HalfEdgeStructure& convexHullHalfEdgeStructure, Map<uint32, Vector3>& mapFaceIndexToNormal, MemoryAllocator &allocator);
+
+        /// Find the horizon (edges) forming the separation between the faces that are visible from the vertex and the faces that are not visible
+        static void findHorizon(const Vector3& vertex, uint32 faceIndex, HalfEdgeStructure& convexHullHalfEdgeStructure,
+                                Map<uint32, Vector3>& mapFaceIndexToNormal, const Array<Vector3>& points,
+                                MemoryAllocator& allocator, Array<const HalfEdgeStructure::Edge &> outHorizonEdges);
 
         /// Return the index of the next vertex candidate to be added to the hull
-        static uint32 findNextVertexCandidate(Map<uint32, Array<uint32>>& mapFaceIndexToRemainingClosestPoints, Map<uint32, Vector3>& mapFaceIndexToNormal, HalfEdgeStructure &convexHullHalfEdgeStructure, Array<Vector3> &points);
+        static void findNextVertexCandidate(Map<uint32, Array<uint32>>& mapFaceIndexToRemainingClosestPoints, Map<uint32, Vector3>& mapFaceIndexToNormal, HalfEdgeStructure& convexHullHalfEdgeStructure,
+                                              Array<Vector3>& points, uint32& outNextVertexIndex, uint32& outNextFaceIndex);
 
         /// Find the closest face for a given vertex and add this vertex to the remaining closest points for this face
         static void findClosestFaceForVertex(uint32 vertexIndex, Array<uint32>& facesIndices, Array<Vector3>& points,
