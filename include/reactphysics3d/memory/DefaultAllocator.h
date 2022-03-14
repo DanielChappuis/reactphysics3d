@@ -28,15 +28,19 @@
 
 // Libraries
 #include <reactphysics3d/memory/MemoryAllocator.h>
+#include <reactphysics3d/configuration.h>
 #include <cstdlib>
 #include <iostream>
+#include <stdlib.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Class DefaultAllocator
 /**
- * This class represents a default memory allocator that uses default malloc/free methods
+ * This class represents a default memory allocator that uses standard C++ functions
+ * to allocated 16-bytes aligned memory.
+ *
  */
 class DefaultAllocator : public MemoryAllocator {
 
@@ -49,15 +53,33 @@ class DefaultAllocator : public MemoryAllocator {
         DefaultAllocator& operator=(DefaultAllocator& allocator) = default;
 
         /// Allocate memory of a given size (in bytes) and return a pointer to the
-        /// allocated memory.
+        /// allocated memory. The returned allocated memory must be 16 bytes aligned.
         virtual void* allocate(size_t size) override {
 
-            return std::malloc(size);
+// If compiler is Visual Studio
+#ifdef _MSC_VER
+
+                // Visual Studio doesn't not support standard std:aligned_alloc() method from c++ 17
+                return _alligned_malloc(size, GLOBAL_ALIGNMENT);
+#else
+
+                // Return 16-bytes aligned memory
+                return std::aligned_alloc(GLOBAL_ALIGNMENT, size);
+#endif
         }
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t /*size*/) override {
-            std::free(pointer);
+
+            // If compiler is Visual Studio
+#ifdef _MSC_VER
+
+                // Visual Studio doesn't not support standard std:aligned_alloc() method from c++ 17
+                return _aligned_free(GLOBAL_ALIGNMENT, pointer);
+#else
+
+                return std::free(pointer);
+#endif
         }
 };
 

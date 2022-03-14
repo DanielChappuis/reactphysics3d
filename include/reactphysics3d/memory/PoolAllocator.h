@@ -81,13 +81,16 @@ class PoolAllocator : public MemoryAllocator {
         /// Number of heaps
         static const int NB_HEAPS = 128;
 
+        /// Minimum unit size
+        static const size_t MIN_UNIT_SIZE = 16;
+
         /// Maximum memory unit size. An allocation request of a size smaller or equal to
         /// this size will be handled using the small block allocator. However, for an
         /// allocation request larger than the maximum block size, the standard malloc()
         /// will be used.
-        static const size_t MAX_UNIT_SIZE = 1024;
+        static const size_t MAX_UNIT_SIZE = NB_HEAPS * MIN_UNIT_SIZE;
 
-        /// Size a memory chunk
+        /// Size of a memory chunk
         static const size_t BLOCK_SIZE = 16 * MAX_UNIT_SIZE;
 
         // -------------------- Attributes -------------------- //

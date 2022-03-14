@@ -1,5 +1,5 @@
 # Minimum cmake version required
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 
 # Project configuration
 project(ReactPhysics3D VERSION 0.9.0 LANGUAGES CXX)
@@ -242,7 +242,7 @@ add_library(reactphysics3d ${REACTPHYSICS3D_HEADERS} ${REACTPHYSICS3D_SOURCES})
 add_library(ReactPhysics3D::reactphysics3d ALIAS reactphysics3d)
 
 # C++11 compiler features
-target_compile_features(reactphysics3d PUBLIC cxx_std_11)
+target_compile_features(reactphysics3d PUBLIC cxx_std_17)
 set_target_properties(reactphysics3d PROPERTIES CXX_EXTENSIONS OFF)
 
 # Library headers

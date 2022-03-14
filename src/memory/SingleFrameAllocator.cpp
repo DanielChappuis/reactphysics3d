@@ -34,7 +34,7 @@ using namespace reactphysics3d;
 // Constructor
 SingleFrameAllocator::SingleFrameAllocator(MemoryAllocator& baseAllocator) : mBaseAllocator(baseAllocator),
                                            mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES),
-                                           mCurrentOffset(0), mNbFramesTooMuchAllocated(0), mNeedToAllocatedMore(false) {
+                                           mCurrentOffset(0) {
 
     // Allocate a whole block of memory at the beginning
     mMemoryBufferStart = static_cast<char*>(mBaseAllocator.allocate(mTotalSizeBytes));
@@ -48,47 +48,71 @@ SingleFrameAllocator::~SingleFrameAllocator() {
     mBaseAllocator.release(mMemoryBufferStart, mTotalSizeBytes);
 }
 
-
 // Allocate memory of a given size (in bytes) and return a pointer to the
-// allocated memory.
+// allocated memory. Allocated memory must be 16-bytes aligned.
 void* SingleFrameAllocator::allocate(size_t size) {
 
     // Lock the method with a mutex
     std::lock_guard<std::mutex> lock(mMutex);
 
+    // Allocate a little bit more memory to make sure we can return an aligned address
+    const size_t totalSize = size + GLOBAL_ALIGNMENT;
+
     // Check that there is enough remaining memory in the buffer
-    if (mCurrentOffset + size > mTotalSizeBytes) {
+    if (mCurrentOffset + totalSize > mTotalSizeBytes) {
 
-        // We need to allocate more memory next time reset() is called
-        mNeedToAllocatedMore = true;
+        const size_t previousTotalSizeBytes = mTotalSizeBytes;
 
-        // Return default memory allocation
-        return mBaseAllocator.allocate(size);
+        // Multiply the total memory to allocate by two
+        mTotalSizeBytes *= 2;
+
+        // Allocate a whole block of memory
+        void* allocatedMemory = mBaseAllocator.allocate(mTotalSizeBytes);
+        assert(allocatedMemory != nullptr);
+
+        // Check that allocated memory is 16-bytes aligned
+        assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
+
+        char* newMemoryBufferStart = static_cast<char*>(allocatedMemory);
+
+        // Copy the previous memory bloc to new new location
+        memcpy(newMemoryBufferStart, mMemoryBufferStart, previousTotalSizeBytes);
+
+        // Release the memory allocated at the beginning
+        mBaseAllocator.release(mMemoryBufferStart, previousTotalSizeBytes);
+
+        mMemoryBufferStart = newMemoryBufferStart;
     }
 
     // Next available memory location
     void* nextAvailableMemory = mMemoryBufferStart + mCurrentOffset;
 
+    // Take care of alignment to make sure that we always return an address to the
+    // enforce the global alignment of the library
+    uintptr_t currentAdress = reinterpret_cast<uintptr_t>(nextAvailableMemory);
+
+    // Calculate the adjustment by masking off the lower bits of the address, to determine how "misaligned" it is.
+    size_t mask = GLOBAL_ALIGNMENT - 1;
+    uintptr_t misalignment = currentAdress & mask;
+    ptrdiff_t alignmentOffset = GLOBAL_ALIGNMENT - misalignment;
+
+    // Compute the aligned address
+    uintptr_t alignedAdress = currentAdress + alignmentOffset;
+    nextAvailableMemory = reinterpret_cast<void*>(alignedAdress);
+
     // Increment the offset
-    mCurrentOffset += size;
+    mCurrentOffset += totalSize;
+
+    // Check that allocated memory is 16-bytes aligned
+    assert(reinterpret_cast<uintptr_t>(nextAvailableMemory) % GLOBAL_ALIGNMENT == 0);
 
     // Return the next available memory location
     return nextAvailableMemory;
 }
 
 // Release previously allocated memory.
-void SingleFrameAllocator::release(void* pointer, size_t size) {
+void SingleFrameAllocator::release(void* /*pointer*/, size_t /*size*/) {
 
-    // Lock the method with a mutex
-    std::lock_guard<std::mutex> lock(mMutex);
-
-    // If allocated memory is not within the single frame allocation range
-    char* p = static_cast<char*>(pointer);
-    if (p < mMemoryBufferStart || p > mMemoryBufferStart + mTotalSizeBytes) {
-
-        // Use default deallocation
-        mBaseAllocator.release(pointer, size);
-    }
 }
 
 // Reset the marker of the current allocated memory
@@ -96,48 +120,6 @@ void SingleFrameAllocator::reset() {
 
     // Lock the method with a mutex
     std::lock_guard<std::mutex> lock(mMutex);
-
-    // If too much memory is allocated
-    if (mCurrentOffset < mTotalSizeBytes / 2) {
-
-        mNbFramesTooMuchAllocated++;
-
-        if (mNbFramesTooMuchAllocated > NB_FRAMES_UNTIL_SHRINK) {
-
-            // Release the memory allocated at the beginning
-            mBaseAllocator.release(mMemoryBufferStart, mTotalSizeBytes);
-
-            // Divide the total memory to allocate by two
-            mTotalSizeBytes /= 2;
-            if (mTotalSizeBytes == 0) mTotalSizeBytes = 1;
-
-            // Allocate a whole block of memory at the beginning
-            mMemoryBufferStart = static_cast<char*>(mBaseAllocator.allocate(mTotalSizeBytes));
-            assert(mMemoryBufferStart != nullptr);
-
-            mNbFramesTooMuchAllocated = 0;
-        }
-    }
-    else {
-        mNbFramesTooMuchAllocated = 0;
-    }
-
-    // If we need to allocate more memory
-    if (mNeedToAllocatedMore) {
-
-        // Release the memory allocated at the beginning
-        mBaseAllocator.release(mMemoryBufferStart, mTotalSizeBytes);
-
-        // Multiply the total memory to allocate by two
-        mTotalSizeBytes *= 2;
-
-        // Allocate a whole block of memory at the beginning
-        mMemoryBufferStart = static_cast<char*>(mBaseAllocator.allocate(mTotalSizeBytes));
-        assert(mMemoryBufferStart != nullptr);
-
-        mNeedToAllocatedMore = false;
-        mNbFramesTooMuchAllocated = 0;
-    }
 
     // Reset the current offset at the beginning of the block
     mCurrentOffset = 0;

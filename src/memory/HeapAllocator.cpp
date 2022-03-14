@@ -175,7 +175,12 @@ void* HeapAllocator::allocate(size_t size) {
     }
 
     // Return a pointer to the memory area inside the unit
-    return static_cast<void*>(reinterpret_cast<unsigned char*>(currentUnit) + sizeof(MemoryUnitHeader));
+    void* allocatedMemory = static_cast<void*>(reinterpret_cast<unsigned char*>(currentUnit) + sizeof(MemoryUnitHeader));
+
+    // Check that allocated memory is 16-bytes aligned
+    assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
+
+    return allocatedMemory;
 }
 
 // Release previously allocated memory.
@@ -250,6 +255,9 @@ void HeapAllocator::reserve(size_t sizeToAllocate) {
     // Allocate memory
     void* memory = mBaseAllocator.allocate(sizeToAllocate + sizeof(MemoryUnitHeader));
     assert(memory != nullptr);
+
+    // Check that allocated memory is 16-bytes aligned
+    assert(reinterpret_cast<uintptr_t>(memory) % GLOBAL_ALIGNMENT == 0);
 
     // Create a new memory unit for the allocated memory
     MemoryUnitHeader* memoryUnit = new (memory) MemoryUnitHeader(sizeToAllocate, nullptr, mMemoryUnits, false);

@@ -50,7 +50,7 @@ class MemoryAllocator {
         MemoryAllocator& operator=(MemoryAllocator& allocator) = default;
 
         /// Allocate memory of a given size (in bytes) and return a pointer to the
-        /// allocated memory.
+        /// allocated memory. The return allocated memory must be 16 bytes aligned.
         virtual void* allocate(size_t size)=0;
 
         /// Release previously allocated memory.

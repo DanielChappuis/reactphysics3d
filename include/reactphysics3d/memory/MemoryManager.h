@@ -104,14 +104,18 @@ class MemoryManager {
 // Allocate memory of a given type
 RP3D_FORCE_INLINE void* MemoryManager::allocate(AllocationType allocationType, size_t size) {
 
+    void* allocatedMemory = nullptr;
+
     switch (allocationType) {
-       case AllocationType::Base: return mBaseAllocator->allocate(size);
-       case AllocationType::Pool: return mPoolAllocator.allocate(size);
-       case AllocationType::Heap: return mHeapAllocator.allocate(size);
-       case AllocationType::Frame: return mSingleFrameAllocator.allocate(size);
+       case AllocationType::Base: allocatedMemory = mBaseAllocator->allocate(size); break;
+       case AllocationType::Pool: allocatedMemory =  mPoolAllocator.allocate(size); break;
+       case AllocationType::Heap: allocatedMemory =  mHeapAllocator.allocate(size); break;
+       case AllocationType::Frame: allocatedMemory =  mSingleFrameAllocator.allocate(size); break;
     }
 
-    return nullptr;
+    assert(allocatedMemory == nullptr || reinterpret_cast<uintptr_t>(allocatedMemory) % 16 == 0);
+
+    return allocatedMemory;
 }
 
 // Release previously allocated memory.
