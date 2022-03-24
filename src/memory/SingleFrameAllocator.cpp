@@ -34,11 +34,17 @@ using namespace reactphysics3d;
 // Constructor
 SingleFrameAllocator::SingleFrameAllocator(MemoryAllocator& baseAllocator) : mBaseAllocator(baseAllocator),
                                            mTotalSizeBytes(INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES),
-                                           mCurrentOffset(0) {
+                                           mCurrentOffset(0), mNeedToAllocatedMore(false) {
 
     // Allocate a whole block of memory at the beginning
-    mMemoryBufferStart = static_cast<char*>(mBaseAllocator.allocate(mTotalSizeBytes));
-    assert(mMemoryBufferStart != nullptr);
+    void* allocatedMemory = mBaseAllocator.allocate(mTotalSizeBytes);
+
+    assert(allocatedMemory != nullptr);
+
+    // Check that allocated memory is 16-bytes aligned
+    assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
+
+    mMemoryBufferStart = static_cast<char*>(allocatedMemory);
 }
 
 // Destructor
@@ -61,27 +67,11 @@ void* SingleFrameAllocator::allocate(size_t size) {
     // Check that there is enough remaining memory in the buffer
     if (mCurrentOffset + totalSize > mTotalSizeBytes) {
 
-        const size_t previousTotalSizeBytes = mTotalSizeBytes;
+        // We need to allocate more memory next time reset() is called
+       mNeedToAllocatedMore = true;
 
-        // Multiply the total memory to allocate by two
-        mTotalSizeBytes *= 2;
-
-        // Allocate a whole block of memory
-        void* allocatedMemory = mBaseAllocator.allocate(mTotalSizeBytes);
-        assert(allocatedMemory != nullptr);
-
-        // Check that allocated memory is 16-bytes aligned
-        assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
-
-        char* newMemoryBufferStart = static_cast<char*>(allocatedMemory);
-
-        // Copy the previous memory bloc to new new location
-        memcpy(newMemoryBufferStart, mMemoryBufferStart, previousTotalSizeBytes);
-
-        // Release the memory allocated at the beginning
-        mBaseAllocator.release(mMemoryBufferStart, previousTotalSizeBytes);
-
-        mMemoryBufferStart = newMemoryBufferStart;
+       // Return default memory allocation
+       return mBaseAllocator.allocate(size);
     }
 
     // Next available memory location
@@ -92,12 +82,13 @@ void* SingleFrameAllocator::allocate(size_t size) {
     uintptr_t currentAdress = reinterpret_cast<uintptr_t>(nextAvailableMemory);
 
     // Calculate the adjustment by masking off the lower bits of the address, to determine how "misaligned" it is.
-    size_t mask = GLOBAL_ALIGNMENT - 1;
-    uintptr_t misalignment = currentAdress & mask;
-    ptrdiff_t alignmentOffset = GLOBAL_ALIGNMENT - misalignment;
+    const size_t mask = GLOBAL_ALIGNMENT - 1;
+    const uintptr_t misalignment = currentAdress & mask;
+    const ptrdiff_t alignmentOffset = GLOBAL_ALIGNMENT - misalignment;
+    assert(alignmentOffset <= GLOBAL_ALIGNMENT);
 
     // Compute the aligned address
-    uintptr_t alignedAdress = currentAdress + alignmentOffset;
+    const uintptr_t alignedAdress = currentAdress + alignmentOffset;
     nextAvailableMemory = reinterpret_cast<void*>(alignedAdress);
 
     // Increment the offset
@@ -111,8 +102,18 @@ void* SingleFrameAllocator::allocate(size_t size) {
 }
 
 // Release previously allocated memory.
-void SingleFrameAllocator::release(void* /*pointer*/, size_t /*size*/) {
+void SingleFrameAllocator::release(void* pointer, size_t size) {
 
+    // Lock the method with a mutex
+    std::lock_guard<std::mutex> lock(mMutex);
+
+    // If allocated memory is not within the single frame allocation range
+    char* p = static_cast<char*>(pointer);
+    if (p < mMemoryBufferStart || p > mMemoryBufferStart + mTotalSizeBytes) {
+
+        // Use default deallocation
+        mBaseAllocator.release(pointer, size);
+    }
 }
 
 // Reset the marker of the current allocated memory
@@ -120,6 +121,22 @@ void SingleFrameAllocator::reset() {
 
     // Lock the method with a mutex
     std::lock_guard<std::mutex> lock(mMutex);
+
+    // If we need to allocate more memory
+    if (mNeedToAllocatedMore) {
+
+        // Release the memory allocated at the beginning
+        mBaseAllocator.release(mMemoryBufferStart, mTotalSizeBytes);
+
+        // Multiply the total memory to allocate by two
+        mTotalSizeBytes *= 2;
+
+        // Allocate a whole block of memory at the beginning
+        mMemoryBufferStart = static_cast<char*>(mBaseAllocator.allocate(mTotalSizeBytes));
+        assert(mMemoryBufferStart != nullptr);
+
+        mNeedToAllocatedMore = false;
+    }
 
     // Reset the current offset at the beginning of the block
     mCurrentOffset = 0;

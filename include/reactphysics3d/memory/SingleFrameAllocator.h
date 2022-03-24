@@ -65,6 +65,9 @@ class SingleFrameAllocator : public MemoryAllocator {
         /// Pointer to the next available memory location in the buffer
         size_t mCurrentOffset;
 
+        /// True if we need to allocate more memory in the next reset() call
+        bool mNeedToAllocatedMore;
+
     public :
 
         // -------------------- Methods -------------------- //

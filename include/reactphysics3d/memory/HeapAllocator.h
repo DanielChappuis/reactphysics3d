@@ -57,26 +57,33 @@ class HeapAllocator : public MemoryAllocator {
 
                 // -------------------- Attributes -------------------- //
 
-                /// Size in bytes of the allocated memory unit
-                size_t size;
-
-                /// True if the memory unit is currently allocated
-                bool isAllocated;
-
                 /// Pointer to the previous memory unit
                 MemoryUnitHeader* previousUnit;
 
                 /// Pointer to the next memory unit
                 MemoryUnitHeader* nextUnit;
 
+                /// Pointer to the previous free (not allocated) memory unit
+                MemoryUnitHeader* previousFreeUnit;
+
+                /// Pointer to the next free (not allocated) memory unit
+                MemoryUnitHeader* nextFreeUnit;
+
+                /// Size in bytes of the allocated memory unit
+                size_t size;
+
                 /// True if the next memory unit has been allocated with the same call to malloc()
                 bool isNextContiguousMemory;
 
+                /// True if the memory unit is currently allocated
+                bool isAllocated = false;
+
                 // -------------------- Methods -------------------- //
 
-                MemoryUnitHeader(size_t size, MemoryUnitHeader* previousUnit, MemoryUnitHeader* nextUnit, bool isNextContiguousMemory)
-                    : size(size), isAllocated(false), previousUnit(previousUnit),
-                      nextUnit(nextUnit), isNextContiguousMemory(isNextContiguousMemory) {
+                MemoryUnitHeader(size_t size, MemoryUnitHeader* previousUnit, MemoryUnitHeader* nextUnit,
+                                MemoryUnitHeader* previousFreeUnit,  MemoryUnitHeader* nextFreeUnit, bool isNextContiguousMemory)
+                    : previousUnit(previousUnit), nextUnit(nextUnit), previousFreeUnit(previousFreeUnit), nextFreeUnit(nextFreeUnit), size(size),
+                      isNextContiguousMemory(isNextContiguousMemory) {
 
                     assert(size > 0);
                 }
@@ -101,8 +108,8 @@ class HeapAllocator : public MemoryAllocator {
         /// Pointer to the first memory unit of the linked-list
         MemoryUnitHeader* mMemoryUnits;
 
-        /// Pointer to a cached free memory unit
-        MemoryUnitHeader* mCachedFreeUnit;
+        /// Pointer to the first item of the linked-list of free units
+        MemoryUnitHeader* mFreeUnits;
 
 #ifndef NDEBUG
         /// This variable is incremented by one when the allocate() method has been
@@ -118,11 +125,20 @@ class HeapAllocator : public MemoryAllocator {
         /// left over space. The second unit is put into the free memory units
         void splitMemoryUnit(MemoryUnitHeader* unit, size_t size);
 
-        // Merge two contiguous memory units that are not allocated.
+        /// Add the unit from the linked-list of free units
+        void addToFreeUnits(MemoryUnitHeader* unit);
+
+        /// Remove the unit from the linked-list of free units
+        void removeFromFreeUnits(MemoryUnitHeader* unit);
+
+        /// Merge two contiguous memory units that are not allocated.
         void mergeUnits(MemoryUnitHeader* unit1, MemoryUnitHeader* unit2);
 
         /// Reserve more memory for the allocator
         void reserve(size_t sizeToAllocate);
+
+        /// Return the next aligned memory address
+        void* computeAlignedAddress(void* unalignedAddress);
 
     public :
 

@@ -36,7 +36,7 @@ size_t HeapAllocator::INIT_ALLOCATED_SIZE = 5 * 1048576;    // 5 Mb
 
 // Constructor
 HeapAllocator::HeapAllocator(MemoryAllocator& baseAllocator, size_t initAllocatedMemory)
-              : mBaseAllocator(baseAllocator), mAllocatedMemory(0), mMemoryUnits(nullptr), mCachedFreeUnit(nullptr) {
+              : mBaseAllocator(baseAllocator), mAllocatedMemory(0), mMemoryUnits(nullptr), mFreeUnits(nullptr) {
 
 #ifndef NDEBUG
         mNbTimesAllocateMethodCalled = 0;
@@ -55,12 +55,12 @@ HeapAllocator::~HeapAllocator() {
 #endif
 
     // Release the memory allocated for memory unit
-    MemoryUnitHeader* unit = mMemoryUnits;
+    MemoryUnitHeader* unit = mFreeUnits;
     while (unit != nullptr) {
 
         assert(!unit->isAllocated);
 
-        MemoryUnitHeader* nextUnit = unit->nextUnit;
+        MemoryUnitHeader* nextUnit = unit->nextFreeUnit;
 
         const size_t unitSize = unit->size;
 
@@ -76,23 +76,24 @@ HeapAllocator::~HeapAllocator() {
 /// left over space. The second unit is put into the free memory units
 void HeapAllocator::splitMemoryUnit(MemoryUnitHeader* unit, size_t size) {
 
-    assert(size <= unit->size);
     assert(!unit->isAllocated);
 
-    // Split the free memory unit in two memory units, one with the requested memory size
-    // and a second one with the left over space
+    // If the size of the unit is large enough to be slit
     if (size + sizeof(MemoryUnitHeader) < unit->size) {
-
-        assert(unit->size - size > 0);
 
         // Create a new memory unit with left over space
         unsigned char* newUnitLocation = (reinterpret_cast<unsigned char*>(unit)) + sizeof(MemoryUnitHeader) + size;
-        MemoryUnitHeader* newUnit = new (static_cast<void*>(newUnitLocation)) MemoryUnitHeader(unit->size - sizeof(MemoryUnitHeader) - size, unit, unit->nextUnit, unit->isNextContiguousMemory);
+        MemoryUnitHeader* newUnit = new (static_cast<void*>(newUnitLocation)) MemoryUnitHeader(unit->size - sizeof(MemoryUnitHeader) - size, unit, unit->nextUnit, unit, unit->nextFreeUnit, unit->isNextContiguousMemory);
         assert(newUnit->nextUnit != newUnit);
         unit->nextUnit = newUnit;
+        unit->nextFreeUnit = newUnit;
         if (newUnit->nextUnit != nullptr) {
             newUnit->nextUnit->previousUnit = newUnit;
         }
+        if (newUnit->nextFreeUnit != nullptr) {
+            newUnit->nextFreeUnit->previousFreeUnit = newUnit;
+        }
+
         assert(unit->nextUnit != unit);
         unit->isNextContiguousMemory = true;
         unit->size = size;
@@ -100,9 +101,19 @@ void HeapAllocator::splitMemoryUnit(MemoryUnitHeader* unit, size_t size) {
        assert(unit->previousUnit == nullptr || unit->previousUnit->nextUnit == unit);
        assert(unit->nextUnit == nullptr || unit->nextUnit->previousUnit == unit);
 
+       assert(unit->previousFreeUnit == nullptr || unit->previousFreeUnit->nextFreeUnit == unit);
+       assert(unit->nextFreeUnit == nullptr || unit->nextFreeUnit->previousFreeUnit == unit);
+
        assert(newUnit->previousUnit == nullptr || newUnit->previousUnit->nextUnit == newUnit);
        assert(newUnit->nextUnit == nullptr || newUnit->nextUnit->previousUnit == newUnit);
-    }
+
+       assert(newUnit->previousFreeUnit->nextFreeUnit == newUnit);
+       assert(newUnit->nextFreeUnit == nullptr || newUnit->nextFreeUnit->previousFreeUnit == newUnit);
+
+       assert(unit->nextFreeUnit == newUnit);
+       assert(newUnit->previousFreeUnit == unit);
+       assert(!newUnit->isAllocated);
+   }
 }
 
 // Allocate memory of a given size (in bytes) and return a pointer to the
@@ -117,70 +128,90 @@ void* HeapAllocator::allocate(size_t size) {
     // We cannot allocate zero bytes
     if (size == 0) return nullptr;
 
+    // Allocate a little bit more memory to make sure we can return an aligned address
+    const size_t totalSize = size + GLOBAL_ALIGNMENT;
+
 #ifndef NDEBUG
         mNbTimesAllocateMethodCalled++;
 #endif
 
-    MemoryUnitHeader* currentUnit = mMemoryUnits;
-    assert(mMemoryUnits->previousUnit == nullptr);
+    MemoryUnitHeader* currentUnit = mFreeUnits;
 
-    // If there is a cached free memory unit
-    if (mCachedFreeUnit != nullptr) {
-        assert(!mCachedFreeUnit->isAllocated);
-
-        // If the cached free memory unit matches the request
-        if (size <= mCachedFreeUnit->size) {
-            currentUnit = mCachedFreeUnit;
-            mCachedFreeUnit = nullptr;
-        }
-    }
-
-    // For each memory unit
+    // For each free memory unit
     while (currentUnit != nullptr) {
 
-        // If we have found a free memory unit with size large enough for the allocation request
-        if (!currentUnit->isAllocated && size <= currentUnit->size) {
+        assert(!currentUnit->isAllocated);
 
-            // Split the free memory unit in two memory units, one with the requested memory size
-            // and a second one with the left over space
-            splitMemoryUnit(currentUnit, size);
+        // If we have found a free memory unit with size large enough for the allocation request
+        if (totalSize <= currentUnit->size) {
 
             break;
         }
 
-        currentUnit = currentUnit->nextUnit;
+        assert(currentUnit->nextFreeUnit == nullptr || currentUnit->nextFreeUnit->previousFreeUnit == currentUnit);
+
+        currentUnit = currentUnit->nextFreeUnit;
     }
 
-    // If we have not found a large enough memory unit we need to allocate more memory
+    // If we have not found a large enough free memory unit
     if (currentUnit == nullptr) {
 
-        reserve((mAllocatedMemory + size) * 2);
+        // We need to allocate more memory
+        reserve((mAllocatedMemory + totalSize) * 2);
 
-        assert(mCachedFreeUnit != nullptr);
-        assert(!mCachedFreeUnit->isAllocated);
+        assert(mFreeUnits != nullptr);
 
         // The cached free memory unit is large enough at this point
-        currentUnit = mCachedFreeUnit;
-
-        assert(currentUnit->size >= size);
-
-        splitMemoryUnit(currentUnit, size);
+        currentUnit = mFreeUnits;
     }
+
+    // Split the free memory unit in two memory units, one with the requested memory size
+    // and a second one with the left over space
+    splitMemoryUnit(currentUnit, totalSize);
+
+    assert(currentUnit->size >= totalSize);
+    assert(!currentUnit->isAllocated);
 
     currentUnit->isAllocated = true;
 
-    // Cache the next memory unit if it is not allocated
-    if (currentUnit->nextUnit != nullptr && !currentUnit->nextUnit->isAllocated) {
-        mCachedFreeUnit = currentUnit->nextUnit;
-    }
+    removeFromFreeUnits(currentUnit);
 
     // Return a pointer to the memory area inside the unit
     void* allocatedMemory = static_cast<void*>(reinterpret_cast<unsigned char*>(currentUnit) + sizeof(MemoryUnitHeader));
+
+    // Offset the allocated address such that it is properly aligned
+    allocatedMemory = computeAlignedAddress(allocatedMemory);
 
     // Check that allocated memory is 16-bytes aligned
     assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
 
     return allocatedMemory;
+}
+
+// Return the next aligned memory address
+void* HeapAllocator::computeAlignedAddress(void* unalignedAddress) {
+
+    // Take care of alignment to make sure that we always return an address to the
+    // enforce the global alignment of the library
+
+    const uintptr_t currentAdress = reinterpret_cast<uintptr_t>(unalignedAddress);
+
+    // Calculate the adjustment by masking off the lower bits of the address, to determine how "misaligned" it is.
+    size_t mask = GLOBAL_ALIGNMENT - 1;
+    uintptr_t misalignment = currentAdress & mask;
+    ptrdiff_t alignmentOffset = GLOBAL_ALIGNMENT - misalignment;
+
+    // Compute the aligned address
+    uintptr_t alignedAddress = currentAdress + alignmentOffset;
+
+    // Store the adjustment in the byte immediately preceding the adjusted address.
+    // This way we can find again the original allocated memory address returned by malloc
+    // when this memory unit is released.
+    assert(alignmentOffset < 256);
+    uint8* pAlignedMemory = reinterpret_cast<uint8*>(alignedAddress);
+    pAlignedMemory[-1] = static_cast<uint8>(alignmentOffset);
+
+    return reinterpret_cast<void*>(alignedAddress);
 }
 
 // Release previously allocated memory.
@@ -198,15 +229,27 @@ void HeapAllocator::release(void* pointer, size_t size) {
         mNbTimesAllocateMethodCalled--;
 #endif
 
-    unsigned char* unitLocation = static_cast<unsigned char*>(pointer) - sizeof(MemoryUnitHeader);
+    // Read the alignment offset in order to compute the initial allocated
+    // raw address (instead of the aligned address)
+    const uint8* pAlignedMemory = reinterpret_cast<const uint8*>(pointer);
+    const uintptr_t alignedAddress = reinterpret_cast<uintptr_t>(pAlignedMemory);
+    const ptrdiff_t alignmentOffset = static_cast<ptrdiff_t>(pAlignedMemory[-1]);
+    const uintptr_t initialAddress = alignedAddress - alignmentOffset;
+    void* pInitialAddress = reinterpret_cast<void*>(initialAddress);
+
+    unsigned char* unitLocation = static_cast<unsigned char*>(pInitialAddress) - sizeof(MemoryUnitHeader);
     MemoryUnitHeader* unit = reinterpret_cast<MemoryUnitHeader*>(unitLocation);
     assert(unit->isAllocated);
+    assert(unit->nextFreeUnit == nullptr);
+    assert(unit->previousFreeUnit == nullptr);
     unit->isAllocated = false;
 
     MemoryUnitHeader* currentUnit = unit;
 
     // If the previous unit is not allocated and memory is contiguous to the current unit
     if (unit->previousUnit != nullptr && !unit->previousUnit->isAllocated && unit->previousUnit->isNextContiguousMemory) {
+
+        removeFromFreeUnits(unit->previousUnit);
 
         currentUnit = unit->previousUnit;
 
@@ -217,11 +260,40 @@ void HeapAllocator::release(void* pointer, size_t size) {
     // If the next unit is not allocated and memory is contiguous to the current unit
     if (currentUnit->nextUnit != nullptr && !currentUnit->nextUnit->isAllocated && currentUnit->isNextContiguousMemory) {
 
+        removeFromFreeUnits(unit->nextUnit);
+
         // Merge the two contiguous memory units
         mergeUnits(currentUnit, currentUnit->nextUnit);
     }
 
-    mCachedFreeUnit = currentUnit;
+    addToFreeUnits(currentUnit);
+}
+
+// Add the unit from the linked-list of free units
+void HeapAllocator::addToFreeUnits(MemoryUnitHeader* unit) {
+
+    if (mFreeUnits != nullptr) {
+        assert(mFreeUnits->previousFreeUnit == nullptr);
+        mFreeUnits->previousFreeUnit = unit;
+    }
+    unit->nextFreeUnit = mFreeUnits;
+    mFreeUnits = unit;
+}
+
+// Remove the unit from the linked-list of free units
+void HeapAllocator::removeFromFreeUnits(MemoryUnitHeader* unit) {
+
+    if (unit->previousFreeUnit != nullptr) {
+        unit->previousFreeUnit->nextFreeUnit = unit->nextFreeUnit;
+    }
+    if (unit->nextFreeUnit != nullptr) {
+        unit->nextFreeUnit->previousFreeUnit = unit->previousFreeUnit;
+    }
+    if (unit == mFreeUnits) {
+        mFreeUnits = unit->nextFreeUnit;
+    }
+    unit->nextFreeUnit = nullptr;
+    unit->previousFreeUnit = nullptr;
 }
 
 // Merge two contiguous memory units that are not allocated.
@@ -260,7 +332,13 @@ void HeapAllocator::reserve(size_t sizeToAllocate) {
     assert(reinterpret_cast<uintptr_t>(memory) % GLOBAL_ALIGNMENT == 0);
 
     // Create a new memory unit for the allocated memory
-    MemoryUnitHeader* memoryUnit = new (memory) MemoryUnitHeader(sizeToAllocate, nullptr, mMemoryUnits, false);
+    MemoryUnitHeader* memoryUnit = new (memory) MemoryUnitHeader(sizeToAllocate, nullptr, mMemoryUnits, nullptr, mFreeUnits, false);
+
+    if (mFreeUnits != nullptr) {
+
+        assert(mFreeUnits->previousFreeUnit == nullptr);
+        mFreeUnits->previousFreeUnit = memoryUnit;
+    }
 
     if (mMemoryUnits != nullptr) {
         mMemoryUnits->previousUnit = memoryUnit;
@@ -268,8 +346,7 @@ void HeapAllocator::reserve(size_t sizeToAllocate) {
 
     // Add the memory unit at the beginning of the linked-list of memory units
     mMemoryUnits = memoryUnit;
-
-    mCachedFreeUnit = mMemoryUnits;
+    mFreeUnits = mMemoryUnits;
 
     mAllocatedMemory += sizeToAllocate;
 }
