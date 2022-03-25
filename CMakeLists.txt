@@ -229,6 +229,7 @@ set (REACTPHYSICS3D_SOURCES
     "src/memory/SingleFrameAllocator.cpp"
     "src/memory/HeapAllocator.cpp"
     "src/memory/MemoryManager.cpp"
+    "src/memory/MemoryAllocator.cpp"
     "src/utils/Profiler.cpp"
     "src/utils/DefaultLogger.cpp"
     "src/utils/DebugRenderer.cpp"

@@ -28,6 +28,7 @@
 
 // Libraries
 #include <cstring>
+#include <reactphysics3d/configuration.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -55,6 +56,14 @@ class MemoryAllocator {
 
         /// Release previously allocated memory.
         virtual void release(void* pointer, size_t size)=0;
+
+        /// Given a pointer to memory, this method returns the next aligned address
+        // TODO : We need to use uint8 type instead of uint8_t here
+        static void* alignAddress(void* pointer, std::uint8_t alignment);
+
+        /// Given a pointer to memory, this method returns the next aligned address and also output the alignment offset
+        // TODO : We need to use uint8 type instead of uint8_t here
+        static void* alignAddress(void* pointer, std::uint8_t alignment, ptrdiff_t& alignmentOffset);
 };
 
 }

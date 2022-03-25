@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 
 // Constructor
 TransformComponents::TransformComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(Transform)) {
+                    :Components(allocator, sizeof(Entity) + sizeof(Transform) + 2 * GLOBAL_ALIGNMENT) {
 
     // Allocate memory for the components data
     allocate(INIT_NB_ALLOCATED_COMPONENTS);
@@ -55,7 +55,9 @@ void TransformComponents::allocate(uint32 nbComponentsToAllocate) {
 
     // New pointers to components data
     Entity* newEntities = static_cast<Entity*>(newBuffer);
+    //assert(reinterpret_cast<uintptr_t>(newEntities) % GLOBAL_ALIGNMENT == 0);
     Transform* newTransforms = reinterpret_cast<Transform*>(newEntities + nbComponentsToAllocate);
+    //assert(reinterpret_cast<uintptr_t>(newTransforms) % GLOBAL_ALIGNMENT == 0);
 
     // If there was already components before
     if (mNbComponents > 0) {

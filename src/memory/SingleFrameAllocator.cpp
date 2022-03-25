@@ -77,19 +77,8 @@ void* SingleFrameAllocator::allocate(size_t size) {
     // Next available memory location
     void* nextAvailableMemory = mMemoryBufferStart + mCurrentOffset;
 
-    // Take care of alignment to make sure that we always return an address to the
-    // enforce the global alignment of the library
-    uintptr_t currentAdress = reinterpret_cast<uintptr_t>(nextAvailableMemory);
-
-    // Calculate the adjustment by masking off the lower bits of the address, to determine how "misaligned" it is.
-    const size_t mask = GLOBAL_ALIGNMENT - 1;
-    const uintptr_t misalignment = currentAdress & mask;
-    const ptrdiff_t alignmentOffset = GLOBAL_ALIGNMENT - misalignment;
-    assert(alignmentOffset <= GLOBAL_ALIGNMENT);
-
-    // Compute the aligned address
-    const uintptr_t alignedAdress = currentAdress + alignmentOffset;
-    nextAvailableMemory = reinterpret_cast<void*>(alignedAdress);
+    // Compute the next aligned memory address
+    nextAvailableMemory = alignAddress(nextAvailableMemory, GLOBAL_ALIGNMENT);
 
     // Increment the offset
     mCurrentOffset += totalSize;

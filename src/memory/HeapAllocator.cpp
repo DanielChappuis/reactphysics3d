@@ -194,24 +194,20 @@ void* HeapAllocator::computeAlignedAddress(void* unalignedAddress) {
     // Take care of alignment to make sure that we always return an address to the
     // enforce the global alignment of the library
 
-    const uintptr_t currentAdress = reinterpret_cast<uintptr_t>(unalignedAddress);
-
-    // Calculate the adjustment by masking off the lower bits of the address, to determine how "misaligned" it is.
-    size_t mask = GLOBAL_ALIGNMENT - 1;
-    uintptr_t misalignment = currentAdress & mask;
-    ptrdiff_t alignmentOffset = GLOBAL_ALIGNMENT - misalignment;
-
     // Compute the aligned address
-    uintptr_t alignedAddress = currentAdress + alignmentOffset;
+    ptrdiff_t alignmentOffset;
+    void* alignedPointer = alignAddress(unalignedAddress, GLOBAL_ALIGNMENT, alignmentOffset);
+
+    uintptr_t alignedAddress = reinterpret_cast<uintptr_t>(alignedPointer);
 
     // Store the adjustment in the byte immediately preceding the adjusted address.
     // This way we can find again the original allocated memory address returned by malloc
     // when this memory unit is released.
-    assert(alignmentOffset < 256);
+    assert(alignmentOffset <= GLOBAL_ALIGNMENT);
     uint8* pAlignedMemory = reinterpret_cast<uint8*>(alignedAddress);
     pAlignedMemory[-1] = static_cast<uint8>(alignmentOffset);
 
-    return reinterpret_cast<void*>(alignedAddress);
+    return alignedPointer;
 }
 
 // Release previously allocated memory.
