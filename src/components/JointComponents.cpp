@@ -35,10 +35,8 @@ using namespace reactphysics3d;
 JointComponents::JointComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Entity) + sizeof(Joint*) +
                                 sizeof(JointType) + sizeof(JointsPositionCorrectionTechnique) + sizeof(bool) +
-                                sizeof(bool)) {
+                                sizeof(bool), 8 * GLOBAL_ALIGNMENT) {
 
-    // Allocate memory for the components data
-    allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Allocate memory for a given number of components
@@ -47,21 +45,30 @@ void JointComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
     // Size for the data of a single component (in bytes)
-    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize;
+    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize + mAlignmentMarginSize;
 
     // Allocate memory
     void* newBuffer = mMemoryAllocator.allocate(totalSizeBytes);
     assert(newBuffer != nullptr);
+    assert(reinterpret_cast<uintptr_t>(newBuffer) % GLOBAL_ALIGNMENT == 0);
 
     // New pointers to components data
     Entity* newJointsEntities = static_cast<Entity*>(newBuffer);
-    Entity* newBody1Entities = reinterpret_cast<Entity*>(newJointsEntities + nbComponentsToAllocate);
-    Entity* newBody2Entities = reinterpret_cast<Entity*>(newBody1Entities + nbComponentsToAllocate);
-    Joint** newJoints = reinterpret_cast<Joint**>(newBody2Entities + nbComponentsToAllocate);
-    JointType* newTypes = reinterpret_cast<JointType*>(newJoints + nbComponentsToAllocate);
-    JointsPositionCorrectionTechnique* newPositionCorrectionTechniques = reinterpret_cast<JointsPositionCorrectionTechnique*>(newTypes + nbComponentsToAllocate);
-    bool* newIsCollisionEnabled = reinterpret_cast<bool*>(newPositionCorrectionTechniques + nbComponentsToAllocate);
-    bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newIsCollisionEnabled + nbComponentsToAllocate);
+    Entity* newBody1Entities = reinterpret_cast<Entity*>(MemoryAllocator::alignAddress(newJointsEntities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBody1Entities) % GLOBAL_ALIGNMENT == 0);
+    Entity* newBody2Entities = reinterpret_cast<Entity*>(MemoryAllocator::alignAddress(newBody1Entities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBody2Entities) % GLOBAL_ALIGNMENT == 0);
+    Joint** newJoints = reinterpret_cast<Joint**>(MemoryAllocator::alignAddress(newBody2Entities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newJoints) % GLOBAL_ALIGNMENT == 0);
+    JointType* newTypes = reinterpret_cast<JointType*>(MemoryAllocator::alignAddress(newJoints + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newTypes) % GLOBAL_ALIGNMENT == 0);
+    JointsPositionCorrectionTechnique* newPositionCorrectionTechniques = reinterpret_cast<JointsPositionCorrectionTechnique*>(MemoryAllocator::alignAddress(newTypes + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newPositionCorrectionTechniques) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsCollisionEnabled = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newPositionCorrectionTechniques + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsCollisionEnabled) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newIsCollisionEnabled + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsAlreadyInIsland) % GLOBAL_ALIGNMENT == 0);
+    assert(reinterpret_cast<uintptr_t>(newIsAlreadyInIsland + nbComponentsToAllocate) <= reinterpret_cast<uintptr_t>(newBuffer) + totalSizeBytes);
 
     // If there was already components before
     if (mNbComponents > 0) {

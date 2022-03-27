@@ -106,6 +106,16 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, PhysicsCommon& physicsC
 
     mNbWorlds++;
 
+    mTransformComponents.init();
+    mCollidersComponents.init();
+    mCollisionBodyComponents.init();
+    mRigidBodyComponents.init();
+    mJointsComponents.init();
+    mBallAndSocketJointsComponents.init();
+    mFixedJointsComponents.init();
+    mSliderJointsComponents.init();
+    mHingeJointsComponents.init();
+
     RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: Physics world " + mName + " has been created",  __FILE__, __LINE__);
     RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,

@@ -44,10 +44,8 @@ RigidBodyComponents::RigidBodyComponents(MemoryAllocator& allocator)
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Quaternion) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(bool) + sizeof(bool) + sizeof(Array<Entity>) + sizeof(Array<uint>) +
-                                sizeof(Vector3) + sizeof(Vector3)) {
+                                sizeof(Vector3) + sizeof(Vector3), 31 * GLOBAL_ALIGNMENT) {
 
-    // Allocate memory for the components data
-    allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Allocate memory for a given number of components
@@ -56,44 +54,76 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
     // Size for the data of a single component (in bytes)
-    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize;
+    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize + mAlignmentMarginSize;
 
     // Allocate memory
     void* newBuffer = mMemoryAllocator.allocate(totalSizeBytes);
     assert(newBuffer != nullptr);
+    assert(reinterpret_cast<uintptr_t>(newBuffer) % GLOBAL_ALIGNMENT == 0);
 
     // New pointers to components data
     Entity* newBodiesEntities = static_cast<Entity*>(newBuffer);
-    RigidBody** newBodies = reinterpret_cast<RigidBody**>(newBodiesEntities + nbComponentsToAllocate);
-    bool* newIsAllowedToSleep = reinterpret_cast<bool*>(newBodies + nbComponentsToAllocate);
-    bool* newIsSleeping = reinterpret_cast<bool*>(newIsAllowedToSleep + nbComponentsToAllocate);
-    decimal* newSleepTimes = reinterpret_cast<decimal*>(newIsSleeping + nbComponentsToAllocate);
-    BodyType* newBodyTypes = reinterpret_cast<BodyType*>(newSleepTimes + nbComponentsToAllocate);
-    Vector3* newLinearVelocities = reinterpret_cast<Vector3*>(newBodyTypes + nbComponentsToAllocate);
-    Vector3* newAngularVelocities = reinterpret_cast<Vector3*>(newLinearVelocities + nbComponentsToAllocate);
-    Vector3* newExternalForces = reinterpret_cast<Vector3*>(newAngularVelocities + nbComponentsToAllocate);
-    Vector3* newExternalTorques = reinterpret_cast<Vector3*>(newExternalForces + nbComponentsToAllocate);
-    decimal* newLinearDampings = reinterpret_cast<decimal*>(newExternalTorques + nbComponentsToAllocate);
-    decimal* newAngularDampings = reinterpret_cast<decimal*>(newLinearDampings + nbComponentsToAllocate);
-    decimal* newMasses = reinterpret_cast<decimal*>(newAngularDampings + nbComponentsToAllocate);
-    decimal* newInverseMasses = reinterpret_cast<decimal*>(newMasses + nbComponentsToAllocate);
-    Vector3* newInertiaTensorLocal = reinterpret_cast<Vector3*>(newInverseMasses + nbComponentsToAllocate);
-    Vector3* newInertiaTensorLocalInverses = reinterpret_cast<Vector3*>(newInertiaTensorLocal + nbComponentsToAllocate);
-    Matrix3x3* newInertiaTensorWorldInverses = reinterpret_cast<Matrix3x3*>(newInertiaTensorLocalInverses + nbComponentsToAllocate);
-    Vector3* newConstrainedLinearVelocities = reinterpret_cast<Vector3*>(newInertiaTensorWorldInverses + nbComponentsToAllocate);
-    Vector3* newConstrainedAngularVelocities = reinterpret_cast<Vector3*>(newConstrainedLinearVelocities + nbComponentsToAllocate);
-    Vector3* newSplitLinearVelocities = reinterpret_cast<Vector3*>(newConstrainedAngularVelocities + nbComponentsToAllocate);
-    Vector3* newSplitAngularVelocities = reinterpret_cast<Vector3*>(newSplitLinearVelocities + nbComponentsToAllocate);
-    Vector3* newConstrainedPositions = reinterpret_cast<Vector3*>(newSplitAngularVelocities + nbComponentsToAllocate);
-    Quaternion* newConstrainedOrientations = reinterpret_cast<Quaternion*>(newConstrainedPositions + nbComponentsToAllocate);
-    Vector3* newCentersOfMassLocal = reinterpret_cast<Vector3*>(newConstrainedOrientations + nbComponentsToAllocate);
-    Vector3* newCentersOfMassWorld = reinterpret_cast<Vector3*>(newCentersOfMassLocal + nbComponentsToAllocate);
-    bool* newIsGravityEnabled = reinterpret_cast<bool*>(newCentersOfMassWorld + nbComponentsToAllocate);
-    bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(newIsGravityEnabled + nbComponentsToAllocate);
-    Array<Entity>* newJoints = reinterpret_cast<Array<Entity>*>(newIsAlreadyInIsland + nbComponentsToAllocate);
-    Array<uint>* newContactPairs = reinterpret_cast<Array<uint>*>(newJoints + nbComponentsToAllocate);
-    Vector3* newLinearLockAxisFactors = reinterpret_cast<Vector3*>(newContactPairs + nbComponentsToAllocate);
-    Vector3* newAngularLockAxisFactors = reinterpret_cast<Vector3*>(newLinearLockAxisFactors + nbComponentsToAllocate);
+    RigidBody** newBodies = reinterpret_cast<RigidBody**>(MemoryAllocator::alignAddress(newBodiesEntities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBodies) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsAllowedToSleep = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newBodies + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsAllowedToSleep) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsSleeping = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newIsAllowedToSleep + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsSleeping) % GLOBAL_ALIGNMENT == 0);
+    decimal* newSleepTimes = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newIsSleeping + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newSleepTimes) % GLOBAL_ALIGNMENT == 0);
+    BodyType* newBodyTypes = reinterpret_cast<BodyType*>(MemoryAllocator::alignAddress(newSleepTimes + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBodyTypes) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newLinearVelocities = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newBodyTypes + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLinearVelocities) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newAngularVelocities = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newLinearVelocities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newAngularVelocities) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newExternalForces = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newAngularVelocities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newExternalForces) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newExternalTorques = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newExternalForces + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newExternalTorques) % GLOBAL_ALIGNMENT == 0);
+    decimal* newLinearDampings = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newExternalTorques + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLinearDampings) % GLOBAL_ALIGNMENT == 0);
+    decimal* newAngularDampings = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newLinearDampings + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newAngularDampings) % GLOBAL_ALIGNMENT == 0);
+    decimal* newMasses = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newAngularDampings + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newMasses) % GLOBAL_ALIGNMENT == 0);
+    decimal* newInverseMasses = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newMasses + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMasses) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newInertiaTensorLocal = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newInverseMasses + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInertiaTensorLocal) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newInertiaTensorLocalInverses = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newInertiaTensorLocal + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInertiaTensorLocal) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newInertiaTensorWorldInverses = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newInertiaTensorLocalInverses + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInertiaTensorWorldInverses) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newConstrainedLinearVelocities = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newInertiaTensorWorldInverses + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newConstrainedLinearVelocities) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newConstrainedAngularVelocities = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newConstrainedLinearVelocities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newConstrainedAngularVelocities) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newSplitLinearVelocities = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newConstrainedAngularVelocities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newSplitLinearVelocities) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newSplitAngularVelocities = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newSplitLinearVelocities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newSplitAngularVelocities) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newConstrainedPositions = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newSplitAngularVelocities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newConstrainedPositions) % GLOBAL_ALIGNMENT == 0);
+    Quaternion* newConstrainedOrientations = reinterpret_cast<Quaternion*>(MemoryAllocator::alignAddress(newConstrainedPositions + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newConstrainedOrientations) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newCentersOfMassLocal = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newConstrainedOrientations + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newCentersOfMassLocal) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newCentersOfMassWorld = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newCentersOfMassLocal + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newCentersOfMassWorld) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsGravityEnabled = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newCentersOfMassWorld + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsGravityEnabled) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsAlreadyInIsland = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newIsGravityEnabled + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsAlreadyInIsland) % GLOBAL_ALIGNMENT == 0);
+    Array<Entity>* newJoints = reinterpret_cast<Array<Entity>*>(MemoryAllocator::alignAddress(newIsAlreadyInIsland + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newJoints) % GLOBAL_ALIGNMENT == 0);
+    Array<uint>* newContactPairs = reinterpret_cast<Array<uint>*>(MemoryAllocator::alignAddress(newJoints + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newContactPairs) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newLinearLockAxisFactors = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newContactPairs + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLinearLockAxisFactors) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newAngularLockAxisFactors = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newLinearLockAxisFactors + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newAngularLockAxisFactors) % GLOBAL_ALIGNMENT == 0);
+    assert(reinterpret_cast<uintptr_t>(newAngularLockAxisFactors + nbComponentsToAllocate) <= reinterpret_cast<uintptr_t>(newBuffer) + totalSizeBytes);
 
     // If there was already components before
     if (mNbComponents > 0) {

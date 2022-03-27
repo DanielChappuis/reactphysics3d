@@ -63,6 +63,9 @@ class Components {
         /// Size (in bytes) of a single component
         size_t mComponentDataSize;
 
+        /// Size (in bytes) to allocate to make sure we can offset the components array to keep alignment
+        size_t mAlignmentMarginSize;
+
         /// Number of allocated components
         uint32 mNbAllocatedComponents;
 
@@ -96,10 +99,13 @@ class Components {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Components(MemoryAllocator& allocator, size_t componentDataSize);
+        Components(MemoryAllocator& allocator, size_t componentDataSize, size_t alignmentMarginSize);
 
         /// Destructor
         virtual ~Components();
+
+        /// Initialize the components:
+        void init();
 
         /// Remove a component
         void removeComponent(Entity entity);

@@ -38,10 +38,9 @@ BallAndSocketJointComponents::BallAndSocketJointComponents(MemoryAllocator& allo
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Matrix3x3) + sizeof(Matrix3x3) + sizeof(Vector3) +
                                 sizeof(Matrix3x3) + sizeof(Vector3) + sizeof(bool) + sizeof(decimal) +
-                                sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(bool) + sizeof(Vector3)) {
+                                sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(bool) + sizeof(Vector3),
+                                18 * GLOBAL_ALIGNMENT) {
 
-    // Allocate memory for the components data
-    allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Allocate memory for a given number of components
@@ -50,31 +49,51 @@ void BallAndSocketJointComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
     // Size for the data of a single component (in bytes)
-    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize;
+    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize + mAlignmentMarginSize;
 
     // Allocate memory
     void* newBuffer = mMemoryAllocator.allocate(totalSizeBytes);
     assert(newBuffer != nullptr);
+    assert(reinterpret_cast<uintptr_t>(newBuffer) % GLOBAL_ALIGNMENT == 0);
 
     // New pointers to components data
     Entity* newJointEntities = static_cast<Entity*>(newBuffer);
-    BallAndSocketJoint** newJoints = reinterpret_cast<BallAndSocketJoint**>(newJointEntities + nbComponentsToAllocate);
-    Vector3* newLocalAnchorPointBody1 = reinterpret_cast<Vector3*>(newJoints + nbComponentsToAllocate);
-    Vector3* newLocalAnchorPointBody2 = reinterpret_cast<Vector3*>(newLocalAnchorPointBody1 + nbComponentsToAllocate);
-    Vector3* newR1World = reinterpret_cast<Vector3*>(newLocalAnchorPointBody2 + nbComponentsToAllocate);
-    Vector3* newR2World = reinterpret_cast<Vector3*>(newR1World + nbComponentsToAllocate);
-    Matrix3x3* newI1 = reinterpret_cast<Matrix3x3*>(newR2World + nbComponentsToAllocate);
-    Matrix3x3* newI2 = reinterpret_cast<Matrix3x3*>(newI1 + nbComponentsToAllocate);
-    Vector3* newBiasVector = reinterpret_cast<Vector3*>(newI2 + nbComponentsToAllocate);
-    Matrix3x3* newInverseMassMatrix = reinterpret_cast<Matrix3x3*>(newBiasVector + nbComponentsToAllocate);
-    Vector3* newImpulse = reinterpret_cast<Vector3*>(newInverseMassMatrix + nbComponentsToAllocate);
-    bool* newIsConeLimitEnabled = reinterpret_cast<bool*>(newImpulse + nbComponentsToAllocate);
-    decimal* newConeLimitImpulse = reinterpret_cast<decimal*>(newIsConeLimitEnabled + nbComponentsToAllocate);
-    decimal* newConeLimitHalfAngle = reinterpret_cast<decimal*>(newConeLimitImpulse + nbComponentsToAllocate);
-    decimal* newInverseMassMatrixConeLimit = reinterpret_cast<decimal*>(newConeLimitHalfAngle + nbComponentsToAllocate);
-    decimal* newBConeLimit = reinterpret_cast<decimal*>(newInverseMassMatrixConeLimit + nbComponentsToAllocate);
-    bool* newIsConeLimitViolated = reinterpret_cast<bool*>(newBConeLimit + nbComponentsToAllocate);
-    Vector3* newConeLimitACrossB = reinterpret_cast<Vector3*>(newIsConeLimitViolated + nbComponentsToAllocate);
+    assert(reinterpret_cast<uintptr_t>(newJointEntities) % GLOBAL_ALIGNMENT == 0);
+    BallAndSocketJoint** newJoints = reinterpret_cast<BallAndSocketJoint**>(MemoryAllocator::alignAddress(newJointEntities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newJoints) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newLocalAnchorPointBody1 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newJoints + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLocalAnchorPointBody1) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newLocalAnchorPointBody2 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newLocalAnchorPointBody1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLocalAnchorPointBody2) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newR1World = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newLocalAnchorPointBody2 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newR1World) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newR2World = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newR1World + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newR2World) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newI1 = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newR2World + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newI1) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newI2 = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newI1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newI2) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newBiasVector = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newI2 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBiasVector) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newInverseMassMatrix = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newBiasVector + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMassMatrix) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newImpulse = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newInverseMassMatrix + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newImpulse) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsConeLimitEnabled = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newImpulse + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsConeLimitEnabled) % GLOBAL_ALIGNMENT == 0);
+    decimal* newConeLimitImpulse = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newIsConeLimitEnabled + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newConeLimitImpulse) % GLOBAL_ALIGNMENT == 0);
+    decimal* newConeLimitHalfAngle = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newConeLimitImpulse + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newConeLimitHalfAngle) % GLOBAL_ALIGNMENT == 0);
+    decimal* newInverseMassMatrixConeLimit = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newConeLimitHalfAngle + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMassMatrixConeLimit) % GLOBAL_ALIGNMENT == 0);
+    decimal* newBConeLimit = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newInverseMassMatrixConeLimit + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBConeLimit) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsConeLimitViolated = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newBConeLimit + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsConeLimitViolated) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newConeLimitACrossB = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newIsConeLimitViolated + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newConeLimitACrossB) % GLOBAL_ALIGNMENT == 0);
+    assert(reinterpret_cast<uintptr_t>(newConeLimitACrossB + nbComponentsToAllocate) <= reinterpret_cast<uintptr_t>(newBuffer) + totalSizeBytes);
 
     // If there was already components before
     if (mNbComponents > 0) {

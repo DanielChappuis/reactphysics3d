@@ -31,9 +31,9 @@
 using namespace reactphysics3d;
 
 // Constructor
-Components::Components(MemoryAllocator& allocator, size_t componentDataSize)
+Components::Components(MemoryAllocator& allocator, size_t componentDataSize, size_t alignmentMarginSize)
     : mMemoryAllocator(allocator), mNbComponents(0), mComponentDataSize(componentDataSize),
-      mNbAllocatedComponents(0), mBuffer(nullptr), mMapEntityToComponentIndex(allocator),
+      mAlignmentMarginSize(alignmentMarginSize), mNbAllocatedComponents(0), mBuffer(nullptr), mMapEntityToComponentIndex(allocator),
       mDisabledStartIndex(0) {
 
 }
@@ -55,6 +55,13 @@ Components::~Components() {
         // Release the allocated memory
         mMemoryAllocator.release(mBuffer, totalSizeBytes);
     }
+}
+
+// Initialize the components:
+void Components::init() {
+
+    // Allocate memory for the components data
+    allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Compute the index where we need to insert the new component

@@ -26,6 +26,7 @@
 // Libraries
 #include <reactphysics3d/components/TransformComponents.h>
 #include <reactphysics3d/engine/EntityManager.h>
+#include <reactphysics3d/memory/MemoryAllocator.h>
 #include <cassert>
 #include <random>
 
@@ -35,10 +36,9 @@ using namespace reactphysics3d;
 
 // Constructor
 TransformComponents::TransformComponents(MemoryAllocator& allocator)
-                    :Components(allocator, sizeof(Entity) + sizeof(Transform) + 2 * GLOBAL_ALIGNMENT) {
+                    :Components(allocator, sizeof(Entity) + sizeof(Transform), 2 * GLOBAL_ALIGNMENT) {
 
-    // Allocate memory for the components data
-    allocate(INIT_NB_ALLOCATED_COMPONENTS);
+
 }
 
 // Allocate memory for a given number of components
@@ -47,17 +47,19 @@ void TransformComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
     // Size for the data of a single component (in bytes)
-    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize;
+    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize + mAlignmentMarginSize;
 
     // Allocate memory
     void* newBuffer = mMemoryAllocator.allocate(totalSizeBytes);
     assert(newBuffer != nullptr);
+    assert(reinterpret_cast<uintptr_t>(newBuffer) % GLOBAL_ALIGNMENT == 0);
 
     // New pointers to components data
     Entity* newEntities = static_cast<Entity*>(newBuffer);
-    //assert(reinterpret_cast<uintptr_t>(newEntities) % GLOBAL_ALIGNMENT == 0);
-    Transform* newTransforms = reinterpret_cast<Transform*>(newEntities + nbComponentsToAllocate);
-    //assert(reinterpret_cast<uintptr_t>(newTransforms) % GLOBAL_ALIGNMENT == 0);
+    assert(reinterpret_cast<uintptr_t>(newEntities) % GLOBAL_ALIGNMENT == 0);
+    Transform* newTransforms = reinterpret_cast<Transform*>(MemoryAllocator::alignAddress(newEntities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newTransforms) % GLOBAL_ALIGNMENT == 0);
+    assert(reinterpret_cast<uintptr_t>(newTransforms + nbComponentsToAllocate) <= reinterpret_cast<uintptr_t>(newBuffer) + totalSizeBytes);
 
     // If there was already components before
     if (mNbComponents > 0) {
