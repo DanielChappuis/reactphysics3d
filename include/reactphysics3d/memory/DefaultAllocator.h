@@ -59,8 +59,8 @@ class DefaultAllocator : public MemoryAllocator {
 // If compiler is Visual Studio
 #ifdef RP3D_COMPILER_VISUAL_STUDIO
 
-                // Visual Studio doesn't not support standard std:aligned_alloc() method from c++ 17
-                return _alligned_malloc(size, GLOBAL_ALIGNMENT);
+                // Visual Studio doesn't not support standard std:aligned_alloc() method from C++ 17
+                return _aligned_malloc(size, GLOBAL_ALIGNMENT);
 #else
 
                 // Return 16-bytes aligned memory
@@ -75,7 +75,7 @@ class DefaultAllocator : public MemoryAllocator {
 #ifdef RP3D_COMPILER_VISUAL_STUDIO
 
                 // Visual Studio doesn't not support standard std:aligned_alloc() method from c++ 17
-                return _aligned_free(GLOBAL_ALIGNMENT, pointer);
+                return _aligned_free(pointer);
 #else
 
                 return std::free(pointer);
