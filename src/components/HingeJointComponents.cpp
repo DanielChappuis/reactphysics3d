@@ -43,10 +43,8 @@ HingeJointComponents::HingeJointComponents(MemoryAllocator& allocator)
                                 sizeof(Vector3) + sizeof(decimal) + sizeof(decimal) + sizeof(decimal) +
                                 sizeof(decimal) + sizeof(decimal) + sizeof(decimal) + sizeof(decimal) +
                                 sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(decimal) +
-                                sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(decimal)) {
+                                sizeof(bool) + sizeof(bool) + sizeof(decimal) + sizeof(decimal), 35 * GLOBAL_ALIGNMENT ) {
 
-    // Allocate memory for the components data
-    allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Allocate memory for a given number of components
@@ -55,48 +53,84 @@ void HingeJointComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
     // Size for the data of a single component (in bytes)
-    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize;
+    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize + mAlignmentMarginSize;
 
     // Allocate memory
     void* newBuffer = mMemoryAllocator.allocate(totalSizeBytes);
     assert(newBuffer != nullptr);
+    assert(reinterpret_cast<uintptr_t>(newBuffer) % GLOBAL_ALIGNMENT == 0);
 
     // New pointers to components data
     Entity* newJointEntities = static_cast<Entity*>(newBuffer);
-    HingeJoint** newJoints = reinterpret_cast<HingeJoint**>(newJointEntities + nbComponentsToAllocate);
-    Vector3* newLocalAnchorPointBody1 = reinterpret_cast<Vector3*>(newJoints + nbComponentsToAllocate);
-    Vector3* newLocalAnchorPointBody2 = reinterpret_cast<Vector3*>(newLocalAnchorPointBody1 + nbComponentsToAllocate);
-    Vector3* newR1World = reinterpret_cast<Vector3*>(newLocalAnchorPointBody2 + nbComponentsToAllocate);
-    Vector3* newR2World = reinterpret_cast<Vector3*>(newR1World + nbComponentsToAllocate);
-    Matrix3x3* newI1 = reinterpret_cast<Matrix3x3*>(newR2World + nbComponentsToAllocate);
-    Matrix3x3* newI2 = reinterpret_cast<Matrix3x3*>(newI1 + nbComponentsToAllocate);
-    Vector3* newImpulseTranslation = reinterpret_cast<Vector3*>(newI2 + nbComponentsToAllocate);
-    Vector2* newImpulseRotation = reinterpret_cast<Vector2*>(newImpulseTranslation + nbComponentsToAllocate);
-    Matrix3x3* newInverseMassMatrixTranslation = reinterpret_cast<Matrix3x3*>(newImpulseRotation + nbComponentsToAllocate);
-    Matrix2x2* newInverseMassMatrixRotation = reinterpret_cast<Matrix2x2*>(newInverseMassMatrixTranslation + nbComponentsToAllocate);
-    Vector3* newBiasTranslation = reinterpret_cast<Vector3*>(newInverseMassMatrixRotation + nbComponentsToAllocate);
-    Vector2* newBiasRotation = reinterpret_cast<Vector2*>(newBiasTranslation + nbComponentsToAllocate);
-    Quaternion* newInitOrientationDifferenceInv = reinterpret_cast<Quaternion*>(newBiasRotation + nbComponentsToAllocate);
-    Vector3* newHingeLocalAxisBody1 = reinterpret_cast<Vector3*>(newInitOrientationDifferenceInv + nbComponentsToAllocate);
-    Vector3* newHingeLocalAxisBody2 = reinterpret_cast<Vector3*>(newHingeLocalAxisBody1 + nbComponentsToAllocate);
-    Vector3* newA1 = reinterpret_cast<Vector3*>(newHingeLocalAxisBody2 + nbComponentsToAllocate);
-    Vector3* newB2CrossA1 = reinterpret_cast<Vector3*>(newA1 + nbComponentsToAllocate);
-    Vector3* newC2CrossA1 = reinterpret_cast<Vector3*>(newB2CrossA1 + nbComponentsToAllocate);
-    decimal* newImpulseLowerLimit = reinterpret_cast<decimal*>(newC2CrossA1 + nbComponentsToAllocate);
-    decimal* newImpulseUpperLimit = reinterpret_cast<decimal*>(newImpulseLowerLimit + nbComponentsToAllocate);
-    decimal* newImpulseMotor = reinterpret_cast<decimal*>(newImpulseUpperLimit + nbComponentsToAllocate);
-    decimal* newInverseMassMatrixLimitMotor = reinterpret_cast<decimal*>(newImpulseMotor + nbComponentsToAllocate);
-    decimal* newInverseMassMatrixMotor = reinterpret_cast<decimal*>(newInverseMassMatrixLimitMotor + nbComponentsToAllocate);
-    decimal* newBLowerLimit = reinterpret_cast<decimal*>(newInverseMassMatrixMotor + nbComponentsToAllocate);
-    decimal* newBUpperLimit = reinterpret_cast<decimal*>(newBLowerLimit + nbComponentsToAllocate);
-    bool* newIsLimitEnabled = reinterpret_cast<bool*>(newBUpperLimit + nbComponentsToAllocate);
-    bool* newIsMotorEnabled = reinterpret_cast<bool*>(newIsLimitEnabled + nbComponentsToAllocate);
-    decimal* newLowerLimit = reinterpret_cast<decimal*>(newIsMotorEnabled + nbComponentsToAllocate);
-    decimal* newUpperLimit = reinterpret_cast<decimal*>(newLowerLimit + nbComponentsToAllocate);
-    bool* newIsLowerLimitViolated = reinterpret_cast<bool*>(newUpperLimit + nbComponentsToAllocate);
-    bool* newIsUpperLimitViolated = reinterpret_cast<bool*>(newIsLowerLimitViolated + nbComponentsToAllocate);
-    decimal* newMotorSpeed = reinterpret_cast<decimal*>(newIsUpperLimitViolated + nbComponentsToAllocate);
-    decimal* newMaxMotorTorque = reinterpret_cast<decimal*>(newMotorSpeed + nbComponentsToAllocate);
+    HingeJoint** newJoints = reinterpret_cast<HingeJoint**>(MemoryAllocator::alignAddress(newJointEntities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newJoints) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newLocalAnchorPointBody1 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newJoints + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLocalAnchorPointBody1) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newLocalAnchorPointBody2 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newLocalAnchorPointBody1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLocalAnchorPointBody2) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newR1World = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newLocalAnchorPointBody2 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newR1World) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newR2World = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newR1World + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newR2World) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newI1 = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newR2World + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newI1) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newI2 = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newI1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newI2) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newImpulseTranslation = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newI2 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newImpulseTranslation) % GLOBAL_ALIGNMENT == 0);
+    Vector2* newImpulseRotation = reinterpret_cast<Vector2*>(MemoryAllocator::alignAddress(newImpulseTranslation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newImpulseRotation) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newInverseMassMatrixTranslation = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newImpulseRotation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMassMatrixTranslation) % GLOBAL_ALIGNMENT == 0);
+    Matrix2x2* newInverseMassMatrixRotation = reinterpret_cast<Matrix2x2*>(MemoryAllocator::alignAddress(newInverseMassMatrixTranslation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMassMatrixRotation) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newBiasTranslation = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newInverseMassMatrixRotation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBiasTranslation) % GLOBAL_ALIGNMENT == 0);
+    Vector2* newBiasRotation = reinterpret_cast<Vector2*>(MemoryAllocator::alignAddress(newBiasTranslation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBiasRotation) % GLOBAL_ALIGNMENT == 0);
+    Quaternion* newInitOrientationDifferenceInv = reinterpret_cast<Quaternion*>(MemoryAllocator::alignAddress(newBiasRotation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInitOrientationDifferenceInv) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newHingeLocalAxisBody1 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newInitOrientationDifferenceInv + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newHingeLocalAxisBody1) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newHingeLocalAxisBody2 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newHingeLocalAxisBody1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newHingeLocalAxisBody2) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newA1 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newHingeLocalAxisBody2 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newA1) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newB2CrossA1 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newA1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newB2CrossA1) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newC2CrossA1 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newB2CrossA1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newC2CrossA1) % GLOBAL_ALIGNMENT == 0);
+    decimal* newImpulseLowerLimit = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newC2CrossA1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newImpulseLowerLimit) % GLOBAL_ALIGNMENT == 0);
+    decimal* newImpulseUpperLimit = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newImpulseLowerLimit + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newImpulseUpperLimit) % GLOBAL_ALIGNMENT == 0);
+    decimal* newImpulseMotor = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newImpulseUpperLimit + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newImpulseMotor) % GLOBAL_ALIGNMENT == 0);
+    decimal* newInverseMassMatrixLimitMotor = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newImpulseMotor + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMassMatrixLimitMotor) % GLOBAL_ALIGNMENT == 0);
+    decimal* newInverseMassMatrixMotor = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newInverseMassMatrixLimitMotor + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMassMatrixMotor) % GLOBAL_ALIGNMENT == 0);
+    decimal* newBLowerLimit = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newInverseMassMatrixMotor + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBLowerLimit) % GLOBAL_ALIGNMENT == 0);
+    decimal* newBUpperLimit = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newBLowerLimit + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBUpperLimit) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsLimitEnabled = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newBUpperLimit + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsLimitEnabled) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsMotorEnabled = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newIsLimitEnabled + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsMotorEnabled) % GLOBAL_ALIGNMENT == 0);
+    decimal* newLowerLimit = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newIsMotorEnabled + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLowerLimit) % GLOBAL_ALIGNMENT == 0);
+    decimal* newUpperLimit = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newLowerLimit + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newUpperLimit) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsLowerLimitViolated = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newUpperLimit + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsLowerLimitViolated) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsUpperLimitViolated = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newIsLowerLimitViolated + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsUpperLimitViolated) % GLOBAL_ALIGNMENT == 0);
+    decimal* newMotorSpeed = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newIsUpperLimitViolated + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newMotorSpeed) % GLOBAL_ALIGNMENT == 0);
+    decimal* newMaxMotorTorque = reinterpret_cast<decimal*>(MemoryAllocator::alignAddress(newMotorSpeed + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newMaxMotorTorque) % GLOBAL_ALIGNMENT == 0);
+    assert(reinterpret_cast<uintptr_t>(newMaxMotorTorque + nbComponentsToAllocate) <= reinterpret_cast<uintptr_t>(newBuffer) + totalSizeBytes);
 
     // If there was already components before
     if (mNbComponents > 0) {

@@ -38,10 +38,8 @@ FixedJointComponents::FixedJointComponents(MemoryAllocator& allocator)
                                 sizeof(Vector3) + sizeof(Vector3) + sizeof(Vector3) +
                                 sizeof(Matrix3x3) + sizeof(Matrix3x3) + sizeof(Vector3) +
                                 sizeof(Vector3) + sizeof(Matrix3x3) + sizeof(Matrix3x3) +
-                                sizeof(Vector3) + sizeof(Vector3) + sizeof(Quaternion)) {
+                                sizeof(Vector3) + sizeof(Vector3) + sizeof(Quaternion), 15 * GLOBAL_ALIGNMENT) {
 
-    // Allocate memory for the components data
-    allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Allocate memory for a given number of components
@@ -50,28 +48,44 @@ void FixedJointComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
     // Size for the data of a single component (in bytes)
-    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize;
+    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize + mAlignmentMarginSize;
 
     // Allocate memory
     void* newBuffer = mMemoryAllocator.allocate(totalSizeBytes);
     assert(newBuffer != nullptr);
+    assert(reinterpret_cast<uintptr_t>(newBuffer) % GLOBAL_ALIGNMENT == 0);
 
     // New pointers to components data
     Entity* newJointEntities = static_cast<Entity*>(newBuffer);
-    FixedJoint** newJoints = reinterpret_cast<FixedJoint**>(newJointEntities + nbComponentsToAllocate);
-    Vector3* newLocalAnchorPointBody1 = reinterpret_cast<Vector3*>(newJoints + nbComponentsToAllocate);
-    Vector3* newLocalAnchorPointBody2 = reinterpret_cast<Vector3*>(newLocalAnchorPointBody1 + nbComponentsToAllocate);
-    Vector3* newR1World = reinterpret_cast<Vector3*>(newLocalAnchorPointBody2 + nbComponentsToAllocate);
-    Vector3* newR2World = reinterpret_cast<Vector3*>(newR1World + nbComponentsToAllocate);
-    Matrix3x3* newI1 = reinterpret_cast<Matrix3x3*>(newR2World + nbComponentsToAllocate);
-    Matrix3x3* newI2 = reinterpret_cast<Matrix3x3*>(newI1 + nbComponentsToAllocate);
-    Vector3* newImpulseTranslation = reinterpret_cast<Vector3*>(newI2 + nbComponentsToAllocate);
-    Vector3* newImpulseRotation = reinterpret_cast<Vector3*>(newImpulseTranslation + nbComponentsToAllocate);
-    Matrix3x3* newInverseMassMatrixTranslation = reinterpret_cast<Matrix3x3*>(newImpulseRotation + nbComponentsToAllocate);
-    Matrix3x3* newInverseMassMatrixRotation = reinterpret_cast<Matrix3x3*>(newInverseMassMatrixTranslation + nbComponentsToAllocate);
-    Vector3* newBiasTranslation = reinterpret_cast<Vector3*>(newInverseMassMatrixRotation + nbComponentsToAllocate);
-    Vector3* newBiasRotation = reinterpret_cast<Vector3*>(newBiasTranslation + nbComponentsToAllocate);
-    Quaternion* newInitOrientationDifferenceInv = reinterpret_cast<Quaternion*>(newBiasRotation + nbComponentsToAllocate);
+    FixedJoint** newJoints = reinterpret_cast<FixedJoint**>(MemoryAllocator::alignAddress(newJointEntities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newJoints) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newLocalAnchorPointBody1 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newJoints + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLocalAnchorPointBody1) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newLocalAnchorPointBody2 = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newLocalAnchorPointBody1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newLocalAnchorPointBody2) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newR1World = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newLocalAnchorPointBody2 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newR1World) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newR2World = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newR1World + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newR2World) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newI1 = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newR2World + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newI1) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newI2 = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newI1 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newI1) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newImpulseTranslation = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newI2 + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newImpulseTranslation) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newImpulseRotation = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newImpulseTranslation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newImpulseRotation) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newInverseMassMatrixTranslation = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newImpulseRotation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMassMatrixTranslation) % GLOBAL_ALIGNMENT == 0);
+    Matrix3x3* newInverseMassMatrixRotation = reinterpret_cast<Matrix3x3*>(MemoryAllocator::alignAddress(newInverseMassMatrixTranslation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInverseMassMatrixRotation) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newBiasTranslation = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newInverseMassMatrixRotation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBiasTranslation) % GLOBAL_ALIGNMENT == 0);
+    Vector3* newBiasRotation = reinterpret_cast<Vector3*>(MemoryAllocator::alignAddress(newBiasTranslation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBiasRotation) % GLOBAL_ALIGNMENT == 0);
+    Quaternion* newInitOrientationDifferenceInv = reinterpret_cast<Quaternion*>(MemoryAllocator::alignAddress(newBiasRotation + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newInitOrientationDifferenceInv) % GLOBAL_ALIGNMENT == 0);
+    assert(reinterpret_cast<uintptr_t>(newInitOrientationDifferenceInv + nbComponentsToAllocate) <= reinterpret_cast<uintptr_t>(newBuffer) + totalSizeBytes);
 
     // If there was already components before
     if (mNbComponents > 0) {

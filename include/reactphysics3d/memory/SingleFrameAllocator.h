@@ -45,10 +45,6 @@ class SingleFrameAllocator : public MemoryAllocator {
 
         // -------------------- Constants -------------------- //
 
-        /// Number of frames to wait before shrinking the allocated
-        /// memory if too much is allocated
-        static const int NB_FRAMES_UNTIL_SHRINK = 120;
-
         /// Initial size (in bytes) of the single frame allocator
         size_t INIT_SINGLE_FRAME_ALLOCATOR_NB_BYTES = 1048576; // 1Mb
 
@@ -68,10 +64,6 @@ class SingleFrameAllocator : public MemoryAllocator {
 
         /// Pointer to the next available memory location in the buffer
         size_t mCurrentOffset;
-
-        /// Current number of frames since we detected too much memory
-        /// is allocated
-        size_t mNbFramesTooMuchAllocated;
 
         /// True if we need to allocate more memory in the next reset() call
         bool mNeedToAllocatedMore;

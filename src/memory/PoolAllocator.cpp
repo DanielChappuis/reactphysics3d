@@ -57,7 +57,7 @@ PoolAllocator::PoolAllocator(MemoryAllocator& baseAllocator) : mBaseAllocator(ba
         // Initialize the array that contains the sizes of the memory units that will
         // be allocated in each different heap
         for (uint i=0; i < NB_HEAPS; i++) {
-            mUnitSizes[i] = (i+1) * 8;
+            mUnitSizes[i] = (i+1) * MIN_UNIT_SIZE;
         }
 
         // Initialize the lookup table that maps the size to allocated to the
@@ -116,7 +116,12 @@ void* PoolAllocator::allocate(size_t size) {
     if (size > MAX_UNIT_SIZE) {
 
         // Allocate memory using default allocation
-        return mBaseAllocator.allocate(size);
+        void* allocatedMemory = mBaseAllocator.allocate(size);
+
+        // Check that allocated memory is 16-bytes aligned
+        assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
+
+        return allocatedMemory;
     }
 
     // Get the index of the heap that will take care of the allocation request
@@ -129,7 +134,13 @@ void* PoolAllocator::allocate(size_t size) {
         // Return a pointer to the memory unit
         MemoryUnit* unit = mFreeMemoryUnits[indexHeap];
         mFreeMemoryUnits[indexHeap] = unit->nextUnit;
-        return unit;
+
+        void* allocatedMemory = static_cast<void*>(unit);
+
+        // Check that allocated memory is 16-bytes aligned
+        assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
+
+        return allocatedMemory;
     }
     else {  // If there is no more free memory units in the corresponding heap
 
@@ -170,8 +181,13 @@ void* PoolAllocator::allocate(size_t size) {
         mFreeMemoryUnits[indexHeap] = newBlock->memoryUnits->nextUnit;
         mNbCurrentMemoryBlocks++;
 
+        void* allocatedMemory = newBlock->memoryUnits;
+
+        // Check that allocated memory is 16-bytes aligned
+        assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
+
         // Return the pointer to the first memory unit of the new allocated block
-        return newBlock->memoryUnits;
+        return allocatedMemory;
     }
 }
 

@@ -6,6 +6,10 @@
 
 ### Changed
 
+ - The library must now be compiled with C++ 17 compiler
+ - If the user sets its own custom allocator, the return allocated memory must now be 16 bytes aligned
+ - The internal allocators now allocates memory that is 16-bytes aligned
+
 ### Removed
 
 ### Fixed

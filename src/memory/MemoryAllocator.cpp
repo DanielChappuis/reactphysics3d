@@ -23,66 +23,49 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_ALLOCATOR_H
-#define REACTPHYSICS3D_DEFAULT_ALLOCATOR_H
-
 // Libraries
 #include <reactphysics3d/memory/MemoryAllocator.h>
-#include <reactphysics3d/configuration.h>
-#include <cstdlib>
-#include <iostream>
-#include <stdlib.h>
+#include <cassert>
 
-/// ReactPhysics3D namespace
-namespace reactphysics3d {
+using namespace reactphysics3d;
 
-// Class DefaultAllocator
+/// Given a pointer to memory, this method returns the next aligned address
 /**
- * This class represents a default memory allocator that uses standard C++ functions
- * to allocated 16-bytes aligned memory.
- *
- */
-class DefaultAllocator : public MemoryAllocator {
+* @param pointer Pointer to a memory location
+* @param alignment Desired alignment
+* @return Pointer to the next aligned memory location
+*/
+void* MemoryAllocator::alignAddress(void* pointer, std::uint8_t alignment) {
 
-    public:
-
-        /// Destructor
-        virtual ~DefaultAllocator() override = default;
-
-        /// Assignment operator
-        DefaultAllocator& operator=(DefaultAllocator& allocator) = default;
-
-        /// Allocate memory of a given size (in bytes) and return a pointer to the
-        /// allocated memory. The returned allocated memory must be 16 bytes aligned.
-        virtual void* allocate(size_t size) override {
-
-// If compiler is Visual Studio
-#ifdef RP3D_COMPILER_VISUAL_STUDIO
-
-                // Visual Studio doesn't not support standard std:aligned_alloc() method from C++ 17
-                return _aligned_malloc(size, GLOBAL_ALIGNMENT);
-#else
-
-                // Return 16-bytes aligned memory
-                return std::aligned_alloc(GLOBAL_ALIGNMENT, size);
-#endif
-        }
-
-        /// Release previously allocated memory.
-        virtual void release(void* pointer, size_t /*size*/) override {
-
-            // If compiler is Visual Studio
-#ifdef RP3D_COMPILER_VISUAL_STUDIO
-
-                // Visual Studio doesn't not support standard std:aligned_alloc() method from c++ 17
-                return _aligned_free(pointer);
-#else
-
-                return std::free(pointer);
-#endif
-        }
-};
-
+    ptrdiff_t alignmentOffset;
+    return alignAddress(pointer, alignment, alignmentOffset);
 }
 
-#endif
+/// Given a pointer to memory, this method returns the next aligned address and also output the alignment offset
+/**
+* @param pointer Pointer to a memory location
+* @param alignment Desired alignment
+* @param outAlignmentOffset Output alignment offset needed to align the initial pointer
+* @return Pointer to the next aligned memory location
+*/
+void* MemoryAllocator::alignAddress(void* pointer, std::uint8_t alignment, ptrdiff_t& outAlignmentOffset) {
+
+    // Take care of alignment to make sure that we always return an address to the
+    // enforce the global alignment of the library
+    const uintptr_t currentAdress = reinterpret_cast<uintptr_t>(pointer);
+
+    // Calculate the adjustment by masking off the lower bits of the address, to determine how "misaligned" it is.
+    const size_t mask = alignment - 1;
+    const uintptr_t misalignment = currentAdress & mask;
+    outAlignmentOffset = alignment - misalignment;
+    assert(outAlignmentOffset <= alignment);
+
+    // Compute the aligned address
+    const uintptr_t alignedAdress = currentAdress + outAlignmentOffset;
+    void* alignedPointer = reinterpret_cast<void*>(alignedAdress);
+
+    // Check that allocated memory is correctly aligned
+    assert(reinterpret_cast<uintptr_t>(alignedPointer) % alignment == 0);
+
+    return alignedPointer;
+}

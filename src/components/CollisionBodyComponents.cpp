@@ -35,10 +35,8 @@ using namespace reactphysics3d;
 // Constructor
 CollisionBodyComponents::CollisionBodyComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(CollisionBody*) + sizeof(Array<Entity>) +
-                                sizeof(bool) + sizeof(void*)) {
+                                sizeof(bool) + sizeof(void*), 5 * GLOBAL_ALIGNMENT) {
 
-    // Allocate memory for the components data
-    allocate(INIT_NB_ALLOCATED_COMPONENTS);
 }
 
 // Allocate memory for a given number of components
@@ -47,18 +45,25 @@ void CollisionBodyComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
 
     // Size for the data of a single component (in bytes)
-    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize;
+    const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize + mAlignmentMarginSize;
 
     // Allocate memory
     void* newBuffer = mMemoryAllocator.allocate(totalSizeBytes);
     assert(newBuffer != nullptr);
+    assert(reinterpret_cast<uintptr_t>(newBuffer) % GLOBAL_ALIGNMENT == 0);
 
     // New pointers to components data
     Entity* newBodiesEntities = static_cast<Entity*>(newBuffer);
-    CollisionBody** newBodies = reinterpret_cast<CollisionBody**>(newBodiesEntities + nbComponentsToAllocate);
-    Array<Entity>* newColliders = reinterpret_cast<Array<Entity>*>(newBodies + nbComponentsToAllocate);
-    bool* newIsActive = reinterpret_cast<bool*>(newColliders + nbComponentsToAllocate);
-    void** newUserData = reinterpret_cast<void**>(newIsActive + nbComponentsToAllocate);
+    assert(reinterpret_cast<uintptr_t>(newBodiesEntities) % GLOBAL_ALIGNMENT == 0);
+    CollisionBody** newBodies = reinterpret_cast<CollisionBody**>(MemoryAllocator::alignAddress(newBodiesEntities + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newBodies) % GLOBAL_ALIGNMENT == 0);
+    Array<Entity>* newColliders = reinterpret_cast<Array<Entity>*>(MemoryAllocator::alignAddress(newBodies + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newColliders) % GLOBAL_ALIGNMENT == 0);
+    bool* newIsActive = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(newColliders + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newIsActive) % GLOBAL_ALIGNMENT == 0);
+    void** newUserData = reinterpret_cast<void**>(MemoryAllocator::alignAddress(newIsActive + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(newUserData) % GLOBAL_ALIGNMENT == 0);
+    assert(reinterpret_cast<uintptr_t>(newUserData + nbComponentsToAllocate) <= reinterpret_cast<uintptr_t>(newBuffer) + totalSizeBytes);
 
     // If there was already components before
     if (mNbComponents > 0) {
