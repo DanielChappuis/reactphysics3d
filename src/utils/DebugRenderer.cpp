@@ -410,7 +410,7 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
 		// Get a body
         const CollisionBody* body = b < nbCollisionBodies ? world.getCollisionBody(b) : world.getRigidBody(b - nbCollisionBodies);
 
-        if (body->isActive()) {
+        if (body->isActive() && body->isDebugEnabled()) {
 
             // For each collider of the body
             for (uint32 c = 0; c < body->getNbColliders(); c++) {

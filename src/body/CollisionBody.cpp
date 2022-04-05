@@ -465,3 +465,19 @@ Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
 Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
     return mWorld.mTransformComponents.getTransform(mEntity).getOrientation().getInverse() * worldVector;
 }
+
+// Set whether to compute debug lines on this body
+/**
+ * @param enabled Set to true if this body should have it's debug information computed
+ */
+void CollisionBody::setDebugEnabled(bool enabled) {
+    mDebugEnabled = enabled;
+}
+
+// Returns true if this collision body is computing debug information
+/**
+ * @return Returns true if this body is computing debug information
+ */
+bool CollisionBody::isDebugEnabled() const {
+    return mDebugEnabled;
+}

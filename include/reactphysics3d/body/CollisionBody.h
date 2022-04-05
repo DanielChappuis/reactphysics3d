@@ -62,6 +62,9 @@ class CollisionBody {
         /// Reference to the world the body belongs to
         PhysicsWorld& mWorld;
 
+        /// Determines if debug information is computed for this body
+        bool mDebugEnabled;
+
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 		/// Pointer to the profiler
@@ -156,6 +159,12 @@ class CollisionBody {
 
         /// Return the body local-space coordinates of a vector given in the world-space coordinates
         Vector3 getLocalVector(const Vector3& worldVector) const;
+
+        /// Set whether or not debug lines are computed for this body
+        void setDebugEnabled(bool enabled);
+
+        /// Return true if debug lines should be computed for this body
+        bool isDebugEnabled() const;
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
