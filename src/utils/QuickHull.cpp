@@ -64,12 +64,14 @@ PolygonVertexArray* QuickHull::computeConvexHull(uint32 nbPoints, const void* po
     mapFaceIndexToRemainingClosestPoints.add(Pair<uint32, Array<uint32>>(0, Array<uint32>(allocator)));
     mapFaceIndexToRemainingClosestPoints.add(Pair<uint32, Array<uint32>>(1, Array<uint32>(allocator)));
     mapFaceIndexToRemainingClosestPoints.add(Pair<uint32, Array<uint32>>(2, Array<uint32>(allocator)));
+    mapFaceIndexToRemainingClosestPoints.add(Pair<uint32, Array<uint32>>(3, Array<uint32>(allocator)));
 
     // Associate all the remaining points with the closest faces of the initial hull
     Array<uint32> initialFacesIndices(allocator);
     initialFacesIndices.add(0);
     initialFacesIndices.add(1);
     initialFacesIndices.add(2);
+    initialFacesIndices.add(3);
     associateOldFacePointsToNewFaces(INVALID_FACE_INDEX, initialFacesIndices, points, convexHullHalfEdgeStructure, mapFaceIndexToNormal,
                                      mapFaceIndexToRemainingClosestPoints);
 
@@ -102,42 +104,48 @@ PolygonVertexArray* QuickHull::computeConvexHull(uint32 nbPoints, const void* po
 void QuickHull::addVertexToHull(uint32 vertexIndex, uint32 faceIndex, Array<Vector3>& points, HalfEdgeStructure& convexHullHalfEdgeStructure,
                                 Map<uint32, Vector3>& mapFaceIndexToNormal, MemoryAllocator& allocator) {
 
-    Array<const HalfEdgeStructure::Edge&> horizonEdges(allocator);
+    Array<uint32> horizonEdges(allocator);
 
     // Find the horizon edges
     findHorizon(points[vertexIndex], faceIndex, convexHullHalfEdgeStructure, mapFaceIndexToNormal, points, allocator, horizonEdges);
 
+    // TODO : Delete this
+    std::cout << "---- Horizon Edges ----" << std::endl;
+    for (uint32 i=0; i < horizonEdges.size(); i++) {
+        const HalfEdgeStructure::Edge& edge = convexHullHalfEdgeStructure.getHalfEdge(horizonEdges[i]);
+        const HalfEdgeStructure::Edge& twinEdge = convexHullHalfEdgeStructure.getHalfEdge(edge.twinEdgeIndex);
+        const uint32 v1 = convexHullHalfEdgeStructure.getVertex(edge.vertexIndex).vertexPointIndex;
+        const uint32 v2 = convexHullHalfEdgeStructure.getVertex(twinEdge.vertexIndex).vertexPointIndex;
+        std::cout << "Edge(" << v1 << ", " << v2 << ")" << std::endl;
+    }
+
     /*
-    associateOldFacePointsToNewFaces(oldFaceIndex, newFacesIndices, points, convexHullHalfEdgeStructure,
-                                     mapFaceIndexToRemainingClosestPoints, allocator);
+    associateOldFacePointsToNewFaces(oldFaceIndex, newFacesIndices, points, convexHullHalfEdgeStructure, mapFaceIndexToRemainingClosestPoints, allocator);
     */
 }
 
 // Find the horizon (edges) forming the separation between the faces that are visible from the new vertex and the faces that are not visible
 void QuickHull::findHorizon(const Vector3& vertex, uint32 faceIndex, HalfEdgeStructure& convexHullHalfEdgeStructure,
                             Map<uint32, Vector3>& mapFaceIndexToNormal, const Array<Vector3>& points, MemoryAllocator& allocator,
-                            Array<const HalfEdgeStructure::Edge&> outHorizonEdges) {
+                            Array<uint32>& outHorizonEdgesIndices) {
 
-    Stack<CandidateFace> facesIndicesToVisit(allocator);
+    Stack<CandidateFace> facesToVisit(allocator);
     Set<uint32> visitedFaceIndices(allocator);
 
     const uint32 startEdgeIndex = convexHullHalfEdgeStructure.getFace(faceIndex).edgeIndex;
-    uint32 nextEdgeIndex = convexHullHalfEdgeStructure.getHalfEdge(startEdgeIndex).nextEdgeIndex;
-    facesIndicesToVisit.push(CandidateFace(faceIndex, startEdgeIndex, nextEdgeIndex));
+    facesToVisit.push(CandidateFace(faceIndex, startEdgeIndex, startEdgeIndex));
 
-    // While there still are faces to process
-    while (facesIndicesToVisit.size() > 0) {
+    // While there still are faces to visit
+    while (facesToVisit.size() > 0) {
 
         // Get the next face to process
-        CandidateFace& candidateFace = facesIndicesToVisit.top();
+        CandidateFace& candidateFace = facesToVisit.top();
 
         // Mark the current face as visited
         visitedFaceIndices.add(candidateFace.faceIndex);
 
-        const HalfEdgeStructure::Face& face = convexHullHalfEdgeStructure.getFace(candidateFace.faceIndex);
-
         // For each edge of the current face
-        while(true) {
+        do {
 
             // Get the current edge to cross of the current face
             const HalfEdgeStructure::Edge& edge = convexHullHalfEdgeStructure.getHalfEdge(candidateFace.currentEdgeIndex);
@@ -150,33 +158,37 @@ void QuickHull::findHorizon(const Vector3& vertex, uint32 faceIndex, HalfEdgeStr
             if (!visitedFaceIndices.contains(twinEdge.faceIndex)) {
 
                 const HalfEdgeStructure::Face& nextFace = convexHullHalfEdgeStructure.getFace(twinEdge.faceIndex);
+                const Vector3& faceVertex = points[convexHullHalfEdgeStructure.getVertex(nextFace.faceVertices[0]).vertexPointIndex];
 
                 // If the next face is visible from the vertex
-                if (mapFaceIndexToNormal[twinEdge.faceIndex].dot(vertex - points[nextFace.faceVertices[0]]) > 0) {
+                if (mapFaceIndexToNormal[twinEdge.faceIndex].dot(vertex - faceVertex) > 0) {
 
                     // Add the next face to the stack of faces to visit
-                    nextEdgeIndex = convexHullHalfEdgeStructure.getHalfEdge(nextFace.edgeIndex).nextEdgeIndex;
-                    facesIndicesToVisit.push(CandidateFace(twinEdge.faceIndex, nextFace.edgeIndex, nextEdgeIndex));
+                    facesToVisit.push(CandidateFace(twinEdge.faceIndex, nextFace.edgeIndex, nextFace.edgeIndex));
 
+                    // TODO : DELETE THIS
+                    std::cout << "Face visible from candidate vertex: " << twinEdge.faceIndex << std::endl;
+
+                    // If the face is visible we move to visit this new visible face (Depth First Search)
                     break;
                 }
                 else {    // We have found a face that is not visible from the vertex
 
                     // We add the edge between current face and next face to the array of horizon edges
-                    outHorizonEdges.add(edge);
+                    outHorizonEdgesIndices.add(candidateFace.currentEdgeIndex);
                 }
             }
 
             // Move to the next edge
             candidateFace.currentEdgeIndex = edge.nextEdgeIndex;
 
-            // We have visited all the edges of the current face
-            if (candidateFace.currentEdgeIndex == candidateFace.startEdgeIndex) {
+        } while (candidateFace.currentEdgeIndex != candidateFace.startEdgeIndex);
 
-                // Remove the current face from the stack of faces to visit
-                facesIndicesToVisit.pop();
-                break;
-            }
+        // If we have visited all the edges of the current face
+        if (candidateFace.currentEdgeIndex == candidateFace.startEdgeIndex) {
+
+            // Remove the current face from the stack of faces to visit
+            facesToVisit.pop();
         }
     }
 }
@@ -250,12 +262,11 @@ std::string QuickHull::showMap(Map<uint32, Array<uint32>>& mapFaceIndexToRemaini
     return str;
 }
 
-// Take all the points closest to the old face and add them to the closest faces among the
-// new faces that replace the old face
+// Take all the points closest to the old face and add them to the closest faces among the new faces that replace the old face
 void QuickHull::associateOldFacePointsToNewFaces(uint32 oldFaceIndex, Array<uint32>& newFacesIndices, Array<Vector3>& points,
-                                          HalfEdgeStructure& convexHullHalfEdgeStructure,
-                                          Map<uint32, Vector3> &mapFaceIndexToNormal,
-                                          Map<uint32, Array<uint32>>& mapFaceIndexToRemainingClosestPoints) {
+                                                 HalfEdgeStructure& convexHullHalfEdgeStructure,
+                                                 Map<uint32, Vector3>& mapFaceIndexToNormal,
+                                                 Map<uint32, Array<uint32>>& mapFaceIndexToRemainingClosestPoints) {
 
     // Only first time for initial hull
     if (oldFaceIndex == INVALID_FACE_INDEX) {

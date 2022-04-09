@@ -81,7 +81,7 @@ class QuickHull {
         /// Find the horizon (edges) forming the separation between the faces that are visible from the vertex and the faces that are not visible
         static void findHorizon(const Vector3& vertex, uint32 faceIndex, HalfEdgeStructure& convexHullHalfEdgeStructure,
                                 Map<uint32, Vector3>& mapFaceIndexToNormal, const Array<Vector3>& points,
-                                MemoryAllocator& allocator, Array<const HalfEdgeStructure::Edge &> outHorizonEdges);
+                                MemoryAllocator& allocator, Array<uint32>& outHorizonEdgesIndices);
 
         /// Return the index of the next vertex candidate to be added to the hull
         static void findNextVertexCandidate(Map<uint32, Array<uint32>>& mapFaceIndexToRemainingClosestPoints, Map<uint32, Vector3>& mapFaceIndexToNormal, HalfEdgeStructure& convexHullHalfEdgeStructure,

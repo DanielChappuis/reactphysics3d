@@ -123,11 +123,10 @@ void HalfEdgeStructure::computeHalfEdges() {
 // Return a string representation of the half-edge structure
 std::string HalfEdgeStructure::to_string() const {
 
-    std::string faces;
-
+    std::string faces = "Faces{";
     for (uint32 i=0; i < mFaces.size(); i++) {
 
-       faces += "Face(";
+       faces += "Face" + std::to_string(i) + "(";
 
        const Face& face = mFaces[i];
 
@@ -147,5 +146,35 @@ std::string HalfEdgeStructure::to_string() const {
        }
     }
 
-    return "HalfEdgeStructure(" + faces + ")";
+    faces += "}";
+
+    std::string edges = "Edges{";
+    for (uint32 i=0; i < mEdges.size(); i++) {
+
+       edges += "Edge" + std::to_string(i) + "(";
+
+       const Edge& edge = mEdges[i];
+       const Edge& twinEdge = mEdges[edge.twinEdgeIndex];
+
+       edges += std::to_string(mVertices[edge.vertexIndex].vertexPointIndex) + "," + std::to_string(mVertices[twinEdge.vertexIndex].vertexPointIndex) + ")";
+
+       if (i < mEdges.size() - 1) {
+           edges += ",";
+       }
+    }
+
+    std::string vertices = "Vertices{";
+    for (uint32 i=0; i < mVertices.size(); i++) {
+
+       vertices += "Vertex" + std::to_string(i) + "(";
+
+       const Vertex& vertex = mVertices[i];
+
+       vertices += std::to_string(vertex.vertexPointIndex) + ")";
+
+       if (i < mVertices.size() - 1) {
+           vertices += ",";
+       }
+    }
+    return "HalfEdgeStructure(" + faces + ",\n"  + edges + ",\n" + vertices + ")";
 }
