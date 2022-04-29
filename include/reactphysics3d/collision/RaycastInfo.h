@@ -61,32 +61,31 @@ struct RaycastInfo {
         decimal hitFraction;
 
         /// Mesh subpart index that has been hit (only used for triangles mesh and -1 otherwise)
-        int meshSubpart;
+        int meshSubpart = -1;
 
         /// Hit triangle index (only used for triangles mesh and -1 otherwise)
-        int triangleIndex;
+        int triangleIndex = -1;
 
         /// Pointer to the hit collision body
-        CollisionBody* body;
+        CollisionBody* body = nullptr;
 
         /// Pointer to the hit collider
-        Collider* collider;
+        Collider* collider = nullptr;
 
         // -------------------- Methods -------------------- //
 
-        /// Constructor
-        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(nullptr), collider(nullptr) {
+        RaycastInfo() = default;
 
-        }
+        explicit RaycastInfo(const RaycastInfo& raycastInfo) = default;
 
-        /// Destructor
-        ~RaycastInfo() = default;
-
-        /// Deleted copy constructor
-        RaycastInfo(const RaycastInfo& raycastInfo) = delete;
+        RaycastInfo(RaycastInfo&&) = default;
 
         /// Deleted assignment operator
         RaycastInfo& operator=(const RaycastInfo& raycastInfo) = delete;
+
+        RaycastInfo& operator = (RaycastInfo&&) = default;
+
+        ~RaycastInfo() = default;
 };
 
 // Class RaycastCallback
