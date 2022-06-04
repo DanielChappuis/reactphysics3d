@@ -104,9 +104,6 @@ class HalfEdgeStructure {
         /// Add a face
         void addFace(const Array<uint32>& faceVertices);
 
-        /// Remove a face
-        void removeFace(uint32 faceIndex);
-
         /// Return the number of faces
         uint32 getNbFaces() const;
 
@@ -149,12 +146,6 @@ RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(const Array<uint32>& faceVerti
 
     // Create a new face
     mFaces.add(Face(faceVertices));
-}
-
-
-/// Remove a face and all its edges and vertices
-RP3D_FORCE_INLINE void HalfEdgeStructure::removeFace(uint32 faceIndex) {
-    ...
 }
 
 // Return the number of faces
