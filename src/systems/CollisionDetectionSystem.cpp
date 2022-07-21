@@ -499,8 +499,8 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
     const bool isCollider2Trigger = mCollidersComponents.mIsTrigger[collider2Index];
     reportContacts = reportContacts && !isCollider1Trigger && !isCollider2Trigger;
 
-    CollisionShape* shape1;
-    CollisionShape* shape2;
+    CollisionShape* shape1 = nullptr;
+    CollisionShape* shape2 = nullptr;
 
     if (overlappingPair.isShape1Convex) {
         shape1 = convexShape;
