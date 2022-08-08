@@ -26,7 +26,7 @@
 // Libraries
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
-#include <reactphysics3d/utils/QuickHull.h>
+#include <reactphysics3d/utils/quickhull/QuickHull.h>
 
 using namespace reactphysics3d;
 

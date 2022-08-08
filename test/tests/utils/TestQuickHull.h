@@ -28,7 +28,7 @@
 
 // Libraries
 #include "Test.h"
-#include <reactphysics3d/utils/QuickHull.h>
+#include <reactphysics3d/utils/quickhull/QuickHull.h>
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
