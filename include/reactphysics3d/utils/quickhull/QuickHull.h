@@ -71,9 +71,7 @@ class QuickHull {
 
         // Compute the initial tetrahedron convex hull
         static void computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHullHalfEdgeStructure,
-                                       Map<const QHHalfEdgeStructure::Face*, Vector3>& mapFaceToNormal,
-                                       Map<const QHHalfEdgeStructure::Face *, Array<uint32>>& mapFaceToRemainingClosestPoints,
-                                       Array<const QHHalfEdgeStructure::Face*>& initialFaces,
+                                       Array<QHHalfEdgeStructure::Face*>& initialFaces,
                                        Array<uint32>& orphanPointsIndices,
                                        MemoryAllocator& allocator);
 
@@ -83,54 +81,41 @@ class QuickHull {
 
         /// Add a vertex to the current convex hull to expand it
         static void addVertexToHull(uint32 vertexIndex, QHHalfEdgeStructure::Face* face, Array<Vector3>& points,
-                                    Map<const QHHalfEdgeStructure::Face*, Vector3>& mapFaceToNormal,
                                     QHHalfEdgeStructure& convexHullHalfEdgeStructure,
-                                    Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceToRemainingClosestPoints,
                                     MemoryAllocator& allocator);
 
         /// Build the new faces that contain the new vertex and the horizon edges
         static void buildNewFaces(uint32 newVertexIndex, Array<QHHalfEdgeStructure::Vertex*>& horizonVertices,
                                   QHHalfEdgeStructure& convexHullHalfEdgeStructure,
-                                  Map<const QHHalfEdgeStructure::Face*, Vector3>& mapFaceToNormal,
-                                  Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceToRemainingClosestPoints,
                                   Array<Vector3>& points,
-                                  Array<const QHHalfEdgeStructure::Face*>& newFaces,
+                                  Array<QHHalfEdgeStructure::Face*>& newFaces,
                                   MemoryAllocator& allocator);
 
         /// Delete all the faces visible from the vertex to be added
         static void deleteVisibleFaces(const Array<QHHalfEdgeStructure::Face*>& visibleFaces,
                                        QHHalfEdgeStructure& convexHullHalfEdgeStructure,
-                                       Map<const QHHalfEdgeStructure::Face *, Array<uint32>>& mapFaceToRemainingClosestPoints,
-                                       Map<const QHHalfEdgeStructure::Face *, Vector3>& mapFaceToNormal,
                                        Array<uint32>& orphanPoints,
                                        const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices,
                                        MemoryAllocator& allocator);
 
         /// Find the horizon (edges) forming the separation between the faces that are visible from the vertex and the faces that are not visible
-        static void findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face *face,
-                                Map<const QHHalfEdgeStructure::Face*, Vector3>& mapFaceToNormal, const Array<Vector3>& points,
+        static void findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face *face, const Array<Vector3>& points,
                                 MemoryAllocator& allocator,
                                 Array<QHHalfEdgeStructure::Vertex*>& outHorizonVertices,
                                 Array<QHHalfEdgeStructure::Face*>& outVisibleFaces);
 
         /// Return the index of the next vertex candidate to be added to the hull
-        static void findNextVertexCandidate(Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFacesToRemainingClosestPoints,
-                                            Map<const QHHalfEdgeStructure::Face*, Vector3>& mapFacesToNormal,
-                                            Array<Vector3>& points, uint32& outNextVertexIndex,
+        static void findNextVertexCandidate(Array<Vector3>& points, uint32& outNextVertexIndex,
+                                            QHHalfEdgeStructure& convexHullHalfEdgeStructure,
                                             QHHalfEdgeStructure::Face*& outNextFace);
 
         /// Find the closest face for a given vertex and add this vertex to the remaining closest points for this face
-        static void findClosestFaceForVertex(uint32 vertexIndex, Array<const QHHalfEdgeStructure::Face*>& faces,
-                                             Array<Vector3>& points, Map<const QHHalfEdgeStructure::Face*, Vector3>& mapFaceToNormal,
-                                             Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceToRemainingClosestPoints);
+        static void findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points);
 
         /// Take all the points closest to the old face and add them to the closest faces among the new faces that replace the old face
         static void associateOrphanPointsToNewFaces(Array<uint32>& orphanPointsIndices,
-                                                    Array<const QHHalfEdgeStructure::Face*>& newFaces,
-                                                    Array<Vector3>& points,
-                                                    Map<const QHHalfEdgeStructure::Face*,
-                                                    Vector3>& mapFaceToNormal,
-                                                    Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceToRemainingClosestPoints);
+                                                    Array<QHHalfEdgeStructure::Face*>& newFaces,
+                                                    Array<Vector3>& points);
 
         /// Return true if the vertex is part of horizon edges
         static bool checkVertexInHorizon(QHHalfEdgeStructure::Vertex* vertex, const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices);

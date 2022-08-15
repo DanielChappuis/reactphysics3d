@@ -56,12 +56,13 @@ QHHalfEdgeStructure::Vertex* QHHalfEdgeStructure::addVertex(uint32 externalIndex
  * @param faceVertices Array of the vertices in a face (ordered in CCW order as seen from outside
  *                     the polyhedron). The indices are the internal indices of the vertices inside the HalfEdgeStructure.
  */
-QHHalfEdgeStructure::Face* QHHalfEdgeStructure::addFace(const Array<Vertex*>& faceVertices) {
+QHHalfEdgeStructure::Face* QHHalfEdgeStructure::addFace(const Array<Vertex*>& faceVertices, const Vector3& normal,
+                                                        MemoryAllocator& allocator) {
 
     assert(faceVertices.size() >= 3);
 
     // Create a new face
-    Face* face = new (mAllocator.allocate(sizeof(Face))) Face();
+    Face* face = new (mAllocator.allocate(sizeof(Face))) Face(normal, allocator);
 
     Edge* prevFaceEdge = nullptr;
     Edge* firstFaceEdge = nullptr;

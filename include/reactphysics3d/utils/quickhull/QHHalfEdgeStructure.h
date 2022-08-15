@@ -83,11 +83,13 @@ class QHHalfEdgeStructure {
 
             Face* nextFace;
             Face* previousFace;
-
             Edge* edge;             // One half-edge of the face
+            Vector3 normal;
+            Array<uint32> remainingClosestPoints;   // Array with some remaining points that are closest to this face
 
             /// Constructor
-            Face(): nextFace(nullptr), previousFace(nullptr) {}
+            Face(const Vector3& normal, MemoryAllocator& allocator)
+                : nextFace(nullptr), previousFace(nullptr), normal(normal), remainingClosestPoints(allocator, 8) {}
 
             // Return a vertex of the face
             const Vertex* getVertex() const {
@@ -191,7 +193,7 @@ class QHHalfEdgeStructure {
         Vertex* addVertex(uint32 externalIndex);
 
         /// Add a face
-        Face* addFace(const Array<Vertex*>& faceVertices);
+        Face* addFace(const Array<Vertex*>& faceVertices, const Vector3& normal, MemoryAllocator& allocator);
 
         /// Remove a face
         void removeFace(Face* face);
