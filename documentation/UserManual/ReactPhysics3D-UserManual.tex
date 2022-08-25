@@ -1317,7 +1317,7 @@ TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
   into it as a subpart. Once this is done, we can create the actual \texttt{ConcaveMeshShape}. \\
 
   \begin{lstlisting}
-TriangleMesh triangleMesh* = physicsCommon.createTriangleMesh();
+TriangleMesh* triangleMesh = physicsCommon.createTriangleMesh();
 
 // Add the triangle vertex array to the triangle mesh
 triangleMesh->addSubpart(triangleArray);
