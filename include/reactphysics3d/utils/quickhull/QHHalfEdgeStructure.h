@@ -85,11 +85,14 @@ class QHHalfEdgeStructure {
             Face* previousFace;
             Edge* edge;             // One half-edge of the face
             Vector3 normal;
+            Vector3 centroid;         // Center of the face (average of the face vertices)
             Array<uint32> remainingClosestPoints;   // Array with some remaining points that are closest to this face
 
             /// Constructor
             Face(const Vector3& normal, MemoryAllocator& allocator)
-                : nextFace(nullptr), previousFace(nullptr), normal(normal), remainingClosestPoints(allocator, 8) {}
+                : nextFace(nullptr), previousFace(nullptr), normal(normal), remainingClosestPoints(allocator, 8) {
+
+            }
 
             // Return a vertex of the face
             const Vertex* getVertex() const {
@@ -118,6 +121,31 @@ class QHHalfEdgeStructure {
 
                return verticesString;
             }
+
+            // Compute the centroid of a face (the average of face vertices)
+            void computeCentroid(const Array<Vector3>& points) {
+
+                decimal nbVertices = 0;
+
+                // For each vertex of the face
+                const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
+                const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
+                do {
+
+                   QHHalfEdgeStructure::Vertex* vertex = faceEdge->startVertex;
+
+                   centroid += points[vertex->externalIndex];
+
+                   faceEdge = faceEdge->nextFaceEdge;
+
+                   nbVertices++;
+
+                } while(faceEdge != firstFaceEdge);
+
+                assert(nbVertices > 0);
+                centroid /= nbVertices;
+            }
+
         };
 
         /// Vertex
@@ -176,9 +204,6 @@ class QHHalfEdgeStructure {
         /// Remove a face from the linked-list of faces
         void removeFaceFromLinkedList(Face* face);
 
-        /// Remove an half-edge
-        void removeHalfEdge(Edge* edge);
-
     public:
 
         // ---------- Methods ---------- //
@@ -193,10 +218,16 @@ class QHHalfEdgeStructure {
         Vertex* addVertex(uint32 externalIndex);
 
         /// Add a face
-        Face* addFace(const Array<Vertex*>& faceVertices, const Vector3& normal, MemoryAllocator& allocator);
+        Face* addFace(const Array<Vertex*>& faceVertices, const Vector3& normal, const Array<Vector3>& points, MemoryAllocator& allocator);
 
         /// Remove a face
         void removeFace(Face* face);
+
+        /// Delete the face
+        void deleteFace(Face* face);
+
+        /// Remove an half-edge
+        void removeHalfEdge(Edge* edge);
 
         /// Remove a vertex
         void removeVertex(Vertex* vertex);

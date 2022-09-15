@@ -48,10 +48,29 @@ PolygonVertexArray* QuickHull::computeConvexHull(uint32 nbPoints, const void* po
     Array<Vector3> points(allocator);
     extractPoints(nbPoints, pointsStart, pointsStride, pointDataType, points);
     Array<uint32> orphanPointsIndices(allocator, nbPoints);
+    decimal maxAbsX = 0;
+    decimal maxAbsY = 0;
+    decimal maxAbsZ = 0;
     for (uint32 i=0 ; i < nbPoints; i++) {
         orphanPointsIndices.add(i);
+
+        decimal absX = std::abs(points[i].x);
+        decimal absY = std::abs(points[i].y);
+        decimal absZ = std::abs(points[i].z);
+
+        if (absX > maxAbsX) {
+            maxAbsX = absX;
+        }
+        if (absY > maxAbsY) {
+            maxAbsY = absY;
+        }
+        if (absZ > maxAbsZ) {
+            maxAbsZ = absZ;
+        }
     }
 
+    // Compute the 'epsilon' value for this set of points
+    const decimal epsilon = 3 * (maxAbsX + maxAbsY + maxAbsZ) * MACHINE_EPSILON;
 
     QHHalfEdgeStructure convexHullHalfEdgeStructure(allocator);
 
@@ -68,12 +87,12 @@ PolygonVertexArray* QuickHull::computeConvexHull(uint32 nbPoints, const void* po
     assert(convexHullHalfEdgeStructure.getNbVertices() == 4);
 
     // Associate all the remaining points with the closest faces of the initial hull
-    associateOrphanPointsToNewFaces(orphanPointsIndices, initialFaces, points);
+    associateOrphanPointsToNewFaces(orphanPointsIndices, initialFaces, points, epsilon);
 
     // Get The next vertex candidate
     uint32 nextVertexIndex;
     QHHalfEdgeStructure::Face* nextFace;
-    findNextVertexCandidate(points, nextVertexIndex, convexHullHalfEdgeStructure, nextFace);
+    findNextVertexCandidate(points, nextVertexIndex, convexHullHalfEdgeStructure, nextFace, epsilon);
     while (nextVertexIndex != INVALID_VERTEX_INDEX) {
 
         assert(nextFace != nullptr);
@@ -81,12 +100,12 @@ PolygonVertexArray* QuickHull::computeConvexHull(uint32 nbPoints, const void* po
         std::cout << "Adding vertex " << nextVertexIndex << " to the hull" << std::endl;
 
         // Add the vertex to the hull
-        addVertexToHull(nextVertexIndex, nextFace, points, convexHullHalfEdgeStructure, allocator);
+        addVertexToHull(nextVertexIndex, nextFace, points, convexHullHalfEdgeStructure, epsilon, allocator);
 
         std::cout << " New hull: " << std::endl << convexHullHalfEdgeStructure.to_string() << std::endl;
 
         // Get the next vertex candidate
-        findNextVertexCandidate(points, nextVertexIndex, convexHullHalfEdgeStructure, nextFace);
+        findNextVertexCandidate(points, nextVertexIndex, convexHullHalfEdgeStructure, nextFace, epsilon);
     }
 
     return nullptr;
@@ -97,6 +116,7 @@ void QuickHull::addVertexToHull(uint32 vertexIndex,
                                 QHHalfEdgeStructure::Face* face,
                                 Array<Vector3>& points,
                                 QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+                                decimal epsilon,
                                 MemoryAllocator& allocator) {
 
     Array<QHHalfEdgeStructure::Vertex*> horizonVertices(allocator);
@@ -104,7 +124,7 @@ void QuickHull::addVertexToHull(uint32 vertexIndex,
     Array<uint32> orphanPointsIndices(allocator);
 
     // Find the horizon edges
-    findHorizon(points[vertexIndex], face, points, allocator, horizonVertices, visibleFaces);
+    findHorizon(points[vertexIndex], face, allocator, horizonVertices, visibleFaces, epsilon);
 
     assert(visibleFaces.size() >= 1);
     assert(horizonVertices.size() >= 6);
@@ -128,7 +148,10 @@ void QuickHull::addVertexToHull(uint32 vertexIndex,
     Array<QHHalfEdgeStructure::Face*> newFaces(allocator);
     buildNewFaces(vertexIndex, horizonVertices, convexHullHalfEdgeStructure, points, newFaces, allocator);
 
-    associateOrphanPointsToNewFaces(orphanPointsIndices, newFaces, points);
+    // Merge concave faces
+    mergeConcaveFaces(convexHullHalfEdgeStructure, newFaces, points, epsilon);
+
+    associateOrphanPointsToNewFaces(orphanPointsIndices, newFaces, points, epsilon);
 }
 
 // Build the new faces that contain the new vertex and the horizon edges
@@ -160,7 +183,7 @@ void QuickHull::buildNewFaces(uint32 newVertexIndex,
         normal.normalize();
 
         // Create a new face
-        QHHalfEdgeStructure::Face* face = convexHullHalfEdgeStructure.addFace(faceVertices, normal, allocator);
+        QHHalfEdgeStructure::Face* face = convexHullHalfEdgeStructure.addFace(faceVertices, normal, points, allocator);
 
         newFaces.add(face);
 
@@ -196,7 +219,7 @@ void QuickHull::deleteVisibleFaces(const Array<QHHalfEdgeStructure::Face*>& visi
            QHHalfEdgeStructure::Vertex* vertex = faceEdge->startVertex;
 
            // If the vertex is not part of the horizon
-           if (!checkVertexInHorizon(vertex, horizonVertices)) {
+           if (!testIsVertexInHorizon(vertex, horizonVertices)) {
 
                // Add the vertex to the array of vertices to be removed
                verticesToRemove.add(vertex);
@@ -217,7 +240,7 @@ void QuickHull::deleteVisibleFaces(const Array<QHHalfEdgeStructure::Face*>& visi
 }
 
 // Return true if the vertex is part of horizon edges
-bool QuickHull::checkVertexInHorizon(QHHalfEdgeStructure::Vertex* vertex, const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices) {
+bool QuickHull::testIsVertexInHorizon(QHHalfEdgeStructure::Vertex* vertex, const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices) {
 
     // For each edge of the horizon
     for (uint32 i=0; i < horizonVertices.size(); i += 2) {
@@ -228,11 +251,30 @@ bool QuickHull::checkVertexInHorizon(QHHalfEdgeStructure::Vertex* vertex, const 
     return false;
 }
 
+
+// Return true if a given edge is convex and false otherwise
+bool QuickHull::testIsConvexEdge(const QHHalfEdgeStructure::Edge* edge, decimal epsilon) {
+
+    // Get the two neighbor faces
+    assert(edge->twinEdge != nullptr);
+    QHHalfEdgeStructure::Face* face1 = edge->face;
+    QHHalfEdgeStructure::Face* face2 = edge->twinEdge->face;
+
+    // We test if the center of face1 is below the face2 plane
+    if (computePointToPlaneDistance(face1->centroid, face2->normal, face2->centroid) >= -epsilon) return false;
+
+    // We test if the center of face2 is below the face1 plane
+    if (computePointToPlaneDistance(face2->centroid, face1->normal, face1->centroid) >= -epsilon) return false;
+
+    // If both tests are true, the edge is convex
+    return true;
+}
+
 // Find the horizon (edges) forming the separation between the faces that are visible from the new vertex and the faces that are not visible
 void QuickHull::findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face* face,
-                            const Array<Vector3>& points, MemoryAllocator& allocator,
+                            MemoryAllocator& allocator,
                             Array<QHHalfEdgeStructure::Vertex*>& outHorizonVertices,
-                            Array<QHHalfEdgeStructure::Face*>& outVisibleFaces) {
+                            Array<QHHalfEdgeStructure::Face*>& outVisibleFaces, decimal epsilon) {
 
     Stack<CandidateFace> facesToVisit(allocator);
     Set<const QHHalfEdgeStructure::Face*> visitedFaces(allocator);
@@ -269,10 +311,8 @@ void QuickHull::findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face* fa
             // If the next face is not visited yet
             if (!visitedFaces.contains(nextFace)) {
 
-                const Vector3& faceVertex = points[nextFace->getVertex()->externalIndex];
-
                 // If the next face is visible from the vertex
-                if (nextFace->normal.dot(vertex - faceVertex) > 0) {
+                if (nextFace->normal.dot(vertex - nextFace->centroid) > epsilon) {
 
                     // Add the next face to the stack of faces to visit
                     facesToVisit.push(CandidateFace(nextFace, nextFace->edge, nextFace->edge));
@@ -307,13 +347,145 @@ void QuickHull::findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face* fa
     }
 }
 
+// Iterate over all new faces and fix faces that are forming a concave shape in order to always keep the hull convex
+void QuickHull::mergeConcaveFaces(QHHalfEdgeStructure& convexHullHalfEdgeStructure, Array<QHHalfEdgeStructure::Face*>& newFaces,
+                                  const Array<Vector3>& points, decimal epsilon) {
+
+    // For each new face
+    for (uint32 i=0; i < newFaces.size(); i++) {
+
+        QHHalfEdgeStructure::Face* face = newFaces[i];
+        QHHalfEdgeStructure::Edge* concaveEdge;
+
+        // While we find concave faces to be fixed
+        do {
+
+            concaveEdge = nullptr;
+
+            // For each edge of the new face
+            QHHalfEdgeStructure::Edge* firstFaceEdge = face->edge;
+            QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
+            do {
+
+                assert(faceEdge != nullptr);
+
+                // If the two faces at this edge are forming a convex shape
+                if (testIsConvexEdge(faceEdge, epsilon)) {
+
+                    // Move to the next edge of the face
+                    faceEdge = faceEdge->nextFaceEdge;
+
+                    continue;
+                }
+
+                // The two faces at this edge are forming a concave shape
+                concaveEdge = faceEdge;
+                break;
+
+            } while(faceEdge != firstFaceEdge);
+
+            // If we have found a concave edge
+            if (concaveEdge != nullptr) {
+
+                // Merge the two faces at this edge
+                mergeConcaveFacesAtEdge(concaveEdge, convexHullHalfEdgeStructure, points);
+            }
+
+        } while(concaveEdge != nullptr);
+
+    }
+}
+
+// Merge two faces that are concave at a given edge
+void QuickHull::mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+                                        const Array<Vector3>& points) {
+
+    // We merge the face next to the 'twin edge' into the face next to 'edge'
+
+    QHHalfEdgeStructure::Face* faceToRemove = edge->twinEdge->face;
+    QHHalfEdgeStructure::Face* faceToKeep = edge->face;
+
+    // Make sure the face to keep does not reference the edge to be removed
+    edge->face->edge = edge->previousFaceEdge;
+
+    // Make sure the edges of the face to delete reference the face to keep
+    QHHalfEdgeStructure::Edge* firstFaceEdge = edge->twinEdge;
+    QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge->nextFaceEdge;
+    while (faceEdge != firstFaceEdge) {
+
+        assert(faceEdge != nullptr);
+
+        faceEdge->face = faceToKeep;
+
+        // Move to the next edge of the face
+        faceEdge = faceEdge->nextFaceEdge;
+    };
+
+    // Fix the linked-list of face edges
+    edge->previousFaceEdge->nextFaceEdge = edge->twinEdge->nextFaceEdge;
+    edge->nextFaceEdge->previousFaceEdge = edge->twinEdge->previousFaceEdge;
+    edge->twinEdge->previousFaceEdge->nextFaceEdge = edge->nextFaceEdge;
+    edge->twinEdge->nextFaceEdge->previousFaceEdge = edge->previousFaceEdge;
+
+    // Move the remaining closest vertices of the face to remove to the face to keep
+    faceToKeep->remainingClosestPoints.addRange(faceToRemove->remainingClosestPoints);
+
+    // Recalculate the face centroid and normal to better fit its vertices (using Newell method)
+    recalculateFace(faceToKeep, points);
+
+    // Remove the face
+    convexHullHalfEdgeStructure.deleteFace(faceToRemove);
+
+    // Remove the edges
+    convexHullHalfEdgeStructure.removeHalfEdge(edge);
+    convexHullHalfEdgeStructure.removeHalfEdge(edge->twinEdge);
+}
+
+// Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
+void QuickHull::recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points) {
+
+    Vector3 centroid(0, 0, 0);
+    Vector3 normal(0, 0, 0);
+    uint32 nbVertices = 0;
+
+    std::cout << "Recalculate Face" << std::endl;
+    std::cout << "Previous centroid:" << face->centroid.to_string() << std::endl;
+    std::cout << "Previous normal:" << face->normal.to_string() << std::endl;
+
+    // For each vertex of the face
+    const QHHalfEdgeStructure::Edge* firstFaceEdge = face->edge;
+    const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
+    do {
+
+        const Vector3 v1 = points[faceEdge->startVertex->externalIndex];
+        const Vector3 v2 = points[faceEdge->endVertex->externalIndex];
+        centroid += v1;
+        normal += Vector3((v1.y - v2.y) * (v1.z + v2.z),
+                          (v1.z - v2.z) * (v1.x + v2.x),
+                          (v1.x - v2.x) * (v1.y + v2.y));
+
+        nbVertices++;
+
+       faceEdge = faceEdge->nextFaceEdge;
+
+    } while(faceEdge != firstFaceEdge);
+
+    assert(nbVertices > 0);
+
+    face->centroid = centroid / nbVertices;
+    face->normal = normal;
+
+    std::cout << "New centroid:" << face->centroid.to_string() << std::endl;
+    std::cout << "New normal:" << face->normal.to_string() << std::endl;
+}
+
 // Return the index of the next vertex candidate to be added to the hull
 // This method returns INVALID_VERTEX_INDEX if there is no more vertex candidate
 void QuickHull::findNextVertexCandidate(Array<Vector3>& points, uint32& outNextVertexIndex,
                                         QHHalfEdgeStructure& convexHullHalfEdgeStructure,
-                                        QHHalfEdgeStructure::Face*& outNextFace) {
+                                        QHHalfEdgeStructure::Face*& outNextFace, decimal epsilon) {
 
-    decimal maxDistance = 0;
+    decimal maxDistance = epsilon;
     uint32 maxVertexI = INVALID_VERTEX_INDEX;
     outNextFace = nullptr;
     outNextVertexIndex = INVALID_VERTEX_INDEX;
@@ -327,15 +499,14 @@ void QuickHull::findNextVertexCandidate(Array<Vector3>& points, uint32& outNextV
             std::cout << "Face with vertices " << face->verticesString() << " has candidates points" << std::endl;
 
             const Vector3& faceNormal = face->normal;
-            Vector3& faceVertex = points[face->getVertex()->externalIndex];
 
             // For each remaining candidate point of the face
             for (uint32 i=0; i < face->remainingClosestPoints.size(); i++) {
 
                 uint32 vertexIndex = face->remainingClosestPoints[i];
 
-                const decimal distance = (points[vertexIndex] - faceVertex).dot(faceNormal);
-                assert(distance > 0);
+                const decimal distance = (points[vertexIndex] - face->centroid).dot(faceNormal);
+                assert(distance > epsilon);
 
                 if (distance > maxDistance) {
                     maxDistance = distance;
@@ -353,7 +524,6 @@ void QuickHull::findNextVertexCandidate(Array<Vector3>& points, uint32& outNextV
     if (outNextFace != nullptr) {
         outNextFace->remainingClosestPoints.removeAt(maxVertexI);
     }
-
 }
 
 std::string QuickHull::showMap(Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceToRemainingClosestPoints) {
@@ -380,17 +550,17 @@ std::string QuickHull::showMap(Map<const QHHalfEdgeStructure::Face*, Array<uint3
 // Take all the orphan points to the closest faces among the new faces
 void QuickHull::associateOrphanPointsToNewFaces(Array<uint32>& orphanPointsIndices,
                                                 Array<QHHalfEdgeStructure::Face*>& newFaces,
-                                                Array<Vector3>& points) {
+                                                Array<Vector3>& points, decimal epsilon) {
 
     // For each candidate points of the old faces
     for (uint32 i=0; i < orphanPointsIndices.size(); i++) {
 
-        findClosestFaceForVertex(orphanPointsIndices[i], newFaces, points);
+        findClosestFaceForVertex(orphanPointsIndices[i], newFaces, points, epsilon);
     }
 }
 
 // Find the closest face for a given vertex and add this vertex to the remaining closest points for this face
-void QuickHull::findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points) {
+void QuickHull::findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points, decimal epsilon) {
 
     decimal minDistanceToFace = DECIMAL_LARGEST;
     QHHalfEdgeStructure::Face* closestFace = nullptr;
@@ -399,12 +569,11 @@ void QuickHull::findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStr
     for (uint32 f=0; f < faces.size(); f++) {
 
         QHHalfEdgeStructure::Face* face = faces[f];
-        const QHHalfEdgeStructure::Vertex* v1 = face->getVertex();
 
-        const decimal distanceToFace = face->normal.dot(points[vertexIndex] - points[v1->externalIndex]);
+        const decimal distanceToFace = face->normal.dot(points[vertexIndex] - face->centroid);
 
         // If the point is in front the face and with a smaller distance from the face
-        if (distanceToFace > 0 && distanceToFace < minDistanceToFace) {
+        if (distanceToFace > epsilon && distanceToFace < minDistanceToFace) {
             minDistanceToFace = distanceToFace;
             closestFace = face;
         }
@@ -536,10 +705,10 @@ void QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
         const Vector3 face3Normal = (points[i4] - points[i1]).cross(points[i3] - points[i1]).getUnit();
 
         // Add vertices for each face
-        face0 = convexHullHalfEdgeStructure.addFace(face1Vertices, face0Normal, allocator);
-        face1 = convexHullHalfEdgeStructure.addFace(face2Vertices, face1Normal, allocator);
-        face2 = convexHullHalfEdgeStructure.addFace(face3Vertices, face2Normal, allocator);
-        face3 = convexHullHalfEdgeStructure.addFace(face4Vertices, face3Normal, allocator);
+        face0 = convexHullHalfEdgeStructure.addFace(face1Vertices, face0Normal, points, allocator);
+        face1 = convexHullHalfEdgeStructure.addFace(face2Vertices, face1Normal, points, allocator);
+        face2 = convexHullHalfEdgeStructure.addFace(face3Vertices, face2Normal, points, allocator);
+        face3 = convexHullHalfEdgeStructure.addFace(face4Vertices, face3Normal, points, allocator);
     }
     else {
 
@@ -555,10 +724,10 @@ void QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
         const Vector3 face3Normal = (points[i3] - points[i1]).cross(points[i4] - points[i1]).getUnit();
 
         // Add vertices for each face
-        face0 = convexHullHalfEdgeStructure.addFace(face1Vertices, face0Normal, allocator);
-        face1 = convexHullHalfEdgeStructure.addFace(face2Vertices, face1Normal, allocator);
-        face2 = convexHullHalfEdgeStructure.addFace(face3Vertices, face2Normal, allocator);
-        face3 = convexHullHalfEdgeStructure.addFace(face4Vertices, face3Normal, allocator);
+        face0 = convexHullHalfEdgeStructure.addFace(face1Vertices, face0Normal, points, allocator);
+        face1 = convexHullHalfEdgeStructure.addFace(face2Vertices, face1Normal, points, allocator);
+        face2 = convexHullHalfEdgeStructure.addFace(face3Vertices, face2Normal, points, allocator);
+        face3 = convexHullHalfEdgeStructure.addFace(face4Vertices, face3Normal, points, allocator);
     }
 
     initialFaces.add(face0);

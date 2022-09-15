@@ -66,6 +66,8 @@ class TestQuickHull : public Test {
         void testSimpleMesh() {
 
             Array<Vector3> points(mAllocator);
+
+            /*
             points.add(Vector3(1, 4, 8));
             points.add(Vector3(-5, 0, 9));
             points.add(Vector3(-6, 1, 2));
@@ -74,6 +76,7 @@ class TestQuickHull : public Test {
             points.add(Vector3(2, -2, -8));
             points.add(Vector3(-4, 8, -1));
             points.add(Vector3(4, 8, 4));
+            */
 
             std::cout << "---------- QuickHull ----------" << std::endl;
 

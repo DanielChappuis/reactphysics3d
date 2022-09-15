@@ -81,7 +81,7 @@ class QuickHull {
 
         /// Add a vertex to the current convex hull to expand it
         static void addVertexToHull(uint32 vertexIndex, QHHalfEdgeStructure::Face* face, Array<Vector3>& points,
-                                    QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+                                    QHHalfEdgeStructure& convexHullHalfEdgeStructure, decimal epsilon,
                                     MemoryAllocator& allocator);
 
         /// Build the new faces that contain the new vertex and the horizon edges
@@ -99,26 +99,44 @@ class QuickHull {
                                        MemoryAllocator& allocator);
 
         /// Find the horizon (edges) forming the separation between the faces that are visible from the vertex and the faces that are not visible
-        static void findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face *face, const Array<Vector3>& points,
+        static void findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face *face,
                                 MemoryAllocator& allocator,
                                 Array<QHHalfEdgeStructure::Vertex*>& outHorizonVertices,
-                                Array<QHHalfEdgeStructure::Face*>& outVisibleFaces);
+                                Array<QHHalfEdgeStructure::Face*>& outVisibleFaces,
+                                decimal epsilon);
+
+        /// Iterate over all new faces and fix faces that are forming a concave shape in order to always keep the hull convex
+        static void mergeConcaveFaces(QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+                                      Array<QHHalfEdgeStructure::Face*>& newFaces, const Array<Vector3>& points, decimal epsilon);
+
+        /// Merge two faces that are concave at a given edge
+        static void mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+                                            const Array<Vector3>& points);
+
+        /// Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
+        static void recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
 
         /// Return the index of the next vertex candidate to be added to the hull
         static void findNextVertexCandidate(Array<Vector3>& points, uint32& outNextVertexIndex,
                                             QHHalfEdgeStructure& convexHullHalfEdgeStructure,
-                                            QHHalfEdgeStructure::Face*& outNextFace);
+                                            QHHalfEdgeStructure::Face*& outNextFace, decimal epsilon);
 
         /// Find the closest face for a given vertex and add this vertex to the remaining closest points for this face
-        static void findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points);
+        static void findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points, decimal epsilon);
 
         /// Take all the points closest to the old face and add them to the closest faces among the new faces that replace the old face
         static void associateOrphanPointsToNewFaces(Array<uint32>& orphanPointsIndices,
                                                     Array<QHHalfEdgeStructure::Face*>& newFaces,
-                                                    Array<Vector3>& points);
+                                                    Array<Vector3>& points, decimal epsilon);
 
         /// Return true if the vertex is part of horizon edges
-        static bool checkVertexInHorizon(QHHalfEdgeStructure::Vertex* vertex, const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices);
+        static bool testIsVertexInHorizon(QHHalfEdgeStructure::Vertex* vertex, const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices);
+
+        /// Return true if a given edge is convex and false otherwise
+        static bool testIsConvexEdge(const QHHalfEdgeStructure::Edge* edge, decimal epsilon);
+
+        /// Compute the center of a face (the average of face vertices)
+        static Vector3 computeFaceCenter(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
 
         // TODO : Remove this
         static std::string showMap(Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceIndexToRemainingClosestPoints);
