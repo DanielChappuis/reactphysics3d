@@ -187,6 +187,8 @@ void QuickHull::buildNewFaces(uint32 newVertexIndex,
 
         newFaces.add(face);
 
+        std::cout << "Build new face with vertices: " << face->verticesString() << std::endl;
+
         faceVertices.clear();
     }
 }
@@ -400,6 +402,8 @@ void QuickHull::mergeConcaveFaces(QHHalfEdgeStructure& convexHullHalfEdgeStructu
 void QuickHull::mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfEdgeStructure& convexHullHalfEdgeStructure,
                                         const Array<Vector3>& points) {
 
+    std::cout << "Merge Concave Faces at edge with vertices (" << edge->startVertex->externalIndex << ", " << edge->endVertex->externalIndex << ")" << std::endl;
+
     // We merge the face next to the 'twin edge' into the face next to 'edge'
 
     QHHalfEdgeStructure::Face* faceToRemove = edge->twinEdge->face;
@@ -407,6 +411,9 @@ void QuickHull::mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfE
 
     // Make sure the face to keep does not reference the edge to be removed
     edge->face->edge = edge->previousFaceEdge;
+
+    std::cout << "Removing face with vertices: " << faceToRemove->verticesString() << std::endl;
+    std::cout << "Merging into face with vertices: " << faceToKeep->verticesString() << std::endl;
 
     // Make sure the edges of the face to delete reference the face to keep
     QHHalfEdgeStructure::Edge* firstFaceEdge = edge->twinEdge;
@@ -473,7 +480,7 @@ void QuickHull::recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vec
     assert(nbVertices > 0);
 
     face->centroid = centroid / nbVertices;
-    face->normal = normal;
+    face->normal = normal.getUnit();
 
     std::cout << "New centroid:" << face->centroid.to_string() << std::endl;
     std::cout << "New normal:" << face->normal.to_string() << std::endl;
