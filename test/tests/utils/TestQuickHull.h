@@ -78,6 +78,17 @@ class TestQuickHull : public Test {
             points.add(Vector3(4, 8, 4));
             */
 
+            //
+            points.add(Vector3(0, 0, 0));
+            points.add(Vector3(4, 0, 0));
+            points.add(Vector3(0, 0, 4));
+            points.add(Vector3(4, 0, 4));
+            points.add(Vector3(0, 4, 0));
+            points.add(Vector3(4, 4, 0));
+            points.add(Vector3(0, 4, 4));
+            points.add(Vector3(4, 4, 4));
+            points.add(Vector3(2, 0, 2));
+
             std::cout << "---------- QuickHull ----------" << std::endl;
 
             std::cout << "--- Points ---" << std::endl;
@@ -87,6 +98,17 @@ class TestQuickHull : public Test {
 
             PolygonVertexArray::VertexDataType vertexDataType = sizeof(decimal) == sizeof(float) ? PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE : PolygonVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE;
             PolygonVertexArray* polygonVertexArray = QuickHull::computeConvexHull(points.size(), &(points[0]), sizeof(Vector3), vertexDataType, mAllocator);
+
+            Array<uint32> indicesOfHull(mAllocator);
+            indicesOfHull.add(0);
+            indicesOfHull.add(1);
+            indicesOfHull.add(2);
+            indicesOfHull.add(3);
+            indicesOfHull.add(4);
+            indicesOfHull.add(5);
+            indicesOfHull.add(6);
+            indicesOfHull.add(7);
+            rp3d_test(testPointsAmongHullVertices(points, indicesOfHull, polygonVertexArray));
 
             /*
             for (uint32 f=0; f < polygonVertexArray->getNbFaces(); f++) {
@@ -103,6 +125,31 @@ class TestQuickHull : public Test {
             }
             */
 
+        }
+
+        bool testPointsAmongHullVertices(const Array<Vector3>& points, const Array<uint32>& indicesOfHull,  PolygonVertexArray* polygonVertexArray) {
+
+            bool isValid = true;
+
+            // For each point that should be in the convex hull
+            for(uint32 i=0; i < indicesOfHull.size(); i++) {
+                isValid &= testPointAmongHullVertices(points[indicesOfHull[i]], polygonVertexArray);
+            }
+
+            return isValid;
+        }
+
+        bool testPointAmongHullVertices(const Vector3& vertex, PolygonVertexArray* polygonVertexArray) {
+
+            for (uint32 i=0; i < polygonVertexArray->getNbVertices(); i++) {
+                Vector3 point = polygonVertexArray->getVertex(i);
+
+                if (point == vertex) {
+                    return true;
+                }
+            }
+
+            return false;
         }
  };
 

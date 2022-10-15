@@ -76,6 +76,24 @@ class QHHalfEdgeStructure {
 
                return nullptr;
             }
+
+            bool isValid() const {
+
+                bool isValid = true;
+
+                isValid &= face != nullptr;
+                isValid &= previousFaceEdge != nullptr;
+                isValid &= nextFaceEdge != nullptr;
+                isValid &= previousFaceEdge->nextFaceEdge == this;
+                isValid &= nextFaceEdge->previousFaceEdge == this;
+                isValid &= twinEdge->twinEdge == this;
+                isValid &= startVertex == twinEdge->endVertex;
+                isValid &= endVertex == twinEdge->startVertex;
+                isValid &= endVertex == nextFaceEdge->startVertex;
+                isValid &= startVertex == previousFaceEdge->endVertex;
+
+                return isValid;
+            }
         };
 
         /// Face
@@ -122,6 +140,12 @@ class QHHalfEdgeStructure {
                return verticesString;
             }
 
+            // Return true if the face is a triangle
+            bool isTriangle() {
+
+                return edge->nextFaceEdge->nextFaceEdge->nextFaceEdge == edge;
+            }
+
             // Compute the centroid of a face (the average of face vertices)
             void computeCentroid(const Array<Vector3>& points) {
 
@@ -144,6 +168,16 @@ class QHHalfEdgeStructure {
 
                 assert(nbVertices > 0);
                 centroid /= nbVertices;
+            }
+
+            // Return true if the face structure is valid (for debugging purpose)
+            bool isValid() const {
+               bool isValid = true;
+
+               isValid &= approxEqual(normal.lengthSquare(), 1.0, 0.01);
+               isValid &= edge->face == this;
+
+               return isValid;
             }
 
         };

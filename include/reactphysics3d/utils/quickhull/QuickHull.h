@@ -70,7 +70,7 @@ class QuickHull {
         // -------------------- Methods -------------------- //
 
         // Compute the initial tetrahedron convex hull
-        static void computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+        static void computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
                                        Array<QHHalfEdgeStructure::Face*>& initialFaces,
                                        Array<uint32>& orphanPointsIndices,
                                        MemoryAllocator& allocator);
@@ -81,19 +81,19 @@ class QuickHull {
 
         /// Add a vertex to the current convex hull to expand it
         static void addVertexToHull(uint32 vertexIndex, QHHalfEdgeStructure::Face* face, Array<Vector3>& points,
-                                    QHHalfEdgeStructure& convexHullHalfEdgeStructure, decimal epsilon,
+                                    QHHalfEdgeStructure& convexHull, decimal epsilon,
                                     MemoryAllocator& allocator);
 
         /// Build the new faces that contain the new vertex and the horizon edges
         static void buildNewFaces(uint32 newVertexIndex, Array<QHHalfEdgeStructure::Vertex*>& horizonVertices,
-                                  QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+                                  QHHalfEdgeStructure& convexHull,
                                   Array<Vector3>& points,
                                   Array<QHHalfEdgeStructure::Face*>& newFaces,
                                   MemoryAllocator& allocator);
 
         /// Delete all the faces visible from the vertex to be added
         static void deleteVisibleFaces(const Array<QHHalfEdgeStructure::Face*>& visibleFaces,
-                                       QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+                                       QHHalfEdgeStructure& convexHull,
                                        Array<uint32>& orphanPoints,
                                        const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices,
                                        MemoryAllocator& allocator);
@@ -106,19 +106,26 @@ class QuickHull {
                                 decimal epsilon);
 
         /// Iterate over all new faces and fix faces that are forming a concave shape in order to always keep the hull convex
-        static void mergeConcaveFaces(QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+        static void mergeConcaveFaces(QHHalfEdgeStructure& convexHull,
                                       Array<QHHalfEdgeStructure::Face*>& newFaces, const Array<Vector3>& points, decimal epsilon);
 
         /// Merge two faces that are concave at a given edge
-        static void mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+        static void mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfEdgeStructure& convexHull,
                                             const Array<Vector3>& points);
+
+        /// Fix topological issues (if any) that might have been created during faces merge
+        static void fixTopologicalIssues(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
+
+        /// Fix topological issue at a given edge
+        static void fixTopologicalIssueAtEdge(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face,
+                                              QHHalfEdgeStructure::Edge* inEdge, const Array<Vector3>& points);
 
         /// Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
         static void recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
 
         /// Return the index of the next vertex candidate to be added to the hull
         static void findNextVertexCandidate(Array<Vector3>& points, uint32& outNextVertexIndex,
-                                            QHHalfEdgeStructure& convexHullHalfEdgeStructure,
+                                            QHHalfEdgeStructure& convexHull,
                                             QHHalfEdgeStructure::Face*& outNextFace, decimal epsilon);
 
         /// Find the closest face for a given vertex and add this vertex to the remaining closest points for this face

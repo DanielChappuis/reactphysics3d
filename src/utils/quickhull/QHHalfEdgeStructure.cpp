@@ -286,33 +286,43 @@ bool QHHalfEdgeStructure::isValid() const {
 
        isValid &= face->edge != nullptr;
        isValid &= (face->previousFace != nullptr || nbFaces == 0);
-       isValid &= face->previousFace == previousFace;
-       isValid &= previousFace == nullptr || previousFace->nextFace == face;
+       isValid &= (face->previousFace == nullptr || face->previousFace == previousFace);
+       isValid &= (previousFace == nullptr || previousFace->nextFace == face);
+       isValid &= face->isValid();
        nbFaces++;
     };
+    isValid &= nbFaces > 0 || mFaces == nullptr;
 
     // For each vertex
     uint32 nbVertices = 0;
-    for (Vertex* vertex = mVertices; vertex != nullptr; vertex = vertex->nextVertex) {
+    Vertex* vertex;
+    Vertex* previousVertex;
+    for (vertex = mVertices, previousVertex = nullptr; vertex != nullptr; previousVertex = vertex, vertex = vertex->nextVertex) {
 
+       isValid &= (vertex->previousVertex != nullptr || nbVertices == 0);
+       isValid &= (vertex->previousVertex == nullptr || vertex->previousVertex == previousVertex);
+       isValid &= (previousVertex == nullptr || previousVertex->nextVertex == vertex);
        nbVertices++;
     };
     isValid &= nbVertices == mNbVertices;
+    isValid &= (nbVertices > 0 || mVertices == nullptr);
 
     // For each half-edge
     uint32 nbEdges = 0;
-    for (Edge* edge = mHalfEdges; edge != nullptr; edge = edge->nextEdge) {
+    Edge* edge;
+    Edge* previousEdge;
+    for (edge = mHalfEdges, previousEdge = nullptr; edge != nullptr; previousEdge = edge, edge = edge->nextEdge) {
 
-        isValid &= edge->face != nullptr;
-        isValid &= edge->twinEdge == nullptr || edge->twinEdge->twinEdge == edge;
-        isValid &= edge->twinEdge == nullptr || edge->twinEdge == edge->previousEdge || edge->twinEdge == edge->nextEdge;
-        isValid &= edge->nextFaceEdge == nullptr || edge->nextFaceEdge->previousFaceEdge == edge;
-        isValid &= edge->nextFaceEdge == nullptr || edge->endVertex == edge->nextFaceEdge->startVertex;
-        isValid &= edge->nextFaceEdge == nullptr || edge->face != nullptr;
-
+       isValid &= (edge->previousEdge != nullptr || nbEdges == 0);
+       isValid &= (edge->previousEdge == nullptr || edge->previousEdge == previousEdge);
+       isValid &= (previousEdge == nullptr || previousEdge->nextEdge == edge);
+       isValid &= edge->isValid();
        nbEdges++;
     };
+
     isValid &= nbEdges == mNbHalfEdges;
+    isValid &= (nbEdges > 0 || mHalfEdges == nullptr);
+
     return isValid;
 }
 
