@@ -593,8 +593,11 @@ PolyhedronMesh* PhysicsCommon::createConvexHullPolyhedronMesh(uint32 nbPoints, c
                                                               uint32 pointsStride,
                                                               PolygonVertexArray::VertexDataType pointDataType) {
 
+    /*
+    TODO : Implement This code
+
     // Use the Quick-Hull algorithm to compute the convex hull and return a PolygonVertexArray
-    PolygonVertexArray* polygonVertexArray = QuickHull::computeConvexHull(nbPoints, points, pointsStride, pointDataType, mMemoryManager.getHeapAllocator());
+    PolygonVertexArray* mesh = QuickHull::computeConvexHull(nbPoints, points, pointsStride, pointDataType, mMemoryManager.getHeapAllocator());
 
     // Create the polyhedron mesh
     PolyhedronMesh* mesh = PolyhedronMesh::create(polygonVertexArray, mMemoryManager.getPoolAllocator(), mMemoryManager.getHeapAllocator(), true);
@@ -606,6 +609,9 @@ PolyhedronMesh* PhysicsCommon::createConvexHullPolyhedronMesh(uint32 nbPoints, c
     }
 
     return mesh;
+    */
+
+    return nullptr;
 }
 
 // Destroy a polyhedron mesh

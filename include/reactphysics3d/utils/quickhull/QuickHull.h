@@ -154,7 +154,7 @@ class QuickHull {
         // -------------------- Methods -------------------- //
 
         /// Compute the convex hull of a set of points and return the resulting polyhedron mesh
-        static PolygonVertexArray* computeConvexHull(uint32 nbPoints, const void* points, uint32 pointsStride,
+        static PolyhedronMesh* computeConvexHull(uint32 nbPoints, const void* points, uint32 pointsStride,
                                                  PolygonVertexArray::VertexDataType pointDataType,
                                                  MemoryAllocator& allocator);
 

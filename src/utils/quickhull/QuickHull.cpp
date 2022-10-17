@@ -37,10 +37,10 @@
 using namespace reactphysics3d;
 
 // Compute the convex hull of a set of points and return the resulting polyhedron mesh
-PolygonVertexArray* QuickHull::computeConvexHull(uint32 nbPoints, const void* pointsStart,
-                                                 uint32 pointsStride,
-                                                 PolygonVertexArray::VertexDataType pointDataType,
-                                                 MemoryAllocator& allocator) {
+PolyhedronMesh* QuickHull::computeConvexHull(uint32 nbPoints, const void* pointsStart,
+                                             uint32 pointsStride,
+                                             PolygonVertexArray::VertexDataType pointDataType,
+                                             MemoryAllocator& allocator) {
 
     // TODO : Maybe create a PointsArray type to pass the array of points in parameter
 
