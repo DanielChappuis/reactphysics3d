@@ -87,24 +87,29 @@ class TestStack : public Test {
             rp3d_test(stack4.size() == 3);
             stack4.push(40);
             rp3d_test(stack4.size() == 4);
+            rp3d_test(stack4.top() == 40);
 
-            Stack<int> set5(stack4);
-            rp3d_test(set5.capacity() == stack4.capacity());
-            rp3d_test(set5.size() == stack4.size());
-            rp3d_test(set5.pop() == 40);
-            rp3d_test(set5.size() == 3);
-            rp3d_test(set5.pop() == 30);
-            rp3d_test(set5.pop() == 20);
-            rp3d_test(set5.pop() == 10);
-            rp3d_test(set5.size() == 0);
+            Stack<int> stack5(stack4);
+            rp3d_test(stack5.capacity() == stack4.capacity());
+            rp3d_test(stack5.size() == stack4.size());
+            rp3d_test(stack5.top() == 40);
+            rp3d_test(stack5.pop() == 40);
+            rp3d_test(stack5.size() == 3);
+            rp3d_test(stack5.pop() == 30);
+            rp3d_test(stack5.top() == 20);
+            rp3d_test(stack5.pop() == 20);
+            rp3d_test(stack5.pop() == 10);
+            rp3d_test(stack5.size() == 0);
         }
 
         void testPushPop() {
 
             Stack<int> stack1(mAllocator);
             stack1.push(10);
+            rp3d_test(stack1.top() == 10);
             stack1.push(80);
             stack1.push(130);
+            rp3d_test(stack1.top() == 130);
             rp3d_test(stack1.size() == 3);
             rp3d_test(stack1.pop() == 130);
             rp3d_test(stack1.pop() == 80);

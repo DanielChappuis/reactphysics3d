@@ -64,10 +64,13 @@ class PolyhedronMesh {
         /// Centroid of the polyhedron
         Vector3 mCentroid;
 
+        /// True if we need to release the memory of the PolygonVertexArray
+        bool mReleasePolygonVertexArray;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator);
+        PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator, bool releasePolygonVertexArray);
 
         /// Create the half-edge structure of the mesh
         bool createHalfEdgeStructure();
@@ -82,7 +85,8 @@ class PolyhedronMesh {
         decimal getFaceArea(uint32 faceIndex) const;
 
         /// Static factory method to create a polyhedron mesh
-        static PolyhedronMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator);
+        static PolyhedronMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator,
+                                      bool releasePolygonVertexArray);
 
     public:
 

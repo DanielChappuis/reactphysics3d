@@ -32,6 +32,9 @@
 
 namespace reactphysics3d {
 
+// Declarations
+struct Vector3;
+
 // Class PolygonVertexArray
 /**
  * This class is used to describe the vertices and faces of a polyhedron mesh.
@@ -126,6 +129,9 @@ class PolygonVertexArray {
         /// Return the vertex index of a given vertex in a face
         uint32 getVertexIndexInFace(uint32 faceIndex32, uint32 noVertexInFace) const;
 
+        /// Return the coordinates of a given vertex
+        Vector3 getVertex(uint32 vertexIndex) const;
+
         /// Return a polygon face of the polyhedron
         PolygonFace* getPolygonFace(uint32 faceIndex) const;
 
@@ -134,6 +140,10 @@ class PolygonVertexArray {
 
         /// Return the pointer to the start of the indices array
         const unsigned char* getIndicesStart() const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class PhysicsCommon;
 };
 
 // Return the vertex data type

@@ -168,6 +168,14 @@ class Stack {
             return item;
         }
 
+        /// Return the top element of the stack
+        T& top() {
+
+            assert(mNbElements > 0);
+
+            return mArray[mNbElements-1];
+        }
+
         /// Return the number of items in the stack
         uint64 size() const {
             return mNbElements;

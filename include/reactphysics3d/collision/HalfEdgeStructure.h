@@ -34,8 +34,7 @@ namespace reactphysics3d {
 // Class HalfEdgeStructure
 /**
  * This class describes a polyhedron mesh made of faces and vertices.
- * The faces do not have to be triangle. Note that the half-edge structure
- * is only valid if the mesh is closed (each edge has two adjacent faces).
+ * The faces do not have to be triangle.
  */
 class HalfEdgeStructure {
 
@@ -60,7 +59,7 @@ class HalfEdgeStructure {
             Face(MemoryAllocator& allocator) : edgeIndex(0), faceVertices(allocator) {}
 
             /// Constructor
-            Face(Array<uint32> vertices) : edgeIndex(0), faceVertices(vertices) {}
+            Face(const Array<uint32>& vertices) : edgeIndex(0), faceVertices(vertices) {}
         };
 
         /// Vertex
@@ -96,14 +95,14 @@ class HalfEdgeStructure {
         /// Destructor
         ~HalfEdgeStructure() = default;
 
-        /// Initialize the structure (when all vertices and faces have been added)
-        void init();
+        /// Compute the half-edges (when all vertices and faces have been added)
+        void computeHalfEdges();
 
         /// Add a vertex
         uint32 addVertex(uint32 vertexPointIndex);
 
         /// Add a face
-        void addFace(Array<uint32> faceVertices);
+        void addFace(const Array<uint32>& faceVertices);
 
         /// Return the number of faces
         uint32 getNbFaces() const;
@@ -123,11 +122,14 @@ class HalfEdgeStructure {
         /// Return a given vertex
         const Vertex& getVertex(uint32 index) const;
 
+        /// Return a string representation of the half-edge structure
+        std::string to_string() const;
+
 };
 
 // Add a vertex
 /**
- * @param vertexPointIndex Index of the vertex in the vertex data array
+ * @param vertexPointIndex Index of the vertex in the external user vertex data array
  */
 RP3D_FORCE_INLINE uint32 HalfEdgeStructure::addVertex(uint32 vertexPointIndex) {
     Vertex vertex(vertexPointIndex);
@@ -138,13 +140,12 @@ RP3D_FORCE_INLINE uint32 HalfEdgeStructure::addVertex(uint32 vertexPointIndex) {
 // Add a face
 /**
  * @param faceVertices Array of the vertices in a face (ordered in CCW order as seen from outside
- *                     the polyhedron
+ *                     the polyhedron). The indices are the internal indices of the vertices inside the HalfEdgeStructure.
  */
-RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(Array<uint32> faceVertices) {
+RP3D_FORCE_INLINE void HalfEdgeStructure::addFace(const Array<uint32>& faceVertices) {
 
     // Create a new face
-    Face face(faceVertices);
-    mFaces.add(face);
+    mFaces.add(Face(faceVertices));
 }
 
 // Return the number of faces

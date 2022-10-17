@@ -37,6 +37,7 @@
 #include <reactphysics3d/collision/shapes/ConcaveMeshShape.h>
 #include <reactphysics3d/collision/TriangleMesh.h>
 #include <reactphysics3d/utils/DefaultLogger.h>
+#include <reactphysics3d/collision/PolygonVertexArray.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -213,6 +214,10 @@ class PhysicsCommon {
 
         /// Create a polyhedron mesh
         PolyhedronMesh* createPolyhedronMesh(PolygonVertexArray* polygonVertexArray);
+
+        /// Compute the convex hull of a given set of points and return the result polyhedron of the convex hull
+        PolyhedronMesh* createConvexHullPolyhedronMesh(uint32 nbPoints, const unsigned char* pointsStart,
+                                                       uint32 pointsStride, PolygonVertexArray::VertexDataType vertexDataType);
 
         /// Destroy a polyhedron mesh
         void destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh);

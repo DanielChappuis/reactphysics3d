@@ -28,6 +28,7 @@ set (RP3D_TESTS_HEADERS
     "tests/mathematics/TestVector2.h"
     "tests/mathematics/TestVector3.h"
     "tests/engine/TestRigidBody.h"
+    "tests/utils/TestQuickHull.h"
 )
 
 # Source files

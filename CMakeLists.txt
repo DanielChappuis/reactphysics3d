@@ -146,6 +146,8 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/utils/Logger.h"
     "include/reactphysics3d/utils/DefaultLogger.h"
     "include/reactphysics3d/utils/DebugRenderer.h"
+    "include/reactphysics3d/utils/quickhull/QuickHull.h"
+    "include/reactphysics3d/utils/quickhull/QHHalfEdgeStructure.h"
 )
 
 # Source files
@@ -233,6 +235,8 @@ set (REACTPHYSICS3D_SOURCES
     "src/utils/Profiler.cpp"
     "src/utils/DefaultLogger.cpp"
     "src/utils/DebugRenderer.cpp"
+    "src/utils/quickhull/QuickHull.cpp"
+    "src/utils/quickhull/QHHalfEdgeStructure.cpp"
 )
 
 # Create the library

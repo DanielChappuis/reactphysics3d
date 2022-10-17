@@ -39,9 +39,10 @@ using namespace reactphysics3d;
  * Create a polyhedron mesh given an array of polygons.
  * @param polygonVertexArray Pointer to the array of polygons and their vertices
  */
-PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator)
+PolyhedronMesh::PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator, bool releasePolygonVertexArray)
                : mMemoryAllocator(allocator), mHalfEdgeStructure(allocator, polygonVertexArray->getNbFaces(), polygonVertexArray->getNbVertices(),
-                                    (polygonVertexArray->getNbFaces() + polygonVertexArray->getNbVertices() - 2) * 2), mFacesNormals(nullptr) {
+                                    (polygonVertexArray->getNbFaces() + polygonVertexArray->getNbVertices() - 2) * 2), mFacesNormals(nullptr),
+                 mReleasePolygonVertexArray(releasePolygonVertexArray) {
 
    mPolygonVertexArray = polygonVertexArray;
 }
@@ -60,9 +61,11 @@ PolyhedronMesh::~PolyhedronMesh() {
 }
 
 /// Static factory method to create a polyhedron mesh. This methods returns null_ptr if the mesh is not valid
-PolyhedronMesh* PolyhedronMesh::create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator) {
+PolyhedronMesh* PolyhedronMesh::create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator,
+                                       bool releasePolygonVertexArray) {
 
-    PolyhedronMesh* mesh = new (polyhedronMeshAllocator.allocate(sizeof(PolyhedronMesh))) PolyhedronMesh(polygonVertexArray, dataAllocator);
+    PolyhedronMesh* mesh = new (polyhedronMeshAllocator.allocate(sizeof(PolyhedronMesh))) PolyhedronMesh(polygonVertexArray, dataAllocator,
+                                                                                                         releasePolygonVertexArray);
 
     // Create the half-edge structure of the mesh
     bool isValid = mesh->createHalfEdgeStructure();
@@ -89,14 +92,16 @@ PolyhedronMesh* PolyhedronMesh::create(PolygonVertexArray* polygonVertexArray, M
 bool PolyhedronMesh::createHalfEdgeStructure() {
 
     // For each vertex of the mesh
-    for (uint32 v=0; v < mPolygonVertexArray->getNbVertices(); v++) {
+    const uint32 nbVertices = mPolygonVertexArray->getNbVertices();
+    for (uint32 v=0; v < nbVertices; v++) {
         mHalfEdgeStructure.addVertex(v);
     }
 
     uint32 nbEdges = 0;
 
     // For each polygon face of the mesh
-    for (uint32 f=0; f < mPolygonVertexArray->getNbFaces(); f++) {
+    const uint32 nbFaces = mPolygonVertexArray->getNbFaces();
+    for (uint32 f=0; f < nbFaces; f++) {
 
         // Get the polygon face
         PolygonVertexArray::PolygonFace* face = mPolygonVertexArray->getPolygonFace(f);
@@ -130,7 +135,7 @@ bool PolyhedronMesh::createHalfEdgeStructure() {
     }
 
     // Initialize the half-edge structure
-    mHalfEdgeStructure.init();
+    mHalfEdgeStructure.computeHalfEdges();
 
     // Create the face normals array
     mFacesNormals = new (mMemoryAllocator.allocate(mHalfEdgeStructure.getNbFaces() * sizeof(Vector3))) Vector3[mHalfEdgeStructure.getNbFaces()];
@@ -149,28 +154,8 @@ Vector3 PolyhedronMesh::getVertex(uint32 index) const {
     // Get the vertex index in the array with all vertices
     uint32 vertexIndex = mHalfEdgeStructure.getVertex(index).vertexPointIndex;
 
-    PolygonVertexArray::VertexDataType vertexType = mPolygonVertexArray->getVertexDataType();
-    const unsigned char* verticesStart = mPolygonVertexArray->getVerticesStart();
-    uint32 vertexStride = mPolygonVertexArray->getVerticesStride();
-
-    Vector3 vertex;
-    if (vertexType == PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
-        const float* vertices = (float*)(verticesStart + vertexIndex * vertexStride);
-        vertex.x = decimal(vertices[0]);
-        vertex.y = decimal(vertices[1]);
-        vertex.z = decimal(vertices[2]);
-    }
-    else if (vertexType == PolygonVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
-        const double* vertices = (double*)(verticesStart + vertexIndex * vertexStride);
-        vertex.x = decimal(vertices[0]);
-        vertex.y = decimal(vertices[1]);
-        vertex.z = decimal(vertices[2]);
-    }
-    else {
-        assert(false);
-    }
-
-    return vertex;
+    // Return the corresponding vertex from the polygon vertex array
+    return mPolygonVertexArray->getVertex(vertexIndex);
 }
 
 // Compute the faces normals
