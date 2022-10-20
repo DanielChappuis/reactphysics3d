@@ -36,6 +36,7 @@ namespace reactphysics3d {
 // Declarations
 class DefaultAllocator;
 class PolygonVertexArray;
+struct Error;
 
 // Class PolyhedronMesh
 /**
@@ -51,32 +52,34 @@ class PolyhedronMesh {
         /// Reference to the memory allocator
         MemoryAllocator& mMemoryAllocator;
 
-        /// Pointer the the polygon vertex array with vertices and faces
-        /// of the mesh
-        PolygonVertexArray* mPolygonVertexArray;
-
         /// Half-edge structure of the mesh
         HalfEdgeStructure mHalfEdgeStructure;
 
+        // All the vertices of the mesh
+        Array<Vector3> mVertices;
+
         /// Array with the face normals
-        Vector3* mFacesNormals;
+        Array<Vector3> mFacesNormals;
 
         /// Centroid of the polyhedron
         Vector3 mCentroid;
 
-        /// True if we need to release the memory of the PolygonVertexArray
-        bool mReleasePolygonVertexArray;
-
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator, bool releasePolygonVertexArray);
+        PolyhedronMesh(MemoryAllocator& allocator, uint32 nbVertices, uint32 nbFaces);
+
+        /// Initialize a mesh and returns errors if any
+        bool init(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
+
+        /// Copy the vertices into the mesh
+        bool copyVertices(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
 
         /// Create the half-edge structure of the mesh
-        bool createHalfEdgeStructure();
+        bool createHalfEdgeStructure(PolygonVertexArray* polygonVertexArray, std::vector<Error> &errors);
 
         /// Compute the faces normals
-        void computeFacesNormals();
+        bool computeFacesNormals(std::vector<Error>& errors);
 
         /// Compute the centroid of the polyhedron
         void computeCentroid() ;
@@ -85,27 +88,23 @@ class PolyhedronMesh {
         decimal getFaceArea(uint32 faceIndex) const;
 
         /// Static factory method to create a polyhedron mesh
-        static PolyhedronMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator,
-                                      bool releasePolygonVertexArray);
+        static PolyhedronMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator, std::vector<reactphysics3d::Error>& errors);
 
     public:
 
         // -------------------- Methods -------------------- //
 
-        /// Destructor
-        ~PolyhedronMesh();
-
         /// Return the number of vertices
         uint32 getNbVertices() const;
 
         /// Return a vertex
-        Vector3 getVertex(uint32 index) const;
+        const Vector3& getVertex(uint32 index) const;
 
         /// Return the number of faces
         uint32 getNbFaces() const;
 
         /// Return a face normal
-        Vector3 getFaceNormal(uint32 faceIndex) const;
+        const Vector3& getFaceNormal(uint32 faceIndex) const;
 
         /// Return the half-edge structure of the mesh
         const HalfEdgeStructure& getHalfEdgeStructure() const;
@@ -126,7 +125,17 @@ class PolyhedronMesh {
  * @return The number of vertices in the mesh
  */
 RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbVertices() const {
-    return mHalfEdgeStructure.getNbVertices();
+    return mVertices.size();
+}
+
+/// Return a vertex
+/**
+ * @param index Index of a given vertex in the mesh
+ * @return The coordinates of a given vertex in the mesh
+ */
+RP3D_FORCE_INLINE const Vector3& PolyhedronMesh::getVertex(uint32 index) const {
+    assert(index < mVertices.size());
+    return mVertices[index];
 }
 
 // Return the number of faces
@@ -142,7 +151,7 @@ RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbFaces() const {
  * @param faceIndex The index of a given face of the mesh
  * @return The normal vector of a given face of the mesh
  */
-RP3D_FORCE_INLINE Vector3 PolyhedronMesh::getFaceNormal(uint32 faceIndex) const {
+RP3D_FORCE_INLINE const Vector3& PolyhedronMesh::getFaceNormal(uint32 faceIndex) const {
     assert(faceIndex < mHalfEdgeStructure.getNbFaces());
     return mFacesNormals[faceIndex];
 }

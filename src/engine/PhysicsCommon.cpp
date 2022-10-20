@@ -567,10 +567,10 @@ void PhysicsCommon::deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
  * @param polygonVertexArray A pointer to the polygon vertex array to use to create the polyhedron mesh
  * @return A pointer to the created polyhedron mesh or nullptr if the mesh is not valid
  */
-PolyhedronMesh* PhysicsCommon::createPolyhedronMesh(PolygonVertexArray* polygonVertexArray) {
+PolyhedronMesh* PhysicsCommon::createPolyhedronMesh(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
 
     // Create the polyhedron mesh
-    PolyhedronMesh* mesh = PolyhedronMesh::create(polygonVertexArray, mMemoryManager.getPoolAllocator(), mMemoryManager.getHeapAllocator(), false);
+    PolyhedronMesh* mesh = PolyhedronMesh::create(polygonVertexArray, mMemoryManager.getHeapAllocator(), errors);
 
     // If the mesh is valid
     if (mesh != nullptr) {
@@ -620,32 +620,7 @@ PolyhedronMesh* PhysicsCommon::createConvexHullPolyhedronMesh(uint32 nbPoints, c
  */
 void PhysicsCommon::destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
 
-    PolygonVertexArray* polygonVertexArray = polyhedronMesh->mPolygonVertexArray;
-    const bool releasePolygonVertexArray = polyhedronMesh->mReleasePolygonVertexArray;
-    const uint32 nbIndices = polyhedronMesh->mHalfEdgeStructure.getNbHalfEdges();   // Nb indices = nb half-edges
-
     deletePolyhedronMesh(polyhedronMesh);
-
-    // If we need to release the memory of the PolygonVertexArray and its data
-    if (releasePolygonVertexArray) {
-
-        MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
-
-        // Release vertices array
-        const uint32 sizeVertex = 3 * (polygonVertexArray->getVertexDataType() == PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE ? sizeof(float) : sizeof (double));
-        allocator.release(const_cast<unsigned char*>(polygonVertexArray->mVerticesStart), polygonVertexArray->mNbVertices * sizeVertex);
-
-        // Release indices array
-        const uint32 sizeIndex = (polygonVertexArray->getIndexDataType() == PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE ? sizeof(int) : sizeof(short));
-        allocator.release(const_cast<unsigned char*>(polygonVertexArray->mIndicesStart), nbIndices * sizeIndex);
-
-        // Release polygon faces array
-        allocator.release(polygonVertexArray->mPolygonFacesStart, polygonVertexArray->mNbFaces * sizeof(PolygonVertexArray::PolygonFace));
-
-        // Release the PolygonVertexArray
-        allocator.release(polygonVertexArray, sizeof(PolygonVertexArray));
-    }
-
     mPolyhedronMeshes.remove(polyhedronMesh);
 }
 
@@ -659,7 +634,7 @@ void PhysicsCommon::deletePolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
    polyhedronMesh->~PolyhedronMesh();
 
    // Release allocated memory
-   mMemoryManager.release(MemoryManager::AllocationType::Pool, polyhedronMesh, sizeof(PolyhedronMesh));
+   mMemoryManager.release(MemoryManager::AllocationType::Heap, polyhedronMesh, sizeof(PolyhedronMesh));
 }
 
 // Create a triangle mesh

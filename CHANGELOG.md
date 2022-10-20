@@ -4,11 +4,16 @@
 
 ### Added
 
+ - The library will now return errors found in input data during ConvexMesh, TriangularMesh and HeighField creation
+
 ### Changed
 
  - The library must now be compiled with C++ 17 compiler
  - If the user sets its own custom allocator, the return allocated memory must now be 16 bytes aligned
  - The internal allocators now allocates memory that is 16-bytes aligned
+ - The PolyhedronMesh class has been renamed to ConvexMesh
+ - The PhysicsCommon::createPolyhedronMesh() method has been renamed to PhysicsCommon::createConvexMesh()
+ - The PhysicsCommon::createConvexMesh() nows returns a list of errors that might have happened during the mesh creation
 
 ### Removed
 

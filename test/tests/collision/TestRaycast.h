@@ -237,7 +237,9 @@ class TestRaycast : public Test {
                                          PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
-            mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray);
+            std::vector<Error> errors;
+            mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray, errors);
+            rp3d_test(mPolyhedronMesh != nullptr);
             mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh);
             mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);
 

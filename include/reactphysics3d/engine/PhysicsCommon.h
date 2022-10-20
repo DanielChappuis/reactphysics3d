@@ -213,7 +213,7 @@ class PhysicsCommon {
         void destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape);
 
         /// Create a polyhedron mesh
-        PolyhedronMesh* createPolyhedronMesh(PolygonVertexArray* polygonVertexArray);
+        PolyhedronMesh* createPolyhedronMesh(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
 
         /// Compute the convex hull of a given set of points and return the result polyhedron of the convex hull
         PolyhedronMesh* createConvexHullPolyhedronMesh(uint32 nbPoints, const unsigned char* pointsStart,

@@ -35,6 +35,7 @@
 #include <reactphysics3d/engine/PhysicsWorld.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
+#include <reactphysics3d/utils/Error.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -160,7 +161,9 @@ class TestPointInside : public Test {
                     &(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
                     PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            mConvexMeshPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMeshPolygonVertexArray);
+            std::vector<Error> errors;
+            mConvexMeshPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMeshPolygonVertexArray, errors);
+            rp3d_test(mConvexMeshPolyhedronMesh != nullptr);
             mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMeshPolyhedronMesh);
             Transform convexMeshTransform(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);

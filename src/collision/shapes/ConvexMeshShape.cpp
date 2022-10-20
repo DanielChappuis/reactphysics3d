@@ -122,9 +122,9 @@ bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider
     for (uint32 f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
-        const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
+        const Vector3& faceNormal = mPolyhedronMesh->getFaceNormal(f);
         const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
-        const Vector3 facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
+        const Vector3& facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
         decimal denom = faceNormal.dot(direction);
         decimal planeD = faceNormal.dot(facePoint);
         decimal dist = planeD -  faceNormal.dot(ray.point1);
@@ -192,9 +192,9 @@ bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* /*col
     for (uint32 f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
-        const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
+        const Vector3& faceNormal = mPolyhedronMesh->getFaceNormal(f);
         const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
-        const Vector3 facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
+        const Vector3& facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
 
         // If the point is out of the face plane, it is outside of the convex mesh
         if (computePointToPlaneDistance(localPoint, faceNormal, facePoint) > decimal(0.0)) return false;
@@ -215,7 +215,7 @@ std::string ConvexMeshShape::to_string() const {
 
     for (uint32 v=0; v < mPolyhedronMesh->getNbVertices(); v++) {
 
-        Vector3 vertex = mPolyhedronMesh->getVertex(v);
+        const Vector3& vertex = mPolyhedronMesh->getVertex(v);
         ss << vertex.to_string();
         if (v != mPolyhedronMesh->getNbVertices() - 1) {
             ss << ", ";

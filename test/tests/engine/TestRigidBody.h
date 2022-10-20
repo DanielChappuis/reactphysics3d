@@ -115,7 +115,9 @@ class TestRigidBody : public Test {
                     &(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
                     rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            mConvexMeshPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMeshPolygonVertexArray);
+            std::vector<Error> errors;
+            mConvexMeshPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMeshPolygonVertexArray, errors);
+            rp3d_test(mConvexMeshPolyhedronMesh != nullptr);
             ConvexMeshShape* convexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMeshPolyhedronMesh);
             Transform transform3(Vector3(10, 0, 0), Quaternion::identity());
             mRigidBody2Convex = mWorld->createRigidBody(transform3);

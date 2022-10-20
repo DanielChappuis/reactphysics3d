@@ -26,6 +26,7 @@
 // Libraries
 #include "ConvexMesh.h"
 #include <unordered_set>
+#include <reactphysics3d/utils/Error.h>
 
 // Constructor
 ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
@@ -71,7 +72,14 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
                                          rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Create the polyhedron mesh
-    mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray);
+    std::vector<rp3d::Error> errors;
+    mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray, errors);
+    if (mPolyhedronMesh == nullptr) {
+        std::cout << "Error while creating a ConvexMesh:" << std::endl;
+        for (const rp3d::Error& error: errors) {
+            std::cout << "Error: " << error.message << std::endl;
+        }
+    }
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end
