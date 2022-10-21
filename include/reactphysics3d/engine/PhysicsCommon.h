@@ -78,8 +78,8 @@ class PhysicsCommon {
         /// Set of height field shapes
         Set<HeightFieldShape*> mHeightFieldShapes;
 
-        /// Set of polyhedron meshes
-        Set<PolyhedronMesh*> mPolyhedronMeshes;
+        /// Set of convex meshes
+        Set<ConvexMesh*> mConvexMeshes;
 
         /// Set of triangle meshes
         Set<TriangleMesh*> mTriangleMeshes;
@@ -128,8 +128,8 @@ class PhysicsCommon {
         /// Delete a concave mesh shape
         void deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape);
 
-        /// Delete a polyhedron mesh
-        void deletePolyhedronMesh(PolyhedronMesh* polyhedronMesh);
+        /// Delete a convex mesh
+        void deleteConvexMesh(ConvexMesh* convexMesh);
 
         /// Delete a triangle mesh
         void deleteTriangleMesh(TriangleMesh* triangleMesh);
@@ -192,7 +192,7 @@ class PhysicsCommon {
         void destroyCapsuleShape(CapsuleShape* capsuleShape);
 
         /// Create and return a convex mesh shape
-        ConvexMeshShape* createConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling = Vector3(1,1,1));
+        ConvexMeshShape* createConvexMeshShape(ConvexMesh* convexMesh, const Vector3& scaling = Vector3(1,1,1));
 
         /// Destroy a convex mesh shape
         void destroyConvexMeshShape(ConvexMeshShape* convexMeshShape);
@@ -212,15 +212,15 @@ class PhysicsCommon {
         /// Destroy a concave mesh shape
         void destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape);
 
-        /// Create a polyhedron mesh
-        PolyhedronMesh* createPolyhedronMesh(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
+        /// Create a convex mesh
+        ConvexMesh* createConvexMesh(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
 
         /// Compute the convex hull of a given set of points and return the result polyhedron of the convex hull
-        PolyhedronMesh* createConvexHullPolyhedronMesh(uint32 nbPoints, const unsigned char* pointsStart,
+        ConvexMesh* createConvexMesh(uint32 nbPoints, const unsigned char* pointsStart,
                                                        uint32 pointsStride, PolygonVertexArray::VertexDataType vertexDataType);
 
-        /// Destroy a polyhedron mesh
-        void destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh);
+        /// Destroy a convex mesh
+        void destroyConvexMesh(ConvexMesh* convexMesh);
 
         /// Create a triangle mesh
         TriangleMesh* createTriangleMesh();

@@ -25,7 +25,7 @@
 
 // Libraries
 #include <reactphysics3d/utils/quickhull/QuickHull.h>
-#include <reactphysics3d/collision/PolyhedronMesh.h>
+#include <reactphysics3d/collision/ConvexMesh.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/containers/Map.h>
 #include <reactphysics3d/containers/Array.h>
@@ -36,8 +36,8 @@
 // Namespace
 using namespace reactphysics3d;
 
-// Compute the convex hull of a set of points and return the resulting polyhedron mesh
-PolyhedronMesh* QuickHull::computeConvexHull(uint32 nbPoints, const void* pointsStart,
+// Compute the convex hull of a set of points and return the resulting convex mesh
+ConvexMesh* QuickHull::computeConvexHull(uint32 nbPoints, const void* pointsStart,
                                              uint32 pointsStride,
                                              PolygonVertexArray::VertexDataType pointDataType,
                                              MemoryAllocator& allocator) {

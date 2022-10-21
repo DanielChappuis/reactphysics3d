@@ -13,7 +13,9 @@
  - The internal allocators now allocates memory that is 16-bytes aligned
  - The PolyhedronMesh class has been renamed to ConvexMesh
  - The PhysicsCommon::createPolyhedronMesh() method has been renamed to PhysicsCommon::createConvexMesh()
+ - The PhysicsCommon::destroyPolyhedronMesh() method has been renamed to PhysicsCommon::destroyConvexMesh()
  - The PhysicsCommon::createConvexMesh() nows returns a list of errors that might have happened during the mesh creation
+ - The input data (vertices, indices, ...) are now copied into the ConvexMesh, TriangularMesh and HeighField and not shared anymore.
 
 ### Removed
 

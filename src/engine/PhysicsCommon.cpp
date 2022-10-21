@@ -42,7 +42,7 @@ PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
                 mPhysicsWorlds(mMemoryManager.getHeapAllocator()), mSphereShapes(mMemoryManager.getHeapAllocator()),
                 mBoxShapes(mMemoryManager.getHeapAllocator()), mCapsuleShapes(mMemoryManager.getHeapAllocator()),
                 mConvexMeshShapes(mMemoryManager.getHeapAllocator()), mConcaveMeshShapes(mMemoryManager.getHeapAllocator()),
-                mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mPolyhedronMeshes(mMemoryManager.getHeapAllocator()),
+                mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mConvexMeshes(mMemoryManager.getHeapAllocator()),
                 mTriangleMeshes(mMemoryManager.getHeapAllocator()),
                 mProfilers(mMemoryManager.getHeapAllocator()), mDefaultLoggers(mMemoryManager.getHeapAllocator()),
                 mBoxShapeHalfEdgeStructure(mMemoryManager.getHeapAllocator(), 6, 8, 24),
@@ -174,11 +174,11 @@ void PhysicsCommon::release() {
     }
     mConcaveMeshShapes.clear();
 
-    // Destroy the polyhedron mesh
-    for (auto it = mPolyhedronMeshes.begin(); it != mPolyhedronMeshes.end(); ++it) {
-        deletePolyhedronMesh(*it);
+    // Destroy the convex mesh
+    for (auto it = mConvexMeshes.begin(); it != mConvexMeshes.end(); ++it) {
+        deleteConvexMesh(*it);
     }
-    mPolyhedronMeshes.clear();
+    mConvexMeshes.clear();
 
     // Destroy the triangle mesh
     for (auto it = mTriangleMeshes.begin(); it != mTriangleMeshes.end(); ++it) {
@@ -416,13 +416,13 @@ void PhysicsCommon::deleteCapsuleShape(CapsuleShape* capsuleShape) {
 
 // Create and return a convex mesh shape
 /**
- * @param polyhedronMesh A pointer to the polyhedron mesh used to create the convex shape
- * @param scaling Scaling factor to scale the polyhedron mesh if necessary
+ * @param convexMesh A pointer to the convex mesh for this shape
+ * @param scaling Scaling factor to scale the convex mesh if necessary
  * @return A pointer to the created convex mesh shape
  */
-ConvexMeshShape* PhysicsCommon::createConvexMeshShape(PolyhedronMesh* polyhedronMesh, const Vector3& scaling) {
+ConvexMeshShape* PhysicsCommon::createConvexMeshShape(ConvexMesh* convexMesh, const Vector3& scaling) {
 
-    ConvexMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConvexMeshShape))) ConvexMeshShape(polyhedronMesh, mMemoryManager.getHeapAllocator(), scaling);
+    ConvexMeshShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConvexMeshShape))) ConvexMeshShape(convexMesh, mMemoryManager.getHeapAllocator(), scaling);
 
     mConvexMeshShapes.add(shape);
 
@@ -562,34 +562,35 @@ void PhysicsCommon::deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
    mMemoryManager.release(MemoryManager::AllocationType::Pool, concaveMeshShape, sizeof(ConcaveMeshShape));
 }
 
-// Create a polyhedron mesh
+// Create a convex mesh
 /**
- * @param polygonVertexArray A pointer to the polygon vertex array to use to create the polyhedron mesh
- * @return A pointer to the created polyhedron mesh or nullptr if the mesh is not valid
+ * @param polygonVertexArray A pointer to the polygon vertex array to use to create the convex mesh
+ * @param errors A reference to a vector of errors. This vector will contains errors after the call (if any)
+ * @return A pointer to the created convex mesh or nullptr if the mesh is not valid
  */
-PolyhedronMesh* PhysicsCommon::createPolyhedronMesh(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
+ConvexMesh* PhysicsCommon::createConvexMesh(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
 
-    // Create the polyhedron mesh
-    PolyhedronMesh* mesh = PolyhedronMesh::create(polygonVertexArray, mMemoryManager.getHeapAllocator(), errors);
+    // Create the convex mesh
+    ConvexMesh* mesh = ConvexMesh::create(polygonVertexArray, mMemoryManager.getHeapAllocator(), errors);
 
     // If the mesh is valid
     if (mesh != nullptr) {
 
-        mPolyhedronMeshes.add(mesh);
+        mConvexMeshes.add(mesh);
     }
 
     return mesh;
 }
 
-// Compute the convex hull of a given set of points and return the result polyhedron mesh of the convex hull
+// Compute the convex hull of a given set of points and return the result convex mesh of the convex hull
 /**
  * @param nbPoints Number of points
  * @param points Pointer to the first point in the array
  * @param pointsStride Stride (number of bytes) between the beginning of two points in the array
  * @param pointDataType Data type of the points coordinates in the array (float or double)
- * @return A pointer to the created polyhedron mesh or nullptr if the mesh is not valid
+ * @return A pointer to the created convex mesh or nullptr if the mesh is not valid
  */
-PolyhedronMesh* PhysicsCommon::createConvexHullPolyhedronMesh(uint32 nbPoints, const unsigned char* points,
+ConvexMesh* PhysicsCommon::createConvexMesh(uint32 nbPoints, const unsigned char* points,
                                                               uint32 pointsStride,
                                                               PolygonVertexArray::VertexDataType pointDataType) {
 
@@ -599,13 +600,13 @@ PolyhedronMesh* PhysicsCommon::createConvexHullPolyhedronMesh(uint32 nbPoints, c
     // Use the Quick-Hull algorithm to compute the convex hull and return a PolygonVertexArray
     PolygonVertexArray* mesh = QuickHull::computeConvexHull(nbPoints, points, pointsStride, pointDataType, mMemoryManager.getHeapAllocator());
 
-    // Create the polyhedron mesh
-    PolyhedronMesh* mesh = PolyhedronMesh::create(polygonVertexArray, mMemoryManager.getPoolAllocator(), mMemoryManager.getHeapAllocator(), true);
+    // Create the convex mesh
+    ConvexMesh* mesh = ConvexMesh::create(polygonVertexArray, mMemoryManager.getPoolAllocator(), mMemoryManager.getHeapAllocator(), true);
 
     // If the mesh is valid
     if (mesh != nullptr) {
 
-        mPolyhedronMeshes.add(mesh);
+        mConvexMeshes.add(mesh);
     }
 
     return mesh;
@@ -614,27 +615,27 @@ PolyhedronMesh* PhysicsCommon::createConvexHullPolyhedronMesh(uint32 nbPoints, c
     return nullptr;
 }
 
-// Destroy a polyhedron mesh
+// Destroy a convex mesh
 /**
- * @param polyhedronMesh A pointer to the polyhedron mesh to destroy
+ * @param convexMesh A pointer to the convex mesh to destroy
  */
-void PhysicsCommon::destroyPolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
+void PhysicsCommon::destroyConvexMesh(ConvexMesh* convexMesh) {
 
-    deletePolyhedronMesh(polyhedronMesh);
-    mPolyhedronMeshes.remove(polyhedronMesh);
+    deleteConvexMesh(convexMesh);
+    mConvexMeshes.remove(convexMesh);
 }
 
-// Delete a polyhedron mesh
+// Delete a convex mesh
 /**
- * @param polyhedronMesh A pointer to the polyhedron mesh to destroy
+ * @param convexMesh A pointer to the convex mesh to destroy
  */
-void PhysicsCommon::deletePolyhedronMesh(PolyhedronMesh* polyhedronMesh) {
+void PhysicsCommon::deleteConvexMesh(ConvexMesh* convexMesh) {
 
    // Call the destructor of the shape
-   polyhedronMesh->~PolyhedronMesh();
+   convexMesh->~ConvexMesh();
 
    // Release allocated memory
-   mMemoryManager.release(MemoryManager::AllocationType::Heap, polyhedronMesh, sizeof(PolyhedronMesh));
+   mMemoryManager.release(MemoryManager::AllocationType::Heap, convexMesh, sizeof(ConvexMesh));
 }
 
 // Create a triangle mesh

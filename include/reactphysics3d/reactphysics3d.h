@@ -50,12 +50,12 @@
 #include <reactphysics3d/collision/shapes/ConvexMeshShape.h>
 #include <reactphysics3d/collision/shapes/ConcaveMeshShape.h>
 #include <reactphysics3d/collision/shapes/HeightFieldShape.h>
-#include <reactphysics3d/collision/PolyhedronMesh.h>
+#include <reactphysics3d/collision/ConvexMesh.h>
 #include <reactphysics3d/collision/shapes/AABB.h>
 #include <reactphysics3d/collision/Collider.h>
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <reactphysics3d/collision/TriangleMesh.h>
-#include <reactphysics3d/collision/PolyhedronMesh.h>
+#include <reactphysics3d/collision/ConvexMesh.h>
 #include <reactphysics3d/collision/TriangleVertexArray.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/collision/CollisionCallback.h>

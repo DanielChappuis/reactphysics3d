@@ -36,7 +36,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class PolyhedronMesh;
+class ConvexMesh;
 template<typename T>
 class Array;
 
@@ -153,8 +153,8 @@ class QuickHull {
 
         // -------------------- Methods -------------------- //
 
-        /// Compute the convex hull of a set of points and return the resulting polyhedron mesh
-        static PolyhedronMesh* computeConvexHull(uint32 nbPoints, const void* points, uint32 pointsStride,
+        /// Compute the convex hull of a set of points and return the resulting convex mesh
+        static ConvexMesh* computeConvexHull(uint32 nbPoints, const void* points, uint32 pointsStride,
                                                  PolygonVertexArray::VertexDataType pointDataType,
                                                  MemoryAllocator& allocator);
 

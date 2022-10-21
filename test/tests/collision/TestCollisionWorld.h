@@ -304,8 +304,8 @@ class TestCollisionWorld : public Test {
 
 		PolygonVertexArray* mConvexMesh1PolygonVertexArray;
 		PolygonVertexArray* mConvexMesh2PolygonVertexArray;
-		PolyhedronMesh* mConvexMesh1PolyhedronMesh;
-		PolyhedronMesh* mConvexMesh2PolyhedronMesh;
+        ConvexMesh* mConvexMesh1;
+        ConvexMesh* mConvexMesh2;
 		PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
 
         TriangleVertexArray* mConcaveMeshTriangleVertexArray;
@@ -395,9 +395,9 @@ class TestCollisionWorld : public Test {
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
             std::vector<Error> errors;
-            mConvexMesh1PolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMesh1PolygonVertexArray, errors);
-            rp3d_test(mConvexMesh1PolyhedronMesh != nullptr);
-            mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1PolyhedronMesh);
+            mConvexMesh1 = mPhysicsCommon.createConvexMesh(mConvexMesh1PolygonVertexArray, errors);
+            rp3d_test(mConvexMesh1 != nullptr);
+            mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1);
             Transform convexMeshTransform1(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshBody1 = mWorld->createCollisionBody(convexMeshTransform1);
             mConvexMeshCollider1 = mConvexMeshBody1->addCollider(mConvexMeshShape1, Transform::identity());
@@ -416,9 +416,9 @@ class TestCollisionWorld : public Test {
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
             errors.clear();
-            mConvexMesh2PolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMesh2PolygonVertexArray, errors);
-            rp3d_test(mConvexMesh2PolyhedronMesh != nullptr);
-            mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2PolyhedronMesh);
+            mConvexMesh2 = mPhysicsCommon.createConvexMesh(mConvexMesh2PolygonVertexArray, errors);
+            rp3d_test(mConvexMesh2 != nullptr);
+            mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2);
             Transform convexMeshTransform2(Vector3(20, 0, 0), Quaternion::identity());
             mConvexMeshBody2 = mWorld->createCollisionBody(convexMeshTransform2);
             mConvexMeshCollider2 = mConvexMeshBody2->addCollider(mConvexMeshShape2, Transform::identity());
@@ -480,8 +480,8 @@ class TestCollisionWorld : public Test {
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape1);
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape2);
 
-            mPhysicsCommon.destroyPolyhedronMesh(mConvexMesh1PolyhedronMesh);
-            mPhysicsCommon.destroyPolyhedronMesh(mConvexMesh2PolyhedronMesh);
+            mPhysicsCommon.destroyConvexMesh(mConvexMesh1);
+            mPhysicsCommon.destroyConvexMesh(mConvexMesh2);
 
 			delete mConvexMesh1PolygonVertexArray;
 			delete mConvexMesh2PolygonVertexArray;

@@ -41,7 +41,7 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
                                               0, 0, scaling.z, 0,
                                               0, 0, 0, 1);
 
-    // Polygon faces descriptions for the polyhedron
+    // Polygon faces descriptions for the convex mesh
     mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
     rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
     for (unsigned int f=0; f < getNbFaces(0); f++) {
@@ -71,10 +71,10 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
                                          rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
-    // Create the polyhedron mesh
+    // Create the convex mesh
     std::vector<rp3d::Error> errors;
-    mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray, errors);
-    if (mPolyhedronMesh == nullptr) {
+    mConvexMesh = mPhysicsCommon.createConvexMesh(mPolygonVertexArray, errors);
+    if (mConvexMesh == nullptr) {
         std::cout << "Error while creating a ConvexMesh:" << std::endl;
         for (const rp3d::Error& error: errors) {
             std::cout << "Error: " << error.message << std::endl;
@@ -83,7 +83,7 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end
-    mConvexShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh, scaling);
+    mConvexShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh, scaling);
 
     mPreviousTransform = rp3d::Transform::identity();
 
@@ -128,7 +128,7 @@ ConvexMesh::~ConvexMesh() {
     }
 
     mPhysicsCommon.destroyConvexMeshShape(mConvexShape);
-    mPhysicsCommon.destroyPolyhedronMesh(mPolyhedronMesh);
+    mPhysicsCommon.destroyConvexMesh(mConvexMesh);
     delete mPolygonVertexArray;
     delete[] mPolygonFaces;
 }

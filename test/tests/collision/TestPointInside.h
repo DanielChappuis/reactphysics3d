@@ -69,7 +69,7 @@ class TestPointInside : public Test {
         float mConvexMeshCubeVertices[8 * 3];
         int mConvexMeshCubeIndices[24];
         PolygonVertexArray* mConvexMeshPolygonVertexArray;
-        PolyhedronMesh* mConvexMeshPolyhedronMesh;
+        ConvexMesh* mConvexMesh;
         PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
 
         // Collision shapes
@@ -162,9 +162,9 @@ class TestPointInside : public Test {
                     PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
             std::vector<Error> errors;
-            mConvexMeshPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMeshPolygonVertexArray, errors);
-            rp3d_test(mConvexMeshPolyhedronMesh != nullptr);
-            mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMeshPolyhedronMesh);
+            mConvexMesh = mPhysicsCommon.createConvexMesh(mConvexMeshPolygonVertexArray, errors);
+            rp3d_test(mConvexMesh != nullptr);
+            mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);
             Transform convexMeshTransform(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);
 
@@ -184,7 +184,7 @@ class TestPointInside : public Test {
             mPhysicsCommon.destroySphereShape(mSphereShape);
             mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape);
-            mPhysicsCommon.destroyPolyhedronMesh(mConvexMeshPolyhedronMesh);
+            mPhysicsCommon.destroyConvexMesh(mConvexMesh);
             delete[] mConvexMeshPolygonFaces;
             delete mConvexMeshPolygonVertexArray;
         }

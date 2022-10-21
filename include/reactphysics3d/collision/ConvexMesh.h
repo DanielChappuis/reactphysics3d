@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_POLYHEDRON_MESH_H
-#define REACTPHYSICS3D_POLYHEDRON_MESH_H
+#ifndef REACTPHYSICS3D_CONVEX_MESH_H
+#define REACTPHYSICS3D_CONVEX_MESH_H
 
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
@@ -38,12 +38,12 @@ class DefaultAllocator;
 class PolygonVertexArray;
 struct Error;
 
-// Class PolyhedronMesh
+// Class ConvexMesh
 /**
- * This class describes a polyhedron mesh made of faces and vertices.
- * The faces do not have to be triangles.
+ * This class describes a convex mesh made of faces and vertices.
+ * The faces are made of polygons (not only triangles).
  */
-class PolyhedronMesh {
+class ConvexMesh {
 
     private:
 
@@ -61,13 +61,13 @@ class PolyhedronMesh {
         /// Array with the face normals
         Array<Vector3> mFacesNormals;
 
-        /// Centroid of the polyhedron
+        /// Centroid of the mesh
         Vector3 mCentroid;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        PolyhedronMesh(MemoryAllocator& allocator, uint32 nbVertices, uint32 nbFaces);
+        ConvexMesh(MemoryAllocator& allocator, uint32 nbVertices, uint32 nbFaces);
 
         /// Initialize a mesh and returns errors if any
         bool init(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
@@ -81,14 +81,11 @@ class PolyhedronMesh {
         /// Compute the faces normals
         bool computeFacesNormals(std::vector<Error>& errors);
 
-        /// Compute the centroid of the polyhedron
-        void computeCentroid() ;
-
         /// Compute and return the area of a face
         decimal getFaceArea(uint32 faceIndex) const;
 
-        /// Static factory method to create a polyhedron mesh
-        static PolyhedronMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator, std::vector<reactphysics3d::Error>& errors);
+        /// Static factory method to create a convex mesh
+        static ConvexMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator, std::vector<reactphysics3d::Error>& errors);
 
     public:
 
@@ -109,10 +106,10 @@ class PolyhedronMesh {
         /// Return the half-edge structure of the mesh
         const HalfEdgeStructure& getHalfEdgeStructure() const;
 
-        /// Return the centroid of the polyhedron
+        /// Return the centroid of the mesh
         Vector3 getCentroid() const;
 
-        /// Compute and return the volume of the polyhedron
+        /// Compute and return the volume of the mesh
         decimal getVolume() const;
 
         // ---------- Friendship ---------- //
@@ -124,7 +121,7 @@ class PolyhedronMesh {
 /**
  * @return The number of vertices in the mesh
  */
-RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbVertices() const {
+RP3D_FORCE_INLINE uint32 ConvexMesh::getNbVertices() const {
     return mVertices.size();
 }
 
@@ -133,7 +130,7 @@ RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbVertices() const {
  * @param index Index of a given vertex in the mesh
  * @return The coordinates of a given vertex in the mesh
  */
-RP3D_FORCE_INLINE const Vector3& PolyhedronMesh::getVertex(uint32 index) const {
+RP3D_FORCE_INLINE const Vector3& ConvexMesh::getVertex(uint32 index) const {
     assert(index < mVertices.size());
     return mVertices[index];
 }
@@ -142,7 +139,7 @@ RP3D_FORCE_INLINE const Vector3& PolyhedronMesh::getVertex(uint32 index) const {
 /**
  * @return The number of faces in the mesh
  */
-RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbFaces() const {
+RP3D_FORCE_INLINE uint32 ConvexMesh::getNbFaces() const {
    return mHalfEdgeStructure.getNbFaces();
 }
 
@@ -151,7 +148,7 @@ RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbFaces() const {
  * @param faceIndex The index of a given face of the mesh
  * @return The normal vector of a given face of the mesh
  */
-RP3D_FORCE_INLINE const Vector3& PolyhedronMesh::getFaceNormal(uint32 faceIndex) const {
+RP3D_FORCE_INLINE const Vector3& ConvexMesh::getFaceNormal(uint32 faceIndex) const {
     assert(faceIndex < mHalfEdgeStructure.getNbFaces());
     return mFacesNormals[faceIndex];
 }
@@ -160,7 +157,7 @@ RP3D_FORCE_INLINE const Vector3& PolyhedronMesh::getFaceNormal(uint32 faceIndex)
 /**
  * @return The Half-Edge structure of the mesh
  */
-RP3D_FORCE_INLINE const HalfEdgeStructure& PolyhedronMesh::getHalfEdgeStructure() const {
+RP3D_FORCE_INLINE const HalfEdgeStructure& ConvexMesh::getHalfEdgeStructure() const {
     return mHalfEdgeStructure;
 }
 
@@ -168,7 +165,7 @@ RP3D_FORCE_INLINE const HalfEdgeStructure& PolyhedronMesh::getHalfEdgeStructure(
 /**
  * @return The centroid of the mesh
  */
-RP3D_FORCE_INLINE Vector3 PolyhedronMesh::getCentroid() const {
+RP3D_FORCE_INLINE Vector3 ConvexMesh::getCentroid() const {
     return mCentroid;
 }
 

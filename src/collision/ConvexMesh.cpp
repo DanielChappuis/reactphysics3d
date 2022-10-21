@@ -24,7 +24,7 @@
 ********************************************************************************/
 
 // Libraries
-#include <reactphysics3d/collision/PolyhedronMesh.h>
+#include <reactphysics3d/collision/ConvexMesh.h>
 #include <reactphysics3d/memory/MemoryManager.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/utils/DefaultLogger.h>
@@ -37,28 +37,28 @@ using namespace reactphysics3d;
 
 // Constructor
 /**
- * Create a polyhedron mesh given an array of polygons.
+ * Create a convex mesh given an array of polygons.
  * @param polygonVertexArray Pointer to the array of polygons and their vertices
  */
-PolyhedronMesh::PolyhedronMesh(MemoryAllocator& allocator, uint32 nbVertices, uint32 nbFaces)
+ConvexMesh::ConvexMesh(MemoryAllocator& allocator, uint32 nbVertices, uint32 nbFaces)
                : mMemoryAllocator(allocator), mHalfEdgeStructure(allocator, nbFaces, nbVertices, (nbFaces + nbVertices - 2) * 2),
                  mVertices(allocator, nbVertices), mFacesNormals(allocator, nbFaces) {
 
 }
 
-/// Static factory method to create a polyhedron mesh. This methods returns null_ptr if the mesh is not valid
-PolyhedronMesh* PolyhedronMesh::create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator,
+/// Static factory method to create a convex mesh. This methods returns null_ptr if the mesh is not valid
+ConvexMesh* ConvexMesh::create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator,
                                        std::vector<Error>& errors) {
 
-    PolyhedronMesh* mesh = new (allocator.allocate(sizeof(PolyhedronMesh))) PolyhedronMesh(allocator,
+    ConvexMesh* mesh = new (allocator.allocate(sizeof(ConvexMesh))) ConvexMesh(allocator,
                                                                                            polygonVertexArray->getNbVertices(),
                                                                                            polygonVertexArray->getNbFaces());
     // Create the half-edge structure of the mesh
     bool isValid = mesh->init(polygonVertexArray, errors);
 
     if (!isValid) {
-        mesh->~PolyhedronMesh();
-        allocator.release(mesh, sizeof(PolyhedronMesh));
+        mesh->~ConvexMesh();
+        allocator.release(mesh, sizeof(ConvexMesh));
         mesh = nullptr;
     }
 
@@ -66,7 +66,7 @@ PolyhedronMesh* PolyhedronMesh::create(PolygonVertexArray* polygonVertexArray, M
 }
 
 // Initialize a mesh and returns errors if any
-bool PolyhedronMesh::init(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::init(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
 
     bool isValid = true;
 
@@ -83,7 +83,7 @@ bool PolyhedronMesh::init(PolygonVertexArray* polygonVertexArray, std::vector<Er
 }
 
 // Copy the vertices into the mesh
-bool PolyhedronMesh::copyVertices(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::copyVertices(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
 
     bool isValid = true;
 
@@ -112,7 +112,7 @@ bool PolyhedronMesh::copyVertices(PolygonVertexArray* polygonVertexArray, std::v
 
 // Create the half-edge structure of the mesh
 /// This method returns true if the mesh is valid or false otherwise
-bool PolyhedronMesh::createHalfEdgeStructure(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::createHalfEdgeStructure(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
 
     bool isValid = true;
 
@@ -162,7 +162,7 @@ bool PolyhedronMesh::createHalfEdgeStructure(PolygonVertexArray* polygonVertexAr
     if (2 + nbEdges - polygonVertexArray->getNbFaces() != polygonVertexArray->getNbVertices()) {
 
         RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
-                 "Error when creating a PolyhedronMesh: input PolygonVertexArray is not valid. Mesh with duplicated vertices is not supported.",  __FILE__, __LINE__);
+                 "Error when creating a ConvexMesh: input PolygonVertexArray is not valid. Mesh with duplicated vertices is not supported.",  __FILE__, __LINE__);
 
         // Create a new error
         errors.push_back(Error(std::string("Convex Mesh might have duplicated vertices (invalid Euler formula)")));
@@ -177,7 +177,7 @@ bool PolyhedronMesh::createHalfEdgeStructure(PolygonVertexArray* polygonVertexAr
 }
 
 // Compute the faces normals
-bool PolyhedronMesh::computeFacesNormals(std::vector<Error>& errors) {
+bool ConvexMesh::computeFacesNormals(std::vector<Error>& errors) {
 
     bool isValid = true;
 
@@ -209,20 +209,8 @@ bool PolyhedronMesh::computeFacesNormals(std::vector<Error>& errors) {
     return isValid;
 }
 
-// Compute the centroid of the polyhedron
-void PolyhedronMesh::computeCentroid() {
-
-    mCentroid.setToZero();
-
-    for (uint32 v=0; v < getNbVertices(); v++) {
-        mCentroid += getVertex(v);
-    }
-
-    mCentroid /= static_cast<decimal>(getNbVertices());
-}
-
 // Compute and return the area of a face
-decimal PolyhedronMesh::getFaceArea(uint32 faceIndex) const {
+decimal ConvexMesh::getFaceArea(uint32 faceIndex) const {
 
     Vector3 sumCrossProducts(0, 0, 0);
 
@@ -247,13 +235,13 @@ decimal PolyhedronMesh::getFaceArea(uint32 faceIndex) const {
     return decimal(0.5) * sumCrossProducts.length();
 }
 
-// Compute and return the volume of the polyhedron
-/// We use the divergence theorem to compute the volume of the polyhedron using a sum over its faces.
-decimal PolyhedronMesh::getVolume() const {
+// Compute and return the volume of the convex mesh
+/// We use the divergence theorem to compute the volume of the convex mesh using a sum over its faces.
+decimal ConvexMesh::getVolume() const {
 
     decimal sum = 0.0;
 
-    // For each face of the polyhedron
+    // For each face of the mesh
     for (uint32 f=0; f < getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(f);

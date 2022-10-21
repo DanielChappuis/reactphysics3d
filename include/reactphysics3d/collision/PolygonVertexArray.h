@@ -37,9 +37,9 @@ struct Vector3;
 
 // Class PolygonVertexArray
 /**
- * This class is used to describe the vertices and faces of a polyhedron mesh.
+ * This class is used to describe the vertices and faces of a mesh.
  * A PolygonVertexArray represents an array of vertices and polygon faces
- * of a polyhedron mesh. When you create a PolygonVertexArray, no data is copied
+ * of a mesh. When you create a PolygonVertexArray, no data is copied
  * into the array. It only stores pointer to the data. The purpose is to allow
  * the user to share vertices data between the physics engine and the rendering
  * part. Therefore, make sure that the data pointed by a PolygonVertexArray
@@ -55,7 +55,7 @@ class PolygonVertexArray {
         /// Data type for the indices in the array
         enum class IndexDataType {INDEX_INTEGER_TYPE, INDEX_SHORT_TYPE};
 
-        /// Represent a polygon face of the polyhedron
+        /// Represent a polygon face of the mesh
         struct PolygonFace {
 
             /// Number of vertices in the polygon face
@@ -88,7 +88,7 @@ class PolygonVertexArray {
         /// Number of polygon faces in the array
         uint32 mNbFaces;
 
-        /// Pointer to the first polygon face in the polyhedron
+        /// Pointer to the first polygon face in the mesh
         PolygonFace* mPolygonFacesStart;
 
         /// Data type of the vertices in the array
@@ -132,7 +132,7 @@ class PolygonVertexArray {
         /// Return the coordinates of a given vertex
         Vector3 getVertex(uint32 vertexIndex) const;
 
-        /// Return a polygon face of the polyhedron
+        /// Return a polygon face of the mesh
         PolygonFace* getPolygonFace(uint32 faceIndex) const;
 
         /// Return the pointer to the start of the vertices array
@@ -194,7 +194,7 @@ RP3D_FORCE_INLINE uint32 PolygonVertexArray::getIndicesStride() const {
     return mIndicesStride;
 }
 
-// Return a polygon face of the polyhedron
+// Return a polygon face of the mesh
 /**
  * @param faceIndex Index of a given face
  * @return A polygon face
@@ -206,7 +206,7 @@ RP3D_FORCE_INLINE PolygonVertexArray::PolygonFace* PolygonVertexArray::getPolygo
 
 // Return the pointer to the start of the vertices array
 /**
- * @return A pointer to the start of the vertex array of the polyhedron
+ * @return A pointer to the start of the vertex array of the mesh
  */
 RP3D_FORCE_INLINE const unsigned char* PolygonVertexArray::getVerticesStart() const {
     return mVerticesStart;
@@ -214,7 +214,7 @@ RP3D_FORCE_INLINE const unsigned char* PolygonVertexArray::getVerticesStart() co
 
 // Return the pointer to the start of the indices array
 /**
- * @return A pointer to the start of the face indices array of the polyhedron
+ * @return A pointer to the start of the face indices array of the mesh
  */
 RP3D_FORCE_INLINE const unsigned char* PolygonVertexArray::getIndicesStart() const {
     return mIndicesStart;

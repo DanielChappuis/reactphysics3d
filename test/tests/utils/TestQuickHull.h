@@ -97,7 +97,7 @@ class TestQuickHull : public Test {
             }
 
             PolygonVertexArray::VertexDataType vertexDataType = sizeof(decimal) == sizeof(float) ? PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE : PolygonVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE;
-            PolyhedronMesh* mesh = QuickHull::computeConvexHull(points.size(), &(points[0]), sizeof(Vector3), vertexDataType, mAllocator);
+            ConvexMesh* mesh = QuickHull::computeConvexHull(points.size(), &(points[0]), sizeof(Vector3), vertexDataType, mAllocator);
 
             Array<uint32> indicesOfHull(mAllocator);
             indicesOfHull.add(0);

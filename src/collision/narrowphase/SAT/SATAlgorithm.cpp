@@ -26,7 +26,7 @@
 // Libraries
 #include <reactphysics3d/collision/narrowphase/SAT/SATAlgorithm.h>
 #include <reactphysics3d/constraint/ContactPoint.h>
-#include <reactphysics3d/collision/PolyhedronMesh.h>
+#include <reactphysics3d/collision/ConvexMesh.h>
 #include <reactphysics3d/collision/shapes/CapsuleShape.h>
 #include <reactphysics3d/collision/shapes/SphereShape.h>
 #include <reactphysics3d/engine/OverlappingPairs.h>

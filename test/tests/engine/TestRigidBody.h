@@ -56,7 +56,7 @@ class TestRigidBody : public Test {
         Collider* mConvexMeshCollider;
 
         PolygonVertexArray* mConvexMeshPolygonVertexArray;
-        PolyhedronMesh* mConvexMeshPolyhedronMesh;
+        ConvexMesh* mConvexMesh;
         PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
         float mConvexMeshCubeVertices[8 * 3];
         int mConvexMeshCubeIndices[24];
@@ -116,9 +116,9 @@ class TestRigidBody : public Test {
                     rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
             std::vector<Error> errors;
-            mConvexMeshPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMeshPolygonVertexArray, errors);
-            rp3d_test(mConvexMeshPolyhedronMesh != nullptr);
-            ConvexMeshShape* convexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMeshPolyhedronMesh);
+            mConvexMesh = mPhysicsCommon.createConvexMesh(mConvexMeshPolygonVertexArray, errors);
+            rp3d_test(mConvexMesh != nullptr);
+            ConvexMeshShape* convexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);
             Transform transform3(Vector3(10, 0, 0), Quaternion::identity());
             mRigidBody2Convex = mWorld->createRigidBody(transform3);
             mConvexMeshCollider = mRigidBody2Convex->addCollider(convexMeshShape, Transform::identity());

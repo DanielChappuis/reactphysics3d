@@ -158,9 +158,9 @@ class TestRaycast : public Test {
         float mHeightFieldData[100];
         PolygonVertexArray::PolygonFace mPolygonFaces[6];
         PolygonVertexArray* mPolygonVertexArray;
-        PolyhedronMesh* mPolyhedronMesh;
-        float mPolyhedronVertices[8 * 3];
-        int mPolyhedronIndices[4 * 6];
+        ConvexMesh* mConvexMesh;
+        float mConvexMeshVertices[8 * 3];
+        int mConvexMeshIndices[4 * 6];
 
     public :
 
@@ -207,23 +207,23 @@ class TestRaycast : public Test {
             mCapsuleShape = mPhysicsCommon.createCapsuleShape(2, 5);
             mCapsuleCollider = mCapsuleBody->addCollider(mCapsuleShape, mShapeTransform);
 
-            mPolyhedronVertices[0] = -2; mPolyhedronVertices[1] = -3; mPolyhedronVertices[2] = 4;
-            mPolyhedronVertices[3] = 2; mPolyhedronVertices[4] = -3; mPolyhedronVertices[5] = 4;
-            mPolyhedronVertices[6] = 2; mPolyhedronVertices[7] = -3; mPolyhedronVertices[8] = -4;
-            mPolyhedronVertices[9] = -2; mPolyhedronVertices[10] = -3; mPolyhedronVertices[11] = -4;
-            mPolyhedronVertices[12] = -2; mPolyhedronVertices[13] = 3; mPolyhedronVertices[14] = 4;
-            mPolyhedronVertices[15] = 2; mPolyhedronVertices[16] = 3; mPolyhedronVertices[17] = 4;
-            mPolyhedronVertices[18] = 2; mPolyhedronVertices[19] = 3; mPolyhedronVertices[20] = -4;
-            mPolyhedronVertices[21] = -2; mPolyhedronVertices[22] = 3; mPolyhedronVertices[23] = -4;
+            mConvexMeshVertices[0] = -2; mConvexMeshVertices[1] = -3; mConvexMeshVertices[2] = 4;
+            mConvexMeshVertices[3] = 2; mConvexMeshVertices[4] = -3; mConvexMeshVertices[5] = 4;
+            mConvexMeshVertices[6] = 2; mConvexMeshVertices[7] = -3; mConvexMeshVertices[8] = -4;
+            mConvexMeshVertices[9] = -2; mConvexMeshVertices[10] = -3; mConvexMeshVertices[11] = -4;
+            mConvexMeshVertices[12] = -2; mConvexMeshVertices[13] = 3; mConvexMeshVertices[14] = 4;
+            mConvexMeshVertices[15] = 2; mConvexMeshVertices[16] = 3; mConvexMeshVertices[17] = 4;
+            mConvexMeshVertices[18] = 2; mConvexMeshVertices[19] = 3; mConvexMeshVertices[20] = -4;
+            mConvexMeshVertices[21] = -2; mConvexMeshVertices[22] = 3; mConvexMeshVertices[23] = -4;
 
-            mPolyhedronIndices[0] = 0; mPolyhedronIndices[1] = 3; mPolyhedronIndices[2] = 2; mPolyhedronIndices[3] = 1;
-            mPolyhedronIndices[4] = 4; mPolyhedronIndices[5] = 5; mPolyhedronIndices[6] = 6; mPolyhedronIndices[7] = 7;
-            mPolyhedronIndices[8] = 0; mPolyhedronIndices[9] = 1; mPolyhedronIndices[10] = 5; mPolyhedronIndices[11] = 4;
-            mPolyhedronIndices[12] = 1; mPolyhedronIndices[13] = 2; mPolyhedronIndices[14] = 6; mPolyhedronIndices[15] = 5;
-            mPolyhedronIndices[16] = 2; mPolyhedronIndices[17] = 3; mPolyhedronIndices[18] = 7; mPolyhedronIndices[19] = 6;
-            mPolyhedronIndices[20] = 0; mPolyhedronIndices[21] = 4; mPolyhedronIndices[22] = 7; mPolyhedronIndices[23] = 3;
+            mConvexMeshIndices[0] = 0; mConvexMeshIndices[1] = 3; mConvexMeshIndices[2] = 2; mConvexMeshIndices[3] = 1;
+            mConvexMeshIndices[4] = 4; mConvexMeshIndices[5] = 5; mConvexMeshIndices[6] = 6; mConvexMeshIndices[7] = 7;
+            mConvexMeshIndices[8] = 0; mConvexMeshIndices[9] = 1; mConvexMeshIndices[10] = 5; mConvexMeshIndices[11] = 4;
+            mConvexMeshIndices[12] = 1; mConvexMeshIndices[13] = 2; mConvexMeshIndices[14] = 6; mConvexMeshIndices[15] = 5;
+            mConvexMeshIndices[16] = 2; mConvexMeshIndices[17] = 3; mConvexMeshIndices[18] = 7; mConvexMeshIndices[19] = 6;
+            mConvexMeshIndices[20] = 0; mConvexMeshIndices[21] = 4; mConvexMeshIndices[22] = 7; mConvexMeshIndices[23] = 3;
 
-            // Polygon faces descriptions for the polyhedron
+            // Polygon faces descriptions for the convex mesh
             PolygonVertexArray::PolygonFace* face = mPolygonFaces;
             for (int f = 0; f < 6; f++) {
                 face->indexBase = f * 4;
@@ -232,15 +232,15 @@ class TestRaycast : public Test {
             }
 
             // Create the polygon vertex array
-            mPolygonVertexArray = new PolygonVertexArray(8, mPolyhedronVertices, 3 * sizeof(float),
-                                         mPolyhedronIndices, sizeof(int), 6, mPolygonFaces,
+            mPolygonVertexArray = new PolygonVertexArray(8, mConvexMeshVertices, 3 * sizeof(float),
+                                         mConvexMeshIndices, sizeof(int), 6, mPolygonFaces,
                                          PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
             std::vector<Error> errors;
-            mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray, errors);
-            rp3d_test(mPolyhedronMesh != nullptr);
-            mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh);
+            mConvexMesh = mPhysicsCommon.createConvexMesh(mPolygonVertexArray, errors);
+            rp3d_test(mConvexMesh != nullptr);
+            mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);
             mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);
 
             // Compound shape is a cylinder and a sphere
@@ -317,7 +317,7 @@ class TestRaycast : public Test {
             delete mConcaveMeshVertexArray;
 
             delete mPolygonVertexArray;
-            mPhysicsCommon.destroyPolyhedronMesh(mPolyhedronMesh);
+            mPhysicsCommon.destroyConvexMesh(mConvexMesh);
         }
 
         /// Run the tests

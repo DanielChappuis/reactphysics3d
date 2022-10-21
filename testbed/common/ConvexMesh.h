@@ -42,7 +42,7 @@ class ConvexMesh : public PhysicsObject {
 
         rp3d::PolygonVertexArray* mPolygonVertexArray;
 
-        rp3d::PolyhedronMesh* mPolyhedronMesh;
+        rp3d::ConvexMesh* mConvexMesh;
 
         /// Collision shape
         rp3d::ConvexMeshShape* mConvexShape;
