@@ -38,10 +38,6 @@ class ConvexMesh : public PhysicsObject {
 
         // -------------------- Attributes -------------------- //
 
-        rp3d::PolygonVertexArray::PolygonFace* mPolygonFaces;
-
-        rp3d::PolygonVertexArray* mPolygonVertexArray;
-
         rp3d::ConvexMesh* mConvexMesh;
 
         /// Collision shape

@@ -156,7 +156,7 @@ class TestRaycast : public Test {
         std::vector<uint> mConcaveMeshIndices;
         TriangleVertexArray* mConcaveMeshVertexArray;
         float mHeightFieldData[100];
-        PolygonVertexArray::PolygonFace mPolygonFaces[6];
+        PolygonVertexArray::PolygonFace polygonFaces[6];
         PolygonVertexArray* mPolygonVertexArray;
         ConvexMesh* mConvexMesh;
         float mConvexMeshVertices[8 * 3];
@@ -224,7 +224,8 @@ class TestRaycast : public Test {
             mConvexMeshIndices[20] = 0; mConvexMeshIndices[21] = 4; mConvexMeshIndices[22] = 7; mConvexMeshIndices[23] = 3;
 
             // Polygon faces descriptions for the convex mesh
-            PolygonVertexArray::PolygonFace* face = mPolygonFaces;
+            PolygonVertexArray::PolygonFace polygonFaces[6];
+            PolygonVertexArray::PolygonFace* face = polygonFaces;
             for (int f = 0; f < 6; f++) {
                 face->indexBase = f * 4;
                 face->nbVertices = 4;
@@ -232,13 +233,13 @@ class TestRaycast : public Test {
             }
 
             // Create the polygon vertex array
-            mPolygonVertexArray = new PolygonVertexArray(8, mConvexMeshVertices, 3 * sizeof(float),
-                                         mConvexMeshIndices, sizeof(int), 6, mPolygonFaces,
+            PolygonVertexArray polygonVertexArray(8, mConvexMeshVertices, 3 * sizeof(float),
+                                         mConvexMeshIndices, sizeof(int), 6, polygonFaces,
                                          PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
             std::vector<Error> errors;
-            mConvexMesh = mPhysicsCommon.createConvexMesh(mPolygonVertexArray, errors);
+            mConvexMesh = mPhysicsCommon.createConvexMesh(polygonVertexArray, errors);
             rp3d_test(mConvexMesh != nullptr);
             mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);
             mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);
@@ -316,7 +317,6 @@ class TestRaycast : public Test {
 
             delete mConcaveMeshVertexArray;
 
-            delete mPolygonVertexArray;
             mPhysicsCommon.destroyConvexMesh(mConvexMesh);
         }
 

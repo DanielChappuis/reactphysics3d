@@ -40,11 +40,7 @@ struct Vector3;
  * This class is used to describe the vertices and faces of a mesh.
  * A PolygonVertexArray represents an array of vertices and polygon faces
  * of a mesh. When you create a PolygonVertexArray, no data is copied
- * into the array. It only stores pointer to the data. The purpose is to allow
- * the user to share vertices data between the physics engine and the rendering
- * part. Therefore, make sure that the data pointed by a PolygonVertexArray
- * remains valid during the PolygonVertexArray life.
- */
+ * into the array. It only stores pointer to the data.  */
 class PolygonVertexArray {
 
     public:
@@ -100,13 +96,19 @@ class PolygonVertexArray {
     public:
 
         /// Constructor
+        PolygonVertexArray();
+
+        /// Constructor
         PolygonVertexArray(uint32 nbVertices, const void* verticesStart, uint32 verticesStride,
                            const void* indexesStart, uint32 indexesStride,
                            uint32 nbFaces, PolygonFace* facesStart,
                            VertexDataType vertexDataType, IndexDataType indexDataType);
 
-        /// Destructor
-        ~PolygonVertexArray() = default;
+        /// Initialize the PolygonVertexArray
+        void init(uint32 nbVertices, const void* verticesStart, uint32 verticesStride,
+                                 const void* indexesStart, uint32 indexesStride,
+                                 uint32 nbFaces, PolygonFace* facesStart,
+                                 VertexDataType vertexDataType, IndexDataType indexDataType);
 
         /// Return the vertex data type
         VertexDataType getVertexDataType() const;

@@ -5,6 +5,7 @@
 ### Added
 
  - The library will now return errors found in input data during ConvexMesh, TriangularMesh and HeighField creation
+ - It is now possible to create a ConvexMesh by specifying only a list of vertices (automatic computation of convex hull using internal QuickHull algorithm)
 
 ### Changed
 
@@ -15,6 +16,7 @@
  - The PhysicsCommon::createPolyhedronMesh() method has been renamed to PhysicsCommon::createConvexMesh()
  - The PhysicsCommon::destroyPolyhedronMesh() method has been renamed to PhysicsCommon::destroyConvexMesh()
  - The PhysicsCommon::createConvexMesh() nows returns a list of errors that might have happened during the mesh creation
+ - The PhysicsCommon::createConvexMesh() method now takes a reference to PolygonVertexArray
  - The input data (vertices, indices, ...) are now copied into the ConvexMesh, TriangularMesh and HeighField and not shared anymore.
 
 ### Removed

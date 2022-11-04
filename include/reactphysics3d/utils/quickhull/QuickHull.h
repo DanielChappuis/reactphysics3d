@@ -37,6 +37,8 @@ namespace reactphysics3d {
 
 // Declarations
 class ConvexMesh;
+class VertexArray;
+struct Error;
 template<typename T>
 class Array;
 
@@ -70,14 +72,13 @@ class QuickHull {
         // -------------------- Methods -------------------- //
 
         // Compute the initial tetrahedron convex hull
-        static void computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
+        static bool computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
                                        Array<QHHalfEdgeStructure::Face*>& initialFaces,
                                        Array<uint32>& orphanPointsIndices,
-                                       MemoryAllocator& allocator);
+                                       MemoryAllocator& allocator, std::vector<Error>& errors);
 
         /// Extract the points from the array
-        static void extractPoints(uint32 nbPoints, const void* pointsStart, uint32 pointsStride,
-                                  PolygonVertexArray::VertexDataType pointDataType, Array<Vector3>& outArray);
+        static void extractPoints(const VertexArray& vertexArray, Array<Vector3>& outArray);
 
         /// Add a vertex to the current convex hull to expand it
         static void addVertexToHull(uint32 vertexIndex, QHHalfEdgeStructure::Face* face, Array<Vector3>& points,
@@ -145,6 +146,14 @@ class QuickHull {
         /// Compute the center of a face (the average of face vertices)
         static Vector3 computeFaceCenter(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
 
+        /// Compute the final PolygonVertexArray from the convex hull half-edge structure
+        static void computeFinalPolygonVertexArray(const QHHalfEdgeStructure& convexHull,
+                                                   const Array<Vector3>& points,
+                                                   PolygonVertexArray& outPolygonVertexArray,
+                                                   Array<float>& outVertices, Array<unsigned int>& outIndices,
+                                                   Array<PolygonVertexArray::PolygonFace>& outFaces,
+                                                   MemoryAllocator& allocator);
+
         // TODO : Remove this
         static std::string showMap(Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceIndexToRemainingClosestPoints);
 
@@ -153,10 +162,11 @@ class QuickHull {
 
         // -------------------- Methods -------------------- //
 
-        /// Compute the convex hull of a set of points and return the resulting convex mesh
-        static ConvexMesh* computeConvexHull(uint32 nbPoints, const void* points, uint32 pointsStride,
-                                                 PolygonVertexArray::VertexDataType pointDataType,
-                                                 MemoryAllocator& allocator);
+        /// Compute the convex hull of a set of points and returns true if there are no errors
+        static bool computeConvexHull(const VertexArray& vertexArray, PolygonVertexArray& outPolygonVertexArray,
+                                      Array<float>& outVertices, Array<unsigned int>& outIndices,
+                                      Array<PolygonVertexArray::PolygonFace>& outFaces,
+                                      MemoryAllocator& allocator, std::vector<Error>& errors);
 
 
 

@@ -40,35 +40,29 @@ using namespace reactphysics3d;
  * Create a convex mesh given an array of polygons.
  * @param polygonVertexArray Pointer to the array of polygons and their vertices
  */
-ConvexMesh::ConvexMesh(MemoryAllocator& allocator, uint32 nbVertices, uint32 nbFaces)
-               : mMemoryAllocator(allocator), mHalfEdgeStructure(allocator, nbFaces, nbVertices, (nbFaces + nbVertices - 2) * 2),
-                 mVertices(allocator, nbVertices), mFacesNormals(allocator, nbFaces) {
+ConvexMesh::ConvexMesh(MemoryAllocator& allocator)
+               : mMemoryAllocator(allocator), mHalfEdgeStructure(allocator, 6, 8, 24),
+                 mVertices(allocator), mFacesNormals(allocator) {
 
 }
 
 /// Static factory method to create a convex mesh. This methods returns null_ptr if the mesh is not valid
-ConvexMesh* ConvexMesh::create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator,
-                                       std::vector<Error>& errors) {
+ConvexMesh* ConvexMesh::create(MemoryAllocator& allocator) {
 
-    ConvexMesh* mesh = new (allocator.allocate(sizeof(ConvexMesh))) ConvexMesh(allocator,
-                                                                                           polygonVertexArray->getNbVertices(),
-                                                                                           polygonVertexArray->getNbFaces());
-    // Create the half-edge structure of the mesh
-    bool isValid = mesh->init(polygonVertexArray, errors);
-
-    if (!isValid) {
-        mesh->~ConvexMesh();
-        allocator.release(mesh, sizeof(ConvexMesh));
-        mesh = nullptr;
-    }
-
+    ConvexMesh* mesh = new (allocator.allocate(sizeof(ConvexMesh))) ConvexMesh(allocator);
     return mesh;
 }
 
 // Initialize a mesh and returns errors if any
-bool ConvexMesh::init(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::init(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors) {
 
     bool isValid = true;
+
+    // Reserve memory for the vertices, faces and edges
+    mVertices.reserve(polygonVertexArray.getNbVertices());
+    mFacesNormals.reserve(polygonVertexArray.getNbFaces());
+    mHalfEdgeStructure.reserve(polygonVertexArray.getNbFaces(), polygonVertexArray.getNbVertices(),
+                               (polygonVertexArray.getNbVertices() + polygonVertexArray.getNbFaces() - 2) * 2);
 
     // Copy the vertices from the PolygonVertexArray into the mesh
     isValid &= copyVertices(polygonVertexArray, errors);
@@ -83,15 +77,15 @@ bool ConvexMesh::init(PolygonVertexArray* polygonVertexArray, std::vector<Error>
 }
 
 // Copy the vertices into the mesh
-bool ConvexMesh::copyVertices(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors) {
 
     bool isValid = true;
 
     mCentroid.setToZero();
 
-    for (uint32 i=0 ; i < polygonVertexArray->getNbVertices(); i++) {
+    for (uint32 i=0 ; i < polygonVertexArray.getNbVertices(); i++) {
 
-        const Vector3 vertex = polygonVertexArray->getVertex(i);
+        const Vector3 vertex = polygonVertexArray.getVertex(i);
         mVertices.add(vertex);
         mCentroid += vertex;
     }
@@ -112,12 +106,12 @@ bool ConvexMesh::copyVertices(PolygonVertexArray* polygonVertexArray, std::vecto
 
 // Create the half-edge structure of the mesh
 /// This method returns true if the mesh is valid or false otherwise
-bool ConvexMesh::createHalfEdgeStructure(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::createHalfEdgeStructure(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors) {
 
     bool isValid = true;
 
     // For each vertex of the mesh
-    const uint32 nbVertices = polygonVertexArray->getNbVertices();
+    const uint32 nbVertices = polygonVertexArray.getNbVertices();
     for (uint32 v=0; v < nbVertices; v++) {
         mHalfEdgeStructure.addVertex(v);
     }
@@ -125,17 +119,17 @@ bool ConvexMesh::createHalfEdgeStructure(PolygonVertexArray* polygonVertexArray,
     uint32 nbEdges = 0;
 
     // For each polygon face of the mesh
-    const uint32 nbFaces = polygonVertexArray->getNbFaces();
+    const uint32 nbFaces = polygonVertexArray.getNbFaces();
     for (uint32 f=0; f < nbFaces; f++) {
 
         // Get the polygon face
-        PolygonVertexArray::PolygonFace* face = polygonVertexArray->getPolygonFace(f);
+        PolygonVertexArray::PolygonFace* face = polygonVertexArray.getPolygonFace(f);
 
         Array<uint32> faceVertices(mMemoryAllocator, face->nbVertices);
 
         // For each vertex of the face
         for (uint32 v=0; v < face->nbVertices; v++) {
-            faceVertices.add(polygonVertexArray->getVertexIndexInFace(f, v));
+            faceVertices.add(polygonVertexArray.getVertexIndexInFace(f, v));
         }
 
         nbEdges += face->nbVertices;
@@ -159,7 +153,7 @@ bool ConvexMesh::createHalfEdgeStructure(PolygonVertexArray* polygonVertexArray,
     nbEdges /= 2;
 
     // If the mesh is not valid (check Euler formula V + F - E = 2) (has duplicated vertices)
-    if (2 + nbEdges - polygonVertexArray->getNbFaces() != polygonVertexArray->getNbVertices()) {
+    if (2 + nbEdges - polygonVertexArray.getNbFaces() != polygonVertexArray.getNbVertices()) {
 
         RP3D_LOG("PhysicsCommon", Logger::Level::Error, Logger::Category::PhysicCommon,
                  "Error when creating a ConvexMesh: input PolygonVertexArray is not valid. Mesh with duplicated vertices is not supported.",  __FILE__, __LINE__);

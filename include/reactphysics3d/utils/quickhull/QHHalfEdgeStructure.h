@@ -246,7 +246,7 @@ class QHHalfEdgeStructure {
         QHHalfEdgeStructure(MemoryAllocator& allocator) :mAllocator(allocator), mMapVerticesToEdge(allocator) {}
 
         /// Destructor
-        ~QHHalfEdgeStructure() = default;
+        ~QHHalfEdgeStructure();
 
         /// Add a vertex
         Vertex* addVertex(uint32 externalIndex);

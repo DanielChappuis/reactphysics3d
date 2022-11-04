@@ -67,16 +67,16 @@ class ConvexMesh {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMesh(MemoryAllocator& allocator, uint32 nbVertices, uint32 nbFaces);
+        ConvexMesh(MemoryAllocator& allocator);
 
         /// Initialize a mesh and returns errors if any
-        bool init(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
+        bool init(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors);
 
         /// Copy the vertices into the mesh
-        bool copyVertices(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
+        bool copyVertices(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors);
 
         /// Create the half-edge structure of the mesh
-        bool createHalfEdgeStructure(PolygonVertexArray* polygonVertexArray, std::vector<Error> &errors);
+        bool createHalfEdgeStructure(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors);
 
         /// Compute the faces normals
         bool computeFacesNormals(std::vector<Error>& errors);
@@ -85,7 +85,7 @@ class ConvexMesh {
         decimal getFaceArea(uint32 faceIndex) const;
 
         /// Static factory method to create a convex mesh
-        static ConvexMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator, std::vector<reactphysics3d::Error>& errors);
+        static ConvexMesh* create(MemoryAllocator& allocator);
 
     public:
 

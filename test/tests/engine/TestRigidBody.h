@@ -55,9 +55,7 @@ class TestRigidBody : public Test {
         Collider* mSphereCollider;
         Collider* mConvexMeshCollider;
 
-        PolygonVertexArray* mConvexMeshPolygonVertexArray;
         ConvexMesh* mConvexMesh;
-        PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
         float mConvexMeshCubeVertices[8 * 3];
         int mConvexMeshCubeIndices[24];
 
@@ -104,19 +102,19 @@ class TestRigidBody : public Test {
             mConvexMeshCubeIndices[16] = 2; mConvexMeshCubeIndices[17] = 3; mConvexMeshCubeIndices[18] = 7; mConvexMeshCubeIndices[19] = 6;
             mConvexMeshCubeIndices[20] = 0; mConvexMeshCubeIndices[21] = 4; mConvexMeshCubeIndices[22] = 7; mConvexMeshCubeIndices[23] = 3;
 
-            mConvexMeshPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[6];
-            rp3d::PolygonVertexArray::PolygonFace* face = mConvexMeshPolygonFaces;
+            rp3d::PolygonVertexArray::PolygonFace convexMeshPolygonFaces[6];
+            rp3d::PolygonVertexArray::PolygonFace* face = convexMeshPolygonFaces;
             for (int f = 0; f < 6; f++) {
                 face->indexBase = f * 4;
                 face->nbVertices = 4;
                 face++;
             }
-            mConvexMeshPolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMeshCubeVertices[0]), 3 * sizeof(float),
-                    &(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
+            PolygonVertexArray convexMeshPolygonVertexArray(8, &(mConvexMeshCubeVertices[0]), 3 * sizeof(float),
+                    &(mConvexMeshCubeIndices[0]), sizeof(int), 6, convexMeshPolygonFaces,
                     rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
             std::vector<Error> errors;
-            mConvexMesh = mPhysicsCommon.createConvexMesh(mConvexMeshPolygonVertexArray, errors);
+            mConvexMesh = mPhysicsCommon.createConvexMesh(convexMeshPolygonVertexArray, errors);
             rp3d_test(mConvexMesh != nullptr);
             ConvexMeshShape* convexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);
             Transform transform3(Vector3(10, 0, 0), Quaternion::identity());
@@ -138,9 +136,6 @@ class TestRigidBody : public Test {
             mWorld->destroyRigidBody(mRigidBody1);
             mWorld->destroyRigidBody(mRigidBody2Box);
             mWorld->destroyRigidBody(mRigidBody2Sphere);
-
-            delete[] mConvexMeshPolygonFaces;
-            delete mConvexMeshPolygonVertexArray;
         }
 
         /// Run the tests

@@ -26,6 +26,7 @@
 // Libraries
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
+#include <reactphysics3d/collision/VertexArray.h>
 #include <reactphysics3d/utils/quickhull/QuickHull.h>
 
 using namespace reactphysics3d;
@@ -562,57 +563,76 @@ void PhysicsCommon::deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
    mMemoryManager.release(MemoryManager::AllocationType::Pool, concaveMeshShape, sizeof(ConcaveMeshShape));
 }
 
-// Create a convex mesh
+// Create a convex mesh from a PolygonVertexArray describing vertices and faces
 /**
  * @param polygonVertexArray A pointer to the polygon vertex array to use to create the convex mesh
  * @param errors A reference to a vector of errors. This vector will contains errors after the call (if any)
- * @return A pointer to the created convex mesh or nullptr if the mesh is not valid
+ * @return A pointer to the created ConvexMesh instance or nullptr if errors occured during the creation
  */
-ConvexMesh* PhysicsCommon::createConvexMesh(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors) {
+ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors) {
+
+    MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
 
     // Create the convex mesh
-    ConvexMesh* mesh = ConvexMesh::create(polygonVertexArray, mMemoryManager.getHeapAllocator(), errors);
+    ConvexMesh* mesh = ConvexMesh::create(allocator);
+
+    // Create the half-edge structure of the mesh
+    bool isValid = mesh->init(polygonVertexArray, errors);
+
+    // If the mesh is not valid
+    if (!isValid) {
+        mesh->~ConvexMesh();
+        allocator.release(mesh, sizeof(ConvexMesh));
+        return nullptr;
+    }
 
     // If the mesh is valid
-    if (mesh != nullptr) {
 
-        mConvexMeshes.add(mesh);
-    }
+    mConvexMeshes.add(mesh);
 
     return mesh;
 }
 
-// Compute the convex hull of a given set of points and return the result convex mesh of the convex hull
+// Create a convex mesh from an array of vertices (automatically computing the convex hull using QuickHull)
 /**
- * @param nbPoints Number of points
- * @param points Pointer to the first point in the array
- * @param pointsStride Stride (number of bytes) between the beginning of two points in the array
- * @param pointDataType Data type of the points coordinates in the array (float or double)
- * @return A pointer to the created convex mesh or nullptr if the mesh is not valid
+ * @param vertexArray A reference to the vertex object describing the vertices used to compute the convex hull
+ * @param errors A reference to the array of errors that happened during convex mesh creation (if any)
+ * @return A pointer to the created ConvexMesh instance or nullptr if errors occured during the creation
  */
-ConvexMesh* PhysicsCommon::createConvexMesh(uint32 nbPoints, const unsigned char* points,
-                                                              uint32 pointsStride,
-                                                              PolygonVertexArray::VertexDataType pointDataType) {
+ConvexMesh* PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std::vector<Error>& errors) {
 
-    /*
-    TODO : Implement This code
+    MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
+
+    PolygonVertexArray outPolygonVertexArray;
+    Array<float> vertices(allocator);
+    Array<unsigned int> indices(allocator);
+    Array<PolygonVertexArray::PolygonFace> faces(allocator);
 
     // Use the Quick-Hull algorithm to compute the convex hull and return a PolygonVertexArray
-    PolygonVertexArray* mesh = QuickHull::computeConvexHull(nbPoints, points, pointsStride, pointDataType, mMemoryManager.getHeapAllocator());
-
-    // Create the convex mesh
-    ConvexMesh* mesh = ConvexMesh::create(polygonVertexArray, mMemoryManager.getPoolAllocator(), mMemoryManager.getHeapAllocator(), true);
-
-    // If the mesh is valid
-    if (mesh != nullptr) {
-
-        mConvexMeshes.add(mesh);
+    bool isValid = QuickHull::computeConvexHull(vertexArray, outPolygonVertexArray, vertices, indices, faces, allocator, errors);
+    if (!isValid) {
+        return nullptr;
     }
 
-    return mesh;
-    */
+    // Create the convex mesh
+    ConvexMesh* mesh = ConvexMesh::create(allocator);
+    assert(mesh != nullptr);
 
-    return nullptr;
+    // Create the half-edge structure of the mesh
+    isValid &= mesh->init(outPolygonVertexArray, errors);
+
+    // If the mesh is not valid
+    if (!isValid) {
+        mesh->~ConvexMesh();
+        allocator.release(mesh, sizeof(ConvexMesh));
+        return nullptr;
+    }
+
+    // If the mesh is valid
+
+    mConvexMeshes.add(mesh);
+
+    return mesh;
 }
 
 // Destroy a convex mesh

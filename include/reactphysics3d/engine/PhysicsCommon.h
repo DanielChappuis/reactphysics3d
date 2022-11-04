@@ -38,9 +38,12 @@
 #include <reactphysics3d/collision/TriangleMesh.h>
 #include <reactphysics3d/utils/DefaultLogger.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
+#include <reactphysics3d/collision/VertexArray.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
+
+class VertexArray;
 
 // Class PhysicsCommon
 /**
@@ -212,12 +215,11 @@ class PhysicsCommon {
         /// Destroy a concave mesh shape
         void destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape);
 
-        /// Create a convex mesh
-        ConvexMesh* createConvexMesh(PolygonVertexArray* polygonVertexArray, std::vector<Error>& errors);
+        /// Create a convex mesh from a PolygonVertexArray describing vertices and faces
+        ConvexMesh* createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors);
 
-        /// Compute the convex hull of a given set of points and return the result polyhedron of the convex hull
-        ConvexMesh* createConvexMesh(uint32 nbPoints, const unsigned char* pointsStart,
-                                                       uint32 pointsStride, PolygonVertexArray::VertexDataType vertexDataType);
+        /// Create a convex mesh from an array of vertices (automatically computing the convex hull using QuickHull)
+        ConvexMesh* createConvexMesh(const VertexArray& vertexArray, std::vector<Error>& errors);
 
         /// Destroy a convex mesh
         void destroyConvexMesh(ConvexMesh* convexMesh);

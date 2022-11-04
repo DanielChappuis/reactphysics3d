@@ -42,8 +42,9 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
                                               0, 0, 0, 1);
 
     // Polygon faces descriptions for the convex mesh
-    mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
-    rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
+
+    rp3d::PolygonVertexArray::PolygonFace* polygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
+    rp3d::PolygonVertexArray::PolygonFace* face = polygonFaces;
     for (unsigned int f=0; f < getNbFaces(0); f++) {
 
 		for (int v = 0; v < 3; v++) {
@@ -64,16 +65,15 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
     }
 
     // Create the polygon vertex array
-    mPolygonVertexArray =
-            new rp3d::PolygonVertexArray(mConvexMeshVertices.size(), &(mConvexMeshVertices[0]), sizeof(openglframework::Vector3),
+    rp3d::PolygonVertexArray polygonVertexArray(mConvexMeshVertices.size(), &(mConvexMeshVertices[0]), sizeof(openglframework::Vector3),
                                          &(mConvexMeshIndices[0]), sizeof(int),
-                                         getNbFaces(0), mPolygonFaces,
+                                         getNbFaces(0), polygonFaces,
                                          rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Create the convex mesh
     std::vector<rp3d::Error> errors;
-    mConvexMesh = mPhysicsCommon.createConvexMesh(mPolygonVertexArray, errors);
+    mConvexMesh = mPhysicsCommon.createConvexMesh(polygonVertexArray, errors);
     if (mConvexMesh == nullptr) {
         std::cout << "Error while creating a ConvexMesh:" << std::endl;
         for (const rp3d::Error& error: errors) {
@@ -104,6 +104,8 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
     createVBOAndVAO();
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
+
+    delete[] polygonFaces;
 }
 
 // Destructor
@@ -129,8 +131,6 @@ ConvexMesh::~ConvexMesh() {
 
     mPhysicsCommon.destroyConvexMeshShape(mConvexShape);
     mPhysicsCommon.destroyConvexMesh(mConvexMesh);
-    delete mPolygonVertexArray;
-    delete[] mPolygonFaces;
 }
 
 // Render the sphere at the correct position and with the correct orientation

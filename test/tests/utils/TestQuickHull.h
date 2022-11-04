@@ -46,7 +46,7 @@ class TestQuickHull : public Test {
         // ---------- Atributes ---------- //
     
         DefaultAllocator mAllocator;
-        
+        PhysicsCommon mPhysicsCommon;
 
     public :
 
@@ -56,6 +56,9 @@ class TestQuickHull : public Test {
         TestQuickHull(const std::string& name) : Test(name) {
 
         }
+
+        /// Destructor
+        virtual ~TestQuickHull() = default;
 
         /// Run the tests
         void run() {
@@ -96,8 +99,12 @@ class TestQuickHull : public Test {
                 std::cout << "Point " << p << ": (" << points[p].x << ", " << points[p].y << ", " << points[p].z << ")" << std::endl;
             }
 
-            PolygonVertexArray::VertexDataType vertexDataType = sizeof(decimal) == sizeof(float) ? PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE : PolygonVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE;
-            ConvexMesh* mesh = QuickHull::computeConvexHull(points.size(), &(points[0]), sizeof(Vector3), vertexDataType, mAllocator);
+            VertexArray::DataType dataType = sizeof(decimal) == sizeof(float) ? VertexArray::DataType::VERTEX_FLOAT_TYPE : VertexArray::DataType::VERTEX_DOUBLE_TYPE;
+            VertexArray vertexArray(&(points[0]), sizeof(Vector3), points.size(), dataType);
+
+            std::vector<Error> errors;
+            ConvexMesh* mesh = mPhysicsCommon.createConvexMesh(vertexArray, errors);
+            rp3d_test(mesh != nullptr);
 
             Array<uint32> indicesOfHull(mAllocator);
             indicesOfHull.add(0);

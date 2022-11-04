@@ -120,6 +120,15 @@ void HalfEdgeStructure::computeHalfEdges() {
     }
 }
 
+// Reserve some memory for vertices, faces and edges
+void HalfEdgeStructure::reserve(uint32 facesCapacity, uint32 verticesCapacity, uint32 edgesCapacity) {
+
+   mFaces.reserve(facesCapacity);
+   mVertices.reserve(verticesCapacity);
+   mEdges.reserve(edgesCapacity);
+
+}
+
 // Return a string representation of the half-edge structure
 std::string HalfEdgeStructure::to_string() const {
 

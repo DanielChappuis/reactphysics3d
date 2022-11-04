@@ -31,6 +31,46 @@
 
 using namespace reactphysics3d;
 
+// Destructor
+QHHalfEdgeStructure::~QHHalfEdgeStructure() {
+
+    // Delete faces
+    Face* face = mFaces;
+    while (face != nullptr) {
+
+        Face* nextFace = face->nextFace;
+
+        face->~Face();
+        mAllocator.release(face, sizeof(Face));
+
+        face = nextFace;
+    }
+
+    // Delete edges
+    Edge* edge = mHalfEdges;
+    while (edge != nullptr) {
+
+        Edge* nextEdge = edge->nextEdge;
+
+        edge->~Edge();
+        mAllocator.release(edge, sizeof(Edge));
+
+        edge = nextEdge;
+    }
+
+    // Delete vertices
+    Vertex* vertex = mVertices;
+    while (vertex != nullptr) {
+
+        Vertex* nextVertex = vertex->nextVertex;
+
+        vertex->~Vertex();
+        mAllocator.release(vertex, sizeof(Vertex));
+
+        vertex = nextVertex;
+    }
+}
+
 // Add a vertex
 /**
  * @param vertexPointIndex Index of the vertex in the external user vertex data array

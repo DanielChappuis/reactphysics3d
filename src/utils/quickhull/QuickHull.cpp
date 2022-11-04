@@ -27,31 +27,41 @@
 #include <reactphysics3d/utils/quickhull/QuickHull.h>
 #include <reactphysics3d/collision/ConvexMesh.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
+#include <reactphysics3d/collision/VertexArray.h>
 #include <reactphysics3d/containers/Map.h>
 #include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/containers/Stack.h>
 #include <reactphysics3d/containers/Set.h>
+#include <reactphysics3d/utils/Error.h>
 #include <iostream>
 
 // Namespace
 using namespace reactphysics3d;
 
 // Compute the convex hull of a set of points and return the resulting convex mesh
-ConvexMesh* QuickHull::computeConvexHull(uint32 nbPoints, const void* pointsStart,
-                                             uint32 pointsStride,
-                                             PolygonVertexArray::VertexDataType pointDataType,
-                                             MemoryAllocator& allocator) {
+bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexArray& outPolygonVertexArray,
+                                  Array<float>& outVertices, Array<unsigned int>& outIndices,
+                                  Array<PolygonVertexArray::PolygonFace>& outFaces, MemoryAllocator& allocator,
+                                  std::vector<Error>& errors) {
 
-    // TODO : Maybe create a PointsArray type to pass the array of points in parameter
+    bool isValid = true;
 
     // Extract the points from the array
     Array<Vector3> points(allocator);
-    extractPoints(nbPoints, pointsStart, pointsStride, pointDataType, points);
-    Array<uint32> orphanPointsIndices(allocator, nbPoints);
+    extractPoints(vertexArray, points);
+
+    // If there are less than four vertices in the vertex array
+    if (points.size() < 4) {
+
+       errors.push_back(Error("The VertexArray must contain at least 4 vertices to create a convex mesh"));
+       return false;
+    }
+
+    Array<uint32> orphanPointsIndices(allocator, points.size());
     decimal maxAbsX = 0;
     decimal maxAbsY = 0;
     decimal maxAbsZ = 0;
-    for (uint32 i=0 ; i < nbPoints; i++) {
+    for (uint32 i=0 ; i < points.size(); i++) {
         orphanPointsIndices.add(i);
 
         decimal absX = std::abs(points[i].x);
@@ -77,7 +87,10 @@ ConvexMesh* QuickHull::computeConvexHull(uint32 nbPoints, const void* pointsStar
     Array<QHHalfEdgeStructure::Face*> initialFaces(allocator);
 
     // Compute the initial convex hull
-    computeInitialHull(points, convexHull, initialFaces, orphanPointsIndices, allocator);
+    isValid &= computeInitialHull(points, convexHull, initialFaces, orphanPointsIndices, allocator, errors);
+    if (!isValid) {
+        return false;
+    }
 
     assert(convexHull.getNbVertices() == 4);
     assert(convexHull.getNbFaces() == 4);
@@ -110,7 +123,75 @@ ConvexMesh* QuickHull::computeConvexHull(uint32 nbPoints, const void* pointsStar
         assert(convexHull.isValid());
     }
 
-    return nullptr;
+    // Compute the final PolygonVertexArray with the resulting convex hull mesh
+    computeFinalPolygonVertexArray(convexHull, points, outPolygonVertexArray, outVertices, outIndices, outFaces, allocator);
+
+    return isValid;
+}
+
+// Compute the final PolygonVertexArray from the convex hull half-edge structure
+void QuickHull::computeFinalPolygonVertexArray(const QHHalfEdgeStructure& convexHull,
+                                               const Array<Vector3>& points,
+                                               PolygonVertexArray& outPolygonVertexArray,
+                                               Array<float>& outVertices, Array<unsigned int>& outIndices,
+                                               Array<PolygonVertexArray::PolygonFace>& outFaces,
+                                               MemoryAllocator& allocator) {
+
+    assert(outVertices.size() == 0);
+    assert(outIndices.size() == 0);
+    assert(outFaces.size() == 0);
+
+    Map<uint32, uint32> mapOldVertexIndexToNew(allocator, convexHull.getNbVertices());
+
+    // For each face of the convex hull
+    for (const QHHalfEdgeStructure::Face* face = convexHull.getFaces(); face != nullptr; face = face->nextFace) {
+
+        PolygonVertexArray::PolygonFace polygonFace;
+        polygonFace.nbVertices = 0;
+        polygonFace.indexBase = outIndices.size();
+
+        // For each edge of the face
+        QHHalfEdgeStructure::Edge* firstFaceEdge = face->edge;
+        QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
+        do {
+
+            assert(faceEdge != nullptr);
+
+            const uint32 vOldIndex = faceEdge->startVertex->externalIndex;
+            uint32 vNewIndex = outVertices.size() / 3;
+            auto it = mapOldVertexIndexToNew.find(vOldIndex);
+
+            // If the vertex is already in the new array of vertices
+            if (it != mapOldVertexIndexToNew.end()) {
+               vNewIndex = it->second;
+            }
+            else {
+
+                // Add the vertex to the new array of vertices
+                mapOldVertexIndexToNew.add(Pair<uint32, uint32>(vOldIndex, vNewIndex));
+                outVertices.add(points[vOldIndex].x);
+                outVertices.add(points[vOldIndex].y);
+                outVertices.add(points[vOldIndex].z);
+            }
+
+            // Add the new vertex index to the array of indices
+            outIndices.add(vNewIndex);
+
+            polygonFace.nbVertices++;
+
+            // Go to the next edge of the face
+            faceEdge = faceEdge->nextFaceEdge;
+
+        } while(faceEdge != firstFaceEdge);
+
+        outFaces.add(polygonFace);
+    }
+
+    outPolygonVertexArray.init(outVertices.size() / 3, &(outVertices[0]), sizeof(Vector3),
+                               &(outIndices[0]), sizeof(unsigned int),
+                               outFaces.size(), &(outFaces[0]),
+                               PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                               PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 }
 
 // Add a vertex to the current convex hull to expand it
@@ -715,10 +796,10 @@ void QuickHull::findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStr
 }
 
 // Compute the initial tetrahedron convex hull
-void QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
+bool QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
                                    Array<QHHalfEdgeStructure::Face*>& initialFaces,
                                    Array<uint32>& orphanPointsIndices,
-                                   MemoryAllocator& allocator) {
+                                   MemoryAllocator& allocator, std::vector<Error>& errors) {
 
     // Find the extreme points on each X, Y and Z axes
 
@@ -761,6 +842,11 @@ void QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
         }
     }
 
+    if (maxLargestDistSquare < MACHINE_EPSILON) {
+        errors.push_back(Error("Error during initial hull creation in QuickHull: vertices too close to each other"));
+        return false;
+    }
+
     // The pair of points that have the largest distance between them
     uint32 i1 = extremePointsIndices[iMax * 2];
     uint32 i2 = extremePointsIndices[iMax * 2 + 1];
@@ -781,6 +867,11 @@ void QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
         }
     }
 
+    if (maxLargestDistSquare < MACHINE_EPSILON) {
+        errors.push_back(Error("Error during initial hull creation in QuickHull: vertices too close to each other"));
+        return false;
+    }
+
     // Find a fourth point that has the largest distance with the v1, v2, v3 plane
 
     uint32 i4 = 0;
@@ -796,6 +887,16 @@ void QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
            maxLargestDistSquare = distSquare;
         }
     }
+
+    if (maxLargestDistSquare < MACHINE_EPSILON) {
+        errors.push_back(Error("Error during initial hull creation in QuickHull: vertices too close to each other"));
+        return false;
+    }
+
+    assert(i1 != i2 && i1 != i3 && i1 != i4);
+    assert(i2 != i1 && i2 != i3 && i2 != i4);
+    assert(i3 != i1 && i3 != i2 && i3 != i4);
+    assert(i4 != i1 && i4 != i2 && i4 != i3);
 
     // Test in which side of the triangle face v1,v2,v3 is the point v4
     // to know the orientation of the tetrahedron
@@ -866,23 +967,24 @@ void QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
     orphanPointsIndices.remove(v1->externalIndex);
     orphanPointsIndices.remove(v2->externalIndex);
     orphanPointsIndices.remove(v3->externalIndex);
+
+    return true;
 }
 
 // Extract the points from the array
-void QuickHull::extractPoints(uint32 nbPoints, const void* pointsStart, uint32 pointsStride,
-                              PolygonVertexArray::VertexDataType pointDataType, Array<Vector3>& outArray)  {
+void QuickHull::extractPoints(const VertexArray& vertexArray, Array<Vector3>& outArray)  {
 
-    const unsigned char* pointsStartPointer = reinterpret_cast<const unsigned char*>(pointsStart);
+    const unsigned char* pointsStartPointer = reinterpret_cast<const unsigned char*>(vertexArray.getStart());
 
-    if (pointDataType == PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
-        for (uint32 p=0; p < nbPoints; p++) {
-            const float* points = (float*)(pointsStartPointer + p * pointsStride);
+    if (vertexArray.getDataType() == VertexArray::DataType::VERTEX_FLOAT_TYPE) {
+        for (uint32 p=0; p < vertexArray.getNbVertices(); p++) {
+            const float* points = (float*)(pointsStartPointer + p * vertexArray.getStride());
             outArray.add(Vector3(points[0], points[1], points[2]));
         }
     }
-    else if (pointDataType == PolygonVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
-        for (uint32 p=0; p < nbPoints; p++) {
-            const double* points = (double*)(pointsStartPointer + p * pointsStride);
+    else if (vertexArray.getDataType() == VertexArray::DataType::VERTEX_DOUBLE_TYPE) {
+        for (uint32 p=0; p < vertexArray.getNbVertices(); p++) {
+            const double* points = (double*)(pointsStartPointer + p * vertexArray.getStride());
             outArray.add(Vector3(points[0], points[1], points[2]));
         }
     }

@@ -58,6 +58,7 @@
 #include <reactphysics3d/collision/ConvexMesh.h>
 #include <reactphysics3d/collision/TriangleVertexArray.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
+#include <reactphysics3d/collision/VertexArray.h>
 #include <reactphysics3d/collision/CollisionCallback.h>
 #include <reactphysics3d/collision/OverlapCallback.h>
 #include <reactphysics3d/constraint/BallAndSocketJoint.h>
@@ -65,6 +66,7 @@
 #include <reactphysics3d/constraint/HingeJoint.h>
 #include <reactphysics3d/constraint/FixedJoint.h>
 #include <reactphysics3d/containers/Array.h>
+#include <reactphysics3d/utils/Error.h>
 
 /// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;

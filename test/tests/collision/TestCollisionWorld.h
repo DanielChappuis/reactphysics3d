@@ -302,11 +302,8 @@ class TestCollisionWorld : public Test {
         Collider* mConvexMeshCollider2;
         Collider* mConcaveMeshCollider;
 
-		PolygonVertexArray* mConvexMesh1PolygonVertexArray;
-		PolygonVertexArray* mConvexMesh2PolygonVertexArray;
         ConvexMesh* mConvexMesh1;
         ConvexMesh* mConvexMesh2;
-		PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
 
         TriangleVertexArray* mConcaveMeshTriangleVertexArray;
         float mConvexMesh1CubeVertices[8 * 3];
@@ -383,19 +380,19 @@ class TestCollisionWorld : public Test {
             mConvexMeshCubeIndices[16] = 2; mConvexMeshCubeIndices[17] = 3; mConvexMeshCubeIndices[18] = 7; mConvexMeshCubeIndices[19] = 6;
             mConvexMeshCubeIndices[20] = 0; mConvexMeshCubeIndices[21] = 4; mConvexMeshCubeIndices[22] = 7; mConvexMeshCubeIndices[23] = 3;
 
-			mConvexMeshPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[6];
-			rp3d::PolygonVertexArray::PolygonFace* face = mConvexMeshPolygonFaces;
+            PolygonVertexArray::PolygonFace convexMeshPolygonFaces[6];
+            rp3d::PolygonVertexArray::PolygonFace* face = convexMeshPolygonFaces;
 			for (int f = 0; f < 6; f++) {
                 face->indexBase = f * 4;
 				face->nbVertices = 4;
 				face++;
 			}
-            mConvexMesh1PolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMesh1CubeVertices[0]), 3 * sizeof(float),
-					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
+            PolygonVertexArray convexMesh1PolygonVertexArray(8, &(mConvexMesh1CubeVertices[0]), 3 * sizeof(float),
+                    &(mConvexMeshCubeIndices[0]), sizeof(int), 6, convexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
             std::vector<Error> errors;
-            mConvexMesh1 = mPhysicsCommon.createConvexMesh(mConvexMesh1PolygonVertexArray, errors);
+            mConvexMesh1 = mPhysicsCommon.createConvexMesh(convexMesh1PolygonVertexArray, errors);
             rp3d_test(mConvexMesh1 != nullptr);
             mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1);
             Transform convexMeshTransform1(Vector3(10, 0, 0), Quaternion::identity());
@@ -411,12 +408,12 @@ class TestCollisionWorld : public Test {
             mConvexMesh2CubeVertices[18] = 4; mConvexMesh2CubeVertices[19] = 2; mConvexMesh2CubeVertices[20] = -8;
             mConvexMesh2CubeVertices[21] = -4; mConvexMesh2CubeVertices[22] = 2; mConvexMesh2CubeVertices[23] = -8;
 
-            mConvexMesh2PolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMesh2CubeVertices[0]), 3 * sizeof(float),
-					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
+            PolygonVertexArray convexMesh2PolygonVertexArray(8, &(mConvexMesh2CubeVertices[0]), 3 * sizeof(float),
+                    &(mConvexMeshCubeIndices[0]), sizeof(int), 6, convexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
             errors.clear();
-            mConvexMesh2 = mPhysicsCommon.createConvexMesh(mConvexMesh2PolygonVertexArray, errors);
+            mConvexMesh2 = mPhysicsCommon.createConvexMesh(convexMesh2PolygonVertexArray, errors);
             rp3d_test(mConvexMesh2 != nullptr);
             mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2);
             Transform convexMeshTransform2(Vector3(20, 0, 0), Quaternion::identity());
@@ -482,10 +479,6 @@ class TestCollisionWorld : public Test {
 
             mPhysicsCommon.destroyConvexMesh(mConvexMesh1);
             mPhysicsCommon.destroyConvexMesh(mConvexMesh2);
-
-			delete mConvexMesh1PolygonVertexArray;
-			delete mConvexMesh2PolygonVertexArray;
-            delete[] mConvexMeshPolygonFaces;
 
             mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
 
