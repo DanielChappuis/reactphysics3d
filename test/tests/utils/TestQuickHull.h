@@ -62,15 +62,14 @@ class TestQuickHull : public Test {
 
         /// Run the tests
         void run() {
-            testSimpleMesh();
+            testConvexHulls();
         }
 
         /// Test a simple mesh
-        void testSimpleMesh() {
+        void testConvexHulls() {
 
             Array<Vector3> points(mAllocator);
 
-            /*
             points.add(Vector3(1, 4, 8));
             points.add(Vector3(-5, 0, 9));
             points.add(Vector3(-6, 1, 2));
@@ -79,31 +78,12 @@ class TestQuickHull : public Test {
             points.add(Vector3(2, -2, -8));
             points.add(Vector3(-4, 8, -1));
             points.add(Vector3(4, 8, 4));
-            */
-
-            //
-            points.add(Vector3(0, 0, 0));
-            points.add(Vector3(4, 0, 0));
-            points.add(Vector3(0, 0, 4));
-            points.add(Vector3(4, 0, 4));
-            points.add(Vector3(0, 4, 0));
-            points.add(Vector3(4, 4, 0));
-            points.add(Vector3(0, 4, 4));
-            points.add(Vector3(4, 4, 4));
-            points.add(Vector3(2, 0, 2));
-
-            std::cout << "---------- QuickHull ----------" << std::endl;
-
-            std::cout << "--- Points ---" << std::endl;
-            for (uint32 p=0; p < points.size(); p++) {
-                std::cout << "Point " << p << ": (" << points[p].x << ", " << points[p].y << ", " << points[p].z << ")" << std::endl;
-            }
 
             VertexArray::DataType dataType = sizeof(decimal) == sizeof(float) ? VertexArray::DataType::VERTEX_FLOAT_TYPE : VertexArray::DataType::VERTEX_DOUBLE_TYPE;
-            VertexArray vertexArray(&(points[0]), sizeof(Vector3), points.size(), dataType);
+            VertexArray vertexArray1(&(points[0]), sizeof(Vector3), points.size(), dataType);
 
             std::vector<Error> errors;
-            ConvexMesh* mesh = mPhysicsCommon.createConvexMesh(vertexArray, errors);
+            ConvexMesh* mesh = mPhysicsCommon.createConvexMesh(vertexArray1, errors);
             rp3d_test(mesh != nullptr);
 
             Array<uint32> indicesOfHull(mAllocator);
@@ -115,40 +95,152 @@ class TestQuickHull : public Test {
             indicesOfHull.add(5);
             indicesOfHull.add(6);
             indicesOfHull.add(7);
-            //rp3d_test(testPointsAmongHullVertices(points, indicesOfHull, mesh));
+            rp3d_test(testPointsAmongHullVertices(points, indicesOfHull, mesh));
 
-            /*
-            for (uint32 f=0; f < polygonVertexArray->getNbFaces(); f++) {
+            // Cube
+            points.clear();
+            points.add(Vector3(0, 0, 0));
+            points.add(Vector3(4, 0, 0));
+            points.add(Vector3(0, 0, 4));
+            points.add(Vector3(4, 0, 4));
+            points.add(Vector3(0, 4, 0));
+            points.add(Vector3(4, 4, 0));
+            points.add(Vector3(0, 4, 4));
+            points.add(Vector3(4, 4, 4));
+            points.add(Vector3(2, 0, 2));
+            points.add(Vector3(0, 2, 2));
+            points.add(Vector3(2, 2, 0));
+            points.add(Vector3(4, 2, 2));
+            points.add(Vector3(2, 2, 4));
+            points.add(Vector3(2, 4, 2));
+            points.add(Vector3(2, 2, 2));
 
-                std::cout << " :: Face " << f << " ::" << std::endl;
-                PolygonVertexArray::PolygonFace* face = polygonVertexArray->getPolygonFace(f);
-                for (uint32 v=0; v < face->nbVertices; v++) {
+            dataType = sizeof(decimal) == sizeof(float) ? VertexArray::DataType::VERTEX_FLOAT_TYPE : VertexArray::DataType::VERTEX_DOUBLE_TYPE;
+            VertexArray vertexArray2(&(points[0]), sizeof(Vector3), points.size(), dataType);
 
-                    uint32 vertexIndex = polygonVertexArray->getVertexIndexInFace(f, v);
-                    Vector3 vertex = polygonVertexArray->getVertex(vertexIndex);
+            errors.clear();
+            mesh = mPhysicsCommon.createConvexMesh(vertexArray2, errors);
+            rp3d_test(mesh != nullptr);
 
-                    std::cout << "   :: Vertex " << vertexIndex << ": (" << vertex.x << ", " << vertex.y << ", " << vertex.z << ")" << std::endl;
-                }
-            }
-            */
+            indicesOfHull.clear();
+            indicesOfHull.add(0);
+            indicesOfHull.add(1);
+            indicesOfHull.add(2);
+            indicesOfHull.add(3);
+            indicesOfHull.add(4);
+            indicesOfHull.add(5);
+            indicesOfHull.add(6);
+            indicesOfHull.add(7);
+            rp3d_test(testPointsAmongHullVertices(points, indicesOfHull, mesh));
+
+            points.clear();
+            points.add(Vector3(10, 11, 56));
+            points.add(Vector3(-4, -45, -34));
+            points.add(Vector3(2, -99, 95));
+            points.add(Vector3(23, 21, -25));
+            points.add(Vector3(-56, 45, 75));
+            points.add(Vector3(29, -87, 12));
+            points.add(Vector3(-12, -1, 98));
+            points.add(Vector3(-48, 59, -12));
+            points.add(Vector3(2, -21, -28));
+            points.add(Vector3(0, -82, 48));
+            points.add(Vector3(23, 91, -5));
+            points.add(Vector3(-64, 24, 0));
+
+            dataType = sizeof(decimal) == sizeof(float) ? VertexArray::DataType::VERTEX_FLOAT_TYPE : VertexArray::DataType::VERTEX_DOUBLE_TYPE;
+            VertexArray vertexArray3(&(points[0]), sizeof(Vector3), points.size(), dataType);
+
+            errors.clear();
+            mesh = mPhysicsCommon.createConvexMesh(vertexArray3, errors);
+            rp3d_test(mesh != nullptr);
+
+            indicesOfHull.clear();
+            indicesOfHull.add(0);
+            indicesOfHull.add(1);
+            indicesOfHull.add(2);
+            indicesOfHull.add(3);
+            indicesOfHull.add(4);
+            indicesOfHull.add(5);
+            indicesOfHull.add(6);
+            indicesOfHull.add(7);
+            indicesOfHull.add(9);
+            indicesOfHull.add(10);
+            indicesOfHull.add(11);
+            rp3d_test(testPointsAmongHullVertices(points, indicesOfHull, mesh));
+
+            points.clear();
+            points.add(Vector3(3, -45, -145));
+            points.add(Vector3(-6, 0, 222));
+            points.add(Vector3(76, -21, -83));
+            points.add(Vector3(19, -99, -56));
+            points.add(Vector3(-43, -37, 87));
+            points.add(Vector3(0, 2, -345));
+            points.add(Vector3(-15, 49, 1));
+            points.add(Vector3(91, 82, -38));
+            points.add(Vector3(-4, -17, -9));
+            points.add(Vector3(62, -65, -61));
+            points.add(Vector3(49, 40, 21));
+            points.add(Vector3(7, 49, 124));
+            points.add(Vector3(200, -1, 0));
+
+            dataType = sizeof(decimal) == sizeof(float) ? VertexArray::DataType::VERTEX_FLOAT_TYPE : VertexArray::DataType::VERTEX_DOUBLE_TYPE;
+            VertexArray vertexArray4(&(points[0]), sizeof(Vector3), points.size(), dataType);
+
+            errors.clear();
+            mesh = mPhysicsCommon.createConvexMesh(vertexArray4, errors);
+            rp3d_test(mesh != nullptr);
+
+            indicesOfHull.clear();
+            indicesOfHull.add(1);
+            indicesOfHull.add(3);
+            indicesOfHull.add(4);
+            indicesOfHull.add(5);
+            indicesOfHull.add(6);
+            indicesOfHull.add(7);
+            indicesOfHull.add(11);
+            indicesOfHull.add(12);
+            rp3d_test(testPointsAmongHullVertices(points, indicesOfHull, mesh));
+
+            points.clear();
+            points.add(Vector3(34, 0, -58));
+            points.add(Vector3(5, 3, 31));
+            points.add(Vector3(87, -76, 0));
+            points.add(Vector3(-23, -21, 0));
+            points.add(Vector3(9, -20, -48));
+            points.add(Vector3(5, 3, 31));
+
+            dataType = sizeof(decimal) == sizeof(float) ? VertexArray::DataType::VERTEX_FLOAT_TYPE : VertexArray::DataType::VERTEX_DOUBLE_TYPE;
+            VertexArray vertexArray5(&(points[0]), sizeof(Vector3), points.size(), dataType);
+
+            errors.clear();
+            mesh = mPhysicsCommon.createConvexMesh(vertexArray5, errors);
+            rp3d_test(mesh != nullptr);
+
+            indicesOfHull.clear();
+            indicesOfHull.add(0);
+            indicesOfHull.add(1);
+            indicesOfHull.add(2);
+            indicesOfHull.add(3);
+            indicesOfHull.add(4);
+            rp3d_test(testPointsAmongHullVertices(points, indicesOfHull, mesh));
         }
 
-        bool testPointsAmongHullVertices(const Array<Vector3>& points, const Array<uint32>& indicesOfHull,  PolygonVertexArray* polygonVertexArray) {
+        bool testPointsAmongHullVertices(const Array<Vector3>& points, const Array<uint32>& indicesOfHull, ConvexMesh* convexMesh) {
 
             bool isValid = true;
 
             // For each point that should be in the convex hull
             for(uint32 i=0; i < indicesOfHull.size(); i++) {
-                isValid &= testPointAmongHullVertices(points[indicesOfHull[i]], polygonVertexArray);
+                isValid &= testPointAmongHullVertices(points[indicesOfHull[i]], convexMesh);
             }
 
             return isValid;
         }
 
-        bool testPointAmongHullVertices(const Vector3& vertex, PolygonVertexArray* polygonVertexArray) {
+        bool testPointAmongHullVertices(const Vector3& vertex, ConvexMesh* convexMesh) {
 
-            for (uint32 i=0; i < polygonVertexArray->getNbVertices(); i++) {
-                Vector3 point = polygonVertexArray->getVertex(i);
+            for (uint32 i=0; i < convexMesh->getNbVertices(); i++) {
+                const Vector3& point = convexMesh->getVertex(i);
 
                 if (point == vertex) {
                     return true;

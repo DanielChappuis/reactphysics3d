@@ -110,6 +110,7 @@ bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexA
 
         assert(nextFace != nullptr);
 
+        // TODO : REMOVE ALL CONSOLE OUTPUT FROM QUICKHULL
         std::cout << "Adding vertex " << nextVertexIndex << " to the hull" << std::endl;
 
         // Add the vertex to the hull
@@ -125,6 +126,8 @@ bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexA
 
     // Compute the final PolygonVertexArray with the resulting convex hull mesh
     computeFinalPolygonVertexArray(convexHull, points, outPolygonVertexArray, outVertices, outIndices, outFaces, allocator);
+
+    assert(convexHull.isValid());
 
     return isValid;
 }
