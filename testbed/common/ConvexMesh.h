@@ -34,7 +34,7 @@
 // Class ConvexMesh
 class ConvexMesh : public PhysicsObject {
 
-    private :
+    protected :
 
         // -------------------- Attributes -------------------- //
 
@@ -72,6 +72,9 @@ class ConvexMesh : public PhysicsObject {
 		std::vector<int> mConvexMeshIndices;
 
         // -------------------- Methods -------------------- //
+
+        /// Constructor (only for derived classes)
+        ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath);
 
         /// Create the Vertex Buffer Objects used to render with OpenGL.
         void createVBOAndVAO();

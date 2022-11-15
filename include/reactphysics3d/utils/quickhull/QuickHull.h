@@ -57,9 +57,8 @@ class QuickHull {
             const QHHalfEdgeStructure::Edge* currentEdge;
 
             // Constructor
-            CandidateFace(const QHHalfEdgeStructure::Face* face, const QHHalfEdgeStructure::Edge* startEdge,
-                          const QHHalfEdgeStructure::Edge* currentEdge)
-                :face(face), startEdge(startEdge), currentEdge(currentEdge) {}
+            CandidateFace(const QHHalfEdgeStructure::Face* face, const QHHalfEdgeStructure::Edge* edge)
+                :face(face), startEdge(edge), currentEdge(edge) {}
         };
 
         // -------------------- Constants -------------------- //

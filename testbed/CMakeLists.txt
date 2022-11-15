@@ -107,6 +107,8 @@ set(COMMON_SOURCES
     common/Capsule.cpp
     common/ConvexMesh.h
     common/ConvexMesh.cpp
+    common/ConvexHull.h
+    common/ConvexHull.cpp
     common/ConcaveMesh.h
     common/ConcaveMesh.cpp
     common/Dumbbell.h

@@ -23,95 +23,28 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef COLLISION_SHAPES_SCENE_H
-#define COLLISION_SHAPES_SCENE_H
+#ifndef CONVEX_HULL_H
+#define CONVEX_HULL_H
 
 // Libraries
 #include "openglframework.h"
 #include <reactphysics3d/reactphysics3d.h>
-#include "SceneDemo.h"
-#include "Sphere.h"
-#include "Box.h"
-#include "Capsule.h"
 #include "ConvexMesh.h"
-#include "ConvexHull.h"
-#include "ConcaveMesh.h"
-#include "Dumbbell.h"
-#include "VisualContactPoint.h"
 
-namespace collisionshapesscene {
-
-// Constants
-const float SCENE_RADIUS = 30.0f;
-const int NB_BOXES = 10;
-const int NB_SPHERES = 5;
-const int NB_CAPSULES = 5;
-const int NB_MESHES = 5;
-const int NB_HULLS = 5;
-const int NB_COMPOUND_SHAPES = 5;
-const openglframework::Vector3 BOX_SIZE(2, 2, 2);
-const float SPHERE_RADIUS = 1.5f;
-const float CONE_RADIUS = 2.0f;
-const float CONE_HEIGHT = 3.0f;
-const float CYLINDER_RADIUS = 1.0f;
-const float CYLINDER_HEIGHT = 5.0f;
-const float CAPSULE_RADIUS = 1.0f;
-const float CAPSULE_HEIGHT = 1.0f;
-const float DUMBBELL_HEIGHT = 1.0f;
-const openglframework::Vector3 FLOOR_SIZE(30, 0.5f, 30);        // Floor dimensions in meters
-
-// Class CollisionShapesScene
-class CollisionShapesScene : public SceneDemo {
+// Class ConvexHull
+// Created from any triangular mesh this object will have a collider
+// that is the convex hull of the input triangular mesh
+class ConvexHull : public ConvexMesh {
 
     private :
 
-        // -------------------- Attributes -------------------- //
-
-        /// All the boxes of the scene
-        std::vector<Box*> mBoxes;
-
-        std::vector<Sphere*> mSpheres;
-
-        std::vector<Capsule*> mCapsules;
-
-        /// All the convex meshes of the scene
-        std::vector<ConvexMesh*> mConvexMeshes;
-
-        /// All the convex hulls of the scene
-        std::vector<ConvexHull*> mConvexHulls;
-
-        /// All the dumbbell of the scene
-        std::vector<Dumbbell*> mDumbbells;
-
-        /// Box for the floor
-        Box* mFloor;
-
-        /// World settings
-        rp3d::PhysicsWorld::WorldSettings mWorldSettings;
-
-    public:
+    public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionShapesScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon);
-
-        /// Destructor
-        virtual ~CollisionShapesScene() override;
-
-        /// Reset the scene
-        virtual void reset() override;
-
-        /// Create the physics world
-        void createPhysicsWorld();
-
-        /// Destroy the physics world
-        void destroyPhysicsWorld();
-
-        /// Initialize the bodies positions
-        void initBodiesPositions();
+        ConvexHull(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+                   const std::string& meshPath, const rp3d::Vector3& scaling = rp3d::Vector3(1, 1, 1));
 };
-
-}
 
 #endif

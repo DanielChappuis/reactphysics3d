@@ -162,6 +162,25 @@ void CollisionShapesScene::createPhysicsWorld() {
         mPhysicsObjects.push_back(mesh);
     }
 
+    // Create all the convex hulls of the scene
+    for (int i=0; i<NB_HULLS; i++) {
+
+        // Create a convex hull and a corresponding rigid in the physics world
+        ConvexHull* mesh = new ConvexHull(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "teapot.obj");
+
+        // Set the box color
+        mesh->setColor(mObjectColorDemo);
+        mesh->setSleepingColor(mSleepingColorDemo);
+
+        // Change the material properties of the rigid body
+        rp3d::Material& material = mesh->getCollider()->getMaterial();
+        material.setBounciness(rp3d::decimal(0.2));
+
+        // Add the mesh the list of sphere in the scene
+        mConvexHulls.push_back(mesh);
+        mPhysicsObjects.push_back(mesh);
+    }
+
     // ---------- Create the floor ---------
 
     mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
@@ -243,6 +262,19 @@ void CollisionShapesScene::initBodiesPositions() {
         mConvexMeshes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
     }
 
+    // Create all the convex hulls of the scene
+    for (uint i = 0; i<mConvexHulls.size(); i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        rp3d::Vector3 position(radius * std::cos(angle),
+            30 + i * (CAPSULE_HEIGHT + 0.3f),
+            radius * std::sin(angle));
+
+        mConvexHulls[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+    }
+
+
     // ---------- Create the triangular mesh ---------- //
 
     mFloor->setTransform(rp3d::Transform::identity());
@@ -264,6 +296,7 @@ void CollisionShapesScene::destroyPhysicsWorld() {
         mSpheres.clear();
         mCapsules.clear();
         mConvexMeshes.clear();
+        mConvexHulls.clear();
         mDumbbells.clear();
 
         // Destroy the physics world
