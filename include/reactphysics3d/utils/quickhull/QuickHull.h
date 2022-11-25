@@ -30,6 +30,7 @@
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/containers/Map.h>
+#include <reactphysics3d/containers/Set.h>
 #include <reactphysics3d/utils/quickhull/QHHalfEdgeStructure.h>
 
 /// ReactPhysics3D namespace
@@ -106,19 +107,22 @@ class QuickHull {
                                 decimal epsilon);
 
         /// Iterate over all new faces and fix faces that are forming a concave shape in order to always keep the hull convex
-        static void mergeConcaveFaces(QHHalfEdgeStructure& convexHull,
-                                      Array<QHHalfEdgeStructure::Face*>& newFaces, const Array<Vector3>& points, decimal epsilon);
+        static void mergeConcaveFaces(QHHalfEdgeStructure& convexHull, Array<QHHalfEdgeStructure::Face*>& newFaces,
+                                      const Array<Vector3>& points, decimal epsilon,
+                                      Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Merge two faces that are concave at a given edge
         static void mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfEdgeStructure& convexHull,
-                                            const Array<Vector3>& points);
+                                            const Array<Vector3>& points, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Fix topological issues (if any) that might have been created during faces merge
-        static void fixTopologicalIssues(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
+        static void fixTopologicalIssues(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face,
+                                         const Array<Vector3>& points, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Fix topological issue at a given edge
         static void fixTopologicalIssueAtEdge(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face,
-                                              QHHalfEdgeStructure::Edge* inEdge, const Array<Vector3>& points);
+                                              QHHalfEdgeStructure::Edge* inEdge, const Array<Vector3>& points,
+                                              Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
         static void recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
@@ -129,12 +133,13 @@ class QuickHull {
                                             QHHalfEdgeStructure::Face*& outNextFace, decimal epsilon);
 
         /// Find the closest face for a given vertex and add this vertex to the remaining closest points for this face
-        static void findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points, decimal epsilon);
+        static void findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points,
+                                             decimal epsilon, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Take all the points closest to the old face and add them to the closest faces among the new faces that replace the old face
         static void associateOrphanPointsToNewFaces(Array<uint32>& orphanPointsIndices,
                                                     Array<QHHalfEdgeStructure::Face*>& newFaces,
-                                                    Array<Vector3>& points, decimal epsilon);
+                                                    Array<Vector3>& points, decimal epsilon, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Return true if the vertex is part of horizon edges
         static bool testIsVertexInHorizon(QHHalfEdgeStructure::Vertex* vertex, const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices);

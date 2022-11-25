@@ -67,16 +67,6 @@ class QHHalfEdgeStructure {
                 :startVertex(startVertex), endVertex(endVertex), face(face), previousEdge(nullptr), nextEdge(nullptr),
                  previousFaceEdge(nullptr), nextFaceEdge(nullptr), twinEdge(nullptr) {}
 
-            // Return the next edge of the next edge (if any)
-            const Edge* getNextSecondEdge() const {
-
-               if (nextEdge != nullptr) {
-                   return nextEdge->nextEdge;
-               }
-
-               return nullptr;
-            }
-
             bool isValid() const {
 
                 bool isValid = true;
