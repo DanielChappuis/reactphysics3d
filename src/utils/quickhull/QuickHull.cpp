@@ -51,6 +51,9 @@ bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexA
     Array<Vector3> points(allocator);
     extractPoints(vertexArray, points);
 
+    // Remove the duplicated vertices from the points
+    removeDuplicatedVertices(points, allocator);
+
     // If there are less than four vertices in the vertex array
     if (points.size() < 4) {
 
@@ -126,10 +129,10 @@ bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexA
         assert(convexHull.isValid());
     }
 
+    assert(convexHull.isValid());
+
     // Compute the final PolygonVertexArray with the resulting convex hull mesh
     computeFinalPolygonVertexArray(convexHull, points, outPolygonVertexArray, outVertices, outIndices, outFaces, allocator);
-
-    assert(convexHull.isValid());
 
     return isValid;
 }
@@ -147,6 +150,10 @@ void QuickHull::computeFinalPolygonVertexArray(const QHHalfEdgeStructure& convex
     assert(outFaces.size() == 0);
 
     Map<uint32, uint32> mapOldVertexIndexToNew(allocator, convexHull.getNbVertices());
+
+    // TODO : Remove this
+    std::vector<const QHHalfEdgeStructure::Vertex*> verts;
+    std::vector<const QHHalfEdgeStructure::Vertex*> noFoundVerts;
 
     // For each face of the convex hull
     for (const QHHalfEdgeStructure::Face* face = convexHull.getFaces(); face != nullptr; face = face->nextFace) {
@@ -172,6 +179,8 @@ void QuickHull::computeFinalPolygonVertexArray(const QHHalfEdgeStructure& convex
             }
             else {
 
+                verts.push_back(faceEdge->startVertex);
+
                 // Add the vertex to the new array of vertices
                 mapOldVertexIndexToNew.add(Pair<uint32, uint32>(vOldIndex, vNewIndex));
                 outVertices.add(points[vOldIndex].x);
@@ -191,6 +200,25 @@ void QuickHull::computeFinalPolygonVertexArray(const QHHalfEdgeStructure& convex
 
         outFaces.add(polygonFace);
     }
+
+    // TODO : DELETE THIS
+    for (const QHHalfEdgeStructure::Vertex* v = convexHull.getVertices(); v != nullptr; v = v->nextVertex) {
+
+        bool found = false;
+        for (const QHHalfEdgeStructure::Vertex* v2: verts) {
+            if (v->externalIndex == v2->externalIndex) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            noFoundVerts.push_back(v);
+        }
+    }
+
+    assert(convexHull.getNbVertices() == outVertices.size() / 3);
+    assert(convexHull.getNbFaces() == outFaces.size());
 
     outPolygonVertexArray.init(outVertices.size() / 3, &(outVertices[0]), sizeof(Vector3),
                                &(outIndices[0]), sizeof(unsigned int),
@@ -269,6 +297,12 @@ void QuickHull::buildNewFaces(uint32 newVertexIndex,
         faceVertices.add(v3);
         faceVertices.add(v);
 
+        // TODO : DELETE THIS
+
+        Vector3 v1Pos = points[newVertexIndex];
+        Vector3 v2Pos = points[v2->externalIndex];
+        Vector3 v3Pos = points[v3->externalIndex];
+
         // Compute the face normal
         Vector3 normal = (points[v3->externalIndex] - points[v2->externalIndex]).cross(points[v->externalIndex] - points[v3->externalIndex]);
         normal.normalize();
@@ -278,7 +312,14 @@ void QuickHull::buildNewFaces(uint32 newVertexIndex,
 
         newFaces.add(face);
 
+        // TODO : DELETE THIS
+        bool test1 = face->hasVertexWithIndex(21995) ;
+        bool test2 = face->hasVertexWithIndex(21996);
+        bool test3 = face->hasVertexWithIndex(22007);
+
         //std::cout << "Build new face with vertices: " << face->verticesString() << std::endl;
+
+        const decimal area = face->computeArea(points);
 
         faceVertices.clear();
     }
@@ -295,22 +336,14 @@ void QuickHull::deleteVisibleFaces(const Array<QHHalfEdgeStructure::Face*>& visi
 
     Set<QHHalfEdgeStructure::Vertex*> verticesToRemove(allocator);
 
-    // TODO: DELETE THIS
-    for (const QHHalfEdgeStructure::Face* face = convexHull.getFaces(); face != nullptr; face = face->nextFace) {
-       assert(face->remainingClosestPoints.capacity() < 70000);
-    }
-
     // For each visible face
     for (uint32 i=0; i < nbFaces; i++) {
 
         // TODO : DELETE THIS
         //std::cout << "Removing visible face with vertices " << visibleFaces[i]->verticesString() << std::endl;
 
-        auto test = visibleFaces[i]->remainingClosestPoints.size();
-        auto& test1 = visibleFaces[i];
-
         // Add all the remaining points associated with this face to the array of orphan points
-        orphanPoints.addRange(visibleFaces[i]->remainingClosestPoints);
+        orphanPoints.addRange(visibleFaces[i]->conflictPoints);
 
         // For each vertex of the face to remove
         const QHHalfEdgeStructure::Edge* firstFaceEdge = visibleFaces[i]->edge;
@@ -330,6 +363,9 @@ void QuickHull::deleteVisibleFaces(const Array<QHHalfEdgeStructure::Face*>& visi
 
         } while(faceEdge != firstFaceEdge);
 
+        // TODO : DELETE FACE
+        bool test1 = visibleFaces[i]->hasVertexWithIndex(17054);
+
         // Remove the face from the current convex hull
         convexHull.removeFace(visibleFaces[i]);
     }
@@ -337,11 +373,6 @@ void QuickHull::deleteVisibleFaces(const Array<QHHalfEdgeStructure::Face*>& visi
     // Remove the vertices to be removed
     for (auto it = verticesToRemove.begin(); it != verticesToRemove.end(); ++it) {
         convexHull.removeVertex(*it);
-    }
-
-    // TODO: DELETE THIS
-    for (const QHHalfEdgeStructure::Face* face = convexHull.getFaces(); face != nullptr; face = face->nextFace) {
-       assert(&(face->remainingClosestPoints) != nullptr);
     }
 }
 
@@ -400,6 +431,9 @@ void QuickHull::findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face* fa
 
         // Mark the current face as visited
         visitedFaces.add(candidateFace.face);
+
+        // TODO : REMOVE THIS
+        bool test = candidateFace.face->hasVertexWithIndex(17054);
 
         bool goToVisibleFace = false;
 
@@ -529,6 +563,22 @@ void QuickHull::mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfE
     QHHalfEdgeStructure::Face* faceToRemove = edge->twinEdge->face;
     QHHalfEdgeStructure::Face* faceToKeep = edge->face;
 
+    // TODO : DELETE THIS
+    bool test1 = faceToKeep->hasVertexWithIndex(21995);
+    bool test2 = faceToKeep->hasVertexWithIndex(22007);
+    bool test3 = faceToKeep->hasVertexWithIndex(21996);
+
+    test1 = faceToRemove->hasVertexWithIndex(21995);
+    test2 = faceToRemove->hasVertexWithIndex(22007);
+    test3 = faceToRemove->hasVertexWithIndex(21996);
+
+    assert(faceToRemove->isValid());
+    assert(faceToKeep->isValid());
+
+    // TODO : REMOVE THIS
+    test1 = faceToRemove->hasVertexWithIndex(17054) ;
+    test2 = faceToKeep->hasVertexWithIndex(17054);
+
     QHHalfEdgeStructure::Edge* edgeBefore = edge->previousFaceEdge;
     QHHalfEdgeStructure::Edge* edgeAfter = edge->nextFaceEdge;
 
@@ -551,15 +601,19 @@ void QuickHull::mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfE
         faceEdge = faceEdge->nextFaceEdge;
     };
 
+    assert(faceToKeep->isValid());
+
     // Fix the linked-list of face edges
     edge->previousFaceEdge->nextFaceEdge = edge->twinEdge->nextFaceEdge;
     edge->nextFaceEdge->previousFaceEdge = edge->twinEdge->previousFaceEdge;
     edge->twinEdge->previousFaceEdge->nextFaceEdge = edge->nextFaceEdge;
     edge->twinEdge->nextFaceEdge->previousFaceEdge = edge->previousFaceEdge;
 
+    assert(faceToKeep->isValid());
+
     // Move the remaining closest vertices of the face to remove to the face to keep
     //std::cout << "Transfer remaining closests points: " << faceToRemove->remainingClosestPoints.size() << std::endl;
-    faceToKeep->remainingClosestPoints.addRange(faceToRemove->remainingClosestPoints);
+    faceToKeep->conflictPoints.addRange(faceToRemove->conflictPoints);
 
     // Remove the face
     deletedFaces.add(faceToRemove);
@@ -569,17 +623,21 @@ void QuickHull::mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfE
     convexHull.removeHalfEdge(edge->twinEdge);
     convexHull.removeHalfEdge(edge);
 
+    assert(faceToKeep->isValid());
+
     // Recalculate the face centroid and normal to better fit its vertices (using Newell method)
     recalculateFace(faceToKeep, points);
-
-    // Fix topological issues (if any) that might have been created during merge
-    fixTopologicalIssues(convexHull, faceToKeep, points, deletedFaces);
 
     assert(faceToKeep->edge->face == faceToKeep);
     assert(edgeBefore->nextFaceEdge->previousFaceEdge == edgeBefore);
     assert(edgeAfter->previousFaceEdge->nextFaceEdge == edgeAfter);
     assert(edgeBefore->nextFaceEdge->face == faceToKeep);
     assert(edgeAfter->previousFaceEdge->face == faceToKeep);
+
+    // Fix topological issues (if any) that might have been created during merge
+    fixTopologicalIssues(convexHull, faceToKeep, points, deletedFaces);
+
+    assert(faceToKeep->isValid());
 }
 
 // Fix topological issues (if any) that might have been created during faces merge
@@ -600,7 +658,7 @@ void QuickHull::fixTopologicalIssues(QHHalfEdgeStructure& convexHull, QHHalfEdge
         // the same face on the opposite side
         QHHalfEdgeStructure::Edge* firstInEdge = face->edge;
         QHHalfEdgeStructure::Edge* inEdge = firstInEdge;
-        while (inEdge != firstInEdge) {
+        do {
 
             assert(inEdge != nullptr);
 
@@ -613,7 +671,8 @@ void QuickHull::fixTopologicalIssues(QHHalfEdgeStructure& convexHull, QHHalfEdge
 
             // Move to the next edge of the face
             inEdge = outEdge;
-        };
+        }
+        while (inEdge != firstInEdge);
 
         // If we have found an edge with error (redundant vertex)
         if (edgeError != nullptr) {
@@ -654,7 +713,7 @@ void QuickHull::fixTopologicalIssueAtEdge(QHHalfEdgeStructure& convexHull, QHHal
         inEdge->twinEdge->nextFaceEdge->nextFaceEdge = edgeAfterTriangle;
 
         // Move the remaining closest vertices of the face to remove to the face to keep
-        faceToKeep->remainingClosestPoints.addRange(faceToRemove->remainingClosestPoints);
+        faceToKeep->conflictPoints.addRange(faceToRemove->conflictPoints);
 
         // Recalculate the face centroid and normal to better fit its vertices (using Newell method)
         recalculateFace(faceToKeep, points);
@@ -679,6 +738,8 @@ void QuickHull::fixTopologicalIssueAtEdge(QHHalfEdgeStructure& convexHull, QHHal
         assert(edgeBeforeTriangle->nextFaceEdge->face == faceToKeep);
         assert(faceToKeep->edge->face == faceToKeep);
         assert(edgeBeforeTriangle->nextFaceEdge->twinEdge->twinEdge == edgeBeforeTriangle->nextFaceEdge);
+
+        assert(faceToKeep->isValid());
     }
     else {  // If the opposite face is not a triangle
 
@@ -748,6 +809,58 @@ void QuickHull::recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vec
     //std::cout << "New normal:" << face->normal.to_string() << std::endl;
 }
 
+// Remove duplicated vertices in the input array of points
+void QuickHull::removeDuplicatedVertices(Array<Vector3>& points, MemoryAllocator& allocator) {
+
+    const decimal distanceEpsilon = 0.00001f;
+    Array<Vector3> pointsToKeep(allocator, points.size());
+
+    // Compute the points cloud center
+    Vector3 center(0, 0, 0);
+    for (uint32 i=0; i < points.size(); i++) {
+        center += points[i];
+    }
+    center /= points.size();
+
+    // For each input point
+    for (uint32 i=0; i < points.size(); i++) {
+
+        // For each point to keep
+        uint32 j;
+        for (j=0; j < pointsToKeep.size(); j++) {
+
+            decimal dx = std::abs(pointsToKeep[j].x - points[i].x);
+            decimal dy = std::abs(pointsToKeep[j].y - points[i].y);
+            decimal dz = std::abs(pointsToKeep[j].z - points[i].z);
+
+            auto v1 = pointsToKeep[j];
+            auto v2 = points[i];
+
+            // If the points are nearly the same
+            if (dx < distanceEpsilon && dy < distanceEpsilon && dz < distanceEpsilon) {
+
+                // Between the two points, we keep the one that is the furthest away from the cloud points center
+                if ((points[i] - center).lengthSquare() > (pointsToKeep[j] - center).lengthSquare()) {
+
+                    pointsToKeep[j] = points[i];
+                }
+
+                break;
+            }
+        }
+
+        // If the point is not already in the array of points to keep
+        if (j == pointsToKeep.size()) {
+
+            // We add it
+            pointsToKeep.add(points[i]);
+        }
+    }
+
+    points.clear();
+    points.addRange(pointsToKeep);
+}
+
 // Return the index of the next vertex candidate to be added to the hull
 // This method returns INVALID_VERTEX_INDEX if there is no more vertex candidate
 void QuickHull::findNextVertexCandidate(Array<Vector3>& points, uint32& outNextVertexIndex,
@@ -763,16 +876,16 @@ void QuickHull::findNextVertexCandidate(Array<Vector3>& points, uint32& outNextV
     for (auto face = convexHull.getFaces(); face != nullptr; face = face->nextFace) {
 
         // If the face has remaining candidates points
-        if (face->remainingClosestPoints.size() > 0) {
+        if (face->conflictPoints.size() > 0) {
 
             //std::cout << "Face with vertices " << face->verticesString() << " has candidates points" << std::endl;
 
             const Vector3& faceNormal = face->normal;
 
             // For each remaining candidate point of the face
-            for (uint32 i=0; i < face->remainingClosestPoints.size(); i++) {
+            for (uint32 i=0; i < face->conflictPoints.size(); i++) {
 
-                uint32 vertexIndex = face->remainingClosestPoints[i];
+                uint32 vertexIndex = face->conflictPoints[i];
 
                 const decimal distance = (points[vertexIndex] - face->centroid).dot(faceNormal);
                 assert(distance > epsilon);
@@ -788,10 +901,11 @@ void QuickHull::findNextVertexCandidate(Array<Vector3>& points, uint32& outNextV
     }
 
     //std::cout << "Next vertex candidate: " << std::to_string(outNextVertexIndex) << " is furthest" << std::endl;
+    std::cout << "Max distance: " << maxDistance << std::endl;
 
     // Remove the vertex from the array of remaining vertices for that face
     if (outNextFace != nullptr) {
-        outNextFace->remainingClosestPoints.removeAt(maxVertexI);
+        outNextFace->conflictPoints.removeAt(maxVertexI);
     }
 }
 
@@ -816,23 +930,23 @@ std::string QuickHull::showMap(Map<const QHHalfEdgeStructure::Face*, Array<uint3
     return str;
 }
 
-// Take all the orphan points to the closest faces among the new faces
+// Take all the orphan points to the furthest faces among the new faces
 void QuickHull::associateOrphanPointsToNewFaces(Array<uint32>& orphanPointsIndices, Array<QHHalfEdgeStructure::Face*>& newFaces,
                                                 Array<Vector3>& points, decimal epsilon, Set<QHHalfEdgeStructure::Face*>& deletedFaces) {
 
     // For each candidate points of the old faces
     for (uint32 i=0; i < orphanPointsIndices.size(); i++) {
 
-        findClosestFaceForVertex(orphanPointsIndices[i], newFaces, points, epsilon, deletedFaces);
+        findFarthestFaceForVertex(orphanPointsIndices[i], newFaces, points, epsilon, deletedFaces);
     }
 }
 
-// Find the closest face for a given vertex and add this vertex to the remaining closest points for this face
-void QuickHull::findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points, decimal epsilon,
+// Find the closest face for a given vertex and add this vertex to the conflict list for this face
+void QuickHull::findFarthestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points, decimal epsilon,
                                          Set<QHHalfEdgeStructure::Face*>& deletedFaces) {
 
-    decimal minDistanceToFace = DECIMAL_LARGEST;
-    QHHalfEdgeStructure::Face* closestFace = nullptr;
+    decimal maxDistanceToFace = epsilon;
+    QHHalfEdgeStructure::Face* farthestFace = nullptr;
 
     // For each new face
     for (uint32 f=0; f < faces.size(); f++) {
@@ -844,18 +958,18 @@ void QuickHull::findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStr
 
         const decimal distanceToFace = face->normal.dot(points[vertexIndex] - face->centroid);
 
-        // If the point is in front the face and with a smaller distance from the face
-        if (distanceToFace > epsilon && distanceToFace < minDistanceToFace) {
-            minDistanceToFace = distanceToFace;
-            closestFace = face;
+        // If the point is in front the face and with a larger distance from the face
+        if (distanceToFace > maxDistanceToFace) {
+            maxDistanceToFace = distanceToFace;
+            farthestFace = face;
         }
     }
 
-    // If we have found a closest face (where the point is in front of the face)
-    if (closestFace != nullptr) {
+    // If we have found a farthest face
+    if (farthestFace != nullptr) {
 
-        // Add the vertex to the remaining closest points of the face
-        closestFace->remainingClosestPoints.add(vertexIndex);
+        // Add the vertex to the conflict list of the face
+        farthestFace->conflictPoints.add(vertexIndex);
     }
 }
 

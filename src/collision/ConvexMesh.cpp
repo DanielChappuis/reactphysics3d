@@ -164,8 +164,11 @@ bool ConvexMesh::createHalfEdgeStructure(const PolygonVertexArray& polygonVertex
         isValid = false;
     }
 
-    // Initialize the half-edge structure
-    mHalfEdgeStructure.computeHalfEdges();
+    //if (isValid) {
+
+        // Initialize the half-edge structure
+        mHalfEdgeStructure.computeHalfEdges();
+    //}
 
     return isValid;
 }
@@ -189,6 +192,7 @@ bool ConvexMesh::computeFacesNormals(std::vector<Error>& errors) {
             const Vector3 vec2 = getVertex(face.faceVertices[2]) - getVertex(face.faceVertices[0]);
             mFacesNormals.add(vec1.cross(vec2));
 
+            // TODO : Do not use MACHINE_EPSILON here
             if (mFacesNormals[f].lengthSquare() > MACHINE_EPSILON) {
 
                 mFacesNormals[f].normalize();

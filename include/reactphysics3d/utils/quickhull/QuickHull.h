@@ -127,13 +127,16 @@ class QuickHull {
         /// Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
         static void recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
 
+        /// Remove duplicated vertices in the input array of points
+        static void removeDuplicatedVertices(Array<Vector3>& points, MemoryAllocator& allocator);
+
         /// Return the index of the next vertex candidate to be added to the hull
         static void findNextVertexCandidate(Array<Vector3>& points, uint32& outNextVertexIndex,
                                             QHHalfEdgeStructure& convexHull,
                                             QHHalfEdgeStructure::Face*& outNextFace, decimal epsilon);
 
         /// Find the closest face for a given vertex and add this vertex to the remaining closest points for this face
-        static void findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points,
+        static void findFarthestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points,
                                              decimal epsilon, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Take all the points closest to the old face and add them to the closest faces among the new faces that replace the old face

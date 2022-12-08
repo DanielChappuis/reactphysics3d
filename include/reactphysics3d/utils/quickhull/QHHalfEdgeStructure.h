@@ -29,6 +29,7 @@
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <reactphysics3d/containers/Map.h>
+#include <reactphysics3d/containers/Set.h>
 
 namespace reactphysics3d {
 
@@ -76,6 +77,7 @@ class QHHalfEdgeStructure {
                 isValid &= nextFaceEdge != nullptr;
                 isValid &= previousFaceEdge->nextFaceEdge == this;
                 isValid &= nextFaceEdge->previousFaceEdge == this;
+                isValid &= twinEdge != nullptr;
                 isValid &= twinEdge->twinEdge == this;
                 isValid &= startVertex == twinEdge->endVertex;
                 isValid &= endVertex == twinEdge->startVertex;
@@ -94,11 +96,14 @@ class QHHalfEdgeStructure {
             Edge* edge;             // One half-edge of the face
             Vector3 normal;
             Vector3 centroid;         // Center of the face (average of the face vertices)
-            Array<uint32> remainingClosestPoints;   // Array with some remaining points that are closest to this face
+            Array<uint32> conflictPoints;   // Array with some remaining points visible from this face that need to be processed
+
+            // TODO : DELETE THIS
+            Set<uint32> vertices;
 
             /// Constructor
             Face(const Vector3& normal, MemoryAllocator& allocator)
-                : nextFace(nullptr), previousFace(nullptr), normal(normal), remainingClosestPoints(allocator, 8) {
+                : nextFace(nullptr), previousFace(nullptr), normal(normal), conflictPoints(allocator, 8), vertices(allocator) {
 
             }
 
@@ -130,10 +135,54 @@ class QHHalfEdgeStructure {
                return verticesString;
             }
 
+            // TODO: DELETE THIS
+            bool hasVertexWithIndex(uint32 externalIndex) const {
+
+                const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
+                const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
+                do {
+
+                   QHHalfEdgeStructure::Vertex* vertex = faceEdge->startVertex;
+
+                   if (vertex->externalIndex == externalIndex) {
+                       return true;
+                   }
+
+                   faceEdge = faceEdge->nextFaceEdge;
+
+                } while(faceEdge != firstFaceEdge);
+
+                return false;
+            }
+
             // Return true if the face is a triangle
             bool isTriangle() {
 
                 return edge->nextFaceEdge->nextFaceEdge->nextFaceEdge == edge;
+            }
+
+            // TODO: DELETE THIS
+            decimal computeArea(const Array<Vector3>& points) const {
+
+                decimal area = 0.0;
+
+                Vector3 v1 = points[edge->startVertex->externalIndex];
+
+                // For each vertex of the face
+                const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
+                const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge->nextFaceEdge;
+                do {
+
+                   Vector3 v2 = points[faceEdge->startVertex->externalIndex];
+                   Vector3 v3 = points[faceEdge->endVertex->externalIndex];
+
+                   area += (v3 - v1).cross(v2 - v1).length();
+
+                   faceEdge = faceEdge->nextFaceEdge;
+
+                } while(faceEdge->nextFaceEdge != firstFaceEdge);
+
+                return area * decimal(0.5);
             }
 
             // Compute the centroid of a face (the average of face vertices)
@@ -161,11 +210,33 @@ class QHHalfEdgeStructure {
             }
 
             // Return true if the face structure is valid (for debugging purpose)
-            bool isValid() const {
+            bool isValid() {
                bool isValid = true;
 
                isValid &= approxEqual(normal.lengthSquare(), 1.0, 0.01);
                isValid &= edge->face == this;
+
+               // For each edge of the face
+               vertices.clear();
+
+                const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
+                const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
+                do {
+
+                   if (vertices.contains(faceEdge->startVertex->externalIndex)) {
+                       return false;
+                   }
+
+                   if (faceEdge->face != this) {
+                       return false;
+                   }
+
+                   vertices.add(faceEdge->startVertex->externalIndex);
+
+                   faceEdge = faceEdge->nextFaceEdge;
+
+                } while(faceEdge != firstFaceEdge);
+
 
                return isValid;
             }

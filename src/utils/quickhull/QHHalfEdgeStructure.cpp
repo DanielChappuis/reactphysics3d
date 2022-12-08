@@ -361,6 +361,7 @@ bool QHHalfEdgeStructure::isValid() const {
     };
 
     isValid &= nbEdges == mNbHalfEdges;
+    isValid &= mNbHalfEdges % 2 == 0;
     isValid &= (nbEdges > 0 || mHalfEdges == nullptr);
 
     return isValid;
