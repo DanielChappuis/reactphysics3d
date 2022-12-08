@@ -54,24 +54,13 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         /// Convex mesh
         ConvexMesh* mConvexMesh;
 
-        // TODO : Maybe store min/max bounds in the ConvexMesh instead
-
-        /// Mesh minimum bounds in the three local x, y and z directions
-        Vector3 mMinBounds;
-
-        /// Mesh maximum bounds in the three local x, y and z directions
-        Vector3 mMaxBounds;
-
-        /// Scale of the mesh
+        /// Scale to apply to the mesh
         Vector3 mScale;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
         ConvexMeshShape(ConvexMesh* convexMesh,  MemoryAllocator& allocator, const Vector3& scale = Vector3(1,1,1));
-
-        /// Recompute the bounds of the mesh
-        void recalculateBounds();
 
         /// Return a local support point in a given direction without the object margin.
         virtual Vector3 getLocalSupportPointWithoutMargin(const Vector3& direction) const override;
@@ -163,7 +152,6 @@ RP3D_FORCE_INLINE const Vector3& ConvexMeshShape::getScale() const {
 /// after changing the scale of a collision shape
 RP3D_FORCE_INLINE void ConvexMeshShape::setScale(const Vector3& scale) {
     mScale = scale;
-    recalculateBounds();
     notifyColliderAboutChangedSize();
 }
 
@@ -173,8 +161,8 @@ RP3D_FORCE_INLINE void ConvexMeshShape::setScale(const Vector3& scale) {
  * @param max The maximum bounds of the shape in local-space coordinates
  */
 RP3D_FORCE_INLINE void ConvexMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
-    min = mMinBounds;
-    max = mMaxBounds;
+    min = mConvexMesh->getMinBounds() * mScale;
+    max = mConvexMesh->getMaxBounds() * mScale;
 }
 
 // Return the local inertia tensor of the collision shape.
@@ -184,8 +172,11 @@ RP3D_FORCE_INLINE void ConvexMeshShape::getLocalBounds(Vector3& min, Vector3& ma
 * @param mass Mass to use to compute the inertia tensor of the collision shape
 */
 RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getLocalInertiaTensor(decimal mass) const {
+
+    // TODO: We should compute a much better inertia tensor here (not using a box)
+
     const decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    const Vector3 realExtent = decimal(0.5) * (mMaxBounds - mMinBounds);
+    const Vector3 realExtent = decimal(0.5) * mScale * (mConvexMesh->getMaxBounds() - mConvexMesh->getMinBounds());
     assert(realExtent.x > 0 && realExtent.y > 0 && realExtent.z > 0);
     const decimal xSquare = realExtent.x * realExtent.x;
     const decimal ySquare = realExtent.y * realExtent.y;

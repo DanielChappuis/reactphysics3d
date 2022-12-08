@@ -64,6 +64,12 @@ class ConvexMesh {
         /// Centroid of the mesh
         Vector3 mCentroid;
 
+        /// Mesh minimum bounds in the three local x, y and z directions
+        Vector3 mMinBounds;
+
+        /// Mesh maximum bounds in the three local x, y and z directions
+        Vector3 mMaxBounds;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -107,7 +113,13 @@ class ConvexMesh {
         const HalfEdgeStructure& getHalfEdgeStructure() const;
 
         /// Return the centroid of the mesh
-        Vector3 getCentroid() const;
+        const Vector3& getCentroid() const;
+
+        /// Return the minimum bounds of the mesh in the x,y,z direction
+        const Vector3& getMinBounds() const;
+
+        /// Return the maximum bounds of the mesh in the x,y,z direction
+        const Vector3& getMaxBounds() const;
 
         /// Compute and return the volume of the mesh
         decimal getVolume() const;
@@ -165,8 +177,24 @@ RP3D_FORCE_INLINE const HalfEdgeStructure& ConvexMesh::getHalfEdgeStructure() co
 /**
  * @return The centroid of the mesh
  */
-RP3D_FORCE_INLINE Vector3 ConvexMesh::getCentroid() const {
+RP3D_FORCE_INLINE const Vector3& ConvexMesh::getCentroid() const {
     return mCentroid;
+}
+
+// Return the minimum bounds of the mesh in the x,y,z direction
+/**
+ * @return The three mimimum bounds of the mesh in the x,y,z direction
+ */
+RP3D_FORCE_INLINE const Vector3& ConvexMesh::getMinBounds() const {
+    return mMinBounds;
+}
+
+// Return the maximum bounds of the mesh in the x,y,z direction
+/**
+ * @return The three maximum bounds of the mesh in the x,y,z direction
+ */
+RP3D_FORCE_INLINE const Vector3& ConvexMesh::getMaxBounds() const {
+    return mMaxBounds;
 }
 
 }

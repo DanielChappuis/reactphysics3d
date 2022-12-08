@@ -42,7 +42,7 @@ using namespace reactphysics3d;
  */
 ConvexMesh::ConvexMesh(MemoryAllocator& allocator)
                : mMemoryAllocator(allocator), mHalfEdgeStructure(allocator, 6, 8, 24),
-                 mVertices(allocator), mFacesNormals(allocator) {
+                 mVertices(allocator), mFacesNormals(allocator), mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0)  {
 
 }
 
@@ -82,12 +82,23 @@ bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std:
     bool isValid = true;
 
     mCentroid.setToZero();
+    mMinBounds = polygonVertexArray.getVertex(0);
+    mMaxBounds = polygonVertexArray.getVertex(0);
 
     for (uint32 i=0 ; i < polygonVertexArray.getNbVertices(); i++) {
 
         const Vector3 vertex = polygonVertexArray.getVertex(i);
         mVertices.add(vertex);
         mCentroid += vertex;
+
+        if (vertex.x > mMaxBounds.x) mMaxBounds.x = vertex.x;
+        if (vertex.x < mMinBounds.x) mMinBounds.x = vertex.x;
+
+        if (vertex.y > mMaxBounds.y) mMaxBounds.y = vertex.y;
+        if (vertex.y < mMinBounds.y) mMinBounds.y = vertex.y;
+
+        if (vertex.z > mMaxBounds.z) mMaxBounds.z = vertex.z;
+        if (vertex.z < mMinBounds.z) mMinBounds.z = vertex.z;
     }
 
     if (getNbVertices() > 0) {

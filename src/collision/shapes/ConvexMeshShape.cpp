@@ -41,10 +41,8 @@ using namespace reactphysics3d;
  */
 ConvexMeshShape::ConvexMeshShape(ConvexMesh* convexMesh, MemoryAllocator& allocator, const Vector3& scale)
                 : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH, allocator), mConvexMesh(convexMesh),
-                  mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0), mScale(scale) {
+                  mScale(scale) {
 
-    // Recalculate the bounds of the mesh
-    recalculateBounds();
 }
 
 // Return a local support point in a given direction without the object margin.
@@ -77,30 +75,6 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
 
     // Return the vertex with the largest dot product in the support direction
     return mConvexMesh->getVertex(indexMaxDotProduct) * mScale;
-}
-
-// Recompute the bounds of the mesh
-void ConvexMeshShape::recalculateBounds() {
-
-    mMinBounds = mConvexMesh->getVertex(0);
-    mMaxBounds = mConvexMesh->getVertex(0);
-
-    // For each vertex of the mesh
-    for (uint32 i=1; i<mConvexMesh->getNbVertices(); i++) {
-
-        if (mConvexMesh->getVertex(i).x > mMaxBounds.x) mMaxBounds.x = mConvexMesh->getVertex(i).x;
-        if (mConvexMesh->getVertex(i).x < mMinBounds.x) mMinBounds.x = mConvexMesh->getVertex(i).x;
-
-        if (mConvexMesh->getVertex(i).y > mMaxBounds.y) mMaxBounds.y = mConvexMesh->getVertex(i).y;
-        if (mConvexMesh->getVertex(i).y < mMinBounds.y) mMinBounds.y = mConvexMesh->getVertex(i).y;
-
-        if (mConvexMesh->getVertex(i).z > mMaxBounds.z) mMaxBounds.z = mConvexMesh->getVertex(i).z;
-        if (mConvexMesh->getVertex(i).z < mMinBounds.z) mMinBounds.z = mConvexMesh->getVertex(i).z;
-    }
-
-    // Apply the local scaling factor
-    mMaxBounds = mMaxBounds * mScale;
-    mMinBounds = mMinBounds * mScale;
 }
 
 // Raycast method with feedback information
