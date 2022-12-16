@@ -465,3 +465,22 @@ Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
 Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
     return mWorld.mTransformComponents.getTransform(mEntity).getOrientation().getInverse() * worldVector;
 }
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+// Set the profiler
+void CollisionBody::setProfiler(Profiler* profiler) {
+
+    mProfiler = profiler;
+
+    // Set the profiler for each collider
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
+
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+
+        collider->setProfiler(profiler);
+    }
+}
+
+#endif

@@ -1088,23 +1088,3 @@ void RigidBody::setIsActive(bool isActive) {
 
     CollisionBody::setIsActive(isActive);
 }
-
-#ifdef IS_RP3D_PROFILING_ENABLED
-
-
-// Set the profiler
-void RigidBody::setProfiler(Profiler* profiler) {
-
-	CollisionBody::setProfiler(profiler);
-
-    // Set the profiler for each collider
-    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    for (uint32 i=0; i < colliderEntities.size(); i++) {
-
-        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
-
-        collider->setProfiler(profiler);
-	}
-}
-
-#endif
