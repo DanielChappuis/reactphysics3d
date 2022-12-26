@@ -82,15 +82,22 @@ bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std:
     bool isValid = true;
 
     mCentroid.setToZero();
-    mMinBounds = polygonVertexArray.getVertex(0);
-    mMaxBounds = polygonVertexArray.getVertex(0);
 
+    if (polygonVertexArray.getNbVertices() > 0) {
+        mMinBounds = polygonVertexArray.getVertex(0);
+        mMaxBounds = polygonVertexArray.getVertex(0);
+    }
+
+    // For each vertex
     for (uint32 i=0 ; i < polygonVertexArray.getNbVertices(); i++) {
 
         const Vector3 vertex = polygonVertexArray.getVertex(i);
         mVertices.add(vertex);
+
+        // Compute centroid
         mCentroid += vertex;
 
+        // Compute mesh bounds
         if (vertex.x > mMaxBounds.x) mMaxBounds.x = vertex.x;
         if (vertex.x < mMinBounds.x) mMinBounds.x = vertex.x;
 
@@ -199,14 +206,29 @@ bool ConvexMesh::computeFacesNormals(std::vector<Error>& errors) {
 
         if (face.faceVertices.size() >= 3) {
 
-            const Vector3 vec1 = getVertex(face.faceVertices[1]) - getVertex(face.faceVertices[0]);
-            const Vector3 vec2 = getVertex(face.faceVertices[2]) - getVertex(face.faceVertices[0]);
-            mFacesNormals.add(vec1.cross(vec2));
+            auto test0 = face.faceVertices[0];
+            auto test1 = face.faceVertices[1];
+            auto test2 = face.faceVertices[2];
+
+            auto v0 = getVertex(face.faceVertices[0]);
+            auto v1 = getVertex(face.faceVertices[1]);
+            auto v2 = getVertex(face.faceVertices[2]);
+            auto v3 = Vector3(0, 0, 0);
+            if (face.faceVertices.size() > 3) {
+
+                v3 = getVertex(face.faceVertices[3]);
+            }
+
+            mFacesNormals.add(computeFaceNormal(f));
+            decimal normalLength = mFacesNormals[f].length();
+
+            // TODO : DELETE THIS
+            const decimal abc = mFacesNormals[f].length();
 
             // TODO : Do not use MACHINE_EPSILON here
-            if (mFacesNormals[f].lengthSquare() > MACHINE_EPSILON) {
+            if (normalLength > MACHINE_EPSILON) {
 
-                mFacesNormals[f].normalize();
+                mFacesNormals[f] /= normalLength;
             }
             else {
                isValid = false;
@@ -218,30 +240,26 @@ bool ConvexMesh::computeFacesNormals(std::vector<Error>& errors) {
     return isValid;
 }
 
-// Compute and return the area of a face
-decimal ConvexMesh::getFaceArea(uint32 faceIndex) const {
+// Compute and return the face normal (not normalized)
+Vector3 ConvexMesh::computeFaceNormal(uint32 faceIndex) const {
 
-    Vector3 sumCrossProducts(0, 0, 0);
+    Vector3 normal(0, 0, 0);
 
     const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(faceIndex);
     assert(face.faceVertices.size() >= 3);
 
-    const Vector3& v1 = getVertex(face.faceVertices[0]);
+    // Use Newell's method to compute the face normal
+    for (uint32 i = face.faceVertices.size() - 1, j = 0; j < face.faceVertices.size(); i = j, j++) {
 
-    // For each vertex of the face
-    const uint32 nbFaceVertices = static_cast<uint32>(face.faceVertices.size());
-    for (uint32 i=2; i < nbFaceVertices; i++) {
+        const Vector3& v1 = getVertex(face.faceVertices[i]);
+        const Vector3& v2 = getVertex(face.faceVertices[j]);
 
-        const Vector3& v2 = getVertex(face.faceVertices[i-1]);
-        const Vector3& v3 = getVertex(face.faceVertices[i]);
-
-        const Vector3 v1v2 = v2 - v1;
-        const Vector3 v1v3 = v3 - v1;
-
-        sumCrossProducts +=  v1v2.cross(v1v3);
+        normal += Vector3((v1.y - v2.y) * (v1.z + v2.z),
+                          (v1.z - v2.z) * (v1.x + v2.x),
+                          (v1.x - v2.x) * (v1.y + v2.y));
     }
 
-    return decimal(0.5) * sumCrossProducts.length();
+    return normal;
 }
 
 // Compute and return the volume of the convex mesh
@@ -254,7 +272,7 @@ decimal ConvexMesh::getVolume() const {
     for (uint32 f=0; f < getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(f);
-        const decimal faceArea = getFaceArea(f);
+        const decimal faceArea = computeFaceNormal(f).length();
         const Vector3 faceNormal = mFacesNormals[f];
         const Vector3& faceVertex = getVertex(face.faceVertices[0]);
 

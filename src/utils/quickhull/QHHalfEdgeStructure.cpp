@@ -96,13 +96,13 @@ QHHalfEdgeStructure::Vertex* QHHalfEdgeStructure::addVertex(uint32 externalIndex
  * @param faceVertices Array of the vertices in a face (ordered in CCW order as seen from outside
  *                     the polyhedron). The indices are the internal indices of the vertices inside the HalfEdgeStructure.
  */
-QHHalfEdgeStructure::Face* QHHalfEdgeStructure::addFace(const Array<Vertex*>& faceVertices, const Vector3& normal, const Array<Vector3>& points,
+QHHalfEdgeStructure::Face* QHHalfEdgeStructure::addFace(const Array<Vertex*>& faceVertices, const Array<Vector3>& points,
                                                         MemoryAllocator& allocator) {
 
     assert(faceVertices.size() >= 3);
 
     // Create a new face
-    Face* face = new (mAllocator.allocate(sizeof(Face))) Face(normal, allocator);
+    Face* face = new (mAllocator.allocate(sizeof(Face))) Face(allocator);
 
     Edge* prevFaceEdge = nullptr;
     Edge* firstFaceEdge = nullptr;
@@ -161,7 +161,8 @@ QHHalfEdgeStructure::Face* QHHalfEdgeStructure::addFace(const Array<Vertex*>& fa
 
     mNbFaces++;
 
-    face->computeCentroid(points);
+    // Compute the normal, area and centroid
+    face->recalculateFace(points);
 
     return face;
 }
@@ -329,6 +330,7 @@ bool QHHalfEdgeStructure::isValid() const {
        isValid &= (face->previousFace == nullptr || face->previousFace == previousFace);
        isValid &= (previousFace == nullptr || previousFace->nextFace == face);
        isValid &= face->isValid();
+       isValid &= face->area > 0.00001;
        nbFaces++;
     };
     isValid &= nbFaces > 0 || mFaces == nullptr;

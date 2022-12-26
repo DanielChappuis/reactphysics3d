@@ -59,7 +59,7 @@ class HalfEdgeStructure {
             Face(MemoryAllocator& allocator) : edgeIndex(0), faceVertices(allocator) {}
 
             /// Constructor
-            Face(const Array<uint32>& vertices) : edgeIndex(0), faceVertices(vertices) {}
+            Face(const Array<uint32>& vertices) : edgeIndex(0), faceVertices(vertices) {}    
         };
 
         /// Vertex

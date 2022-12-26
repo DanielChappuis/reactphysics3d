@@ -106,7 +106,11 @@ class QuickHull {
                                 Array<QHHalfEdgeStructure::Face*>& outVisibleFaces,
                                 decimal epsilon);
 
-        /// Iterate over all new faces and fix faces that are forming a concave shape in order to always keep the hull convex
+        /// Fix faces that are forming a concave or coplanar shape (by giving priority to large faces)
+        static void mergeLargeConcaveFaces(QHHalfEdgeStructure& convexHull, Array<QHHalfEdgeStructure::Face*>& newFaces,
+                                          const Array<Vector3>& points, decimal epsilon, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
+
+        /// Fix faces that are forming a concave or coplanar shape
         static void mergeConcaveFaces(QHHalfEdgeStructure& convexHull, Array<QHHalfEdgeStructure::Face*>& newFaces,
                                       const Array<Vector3>& points, decimal epsilon,
                                       Set<QHHalfEdgeStructure::Face*>& deletedFaces);
@@ -123,9 +127,6 @@ class QuickHull {
         static void fixTopologicalIssueAtEdge(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face,
                                               QHHalfEdgeStructure::Edge* inEdge, const Array<Vector3>& points,
                                               Set<QHHalfEdgeStructure::Face*>& deletedFaces);
-
-        /// Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
-        static void recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
 
         /// Remove duplicated vertices in the input array of points
         static void removeDuplicatedVertices(Array<Vector3>& points, MemoryAllocator& allocator);
@@ -160,10 +161,6 @@ class QuickHull {
                                                    Array<float>& outVertices, Array<unsigned int>& outIndices,
                                                    Array<PolygonVertexArray::PolygonFace>& outFaces,
                                                    MemoryAllocator& allocator);
-
-        // TODO : Remove this
-        static std::string showMap(Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceIndexToRemainingClosestPoints);
-
 
     public:
 

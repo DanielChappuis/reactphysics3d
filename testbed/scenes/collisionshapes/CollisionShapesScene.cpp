@@ -268,7 +268,7 @@ void CollisionShapesScene::initBodiesPositions() {
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            30 + i * (CAPSULE_HEIGHT + 0.3f),
+            30 + i * (HULL_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
         mConvexHulls[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));

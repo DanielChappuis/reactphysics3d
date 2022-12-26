@@ -87,8 +87,8 @@ class ConvexMesh {
         /// Compute the faces normals
         bool computeFacesNormals(std::vector<Error>& errors);
 
-        /// Compute and return the area of a face
-        decimal getFaceArea(uint32 faceIndex) const;
+        /// Compute and return the face normal (not normalized)
+        Vector3 computeFaceNormal(uint32 faceIndex) const;
 
         /// Static factory method to create a convex mesh
         static ConvexMesh* create(MemoryAllocator& allocator);
