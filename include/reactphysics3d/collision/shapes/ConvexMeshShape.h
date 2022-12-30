@@ -234,7 +234,6 @@ RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getCentroid() const {
     return mConvexMesh->getCentroid() * mScale;
 }
 
-
 // Compute and return the volume of the collision shape
 RP3D_FORCE_INLINE decimal ConvexMeshShape::getVolume() const {
     return mConvexMesh->getVolume();

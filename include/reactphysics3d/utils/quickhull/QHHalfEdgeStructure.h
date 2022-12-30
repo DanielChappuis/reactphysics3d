@@ -99,12 +99,9 @@ class QHHalfEdgeStructure {
             decimal area;             // Area of the face
             Array<uint32> conflictPoints;   // Array with some remaining points visible from this face that need to be processed
 
-            // TODO : DELETE THIS
-            Set<uint32> vertices;
-
             /// Constructor
             Face(MemoryAllocator& allocator)
-                : nextFace(nullptr), previousFace(nullptr), normal(0, 0, 0), area(0), conflictPoints(allocator, 8), vertices(allocator) {
+                : nextFace(nullptr), previousFace(nullptr), normal(0, 0, 0), area(0), conflictPoints(allocator, 8) {
 
             }
 
@@ -119,10 +116,6 @@ class QHHalfEdgeStructure {
                 centroid.setToZero();
                 normal.setToZero();
                 uint32 nbVertices = 0;
-
-                //std::cout << "Recalculate Face" << std::endl;
-                //std::cout << "Previous centroid:" << face->centroid.to_string() << std::endl;
-                //std::cout << "Previous normal:" << face->normal.to_string() << std::endl;
 
                 // For each vertex of the face
                 const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
@@ -149,9 +142,6 @@ class QHHalfEdgeStructure {
                 assert(normalLength > 0);
                 normal = normal / normalLength;
                 area = normalLength * decimal(0.5);
-
-                //std::cout << "New centroid:" << face->centroid.to_string() << std::endl;
-                //std::cout << "New normal:" << face->normal.to_string() << std::endl;
             }
 
             // Return a string with the vertices of the face
@@ -210,22 +200,13 @@ class QHHalfEdgeStructure {
                isValid &= approxEqual(normal.lengthSquare(), 1.0, 0.01);
                isValid &= edge->face == this;
 
-               // For each edge of the face
-               vertices.clear();
-
                 const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
                 const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
                 do {
 
-                   if (vertices.contains(faceEdge->startVertex->externalIndex)) {
-                       return false;
-                   }
-
                    if (faceEdge->face != this) {
                        return false;
                    }
-
-                   vertices.add(faceEdge->startVertex->externalIndex);
 
                    faceEdge = faceEdge->nextFaceEdge;
 

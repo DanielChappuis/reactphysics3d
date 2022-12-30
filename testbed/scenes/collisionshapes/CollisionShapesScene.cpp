@@ -166,7 +166,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_HULLS; i++) {
 
         // Create a convex hull and a corresponding rigid in the physics world
-        ConvexHull* mesh = new ConvexHull(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "teapot.obj");
+        ConvexHull* mesh = new ConvexHull(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "cow.obj", rp3d::Vector3(5, 5, 5));
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -202,6 +202,18 @@ void CollisionShapesScene::createPhysicsWorld() {
 void CollisionShapesScene::initBodiesPositions() {
 
     const float radius = 3.0f;
+
+    // Create all the convex hulls of the scene
+    for (uint i = 0; i<mConvexHulls.size(); i++) {
+
+        // Position
+        float angle = i * 30.0f;
+        rp3d::Vector3 position(radius * std::cos(angle),
+            175 + i * (HULL_HEIGHT + 0.3f),
+            radius * std::sin(angle));
+
+        mConvexHulls[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+    }
 
     for (uint i = 0; i<NB_COMPOUND_SHAPES; i++) {
 
@@ -261,19 +273,6 @@ void CollisionShapesScene::initBodiesPositions() {
 
         mConvexMeshes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
     }
-
-    // Create all the convex hulls of the scene
-    for (uint i = 0; i<mConvexHulls.size(); i++) {
-
-        // Position
-        float angle = i * 30.0f;
-        rp3d::Vector3 position(radius * std::cos(angle),
-            30 + i * (HULL_HEIGHT + 0.3f),
-            radius * std::sin(angle));
-
-        mConvexHulls[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
-    }
-
 
     // ---------- Create the triangular mesh ---------- //
 

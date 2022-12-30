@@ -118,8 +118,6 @@ bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexA
         // Add the vertex to the hull
         addVertexToHull(nextVertexIndex, nextFace, points, convexHull, epsilon, allocator);
 
-        //std::cout << " New hull: " << std::endl << convexHull.to_string() << std::endl;
-
         // Get the next vertex candidate
         findNextVertexCandidate(points, nextVertexIndex, convexHull, nextFace, epsilon);
 
@@ -405,10 +403,6 @@ void QuickHull::findHorizon(const Vector3& vertex, QHHalfEdgeStructure::Face* fa
                     break;
                 }
                 else {    // We have found a face that is not visible from the vertex
-
-                    //std::cout << "Face not visible from candidate vertex has vertices : " << nextFace->verticesString() << std::endl;
-
-                    //std::cout << "New horizon edge: (" << candidateFace.currentEdge->startVertex->externalIndex << ", "  << candidateFace.currentEdge->endVertex->externalIndex << ")" << std::endl;
 
                     // We add the edge between current face and next face to the array of horizon edges
                     outHorizonVertices.add(candidateFace.currentEdge->startVertex);

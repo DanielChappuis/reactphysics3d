@@ -222,10 +222,6 @@ bool ConvexMesh::computeFacesNormals(std::vector<Error>& errors) {
             mFacesNormals.add(computeFaceNormal(f));
             decimal normalLength = mFacesNormals[f].length();
 
-            // TODO : DELETE THIS
-            const decimal abc = mFacesNormals[f].length();
-
-            // TODO : Do not use MACHINE_EPSILON here
             if (normalLength > MACHINE_EPSILON) {
 
                 mFacesNormals[f] /= normalLength;
@@ -272,7 +268,7 @@ decimal ConvexMesh::getVolume() const {
     for (uint32 f=0; f < getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = mHalfEdgeStructure.getFace(f);
-        const decimal faceArea = computeFaceNormal(f).length();
+        const decimal faceArea = computeFaceNormal(f).length() * decimal(0.5);
         const Vector3 faceNormal = mFacesNormals[f];
         const Vector3& faceVertex = getVertex(face.faceVertices[0]);
 
