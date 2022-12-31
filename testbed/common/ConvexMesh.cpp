@@ -263,4 +263,3 @@ int ConvexMesh::findVertexIndex(const std::vector<openglframework::Vector3>& ver
 
 	return -1;
 }
-

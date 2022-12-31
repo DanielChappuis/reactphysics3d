@@ -70,6 +70,9 @@ class ConvexMesh {
         /// Mesh maximum bounds in the three local x, y and z directions
         Vector3 mMaxBounds;
 
+        /// Volume of the mesh
+        decimal mVolume;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -89,6 +92,9 @@ class ConvexMesh {
 
         /// Compute and return the face normal (not normalized)
         Vector3 computeFaceNormal(uint32 faceIndex) const;
+
+        /// Compute the volume of the mesh
+        void computeVolume();
 
         /// Static factory method to create a convex mesh
         static ConvexMesh* create(MemoryAllocator& allocator);
@@ -123,6 +129,9 @@ class ConvexMesh {
 
         /// Compute and return the volume of the mesh
         decimal getVolume() const;
+
+        /// Return the local inertia tensor of the mesh
+        Vector3 getLocalInertiaTensor(decimal mass, Vector3 scale) const;
 
         // ---------- Friendship ---------- //
 
@@ -195,6 +204,34 @@ RP3D_FORCE_INLINE const Vector3& ConvexMesh::getMinBounds() const {
  */
 RP3D_FORCE_INLINE const Vector3& ConvexMesh::getMaxBounds() const {
     return mMaxBounds;
+}
+
+// Return the volume of the convex mesh
+/**
+ * @return The volume of the mesh
+ */
+RP3D_FORCE_INLINE decimal ConvexMesh::getVolume() const {
+   return mVolume;
+}
+
+// Return the local inertia tensor of the mesh
+/// The local inertia tensor of the convex mesh is approximated using the inertia tensor
+/// of its bounding box.
+/**
+* @param mass Mass to use to compute the inertia tensor of the collision shape
+* @param scale Scaling factor for the mesh
+*/
+RP3D_FORCE_INLINE Vector3 ConvexMesh::getLocalInertiaTensor(decimal mass, Vector3 scale) const {
+
+    // TODO: We should compute a much better inertia tensor here (not using a box)
+
+    const decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
+    const Vector3 realExtent = decimal(0.5) * scale * (getMaxBounds() - getMinBounds());
+    assert(realExtent.x > 0 && realExtent.y > 0 && realExtent.z > 0);
+    const decimal xSquare = realExtent.x * realExtent.x;
+    const decimal ySquare = realExtent.y * realExtent.y;
+    const decimal zSquare = realExtent.z * realExtent.z;
+    return Vector3(factor * (ySquare + zSquare), factor * (xSquare + zSquare), factor * (xSquare + ySquare));
 }
 
 }

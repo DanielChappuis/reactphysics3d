@@ -172,16 +172,7 @@ RP3D_FORCE_INLINE void ConvexMeshShape::getLocalBounds(Vector3& min, Vector3& ma
 * @param mass Mass to use to compute the inertia tensor of the collision shape
 */
 RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getLocalInertiaTensor(decimal mass) const {
-
-    // TODO: We should compute a much better inertia tensor here (not using a box)
-
-    const decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    const Vector3 realExtent = decimal(0.5) * mScale * (mConvexMesh->getMaxBounds() - mConvexMesh->getMinBounds());
-    assert(realExtent.x > 0 && realExtent.y > 0 && realExtent.z > 0);
-    const decimal xSquare = realExtent.x * realExtent.x;
-    const decimal ySquare = realExtent.y * realExtent.y;
-    const decimal zSquare = realExtent.z * realExtent.z;
-    return Vector3(factor * (ySquare + zSquare), factor * (xSquare + zSquare), factor * (xSquare + ySquare));
+    return mConvexMesh->getLocalInertiaTensor(mass, mScale);
 }
 
 // Return the number of faces of the mesh
@@ -236,7 +227,7 @@ RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getCentroid() const {
 
 // Compute and return the volume of the collision shape
 RP3D_FORCE_INLINE decimal ConvexMeshShape::getVolume() const {
-    return mConvexMesh->getVolume();
+    return mConvexMesh->getVolume() * mScale.x * mScale.y * mScale.z;
 }
 
 }

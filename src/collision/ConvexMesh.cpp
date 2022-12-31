@@ -42,7 +42,7 @@ using namespace reactphysics3d;
  */
 ConvexMesh::ConvexMesh(MemoryAllocator& allocator)
                : mMemoryAllocator(allocator), mHalfEdgeStructure(allocator, 6, 8, 24),
-                 mVertices(allocator), mFacesNormals(allocator), mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0)  {
+                 mVertices(allocator), mFacesNormals(allocator), mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0), mVolume(0) {
 
 }
 
@@ -72,6 +72,9 @@ bool ConvexMesh::init(const PolygonVertexArray& polygonVertexArray, std::vector<
 
     // Compute the faces normals
     isValid &= computeFacesNormals(errors);
+
+    // Compute the volume of the mesh
+    computeVolume();
 
    return isValid;
 }
@@ -206,19 +209,6 @@ bool ConvexMesh::computeFacesNormals(std::vector<Error>& errors) {
 
         if (face.faceVertices.size() >= 3) {
 
-            auto test0 = face.faceVertices[0];
-            auto test1 = face.faceVertices[1];
-            auto test2 = face.faceVertices[2];
-
-            auto v0 = getVertex(face.faceVertices[0]);
-            auto v1 = getVertex(face.faceVertices[1]);
-            auto v2 = getVertex(face.faceVertices[2]);
-            auto v3 = Vector3(0, 0, 0);
-            if (face.faceVertices.size() > 3) {
-
-                v3 = getVertex(face.faceVertices[3]);
-            }
-
             mFacesNormals.add(computeFaceNormal(f));
             decimal normalLength = mFacesNormals[f].length();
 
@@ -258,9 +248,9 @@ Vector3 ConvexMesh::computeFaceNormal(uint32 faceIndex) const {
     return normal;
 }
 
-// Compute and return the volume of the convex mesh
+// Compute the volume of the convex mesh
 /// We use the divergence theorem to compute the volume of the convex mesh using a sum over its faces.
-decimal ConvexMesh::getVolume() const {
+void ConvexMesh::computeVolume() {
 
     decimal sum = 0.0;
 
@@ -275,5 +265,5 @@ decimal ConvexMesh::getVolume() const {
         sum += faceVertex.dot(faceNormal) * faceArea;
     }
 
-    return std::abs(sum) / decimal(3.0);
+    mVolume = std::abs(sum) / decimal(3.0);
 }
