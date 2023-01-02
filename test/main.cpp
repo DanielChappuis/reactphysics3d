@@ -39,6 +39,7 @@
 #include "tests/collision/TestDynamicAABBTree.h"
 #include "tests/collision/TestHalfEdgeStructure.h"
 #include "tests/collision/TestTriangleVertexArray.h"
+#include "tests/collision/TestConvexMesh.h"
 #include "tests/containers/TestArray.h"
 #include "tests/containers/TestMap.h"
 #include "tests/containers/TestSet.h"
@@ -80,6 +81,7 @@ int main() {
     testSuite.addTest(new TestCollisionWorld("CollisionWorld"));
     testSuite.addTest(new TestDynamicAABBTree("DynamicAABBTree"));
     testSuite.addTest(new TestHalfEdgeStructure("HalfEdgeStructure"));
+    testSuite.addTest(new TestConvexMesh("ConvexMesh"));
 
     // ---------- Utils tests ---------- //
 

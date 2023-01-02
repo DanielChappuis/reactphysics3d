@@ -170,16 +170,16 @@ class TestTriangleVertexArray : public Test {
             Vector3 triangle0Vertices[3];
             mTriangleVertexArray1->getTriangleVertices(0, triangle0Vertices);
 
-            rp3d_test(approxEqual(triangle0Vertices[0], mVertex0, decimal(0.0000001)));
-            rp3d_test(approxEqual(triangle0Vertices[1], mVertex1, decimal(0.0000001)));
-            rp3d_test(approxEqual(triangle0Vertices[2], mVertex2, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Vertices[0], mVertex0, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Vertices[1], mVertex1, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Vertices[2], mVertex2, decimal(0.0000001)));
 
             Vector3 triangle1Vertices[3];
             mTriangleVertexArray1->getTriangleVertices(1, triangle1Vertices);
 
-            rp3d_test(approxEqual(triangle1Vertices[0], mVertex0, decimal(0.0000001)));
-            rp3d_test(approxEqual(triangle1Vertices[1], mVertex3, decimal(0.0000001)));
-            rp3d_test(approxEqual(triangle1Vertices[2], mVertex1, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Vertices[0], mVertex0, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Vertices[1], mVertex3, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Vertices[2], mVertex1, decimal(0.0000001)));
 
             // Get triangle normals
 
@@ -193,9 +193,9 @@ class TestTriangleVertexArray : public Test {
             const Vector3 normal2Test(0, 1, 0);
             const Vector3 normal3Test(1, 0, 0);
 
-            rp3d_test(approxEqual(triangle0Normals[0], normal0Test, decimal(0.0001)));
-            rp3d_test(approxEqual(triangle0Normals[2], normal2Test, decimal(0.0001)));
-            rp3d_test(approxEqual(triangle1Normals[1], normal3Test, decimal(0.0001)));
+            rp3d_test(Vector3::approxEqual(triangle0Normals[0], normal0Test, decimal(0.0001)));
+            rp3d_test(Vector3::approxEqual(triangle0Normals[2], normal2Test, decimal(0.0001)));
+            rp3d_test(Vector3::approxEqual(triangle1Normals[1], normal3Test, decimal(0.0001)));
 
             // ----- Second triangle vertex array ----- //
 
@@ -229,28 +229,28 @@ class TestTriangleVertexArray : public Test {
 
             mTriangleVertexArray2->getTriangleVertices(0, triangle0Vertices);
 
-            rp3d_test(approxEqual(triangle0Vertices[0], mVertex4, decimal(0.0000001)));
-            rp3d_test(approxEqual(triangle0Vertices[1], mVertex5, decimal(0.0000001)));
-            rp3d_test(approxEqual(triangle0Vertices[2], mVertex6, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Vertices[0], mVertex4, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Vertices[1], mVertex5, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Vertices[2], mVertex6, decimal(0.0000001)));
 
             mTriangleVertexArray2->getTriangleVertices(1, triangle1Vertices);
 
-            rp3d_test(approxEqual(triangle1Vertices[0], mVertex4, decimal(0.0000001)));
-            rp3d_test(approxEqual(triangle1Vertices[1], mVertex7, decimal(0.0000001)));
-            rp3d_test(approxEqual(triangle1Vertices[2], mVertex5, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Vertices[0], mVertex4, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Vertices[1], mVertex7, decimal(0.0000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Vertices[2], mVertex5, decimal(0.0000001)));
 
             // Get triangle normals
 
             mTriangleVertexArray2->getTriangleVerticesNormals(0, triangle0Normals);
             mTriangleVertexArray2->getTriangleVerticesNormals(1, triangle1Normals);
 
-            rp3d_test(approxEqual(triangle0Normals[0], mNormal0, decimal(0.000001)));
-            rp3d_test(approxEqual(triangle0Normals[1], mNormal1, decimal(0.000001)));
-            rp3d_test(approxEqual(triangle0Normals[2], mNormal2, decimal(0.000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Normals[0], mNormal0, decimal(0.000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Normals[1], mNormal1, decimal(0.000001)));
+            rp3d_test(Vector3::approxEqual(triangle0Normals[2], mNormal2, decimal(0.000001)));
 
-            rp3d_test(approxEqual(triangle1Normals[0], mNormal0, decimal(0.000001)));
-            rp3d_test(approxEqual(triangle1Normals[1], mNormal3, decimal(0.000001)));
-            rp3d_test(approxEqual(triangle1Normals[2], mNormal1, decimal(0.000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Normals[0], mNormal0, decimal(0.000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Normals[1], mNormal3, decimal(0.000001)));
+            rp3d_test(Vector3::approxEqual(triangle1Normals[2], mNormal1, decimal(0.000001)));
         }
 
 };

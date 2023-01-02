@@ -59,8 +59,8 @@ struct CollisionPointData {
 
 	bool isContactPointSimilarTo(const Vector3& pointBody1, const Vector3& pointBody2, decimal penDepth, decimal epsilon = 0.001) const {
 
-		return approxEqual(pointBody1, localPointBody1, epsilon) &&
-			   approxEqual(pointBody2, localPointBody2, epsilon) &&
+        return Vector3::approxEqual(pointBody1, localPointBody1, epsilon) &&
+               Vector3::approxEqual(pointBody2, localPointBody2, epsilon) &&
 			   approxEqual(penetrationDepth, penDepth, epsilon);
 	}
 };
