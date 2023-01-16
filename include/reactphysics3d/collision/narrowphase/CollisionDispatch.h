@@ -40,7 +40,7 @@ namespace reactphysics3d {
 /// Enumeration for the type of narrow-phase
 /// collision detection algorithm
 enum class NarrowPhaseAlgorithmType {
-    None,
+    NONE,
     SphereVsSphere,
     SphereVsCapsule,
     CapsuleVsCapsule,

@@ -478,7 +478,7 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
 
     assert(convexShape->isConvex());
     assert(!concaveShape->isConvex());
-    assert(overlappingPair.narrowPhaseAlgorithmType != NarrowPhaseAlgorithmType::None);
+    assert(overlappingPair.narrowPhaseAlgorithmType != NarrowPhaseAlgorithmType::NONE);
 
     // Compute the convex shape AABB in the local-space of the concave shape
     AABB aabb;
