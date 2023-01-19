@@ -179,8 +179,7 @@ void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbIte
             const Transform& transform = mTransformsComponents.getTransform(bodyEntity);
 
             // Recompute the world-space AABB of the collision shape
-            AABB aabb;
-            mCollidersComponents.mCollisionShapes[i]->computeAABB(aabb, transform * mCollidersComponents.mLocalToBodyTransforms[i]);
+            const AABB aabb = mCollidersComponents.mCollisionShapes[i]->computeTransformedAABB(transform * mCollidersComponents.mLocalToBodyTransforms[i]);
 
             // If the size of the collision shape has been changed by the user,
             // we need to reset the broad-phase AABB to its new size

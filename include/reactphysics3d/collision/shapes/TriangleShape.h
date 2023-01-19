@@ -28,6 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
+#include <reactphysics3d/collision/shapes/AABB.h>
 #include <reactphysics3d/collision/shapes/ConvexPolyhedronShape.h>
 
 /// ReactPhysics3D namespace
@@ -127,13 +128,13 @@ class TriangleShape : public ConvexPolyhedronShape {
         TriangleShape& operator=(const TriangleShape& shape) = delete;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
+        virtual AABB getLocalBounds() const override;
 
         /// Return the local inertia tensor of the collision shape
         virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
 
-        /// Update the AABB of a body using its collision shape
-        virtual void computeAABB(AABB& aabb, const Transform& transform) const override;
+        /// Compute the transformed AABB of the collision shape given a transform
+        virtual AABB computeTransformedAABB(const Transform& transform) const override;
 
         /// Return the raycast test type (front, back, front-back)
         TriangleRaycastSide getRaycastTestType() const;
@@ -201,21 +202,21 @@ RP3D_FORCE_INLINE Vector3 TriangleShape::getLocalSupportPointWithoutMargin(const
 }
 
 // Return the local bounds of the shape in x, y and z directions.
-// This method is used to compute the AABB of the box
 /**
- * @param min The minimum bounds of the shape in local-space coordinates
- * @param max The maximum bounds of the shape in local-space coordinates
+ * @return The AABB with the min/max bounds of the shape
  */
-RP3D_FORCE_INLINE void TriangleShape::getLocalBounds(Vector3& min, Vector3& max) const {
+RP3D_FORCE_INLINE AABB TriangleShape::getLocalBounds() const {
 
     const Vector3 xAxis(mPoints[0].x, mPoints[1].x, mPoints[2].x);
     const Vector3 yAxis(mPoints[0].y, mPoints[1].y, mPoints[2].y);
     const Vector3 zAxis(mPoints[0].z, mPoints[1].z, mPoints[2].z);
-    min.setAllValues(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue());
-    max.setAllValues(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue());
+    Vector3 min(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue());
+    Vector3 max(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue());
 
     min -= Vector3(mMargin, mMargin, mMargin);
     max += Vector3(mMargin, mMargin, mMargin);
+
+    return AABB(min, max);
 }
 
 // Return the local inertia tensor of the triangle shape

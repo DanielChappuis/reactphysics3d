@@ -42,7 +42,7 @@ using namespace reactphysics3d;
  */
 ConvexMesh::ConvexMesh(MemoryAllocator& allocator)
                : mMemoryAllocator(allocator), mHalfEdgeStructure(allocator, 6, 8, 24),
-                 mVertices(allocator), mFacesNormals(allocator), mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0), mVolume(0) {
+                 mVertices(allocator), mFacesNormals(allocator), mVolume(0) {
 
 }
 
@@ -87,8 +87,8 @@ bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std:
     mCentroid.setToZero();
 
     if (polygonVertexArray.getNbVertices() > 0) {
-        mMinBounds = polygonVertexArray.getVertex(0);
-        mMaxBounds = polygonVertexArray.getVertex(0);
+        mBounds.setMin(polygonVertexArray.getVertex(0));
+        mBounds.setMax( polygonVertexArray.getVertex(0));
     }
 
     // For each vertex
@@ -100,15 +100,8 @@ bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std:
         // Compute centroid
         mCentroid += vertex;
 
-        // Compute mesh bounds
-        if (vertex.x > mMaxBounds.x) mMaxBounds.x = vertex.x;
-        if (vertex.x < mMinBounds.x) mMinBounds.x = vertex.x;
-
-        if (vertex.y > mMaxBounds.y) mMaxBounds.y = vertex.y;
-        if (vertex.y < mMinBounds.y) mMinBounds.y = vertex.y;
-
-        if (vertex.z > mMaxBounds.z) mMaxBounds.z = vertex.z;
-        if (vertex.z < mMinBounds.z) mMinBounds.z = vertex.z;
+        // Inflate the bounds of the mesh with the vertex (if necessary)
+        mBounds.inflateWithPoint(vertex);
     }
 
     if (getNbVertices() > 0) {
@@ -246,6 +239,14 @@ Vector3 ConvexMesh::computeFaceNormal(uint32 faceIndex) const {
     }
 
     return normal;
+}
+
+// Return the minimum bounds of the mesh in the x,y,z direction
+/**
+ * @return The three mimimum bounds of the mesh in the x,y,z direction
+ */
+const AABB& ConvexMesh::getBounds() const {
+    return mBounds;
 }
 
 // Compute the volume of the convex mesh

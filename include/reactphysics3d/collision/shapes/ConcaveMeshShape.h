@@ -28,7 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/collision/shapes/ConcaveShape.h>
-#include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>
+#include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>.h>
 #include <reactphysics3d/containers/Array.h>
 
 namespace reactphysics3d {
@@ -49,15 +49,11 @@ class ConvexTriangleAABBOverlapCallback : public DynamicAABBTreeOverlapCallback 
         // Reference to the concave mesh shape
         const ConcaveMeshShape& mConcaveMeshShape;
 
-        // Reference to the Dynamic AABB tree
-        const DynamicAABBTree& mDynamicAABBTree;
-
     public:
 
         // Constructor
-        ConvexTriangleAABBOverlapCallback(TriangleCallback& triangleCallback, const ConcaveMeshShape& concaveShape,
-                                          const DynamicAABBTree& dynamicAABBTree)
-          : mTriangleTestCallback(triangleCallback), mConcaveMeshShape(concaveShape), mDynamicAABBTree(dynamicAABBTree) {
+        ConvexTriangleAABBOverlapCallback(TriangleCallback& triangleCallback, const ConcaveMeshShape& concaveShape)
+          : mTriangleTestCallback(triangleCallback), mConcaveMeshShape(concaveShape) {
 
         }
 
@@ -73,7 +69,6 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
     private :
 
         Array<int32> mHitAABBNodes;
-        const DynamicAABBTree& mDynamicAABBTree;
         const ConcaveMeshShape& mConcaveMeshShape;
         Collider* mCollider;
         RaycastInfo& mRaycastInfo;
@@ -92,9 +87,9 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
     public:
 
         // Constructor
-        ConcaveMeshRaycastCallback(const DynamicAABBTree& dynamicAABBTree, const ConcaveMeshShape& concaveMeshShape,
+        ConcaveMeshRaycastCallback(const ConcaveMeshShape& concaveMeshShape,
                                    Collider* collider, RaycastInfo& raycastInfo, const Ray& ray, const Vector3& meshScale, MemoryAllocator& allocator)
-            : mHitAABBNodes(allocator), mDynamicAABBTree(dynamicAABBTree), mConcaveMeshShape(concaveMeshShape), mCollider(collider),
+            : mHitAABBNodes(allocator), mConcaveMeshShape(concaveMeshShape), mCollider(collider),
               mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false), mAllocator(allocator), mMeshScale(meshScale) {
 
         }
@@ -135,13 +130,6 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Pointer to the triangle mesh
         TriangleMesh* mTriangleMesh;
 
-        /// Dynamic AABB tree to accelerate collision with the triangles
-        DynamicAABBTree mDynamicAABBTree;
-
-        /// Array with computed vertices normals for each TriangleVertexArray of the triangle mesh (only
-        /// if the user did not provide its own vertices normals)
-        Vector3** mComputedVerticesNormals;
-
         /// Reference to the triangle half-edge structure
         HalfEdgeStructure& mTriangleHalfEdgeStructure;
 
@@ -159,14 +147,8 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
 
-        /// Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-        void getTriangleVertices(uint32 subPart, uint32 triangleIndex, Vector3* outTriangleVertices) const;
-
-        /// Return the three vertex normals (in the array outVerticesNormals) of a triangle
-        void getTriangleVerticesNormals(uint32 subPart, uint32 triangleIndex, Vector3* outVerticesNormals) const;
-
         /// Compute the shape Id for a given triangle of the mesh
-        uint32 computeTriangleShapeId(uint32 subPart, uint32 triangleIndex) const;
+        uint32 computeTriangleShapeId(uint32 triangleIndex) const;
 
         /// Compute all the triangles of the mesh that are overlapping with the AABB in parameter
         virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,
@@ -176,6 +158,9 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Destructor
         virtual ~ConcaveMeshShape() override = default;
 
+        // Return the integer data of leaf node of the dynamic AABB tree
+        int32 getDynamicAABBTreeNodeDataInt(int32 nodeID) const;
+
     public:
 
         /// Deleted copy-constructor
@@ -184,17 +169,31 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Deleted assignment operator
         ConcaveMeshShape& operator=(const ConcaveMeshShape& shape) = delete;
 
-        /// Return the number of sub parts contained in this mesh
-        uint32 getNbSubparts() const;
-		
-        /// Return the number of triangles in a sub part of the mesh
-        uint32 getNbTriangles(uint32 subPart) const;
+        /// Return the number of vertices in the mesh
+        uint32 getNbVertices() const;
+
+        /// Return the number of triangles of the mesh
+        uint32 getNbTriangles() const;
 
         /// Return the indices of the three vertices of a given triangle in the array
-        void getTriangleVerticesIndices(uint32 subPart, uint32 triangleIndex, uint32* outVerticesIndices) const;
+        void getTriangleVerticesIndices(uint32 triangleIndex, uint32& outV1Index, uint32& outV2Index,
+                                        uint32& outV3Index) const;
+
+        /// Return the coordinates of the three vertices of a given triangle face
+        void getTriangleVertices(uint32 triangleIndex, Vector3& outV1, Vector3& outV2, Vector3& outV3) const;
+
+        /// Return the normals of the three vertices of a given triangle face
+        void getTriangleVerticesNormals(uint32 triangleIndex, Vector3& outN1,
+                                        Vector3& outN2, Vector3& outN3) const;
+
+        /// Return the coordinates of a given vertex
+        const Vector3& getVertex(uint32 vertexIndex) const;
+
+        /// Return the normal of a given vertex
+        const Vector3& getVertexNormal(uint32 vertexIndex) const;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
+        virtual AABB getLocalBounds() const override;
 
         /// Return the string representation of the shape
         virtual std::string to_string() const override;
@@ -219,38 +218,31 @@ RP3D_FORCE_INLINE size_t ConcaveMeshShape::getSizeInBytes() const {
     return sizeof(ConcaveMeshShape);
 }
 
-// Return the local bounds of the shape in x, y and z directions.
-// This method is used to compute the AABB of the box
-/**
- * @param min The minimum bounds of the shape in local-space coordinates
- * @param max The maximum bounds of the shape in local-space coordinates
- */
-RP3D_FORCE_INLINE void ConcaveMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
-
-    // Get the AABB of the whole tree
-    AABB treeAABB = mDynamicAABBTree.getRootAABB();
-
-    min = treeAABB.getMin();
-    max = treeAABB.getMax();
-}
-
 // Called when a overlapping node has been found during the call to
 // DynamicAABBTree:reportAllShapesOverlappingWithAABB()
 RP3D_FORCE_INLINE void ConvexTriangleAABBOverlapCallback::notifyOverlappingNode(int nodeId) {
 
     // Get the node data (triangle index and mesh subpart index)
-    int32* data = mDynamicAABBTree.getNodeDataInt(nodeId);
+    int32 data = mConcaveMeshShape.getDynamicAABBTreeNodeDataInt(nodeId);
 
     // Get the triangle vertices for this node from the concave mesh shape
     Vector3 trianglePoints[3];
-    mConcaveMeshShape.getTriangleVertices(data[0], data[1], trianglePoints);
+    mConcaveMeshShape.getTriangleVertices(data, trianglePoints[0], trianglePoints[1], trianglePoints[2]);
 
     // Get the vertices normals of the triangle
     Vector3 verticesNormals[3];
-    mConcaveMeshShape.getTriangleVerticesNormals(data[0], data[1], verticesNormals);
+    mConcaveMeshShape.getTriangleVerticesNormals(data, verticesNormals[0], verticesNormals[1], verticesNormals[2]);
 
     // Call the callback to test narrow-phase collision with this triangle
-    mTriangleTestCallback.testTriangle(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]));
+    mTriangleTestCallback.testTriangle(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data));
+}
+
+// Compute the shape Id for a given triangle of the mesh
+RP3D_FORCE_INLINE uint32 ConcaveMeshShape::computeTriangleShapeId(uint32 triangleIndex) const {
+
+    RP3D_PROFILE("ConcaveMeshShape::computeTriangleShapeId()", mProfiler);
+
+    return getNbTriangles() + triangleIndex;
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED

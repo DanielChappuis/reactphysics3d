@@ -43,23 +43,20 @@ CollisionShape::CollisionShape(CollisionShapeName name, CollisionShapeType type,
 
 }
 
-// Compute the world-space AABB of the collision shape given a transform from shape
-// local-space to world-space. The technique is described in the book Real-Time Collision
-// Detection by Christer Ericson.
+// Compute the transformed AABB of the collision shape in another space
+// The technique is described in the book Real-Time Collision
+// Detection by Christer Ericson. This can be used to compute AABB of the collision shape
+// in world-space for instance
 /**
- * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
- *                  computed in world-space coordinates
- * @param transform Transform from shape local-space to world-space used to compute
- *                  the AABB of the collision shape
+ * @param transform Transform to use to for the space conversion
+ * @return The transformed axis-aligned bounding box (AABB) of the collision shape
  */
-void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
+AABB CollisionShape::computeTransformedAABB(const Transform& transform) const {
 
     RP3D_PROFILE("CollisionShape::computeAABB()", mProfiler);
 
     // Get the local bounds in x,y and z direction
-    Vector3 minBounds;
-    Vector3 maxBounds;
-    getLocalBounds(minBounds, maxBounds);
+    AABB aabb = getLocalBounds();
 
     const Vector3& translation = transform.getPosition();
     Matrix3x3 matrix = transform.getOrientation().getMatrix();
@@ -74,8 +71,8 @@ void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
         resultMax[i] = translation[i];
 
         for (int j=0; j<3; j++) {
-            decimal e = matrix[i][j] * minBounds[j];
-            decimal f = matrix[i][j] * maxBounds[j];
+            decimal e = matrix[i][j] * aabb.getMin()[j];
+            decimal f = matrix[i][j] * aabb.getMax()[j];
 
             if (e < f) {
                 resultMin[i] += e;
@@ -91,6 +88,8 @@ void CollisionShape::computeAABB(AABB& aabb, const Transform& transform) const {
     // Update the AABB with the new minimum and maximum coordinates
     aabb.setMin(resultMin);
     aabb.setMax(resultMax);
+
+    return aabb;
 }
 
 /// Notify all the assign colliders that the size of the collision shape has changed

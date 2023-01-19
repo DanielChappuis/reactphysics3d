@@ -140,3 +140,12 @@ const HalfEdgeStructure::Edge& BoxShape::getHalfEdge(uint32 edgeIndex) const {
     assert(edgeIndex < getNbHalfEdges());
     return mPhysicsCommon.mBoxShapeHalfEdgeStructure.getHalfEdge(edgeIndex);
 }
+
+// Return the local bounds of the shape in x, y and z directions
+/// This method is used to compute the AABB of the box
+/**
+ * @return The AABB of the shape
+ */
+AABB BoxShape::getLocalBounds() const {
+    return AABB(-mHalfExtents, mHalfExtents);
+}

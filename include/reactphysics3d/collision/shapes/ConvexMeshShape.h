@@ -94,7 +94,7 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         void setScale(const Vector3& scale);
 
         /// Return the local bounds of the shape in x, y and z directions
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
+        virtual AABB getLocalBounds() const override;
 
         /// Return the local inertia tensor of the collision shape.
         virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
@@ -153,16 +153,6 @@ RP3D_FORCE_INLINE const Vector3& ConvexMeshShape::getScale() const {
 RP3D_FORCE_INLINE void ConvexMeshShape::setScale(const Vector3& scale) {
     mScale = scale;
     notifyColliderAboutChangedSize();
-}
-
-// Return the local bounds of the shape in x, y and z directions
-/**
- * @param min The minimum bounds of the shape in local-space coordinates
- * @param max The maximum bounds of the shape in local-space coordinates
- */
-RP3D_FORCE_INLINE void ConvexMeshShape::getLocalBounds(Vector3& min, Vector3& max) const {
-    min = mConvexMesh->getMinBounds() * mScale;
-    max = mConvexMesh->getMaxBounds() * mScale;
 }
 
 // Return the local inertia tensor of the collision shape.

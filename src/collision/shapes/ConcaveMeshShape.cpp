@@ -29,101 +29,53 @@
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <reactphysics3d/collision/TriangleMesh.h>
 #include <reactphysics3d/utils/Profiler.h>
-#include <reactphysics3d/collision/TriangleVertexArray.h>
 
 using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, HalfEdgeStructure& triangleHalfEdgeStructure, const Vector3& scaling)
-                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH, allocator, scaling), mDynamicAABBTree(allocator), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
+                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH, allocator, scaling), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
 
     mTriangleMesh = triangleMesh;
     mRaycastTestType = TriangleRaycastSide::FRONT;
-
-    // Insert all the triangles into the dynamic AABB tree
-    initBVHTree();
-}
-
-// Insert all the triangles into the dynamic AABB tree
-void ConcaveMeshShape::initBVHTree() {
-
-    // TODO : Try to randomly add the triangles into the tree to obtain a better tree
-
-    // For each sub-part of the mesh
-    for (uint32 subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
-
-        // Get the triangle vertex array of the current sub-part
-        TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
-
-        // For each triangle of the concave mesh
-        for (uint32 triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
-
-            Vector3 trianglePoints[3];
-
-            // Get the triangle vertices
-            triangleVertexArray->getTriangleVertices(triangleIndex, trianglePoints);
-
-            // Create the AABB for the triangle
-            AABB aabb = AABB::createAABBForTriangle(trianglePoints);
-
-            // Add the AABB with the index of the triangle into the dynamic AABB tree
-            mDynamicAABBTree.addObject(aabb, subPart, triangleIndex);
-        }
-    }
 }
 
 // Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
-void ConcaveMeshShape::getTriangleVertices(uint32 subPart, uint32 triangleIndex, Vector3* outTriangleVertices) const {
-
-    // Get the triangle vertex array of the current sub-part
-    TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
+void ConcaveMeshShape::getTriangleVertices(uint32 triangleIndex, Vector3& outV1, Vector3& outV2, Vector3& outV3) const {
 
     // Get the vertices coordinates of the triangle
-    triangleVertexArray->getTriangleVertices(triangleIndex, outTriangleVertices);
+    mTriangleMesh->getTriangleVertices(triangleIndex, outV1, outV2, outV3);
 
     // Apply the scaling factor to the vertices
-    outTriangleVertices[0].x *= mScale.x;
-    outTriangleVertices[0].y *= mScale.y;
-    outTriangleVertices[0].z *= mScale.z;
-    outTriangleVertices[1].x *= mScale.x;
-    outTriangleVertices[1].y *= mScale.y;
-    outTriangleVertices[1].z *= mScale.z;
-    outTriangleVertices[2].x *= mScale.x;
-    outTriangleVertices[2].y *= mScale.y;
-    outTriangleVertices[2].z *= mScale.z;
+    outV1 = outV1 * mScale;
+    outV2 = outV2 * mScale;
+    outV3 = outV3 * mScale;
 }
 
 // Return the three vertex normals (in the array outVerticesNormals) of a triangle
-void ConcaveMeshShape::getTriangleVerticesNormals(uint32 subPart, uint32 triangleIndex, Vector3* outVerticesNormals) const {
+void ConcaveMeshShape::getTriangleVerticesNormals(uint32 triangleIndex,
+                                                  Vector3& outN1, Vector3& outN2, Vector3& outN3) const {
 
-    // Get the triangle vertex array of the current sub-part
-    TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
-
-    // Get the vertices normals of the triangle
-    triangleVertexArray->getTriangleVerticesNormals(triangleIndex, outVerticesNormals);
+    // Get the vertices coordinates of the triangle
+    mTriangleMesh->getTriangleVerticesNormals(triangleIndex, outN1, outN2, outN3);
 }
 
 // Return the indices of the three vertices of a given triangle in the array
-void ConcaveMeshShape::getTriangleVerticesIndices(uint32 subPart, uint32 triangleIndex, uint32* outVerticesIndices) const {
+void ConcaveMeshShape::getTriangleVerticesIndices(uint32 triangleIndex, uint32& outV1Index,
+                                                  uint32& outV2Index, uint32& outV3Index) const {
 
-    // Get the triangle vertex array of the current sub-part
-    TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
-
-    // Get the vertices normals of the triangle
-    triangleVertexArray->getTriangleVerticesIndices(triangleIndex, outVerticesIndices);
+    mTriangleMesh->getTriangleVerticesIndices(triangleIndex, outV1Index, outV2Index, outV3Index);
 }
 
-// Return the number of sub parts contained in this mesh
-uint32 ConcaveMeshShape::getNbSubparts() const
-{
-	return mTriangleMesh->getNbSubparts();
+// Return the number of vertices in the mesh
+uint32 ConcaveMeshShape::getNbVertices() const {
+    return mTriangleMesh->getNbVertices();
 }
-		
+
 // Return the number of triangles in a sub part of the mesh
-uint32 ConcaveMeshShape::getNbTriangles(uint32 subPart) const
+uint32 ConcaveMeshShape::getNbTriangles() const
 {
-	assert(mTriangleMesh->getSubpart(subPart));
-	return mTriangleMesh->getSubpart(subPart)->getNbTriangles();
+    return mTriangleMesh->getNbTriangles();
 }
 
 // Compute all the triangles of the mesh that are overlapping with the AABB in parameter
@@ -140,7 +92,7 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, Array<
 
     // Compute the nodes of the internal AABB tree that are overlapping with the AABB
     Array<int> overlappingNodes(allocator, 64);
-    mDynamicAABBTree.reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
+    mTriangleMesh->reportAllShapesOverlappingWithAABB(aabb, overlappingNodes);
 
     const uint32 nbOverlappingNodes = static_cast<uint32>(overlappingNodes.size());
 
@@ -154,16 +106,17 @@ void ConcaveMeshShape::computeOverlappingTriangles(const AABB& localAABB, Array<
         int nodeId = overlappingNodes[i];
 
         // Get the node data (triangle index and mesh subpart index)
-        int32* data = mDynamicAABBTree.getNodeDataInt(nodeId);
+        int32 data = mTriangleMesh->getDynamicAABBTreeNodeDataInt(nodeId);
 
         // Get the triangle vertices for this node from the concave mesh shape
-        getTriangleVertices(data[0], data[1], &(triangleVertices[i * 3]));
+        getTriangleVertices(data, triangleVertices[i * 3], triangleVertices[i * 3 + 1], triangleVertices[i * 3 + 2]);
 
         // Get the vertices normals of the triangle
-        getTriangleVerticesNormals(data[0], data[1], &(triangleVerticesNormals[i * 3]));
+        getTriangleVerticesNormals(data, triangleVerticesNormals[i * 3], triangleVerticesNormals[i * 3 + 1],
+                                   triangleVerticesNormals[i * 3 + 2]);
 
         // Compute the triangle shape ID
-        shapeIds.add(computeTriangleShapeId(data[0], data[1]));
+        shapeIds.add(computeTriangleShapeId(data));
     }
 }
 
@@ -180,10 +133,9 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     Ray scaledRay(ray.point1 * inverseScale, ray.point2 * inverseScale, ray.maxFraction);
 
     // Create the callback object that will compute ray casting against triangles
-    ConcaveMeshRaycastCallback raycastCallback(mDynamicAABBTree, *this, collider, raycastInfo, scaledRay, mScale, allocator);
+    ConcaveMeshRaycastCallback raycastCallback(*this, collider, raycastInfo, scaledRay, mScale, allocator);
 
 #ifdef IS_RP3D_PROFILING_ENABLED
-
 
 	// Set the profiler
 	raycastCallback.setProfiler(mProfiler);
@@ -193,29 +145,11 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     // Ask the Dynamic AABB Tree to report all AABB nodes that are hit by the ray.
     // The raycastCallback object will then compute ray casting against the triangles
     // in the hit AABBs.
-    mDynamicAABBTree.raycast(scaledRay, raycastCallback);
+    mTriangleMesh->raycast(scaledRay, raycastCallback);
 
     raycastCallback.raycastTriangles();
 
     return raycastCallback.getIsHit();
-}
-
-// Compute the shape Id for a given triangle of the mesh
-uint32 ConcaveMeshShape::computeTriangleShapeId(uint32 subPart, uint32 triangleIndex) const {
-
-    RP3D_PROFILE("ConcaveMeshShape::computeTriangleShapeId()", mProfiler);
-
-    uint32 shapeId = 0;
-
-    uint32 i=0;
-    while (i < subPart) {
-
-        shapeId += mTriangleMesh->getSubpart(i)->getNbTriangles();
-
-        i++;
-    }
-
-    return shapeId + triangleIndex;
 }
 
 // Collect all the AABB nodes that are hit by the ray in the Dynamic AABB Tree
@@ -236,18 +170,18 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
     for (it = mHitAABBNodes.begin(); it != mHitAABBNodes.end(); ++it) {
 
         // Get the node data (triangle index and mesh subpart index)
-        int32* data = mDynamicAABBTree.getNodeDataInt(*it);
+        int32 data = mConcaveMeshShape.getDynamicAABBTreeNodeDataInt(*it);
 
         // Get the triangle vertices for this node from the concave mesh shape
         Vector3 trianglePoints[3];
-        mConcaveMeshShape.getTriangleVertices(data[0], data[1], trianglePoints);
+        mConcaveMeshShape.getTriangleVertices(data, trianglePoints[0], trianglePoints[1], trianglePoints[2]);
 
         // Get the vertices normals of the triangle
         Vector3 verticesNormals[3];
-        mConcaveMeshShape.getTriangleVerticesNormals(data[0], data[1], verticesNormals);
+        mConcaveMeshShape.getTriangleVerticesNormals(data, verticesNormals[0], verticesNormals[1], verticesNormals[2]);
 
         // Create a triangle collision shape
-        TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data[0], data[1]), mConcaveMeshShape.mTriangleHalfEdgeStructure, mAllocator);
+        TriangleShape triangleShape(trianglePoints, verticesNormals, mConcaveMeshShape.computeTriangleShapeId(data), mConcaveMeshShape.mTriangleHalfEdgeStructure, mAllocator);
         triangleShape.setRaycastTestType(mConcaveMeshShape.getRaycastTestType());
 		
 #ifdef IS_RP3D_PROFILING_ENABLED
@@ -272,13 +206,34 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
             mRaycastInfo.hitFraction = raycastInfo.hitFraction;
             mRaycastInfo.worldPoint = raycastInfo.worldPoint * mMeshScale;
             mRaycastInfo.worldNormal = raycastInfo.worldNormal;
-            mRaycastInfo.meshSubpart = data[0];
-            mRaycastInfo.triangleIndex = data[1];
+            mRaycastInfo.triangleIndex = data;
 
             smallestHitFraction = raycastInfo.hitFraction;
             mIsHit = true;
         }
     }
+}
+
+// Return the local bounds of the shape in x, y and z directions.
+// This method is used to compute the AABB of the box
+/**
+ * @param min The minimum bounds of the shape in local-space coordinates
+ * @param max The maximum bounds of the shape in local-space coordinates
+ */
+AABB ConcaveMeshShape::getLocalBounds() const {
+
+    // Get the AABB of the whole tree
+    AABB aabb = mTriangleMesh->getBounds();
+
+    // Apply the scale factor
+    aabb.applyScale(mScale);
+
+    return aabb;
+}
+
+// Return the integer data of leaf node of the dynamic AABB tree
+int32 ConcaveMeshShape::getDynamicAABBTreeNodeDataInt(int32 nodeID) const {
+   return mTriangleMesh->getDynamicAABBTreeNodeDataInt(nodeID);
 }
 
 // Return the string representation of the shape
@@ -287,61 +242,50 @@ std::string ConcaveMeshShape::to_string() const {
     std::stringstream ss;
 
     ss << "ConcaveMeshShape{" << std::endl;
-    ss << "nbSubparts=" << mTriangleMesh->getNbSubparts() << std::endl;
 
-    // Vertices array
-    for (uint32 subPart=0; subPart<mTriangleMesh->getNbSubparts(); subPart++) {
+    ss << "nbVertices=" << getNbVertices() << std::endl;
+    ss << "nbTriangles=" << getNbTriangles() << std::endl;
 
-        // Get the triangle vertex array of the current sub-part
-        TriangleVertexArray* triangleVertexArray = mTriangleMesh->getSubpart(subPart);
+    ss << "vertices=[";
 
-        ss << "subpart" << subPart << "={" << std::endl;
-        ss << "nbVertices=" << triangleVertexArray->getNbVertices() << std::endl;
-        ss << "nbTriangles=" << triangleVertexArray->getNbTriangles() << std::endl;
+    // For each triangle of the concave mesh
+    for (uint32 v=0; v<getNbVertices(); v++) {
 
-        ss << "vertices=[";
+        Vector3 vertex = mTriangleMesh->getVertex(v);
 
-        // For each triangle of the concave mesh
-        for (uint32 v=0; v<triangleVertexArray->getNbVertices(); v++) {
-
-            Vector3 vertex;
-            triangleVertexArray->getVertex(v, &vertex);
-
-            ss << vertex.to_string() << ", ";
-        }
-
-        ss << "], " << std::endl;
-
-        ss << "normals=[";
-
-        // For each triangle of the concave mesh
-        for (uint32 v=0; v<triangleVertexArray->getNbVertices(); v++) {
-
-            Vector3 normal;
-            triangleVertexArray->getNormal(v, &normal);
-
-            ss << normal.to_string() << ", ";
-        }
-
-        ss << "], " << std::endl;
-
-        ss << "triangles=[";
-
-        // For each triangle of the concave mesh
-        // For each triangle of the concave mesh
-        for (uint32 triangleIndex=0; triangleIndex<triangleVertexArray->getNbTriangles(); triangleIndex++) {
-
-            uint32 indices[3];
-
-            triangleVertexArray->getTriangleVerticesIndices(triangleIndex, indices);
-
-            ss << "(" << indices[0] << "," << indices[1] << "," << indices[2] << "), ";
-        }
-
-        ss << "], " << std::endl;
-
-        ss << "}" << std::endl;
+        ss << vertex.to_string() << ", ";
     }
+
+    ss << "], " << std::endl;
+
+    ss << "normals=[";
+
+    // For each vertex of the concave mesh
+    for (uint32 v=0; v<getNbVertices(); v++) {
+
+        Vector3 normal = mTriangleMesh->getVertexNormal(v);
+
+        ss << normal.to_string() << ", ";
+    }
+
+    ss << "], " << std::endl;
+
+    ss << "triangles=[";
+
+    // For each triangle of the concave mesh
+    // For each triangle of the concave mesh
+    for (uint32 triangleIndex=0; triangleIndex < getNbTriangles(); triangleIndex++) {
+
+        uint32 indices[3];
+
+        mTriangleMesh->getTriangleVerticesIndices(triangleIndex, indices[0], indices[1], indices[2]);
+
+        ss << "(" << indices[0] << "," << indices[1] << "," << indices[2] << "), ";
+    }
+
+    ss << "], " << std::endl;
+
+    ss << "}" << std::endl;
 
     return ss.str();
 }

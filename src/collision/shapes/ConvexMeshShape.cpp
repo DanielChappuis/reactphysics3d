@@ -177,6 +177,16 @@ bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* /*col
     return true;
 }
 
+// Return the local bounds of the shape in x, y and z directions
+/**
+ * @return The AABB with the min/max bounds
+ */
+AABB ConvexMeshShape::getLocalBounds() const {
+    AABB aabb = mConvexMesh->getBounds();
+    aabb.applyScale(mScale);
+    return aabb;
+}
+
 // Return the string representation of the shape
 std::string ConvexMeshShape::to_string() const {
 

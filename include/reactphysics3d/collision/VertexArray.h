@@ -65,7 +65,7 @@ class VertexArray {
         /// Constructor
         VertexArray(const void* start, uint32 stride, uint32 nbVertices, DataType dataType);
 
-        // TODO : Add constructor with a vector of Vector3
+        // TODO : Add constructor with a reference to a vector of Vector3
 
         /// Return the vertex data type
         DataType getDataType() const;

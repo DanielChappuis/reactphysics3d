@@ -29,6 +29,7 @@
 // Libraries
 #include <reactphysics3d/collision/shapes/ConvexShape.h>
 #include <reactphysics3d/mathematics/mathematics.h>
+#include <reactphysics3d/collision/shapes/AABB.h>
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -88,7 +89,7 @@ class SphereShape : public ConvexShape {
         virtual bool isPolyhedron() const override;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
+        virtual AABB getLocalBounds() const override;
 
         /// Return the local inertia tensor of the collision shape
         virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
@@ -96,8 +97,8 @@ class SphereShape : public ConvexShape {
         /// Compute and return the volume of the collision shape
         virtual decimal getVolume() const override;
 
-        /// Update the AABB of a body using its collision shape
-        virtual void computeAABB(AABB& aabb, const Transform& transform) const override;
+        /// Compute the transformed AABB
+        virtual AABB computeTransformedAABB(const Transform& transform) const override;
 
         /// Return the string representation of the shape
         virtual std::string to_string() const override;
@@ -154,20 +155,12 @@ RP3D_FORCE_INLINE Vector3 SphereShape::getLocalSupportPointWithoutMargin(const V
 // Return the local bounds of the shape in x, y and z directions.
 // This method is used to compute the AABB of the box
 /**
- * @param min The minimum bounds of the shape in local-space coordinates
- * @param max The maximum bounds of the shape in local-space coordinates
+ * @return The AABB with the min/max bounds of the shape
  */
-RP3D_FORCE_INLINE void SphereShape::getLocalBounds(Vector3& min, Vector3& max) const {
+RP3D_FORCE_INLINE AABB SphereShape::getLocalBounds() const {
 
-    // Maximum bounds
-    max.x = mMargin;
-    max.y = mMargin;
-    max.z = mMargin;
-
-    // Minimum bounds
-    min.x = -mMargin;
-    min.y = min.x;
-    min.z = min.x;
+    return AABB(Vector3(-mMargin, -mMargin, -mMargin),
+                Vector3(mMargin, mMargin, mMargin));
 }
 
 // Return the local inertia tensor of the sphere

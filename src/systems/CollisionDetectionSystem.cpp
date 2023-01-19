@@ -481,8 +481,7 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
     assert(overlappingPair.narrowPhaseAlgorithmType != NarrowPhaseAlgorithmType::None);
 
     // Compute the convex shape AABB in the local-space of the concave shape
-    AABB aabb;
-    convexShape->computeAABB(aabb, convexToConcaveTransform);
+    const AABB aabb = convexShape->computeTransformedAABB(convexToConcaveTransform);
 
     // Compute the concave shape triangles that are overlapping with the convex mesh AABB
     Array<Vector3> triangleVertices(allocator, 64);

@@ -564,6 +564,8 @@ void PhysicsCommon::deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
 }
 
 // Create a convex mesh from a PolygonVertexArray describing vertices and faces
+/// The data (vertices, faces indices, ...) are copied from the PolygonVertexArray into the
+/// created ConvexMesh.
 /**
  * @param polygonVertexArray A pointer to the polygon vertex array to use to create the convex mesh
  * @param errors A reference to a vector of errors. This vector will contains errors after the call (if any)
@@ -594,6 +596,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVer
 }
 
 // Create a convex mesh from an array of vertices (automatically computing the convex hull using QuickHull)
+/// The data (vertices) are copied from the VertexArray into the created ConvexMesh.
 /**
  * @param vertexArray A reference to the vertex object describing the vertices used to compute the convex hull
  * @param errors A reference to the array of errors that happened during convex mesh creation (if any)
@@ -658,13 +661,24 @@ void PhysicsCommon::deleteConvexMesh(ConvexMesh* convexMesh) {
    mMemoryManager.release(MemoryManager::AllocationType::Heap, convexMesh, sizeof(ConvexMesh));
 }
 
-// Create a triangle mesh
+// Create a triangle mesh from a TriangleVertexArray
+/// The data (vertices, faces indices) are copied from the TriangleVertexArray into the created ConvexMesh.
 /**
  * @return A pointer to the created triangle mesh
  */
-TriangleMesh* PhysicsCommon::createTriangleMesh() {
+TriangleMesh* PhysicsCommon::createTriangleMesh(const TriangleVertexArray& triangleVertexArray, std::vector<Error>& errors) {
 
     TriangleMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(TriangleMesh))) TriangleMesh(mMemoryManager.getHeapAllocator());
+
+    bool isValid = mesh->init(triangleVertexArray, errors);
+
+    if (!isValid) {
+
+        mesh->~TriangleMesh();
+        mMemoryManager.release(MemoryManager::AllocationType::Pool, mesh, sizeof(TriangleMesh));
+
+        return nullptr;
+    }
 
     mTriangleMeshes.add(mesh);
 

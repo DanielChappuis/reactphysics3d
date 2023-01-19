@@ -103,7 +103,7 @@ class CapsuleShape : public ConvexShape {
         void setHeight(decimal height);
 
         /// Return the local bounds of the shape in x, y and z directions
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
+        virtual AABB getLocalBounds() const override;
 
         /// Compute and return the volume of the collision shape
         virtual decimal getVolume() const override;
@@ -169,25 +169,6 @@ RP3D_FORCE_INLINE void CapsuleShape::setHeight(decimal height) {
 // Return the number of bytes used by the collision shape
 RP3D_FORCE_INLINE size_t CapsuleShape::getSizeInBytes() const {
     return sizeof(CapsuleShape);
-}
-
-// Return the local bounds of the shape in x, y and z directions
-// This method is used to compute the AABB of the box
-/**
- * @param min The minimum bounds of the shape in local-space coordinates
- * @param max The maximum bounds of the shape in local-space coordinates
- */
-RP3D_FORCE_INLINE void CapsuleShape::getLocalBounds(Vector3& min, Vector3& max) const {
-
-    // Maximum bounds
-    max.x = mMargin;
-    max.y = mHalfHeight + mMargin;
-    max.z = mMargin;
-
-    // Minimum bounds
-    min.x = -mMargin;
-    min.y = -max.y;
-    min.z = min.x;
 }
 
 // Compute and return the volume of the collision shape

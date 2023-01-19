@@ -100,6 +100,7 @@ class TestConvexMesh : public Test {
 
         void test() {
 
+            // Vertices
             rp3d_test(Vector3::approxEqual(mConvexMesh->getVertex(0), Vector3(mVertices[0], mVertices[1], mVertices[2])));
             rp3d_test(Vector3::approxEqual(mConvexMesh->getVertex(1), Vector3(mVertices[3], mVertices[4], mVertices[5])));
             rp3d_test(Vector3::approxEqual(mConvexMesh->getVertex(2), Vector3(mVertices[6], mVertices[7], mVertices[8])));
@@ -109,6 +110,14 @@ class TestConvexMesh : public Test {
             rp3d_test(Vector3::approxEqual(mConvexMesh->getVertex(6), Vector3(mVertices[18], mVertices[19], mVertices[20])));
             rp3d_test(Vector3::approxEqual(mConvexMesh->getVertex(7), Vector3(mVertices[21], mVertices[22], mVertices[23])));
 
+            // Normals
+            rp3d_test(Vector3::approxEqual(mConvexMesh->getFaceNormal(0), Vector3(0, -1, 0)));
+            rp3d_test(Vector3::approxEqual(mConvexMesh->getFaceNormal(1), Vector3(0, 1, 0)));
+            rp3d_test(Vector3::approxEqual(mConvexMesh->getFaceNormal(2), Vector3(0, 0, 1)));
+            rp3d_test(Vector3::approxEqual(mConvexMesh->getFaceNormal(3), Vector3(1, 0, 0)));
+            rp3d_test(Vector3::approxEqual(mConvexMesh->getFaceNormal(4), Vector3(0, 0, -1)));
+            rp3d_test(Vector3::approxEqual(mConvexMesh->getFaceNormal(5), Vector3(-1, 0, 0)));
+
             rp3d_test(mConvexMesh->getNbVertices() == 8);
             rp3d_test(mConvexMesh->getHalfEdgeStructure().getNbVertices() == 8);
             rp3d_test(mConvexMesh->getNbFaces() == 6);
@@ -117,8 +126,8 @@ class TestConvexMesh : public Test {
             rp3d_test(mConvexMesh->getVolume() == 216);
 
             rp3d_test(Vector3::approxEqual(mConvexMesh->getCentroid(), Vector3::zero()));
-            rp3d_test(Vector3::approxEqual(mConvexMesh->getMinBounds(), Vector3(-3, -3 ,-3)));
-            rp3d_test(Vector3::approxEqual(mConvexMesh->getMaxBounds(), Vector3(3, 3 ,3)));
+            rp3d_test(Vector3::approxEqual(mConvexMesh->getBounds().getMin(), Vector3(-3, -3 ,-3)));
+            rp3d_test(Vector3::approxEqual(mConvexMesh->getBounds().getMax(), Vector3(3, 3 ,3)));
         }
  };
 

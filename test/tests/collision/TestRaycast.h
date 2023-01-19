@@ -154,10 +154,7 @@ class TestRaycast : public Test {
 
         std::vector<Vector3> mConcaveMeshVertices;
         std::vector<uint> mConcaveMeshIndices;
-        TriangleVertexArray* mConcaveMeshVertexArray;
         float mHeightFieldData[100];
-        PolygonVertexArray::PolygonFace polygonFaces[6];
-        PolygonVertexArray* mPolygonVertexArray;
         ConvexMesh* mConvexMesh;
         float mConvexMeshVertices[8 * 3];
         int mConvexMeshIndices[4 * 6];
@@ -276,14 +273,13 @@ class TestRaycast : public Test {
             mConcaveMeshIndices.push_back(4); mConcaveMeshIndices.push_back(7); mConcaveMeshIndices.push_back(5);
             TriangleVertexArray::VertexDataType vertexType = sizeof(decimal) == 4 ? TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE :
                                                                                     TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE;
-            mConcaveMeshVertexArray =
-                    new TriangleVertexArray(8, &(mConcaveMeshVertices[0]), sizeof(Vector3),
+            TriangleVertexArray concaveMeshVertexArray(8, &(mConcaveMeshVertices[0]), sizeof(Vector3),
                                                   12, &(mConcaveMeshIndices[0]), 3 * sizeof(uint),
                                                   vertexType, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
-            // Add the triangle vertex array of the subpart to the triangle mesh
-            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh();
-            mConcaveTriangleMesh->addSubpart(mConcaveMeshVertexArray);
+            // Add the triangle vertex array to the triangle mesh
+            errors.clear();
+            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh(concaveMeshVertexArray, errors);
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, mShapeTransform);
 
@@ -314,9 +310,6 @@ class TestRaycast : public Test {
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape);
             mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
             mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
-
-            delete mConcaveMeshVertexArray;
-
             mPhysicsCommon.destroyConvexMesh(mConvexMesh);
         }
 

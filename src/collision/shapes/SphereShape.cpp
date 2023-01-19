@@ -41,22 +41,20 @@ SphereShape::SphereShape(decimal radius, MemoryAllocator& allocator)
     assert(radius > decimal(0.0));
 }
 
-// Update the AABB of a body using its collision shape
+// Compute the transformed AABB of the collision shape given a transform
 /**
- * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
- *                  computed in world-space coordinates
- * @param transform Transform used to compute the AABB of the collision shape
+ * @param transform Transform used to for the space conversion
+ * @return aabb The transformed axis-aligned bounding box (AABB) of the collision shape
  */
-void SphereShape::computeAABB(AABB& aabb, const Transform& transform) const {
+AABB SphereShape::computeTransformedAABB(const Transform& transform) const {
 
     RP3D_PROFILE("SphereShape::computeAABB()", mProfiler);
 
     // Get the local extents in x,y and z direction
     Vector3 extents(mMargin, mMargin, mMargin);
 
-    // Update the AABB with the new minimum and maximum coordinates
-    aabb.setMin(transform.getPosition() - extents);
-    aabb.setMax(transform.getPosition() + extents);
+    // Return the AABB with the new minimum and maximum coordinates
+    return AABB(transform.getPosition() - extents, transform.getPosition() + extents);
 }
 
 // Raycast method with feedback information

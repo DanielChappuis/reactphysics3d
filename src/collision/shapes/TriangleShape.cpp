@@ -112,13 +112,12 @@ void TriangleShape::computeSmoothMeshContact(Vector3 localContactPointTriangle, 
     outNewLocalContactPointOtherShape.setAllValues(otherShapePoint.x, otherShapePoint.y, otherShapePoint.z);
 }
 
-// Update the AABB of a body using its collision shape
+// Compute the transformed AABB of the collision shape given a transform
 /**
- * @param[out] aabb The axis-aligned bounding box (AABB) of the collision shape
- *                  computed in world-space coordinates
- * @param transform Transform used to compute the AABB of the collision shape
+ * @param transform Transform to use for the space conversion
+ * @return aabb The transformed axis-aligned bounding box (AABB) of the collision shape
  */
-void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
+AABB TriangleShape::computeTransformedAABB(const Transform& transform) const {
 
     RP3D_PROFILE("TriangleShape::computeAABB()", mProfiler);
 
@@ -129,8 +128,9 @@ void TriangleShape::computeAABB(AABB& aabb, const Transform& transform) const {
     const Vector3 xAxis(worldPoint1.x, worldPoint2.x, worldPoint3.x);
     const Vector3 yAxis(worldPoint1.y, worldPoint2.y, worldPoint3.y);
     const Vector3 zAxis(worldPoint1.z, worldPoint2.z, worldPoint3.z);
-    aabb.setMin(Vector3(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue()));
-    aabb.setMax(Vector3(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue()));
+
+    return AABB(Vector3(xAxis.getMinValue(), yAxis.getMinValue(), zAxis.getMinValue()),
+                Vector3(xAxis.getMaxValue(), yAxis.getMaxValue(), zAxis.getMaxValue()));
 }
 
 // Raycast method with feedback information

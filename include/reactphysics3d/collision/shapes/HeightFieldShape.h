@@ -153,7 +153,7 @@ class HeightFieldShape : public ConcaveShape {
         HeightDataType getHeightDataType() const;
 
         /// Return the local bounds of the shape in x, y and z directions.
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
+        virtual AABB getLocalBounds() const override;
 
         /// Use a callback method on all triangles of the concave shape inside a given AABB
         virtual void computeOverlappingTriangles(const AABB& localAABB, Array<Vector3>& triangleVertices,

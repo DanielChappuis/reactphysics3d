@@ -665,13 +665,10 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
                                       sizeof(Collider))) Collider(colliderEntity, this, mWorld.mMemoryManager);
 
     // Add the collider component to the entity of the body
-    Vector3 localBoundsMin;
-    Vector3 localBoundsMax;
-    // TODO : Maybe this method can directly returns an AABB
-    collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
+    AABB shapeAABB = collisionShape->getLocalBounds();
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
     Material material(mWorld.mConfig.defaultFrictionCoefficient, mWorld.mConfig.defaultBounciness);
-    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, AABB(localBoundsMin, localBoundsMax),
+    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, shapeAABB,
                                                             transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform, material);
     bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
     mWorld.mCollidersComponents.addComponent(colliderEntity, isSleeping, colliderComponent);
@@ -690,8 +687,7 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
 #endif
 
     // Compute the world-space AABB of the new collision shape
-    AABB aabb;
-    collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
+    AABB aabb = collisionShape->computeTransformedAABB(mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addCollider(collider, aabb);

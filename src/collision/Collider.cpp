@@ -129,9 +129,8 @@ void Collider::setLocalToBodyTransform(const Transform& transform) {
  * @return The AABB of the collider in world-space
  */
 const AABB Collider::getWorldAABB() const {
-    AABB aabb;
     CollisionShape* collisionShape = mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
-    collisionShape->computeAABB(aabb, getLocalToWorldTransform());
+    const AABB aabb = collisionShape->computeTransformedAABB(getLocalToWorldTransform());
     return aabb;
 }
 

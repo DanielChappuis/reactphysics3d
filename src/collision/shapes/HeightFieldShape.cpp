@@ -79,14 +79,13 @@ HeightFieldShape::HeightFieldShape(int nbGridColumns, int nbGridRows, decimal mi
 }
 
 // Return the local bounds of the shape in x, y and z directions.
-// This method is used to compute the AABB of the box
 /**
- * @param min The minimum bounds of the shape in local-space coordinates
- * @param max The maximum bounds of the shape in local-space coordinates
+ * @return The AABB with the min/max bounds of the shape
  */
-void HeightFieldShape::getLocalBounds(Vector3& min, Vector3& max) const {
-    min = mAABB.getMin() * mScale;
-    max = mAABB.getMax() * mScale;
+AABB HeightFieldShape::getLocalBounds() const {
+    AABB aabb = mAABB;
+    aabb.applyScale(mScale);
+    return aabb;
 }
 
 // Test collision with the triangles of the height field shape. The idea is to use the AABB
@@ -362,7 +361,6 @@ bool HeightFieldShape::raycastTriangle(const Ray& ray, const Vector3& p1, const 
         raycastInfo.hitFraction = triangleRaycastInfo.hitFraction;
         raycastInfo.worldPoint = triangleRaycastInfo.worldPoint;
         raycastInfo.worldNormal = triangleRaycastInfo.worldNormal;
-        raycastInfo.meshSubpart = -1;
         raycastInfo.triangleIndex = -1;
 
         smallestHitFraction = triangleRaycastInfo.hitFraction;

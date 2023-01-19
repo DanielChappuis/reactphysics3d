@@ -15,11 +15,22 @@
  - The PolyhedronMesh class has been renamed to ConvexMesh
  - The PhysicsCommon::createPolyhedronMesh() method has been renamed to PhysicsCommon::createConvexMesh()
  - The PhysicsCommon::destroyPolyhedronMesh() method has been renamed to PhysicsCommon::destroyConvexMesh()
- - The PhysicsCommon::createConvexMesh() nows returns a list of errors that might have happened during the mesh creation
+ - The PhysicsCommon::createConvexMesh() nows outputs a list of errors that might have happened during the mesh creation
  - The PhysicsCommon::createConvexMesh() method now takes a reference to PolygonVertexArray
- - The input data (vertices, indices, ...) are now copied into the ConvexMesh, TriangularMesh and HeighField and not shared anymore.
+ - The input data (vertices, indices, ...) are now copied into the ConvexMesh, TriangularMesh and HeighField and not shared anymore
+ - The PhysicsCommon::createTriangleMesh() method now directly takes a TriangleVertexArray
+ - The PhysicsCommon::createTriangleMesh() nows outputs a list of errors that might have happened during the mesh creation
+ - The signature of the TriangleVertexArray::getTriangleVerticesIndices() method has changed
+ - The signature of the TriangleVertexArray::getNormal() method has changed
+ - The getLocalBounds() methods of the collision shapes now returns an AABB
 
 ### Removed
+
+ - The TriangleMesh does not support adding multiple parts of a mesh anymore. 
+ - The TriangleMesh::addSubpart() method has been removed. The PhysicsCommon::createTriangleMesh() method should be used instead
+ - The TriangleMesh::getSubpart() method has been removed. 
+ - The TriangleMesh::getNbSubparts() method has been removed.
+
 
 ### Fixed
 

@@ -60,9 +60,6 @@ struct RaycastInfo {
         /// The hit point "p" is such that p = point1 + hitFraction * (point2 - point1)
         decimal hitFraction;
 
-        /// Mesh subpart index that has been hit (only used for triangles mesh and -1 otherwise)
-        int meshSubpart;
-
         /// Hit triangle index (only used for triangles mesh and -1 otherwise)
         int triangleIndex;
 
@@ -75,7 +72,7 @@ struct RaycastInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(nullptr), collider(nullptr) {
+        RaycastInfo() : triangleIndex(-1), body(nullptr), collider(nullptr) {
 
         }
 

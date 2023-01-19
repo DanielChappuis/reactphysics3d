@@ -37,6 +37,7 @@ namespace reactphysics3d {
 class CollisionBody;
 class DefaultAllocator;
 class PhysicsCommon;
+class AABB;
 
 // Class BoxShape
 /**
@@ -94,7 +95,7 @@ class BoxShape : public ConvexPolyhedronShape {
         void setHalfExtents(const Vector3& halfExtents);
 
         /// Return the local bounds of the shape in x, y and z directions
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const override;
+        virtual AABB getLocalBounds() const override;
 
         /// Return the local inertia tensor of the collision shape
         virtual Vector3 getLocalInertiaTensor(decimal mass) const override;
@@ -155,21 +156,6 @@ RP3D_FORCE_INLINE void BoxShape::setHalfExtents(const Vector3& halfExtents) {
     mHalfExtents = halfExtents;
 
     notifyColliderAboutChangedSize();
-}
-
-// Return the local bounds of the shape in x, y and z directions
-/// This method is used to compute the AABB of the box
-/**
- * @param min The minimum bounds of the shape in local-space coordinates
- * @param max The maximum bounds of the shape in local-space coordinates
- */
-RP3D_FORCE_INLINE void BoxShape::getLocalBounds(Vector3& min, Vector3& max) const {
-
-    // Maximum bounds
-    max = mHalfExtents;
-
-    // Minimum bounds
-    min = -max;
 }
 
 // Return the number of bytes used by the collision shape

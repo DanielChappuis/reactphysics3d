@@ -225,7 +225,7 @@ class PhysicsCommon {
         void destroyConvexMesh(ConvexMesh* convexMesh);
 
         /// Create a triangle mesh
-        TriangleMesh* createTriangleMesh();
+        TriangleMesh* createTriangleMesh(const TriangleVertexArray& triangleVertexArray, std::vector<Error>& errors);
 
         /// Destroy a triangle mesh
         void destroyTriangleMesh(TriangleMesh* triangleMesh);

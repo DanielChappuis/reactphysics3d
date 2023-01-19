@@ -29,6 +29,7 @@
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <reactphysics3d/containers/Array.h>
+#include <reactphysics3d/collision/shapes/AABB.h>
 #include "HalfEdgeStructure.h"
 
 namespace reactphysics3d {
@@ -55,7 +56,7 @@ class ConvexMesh {
         /// Half-edge structure of the mesh
         HalfEdgeStructure mHalfEdgeStructure;
 
-        // All the vertices of the mesh
+        /// All the vertices of the mesh
         Array<Vector3> mVertices;
 
         /// Array with the face normals
@@ -64,11 +65,8 @@ class ConvexMesh {
         /// Centroid of the mesh
         Vector3 mCentroid;
 
-        /// Mesh minimum bounds in the three local x, y and z directions
-        Vector3 mMinBounds;
-
-        /// Mesh maximum bounds in the three local x, y and z directions
-        Vector3 mMaxBounds;
+        /// Mesh minimum/maximum bounds in the three local x, y and z directions
+        AABB mBounds;
 
         /// Volume of the mesh
         decimal mVolume;
@@ -121,11 +119,8 @@ class ConvexMesh {
         /// Return the centroid of the mesh
         const Vector3& getCentroid() const;
 
-        /// Return the minimum bounds of the mesh in the x,y,z direction
-        const Vector3& getMinBounds() const;
-
-        /// Return the maximum bounds of the mesh in the x,y,z direction
-        const Vector3& getMaxBounds() const;
+        /// Return the bounds of the mesh in the x,y,z direction
+        const AABB& getBounds() const;
 
         /// Compute and return the volume of the mesh
         decimal getVolume() const;
@@ -190,22 +185,6 @@ RP3D_FORCE_INLINE const Vector3& ConvexMesh::getCentroid() const {
     return mCentroid;
 }
 
-// Return the minimum bounds of the mesh in the x,y,z direction
-/**
- * @return The three mimimum bounds of the mesh in the x,y,z direction
- */
-RP3D_FORCE_INLINE const Vector3& ConvexMesh::getMinBounds() const {
-    return mMinBounds;
-}
-
-// Return the maximum bounds of the mesh in the x,y,z direction
-/**
- * @return The three maximum bounds of the mesh in the x,y,z direction
- */
-RP3D_FORCE_INLINE const Vector3& ConvexMesh::getMaxBounds() const {
-    return mMaxBounds;
-}
-
 // Return the volume of the convex mesh
 /**
  * @return The volume of the mesh
@@ -226,7 +205,7 @@ RP3D_FORCE_INLINE Vector3 ConvexMesh::getLocalInertiaTensor(decimal mass, Vector
     // TODO: We should compute a much better inertia tensor here (not using a box)
 
     const decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
-    const Vector3 realExtent = decimal(0.5) * scale * (getMaxBounds() - getMinBounds());
+    const Vector3 realExtent = decimal(0.5) * scale * (mBounds.getMax() - mBounds.getMin());
     assert(realExtent.x > 0 && realExtent.y > 0 && realExtent.z > 0);
     const decimal xSquare = realExtent.x * realExtent.x;
     const decimal ySquare = realExtent.y * realExtent.y;

@@ -446,15 +446,16 @@ class TestCollisionWorld : public Test {
                 }
 			}
 
-            mConcaveMeshTriangleVertexArray = new rp3d::TriangleVertexArray(36, &(mConcaveMeshPlaneVertices[0]), 3 * sizeof(float),
+            rp3d::TriangleVertexArray concaveMeshTriangleVertexArray(36, &(mConcaveMeshPlaneVertices[0]), 3 * sizeof(float),
                     50, &(mConcaveMeshPlaneIndices[0]), 3 * sizeof(int),
                     rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 			// Add the triangle vertex array of the subpart to the triangle mesh
             Transform concaveMeshTransform(Vector3(0, -20, 0), Quaternion::identity());
-            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh();
-            mConcaveTriangleMesh->addSubpart(mConcaveMeshTriangleVertexArray);
+            errors.clear();
+            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh(concaveMeshTriangleVertexArray, errors);
+            rp3d_test(mConcaveTriangleMesh != nullptr);
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshBody = mWorld->createCollisionBody(concaveMeshTransform);
             mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, rp3d::Transform::identity());
