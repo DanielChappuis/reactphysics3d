@@ -26,7 +26,7 @@
 // Libraries
 #include "ConvexHull.h"
 #include <unordered_set>
-#include <reactphysics3d/utils/Error.h>
+#include <reactphysics3d/utils/Message.h>
 
 // Constructor
 ConvexHull::ConvexHull(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
@@ -44,12 +44,12 @@ ConvexHull::ConvexHull(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
                                   mVertices.size(), rp3d::VertexArray::DataType::VERTEX_FLOAT_TYPE);
 
     // Create the convex mesh
-    std::vector<rp3d::Error> errors;
-    mConvexMesh = mPhysicsCommon.createConvexMesh(vertexArray, errors);
+    std::vector<rp3d::Message> messages;
+    mConvexMesh = mPhysicsCommon.createConvexMesh(vertexArray, messages);
     if (mConvexMesh == nullptr) {
         std::cout << "Error while creating a ConvexMesh:" << std::endl;
-        for (const rp3d::Error& error: errors) {
-            std::cout << "Error: " << error.message << std::endl;
+        for (const rp3d::Message& message: messages) {
+            std::cout << "Error: " << message.text << std::endl;
         }
     }
 

@@ -29,7 +29,7 @@
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/utils/DefaultLogger.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
-#include <reactphysics3d/utils/Error.h>
+#include <reactphysics3d/utils/Message.h>
 #include <cstdlib>
 
 using namespace reactphysics3d;
@@ -54,7 +54,7 @@ ConvexMesh* ConvexMesh::create(MemoryAllocator& allocator) {
 }
 
 // Initialize a mesh and returns errors if any
-bool ConvexMesh::init(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::init(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors) {
 
     bool isValid = true;
 
@@ -80,7 +80,7 @@ bool ConvexMesh::init(const PolygonVertexArray& polygonVertexArray, std::vector<
 }
 
 // Copy the vertices into the mesh
-bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors) {
 
     bool isValid = true;
 
@@ -110,7 +110,7 @@ bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std:
     }
     else {
 
-        errors.push_back(Error("The mesh does not have any vertices"));
+        errors.push_back(Message("The mesh does not have any vertices"));
 
         isValid = false;
     }
@@ -120,7 +120,7 @@ bool ConvexMesh::copyVertices(const PolygonVertexArray& polygonVertexArray, std:
 
 // Create the half-edge structure of the mesh
 /// This method returns true if the mesh is valid or false otherwise
-bool ConvexMesh::createHalfEdgeStructure(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors) {
+bool ConvexMesh::createHalfEdgeStructure(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors) {
 
     bool isValid = true;
 
@@ -152,7 +152,7 @@ bool ConvexMesh::createHalfEdgeStructure(const PolygonVertexArray& polygonVertex
         if (faceVertices.size() < 3) {
 
             // Create a new error
-            errors.push_back(Error(std::string("The face with index " + std::to_string(f) + " has less than three vertices")));
+            errors.push_back(Message(std::string("The face with index " + std::to_string(f) + " has less than three vertices")));
 
             isValid = false;
 
@@ -173,7 +173,7 @@ bool ConvexMesh::createHalfEdgeStructure(const PolygonVertexArray& polygonVertex
                  "Error when creating a ConvexMesh: input PolygonVertexArray is not valid. Mesh with duplicated vertices is not supported.",  __FILE__, __LINE__);
 
         // Create a new error
-        errors.push_back(Error(std::string("Convex Mesh might have duplicated vertices (invalid Euler formula)")));
+        errors.push_back(Message(std::string("Convex Mesh might have duplicated vertices (invalid Euler formula)")));
 
         isValid = false;
     }
@@ -188,7 +188,7 @@ bool ConvexMesh::createHalfEdgeStructure(const PolygonVertexArray& polygonVertex
 }
 
 // Compute the faces normals
-bool ConvexMesh::computeFacesNormals(std::vector<Error>& errors) {
+bool ConvexMesh::computeFacesNormals(std::vector<Message>& errors) {
 
     bool isValid = true;
 
@@ -211,7 +211,7 @@ bool ConvexMesh::computeFacesNormals(std::vector<Error>& errors) {
             }
             else {
                isValid = false;
-               errors.push_back(Error("Face with index " + std::to_string(f) + " has a zero area"));
+               errors.push_back(Message("Face with index " + std::to_string(f) + " has a zero area"));
             }
         }
     }

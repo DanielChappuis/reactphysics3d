@@ -46,6 +46,12 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
 
     // Compute the triangle normal
     mNormal = (vertices[1] - vertices[0]).cross(vertices[2] - vertices[0]);
+
+    // TODO : REMOVE THIS
+    const decimal l = mNormal.length();
+
+    assert(mNormal.length() > MACHINE_EPSILON);
+
     mNormal.normalize();
 
     mVerticesNormals[0] = verticesNormals[0];
@@ -91,11 +97,20 @@ void TriangleShape::computeSmoothMeshContact(Vector3 localContactPointTriangle, 
     // Get the smooth contact normal of the mesh at the contact point on the triangle
     Vector3 triangleLocalNormal = computeSmoothLocalContactNormalForTriangle(localContactPointTriangle);
 
+    // TODO : REMOVE
+    std::cout << "triangleLocalNormal: " << triangleLocalNormal.to_string() << std::endl;
+
     // Convert the local contact normal into world-space
     Vector3 triangleWorldNormal = triangleShapeToWorldTransform.getOrientation() * triangleLocalNormal;
 
+    // TODO : REMOVE
+    std::cout << "triangleWorldNormal: " << triangleWorldNormal.to_string() << std::endl;
+
     // Penetration axis with direction from triangle to other shape
     Vector3 triangleToOtherShapePenAxis = isTriangleShape1 ? outSmoothWorldContactTriangleNormal : -outSmoothWorldContactTriangleNormal;
+
+    // TODO : REMOVE
+    std::cout << "triangleToOtherShapePenAxis: " << triangleToOtherShapePenAxis.to_string() << std::endl;
 
     // The triangle normal should be the one in the direction out of the current colliding face of the triangle
     if (triangleWorldNormal.dot(triangleToOtherShapePenAxis) < decimal(0.0)) {
@@ -103,12 +118,24 @@ void TriangleShape::computeSmoothMeshContact(Vector3 localContactPointTriangle, 
         triangleLocalNormal = -triangleLocalNormal;
     }
 
+    // TODO : REMOVE
+    std::cout << "triangleLocalNormal: " << triangleLocalNormal.to_string() << std::endl;
+    std::cout << "triangleWorldNormal: " << triangleWorldNormal.to_string() << std::endl;
+
     // Compute the final contact normal from shape 1 to shape 2
     outSmoothWorldContactTriangleNormal = isTriangleShape1 ? triangleWorldNormal : -triangleWorldNormal;
+
+    // TODO : REMOVE
+    std::cout << "outSmoothWorldContactTriangleNormal: " << outSmoothWorldContactTriangleNormal.to_string() << std::endl;
 
     // Re-align the local contact point on the other shape such that it is aligned along the new contact normal
     Vector3 otherShapePointTriangleSpace = localContactPointTriangle - triangleLocalNormal * penetrationDepth;
     Vector3 otherShapePoint = worldToOtherShapeTransform * triangleShapeToWorldTransform * otherShapePointTriangleSpace;
+
+    // TODO : REMOVE
+    std::cout << "otherShapePointTriangleSpace: " << otherShapePointTriangleSpace.to_string() << std::endl;
+    std::cout << "otherShapePoint: " << otherShapePoint.to_string() << std::endl;
+
     outNewLocalContactPointOtherShape.setAllValues(otherShapePoint.x, otherShapePoint.y, otherShapePoint.z);
 }
 

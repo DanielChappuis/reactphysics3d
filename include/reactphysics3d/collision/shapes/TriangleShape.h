@@ -31,6 +31,9 @@
 #include <reactphysics3d/collision/shapes/AABB.h>
 #include <reactphysics3d/collision/shapes/ConvexPolyhedronShape.h>
 
+// TODO : REMOVE
+#include <iostream>
+
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
@@ -310,6 +313,9 @@ RP3D_FORCE_INLINE decimal TriangleShape::getVolume() const {
 RP3D_FORCE_INLINE Vector3 TriangleShape::computeSmoothLocalContactNormalForTriangle(const Vector3& localContactPoint) const {
 
     assert(mNormal.length() > decimal(0.0));
+
+    // TODO : REMOVE
+    std::cout << "mNormal: " << mNormal.to_string() << std::endl;
 
     // Compute the barycentric coordinates of the point in the triangle
     decimal u, v, w;

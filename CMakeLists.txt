@@ -145,7 +145,7 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/containers/Deque.h"
     "include/reactphysics3d/utils/Profiler.h"
     "include/reactphysics3d/utils/Logger.h"
-    "include/reactphysics3d/utils/Error.h"
+    "include/reactphysics3d/utils/Message.h"
     "include/reactphysics3d/utils/DefaultLogger.h"
     "include/reactphysics3d/utils/DebugRenderer.h"
     "include/reactphysics3d/utils/quickhull/QuickHull.h"

@@ -568,10 +568,10 @@ void PhysicsCommon::deleteConcaveMeshShape(ConcaveMeshShape* concaveMeshShape) {
 /// created ConvexMesh.
 /**
  * @param polygonVertexArray A pointer to the polygon vertex array to use to create the convex mesh
- * @param errors A reference to a vector of errors. This vector will contains errors after the call (if any)
+ * @param messages A reference to a vector of messages. This vector might contains errors that occured during the creation
  * @return A pointer to the created ConvexMesh instance or nullptr if errors occured during the creation
  */
-ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors) {
+ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& messages) {
 
     MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
 
@@ -579,7 +579,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVer
     ConvexMesh* mesh = ConvexMesh::create(allocator);
 
     // Create the half-edge structure of the mesh
-    bool isValid = mesh->init(polygonVertexArray, errors);
+    bool isValid = mesh->init(polygonVertexArray, messages);
 
     // If the mesh is not valid
     if (!isValid) {
@@ -599,10 +599,10 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVer
 /// The data (vertices) are copied from the VertexArray into the created ConvexMesh.
 /**
  * @param vertexArray A reference to the vertex object describing the vertices used to compute the convex hull
- * @param errors A reference to the array of errors that happened during convex mesh creation (if any)
+ * @param messages A reference to the array of messages with errors that might have happened during convex mesh creation
  * @return A pointer to the created ConvexMesh instance or nullptr if errors occured during the creation
  */
-ConvexMesh* PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std::vector<Error>& errors) {
+ConvexMesh* PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std::vector<Message>& messages) {
 
     MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
 
@@ -612,7 +612,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std:
     Array<PolygonVertexArray::PolygonFace> faces(allocator);
 
     // Use the Quick-Hull algorithm to compute the convex hull and return a PolygonVertexArray
-    bool isValid = QuickHull::computeConvexHull(vertexArray, outPolygonVertexArray, vertices, indices, faces, allocator, errors);
+    bool isValid = QuickHull::computeConvexHull(vertexArray, outPolygonVertexArray, vertices, indices, faces, allocator, messages);
     if (!isValid) {
         return nullptr;
     }
@@ -622,7 +622,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std:
     assert(mesh != nullptr);
 
     // Create the half-edge structure of the mesh
-    isValid &= mesh->init(outPolygonVertexArray, errors);
+    isValid &= mesh->init(outPolygonVertexArray, messages);
 
     // If the mesh is not valid
     if (!isValid) {
@@ -666,11 +666,11 @@ void PhysicsCommon::deleteConvexMesh(ConvexMesh* convexMesh) {
 /**
  * @return A pointer to the created triangle mesh
  */
-TriangleMesh* PhysicsCommon::createTriangleMesh(const TriangleVertexArray& triangleVertexArray, std::vector<Error>& errors) {
+TriangleMesh* PhysicsCommon::createTriangleMesh(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages) {
 
     TriangleMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(TriangleMesh))) TriangleMesh(mMemoryManager.getHeapAllocator());
 
-    bool isValid = mesh->init(triangleVertexArray, errors);
+    bool isValid = mesh->init(triangleVertexArray, messages);
 
     if (!isValid) {
 

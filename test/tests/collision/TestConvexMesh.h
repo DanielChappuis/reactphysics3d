@@ -83,7 +83,7 @@ class TestConvexMesh : public Test {
                     &(mIndices[0]), sizeof(int), 6, faces,
                     rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            std::vector<Error> errors;
+            std::vector<Message> errors;
             mConvexMesh = mPhysicsCommon.createConvexMesh(polygonVertexArray, errors);
             rp3d_test(mConvexMesh != nullptr);
         }

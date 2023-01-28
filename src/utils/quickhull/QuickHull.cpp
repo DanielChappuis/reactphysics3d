@@ -33,7 +33,7 @@
 #include <reactphysics3d/containers/Stack.h>
 #include <reactphysics3d/containers/LinkedList.h>
 #include <reactphysics3d/containers/Set.h>
-#include <reactphysics3d/utils/Error.h>
+#include <reactphysics3d/utils/Message.h>
 #include <iostream>
 
 // Namespace
@@ -43,7 +43,7 @@ using namespace reactphysics3d;
 bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexArray& outPolygonVertexArray,
                                   Array<float>& outVertices, Array<unsigned int>& outIndices,
                                   Array<PolygonVertexArray::PolygonFace>& outFaces, MemoryAllocator& allocator,
-                                  std::vector<Error>& errors) {
+                                  std::vector<Message>& errors) {
 
     bool isValid = true;
 
@@ -57,7 +57,7 @@ bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexA
     // If there are less than four vertices in the vertex array
     if (points.size() < 4) {
 
-       errors.push_back(Error("The VertexArray must contain at least 4 vertices to create a convex mesh"));
+       errors.push_back(Message("The VertexArray must contain at least 4 vertices to create a convex mesh"));
        return false;
     }
 
@@ -786,9 +786,6 @@ void QuickHull::removeDuplicatedVertices(Array<Vector3>& points, MemoryAllocator
             decimal dy = std::abs(pointsToKeep[j].y - points[i].y);
             decimal dz = std::abs(pointsToKeep[j].z - points[i].z);
 
-            auto v1 = pointsToKeep[j];
-            auto v2 = points[i];
-
             // If the points are nearly the same
             if (dx < distanceEpsilon && dy < distanceEpsilon && dz < distanceEpsilon) {
 
@@ -908,7 +905,7 @@ void QuickHull::findFarthestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeSt
 bool QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
                                    Array<QHHalfEdgeStructure::Face*>& initialFaces,
                                    Array<uint32>& orphanPointsIndices,
-                                   MemoryAllocator& allocator, std::vector<Error>& errors) {
+                                   MemoryAllocator& allocator, std::vector<Message>& errors) {
 
     // Find the extreme points on each X, Y and Z axes
 
@@ -952,7 +949,7 @@ bool QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
     }
 
     if (maxLargestDistSquare < MACHINE_EPSILON) {
-        errors.push_back(Error("Error during initial hull creation in QuickHull: vertices too close to each other"));
+        errors.push_back(Message("Error during initial hull creation in QuickHull: vertices too close to each other"));
         return false;
     }
 
@@ -977,7 +974,7 @@ bool QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
     }
 
     if (maxLargestDistSquare < MACHINE_EPSILON) {
-        errors.push_back(Error("Error during initial hull creation in QuickHull: vertices too close to each other"));
+        errors.push_back(Message("Error during initial hull creation in QuickHull: vertices too close to each other"));
         return false;
     }
 
@@ -998,7 +995,7 @@ bool QuickHull::computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& 
     }
 
     if (maxLargestDistSquare < MACHINE_EPSILON) {
-        errors.push_back(Error("Error during initial hull creation in QuickHull: vertices too close to each other"));
+        errors.push_back(Message("Error during initial hull creation in QuickHull: vertices too close to each other"));
         return false;
     }
 

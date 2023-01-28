@@ -25,6 +25,7 @@
 
 // Libraries
 #include "ConcaveMesh.h"
+#include <reactphysics3d/utils/Message.h>
 
 // Constructor
 ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
@@ -47,8 +48,21 @@ ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
                                           rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
     // Add the triangle vertex array of the subpart to the triangle mesh
-    std::vector<rp3d::Error> errors;
-    mPhysicsTriangleMesh = mPhysicsCommon.createTriangleMesh(vertexArray, errors);
+    std::vector<rp3d::Message> messages;
+    mPhysicsTriangleMesh = mPhysicsCommon.createTriangleMesh(vertexArray, messages);
+    if (messages.size() > 0) {
+        std::cout << "ConcaveMesh creation:" << std::endl;
+    }
+    for (const rp3d::Message& message: messages) {
+        std::string messageType;
+        switch(message.type) {
+            case rp3d::Message::Type::Information: messageType = "info"; break;
+            case rp3d::Message::Type::Warning: messageType = "warning"; break;
+            case rp3d::Message::Type::Error: messageType = "error"; break;
+        }
+
+        std::cout << "Message (" << messageType << "): " << message.text << std::endl;
+    }
     assert(mPhysicsTriangleMesh != nullptr);
 
     // Create the collision shape for the rigid body (convex mesh shape) and

@@ -37,7 +37,7 @@ namespace reactphysics3d {
 // Declarations
 class DefaultAllocator;
 class PolygonVertexArray;
-struct Error;
+struct Message;
 
 // Class ConvexMesh
 /**
@@ -77,16 +77,16 @@ class ConvexMesh {
         ConvexMesh(MemoryAllocator& allocator);
 
         /// Initialize a mesh and returns errors if any
-        bool init(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors);
+        bool init(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors);
 
         /// Copy the vertices into the mesh
-        bool copyVertices(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors);
+        bool copyVertices(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors);
 
         /// Create the half-edge structure of the mesh
-        bool createHalfEdgeStructure(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors);
+        bool createHalfEdgeStructure(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors);
 
         /// Compute the faces normals
-        bool computeFacesNormals(std::vector<Error>& errors);
+        bool computeFacesNormals(std::vector<Message>& errors);
 
         /// Compute and return the face normal (not normalized)
         Vector3 computeFaceNormal(uint32 faceIndex) const;

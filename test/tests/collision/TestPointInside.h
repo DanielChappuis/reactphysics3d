@@ -35,7 +35,7 @@
 #include <reactphysics3d/engine/PhysicsWorld.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
-#include <reactphysics3d/utils/Error.h>
+#include <reactphysics3d/utils/Message.h>
 
 /// Reactphysics3D namespace
 namespace reactphysics3d {
@@ -159,7 +159,7 @@ class TestPointInside : public Test {
                     &(mConvexMeshCubeIndices[0]), sizeof(int), 6, convexMeshPolygonFaces,
                     PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                     PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            std::vector<Error> errors;
+            std::vector<Message> errors;
             mConvexMesh = mPhysicsCommon.createConvexMesh(convexMeshPolygonVertexArray, errors);
             rp3d_test(mConvexMesh != nullptr);
             mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);

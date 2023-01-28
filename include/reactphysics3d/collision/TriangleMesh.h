@@ -31,12 +31,13 @@
 #include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/memory/MemoryAllocator.h>
 #include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>
+#include <reactphysics3d/containers/Map.h>
 
 namespace reactphysics3d {
 
 // Declarations
 class TriangleVertexArray;
-struct Error;
+struct Message;
 
 // Class TriangleMesh
 /**
@@ -47,6 +48,9 @@ struct Error;
 class TriangleMesh {
 
     protected:
+
+        /// Reference to the memory allocator
+        MemoryAllocator& mAllocator;
 
         /// All the vertices of the mesh
         Array<Vector3> mVertices;
@@ -60,24 +64,29 @@ class TriangleMesh {
         /// Dynamic AABB tree to accelerate collision with the triangles
         DynamicAABBTree mDynamicAABBTree;
 
+        /// Epsilon value for this mesh
+        decimal mEpsilon;
+
         /// Constructor
         TriangleMesh(reactphysics3d::MemoryAllocator& allocator);
 
         /// Copy the vertices into the mesh
-        bool copyVertices(const TriangleVertexArray& triangleVertexArray, std::vector<Error>& errors);
+        bool copyVertices(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages);
 
         /// Copy or compute the vertices normals
-        bool copyOrComputeVerticesNormals(const TriangleVertexArray& triangleVertexArray,
-                                          std::vector<Error>& errors);
+        void computeVerticesNormals();
 
         /// Copy the triangles into the mesh
-        bool copyTriangles(const TriangleVertexArray& triangleVertexArray, std::vector<Error>& errors);
+        bool copyData(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& errors);
 
         /// Insert all the triangles into the dynamic AABB tree
         void initBVHTree();
 
         /// Initialize the mesh using a TriangleVertexArray
-        bool init(const TriangleVertexArray& triangleVertexArray, std::vector<Error>& errors);
+        bool init(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages);
+
+        /// Addd a vertex to the mesh
+        uint32 addVertex(uint32 userVertexIndex, const Vector3& vertex, Map<uint32, uint32>& mapUserVertexIndexToInternal);
 
         /// Report all shapes overlapping with the AABB given in parameter.
         void reportAllShapesOverlappingWithAABB(const AABB& aabb, Array<int32>& overlappingNodes);
@@ -160,6 +169,11 @@ RP3D_FORCE_INLINE void TriangleMesh::getTriangleVerticesNormals(uint32 triangleI
     outN1 = mVerticesNormals[mTriangles[triangleIndex * 3]];
     outN2 = mVerticesNormals[mTriangles[triangleIndex * 3 + 1]];
     outN3 = mVerticesNormals[mTriangles[triangleIndex * 3 + 2]];
+
+    // TODO : REMOVE
+    assert(outN1.length() > MACHINE_EPSILON);
+    assert(outN2.length() > MACHINE_EPSILON);
+    assert(outN3.length() > MACHINE_EPSILON);
 }
 
 // Return the coordinates of a given vertex

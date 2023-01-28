@@ -39,7 +39,7 @@ namespace reactphysics3d {
 // Declarations
 class ConvexMesh;
 class VertexArray;
-struct Error;
+struct Message;
 template<typename T>
 class Array;
 
@@ -75,7 +75,7 @@ class QuickHull {
         static bool computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
                                        Array<QHHalfEdgeStructure::Face*>& initialFaces,
                                        Array<uint32>& orphanPointsIndices,
-                                       MemoryAllocator& allocator, std::vector<Error>& errors);
+                                       MemoryAllocator& allocator, std::vector<Message>& errors);
 
         /// Extract the points from the array
         static void extractPoints(const VertexArray& vertexArray, Array<Vector3>& outArray);
@@ -170,7 +170,7 @@ class QuickHull {
         static bool computeConvexHull(const VertexArray& vertexArray, PolygonVertexArray& outPolygonVertexArray,
                                       Array<float>& outVertices, Array<unsigned int>& outIndices,
                                       Array<PolygonVertexArray::PolygonFace>& outFaces,
-                                      MemoryAllocator& allocator, std::vector<Error>& errors);
+                                      MemoryAllocator& allocator, std::vector<Message>& errors);
 
 
 

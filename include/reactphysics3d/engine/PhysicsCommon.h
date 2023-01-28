@@ -204,7 +204,7 @@ class PhysicsCommon {
         HeightFieldShape* createHeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
                                                  const void* heightFieldData, HeightFieldShape::HeightDataType dataType,
                                                  int upAxis = 1, decimal integerHeightScale = 1.0f,
-                                                  const Vector3& scaling = Vector3(1,1,1));
+                                                 const Vector3& scaling = Vector3(1,1,1));
 
         /// Destroy a height-field shape
         void destroyHeightFieldShape(HeightFieldShape* heightFieldShape);
@@ -216,16 +216,16 @@ class PhysicsCommon {
         void destroyConcaveMeshShape(ConcaveMeshShape* concaveMeshShape);
 
         /// Create a convex mesh from a PolygonVertexArray describing vertices and faces
-        ConvexMesh* createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Error>& errors);
+        ConvexMesh* createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& messages);
 
         /// Create a convex mesh from an array of vertices (automatically computing the convex hull using QuickHull)
-        ConvexMesh* createConvexMesh(const VertexArray& vertexArray, std::vector<Error>& errors);
+        ConvexMesh* createConvexMesh(const VertexArray& vertexArray, std::vector<Message>& messages);
 
         /// Destroy a convex mesh
         void destroyConvexMesh(ConvexMesh* convexMesh);
 
         /// Create a triangle mesh
-        TriangleMesh* createTriangleMesh(const TriangleVertexArray& triangleVertexArray, std::vector<Error>& errors);
+        TriangleMesh* createTriangleMesh(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages);
 
         /// Destroy a triangle mesh
         void destroyTriangleMesh(TriangleMesh* triangleMesh);

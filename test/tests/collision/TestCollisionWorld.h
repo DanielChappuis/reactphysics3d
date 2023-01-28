@@ -391,7 +391,7 @@ class TestCollisionWorld : public Test {
                     &(mConvexMeshCubeIndices[0]), sizeof(int), 6, convexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            std::vector<Error> errors;
+            std::vector<Message> errors;
             mConvexMesh1 = mPhysicsCommon.createConvexMesh(convexMesh1PolygonVertexArray, errors);
             rp3d_test(mConvexMesh1 != nullptr);
             mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1);

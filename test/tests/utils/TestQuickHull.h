@@ -82,7 +82,7 @@ class TestQuickHull : public Test {
             VertexArray::DataType dataType = sizeof(decimal) == sizeof(float) ? VertexArray::DataType::VERTEX_FLOAT_TYPE : VertexArray::DataType::VERTEX_DOUBLE_TYPE;
             VertexArray vertexArray1(points.data(), sizeof(Vector3), points.size(), dataType);
 
-            std::vector<Error> errors;
+            std::vector<Message> errors;
             ConvexMesh* mesh = mPhysicsCommon.createConvexMesh(vertexArray1, errors);
             rp3d_test(mesh != nullptr);
 

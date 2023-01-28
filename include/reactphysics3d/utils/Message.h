@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_ERROR_H
-#define REACTPHYSICS3D_ERROR_H
+#ifndef REACTPHYSICS3D_MESSAGE_H
+#define REACTPHYSICS3D_MESSAGE_H
 
 // Libraries
 #include <string>
@@ -32,27 +32,27 @@
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
-// Structure Error
+// Structure Message
 /**
- * This structure represent an error that can be returned to the user
+ * This structure represent a message that can be returned to the user
  */
-struct Error {
+struct Message {
 
     public:
 
-        /// Error level
-        enum class Level {Error = 1, Warning = 2, Information = 4};
+        /// Type of message
+        enum class Type {Error = 1, Warning = 2, Information = 4};
 
-        /// Error message
-        std::string message;
+        /// Message text
+        std::string text;
 
-        // Level (error, warning, information)
-        Level level;
+        // Type (error, warning, information)
+        Type type;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Error(std::string message, Level level = Level::Error) : message(message), level(level) {
+        Message(std::string text, Type type = Type::Error) : text(text), type(type) {
 
         }
 };

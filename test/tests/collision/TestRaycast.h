@@ -235,7 +235,7 @@ class TestRaycast : public Test {
                                          PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
                                          PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
-            std::vector<Error> errors;
+            std::vector<Message> errors;
             mConvexMesh = mPhysicsCommon.createConvexMesh(polygonVertexArray, errors);
             rp3d_test(mConvexMesh != nullptr);
             mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);
