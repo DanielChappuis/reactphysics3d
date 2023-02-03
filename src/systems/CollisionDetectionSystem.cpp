@@ -874,6 +874,7 @@ void CollisionDetectionSystem::createContacts() {
         for (uint32 m=0; m < contactPair.nbPotentialContactManifolds; m++) {
 
             ContactManifoldInfo& potentialManifold = mPotentialContactManifolds[contactPair.potentialContactManifoldsIndices[m]];
+            assert(potentialManifold.nbPotentialContactPoints > 0);
 
             // Start index and number of contact points for this manifold
             const uint32 contactPointsIndex = static_cast<uint32>(mCurrentContactPoints->size());
@@ -985,6 +986,7 @@ void CollisionDetectionSystem::createSnapshotContacts(Array<ContactPair>& contac
         for (uint32 m=0; m < contactPair.nbPotentialContactManifolds; m++) {
 
             ContactManifoldInfo& potentialManifold = potentialContactManifolds[contactPair.potentialContactManifoldsIndices[m]];
+            assert(potentialManifold.nbPotentialContactPoints > 0);
 
             // Start index and number of contact points for this manifold
             const uint32 contactPointsIndex = static_cast<uint32>(contactPoints.size());
@@ -1186,8 +1188,11 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
             const Entity body1Entity = mCollidersComponents.mBodiesEntities[collider1Index];
             const Entity body2Entity = mCollidersComponents.mBodiesEntities[collider2Index];
 
+            assert(narrowPhaseInfoBatch.narrowPhaseInfos[i].nbContactPoints > 0);
+
             // If we have a convex vs convex collision (if we consider the base collision shapes of the colliders)
-            if (mCollidersComponents.mCollisionShapes[collider1Index]->isConvex() && mCollidersComponents.mCollisionShapes[collider2Index]->isConvex()) {
+            if (mCollidersComponents.mCollisionShapes[collider1Index]->isConvex() &&
+                mCollidersComponents.mCollisionShapes[collider2Index]->isConvex()) {
 
                 // Create a new ContactPair
 
@@ -1226,6 +1231,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                 }
 
                 // Add the contact manifold to the overlapping pair contact
+                assert(potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints > 0);
                 assert(pairId == contactManifoldInfo.pairId);
                 pairContact->potentialContactManifoldsIndices[0] = contactManifoldIndex;
                 pairContact->nbPotentialContactManifolds = 1;
@@ -1259,6 +1265,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                 }
 
                 assert(pairContact != nullptr);
+                assert(narrowPhaseInfoBatch.narrowPhaseInfos[i].nbContactPoints > 0);
 
                 // Add the potential contacts
                 for (uint32 j=0; j < narrowPhaseInfoBatch.narrowPhaseInfos[i].nbContactPoints; j++) {
@@ -1275,12 +1282,15 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                     // For each contact manifold of the overlapping pair
                     for (uint32 m=0; m < pairContact->nbPotentialContactManifolds; m++) {
 
+                       assert(m < pairContact->nbPotentialContactManifolds);
+
                        uint32 contactManifoldIndex = pairContact->potentialContactManifoldsIndices[m];
+
+                       assert(potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints > 0);
 
                        if (potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints < NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD) {
 
                            // Get the first contact point of the current manifold
-                           assert(potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints > 0);
                            const uint manifoldContactPointIndex = potentialContactManifolds[contactManifoldIndex].potentialContactPointsIndices[0];
                            const ContactPointInfo& manifoldContactPoint = potentialContactPoints[manifoldContactPointIndex];
 
@@ -1314,6 +1324,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                         assert(pairContact != nullptr);
 
                         // Add the contact manifold to the overlapping pair contact
+                        assert(potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints > 0);
                         assert(pairContact->pairId == contactManifoldInfo.pairId);
                         pairContact->potentialContactManifoldsIndices[pairContact->nbPotentialContactManifolds] = contactManifoldIndex;
                         pairContact->nbPotentialContactManifolds++;
@@ -1350,6 +1361,7 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(Array<ContactPair
             for (uint32 j=0; j < contactPair.nbPotentialContactManifolds; j++) {
 
                 ContactManifoldInfo& manifold = potentialContactManifolds[contactPair.potentialContactManifoldsIndices[j]];
+                assert(manifold.nbPotentialContactPoints > 0);
 
                 // Get the largest contact point penetration depth of the manifold
                 const decimal depth = computePotentialManifoldLargestContactDepth(manifold, potentialContactPoints);
@@ -1375,6 +1387,7 @@ void CollisionDetectionSystem::reducePotentialContactManifolds(Array<ContactPair
         for (uint32 j=0; j < pairContact.nbPotentialContactManifolds; j++) {
 
             ContactManifoldInfo& manifold = potentialContactManifolds[pairContact.potentialContactManifoldsIndices[j]];
+            assert(manifold.nbPotentialContactPoints > 0);
 
             // If there are two many contact points in the manifold
             if (manifold.nbPotentialContactPoints > MAX_CONTACT_POINTS_IN_MANIFOLD) {
@@ -1611,6 +1624,8 @@ void CollisionDetectionSystem::removeDuplicatedContactPointsInManifold(ContactMa
 
     RP3D_PROFILE("CollisionDetectionSystem::removeDuplicatedContactPointsInManifold()", mProfiler);
 
+    assert(manifold.nbPotentialContactPoints > 0);
+
     const decimal distThresholdSqr = SAME_CONTACT_POINT_DISTANCE_THRESHOLD * SAME_CONTACT_POINT_DISTANCE_THRESHOLD;
 
     // For each contact point of the manifold
@@ -1634,6 +1649,8 @@ void CollisionDetectionSystem::removeDuplicatedContactPointsInManifold(ContactMa
             }
         }
     }
+
+    assert(manifold.nbPotentialContactPoints > 0);
 }
 
 // Report contacts and triggers

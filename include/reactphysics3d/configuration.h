@@ -32,6 +32,7 @@
 #include <utility>
 #include <sstream>
 #include <string>
+#include <cmath>
 #include <reactphysics3d/decimal.h>
 #include <reactphysics3d/containers/Pair.h>
 
@@ -124,7 +125,7 @@ constexpr uint8 NB_MAX_CONTACT_MANIFOLDS = 3;
 constexpr uint8 NB_MAX_POTENTIAL_CONTACT_MANIFOLDS = 4 * NB_MAX_CONTACT_MANIFOLDS;
 
 /// Maximum number of contact points in potential contact manifold
-constexpr uint16 NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD = 256;
+constexpr uint8 NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD = 255;
 
 /// Distance threshold to consider that two contact points in a manifold are the same
 constexpr decimal SAME_CONTACT_POINT_DISTANCE_THRESHOLD = decimal(0.01);
