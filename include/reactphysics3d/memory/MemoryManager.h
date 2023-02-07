@@ -113,7 +113,7 @@ RP3D_FORCE_INLINE void* MemoryManager::allocate(AllocationType allocationType, s
        case AllocationType::Frame: allocatedMemory =  mSingleFrameAllocator.allocate(size); break;
     }
 
-    assert(allocatedMemory == nullptr || reinterpret_cast<uintptr_t>(allocatedMemory) % 16 == 0);
+    assert(allocatedMemory == nullptr || reinterpret_cast<uintptr_t>(allocatedMemory) % 8 == 0);
 
     return allocatedMemory;
 }

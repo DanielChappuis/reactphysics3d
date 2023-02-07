@@ -39,7 +39,7 @@ namespace reactphysics3d {
 // Class DefaultAllocator
 /**
  * This class represents a default memory allocator that uses standard C++ functions
- * to allocated 16-bytes aligned memory.
+ * to allocated 8-bytes aligned memory.
  *
  */
 class DefaultAllocator : public MemoryAllocator {
@@ -53,7 +53,7 @@ class DefaultAllocator : public MemoryAllocator {
         DefaultAllocator& operator=(DefaultAllocator& allocator) = default;
 
         /// Allocate memory of a given size (in bytes) and return a pointer to the
-        /// allocated memory. The returned allocated memory must be 16 bytes aligned.
+        /// allocated memory. The returned allocated memory must be 8 bytes aligned.
         virtual void* allocate(size_t size) override {
 
 // If compiler is Visual Studio
@@ -63,7 +63,7 @@ class DefaultAllocator : public MemoryAllocator {
                 return _aligned_malloc(size, GLOBAL_ALIGNMENT);
 #else
 
-                // Return 16-bytes aligned memory
+                // Return 8-bytes aligned memory
                 return std::aligned_alloc(GLOBAL_ALIGNMENT, size);
 #endif
         }

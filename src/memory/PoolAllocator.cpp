@@ -118,7 +118,7 @@ void* PoolAllocator::allocate(size_t size) {
         // Allocate memory using default allocation
         void* allocatedMemory = mBaseAllocator.allocate(size);
 
-        // Check that allocated memory is 16-bytes aligned
+        // Check that allocated memory is 8-bytes aligned
         assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
 
         return allocatedMemory;
@@ -137,7 +137,7 @@ void* PoolAllocator::allocate(size_t size) {
 
         void* allocatedMemory = static_cast<void*>(unit);
 
-        // Check that allocated memory is 16-bytes aligned
+        // Check that allocated memory is 8-bytes aligned
         assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
 
         return allocatedMemory;
@@ -183,7 +183,7 @@ void* PoolAllocator::allocate(size_t size) {
 
         void* allocatedMemory = newBlock->memoryUnits;
 
-        // Check that allocated memory is 16-bytes aligned
+        // Check that allocated memory is 8-bytes aligned
         assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
 
         // Return the pointer to the first memory unit of the new allocated block
