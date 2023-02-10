@@ -194,17 +194,8 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
             decimal dist = std::sqrt(distSquare);
             assert(dist > decimal(0.0));
 
-            // TODO : REMOVE
-            std::cout << "pA 1: " << pA.to_string() << std::endl;
-            std::cout << "v: " << v.to_string() << std::endl;
-            std::cout << "dist : " << dist << std::endl;
-            std::cout << "margin : " << shape1->getMargin() << std::endl;
-
             pA = (pA - (shape1->getMargin() / dist) * v);
             pB = body2Tobody1.getInverse() * (pB + (shape2->getMargin() / dist) * v);
-
-            // TODO : REMOVE
-            std::cout << "pA 2: " << pA.to_string() << std::endl;
 
             // Compute the contact info
             Vector3 normal = transform1.getOrientation() * (-v.getUnit());
@@ -227,15 +218,9 @@ void GJKAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseInfoBatch, uin
             // If we need to report contacts
             if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
 
-                // TODO : REMOVE
-                std::cout << "Normal 1: " << normal.to_string() << std::endl;
-
                 // Compute smooth triangle mesh contact if one of the two collision shapes is a triangle
                 TriangleShape::computeSmoothTriangleMeshContact(shape1, shape2, pA, pB, transform1, transform2,
                                                                 penetrationDepth, normal);
-
-                // TODO : REMOVE
-                std::cout << "Normal 2: " << normal.to_string() << std::endl;
 
                 // Add a new contact point
                 narrowPhaseInfoBatch.addContactPoint(batchIndex, normal, penetrationDepth, pA, pB);

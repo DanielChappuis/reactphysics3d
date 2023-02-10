@@ -1179,6 +1179,10 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
             overlappingPair->collidingInCurrentFrame = true;
 
+            // TODO: Remove this
+            CollisionShape* shape1 = mCollidersComponents.getCollisionShape(overlappingPair->collider1);
+            CollisionShape* shape2 = mCollidersComponents.getCollisionShape(overlappingPair->collider2);
+
             const Entity collider1Entity = narrowPhaseInfoBatch.narrowPhaseInfos[i].colliderEntity1;
             const Entity collider2Entity = narrowPhaseInfoBatch.narrowPhaseInfos[i].colliderEntity2;
 
@@ -1287,6 +1291,9 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
                        uint32 contactManifoldIndex = pairContact->potentialContactManifoldsIndices[m];
 
                        assert(potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints > 0);
+
+                       // TODO : Remove this
+                       uint32 nbPoints = potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints;
 
                        if (potentialContactManifolds[contactManifoldIndex].nbPotentialContactPoints < NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD) {
 

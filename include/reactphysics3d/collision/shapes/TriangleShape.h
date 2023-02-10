@@ -314,9 +314,6 @@ RP3D_FORCE_INLINE Vector3 TriangleShape::computeSmoothLocalContactNormalForTrian
 
     assert(mNormal.length() > decimal(0.0));
 
-    // TODO : REMOVE
-    std::cout << "mNormal: " << mNormal.to_string() << std::endl;
-
     // Compute the barycentric coordinates of the point in the triangle
     decimal u, v, w;
     computeBarycentricCoordinatesInTriangle(mPoints[0], mPoints[1], mPoints[2], localContactPoint, u, v, w);

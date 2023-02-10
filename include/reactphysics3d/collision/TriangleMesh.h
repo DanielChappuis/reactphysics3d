@@ -76,6 +76,9 @@ class TriangleMesh {
         /// Copy or compute the vertices normals
         void computeVerticesNormals();
 
+        /// Compute the epsilon value for this mesh
+        void computeEpsilon(const TriangleVertexArray& triangleVertexArray);
+
         /// Copy the triangles into the mesh
         bool copyData(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& errors);
 
@@ -86,7 +89,8 @@ class TriangleMesh {
         bool init(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages);
 
         /// Addd a vertex to the mesh
-        uint32 addVertex(uint32 userVertexIndex, const Vector3& vertex, Map<uint32, uint32>& mapUserVertexIndexToInternal);
+        uint32 addVertex(uint32 userVertexIndex, const Vector3& vertex, const Vector3& vertexNormal,
+                         Map<uint32, uint32>& mapUserVertexIndexToInternal);
 
         /// Report all shapes overlapping with the AABB given in parameter.
         void reportAllShapesOverlappingWithAABB(const AABB& aabb, Array<int32>& overlappingNodes);

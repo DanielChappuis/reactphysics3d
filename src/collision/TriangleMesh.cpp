@@ -47,6 +47,8 @@ bool TriangleMesh::init(const TriangleVertexArray& triangleVertexArray, std::vec
     mTriangles.reserve(triangleVertexArray.getNbTriangles() * 3);
     mVerticesNormals.reserve(triangleVertexArray.getNbVertices());
 
+    computeEpsilon(triangleVertexArray);
+
     // Create the half-edge structure of the mesh
     isValid &= copyData(triangleVertexArray, messages);
 
@@ -63,10 +65,33 @@ bool TriangleMesh::init(const TriangleVertexArray& triangleVertexArray, std::vec
     return isValid;
 }
 
+// Compute the epsilon value for this mesh
+void TriangleMesh::computeEpsilon(const TriangleVertexArray& triangleVertexArray) {
+
+    // Compute the bounds of the mesh
+    Vector3 max(0, 0, 0);
+    for (uint32 i=0 ; i < triangleVertexArray.getNbVertices(); i++) {
+
+        const Vector3 vertex = triangleVertexArray.getVertex(i);
+
+        decimal maxX = std::abs(vertex.x);
+        decimal maxY = std::abs(vertex.y);
+        decimal maxZ = std::abs(vertex.z);
+        if (maxX > max.x) max.x = maxX;
+        if (maxY > max.y) max.y = maxY;
+        if (maxZ > max.z) max.z = maxZ;
+    }
+
+    // Compute the 'epsilon' value for this set of points
+    mEpsilon = 3 * (max.x + max.y + max.z) * MACHINE_EPSILON;
+}
+
 // Copy the triangles faces
 bool TriangleMesh::copyData(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages) {
 
     bool isValid = true;
+
+    assert(mEpsilon > 0);
 
     const decimal epsilonSquare = mEpsilon * mEpsilon;
 
@@ -77,7 +102,7 @@ bool TriangleMesh::copyData(const TriangleVertexArray& triangleVertexArray, std:
 
         bool isValidFace = true;
         uint32 vertexIndices[3];
-        Vector3 vertexNormal[3];
+        Vector3 vertexNormal[3] = {Vector3::zero(), Vector3::zero(), Vector3::zero()};
 
         // Get the vertex indices from the user
         triangleVertexArray.getTriangleVerticesIndices(i, vertexIndices[0], vertexIndices[1], vertexIndices[2]);
@@ -113,12 +138,12 @@ bool TriangleMesh::copyData(const TriangleVertexArray& triangleVertexArray, std:
             }
 
             // Check that edges lengths are not almost zero
-            decimal edgesLengths[3];
-            edgesLengths[0] = (v2 - v1).lengthSquare();
-            edgesLengths[1] = (v3 - v2).lengthSquare();
-            edgesLengths[2] = (v1 - v3).lengthSquare();
-            bool hasFaceZeroLengthEdge = edgesLengths[0] < epsilonSquare || edgesLengths[1] < epsilonSquare ||
-                                         edgesLengths[2] < epsilonSquare;
+            decimal edgesLengthsSquare[3];
+            edgesLengthsSquare[0] = (v2 - v1).lengthSquare();
+            edgesLengthsSquare[1] = (v3 - v2).lengthSquare();
+            edgesLengthsSquare[2] = (v1 - v3).lengthSquare();
+            bool hasFaceZeroLengthEdge = edgesLengthsSquare[0] < epsilonSquare || edgesLengthsSquare[1] < epsilonSquare ||
+                                         edgesLengthsSquare[2] < epsilonSquare;
             if (hasFaceZeroLengthEdge) {
 
                 // Add a warning message for the user
@@ -141,31 +166,21 @@ bool TriangleMesh::copyData(const TriangleVertexArray& triangleVertexArray, std:
 
                             messages.push_back(Message("The length of the provided normal for vertex with index " + std::to_string(vertexIndices[v]) + " is too small"))  ;
                             isValid = false;
-                            mVerticesNormals.add(vertexNormal[v]);
-                        }
-                        else {
-
-                            // Add the vertex normal
-                            mVerticesNormals.add(vertexNormal[v]);
                         }
                     }
                 }
-                else {
-
-                    mVerticesNormals.add(Vector3::zero());
-                    mVerticesNormals.add(Vector3::zero());
-                    mVerticesNormals.add(Vector3::zero());
-                }
 
                 // Add the vertices to the mesh
-                const uint32 v1InternalIndex = addVertex(vertexIndices[0], v1, mapUserVertexIndexToInternal);
-                const uint32 v2InternalIndex = addVertex(vertexIndices[1], v2, mapUserVertexIndexToInternal);
-                const uint32 v3InternalIndex = addVertex(vertexIndices[2], v3, mapUserVertexIndexToInternal);
+                const uint32 v1InternalIndex = addVertex(vertexIndices[0], v1, vertexNormal[0], mapUserVertexIndexToInternal);
+                const uint32 v2InternalIndex = addVertex(vertexIndices[1], v2, vertexNormal[1], mapUserVertexIndexToInternal);
+                const uint32 v3InternalIndex = addVertex(vertexIndices[2], v3, vertexNormal[2], mapUserVertexIndexToInternal);
 
                 // Add the triangle to the mesh
                 mTriangles.add(v1InternalIndex);
                 mTriangles.add(v2InternalIndex);
                 mTriangles.add(v3InternalIndex);
+
+                assert(mVertices.size() == mVerticesNormals.size());
             }
         }
     }
@@ -179,26 +194,11 @@ bool TriangleMesh::copyData(const TriangleVertexArray& triangleVertexArray, std:
 
     assert(mTriangles.size() % 3 == 0);
 
-    // Compute the bounds of the mesh
-    Vector3 max(0, 0, 0);
-    for (uint32 i=0 ; i < mVertices.size(); i++) {
-
-        decimal maxX = std::abs(mVertices[i].x);
-        decimal maxY = std::abs(mVertices[i].y);
-        decimal maxZ = std::abs(mVertices[i].z);
-        if (maxX > max.x) max.x = maxX;
-        if (maxY > max.y) max.y = maxY;
-        if (maxZ > max.z) max.z = maxZ;
-    }
-
-    // Compute the 'epsilon' value for this set of points
-    mEpsilon = 3 * (max.x + max.y + max.z) * MACHINE_EPSILON;
-
     return isValid;
 }
 
 // Add a vertex to the the mesh
-uint32 TriangleMesh::addVertex(uint32 userVertexIndex, const Vector3& vertex,
+uint32 TriangleMesh::addVertex(uint32 userVertexIndex, const Vector3& vertex, const Vector3& vertexNormal,
                                Map<uint32, uint32>& mapUserVertexIndexToInternal) {
 
     // If the vertex has already been added
@@ -213,6 +213,7 @@ uint32 TriangleMesh::addVertex(uint32 userVertexIndex, const Vector3& vertex,
         const uint32 internalVertexIndex = mVertices.size();
         mapUserVertexIndexToInternal.add(Pair<uint32, uint32>(userVertexIndex, internalVertexIndex));
 
+        mVerticesNormals.add(vertexNormal);
         mVertices.add(vertex);
 
         return internalVertexIndex;
@@ -262,6 +263,7 @@ void TriangleMesh::computeVerticesNormals() {
 
         // Get the triangle vertices
         Vector3 triangleVertices[3];
+        assert(mTriangles[f * 3 + 2] < mVertices.size());
         triangleVertices[0] = mVertices[mTriangles[f * 3]];
         triangleVertices[1] = mVertices[mTriangles[f * 3 + 1]];
         triangleVertices[2] = mVertices[mTriangles[f * 3 + 2]];
@@ -280,31 +282,35 @@ void TriangleMesh::computeVerticesNormals() {
             const Vector3 a = triangleVertices[nextVertex] - triangleVertices[v];
             const Vector3 b = triangleVertices[previousVertex] - triangleVertices[v];
 
-            const Vector3 crossProduct = a.cross(b);
+            // Weighted normal using angle
+            const decimal dotProduct = a.dot(b);
             decimal lengthATimesLengthB = (edgesLengths[previousVertex] * edgesLengths[v]);
-            assert(lengthATimesLengthB > mEpsilon);
+            assert(lengthATimesLengthB * lengthATimesLengthB >= mEpsilon * mEpsilon);
 
-            decimal sinA = crossProduct.length() / lengthATimesLengthB;
-            sinA = std::min(std::max(sinA, decimal(0.0)), decimal(1.0));
-            const decimal arcSinA = std::asin(sinA);
-            assert(arcSinA >= decimal(0.0));
-            const Vector3 normalComponent = arcSinA * crossProduct;
+            decimal cosA = dotProduct / lengthATimesLengthB;
+            cosA = std::min(std::max(cosA, decimal(0.0)), decimal(1.0));    // Angle inside a triangle should be in [0, pi]
+            const decimal angle = std::acos(cosA);
+            assert(angle >= decimal(0.0));
+
+            Vector3 normal = a.cross(b);
+            assert(normal.lengthSquare() > mEpsilon * mEpsilon);
+            normal.normalize();
 
             // Add the normal component of this vertex into the normals array
-            mVerticesNormals[mTriangles[f * 3 + v]] += normalComponent;
+            mVerticesNormals[mTriangles[f * 3 + v]] += angle * normal;
         }
     }
+
+    assert(mVertices.size() == mVerticesNormals.size());
 
     // Normalize the computed vertices normals
     for (uint32 v=0; v < mVertices.size(); v++) {
 
-        assert(mVerticesNormals[v].length() > mEpsilon);
+        assert(mVerticesNormals[v].lengthSquare() >= mEpsilon * mEpsilon);
 
         // Normalize the normal
         mVerticesNormals[v].normalize();
     }
-
-    assert(mVertices.size() == mVerticesNormals.size());
 }
 
 // Report all shapes overlapping with the AABB given in parameter.

@@ -119,13 +119,13 @@ constexpr decimal DYNAMIC_TREE_FAT_AABB_INFLATE_PERCENTAGE = decimal(0.08);
 constexpr uint8 NB_MAX_CONTACT_POINTS_IN_NARROWPHASE_INFO = 16;
 
 /// Maximum number of contact manifolds in an overlapping pair
-constexpr uint8 NB_MAX_CONTACT_MANIFOLDS = 3;
+constexpr uint8 NB_MAX_CONTACT_MANIFOLDS = 4;
 
 /// Maximum number of potential contact manifolds in an overlapping pair
 constexpr uint8 NB_MAX_POTENTIAL_CONTACT_MANIFOLDS = 4 * NB_MAX_CONTACT_MANIFOLDS;
 
 /// Maximum number of contact points in potential contact manifold
-constexpr uint8 NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD = 255;
+constexpr uint8 NB_MAX_CONTACT_POINTS_IN_POTENTIAL_MANIFOLD = 32;
 
 /// Distance threshold to consider that two contact points in a manifold are the same
 constexpr decimal SAME_CONTACT_POINT_DISTANCE_THRESHOLD = decimal(0.01);
