@@ -88,12 +88,11 @@ class TriangleMesh {
         /// Initialize the mesh using a TriangleVertexArray
         bool init(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages);
 
-        /// Addd a vertex to the mesh
-        uint32 addVertex(uint32 userVertexIndex, const Vector3& vertex, const Vector3& vertexNormal,
-                         Map<uint32, uint32>& mapUserVertexIndexToInternal);
-
         /// Report all shapes overlapping with the AABB given in parameter.
         void reportAllShapesOverlappingWithAABB(const AABB& aabb, Array<int32>& overlappingNodes);
+
+        /// Remove the ununsed vertices (because they are not used in any triangles or are part of discarded triangles)
+        void removeUnusedVertices(Array<bool>& areUsedVertices);
 
         /// Return the integer data of leaf node of the dynamic AABB tree
         int32 getDynamicAABBTreeNodeDataInt(int32 nodeID) const;

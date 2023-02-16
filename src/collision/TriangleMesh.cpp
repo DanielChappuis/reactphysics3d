@@ -95,7 +95,12 @@ bool TriangleMesh::copyData(const TriangleVertexArray& triangleVertexArray, std:
 
     const decimal epsilonSquare = mEpsilon * mEpsilon;
 
-    Map<uint32, uint32> mapUserVertexIndexToInternal(mAllocator, triangleVertexArray.getNbVertices());
+    Array<bool> areUserVerticesUsed(mAllocator);
+    for (uint32 i=0 ; i < triangleVertexArray.getNbVertices(); i++) {
+       areUserVerticesUsed.add(false);
+       mVertices.add(Vector3::zero());
+       mVerticesNormals.add(Vector3::zero());
+    }
 
     // For each face
     for (uint32 i=0 ; i < triangleVertexArray.getNbTriangles(); i++) {
@@ -171,19 +176,28 @@ bool TriangleMesh::copyData(const TriangleVertexArray& triangleVertexArray, std:
                 }
 
                 // Add the vertices to the mesh
-                const uint32 v1InternalIndex = addVertex(vertexIndices[0], v1, vertexNormal[0], mapUserVertexIndexToInternal);
-                const uint32 v2InternalIndex = addVertex(vertexIndices[1], v2, vertexNormal[1], mapUserVertexIndexToInternal);
-                const uint32 v3InternalIndex = addVertex(vertexIndices[2], v3, vertexNormal[2], mapUserVertexIndexToInternal);
+                mVerticesNormals[vertexIndices[0]] = vertexNormal[0];
+                mVertices[vertexIndices[0]] = v1;
+                mVerticesNormals[vertexIndices[1]] = vertexNormal[1];
+                mVertices[vertexIndices[1]] = v2;
+                mVerticesNormals[vertexIndices[2]] = vertexNormal[2];
+                mVertices[vertexIndices[2]] = v3;
 
                 // Add the triangle to the mesh
-                mTriangles.add(v1InternalIndex);
-                mTriangles.add(v2InternalIndex);
-                mTriangles.add(v3InternalIndex);
+                mTriangles.add(vertexIndices[0]);
+                mTriangles.add(vertexIndices[1]);
+                mTriangles.add(vertexIndices[2]);
+
+                areUserVerticesUsed[vertexIndices[0]] = true;
+                areUserVerticesUsed[vertexIndices[1]] = true;
+                areUserVerticesUsed[vertexIndices[2]] = true;
 
                 assert(mVertices.size() == mVerticesNormals.size());
             }
         }
     }
+
+    removeUnusedVertices(areUserVerticesUsed);
 
     if (mTriangles.size() == 0) {
 
@@ -197,26 +211,29 @@ bool TriangleMesh::copyData(const TriangleVertexArray& triangleVertexArray, std:
     return isValid;
 }
 
-// Add a vertex to the the mesh
-uint32 TriangleMesh::addVertex(uint32 userVertexIndex, const Vector3& vertex, const Vector3& vertexNormal,
-                               Map<uint32, uint32>& mapUserVertexIndexToInternal) {
+// Remove the ununsed vertices (because they are not used in any triangles or
+// are part of discarded triangles)
+void TriangleMesh::removeUnusedVertices(Array<bool>& areUsedVertices) {
 
-    // If the vertex has already been added
-    auto it = mapUserVertexIndexToInternal.find(userVertexIndex);
-    if (it != mapUserVertexIndexToInternal.end()) {
-       return it->second;
-    }
-    else {
+    // For each vertex of the user mesh
+    for (uint32 i=mVertices.size() - 1; i > 0; i--) {
 
-        // Add the vertex
+        // If the vertex is not used
+        if (!areUsedVertices[i]) {
 
-        const uint32 internalVertexIndex = mVertices.size();
-        mapUserVertexIndexToInternal.add(Pair<uint32, uint32>(userVertexIndex, internalVertexIndex));
+            mVertices.removeAt(i);
+            mVerticesNormals.removeAt(i);
 
-        mVerticesNormals.add(vertexNormal);
-        mVertices.add(vertex);
+            // For each triangle index of the mesh
+            for (uint32 t=0; t < mTriangles.size(); t++) {
 
-        return internalVertexIndex;
+                assert(mTriangles[t] != i);
+
+                if (mTriangles[t] > i) {
+                    mTriangles[t]--;
+                }
+            }
+        }
     }
 }
 

@@ -420,7 +420,7 @@ class TestCollisionWorld : public Test {
             mConvexMeshBody2 = mWorld->createCollisionBody(convexMeshTransform2);
             mConvexMeshCollider2 = mConvexMeshBody2->addCollider(mConvexMeshShape2, Transform::identity());
 
-			// ---------- Concave Meshes ---------- //
+            // ---------- Concave Mesh ---------- //
 			for (int i = 0; i < 6; i++) {
 				for (int j = 0; j < 6; j++) {
                     mConcaveMeshPlaneVertices[i * 6 * 3 + j * 3] = -2.5f + i;
@@ -434,14 +434,14 @@ class TestCollisionWorld : public Test {
 
 					// Triangle 1
                     mConcaveMeshPlaneIndices[triangleIndex * 3] = i * 6+ j;
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = (i+1) * 6 + (j+1);
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = i * 6+ (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = i * 6+ (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = (i+1) * 6 + (j+1);
                     triangleIndex++;
 
                     // Triangle 2
                     mConcaveMeshPlaneIndices[triangleIndex * 3] = i * 6+ j;
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = (i+1) * 6 + j;
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = (i+1) * 6 + (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = (i+1) * 6 + (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = (i+1) * 6 + j;
                     triangleIndex++;
                 }
 			}
@@ -2455,6 +2455,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
+            auto test = collisionData->getTotalNbContactPoints();
 
             for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
                 rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));
