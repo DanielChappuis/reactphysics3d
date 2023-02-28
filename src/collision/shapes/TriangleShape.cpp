@@ -183,14 +183,15 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* 
 
     // Compute the barycentric coordinates (u, v, w) to determine the
     // intersection point R, R = u * a + v * b + w * c
-    decimal denom = decimal(1.0) / (u + v + w);
+    const decimal denom = decimal(1.0) / (u + v + w);
     u *= denom;
     v *= denom;
     w *= denom;
 
     // Compute the local hit point using the barycentric coordinates
     const Vector3 localHitPoint = u * mPoints[0] + v * mPoints[1] + w * mPoints[2];
-    const decimal hitFraction = (localHitPoint - ray.point1).length() / pq.length();
+    const Vector3 point1ToHitPoint = localHitPoint - ray.point1;
+    const decimal hitFraction = point1ToHitPoint.dot(pq) / pq.lengthSquare();
 
     if (hitFraction < decimal(0.0) || hitFraction > ray.maxFraction) return false;
 
