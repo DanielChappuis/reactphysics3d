@@ -36,6 +36,8 @@
 #include <reactphysics3d/collision/shapes/ConvexMeshShape.h>
 #include <reactphysics3d/collision/shapes/ConcaveMeshShape.h>
 #include <reactphysics3d/collision/TriangleMesh.h>
+#include <reactphysics3d/collision/ConvexMesh.h>
+#include <reactphysics3d/collision/HeightField.h>
 #include <reactphysics3d/utils/DefaultLogger.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/collision/VertexArray.h>
@@ -87,6 +89,9 @@ class PhysicsCommon {
         /// Set of triangle meshes
         Set<TriangleMesh*> mTriangleMeshes;
 
+        /// Set of height-fields
+        Set<HeightField*> mHeightFields;
+
         /// Pointer to the current logger
         static Logger* mLogger;
 
@@ -136,6 +141,9 @@ class PhysicsCommon {
 
         /// Delete a triangle mesh
         void deleteTriangleMesh(TriangleMesh* triangleMesh);
+
+        /// Delete a height-field
+        void deleteHeightField(HeightField* heightField);
 
         /// Delete a default logger
         void deleteDefaultLogger(DefaultLogger* logger);
@@ -200,10 +208,13 @@ class PhysicsCommon {
         /// Destroy a convex mesh shape
         void destroyConvexMeshShape(ConvexMeshShape* convexMeshShape);
 
+        /// Create and return a height-field
+        HeightField* createHeightField(int nbGridColumns, int nbGridRows, const void* heightFieldData,
+                                       HeightField::HeightDataType dataType, std::vector<Message>& messages,
+                                       decimal integerHeightScale = 1.0f);
+
         /// Create and return a height-field shape
-        HeightFieldShape* createHeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
-                                                 const void* heightFieldData, HeightFieldShape::HeightDataType dataType,
-                                                 int upAxis = 1, decimal integerHeightScale = 1.0f,
+        HeightFieldShape* createHeightFieldShape(HeightField* heightField,
                                                  const Vector3& scaling = Vector3(1,1,1));
 
         /// Destroy a height-field shape
@@ -229,6 +240,9 @@ class PhysicsCommon {
 
         /// Destroy a triangle mesh
         void destroyTriangleMesh(TriangleMesh* triangleMesh);
+
+        /// Destroy a height-field
+        void destroyHeightField(HeightField* heightField);
 
         /// Create and return a new default logger
         DefaultLogger* createDefaultLogger();

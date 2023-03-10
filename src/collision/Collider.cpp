@@ -177,7 +177,7 @@ bool Collider::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     if (!mBody->isActive()) return false;
 
     // Convert the ray into the local-space of the collision shape
-    const Transform localToWorldTransform = mBody->mWorld.mCollidersComponents.getLocalToWorldTransform(mEntity);
+    const Transform& localToWorldTransform = mBody->mWorld.mCollidersComponents.getLocalToWorldTransform(mEntity);
     const Transform worldToLocalTransform = localToWorldTransform.getInverse();
     Ray rayLocal(worldToLocalTransform * ray.point1, worldToLocalTransform * ray.point2, ray.maxFraction);
 

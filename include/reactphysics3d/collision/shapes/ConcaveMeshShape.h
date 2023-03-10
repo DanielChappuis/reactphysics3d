@@ -28,7 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/collision/shapes/ConcaveShape.h>
-#include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>.h>
+#include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>
 #include <reactphysics3d/containers/Array.h>
 
 namespace reactphysics3d {

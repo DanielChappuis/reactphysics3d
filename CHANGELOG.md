@@ -9,17 +9,24 @@
 
 ### Changed
 
- - The library must now be compiled with C++ 17 compiler
- - If the user sets its own custom allocator, the return allocated memory must now be 16 bytes aligned
+ - The library must now be compiled with a C++ 17 compiler
  - The internal allocators now allocates memory that is 16-bytes aligned
+ - If the user sets its own custom allocator, the return allocated memory must now be 16 bytes aligned
  - The PolyhedronMesh class has been renamed to ConvexMesh
  - The PhysicsCommon::createPolyhedronMesh() method has been renamed to PhysicsCommon::createConvexMesh()
  - The PhysicsCommon::destroyPolyhedronMesh() method has been renamed to PhysicsCommon::destroyConvexMesh()
  - The PhysicsCommon::createConvexMesh() nows outputs a list of errors that might have happened during the mesh creation
  - The PhysicsCommon::createConvexMesh() method now takes a reference to PolygonVertexArray
+ - When creating a ConvexMesh with PhysicsCommon::createConvexMesh(), the user data (vertices, faces) is now copied into the ConvexMesh and not shared anymore
  - The input data (vertices, indices, ...) are now copied into the ConvexMesh, TriangularMesh and HeighField and not shared anymore
  - The PhysicsCommon::createTriangleMesh() method now directly takes a TriangleVertexArray
  - The PhysicsCommon::createTriangleMesh() nows outputs a list of errors that might have happened during the mesh creation
+ - When creating a TriangleMesh with PhysicsCommon::createTriangleMesh(), the user data (vertices, faces) is now copied into the TriangleMesh and not shared anymore
+ - The PhysicsCommon::createHeightField() must be used to create a HeightField object 
+ - The PhysicsCommon::createHeightFieldShape() method now takes a HeightField object
+ - It is not necessary anymore to specify the min/max height when creating a HeightFieldShape
+ - It is not possible anymore to specify the up axis when creating a HeightFieldShape
+ - When creating a HeightField with PhysicsCommon::createHeightField(), the user data (heights values) is now copied into the HeightField and not shared anymore
  - The signature of the TriangleVertexArray::getTriangleVerticesIndices() method has changed
  - The signature of the TriangleVertexArray::getNormal() method has changed
  - The getLocalBounds() methods of the collision shapes now returns an AABB
@@ -30,6 +37,11 @@
  - The TriangleMesh::addSubpart() method has been removed. The PhysicsCommon::createTriangleMesh() method should be used instead
  - The TriangleMesh::getSubpart() method has been removed. 
  - The TriangleMesh::getNbSubparts() method has been removed.
+ - When creating a HeightField, it is not possible to specify the up axis anymore (changing the Transform of the Collider must be used instead)
+ - No need to specify the min/max height when creating a HeightField anymore (this is now automatically computed)
+ - The HeightFiedShape::getNbColumns() method has been removed (HeightFieldShape::getHeightField()->getNbColumns() must be used instead)
+ - The HeightFiedShape::getNbRows() method has been removed (HeightFieldShape::getHeightField()->getNbRows() must be used instead)
+ - The HeightFiedShape::getHeightAt() method has been removed (HeightFieldShape::getHeightField()->getHeightAt() must be used instead)
 
 
 ### Fixed

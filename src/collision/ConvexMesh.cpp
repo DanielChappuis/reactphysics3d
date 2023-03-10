@@ -46,13 +46,6 @@ ConvexMesh::ConvexMesh(MemoryAllocator& allocator)
 
 }
 
-/// Static factory method to create a convex mesh. This methods returns null_ptr if the mesh is not valid
-ConvexMesh* ConvexMesh::create(MemoryAllocator& allocator) {
-
-    ConvexMesh* mesh = new (allocator.allocate(sizeof(ConvexMesh))) ConvexMesh(allocator);
-    return mesh;
-}
-
 // Initialize a mesh and returns errors if any
 bool ConvexMesh::init(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors) {
 

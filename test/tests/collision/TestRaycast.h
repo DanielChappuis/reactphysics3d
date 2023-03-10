@@ -156,6 +156,7 @@ class TestRaycast : public Test {
         std::vector<uint> mConcaveMeshIndices;
         float mHeightFieldData[100];
         ConvexMesh* mConvexMesh;
+        HeightField* mHeightField;
         float mConvexMeshVertices[8 * 3];
         int mConvexMeshIndices[4 * 6];
 
@@ -283,10 +284,13 @@ class TestRaycast : public Test {
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, mShapeTransform);
 
-
             // Heightfield shape (plane height field at height=4)
             for (int i=0; i<100; i++) mHeightFieldData[i] = 4;
-            mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(10, 10, 0, 4, mHeightFieldData, HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
+            std::vector<Message> messages;
+            mHeightField = mPhysicsCommon.createHeightField(10, 10, mHeightFieldData, HeightField::HeightDataType::HEIGHT_FLOAT_TYPE, messages);
+            rp3d_test(mHeightField != nullptr);
+
+            mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(mHeightField);
             mHeightFieldCollider = mHeightFieldBody->addCollider(mHeightFieldShape, mShapeTransform);
 
             // Assign colliders to the different categories
@@ -311,6 +315,7 @@ class TestRaycast : public Test {
             mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
             mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
             mPhysicsCommon.destroyConvexMesh(mConvexMesh);
+            mPhysicsCommon.destroyHeightField(mHeightField);
         }
 
         /// Run the tests
@@ -1570,7 +1575,7 @@ class TestRaycast : public Test {
             Vector3 point1A = mLocalShapeToWorld * Vector3(0 , 10, 2);
             Vector3 point1B = mLocalShapeToWorld * Vector3(0, -10, 2);
             Ray ray(point1A, point1B);
-            Vector3 hitPoint = mLocalShapeToWorld * Vector3(0, 2, 2);
+            Vector3 hitPoint = mLocalShapeToWorld * Vector3(0, 4, 2);
 
             Vector3 point2A = mLocalShapeToWorld * Vector3(1 , 8, -4);
             Vector3 point2B = mLocalShapeToWorld * Vector3(1, -8, -4);
@@ -1585,7 +1590,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mHeightFieldBody);
             rp3d_test(mCallback.raycastInfo.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.4), epsilon));
+            rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.3), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
@@ -1605,7 +1610,7 @@ class TestRaycast : public Test {
             rp3d_test(mHeightFieldBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mHeightFieldBody);
             rp3d_test(raycastInfo2.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.4), epsilon));
+            rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.3), epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -1615,7 +1620,7 @@ class TestRaycast : public Test {
             rp3d_test(mHeightFieldCollider->raycast(ray, raycastInfo3));
             rp3d_test(raycastInfo3.body == mHeightFieldBody);
             rp3d_test(raycastInfo3.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(raycastInfo3.hitFraction, decimal(0.4), epsilon));
+            rp3d_test(approxEqual(raycastInfo3.hitFraction, decimal(0.3), epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));

@@ -44,7 +44,7 @@ PhysicsCommon::PhysicsCommon(MemoryAllocator* baseMemoryAllocator)
                 mBoxShapes(mMemoryManager.getHeapAllocator()), mCapsuleShapes(mMemoryManager.getHeapAllocator()),
                 mConvexMeshShapes(mMemoryManager.getHeapAllocator()), mConcaveMeshShapes(mMemoryManager.getHeapAllocator()),
                 mHeightFieldShapes(mMemoryManager.getHeapAllocator()), mConvexMeshes(mMemoryManager.getHeapAllocator()),
-                mTriangleMeshes(mMemoryManager.getHeapAllocator()),
+                mTriangleMeshes(mMemoryManager.getHeapAllocator()), mHeightFields(mMemoryManager.getHeapAllocator()),
                 mProfilers(mMemoryManager.getHeapAllocator()), mDefaultLoggers(mMemoryManager.getHeapAllocator()),
                 mBoxShapeHalfEdgeStructure(mMemoryManager.getHeapAllocator(), 6, 8, 24),
                 mTriangleShapeHalfEdgeStructure(mMemoryManager.getHeapAllocator(), 2, 3, 6) {
@@ -461,24 +461,49 @@ void PhysicsCommon::deleteConvexMeshShape(ConvexMeshShape* convexMeshShape) {
    mMemoryManager.release(MemoryManager::AllocationType::Pool, convexMeshShape, sizeof(ConvexMeshShape));
 }
 
-// Create and return a height-field shape
+// Create and return a height-field
 /**
- * @param nbGridColumns Number of columns in the grid of the height field
- * @param nbGridRows Number of rows in the grid of the height field
- * @param minHeight Minimum height value of the height field
- * @param maxHeight Maximum height value of the height field
- * @param heightFieldData Pointer to the first height value data (note that values are shared and not copied)
+ * @param nbGridColumns Number of columns in the grid of the height field (along the local x axis)
+ * @param nbGridRows Number of rows in the grid of the height field (along the local z axis)
+ * @param heightFieldData Pointer to the first height value data (note that values are copied into the heigh-field)
  * @param dataType Data type for the height values (int, float, double)
- * @param upAxis Integer representing the up axis direction (0 for x, 1 for y and 2 for z)
- * @param integerHeightScale Scaling factor used to scale the height values (only when height values type is integer)
+ * @param integerHeightScale Scaling factor used to scale the height values (only used when height values type is integer)
+ * @return A pointer to the created height-field
+ */
+HeightField* PhysicsCommon::createHeightField(int nbGridColumns, int nbGridRows,
+                                              const void* heightFieldData,
+                                              HeightField::HeightDataType dataType,
+                                              std::vector<Message>& messages,
+                                              decimal integerHeightScale) {
+
+    // Create the height-field
+    HeightField* heightField = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(TriangleMesh))) HeightField(mMemoryManager.getHeapAllocator(), mTriangleShapeHalfEdgeStructure);
+
+    // Initialize the height-field
+    bool isValid = heightField->init(nbGridColumns, nbGridRows, heightFieldData, dataType, messages,
+                                     integerHeightScale);
+
+    if (!isValid) {
+
+        heightField->~HeightField();
+        mMemoryManager.release(MemoryManager::AllocationType::Pool, heightField, sizeof(HeightField));
+
+        return nullptr;
+    }
+
+    mHeightFields.add(heightField);
+
+    return heightField;
+}
+
+// Create and return a height-field collision shape
+/**
+ * @param heightField A pointer to a HeightField object
  * @return A pointer to the created height field shape
  */
-HeightFieldShape* PhysicsCommon::createHeightFieldShape(int nbGridColumns, int nbGridRows, decimal minHeight, decimal maxHeight,
-                                         const void* heightFieldData, HeightFieldShape::HeightDataType dataType,
-                                         int upAxis, decimal integerHeightScale, const Vector3& scaling) {
+HeightFieldShape* PhysicsCommon::createHeightFieldShape(HeightField* heightField, const Vector3& scaling) {
 
-    HeightFieldShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(HeightFieldShape))) HeightFieldShape(nbGridColumns, nbGridRows, minHeight, maxHeight,
-                                         heightFieldData, dataType, mMemoryManager.getHeapAllocator(), mTriangleShapeHalfEdgeStructure, upAxis, integerHeightScale, scaling);
+    HeightFieldShape* shape = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(HeightFieldShape))) HeightFieldShape(heightField, mMemoryManager.getHeapAllocator(), scaling);
 
     mHeightFieldShapes.add(shape);
 
@@ -576,7 +601,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVer
     MemoryAllocator& allocator = mMemoryManager.getHeapAllocator();
 
     // Create the convex mesh
-    ConvexMesh* mesh = ConvexMesh::create(allocator);
+    ConvexMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConvexMesh))) ConvexMesh(allocator);
 
     // Create the half-edge structure of the mesh
     bool isValid = mesh->init(polygonVertexArray, messages);
@@ -618,7 +643,8 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std:
     }
 
     // Create the convex mesh
-    ConvexMesh* mesh = ConvexMesh::create(allocator);
+
+    ConvexMesh* mesh = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool, sizeof(ConvexMesh))) ConvexMesh(allocator);
     assert(mesh != nullptr);
 
     // Create the half-edge structure of the mesh
@@ -658,7 +684,7 @@ void PhysicsCommon::deleteConvexMesh(ConvexMesh* convexMesh) {
    convexMesh->~ConvexMesh();
 
    // Release allocated memory
-   mMemoryManager.release(MemoryManager::AllocationType::Heap, convexMesh, sizeof(ConvexMesh));
+   mMemoryManager.release(MemoryManager::AllocationType::Pool, convexMesh, sizeof(ConvexMesh));
 }
 
 // Create a triangle mesh from a TriangleVertexArray
@@ -696,6 +722,14 @@ void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
     mTriangleMeshes.remove(triangleMesh);
 }
 
+// Destroy a height-field
+void PhysicsCommon::destroyHeightField(HeightField* heightField) {
+
+    deleteHeightField(heightField);
+
+    mHeightFields.remove(heightField);
+}
+
 // Delete a triangle mesh
 /**
  * @param A pointer to the triangle mesh to destroy
@@ -707,6 +741,19 @@ void PhysicsCommon::deleteTriangleMesh(TriangleMesh* triangleMesh) {
 
    // Release allocated memory
    mMemoryManager.release(MemoryManager::AllocationType::Pool, triangleMesh, sizeof(TriangleMesh));
+}
+
+// Delete a height-field
+/**
+ * @param A pointer to the height-field to destroy
+ */
+void PhysicsCommon::deleteHeightField(HeightField* heightField) {
+
+   // Call the destructor of the shape
+   heightField->~HeightField();
+
+   // Release allocated memory
+   mMemoryManager.release(MemoryManager::AllocationType::Pool, heightField, sizeof(HeightField));
 }
 
 // Create and return a new logger

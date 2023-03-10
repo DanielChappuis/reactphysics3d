@@ -47,9 +47,6 @@ TriangleShape::TriangleShape(const Vector3* vertices, const Vector3* verticesNor
     // Compute the triangle normal
     mNormal = (vertices[1] - vertices[0]).cross(vertices[2] - vertices[0]);
 
-    // TODO : REMOVE THIS
-    const decimal l = mNormal.length();
-
     assert(mNormal.length() > MACHINE_EPSILON);
 
     mNormal.normalize();

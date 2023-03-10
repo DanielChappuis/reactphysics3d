@@ -56,6 +56,7 @@
 #include <reactphysics3d/collision/RaycastInfo.h>
 #include <reactphysics3d/collision/TriangleMesh.h>
 #include <reactphysics3d/collision/ConvexMesh.h>
+#include <reactphysics3d/collision/HeightField.h>
 #include <reactphysics3d/collision/TriangleVertexArray.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/collision/VertexArray.h>

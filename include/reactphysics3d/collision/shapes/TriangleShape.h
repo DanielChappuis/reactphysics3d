@@ -189,7 +189,7 @@ class TriangleShape : public ConvexPolyhedronShape {
         friend class ConcaveMeshRaycastCallback;
         friend class TriangleOverlapCallback;
         friend class MiddlePhaseTriangleCallback;
-        friend class HeightFieldShape;
+        friend class HeightField;
         friend class CollisionDetectionSystem;
 };
 

@@ -322,8 +322,8 @@ void DebugRenderer::drawConcaveMeshShape(const Transform& transform, const Conca
 void DebugRenderer::drawHeightFieldShape(const Transform& transform, const HeightFieldShape* heightFieldShape, uint32 color) {
 
     // For each sub-grid points (except the last ones one each dimension)
-    for (int i = 0; i < heightFieldShape->getNbColumns() - 1; i++) {
-        for (int j = 0; j < heightFieldShape->getNbRows() - 1; j++) {
+    for (uint32 i = 0; i < heightFieldShape->getHeightField()->getNbColumns() - 1; i++) {
+        for (uint32 j = 0; j < heightFieldShape->getHeightField()->getNbRows() - 1; j++) {
 
             // Compute the four point of the current quad
             Vector3 p1 = heightFieldShape->getVertexAt(i, j);

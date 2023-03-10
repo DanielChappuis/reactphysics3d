@@ -94,9 +94,6 @@ class ConvexMesh {
         /// Compute the volume of the mesh
         void computeVolume();
 
-        /// Static factory method to create a convex mesh
-        static ConvexMesh* create(MemoryAllocator& allocator);
-
     public:
 
         // -------------------- Methods -------------------- //
