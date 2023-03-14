@@ -1575,12 +1575,12 @@ class TestRaycast : public Test {
             Vector3 point1A = mLocalShapeToWorld * Vector3(0 , 10, 2);
             Vector3 point1B = mLocalShapeToWorld * Vector3(0, -10, 2);
             Ray ray(point1A, point1B);
-            Vector3 hitPoint = mLocalShapeToWorld * Vector3(0, 4, 2);
+            Vector3 hitPoint = mLocalShapeToWorld * Vector3(0, 0, 2);
 
             Vector3 point2A = mLocalShapeToWorld * Vector3(1 , 8, -4);
             Vector3 point2B = mLocalShapeToWorld * Vector3(1, -8, -4);
             Ray rayBottom(point2A, point2B);
-            Vector3 hitPoint2 = mLocalShapeToWorld * Vector3(1, 2, -4);
+            Vector3 hitPoint2 = mLocalShapeToWorld * Vector3(1, 0, -4);
 
             mCallback.shapeToTest = mHeightFieldCollider;
 
@@ -1590,7 +1590,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mHeightFieldBody);
             rp3d_test(mCallback.raycastInfo.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.3), epsilon));
+            rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.5), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.z, hitPoint.z, epsilon));
@@ -1610,7 +1610,7 @@ class TestRaycast : public Test {
             rp3d_test(mHeightFieldBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mHeightFieldBody);
             rp3d_test(raycastInfo2.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.3), epsilon));
+            rp3d_test(approxEqual(raycastInfo2.hitFraction, decimal(0.5), epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo2.worldPoint.z, hitPoint.z, epsilon));
@@ -1620,7 +1620,7 @@ class TestRaycast : public Test {
             rp3d_test(mHeightFieldCollider->raycast(ray, raycastInfo3));
             rp3d_test(raycastInfo3.body == mHeightFieldBody);
             rp3d_test(raycastInfo3.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(raycastInfo3.hitFraction, decimal(0.3), epsilon));
+            rp3d_test(approxEqual(raycastInfo3.hitFraction, decimal(0.5), epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.x, hitPoint.x, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.y, hitPoint.y, epsilon));
             rp3d_test(approxEqual(raycastInfo3.worldPoint.z, hitPoint.z, epsilon));
@@ -1630,7 +1630,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
             rp3d_test(mCallback.raycastInfo.body == mHeightFieldBody);
             rp3d_test(mCallback.raycastInfo.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.375), epsilon));
+            rp3d_test(approxEqual(mCallback.raycastInfo.hitFraction, decimal(0.5), epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.x, hitPoint2.x, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint2.y, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.z, hitPoint2.z, epsilon));
@@ -1640,7 +1640,7 @@ class TestRaycast : public Test {
             rp3d_test(mHeightFieldBody->raycast(rayBottom, raycastInfo5));
             rp3d_test(raycastInfo5.body == mHeightFieldBody);
             rp3d_test(raycastInfo5.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(raycastInfo5.hitFraction, decimal(0.375), epsilon));
+            rp3d_test(approxEqual(raycastInfo5.hitFraction, decimal(0.5), epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.x, hitPoint2.x, epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.y, hitPoint2.y, epsilon));
             rp3d_test(approxEqual(raycastInfo5.worldPoint.z, hitPoint2.z, epsilon));
@@ -1650,7 +1650,7 @@ class TestRaycast : public Test {
             rp3d_test(mHeightFieldCollider->raycast(rayBottom, raycastInfo6));
             rp3d_test(raycastInfo6.body == mHeightFieldBody);
             rp3d_test(raycastInfo6.collider == mHeightFieldCollider);
-            rp3d_test(approxEqual(raycastInfo6.hitFraction, decimal(0.375), epsilon));
+            rp3d_test(approxEqual(raycastInfo6.hitFraction, decimal(0.5), epsilon));
             rp3d_test(approxEqual(raycastInfo6.worldPoint.x, hitPoint2.x, epsilon));
             rp3d_test(approxEqual(raycastInfo6.worldPoint.y, hitPoint2.y, epsilon));
             rp3d_test(approxEqual(raycastInfo6.worldPoint.z, hitPoint2.z, epsilon));
@@ -1661,10 +1661,10 @@ class TestRaycast : public Test {
             Ray ray4(mLocalShapeToWorld * Vector3(10, 3, 10), mLocalShapeToWorld * Vector3(22, 3, 31));
             Ray ray5(mLocalShapeToWorld * Vector3(4, 10, -1), mLocalShapeToWorld * Vector3(4, 3, -1));
 
-            Ray ray11(mLocalShapeToWorld * Vector3(3, 15, 0.5), mLocalShapeToWorld * Vector3(3, 1, 0.5));
+            Ray ray11(mLocalShapeToWorld * Vector3(3, 15, 0.5), mLocalShapeToWorld * Vector3(3, -1, 0.5));
             Ray ray12(mLocalShapeToWorld * Vector3(0, 45, 0), mLocalShapeToWorld * Vector3(0, -5, 0));
             Ray ray13(mLocalShapeToWorld * Vector3(1, 23, 2), mLocalShapeToWorld * Vector3(1, -23, 2));
-            Ray ray14(mLocalShapeToWorld * Vector3(3, 8, 3), mLocalShapeToWorld * Vector3(3, 0, 3));
+            Ray ray14(mLocalShapeToWorld * Vector3(3, 2, 3), mLocalShapeToWorld * Vector3(3, -0.5, 3));
 
             // ----- Test raycast miss ----- //
             rp3d_test(!mHeightFieldBody->raycast(ray1, raycastInfo3));
@@ -1721,7 +1721,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.87)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.92)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mHeightFieldBody->raycast(ray13, raycastInfo3));
@@ -1739,7 +1739,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.82)), &mCallback);
             rp3d_test(mCallback.isHit);
         }
 };

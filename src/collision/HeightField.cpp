@@ -70,7 +70,7 @@ bool HeightField::init(int nbGridColumns, int nbGridRows,
     assert(mMinHeight <= mMaxHeight);
 
     const decimal halfHeight = (mMaxHeight - mMinHeight) * decimal(0.5);
-    assert(halfHeight > 0);
+    assert(halfHeight >= 0);
 
     assert(mWidth >= 1);
     assert(mLength >= 1);
