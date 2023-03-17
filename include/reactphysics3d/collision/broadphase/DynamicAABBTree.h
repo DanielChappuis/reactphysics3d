@@ -77,7 +77,7 @@ struct TreeNode {
 
         /// Two pieces of data stored at that node (in case the node is a leaf)
         union {
-            int32 dataInt[2];
+            uint32 dataInt;
             void* dataPointer;
         };
     };
@@ -220,7 +220,7 @@ class DynamicAABBTree {
         ~DynamicAABBTree();
 
         /// Add an object into the tree (where node data are two integers)
-        int32 addObject(const AABB& aabb, int32 data1, int32 data2);
+        int32 addObject(const AABB& aabb, uint32 data);
 
         /// Add an object into the tree (where node data is a pointer)
         int32 addObject(const AABB& aabb, void* data);
@@ -235,7 +235,7 @@ class DynamicAABBTree {
         const AABB& getFatAABB(int32 nodeID) const;
 
         /// Return the pointer to the data array of a given leaf node of the tree
-        int32* getNodeDataInt(int32 nodeID) const;
+        int32 getNodeDataInt(int32 nodeID) const;
 
         /// Return the data pointer of a given leaf node of the tree
         void* getNodeDataPointer(int32 nodeID) const;
@@ -254,7 +254,7 @@ class DynamicAABBTree {
         int computeHeight();
 
         /// Return the root AABB of the tree
-        AABB getRootAABB() const;
+        const AABB& getRootAABB() const;
 
         /// Clear all the nodes and reset the tree
         void reset();
@@ -280,7 +280,7 @@ RP3D_FORCE_INLINE const AABB& DynamicAABBTree::getFatAABB(int32 nodeID) const {
 }
 
 // Return the pointer to the data array of a given leaf node of the tree
-RP3D_FORCE_INLINE int32* DynamicAABBTree::getNodeDataInt(int32 nodeID) const {
+RP3D_FORCE_INLINE int32 DynamicAABBTree::getNodeDataInt(int32 nodeID) const {
     assert(nodeID >= 0 && nodeID < mNbAllocatedNodes);
     assert(mNodes[nodeID].isLeaf());
     return mNodes[nodeID].dataInt;
@@ -294,18 +294,17 @@ RP3D_FORCE_INLINE void* DynamicAABBTree::getNodeDataPointer(int32 nodeID) const 
 }
 
 // Return the root AABB of the tree
-RP3D_FORCE_INLINE AABB DynamicAABBTree::getRootAABB() const {
+RP3D_FORCE_INLINE const AABB& DynamicAABBTree::getRootAABB() const {
     return getFatAABB(mRootNodeID);
 }
 
 // Add an object into the tree. This method creates a new leaf node in the tree and
 // returns the ID of the corresponding node.
-RP3D_FORCE_INLINE int32 DynamicAABBTree::addObject(const AABB& aabb, int32 data1, int32 data2) {
+RP3D_FORCE_INLINE int32 DynamicAABBTree::addObject(const AABB& aabb, uint32 data) {
 
     int32 nodeId = addObjectInternal(aabb);
 
-    mNodes[nodeId].dataInt[0] = data1;
-    mNodes[nodeId].dataInt[1] = data2;
+    mNodes[nodeId].dataInt = data;
 
     return nodeId;
 }

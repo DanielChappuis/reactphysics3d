@@ -29,6 +29,7 @@
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <reactphysics3d/containers/Map.h>
+#include <reactphysics3d/containers/Set.h>
 
 namespace reactphysics3d {
 
@@ -67,16 +68,6 @@ class QHHalfEdgeStructure {
                 :startVertex(startVertex), endVertex(endVertex), face(face), previousEdge(nullptr), nextEdge(nullptr),
                  previousFaceEdge(nullptr), nextFaceEdge(nullptr), twinEdge(nullptr) {}
 
-            // Return the next edge of the next edge (if any)
-            const Edge* getNextSecondEdge() const {
-
-               if (nextEdge != nullptr) {
-                   return nextEdge->nextEdge;
-               }
-
-               return nullptr;
-            }
-
             bool isValid() const {
 
                 bool isValid = true;
@@ -86,6 +77,7 @@ class QHHalfEdgeStructure {
                 isValid &= nextFaceEdge != nullptr;
                 isValid &= previousFaceEdge->nextFaceEdge == this;
                 isValid &= nextFaceEdge->previousFaceEdge == this;
+                isValid &= twinEdge != nullptr;
                 isValid &= twinEdge->twinEdge == this;
                 isValid &= startVertex == twinEdge->endVertex;
                 isValid &= endVertex == twinEdge->startVertex;
@@ -104,17 +96,52 @@ class QHHalfEdgeStructure {
             Edge* edge;             // One half-edge of the face
             Vector3 normal;
             Vector3 centroid;         // Center of the face (average of the face vertices)
-            Array<uint32> remainingClosestPoints;   // Array with some remaining points that are closest to this face
+            decimal area;             // Area of the face
+            Array<uint32> conflictPoints;   // Array with some remaining points visible from this face that need to be processed
 
             /// Constructor
-            Face(const Vector3& normal, MemoryAllocator& allocator)
-                : nextFace(nullptr), previousFace(nullptr), normal(normal), remainingClosestPoints(allocator, 8) {
+            Face(MemoryAllocator& allocator)
+                : nextFace(nullptr), previousFace(nullptr), normal(0, 0, 0), area(0), conflictPoints(allocator, 8) {
 
             }
 
             // Return a vertex of the face
             const Vertex* getVertex() const {
                 return edge->startVertex;
+            }
+
+            // Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
+            void recalculateFace(const Array<Vector3>& points) {
+
+                centroid.setToZero();
+                normal.setToZero();
+                uint32 nbVertices = 0;
+
+                // For each vertex of the face
+                const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
+                const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
+                do {
+
+                    const Vector3 v1 = points[faceEdge->startVertex->externalIndex];
+                    const Vector3 v2 = points[faceEdge->endVertex->externalIndex];
+                    centroid += v1;
+                    normal += Vector3((v1.y - v2.y) * (v1.z + v2.z),
+                                      (v1.z - v2.z) * (v1.x + v2.x),
+                                      (v1.x - v2.x) * (v1.y + v2.y));
+
+                    nbVertices++;
+
+                   faceEdge = faceEdge->nextFaceEdge;
+
+                } while(faceEdge != firstFaceEdge);
+
+                assert(nbVertices > 0);
+
+                centroid = centroid / nbVertices;
+                const decimal normalLength = normal.length();
+                assert(normalLength > 0);
+                normal = normal / normalLength;
+                area = normalLength * decimal(0.5);
             }
 
             // Return a string with the vertices of the face
@@ -140,42 +167,51 @@ class QHHalfEdgeStructure {
                return verticesString;
             }
 
-            // Return true if the face is a triangle
-            bool isTriangle() {
+            // TODO: DELETE THIS
+            bool hasVertexWithIndex(uint32 externalIndex) const {
 
-                return edge->nextFaceEdge->nextFaceEdge->nextFaceEdge == edge;
-            }
-
-            // Compute the centroid of a face (the average of face vertices)
-            void computeCentroid(const Array<Vector3>& points) {
-
-                decimal nbVertices = 0;
-
-                // For each vertex of the face
                 const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
                 const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
                 do {
 
                    QHHalfEdgeStructure::Vertex* vertex = faceEdge->startVertex;
 
-                   centroid += points[vertex->externalIndex];
+                   if (vertex->externalIndex == externalIndex) {
+                       return true;
+                   }
 
                    faceEdge = faceEdge->nextFaceEdge;
 
-                   nbVertices++;
-
                 } while(faceEdge != firstFaceEdge);
 
-                assert(nbVertices > 0);
-                centroid /= nbVertices;
+                return false;
+            }
+
+            // Return true if the face is a triangle
+            bool isTriangle() {
+
+                return edge->nextFaceEdge->nextFaceEdge->nextFaceEdge == edge;
             }
 
             // Return true if the face structure is valid (for debugging purpose)
-            bool isValid() const {
+            bool isValid() {
                bool isValid = true;
 
                isValid &= approxEqual(normal.lengthSquare(), 1.0, 0.01);
                isValid &= edge->face == this;
+
+                const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
+                const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
+                do {
+
+                   if (faceEdge->face != this) {
+                       return false;
+                   }
+
+                   faceEdge = faceEdge->nextFaceEdge;
+
+                } while(faceEdge != firstFaceEdge);
+
 
                return isValid;
             }
@@ -246,13 +282,13 @@ class QHHalfEdgeStructure {
         QHHalfEdgeStructure(MemoryAllocator& allocator) :mAllocator(allocator), mMapVerticesToEdge(allocator) {}
 
         /// Destructor
-        ~QHHalfEdgeStructure() = default;
+        ~QHHalfEdgeStructure();
 
         /// Add a vertex
         Vertex* addVertex(uint32 externalIndex);
 
         /// Add a face
-        Face* addFace(const Array<Vertex*>& faceVertices, const Vector3& normal, const Array<Vector3>& points, MemoryAllocator& allocator);
+        Face* addFace(const Array<Vertex*>& faceVertices, const Array<Vector3>& points, MemoryAllocator& allocator);
 
         /// Remove a face
         void removeFace(Face* face);

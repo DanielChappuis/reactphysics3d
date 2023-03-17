@@ -62,10 +62,7 @@ TriangleVertexArray::TriangleVertexArray(uint32 nbVertices, const void* vertices
     mVertexDataType = vertexDataType;
     mVertexNormaldDataType = NormalDataType::NORMAL_FLOAT_TYPE;
     mIndexDataType = indexDataType;
-    mAreVerticesNormalsProvidedByUser = false;
-
-    // Compute the vertices normals because they are not provided by the user
-    computeVerticesNormals();
+    mHasNormals = false;
 }
 
 // Constructor with vertices normals
@@ -102,95 +99,9 @@ TriangleVertexArray::TriangleVertexArray(uint32 nbVertices, const void* vertices
     mVertexDataType = vertexDataType;
     mVertexNormaldDataType = normalDataType;
     mIndexDataType = indexDataType;
-    mAreVerticesNormalsProvidedByUser = true;
+    mHasNormals = true;
 
     assert(mVerticesNormalsStart != nullptr);
-}
-
-// Destructor
-TriangleVertexArray::~TriangleVertexArray() {
-
-    // If the vertices normals have not been provided by the user
-    if (!mAreVerticesNormalsProvidedByUser) {
-
-        // Release the allocated memory
-        const void* verticesNormalPointer = static_cast<const void*>(mVerticesNormalsStart);
-        const float* verticesNormals = static_cast<const float*>(verticesNormalPointer);
-        delete[] verticesNormals;
-    }
-}
-
-// Compute the vertices normals when they are not provided by the user
-/// The vertices normals are computed with weighted average of the associated
-/// triangle face normal. The weights are the angle between the associated edges
-/// of neighbor triangle face.
-void TriangleVertexArray::computeVerticesNormals() {
-
-    // Allocate memory for the vertices normals
-    float* verticesNormals = new float[mNbVertices * 3];
-
-    // Init vertices normals to zero
-    for (uint32 i=0; i<mNbVertices * 3; i++) {
-        verticesNormals[i] = 0.0f;
-    }
-
-    // For each triangle face in the array
-    for (uint32 f=0; f < mNbTriangles; f++) {
-
-        // Get the indices of the three vertices of the triangle in the array
-        uint32 verticesIndices[3];
-        getTriangleVerticesIndices(f, verticesIndices);
-
-        // Get the triangle vertices
-        Vector3 triangleVertices[3];
-        getTriangleVertices(f, triangleVertices);
-
-        // Edges lengths
-        decimal edgesLengths[3];
-        edgesLengths[0] = (triangleVertices[1] - triangleVertices[0]).length();
-        edgesLengths[1] = (triangleVertices[2] - triangleVertices[1]).length();
-        edgesLengths[2] = (triangleVertices[0] - triangleVertices[2]).length();
-
-        // For each vertex of the face
-        for (uint32 v=0; v < 3; v++) {
-
-            uint32 previousVertex = (v == 0) ? 2 : v-1;
-            uint32 nextVertex = (v == 2) ? 0 : v+1;
-            Vector3 a = triangleVertices[nextVertex] - triangleVertices[v];
-            Vector3 b = triangleVertices[previousVertex] - triangleVertices[v];
-
-            Vector3 crossProduct = a.cross(b);
-            decimal edgeLengths = (edgesLengths[previousVertex] * edgesLengths[v]);
-            if (std::abs(edgeLengths) > decimal(MACHINE_EPSILON)) {
-
-                decimal sinA = crossProduct.length() / edgeLengths;
-                sinA = std::min(std::max(sinA, decimal(0.0)), decimal(1.0));
-                decimal arcSinA = std::asin(sinA);
-                assert(arcSinA >= decimal(0.0));
-                Vector3 normalComponent = arcSinA * crossProduct;
-
-                // Add the normal component of this vertex into the normals array
-                verticesNormals[verticesIndices[v] * 3] += normalComponent.x;
-                verticesNormals[verticesIndices[v] * 3 + 1] += normalComponent.y;
-                verticesNormals[verticesIndices[v] * 3 + 2] += normalComponent.z;
-            }
-        }
-    }
-
-    // Normalize the computed vertices normals
-    for (uint32 v=0; v<mNbVertices * 3; v += 3) {
-
-        // Normalize the normal
-        Vector3 normal(verticesNormals[v], verticesNormals[v + 1], verticesNormals[v + 2]);
-        normal.normalize();
-
-        verticesNormals[v] = normal.x;
-        verticesNormals[v + 1] = normal.y;
-        verticesNormals[v + 2] = normal.z;
-    }
-
-    const void* verticesNormalsPointer = static_cast<const void*>(verticesNormals);
-    mVerticesNormalsStart = static_cast<const uchar*>(verticesNormalsPointer);
 }
 
 // Return the indices of the three vertices of a given triangle in the array
@@ -198,102 +109,26 @@ void TriangleVertexArray::computeVerticesNormals() {
  * @param triangleIndex Index of a given triangle in the array
  * @param[out] outVerticesIndices Pointer to the three output vertex indices
  */
-void TriangleVertexArray::getTriangleVerticesIndices(uint32 triangleIndex, uint32* outVerticesIndices) const {
+void TriangleVertexArray::getTriangleVerticesIndices(uint32 triangleIndex, uint32& outV1Index, uint32& outV2Index, uint32& outV3Index) const {
 
     assert(triangleIndex < mNbTriangles);
 
     const uchar* triangleIndicesPointer = mIndicesStart + triangleIndex * mIndicesStride;
     const void* startTriangleIndices = static_cast<const void*>(triangleIndicesPointer);
 
-    // For each vertex of the triangle
-    for (uint32 i=0; i < 3; i++) {
-
-        // Get the index of the current vertex in the triangle
-        if (mIndexDataType == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
-            outVerticesIndices[i] = static_cast<const uint*>(startTriangleIndices)[i];
-        }
-        else if (mIndexDataType == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE) {
-            outVerticesIndices[i] = static_cast<const ushort*>(startTriangleIndices)[i];
-        }
-        else {
-            assert(false);
-        }
+    // Get the index of the current vertex in the triangle
+    if (mIndexDataType == TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE) {
+        outV1Index = static_cast<const uint*>(startTriangleIndices)[0];
+        outV2Index = static_cast<const uint*>(startTriangleIndices)[1];
+        outV3Index = static_cast<const uint*>(startTriangleIndices)[2];
     }
-}
-
-// Return the three vertices coordinates of a triangle
-/**
- * @param triangleIndex Index of a given triangle in the array
- * @param[out] outTriangleVertices Pointer to the three output vertex coordinates
- */
-void TriangleVertexArray::getTriangleVertices(uint32 triangleIndex, Vector3* outTriangleVertices) const {
-
-    assert(triangleIndex < mNbTriangles);
-
-    // Get the three vertex index of the three vertices of the triangle
-    uint32 verticesIndices[3];
-    getTriangleVerticesIndices(triangleIndex, verticesIndices);
-
-    // For each vertex of the triangle
-    for (uint32 k=0; k < 3; k++) {
-
-        const uchar* vertexPointerChar = mVerticesStart + verticesIndices[k] * mVerticesStride;
-        const void* vertexPointer = static_cast<const void*>(vertexPointerChar);
-
-        // Get the vertices components of the triangle
-        if (mVertexDataType == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
-            const float* vertices = static_cast<const float*>(vertexPointer);
-            outTriangleVertices[k][0] = decimal(vertices[0]);
-            outTriangleVertices[k][1] = decimal(vertices[1]);
-            outTriangleVertices[k][2] = decimal(vertices[2]);
-        }
-        else if (mVertexDataType == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
-            const double* vertices = static_cast<const double*>(vertexPointer);
-            outTriangleVertices[k][0] = decimal(vertices[0]);
-            outTriangleVertices[k][1] = decimal(vertices[1]);
-            outTriangleVertices[k][2] = decimal(vertices[2]);
-        }
-        else {
-            assert(false);
-        }
+    else if (mIndexDataType == TriangleVertexArray::IndexDataType::INDEX_SHORT_TYPE) {
+        outV1Index = static_cast<const ushort*>(startTriangleIndices)[0];
+        outV2Index = static_cast<const ushort*>(startTriangleIndices)[1];
+        outV3Index = static_cast<const ushort*>(startTriangleIndices)[2];
     }
-}
-
-// Return the three vertices normals of a triangle
-/**
- * @param triangleIndex Index of a given triangle in the array
- * @param[out] outTriangleVerticesNormals Pointer to the three output vertex normals
- */
-void TriangleVertexArray::getTriangleVerticesNormals(uint32 triangleIndex, Vector3* outTriangleVerticesNormals) const {
-
-    assert(triangleIndex < mNbTriangles);
-
-    // Get the three vertex index of the three vertices of the triangle
-    uint32 verticesIndices[3];
-    getTriangleVerticesIndices(triangleIndex, verticesIndices);
-
-    // For each vertex of the triangle
-    for (uint32 k=0; k < 3; k++) {
-
-        const uchar* vertexNormalPointerChar = mVerticesNormalsStart + verticesIndices[k] * mVerticesNormalsStride;
-        const void* vertexNormalPointer = static_cast<const void*>(vertexNormalPointerChar);
-
-        // Get the normals from the array
-        if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE) {
-            const float* normal = static_cast<const float*>(vertexNormalPointer);
-            outTriangleVerticesNormals[k][0] = decimal(normal[0]);
-            outTriangleVerticesNormals[k][1] = decimal(normal[1]);
-            outTriangleVerticesNormals[k][2] = decimal(normal[2]);
-        }
-        else if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE) {
-            const double* normal = static_cast<const double*>(vertexNormalPointer);
-            outTriangleVerticesNormals[k][0] = decimal(normal[0]);
-            outTriangleVerticesNormals[k][1] = decimal(normal[1]);
-            outTriangleVerticesNormals[k][2] = decimal(normal[2]);
-        }
-        else {
-            assert(false);
-        }
+    else {
+        assert(false);
     }
 }
 
@@ -302,7 +137,7 @@ void TriangleVertexArray::getTriangleVerticesNormals(uint32 triangleIndex, Vecto
  * @param vertexIndex Index of a given vertex of the array
  * @param[out] outVertex Pointer to the output vertex coordinates
  */
-void TriangleVertexArray::getVertex(uint32 vertexIndex, Vector3* outVertex) {
+Vector3 TriangleVertexArray::getVertex(uint32 vertexIndex) const {
 
     assert(vertexIndex < mNbVertices);
 
@@ -311,16 +146,13 @@ void TriangleVertexArray::getVertex(uint32 vertexIndex, Vector3* outVertex) {
 
     // Get the vertices components of the triangle
     if (mVertexDataType == TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE) {
+
         const float* vertices = static_cast<const float*>(vertexPointer);
-        (*outVertex)[0] = decimal(vertices[0]);
-        (*outVertex)[1] = decimal(vertices[1]);
-        (*outVertex)[2] = decimal(vertices[2]);
+        return Vector3(decimal(vertices[0]), decimal(vertices[1]), decimal(vertices[2]));
     }
     else if (mVertexDataType == TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE) {
         const double* vertices = static_cast<const double*>(vertexPointer);
-        (*outVertex)[0] = decimal(vertices[0]);
-        (*outVertex)[1] = decimal(vertices[1]);
-        (*outVertex)[2] = decimal(vertices[2]);
+        return Vector3(decimal(vertices[0]), decimal(vertices[1]), decimal(vertices[2]));
     }
     else {
         assert(false);
@@ -332,7 +164,7 @@ void TriangleVertexArray::getVertex(uint32 vertexIndex, Vector3* outVertex) {
  * @param vertexIndex Index of a given vertex of the array
  * @param[out] outNormal Pointer to the output vertex normal
  */
-void TriangleVertexArray::getNormal(uint32 vertexIndex, Vector3* outNormal) {
+Vector3 TriangleVertexArray::getVertexNormal(uint32 vertexIndex) const {
 
     assert(vertexIndex < mNbVertices);
 
@@ -342,17 +174,15 @@ void TriangleVertexArray::getNormal(uint32 vertexIndex, Vector3* outNormal) {
     // Get the normals from the array
     if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE) {
         const float* normal = static_cast<const float*>(vertexNormalPointer);
-        (*outNormal)[0] = decimal(normal[0]);
-        (*outNormal)[1] = decimal(normal[1]);
-        (*outNormal)[2] = decimal(normal[2]);
+        return Vector3(decimal(normal[0]), decimal(normal[1]), decimal(normal[2]));
     }
     else if (mVertexNormaldDataType == TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE) {
         const double* normal = static_cast<const double*>(vertexNormalPointer);
-        (*outNormal)[0] = decimal(normal[0]);
-        (*outNormal)[1] = decimal(normal[1]);
-        (*outNormal)[2] = decimal(normal[2]);
+        return Vector3(decimal(normal[0]), decimal(normal[1]), decimal(normal[2]));
     }
     else {
         assert(false);
     }
+
+    return Vector3::zero();
 }

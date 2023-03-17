@@ -23,12 +23,13 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_POLYHEDRON_MESH_H
-#define REACTPHYSICS3D_POLYHEDRON_MESH_H
+#ifndef REACTPHYSICS3D_CONVEX_MESH_H
+#define REACTPHYSICS3D_CONVEX_MESH_H
 
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <reactphysics3d/containers/Array.h>
+#include <reactphysics3d/collision/shapes/AABB.h>
 #include "HalfEdgeStructure.h"
 
 namespace reactphysics3d {
@@ -36,13 +37,14 @@ namespace reactphysics3d {
 // Declarations
 class DefaultAllocator;
 class PolygonVertexArray;
+struct Message;
 
-// Class PolyhedronMesh
+// Class ConvexMesh
 /**
- * This class describes a polyhedron mesh made of faces and vertices.
- * The faces do not have to be triangles.
+ * This class describes a convex mesh made of faces and vertices.
+ * The faces are made of polygons (not only triangles).
  */
-class PolyhedronMesh {
+class ConvexMesh {
 
     private:
 
@@ -51,70 +53,77 @@ class PolyhedronMesh {
         /// Reference to the memory allocator
         MemoryAllocator& mMemoryAllocator;
 
-        /// Pointer the the polygon vertex array with vertices and faces
-        /// of the mesh
-        PolygonVertexArray* mPolygonVertexArray;
-
         /// Half-edge structure of the mesh
         HalfEdgeStructure mHalfEdgeStructure;
 
-        /// Array with the face normals
-        Vector3* mFacesNormals;
+        /// All the vertices of the mesh
+        Array<Vector3> mVertices;
 
-        /// Centroid of the polyhedron
+        /// Array with the face normals
+        Array<Vector3> mFacesNormals;
+
+        /// Centroid of the mesh
         Vector3 mCentroid;
 
-        /// True if we need to release the memory of the PolygonVertexArray
-        bool mReleasePolygonVertexArray;
+        /// Mesh minimum/maximum bounds in the three local x, y and z directions
+        AABB mBounds;
+
+        /// Volume of the mesh
+        decimal mVolume;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        PolyhedronMesh(PolygonVertexArray* polygonVertexArray, MemoryAllocator& allocator, bool releasePolygonVertexArray);
+        ConvexMesh(MemoryAllocator& allocator);
+
+        /// Initialize a mesh and returns errors if any
+        bool init(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors);
+
+        /// Copy the vertices into the mesh
+        bool copyVertices(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors);
 
         /// Create the half-edge structure of the mesh
-        bool createHalfEdgeStructure();
+        bool createHalfEdgeStructure(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& errors);
 
         /// Compute the faces normals
-        void computeFacesNormals();
+        bool computeFacesNormals(std::vector<Message>& errors);
 
-        /// Compute the centroid of the polyhedron
-        void computeCentroid() ;
+        /// Compute and return the face normal (not normalized)
+        Vector3 computeFaceNormal(uint32 faceIndex) const;
 
-        /// Compute and return the area of a face
-        decimal getFaceArea(uint32 faceIndex) const;
-
-        /// Static factory method to create a polyhedron mesh
-        static PolyhedronMesh* create(PolygonVertexArray* polygonVertexArray, MemoryAllocator& polyhedronMeshAllocator, MemoryAllocator& dataAllocator,
-                                      bool releasePolygonVertexArray);
+        /// Compute the volume of the mesh
+        void computeVolume();
 
     public:
 
         // -------------------- Methods -------------------- //
 
-        /// Destructor
-        ~PolyhedronMesh();
-
         /// Return the number of vertices
         uint32 getNbVertices() const;
 
         /// Return a vertex
-        Vector3 getVertex(uint32 index) const;
+        const Vector3& getVertex(uint32 index) const;
 
         /// Return the number of faces
         uint32 getNbFaces() const;
 
         /// Return a face normal
-        Vector3 getFaceNormal(uint32 faceIndex) const;
+        const Vector3& getFaceNormal(uint32 faceIndex) const;
 
         /// Return the half-edge structure of the mesh
         const HalfEdgeStructure& getHalfEdgeStructure() const;
 
-        /// Return the centroid of the polyhedron
-        Vector3 getCentroid() const;
+        /// Return the centroid of the mesh
+        const Vector3& getCentroid() const;
 
-        /// Compute and return the volume of the polyhedron
+        /// Return the bounds of the mesh in the x,y,z direction
+        const AABB& getBounds() const;
+
+        /// Compute and return the volume of the mesh
         decimal getVolume() const;
+
+        /// Return the local inertia tensor of the mesh
+        Vector3 getLocalInertiaTensor(decimal mass, Vector3 scale) const;
 
         // ---------- Friendship ---------- //
 
@@ -125,15 +134,25 @@ class PolyhedronMesh {
 /**
  * @return The number of vertices in the mesh
  */
-RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbVertices() const {
-    return mHalfEdgeStructure.getNbVertices();
+RP3D_FORCE_INLINE uint32 ConvexMesh::getNbVertices() const {
+    return mVertices.size();
+}
+
+/// Return a vertex
+/**
+ * @param index Index of a given vertex in the mesh
+ * @return The coordinates of a given vertex in the mesh
+ */
+RP3D_FORCE_INLINE const Vector3& ConvexMesh::getVertex(uint32 index) const {
+    assert(index < mVertices.size());
+    return mVertices[index];
 }
 
 // Return the number of faces
 /**
  * @return The number of faces in the mesh
  */
-RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbFaces() const {
+RP3D_FORCE_INLINE uint32 ConvexMesh::getNbFaces() const {
    return mHalfEdgeStructure.getNbFaces();
 }
 
@@ -142,7 +161,7 @@ RP3D_FORCE_INLINE uint32 PolyhedronMesh::getNbFaces() const {
  * @param faceIndex The index of a given face of the mesh
  * @return The normal vector of a given face of the mesh
  */
-RP3D_FORCE_INLINE Vector3 PolyhedronMesh::getFaceNormal(uint32 faceIndex) const {
+RP3D_FORCE_INLINE const Vector3& ConvexMesh::getFaceNormal(uint32 faceIndex) const {
     assert(faceIndex < mHalfEdgeStructure.getNbFaces());
     return mFacesNormals[faceIndex];
 }
@@ -151,7 +170,7 @@ RP3D_FORCE_INLINE Vector3 PolyhedronMesh::getFaceNormal(uint32 faceIndex) const 
 /**
  * @return The Half-Edge structure of the mesh
  */
-RP3D_FORCE_INLINE const HalfEdgeStructure& PolyhedronMesh::getHalfEdgeStructure() const {
+RP3D_FORCE_INLINE const HalfEdgeStructure& ConvexMesh::getHalfEdgeStructure() const {
     return mHalfEdgeStructure;
 }
 
@@ -159,8 +178,36 @@ RP3D_FORCE_INLINE const HalfEdgeStructure& PolyhedronMesh::getHalfEdgeStructure(
 /**
  * @return The centroid of the mesh
  */
-RP3D_FORCE_INLINE Vector3 PolyhedronMesh::getCentroid() const {
+RP3D_FORCE_INLINE const Vector3& ConvexMesh::getCentroid() const {
     return mCentroid;
+}
+
+// Return the volume of the convex mesh
+/**
+ * @return The volume of the mesh
+ */
+RP3D_FORCE_INLINE decimal ConvexMesh::getVolume() const {
+   return mVolume;
+}
+
+// Return the local inertia tensor of the mesh
+/// The local inertia tensor of the convex mesh is approximated using the inertia tensor
+/// of its bounding box.
+/**
+* @param mass Mass to use to compute the inertia tensor of the collision shape
+* @param scale Scaling factor for the mesh
+*/
+RP3D_FORCE_INLINE Vector3 ConvexMesh::getLocalInertiaTensor(decimal mass, Vector3 scale) const {
+
+    // TODO: We should compute a much better inertia tensor here (not using a box)
+
+    const decimal factor = (decimal(1.0) / decimal(3.0)) * mass;
+    const Vector3 realExtent = decimal(0.5) * scale * (mBounds.getMax() - mBounds.getMin());
+    assert(realExtent.x > 0 && realExtent.y > 0 && realExtent.z > 0);
+    const decimal xSquare = realExtent.x * realExtent.x;
+    const decimal ySquare = realExtent.y * realExtent.y;
+    const decimal zSquare = realExtent.z * realExtent.z;
+    return Vector3(factor * (ySquare + zSquare), factor * (xSquare + zSquare), factor * (xSquare + ySquare));
 }
 
 }

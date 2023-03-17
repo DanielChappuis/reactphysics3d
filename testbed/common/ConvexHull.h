@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2022 Daniel Chappuis                                       *
+* Copyright (c) 2010-2016 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -23,30 +23,28 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef CONVEX_HULL_H
+#define CONVEX_HULL_H
+
 // Libraries
-#include <reactphysics3d/collision/shapes/ConcaveShape.h>
+#include "openglframework.h"
+#include <reactphysics3d/reactphysics3d.h>
+#include "ConvexMesh.h"
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+// Class ConvexHull
+// Created from any triangular mesh this object will have a collider
+// that is the convex hull of the input triangular mesh
+class ConvexHull : public ConvexMesh {
 
-// Constructor
-ConcaveShape::ConcaveShape(CollisionShapeName name, MemoryAllocator& allocator, const Vector3& scaling)
-             : CollisionShape(name, CollisionShapeType::CONCAVE_SHAPE, allocator), mRaycastTestType(TriangleRaycastSide::FRONT),
-               mScale(scaling) {
+    private :
 
-}
+    public :
 
-// Compute and return the volume of the collision shape
-/// Note that we approximate the volume of a concave shape with the volume of its AABB
-decimal ConcaveShape::getVolume() const {
+        // -------------------- Methods -------------------- //
 
-    // Compute the local bounds
-    AABB aabb = getLocalBounds();
+        /// Constructor
+        ConvexHull(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+                   const std::string& meshPath, const rp3d::Vector3& scaling = rp3d::Vector3(1, 1, 1));
+};
 
-    const decimal lengthX = aabb.getMax().x - aabb.getMin().x;
-    const decimal lengthY = aabb.getMax().y - aabb.getMin().y;
-    const decimal lengthZ = aabb.getMax().z - aabb.getMin().z;
-
-    // Approximate the volume of the concave shape as the volume of its AABB
-    return lengthX * lengthY * lengthZ;
-}
+#endif

@@ -84,13 +84,10 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
                                       sizeof(Collider))) Collider(colliderEntity, this, mWorld.mMemoryManager);
 
     // Add the collider component to the entity of the body
-    Vector3 localBoundsMin;
-    Vector3 localBoundsMax;
-    // TODO : Maybe this method can directly returns an AABB
-    collisionShape->getLocalBounds(localBoundsMin, localBoundsMax);
+    AABB shapeAABB = collisionShape->getLocalBounds();
     const Transform localToWorldTransform = mWorld.mTransformComponents.getTransform(mEntity) * transform;
     Material material(mWorld.mConfig.defaultFrictionCoefficient, mWorld.mConfig.defaultBounciness);
-    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, AABB(localBoundsMin, localBoundsMax),
+    ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, shapeAABB,
                                                                   transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform, material);
     bool isActive = mWorld.mCollisionBodyComponents.getIsActive(mEntity);
     mWorld.mCollidersComponents.addComponent(colliderEntity, !isActive, colliderComponent);
@@ -110,8 +107,7 @@ Collider* CollisionBody::addCollider(CollisionShape* collisionShape, const Trans
 #endif
 
     // Compute the world-space AABB of the new collision shape
-    AABB aabb;
-    collisionShape->computeAABB(aabb, mWorld.mTransformComponents.getTransform(mEntity) * transform);
+    const AABB aabb = collisionShape->computeTransformedAABB(mWorld.mTransformComponents.getTransform(mEntity) * transform);
 
     // Notify the collision detection about this new collision shape
     mWorld.mCollisionDetection.addCollider(collider, aabb);
@@ -259,8 +255,7 @@ void CollisionBody::setIsActive(bool isActive) {
             Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
             // Compute the world-space AABB of the new collision shape
-            AABB aabb;
-            collider->getCollisionShape()->computeAABB(aabb, transform * mWorld.mCollidersComponents.getLocalToBodyTransform(collider->getEntity()));
+            const AABB aabb = collider->getCollisionShape()->computeTransformedAABB(transform * mWorld.mCollidersComponents.getLocalToBodyTransform(collider->getEntity()));
 
             // Add the collider to the collision detection
             mWorld.mCollisionDetection.addCollider(collider, aabb);
@@ -362,15 +357,13 @@ bool CollisionBody::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
 */
 AABB CollisionBody::getAABB() const {
 
-    AABB bodyAABB;
-
     const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
-    if (colliderEntities.size() == 0) return bodyAABB;
+    if (colliderEntities.size() == 0) return AABB();
 
     const Transform& transform = mWorld.mTransformComponents.getTransform(mEntity);
 
     Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[0]);
-    collider->getCollisionShape()->computeAABB(bodyAABB, transform * collider->getLocalToBodyTransform());
+    AABB bodyAABB = collider->getCollisionShape()->computeTransformedAABB(transform * collider->getLocalToBodyTransform());
 
     // For each collider of the body
     const uint32 nbColliderEntities = static_cast<uint32>(colliderEntities.size());
@@ -379,8 +372,7 @@ AABB CollisionBody::getAABB() const {
         Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
 
         // Compute the world-space AABB of the collider
-        AABB aabb;
-        collider->getCollisionShape()->computeAABB(aabb, transform * collider->getLocalToBodyTransform());
+        const AABB aabb = collider->getCollisionShape()->computeTransformedAABB(transform * collider->getLocalToBodyTransform());
 
         // Merge the collider AABB with the current body AABB
         bodyAABB.mergeWithAABB(aabb);
@@ -465,3 +457,22 @@ Vector3 CollisionBody::getLocalPoint(const Vector3& worldPoint) const {
 Vector3 CollisionBody::getLocalVector(const Vector3& worldVector) const {
     return mWorld.mTransformComponents.getTransform(mEntity).getOrientation().getInverse() * worldVector;
 }
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+// Set the profiler
+void CollisionBody::setProfiler(Profiler* profiler) {
+
+    mProfiler = profiler;
+
+    // Set the profiler for each collider
+    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
+
+        Collider* collider = mWorld.mCollidersComponents.getCollider(colliderEntities[i]);
+
+        collider->setProfiler(profiler);
+    }
+}
+
+#endif

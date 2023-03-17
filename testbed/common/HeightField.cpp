@@ -34,7 +34,6 @@ HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
     // Compute the scaling matrix
-    //mScalingMatrix = openglframework::Matrix4::identity();
     mScalingMatrix = openglframework::Matrix4(0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1);
 
     // Generate the height field
@@ -45,8 +44,12 @@ HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(NB_POINTS_WIDTH, NB_POINTS_LENGTH, mMinHeight, mMaxHeight,
-                                                   mHeightData, rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);
+    std::vector<rp3d::Message> messages;
+    mHeightField = mPhysicsCommon.createHeightField(NB_POINTS_WIDTH, NB_POINTS_LENGTH,
+                                                    mHeightData, rp3d::HeightField::HeightDataType::HEIGHT_FLOAT_TYPE,
+                                                    messages);
+    assert(mHeightField != nullptr);
+    mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(mHeightField);
     mHeightFieldShape->setScale(rp3d::Vector3(0.5, 0.5, 0.5));
 
     mPreviousTransform = rp3d::Transform::identity();
@@ -62,7 +65,6 @@ HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
         mBody = physicsWorld->createCollisionBody(mPreviousTransform);
         mCollider = mBody->addCollider(mHeightFieldShape, rp3d::Transform::identity());
     }
-
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -91,6 +93,7 @@ HeightField::~HeightField() {
         mPhysicsWorld->destroyCollisionBody(mBody);
     }
     mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
+    mPhysicsCommon.destroyHeightField(mHeightField);
 }
 
 // Render the sphere at the correct position and with the correct orientation

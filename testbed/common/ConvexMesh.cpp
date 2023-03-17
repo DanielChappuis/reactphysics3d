@@ -26,13 +26,12 @@
 // Libraries
 #include "ConvexMesh.h"
 #include <unordered_set>
+#include <reactphysics3d/utils/Message.h>
 
 // Constructor
 ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                        const std::string& meshPath, const rp3d::Vector3& scaling)
-           : PhysicsObject(physicsCommon, meshPath), mPhysicsWorld(physicsWorld), mVBOVertices(GL_ARRAY_BUFFER),
-             mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-             mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
+           : ConvexMesh(physicsCommon, physicsWorld, meshPath) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0,
@@ -40,12 +39,11 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
                                               0, 0, scaling.z, 0,
                                               0, 0, 0, 1);
 
-    // Polygon faces descriptions for the polyhedron
-    mPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[getNbFaces(0)];
-    rp3d::PolygonVertexArray::PolygonFace* face = mPolygonFaces;
+    // Polygon faces descriptions for the convex mesh
+    std::vector<rp3d::PolygonVertexArray::PolygonFace> polygonFaces;
     for (unsigned int f=0; f < getNbFaces(0); f++) {
 
-		for (int v = 0; v < 3; v++) {
+        for (int v = 0; v < 3; v++) {
 			
 			const openglframework::Vector3 vertex = mVertices[mIndices[0][f*3 + v]];
 			int vIndex = findVertexIndex(mConvexMeshVertices, vertex);
@@ -57,25 +55,40 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
 			mConvexMeshIndices.push_back(vIndex);
 		}
 
-        face->indexBase = f * 3;
-        face->nbVertices = 3;
-        face++;
+        rp3d::PolygonVertexArray::PolygonFace face;
+        face.indexBase = f * 3;
+        face.nbVertices = 3;
+        polygonFaces.push_back(face);
     }
 
     // Create the polygon vertex array
-    mPolygonVertexArray =
-            new rp3d::PolygonVertexArray(mConvexMeshVertices.size(), &(mConvexMeshVertices[0]), sizeof(openglframework::Vector3),
-                                         &(mConvexMeshIndices[0]), sizeof(int),
-                                         getNbFaces(0), mPolygonFaces,
-                                         rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-                                         rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+    rp3d::PolygonVertexArray polygonVertexArray(mConvexMeshVertices.size(), &(mConvexMeshVertices[0]), sizeof(openglframework::Vector3),
+                                             &(mConvexMeshIndices[0]), sizeof(int),
+                                             getNbFaces(0), &(polygonFaces[0]),
+                                             rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                             rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
-    // Create the polyhedron mesh
-    mPolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mPolygonVertexArray);
+    // Create the convex mesh
+    std::vector<rp3d::Message> messages;
+    mConvexMesh = mPhysicsCommon.createConvexMesh(polygonVertexArray, messages);
+    if (messages.size() > 0) {
+        std::cout << "ConvexMesh creation:" << std::endl;
+    }
+    for (const rp3d::Message& message: messages) {
+        std::string messageType;
+        switch(message.type) {
+            case rp3d::Message::Type::Information: messageType = "info"; break;
+            case rp3d::Message::Type::Warning: messageType = "warning"; break;
+            case rp3d::Message::Type::Error: messageType = "error"; break;
+        }
+
+        std::cout << "Message (" << messageType << "): " << message.text << std::endl;
+    }
+    assert(mConvexMesh != nullptr);
 
     // Create the collision shape for the rigid body (convex mesh shape) and do
     // not forget to delete it at the end
-    mConvexShape = mPhysicsCommon.createConvexMeshShape(mPolyhedronMesh, scaling);
+    mConvexShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh, scaling);
 
     mPreviousTransform = rp3d::Transform::identity();
 
@@ -92,10 +105,19 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
         mCollider = mBody->addCollider(mConvexShape, rp3d::Transform::identity());
     }
 
+    mTransformMatrix = mTransformMatrix * mScalingMatrix;
+}
+
+// Constructor (only for derived classes)
+ConvexMesh::ConvexMesh(rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshPath)
+           : PhysicsObject(physicsCommon, meshPath), mPhysicsWorld(physicsWorld), mVBOVertices(GL_ARRAY_BUFFER),
+             mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
+             mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
+
+    mPreviousTransform = rp3d::Transform::identity();
+
     // Create the VBOs and VAO
     createVBOAndVAO();
-
-    mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
 
 // Destructor
@@ -120,9 +142,7 @@ ConvexMesh::~ConvexMesh() {
     }
 
     mPhysicsCommon.destroyConvexMeshShape(mConvexShape);
-    mPhysicsCommon.destroyPolyhedronMesh(mPolyhedronMesh);
-    delete mPolygonVertexArray;
-    delete[] mPolygonFaces;
+    mPhysicsCommon.destroyConvexMesh(mConvexMesh);
 }
 
 // Render the sphere at the correct position and with the correct orientation
@@ -251,4 +271,3 @@ int ConvexMesh::findVertexIndex(const std::vector<openglframework::Vector3>& ver
 
 	return -1;
 }
-

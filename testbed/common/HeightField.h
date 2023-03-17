@@ -46,6 +46,7 @@ class HeightField : public PhysicsObject {
         float mHeightData[NB_POINTS_WIDTH * NB_POINTS_LENGTH];
 
         /// Collision shape
+        rp3d::HeightField* mHeightField;
         rp3d::HeightFieldShape* mHeightFieldShape;
         rp3d::Collider* mCollider;
 

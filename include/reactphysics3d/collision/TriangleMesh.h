@@ -30,74 +30,165 @@
 #include <cassert>
 #include <reactphysics3d/containers/Array.h>
 #include <reactphysics3d/memory/MemoryAllocator.h>
+#include <reactphysics3d/collision/broadphase/DynamicAABBTree.h>
+#include <reactphysics3d/containers/Map.h>
 
 namespace reactphysics3d {
 
 // Declarations
 class TriangleVertexArray;
+struct Message;
 
 // Class TriangleMesh
 /**
- * This class represents a mesh made of triangles. A TriangleMesh contains
- * one or several parts. Each part is a set of triangles represented in a
- * TriangleVertexArray object describing all the triangles vertices of the part.
- * A TriangleMesh object can be used to create a ConcaveMeshShape from a triangle
- * mesh for instance.
+ * This class represents a mesh made of triangles.
+ * A single TriangleMesh object can be used to create one or many ConcaveMeshShape (with
+ * different scaling for instance).
  */
 class TriangleMesh {
 
     protected:
 
-        /// All the triangle arrays of the mesh (one triangle array per part)
-        Array<TriangleVertexArray*> mTriangleArrays;
+        /// Reference to the memory allocator
+        MemoryAllocator& mAllocator;
+
+        /// All the vertices of the mesh
+        Array<Vector3> mVertices;
+
+        /// The three vertices indices for each triangle face of the mesh
+        Array<uint32> mTriangles;
+
+        /// The normal vector at each vertex of the mesh
+        Array<Vector3> mVerticesNormals;
+
+        /// Dynamic AABB tree to accelerate collision with the triangles
+        DynamicAABBTree mDynamicAABBTree;
+
+        /// Epsilon value for this mesh
+        decimal mEpsilon;
 
         /// Constructor
         TriangleMesh(reactphysics3d::MemoryAllocator& allocator);
 
+        /// Copy the vertices into the mesh
+        bool copyVertices(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages);
+
+        /// Copy or compute the vertices normals
+        void computeVerticesNormals();
+
+        /// Compute the epsilon value for this mesh
+        void computeEpsilon(const TriangleVertexArray& triangleVertexArray);
+
+        /// Copy the triangles into the mesh
+        bool copyData(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& errors);
+
+        /// Insert all the triangles into the dynamic AABB tree
+        void initBVHTree();
+
+        /// Initialize the mesh using a TriangleVertexArray
+        bool init(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages);
+
+        /// Report all shapes overlapping with the AABB given in parameter.
+        void reportAllShapesOverlappingWithAABB(const AABB& aabb, Array<int32>& overlappingNodes);
+
+        /// Remove the ununsed vertices (because they are not used in any triangles or are part of discarded triangles)
+        void removeUnusedVertices(Array<bool>& areUsedVertices);
+
+        /// Return the integer data of leaf node of the dynamic AABB tree
+        int32 getDynamicAABBTreeNodeDataInt(int32 nodeID) const;
+
+        /// Ray casting method
+        void raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& callback) const;
+
     public:
 
-        /// Destructor
-        ~TriangleMesh();
+        /// Return the number of vertices in the mesh
+        uint32 getNbVertices() const;
 
-        /// Add a subpart of the mesh
-        void addSubpart(TriangleVertexArray* triangleVertexArray);
+        /// Return the number of triangles faces of the mesh
+        uint32 getNbTriangles() const;
 
-        /// Return a pointer to a given subpart (triangle vertex array) of the mesh
-        TriangleVertexArray* getSubpart(uint32 indexSubpart) const;
+        /// Return the bounds of the mesh in the x,y,z direction
+        const AABB& getBounds() const;
 
-        /// Return the number of subparts of the mesh
-        uint32 getNbSubparts() const;
+        /// Return the three vertex indices of a given triangle face
+        void getTriangleVerticesIndices(uint32 triangleIndex, uint32& outV1Index, uint32& outV2Index,
+                                      uint32& outV3Index) const;
 
+        /// Return the coordinates of the three vertices of a given triangle face
+        void getTriangleVertices(uint32 triangleIndex, Vector3& outV1, Vector3& outV2, Vector3& outV3) const;
+
+        /// Return the normals of the three vertices of a given triangle face
+        void getTriangleVerticesNormals(uint32 triangleIndex, Vector3& outN1,
+                                        Vector3& outN2, Vector3& outN3) const;
+
+        /// Return the coordinates of a given vertex
+        const Vector3& getVertex(uint32 vertexIndex) const;
+
+        /// Return the normal of a given vertex
+        const Vector3& getVertexNormal(uint32 vertexIndex) const;
 
         // ---------- Friendship ---------- //
 
         friend class PhysicsCommon;
+        friend class ConcaveMeshShape;
 };
 
-// Add a subpart of the mesh
-/**
- * @param triangleVertexArray Pointer to the TriangleVertexArray to add into the mesh
- */
-RP3D_FORCE_INLINE void TriangleMesh::addSubpart(TriangleVertexArray* triangleVertexArray) {
-    mTriangleArrays.add(triangleVertexArray );
+// Return the number of vertices in the mesh
+RP3D_FORCE_INLINE uint32 TriangleMesh::getNbVertices() const {
+    return mVertices.size();
 }
 
-// Return a pointer to a given subpart (triangle vertex array) of the mesh
-/**
- * @param indexSubpart The index of the sub-part of the mesh
- * @return A pointer to the triangle vertex array of a given sub-part of the mesh
- */
-RP3D_FORCE_INLINE TriangleVertexArray* TriangleMesh::getSubpart(uint32 indexSubpart) const {
-   assert(indexSubpart < mTriangleArrays.size());
-   return mTriangleArrays[indexSubpart];
+// Return the number of triangles faces of the mesh
+RP3D_FORCE_INLINE uint32 TriangleMesh::getNbTriangles() const {
+    return mTriangles.size() / 3;
 }
 
-// Return the number of sub-parts of the mesh
-/**
- * @return The number of sub-parts of the mesh
- */
-RP3D_FORCE_INLINE uint32 TriangleMesh::getNbSubparts() const {
-    return static_cast<uint32>(mTriangleArrays.size());
+// Return the three vertex indices of a given triangle face
+RP3D_FORCE_INLINE void TriangleMesh::getTriangleVerticesIndices(uint32 triangleIndex, uint32& outV1Index,
+                                                                uint32& outV2Index, uint32& outV3Index) const {
+   assert(triangleIndex < mTriangles.size() / 3);
+
+   outV1Index = mTriangles[triangleIndex * 3];
+   outV2Index = mTriangles[triangleIndex * 3 + 1];
+   outV3Index = mTriangles[triangleIndex * 3 + 2];
+}
+
+// Return the coordinates of the three vertices of a given triangle face
+RP3D_FORCE_INLINE void TriangleMesh::getTriangleVertices(uint32 triangleIndex, Vector3& outV1, Vector3& outV2,
+                                                         Vector3& outV3) const {
+    assert(triangleIndex < mTriangles.size() / 3);
+
+    outV1 = mVertices[mTriangles[triangleIndex * 3]];
+    outV2 = mVertices[mTriangles[triangleIndex * 3 + 1]];
+    outV3 = mVertices[mTriangles[triangleIndex * 3 + 2]];
+}
+
+// Return the normals of the three vertices of a given triangle face
+RP3D_FORCE_INLINE void TriangleMesh::getTriangleVerticesNormals(uint32 triangleIndex, Vector3& outN1,
+                                                                Vector3& outN2, Vector3& outN3) const {
+    assert(triangleIndex < mTriangles.size() / 3);
+
+    outN1 = mVerticesNormals[mTriangles[triangleIndex * 3]];
+    outN2 = mVerticesNormals[mTriangles[triangleIndex * 3 + 1]];
+    outN3 = mVerticesNormals[mTriangles[triangleIndex * 3 + 2]];
+
+    // TODO : REMOVE
+    assert(outN1.length() > MACHINE_EPSILON);
+    assert(outN2.length() > MACHINE_EPSILON);
+    assert(outN3.length() > MACHINE_EPSILON);
+}
+
+// Return the coordinates of a given vertex
+RP3D_FORCE_INLINE const Vector3& TriangleMesh::getVertex(uint32 vertexIndex) const {
+    assert(vertexIndex < mVertices.size());
+    return mVertices[vertexIndex];
+}
+
+// Return the normal of a given vertex
+RP3D_FORCE_INLINE const Vector3& TriangleMesh::getVertexNormal(uint32 vertexIndex) const {
+    assert(vertexIndex < mVertices.size());
+   return mVerticesNormals[vertexIndex];
 }
 
 }

@@ -25,6 +25,7 @@
 
 // Libraries
 #include "ConcaveMesh.h"
+#include <reactphysics3d/utils/Message.h>
 
 // Constructor
 ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
@@ -39,21 +40,30 @@ ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
                                               0, 0, scaling.z, 0,
                                               0, 0, 0, 1);
 
-    mPhysicsTriangleMesh = mPhysicsCommon.createTriangleMesh();
 
-    // For each subpart of the mesh
-    for (unsigned int i=0; i<getNbParts(); i++) {
+    // Vertex and Indices array for the triangle mesh (data in shared and not copied)
+    rp3d::TriangleVertexArray vertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
+                                          getNbFaces(0), &(mIndices[0][0]), 3 * sizeof(int),
+                                          rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                          rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
-        // Vertex and Indices array for the triangle mesh (data in shared and not copied)
-        rp3d::TriangleVertexArray* vertexArray =
-                new rp3d::TriangleVertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
-                                              getNbFaces(i), &(mIndices[i][0]), 3 * sizeof(int),
-                                              rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-                                              rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-
-        // Add the triangle vertex array of the subpart to the triangle mesh
-        mPhysicsTriangleMesh->addSubpart(vertexArray);
+    // Add the triangle vertex array of the subpart to the triangle mesh
+    std::vector<rp3d::Message> messages;
+    mPhysicsTriangleMesh = mPhysicsCommon.createTriangleMesh(vertexArray, messages);
+    if (messages.size() > 0) {
+        std::cout << "ConcaveMesh creation:" << std::endl;
     }
+    for (const rp3d::Message& message: messages) {
+        std::string messageType;
+        switch(message.type) {
+            case rp3d::Message::Type::Information: messageType = "info"; break;
+            case rp3d::Message::Type::Warning: messageType = "warning"; break;
+            case rp3d::Message::Type::Error: messageType = "error"; break;
+        }
+
+        std::cout << "Message (" << messageType << "): " << message.text << std::endl;
+    }
+    assert(mPhysicsTriangleMesh != nullptr);
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
@@ -82,11 +92,6 @@ ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
 // Destructor
 ConcaveMesh::~ConcaveMesh() {
 
-    // Destroy the triangle mesh data for the physics engine
-    for (unsigned int i=0; i<mPhysicsTriangleMesh->getNbSubparts(); i++) {
-        delete mPhysicsTriangleMesh->getSubpart(i);
-    }
-
     // Destroy the mesh
     destroy();
 
@@ -105,6 +110,8 @@ ConcaveMesh::~ConcaveMesh() {
         mPhysicsWorld->destroyCollisionBody(mBody);
     }
     mPhysicsCommon.destroyConcaveMeshShape(mConcaveShape);
+
+    mPhysicsCommon.destroyTriangleMesh(mPhysicsTriangleMesh);
 }
 
 // Render the sphere at the correct position and with the correct orientation

@@ -39,8 +39,7 @@ struct Vector3;
  * This class is used to describe the vertices and faces of a triangular mesh.
  * A TriangleVertexArray represents a continuous array of vertices and indexes
  * of a triangular mesh. When you create a TriangleVertexArray, no data is copied
- * into the array. It only stores pointer to the data. The purpose is to allow
- * the user to share vertices data between the physics engine and the rendering
+ * into the array. It only stores pointer to the data.
  * part. Therefore, make sure that the data pointed by a TriangleVertexArray
  * remains valid during the TriangleVertexArray life.
  */
@@ -97,12 +96,9 @@ class TriangleVertexArray {
         IndexDataType mIndexDataType;
 
         /// True if the vertices normals are provided by the user
-        bool mAreVerticesNormalsProvidedByUser;
+        bool mHasNormals;
 
         // -------------------- Methods -------------------- //
-
-        /// Compute the vertices normals when they are not provided by the user
-        void computeVerticesNormals();
 
     public:
 
@@ -120,9 +116,6 @@ class TriangleVertexArray {
                             VertexDataType vertexDataType, NormalDataType normalDataType,
                             IndexDataType indexDataType);
 
-        /// Destructor
-        ~TriangleVertexArray();
-
         /// Deleted assignment operator
         TriangleVertexArray& operator=(const TriangleVertexArray& triangleVertexArray) = delete;
 
@@ -134,6 +127,9 @@ class TriangleVertexArray {
 
         /// Return the vertex normal data type
         NormalDataType getVertexNormalDataType() const;
+
+        /// Return true if the vertices normal have been provided by the user
+        bool getHasNormals() const;
 
         /// Return the index data type
         IndexDataType getIndexDataType() const;
@@ -162,20 +158,15 @@ class TriangleVertexArray {
         /// Return the pointer to the start of the indices array
         const void* getIndicesStart() const;
 
-        /// Return the vertices coordinates of a triangle
-        void getTriangleVertices(uint32 triangleIndex, Vector3* outTriangleVertices) const;
-
-        /// Return the three vertices normals of a triangle
-        void getTriangleVerticesNormals(uint32 triangleIndex, Vector3* outTriangleVerticesNormals) const;
-
-        /// Return the indices of the three vertices of a given triangle in the array
-        void getTriangleVerticesIndices(uint32 triangleIndex, uint32* outVerticesIndices) const;
+        /// Return the three vertex indices of a given triangle face
+        void getTriangleVerticesIndices(uint32 triangleIndex, uint32& outV1Index, uint32& outV2Index,
+                                      uint32& outV3Index) const;
 
         /// Return a vertex of the array
-        void getVertex(uint32 vertexIndex, Vector3* outVertex);
+        Vector3 getVertex(uint32 vertexIndex) const;
 
         /// Return a vertex normal of the array
-        void getNormal(uint32 vertexIndex, Vector3* outNormal);
+        Vector3 getVertexNormal(uint32 vertexIndex) const;
 };
 
 // Return the vertex data type
@@ -264,6 +255,14 @@ RP3D_FORCE_INLINE const void* TriangleVertexArray::getVerticesNormalsStart() con
  */
 RP3D_FORCE_INLINE const void* TriangleVertexArray::getIndicesStart() const {
     return mIndicesStart;
+}
+
+// Return true if the vertices normals have been provided by the user
+/**
+ * @return True if the vertices normals have been provided by the user
+ */
+RP3D_FORCE_INLINE bool TriangleVertexArray::getHasNormals() const {
+    return mHasNormals;
 }
 
 }

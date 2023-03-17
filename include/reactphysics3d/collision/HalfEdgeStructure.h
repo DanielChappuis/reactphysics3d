@@ -59,7 +59,7 @@ class HalfEdgeStructure {
             Face(MemoryAllocator& allocator) : edgeIndex(0), faceVertices(allocator) {}
 
             /// Constructor
-            Face(const Array<uint32>& vertices) : edgeIndex(0), faceVertices(vertices) {}
+            Face(const Array<uint32>& vertices) : edgeIndex(0), faceVertices(vertices) {}    
         };
 
         /// Vertex
@@ -121,6 +121,9 @@ class HalfEdgeStructure {
 
         /// Return a given vertex
         const Vertex& getVertex(uint32 index) const;
+
+        /// Reserve some memory for vertices, faces and edges
+        void reserve(uint32 facesCapacity, uint32 verticesCapacity, uint32 edgesCapacity);
 
         /// Return a string representation of the half-edge structure
         std::string to_string() const;

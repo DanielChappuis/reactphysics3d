@@ -30,13 +30,16 @@
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/containers/Map.h>
+#include <reactphysics3d/containers/Set.h>
 #include <reactphysics3d/utils/quickhull/QHHalfEdgeStructure.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 
 // Declarations
-class PolyhedronMesh;
+class ConvexMesh;
+class VertexArray;
+struct Message;
 template<typename T>
 class Array;
 
@@ -55,9 +58,8 @@ class QuickHull {
             const QHHalfEdgeStructure::Edge* currentEdge;
 
             // Constructor
-            CandidateFace(const QHHalfEdgeStructure::Face* face, const QHHalfEdgeStructure::Edge* startEdge,
-                          const QHHalfEdgeStructure::Edge* currentEdge)
-                :face(face), startEdge(startEdge), currentEdge(currentEdge) {}
+            CandidateFace(const QHHalfEdgeStructure::Face* face, const QHHalfEdgeStructure::Edge* edge)
+                :face(face), startEdge(edge), currentEdge(edge) {}
         };
 
         // -------------------- Constants -------------------- //
@@ -70,14 +72,13 @@ class QuickHull {
         // -------------------- Methods -------------------- //
 
         // Compute the initial tetrahedron convex hull
-        static void computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
+        static bool computeInitialHull(Array<Vector3>& points, QHHalfEdgeStructure& convexHull,
                                        Array<QHHalfEdgeStructure::Face*>& initialFaces,
                                        Array<uint32>& orphanPointsIndices,
-                                       MemoryAllocator& allocator);
+                                       MemoryAllocator& allocator, std::vector<Message>& errors);
 
         /// Extract the points from the array
-        static void extractPoints(uint32 nbPoints, const void* pointsStart, uint32 pointsStride,
-                                  PolygonVertexArray::VertexDataType pointDataType, Array<Vector3>& outArray);
+        static void extractPoints(const VertexArray& vertexArray, Array<Vector3>& outArray);
 
         /// Add a vertex to the current convex hull to expand it
         static void addVertexToHull(uint32 vertexIndex, QHHalfEdgeStructure::Face* face, Array<Vector3>& points,
@@ -105,23 +106,30 @@ class QuickHull {
                                 Array<QHHalfEdgeStructure::Face*>& outVisibleFaces,
                                 decimal epsilon);
 
-        /// Iterate over all new faces and fix faces that are forming a concave shape in order to always keep the hull convex
-        static void mergeConcaveFaces(QHHalfEdgeStructure& convexHull,
-                                      Array<QHHalfEdgeStructure::Face*>& newFaces, const Array<Vector3>& points, decimal epsilon);
+        /// Fix faces that are forming a concave or coplanar shape (by giving priority to large faces)
+        static void mergeLargeConcaveFaces(QHHalfEdgeStructure& convexHull, Array<QHHalfEdgeStructure::Face*>& newFaces,
+                                          const Array<Vector3>& points, decimal epsilon, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
+
+        /// Fix faces that are forming a concave or coplanar shape
+        static void mergeConcaveFaces(QHHalfEdgeStructure& convexHull, Array<QHHalfEdgeStructure::Face*>& newFaces,
+                                      const Array<Vector3>& points, decimal epsilon,
+                                      Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Merge two faces that are concave at a given edge
         static void mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfEdgeStructure& convexHull,
-                                            const Array<Vector3>& points);
+                                            const Array<Vector3>& points, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Fix topological issues (if any) that might have been created during faces merge
-        static void fixTopologicalIssues(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
+        static void fixTopologicalIssues(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face,
+                                         const Array<Vector3>& points, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Fix topological issue at a given edge
         static void fixTopologicalIssueAtEdge(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face,
-                                              QHHalfEdgeStructure::Edge* inEdge, const Array<Vector3>& points);
+                                              QHHalfEdgeStructure::Edge* inEdge, const Array<Vector3>& points,
+                                              Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
-        /// Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
-        static void recalculateFace(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
+        /// Remove duplicated vertices in the input array of points
+        static void removeDuplicatedVertices(Array<Vector3>& points, MemoryAllocator& allocator);
 
         /// Return the index of the next vertex candidate to be added to the hull
         static void findNextVertexCandidate(Array<Vector3>& points, uint32& outNextVertexIndex,
@@ -129,12 +137,13 @@ class QuickHull {
                                             QHHalfEdgeStructure::Face*& outNextFace, decimal epsilon);
 
         /// Find the closest face for a given vertex and add this vertex to the remaining closest points for this face
-        static void findClosestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points, decimal epsilon);
+        static void findFarthestFaceForVertex(uint32 vertexIndex, Array<QHHalfEdgeStructure::Face*>& faces, Array<Vector3>& points,
+                                             decimal epsilon, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Take all the points closest to the old face and add them to the closest faces among the new faces that replace the old face
         static void associateOrphanPointsToNewFaces(Array<uint32>& orphanPointsIndices,
                                                     Array<QHHalfEdgeStructure::Face*>& newFaces,
-                                                    Array<Vector3>& points, decimal epsilon);
+                                                    Array<Vector3>& points, decimal epsilon, Set<QHHalfEdgeStructure::Face*>& deletedFaces);
 
         /// Return true if the vertex is part of horizon edges
         static bool testIsVertexInHorizon(QHHalfEdgeStructure::Vertex* vertex, const Array<QHHalfEdgeStructure::Vertex*>& horizonVertices);
@@ -145,18 +154,23 @@ class QuickHull {
         /// Compute the center of a face (the average of face vertices)
         static Vector3 computeFaceCenter(QHHalfEdgeStructure::Face* face, const Array<Vector3>& points);
 
-        // TODO : Remove this
-        static std::string showMap(Map<const QHHalfEdgeStructure::Face*, Array<uint32>>& mapFaceIndexToRemainingClosestPoints);
-
+        /// Compute the final PolygonVertexArray from the convex hull half-edge structure
+        static void computeFinalPolygonVertexArray(const QHHalfEdgeStructure& convexHull,
+                                                   const Array<Vector3>& points,
+                                                   PolygonVertexArray& outPolygonVertexArray,
+                                                   Array<float>& outVertices, Array<unsigned int>& outIndices,
+                                                   Array<PolygonVertexArray::PolygonFace>& outFaces,
+                                                   MemoryAllocator& allocator);
 
     public:
 
         // -------------------- Methods -------------------- //
 
-        /// Compute the convex hull of a set of points and return the resulting polyhedron mesh
-        static PolyhedronMesh* computeConvexHull(uint32 nbPoints, const void* points, uint32 pointsStride,
-                                                 PolygonVertexArray::VertexDataType pointDataType,
-                                                 MemoryAllocator& allocator);
+        /// Compute the convex hull of a set of points and returns true if there are no errors
+        static bool computeConvexHull(const VertexArray& vertexArray, PolygonVertexArray& outPolygonVertexArray,
+                                      Array<float>& outVertices, Array<unsigned int>& outIndices,
+                                      Array<PolygonVertexArray::PolygonFace>& outFaces,
+                                      MemoryAllocator& allocator, std::vector<Message>& errors);
 
 
 

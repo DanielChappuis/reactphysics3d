@@ -59,8 +59,8 @@ struct CollisionPointData {
 
 	bool isContactPointSimilarTo(const Vector3& pointBody1, const Vector3& pointBody2, decimal penDepth, decimal epsilon = 0.001) const {
 
-		return approxEqual(pointBody1, localPointBody1, epsilon) &&
-			   approxEqual(pointBody2, localPointBody2, epsilon) &&
+        return Vector3::approxEqual(pointBody1, localPointBody1, epsilon) &&
+               Vector3::approxEqual(pointBody2, localPointBody2, epsilon) &&
 			   approxEqual(penetrationDepth, penDepth, epsilon);
 	}
 };
@@ -302,11 +302,8 @@ class TestCollisionWorld : public Test {
         Collider* mConvexMeshCollider2;
         Collider* mConcaveMeshCollider;
 
-		PolygonVertexArray* mConvexMesh1PolygonVertexArray;
-		PolygonVertexArray* mConvexMesh2PolygonVertexArray;
-		PolyhedronMesh* mConvexMesh1PolyhedronMesh;
-		PolyhedronMesh* mConvexMesh2PolyhedronMesh;
-		PolygonVertexArray::PolygonFace* mConvexMeshPolygonFaces;
+        ConvexMesh* mConvexMesh1;
+        ConvexMesh* mConvexMesh2;
 
         TriangleVertexArray* mConcaveMeshTriangleVertexArray;
         float mConvexMesh1CubeVertices[8 * 3];
@@ -383,19 +380,21 @@ class TestCollisionWorld : public Test {
             mConvexMeshCubeIndices[16] = 2; mConvexMeshCubeIndices[17] = 3; mConvexMeshCubeIndices[18] = 7; mConvexMeshCubeIndices[19] = 6;
             mConvexMeshCubeIndices[20] = 0; mConvexMeshCubeIndices[21] = 4; mConvexMeshCubeIndices[22] = 7; mConvexMeshCubeIndices[23] = 3;
 
-			mConvexMeshPolygonFaces = new rp3d::PolygonVertexArray::PolygonFace[6];
-			rp3d::PolygonVertexArray::PolygonFace* face = mConvexMeshPolygonFaces;
+            PolygonVertexArray::PolygonFace convexMeshPolygonFaces[6];
+            rp3d::PolygonVertexArray::PolygonFace* face = convexMeshPolygonFaces;
 			for (int f = 0; f < 6; f++) {
                 face->indexBase = f * 4;
 				face->nbVertices = 4;
 				face++;
 			}
-            mConvexMesh1PolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMesh1CubeVertices[0]), 3 * sizeof(float),
-					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
+            PolygonVertexArray convexMesh1PolygonVertexArray(8, &(mConvexMesh1CubeVertices[0]), 3 * sizeof(float),
+                    &(mConvexMeshCubeIndices[0]), sizeof(int), 6, convexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            mConvexMesh1PolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMesh1PolygonVertexArray);
-            mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1PolyhedronMesh);
+            std::vector<Message> errors;
+            mConvexMesh1 = mPhysicsCommon.createConvexMesh(convexMesh1PolygonVertexArray, errors);
+            rp3d_test(mConvexMesh1 != nullptr);
+            mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1);
             Transform convexMeshTransform1(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshBody1 = mWorld->createCollisionBody(convexMeshTransform1);
             mConvexMeshCollider1 = mConvexMeshBody1->addCollider(mConvexMeshShape1, Transform::identity());
@@ -409,17 +408,19 @@ class TestCollisionWorld : public Test {
             mConvexMesh2CubeVertices[18] = 4; mConvexMesh2CubeVertices[19] = 2; mConvexMesh2CubeVertices[20] = -8;
             mConvexMesh2CubeVertices[21] = -4; mConvexMesh2CubeVertices[22] = 2; mConvexMesh2CubeVertices[23] = -8;
 
-            mConvexMesh2PolygonVertexArray = new rp3d::PolygonVertexArray(8, &(mConvexMesh2CubeVertices[0]), 3 * sizeof(float),
-					&(mConvexMeshCubeIndices[0]), sizeof(int), 6, mConvexMeshPolygonFaces,
+            PolygonVertexArray convexMesh2PolygonVertexArray(8, &(mConvexMesh2CubeVertices[0]), 3 * sizeof(float),
+                    &(mConvexMeshCubeIndices[0]), sizeof(int), 6, convexMeshPolygonFaces,
 					rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-            mConvexMesh2PolyhedronMesh = mPhysicsCommon.createPolyhedronMesh(mConvexMesh2PolygonVertexArray);
-            mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2PolyhedronMesh);
+            errors.clear();
+            mConvexMesh2 = mPhysicsCommon.createConvexMesh(convexMesh2PolygonVertexArray, errors);
+            rp3d_test(mConvexMesh2 != nullptr);
+            mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2);
             Transform convexMeshTransform2(Vector3(20, 0, 0), Quaternion::identity());
             mConvexMeshBody2 = mWorld->createCollisionBody(convexMeshTransform2);
             mConvexMeshCollider2 = mConvexMeshBody2->addCollider(mConvexMeshShape2, Transform::identity());
 
-			// ---------- Concave Meshes ---------- //
+            // ---------- Concave Mesh ---------- //
 			for (int i = 0; i < 6; i++) {
 				for (int j = 0; j < 6; j++) {
                     mConcaveMeshPlaneVertices[i * 6 * 3 + j * 3] = -2.5f + i;
@@ -433,27 +434,28 @@ class TestCollisionWorld : public Test {
 
 					// Triangle 1
                     mConcaveMeshPlaneIndices[triangleIndex * 3] = i * 6+ j;
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = (i+1) * 6 + (j+1);
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = i * 6+ (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = i * 6+ (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = (i+1) * 6 + (j+1);
                     triangleIndex++;
 
                     // Triangle 2
                     mConcaveMeshPlaneIndices[triangleIndex * 3] = i * 6+ j;
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = (i+1) * 6 + j;
-                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = (i+1) * 6 + (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 1] = (i+1) * 6 + (j+1);
+                    mConcaveMeshPlaneIndices[triangleIndex * 3 + 2] = (i+1) * 6 + j;
                     triangleIndex++;
                 }
 			}
 
-            mConcaveMeshTriangleVertexArray = new rp3d::TriangleVertexArray(36, &(mConcaveMeshPlaneVertices[0]), 3 * sizeof(float),
+            rp3d::TriangleVertexArray concaveMeshTriangleVertexArray(36, &(mConcaveMeshPlaneVertices[0]), 3 * sizeof(float),
                     50, &(mConcaveMeshPlaneIndices[0]), 3 * sizeof(int),
                     rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 					rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 			// Add the triangle vertex array of the subpart to the triangle mesh
             Transform concaveMeshTransform(Vector3(0, -20, 0), Quaternion::identity());
-            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh();
-            mConcaveTriangleMesh->addSubpart(mConcaveMeshTriangleVertexArray);
+            errors.clear();
+            mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh(concaveMeshTriangleVertexArray, errors);
+            rp3d_test(mConcaveTriangleMesh != nullptr);
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshBody = mWorld->createCollisionBody(concaveMeshTransform);
             mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, rp3d::Transform::identity());
@@ -476,12 +478,8 @@ class TestCollisionWorld : public Test {
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape1);
             mPhysicsCommon.destroyConvexMeshShape(mConvexMeshShape2);
 
-            mPhysicsCommon.destroyPolyhedronMesh(mConvexMesh1PolyhedronMesh);
-            mPhysicsCommon.destroyPolyhedronMesh(mConvexMesh2PolyhedronMesh);
-
-			delete mConvexMesh1PolygonVertexArray;
-			delete mConvexMesh2PolygonVertexArray;
-            delete[] mConvexMeshPolygonFaces;
+            mPhysicsCommon.destroyConvexMesh(mConvexMesh1);
+            mPhysicsCommon.destroyConvexMesh(mConvexMesh2);
 
             mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
 
@@ -2457,6 +2455,7 @@ class TestCollisionWorld : public Test {
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
+            auto test = collisionData->getTotalNbContactPoints();
 
             for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
                 rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));

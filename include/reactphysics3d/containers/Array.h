@@ -433,13 +433,13 @@ class Array {
 
         /// Overloaded index operator
         T& operator[](const uint64 index) {
-           assert(index >= 0 && index < mSize);
+           assert(index < mSize);
            return mBuffer[index];
         }
 
         /// Overloaded const index operator
         const T& operator[](const uint64 index) const {
-           assert(index >= 0 && index < mSize);
+           assert(index < mSize);
            return mBuffer[index];
         }
 

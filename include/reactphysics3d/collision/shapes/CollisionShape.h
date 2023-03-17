@@ -135,7 +135,7 @@ class CollisionShape {
         virtual bool isPolyhedron() const=0;
 
         /// Return the local bounds of the shape in x, y and z directions
-        virtual void getLocalBounds(Vector3& min, Vector3& max) const=0;
+        virtual AABB getLocalBounds() const=0;
 
         /// Return the id of the shape
         uint32 getId() const;
@@ -146,8 +146,8 @@ class CollisionShape {
         /// Compute and return the volume of the collision shape
         virtual decimal getVolume() const=0;
 
-        /// Compute the world-space AABB of the collision shape given a transform
-        virtual void computeAABB(AABB& aabb, const Transform& transform) const;
+        /// Compute the transformed AABB of the collision shape given a transform
+        virtual AABB computeTransformedAABB(const Transform& transform) const;
 
         /// Return the string representation of the shape
         virtual std::string to_string() const=0;

@@ -82,6 +82,17 @@ bool CapsuleShape::testPointInside(const Vector3& localPoint, Collider* /*collid
             (xSquare + zSquare + diffYCenterSphere2 * diffYCenterSphere2) < squareRadius;
 }
 
+// Return the local bounds of the shape in x, y and z directions
+// This method is used to compute the AABB of the box
+/**
+ * @return The AABB of the shape
+ */
+AABB CapsuleShape::getLocalBounds() const {
+
+    return AABB(Vector3(-mMargin, -mHalfHeight - mMargin, -mMargin),
+                Vector3(mMargin, mHalfHeight + mMargin, mMargin));
+}
+
 // Raycast method with feedback information
 bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& /*allocator*/) const {
 

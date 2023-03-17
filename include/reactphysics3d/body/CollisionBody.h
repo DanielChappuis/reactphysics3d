@@ -190,15 +190,6 @@ RP3D_FORCE_INLINE Entity CollisionBody::getEntity() const {
     return mEntity;
 }
 
-#ifdef IS_RP3D_PROFILING_ENABLED
-
-// Set the profiler
-RP3D_FORCE_INLINE void CollisionBody::setProfiler(Profiler* profiler) {
-	mProfiler = profiler;
-}
-
-#endif
-
 }
 
 #endif

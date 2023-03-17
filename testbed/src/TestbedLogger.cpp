@@ -61,15 +61,18 @@ void TestbedLogger::log(Level level, const std::string& physicsWorldName, Catego
     // Get the destination file for this world
     DefaultLogger::Destination* destination = mMapWorldToDestinations[physicsWorldName];
 
-    mMutex.lock();
+    if (destination != nullptr) {
 
-    // Write the log file into the file of the corresponding scene
-    destination->write(time, physicsWorldName, message, level, category, filename, lineNumber);
+        mMutex.lock();
 
-    // Write the log into the standard output
-    mStandardOutputDestination->write(time, physicsWorldName, message, level, category, filename, lineNumber);
+        // Write the log file into the file of the corresponding scene
+        destination->write(time, physicsWorldName, message, level, category, filename, lineNumber);
 
-    mMutex.unlock();
+        // Write the log into the standard output
+        mStandardOutputDestination->write(time, physicsWorldName, message, level, category, filename, lineNumber);
+
+        mMutex.unlock();
+    }
 }
 
 // Return the corresponding format

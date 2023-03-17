@@ -24,29 +24,46 @@
 ********************************************************************************/
 
 // Libraries
-#include <reactphysics3d/collision/shapes/ConcaveShape.h>
+#include <reactphysics3d/collision/VertexArray.h>
+#include <reactphysics3d/mathematics/Vector3.h>
 
-// We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
 // Constructor
-ConcaveShape::ConcaveShape(CollisionShapeName name, MemoryAllocator& allocator, const Vector3& scaling)
-             : CollisionShape(name, CollisionShapeType::CONCAVE_SHAPE, allocator), mRaycastTestType(TriangleRaycastSide::FRONT),
-               mScale(scaling) {
-
+/// Note that your data will not be copied into the PolygonVertexArray
+/**
+ * @param start Pointer to the start of the vertices data
+ * @param stride The number of bytes between two consecutive vertices in the array
+ * @param nbVertices Number of vertices in the array
+ * @param dataType Data type of the vertices data
+ */
+VertexArray::VertexArray(const void* start, uint32 stride, uint32 nbVertices, DataType dataType) {
+    mNbVertices = nbVertices;
+    mStart = reinterpret_cast<const unsigned char*>(start);
+    mStride = stride;
+    mDataType = dataType;
 }
 
-// Compute and return the volume of the collision shape
-/// Note that we approximate the volume of a concave shape with the volume of its AABB
-decimal ConcaveShape::getVolume() const {
+// Return the coordinates of a given vertex
+Vector3 VertexArray::getVertex(uint32 vertexIndex) const {
 
-    // Compute the local bounds
-    AABB aabb = getLocalBounds();
+    Vector3 vertex;
 
-    const decimal lengthX = aabb.getMax().x - aabb.getMin().x;
-    const decimal lengthY = aabb.getMax().y - aabb.getMin().y;
-    const decimal lengthZ = aabb.getMax().z - aabb.getMin().z;
+    if (mDataType == DataType::VERTEX_FLOAT_TYPE) {
+        const float* vertices = (float*)(mStart + vertexIndex * mStride);
+        vertex.x = decimal(vertices[0]);
+        vertex.y = decimal(vertices[1]);
+        vertex.z = decimal(vertices[2]);
+    }
+    else if (mDataType == DataType::VERTEX_DOUBLE_TYPE) {
+        const double* vertices = (double*)(mStart + vertexIndex * mStride);
+        vertex.x = decimal(vertices[0]);
+        vertex.y = decimal(vertices[1]);
+        vertex.z = decimal(vertices[2]);
+    }
+    else {
+        assert(false);
+    }
 
-    // Approximate the volume of the concave shape as the volume of its AABB
-    return lengthX * lengthY * lengthZ;
+    return vertex;
 }

@@ -39,12 +39,10 @@ using namespace reactphysics3d;
  * @param stride Stride between the beginning of two elements in the vertices array
  * @param margin Collision margin (in meters) around the collision shape
  */
-ConvexMeshShape::ConvexMeshShape(PolyhedronMesh* polyhedronMesh, MemoryAllocator& allocator, const Vector3& scale)
-                : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH, allocator), mPolyhedronMesh(polyhedronMesh),
-                  mMinBounds(0, 0, 0), mMaxBounds(0, 0, 0), mScale(scale) {
+ConvexMeshShape::ConvexMeshShape(ConvexMesh* convexMesh, MemoryAllocator& allocator, const Vector3& scale)
+                : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH, allocator), mConvexMesh(convexMesh),
+                  mScale(scale) {
 
-    // Recalculate the bounds of the mesh
-    recalculateBounds();
 }
 
 // Return a local support point in a given direction without the object margin.
@@ -61,10 +59,10 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
     uint32 indexMaxDotProduct = 0;
 
     // For each vertex of the mesh
-    for (uint32 i=0; i<mPolyhedronMesh->getNbVertices(); i++) {
+    for (uint32 i=0; i<mConvexMesh->getNbVertices(); i++) {
 
         // Compute the dot product of the current vertex
-        decimal dotProduct = direction.dot(mPolyhedronMesh->getVertex(i));
+        decimal dotProduct = direction.dot(mConvexMesh->getVertex(i));
 
         // If the current dot product is larger than the maximum one
         if (dotProduct > maxDotProduct) {
@@ -76,31 +74,7 @@ Vector3 ConvexMeshShape::getLocalSupportPointWithoutMargin(const Vector3& direct
     assert(maxDotProduct >= decimal(0.0));
 
     // Return the vertex with the largest dot product in the support direction
-    return mPolyhedronMesh->getVertex(indexMaxDotProduct) * mScale;
-}
-
-// Recompute the bounds of the mesh
-void ConvexMeshShape::recalculateBounds() {
-
-    mMinBounds = mPolyhedronMesh->getVertex(0);
-    mMaxBounds = mPolyhedronMesh->getVertex(0);
-
-    // For each vertex of the mesh
-    for (uint32 i=1; i<mPolyhedronMesh->getNbVertices(); i++) {
-
-        if (mPolyhedronMesh->getVertex(i).x > mMaxBounds.x) mMaxBounds.x = mPolyhedronMesh->getVertex(i).x;
-        if (mPolyhedronMesh->getVertex(i).x < mMinBounds.x) mMinBounds.x = mPolyhedronMesh->getVertex(i).x;
-
-        if (mPolyhedronMesh->getVertex(i).y > mMaxBounds.y) mMaxBounds.y = mPolyhedronMesh->getVertex(i).y;
-        if (mPolyhedronMesh->getVertex(i).y < mMinBounds.y) mMinBounds.y = mPolyhedronMesh->getVertex(i).y;
-
-        if (mPolyhedronMesh->getVertex(i).z > mMaxBounds.z) mMaxBounds.z = mPolyhedronMesh->getVertex(i).z;
-        if (mPolyhedronMesh->getVertex(i).z < mMinBounds.z) mMinBounds.z = mPolyhedronMesh->getVertex(i).z;
-    }
-
-    // Apply the local scaling factor
-    mMaxBounds = mMaxBounds * mScale;
-    mMinBounds = mMinBounds * mScale;
+    return mConvexMesh->getVertex(indexMaxDotProduct) * mScale;
 }
 
 // Raycast method with feedback information
@@ -116,15 +90,15 @@ bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider
     Vector3 currentFaceNormal;
     bool isIntersectionFound = false;
 
-    const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
+    const HalfEdgeStructure& halfEdgeStructure = mConvexMesh->getHalfEdgeStructure();
 
     // For each face of the convex mesh
-    for (uint32 f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+    for (uint32 f=0; f < mConvexMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
-        const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
+        const Vector3& faceNormal = mConvexMesh->getFaceNormal(f);
         const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
-        const Vector3 facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
+        const Vector3& facePoint = mConvexMesh->getVertex(faceVertex.vertexPointIndex);
         decimal denom = faceNormal.dot(direction);
         decimal planeD = faceNormal.dot(facePoint);
         decimal dist = planeD -  faceNormal.dot(ray.point1);
@@ -186,15 +160,15 @@ bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider
 // Return true if a point is inside the collision shape
 bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* /*collider*/) const {
 
-    const HalfEdgeStructure& halfEdgeStructure = mPolyhedronMesh->getHalfEdgeStructure();
+    const HalfEdgeStructure& halfEdgeStructure = mConvexMesh->getHalfEdgeStructure();
 
     // For each face plane of the convex mesh
-    for (uint32 f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+    for (uint32 f=0; f < mConvexMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
-        const Vector3 faceNormal = mPolyhedronMesh->getFaceNormal(f);
+        const Vector3& faceNormal = mConvexMesh->getFaceNormal(f);
         const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
-        const Vector3 facePoint = mPolyhedronMesh->getVertex(faceVertex.vertexPointIndex);
+        const Vector3& facePoint = mConvexMesh->getVertex(faceVertex.vertexPointIndex);
 
         // If the point is out of the face plane, it is outside of the convex mesh
         if (computePointToPlaneDistance(localPoint, faceNormal, facePoint) > decimal(0.0)) return false;
@@ -203,29 +177,39 @@ bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* /*col
     return true;
 }
 
+// Return the local bounds of the shape in x, y and z directions
+/**
+ * @return The AABB with the min/max bounds
+ */
+AABB ConvexMeshShape::getLocalBounds() const {
+    AABB aabb = mConvexMesh->getBounds();
+    aabb.applyScale(mScale);
+    return aabb;
+}
+
 // Return the string representation of the shape
 std::string ConvexMeshShape::to_string() const {
 
     std::stringstream ss;
     ss << "ConvexMeshShape{" << std::endl;
-    ss << "nbVertices=" << mPolyhedronMesh->getNbVertices() << std::endl;
-    ss << "nbFaces=" << mPolyhedronMesh->getNbFaces() << std::endl;
+    ss << "nbVertices=" << mConvexMesh->getNbVertices() << std::endl;
+    ss << "nbFaces=" << mConvexMesh->getNbFaces() << std::endl;
 
     ss << "vertices=[";
 
-    for (uint32 v=0; v < mPolyhedronMesh->getNbVertices(); v++) {
+    for (uint32 v=0; v < mConvexMesh->getNbVertices(); v++) {
 
-        Vector3 vertex = mPolyhedronMesh->getVertex(v);
+        const Vector3& vertex = mConvexMesh->getVertex(v);
         ss << vertex.to_string();
-        if (v != mPolyhedronMesh->getNbVertices() - 1) {
+        if (v != mConvexMesh->getNbVertices() - 1) {
             ss << ", ";
         }
     }
 
     ss << "], faces=[";
 
-    HalfEdgeStructure halfEdgeStruct = mPolyhedronMesh->getHalfEdgeStructure();
-    for (uint32 f=0; f < mPolyhedronMesh->getNbFaces(); f++) {
+    HalfEdgeStructure halfEdgeStruct = mConvexMesh->getHalfEdgeStructure();
+    for (uint32 f=0; f < mConvexMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStruct.getFace(f);
 

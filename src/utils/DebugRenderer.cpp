@@ -304,30 +304,26 @@ void DebugRenderer::drawConvexMesh(const Transform& transform, const ConvexMeshS
 // Draw a concave mesh shape
 void DebugRenderer::drawConcaveMeshShape(const Transform& transform, const ConcaveMeshShape* concaveMeshShape, uint32 color) {
 
-	// For each sub-part of the mesh
-    for (uint32 p = 0; p < concaveMeshShape->getNbSubparts(); p++) {
+    // For each triangle of the mesh
+    for (uint32 t = 0; t < concaveMeshShape->getNbTriangles(); t++) {
 
-		// For each triangle of the sub-part
-        for (uint32 t = 0; t < concaveMeshShape->getNbTriangles(p); t++) {
-			
-			Vector3 triangleVertices[3];
-			concaveMeshShape->getTriangleVertices(p, t, triangleVertices);
+        Vector3 v1, v2, v3;
+        concaveMeshShape->getTriangleVertices(t, v1, v2, v3);
 
-            triangleVertices[0] = transform * triangleVertices[0];
-            triangleVertices[1] = transform * triangleVertices[1];
-            triangleVertices[2] = transform * triangleVertices[2];
+        v1 = transform * v1;
+        v2 = transform * v2;
+        v3 = transform * v3;
 
-            mTriangles.add(DebugTriangle(triangleVertices[0], triangleVertices[1], triangleVertices[2], color));
-		}
-	}
+        mTriangles.add(DebugTriangle(v1, v2, v3, color));
+    }
 }
 
 // Draw a height field shape
 void DebugRenderer::drawHeightFieldShape(const Transform& transform, const HeightFieldShape* heightFieldShape, uint32 color) {
 
     // For each sub-grid points (except the last ones one each dimension)
-    for (int i = 0; i < heightFieldShape->getNbColumns() - 1; i++) {
-        for (int j = 0; j < heightFieldShape->getNbRows() - 1; j++) {
+    for (uint32 i = 0; i < heightFieldShape->getHeightField()->getNbColumns() - 1; i++) {
+        for (uint32 j = 0; j < heightFieldShape->getHeightField()->getNbRows() - 1; j++) {
 
             // Compute the four point of the current quad
             Vector3 p1 = heightFieldShape->getVertexAt(i, j);

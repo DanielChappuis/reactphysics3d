@@ -30,6 +30,11 @@
 using namespace reactphysics3d;
 
 // Constructor
+PolygonVertexArray::PolygonVertexArray() {
+
+}
+
+// Constructor
 /// Note that your data will not be copied into the PolygonVertexArray and
 /// therefore, you need to make sure that those data are always valid during
 /// the lifetime of the PolygonVertexArray.
@@ -48,6 +53,18 @@ PolygonVertexArray::PolygonVertexArray(uint32 nbVertices, const void* verticesSt
                                        const void* indexesStart, uint32 indexesStride,
                                        uint32 nbFaces, PolygonFace* facesStart,
                                        VertexDataType vertexDataType, IndexDataType indexDataType) {
+
+    init(nbVertices, verticesStart, verticesStride, indexesStart, indexesStride, nbFaces,
+         facesStart, vertexDataType, indexDataType);
+
+}
+
+// Initialize the PolygonVertexArray
+void PolygonVertexArray::init(uint32 nbVertices, const void* verticesStart, uint32 verticesStride,
+                         const void* indexesStart, uint32 indexesStride,
+                         uint32 nbFaces, PolygonFace* facesStart,
+                         VertexDataType vertexDataType, IndexDataType indexDataType) {
+
     mNbVertices = nbVertices;
     mVerticesStart = reinterpret_cast<const unsigned char*>(verticesStart);
     mVerticesStride = verticesStride;

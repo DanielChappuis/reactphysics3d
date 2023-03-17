@@ -23,30 +23,41 @@
 *                                                                               *
 ********************************************************************************/
 
+#ifndef REACTPHYSICS3D_MESSAGE_H
+#define REACTPHYSICS3D_MESSAGE_H
+
 // Libraries
-#include <reactphysics3d/collision/shapes/ConcaveShape.h>
+#include <string>
 
-// We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;
+/// ReactPhysics3D namespace
+namespace reactphysics3d {
 
-// Constructor
-ConcaveShape::ConcaveShape(CollisionShapeName name, MemoryAllocator& allocator, const Vector3& scaling)
-             : CollisionShape(name, CollisionShapeType::CONCAVE_SHAPE, allocator), mRaycastTestType(TriangleRaycastSide::FRONT),
-               mScale(scaling) {
+// Structure Message
+/**
+ * This structure represent a message that can be returned to the user
+ */
+struct Message {
+
+    public:
+
+        /// Type of message
+        enum class Type {Error = 1, Warning = 2, Information = 4};
+
+        /// Message text
+        std::string text;
+
+        // Type (error, warning, information)
+        Type type;
+
+        // -------------------- Methods -------------------- //
+
+        /// Constructor
+        Message(std::string text, Type type = Type::Error) : text(text), type(type) {
+
+        }
+};
 
 }
 
-// Compute and return the volume of the collision shape
-/// Note that we approximate the volume of a concave shape with the volume of its AABB
-decimal ConcaveShape::getVolume() const {
+#endif
 
-    // Compute the local bounds
-    AABB aabb = getLocalBounds();
-
-    const decimal lengthX = aabb.getMax().x - aabb.getMin().x;
-    const decimal lengthY = aabb.getMax().y - aabb.getMin().y;
-    const decimal lengthZ = aabb.getMax().z - aabb.getMin().z;
-
-    // Approximate the volume of the concave shape as the volume of its AABB
-    return lengthX * lengthY * lengthZ;
-}

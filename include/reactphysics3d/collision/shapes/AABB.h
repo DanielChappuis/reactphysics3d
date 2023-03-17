@@ -82,6 +82,9 @@ class AABB {
         /// Inflate each side of the AABB by a given size
         void inflate(decimal dx, decimal dy, decimal dz);
 
+        /// Inflate (if necessary) to make sure that a given point fit inside it
+        void inflateWithPoint(const Vector3& point);
+
         /// Return true if the current AABB is overlapping with the AABB in argument
         bool testCollision(const AABB& aabb) const;
 
@@ -154,6 +157,20 @@ RP3D_FORCE_INLINE Vector3 AABB::getExtent() const {
 RP3D_FORCE_INLINE void AABB::inflate(decimal dx, decimal dy, decimal dz) {
     mMaxCoordinates += Vector3(dx, dy, dz);
     mMinCoordinates -= Vector3(dx, dy, dz);
+}
+
+// Inflate (if necessary) to make sure that a given point fit inside it
+RP3D_FORCE_INLINE void AABB::inflateWithPoint(const Vector3& point) {
+
+    // Compute mesh bounds
+    if (point.x > mMaxCoordinates.x) mMaxCoordinates.x = point.x;
+    if (point.x < mMinCoordinates.x) mMinCoordinates.x = point.x;
+
+    if (point.y > mMaxCoordinates.y) mMaxCoordinates.y = point.y;
+    if (point.y < mMinCoordinates.y) mMinCoordinates.y = point.y;
+
+    if (point.z > mMaxCoordinates.z) mMaxCoordinates.z = point.z;
+    if (point.z < mMinCoordinates.z) mMinCoordinates.z = point.z;
 }
 
 // Return true if the current AABB is overlapping with the AABB in argument.

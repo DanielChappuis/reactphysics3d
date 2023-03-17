@@ -88,7 +88,6 @@ class LinkedList {
 
         /// Remove all the elements of the list
         void reset();
-
 };
 
 // Return the first element of the list

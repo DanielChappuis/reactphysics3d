@@ -590,7 +590,7 @@ int32 DynamicAABBTree::balanceSubTreeAtNode(int32 nodeID) {
 void DynamicAABBTree::reportAllShapesOverlappingWithShapes(const Array<int32>& nodesToTest, uint32 startIndex,
                                                            size_t endIndex, Array<Pair<int32, int32>>& outOverlappingNodes) const {
 
-    RP3D_PROFILE("DynamicAABBTree::reportAllShapesOverlappingWithAABB()", mProfiler);
+    RP3D_PROFILE("DynamicAABBTree::reportAllShapesOverlappingWithShapes()", mProfiler);
 
     // Create a stack with the nodes to visit
     Stack<int32> stack(mAllocator, 64);
