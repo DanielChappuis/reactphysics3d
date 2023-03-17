@@ -59,7 +59,7 @@ const float HULL_HEIGHT = 30.0f;
 const float CAPSULE_RADIUS = 1.0f;
 const float CAPSULE_HEIGHT = 1.0f;
 const float DUMBBELL_HEIGHT = 1.0f;
-const openglframework::Vector3 FLOOR_SIZE(30, 0.5f, 30);        // Floor dimensions in meters
+const openglframework::Vector3 FLOOR_SIZE(40, 0.5f, 35);        // Floor dimensions in meters
 
 // Class CollisionShapesScene
 class CollisionShapesScene : public SceneDemo {

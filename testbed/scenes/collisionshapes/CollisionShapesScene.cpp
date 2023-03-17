@@ -203,16 +203,16 @@ void CollisionShapesScene::initBodiesPositions() {
 
     const float radius = 3.0f;
 
-    // Create all the convex hulls of the scene
-    for (uint i = 0; i<mConvexHulls.size(); i++) {
+    // Create all the convex meshes of the scene
+    for (uint i = 0; i<NB_MESHES; i++) {
 
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            175 + i * (HULL_HEIGHT + 0.3f),
+            175 + i * (CAPSULE_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
-        mConvexHulls[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+        mConvexMeshes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
     }
 
     for (uint i = 0; i<NB_COMPOUND_SHAPES; i++) {
@@ -262,16 +262,16 @@ void CollisionShapesScene::initBodiesPositions() {
         mCapsules[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
     }
 
-    // Create all the convex meshes of the scene
-    for (uint i = 0; i<NB_MESHES; i++) {
+    // Create all the convex hulls of the scene
+    for (uint i = 0; i<mConvexHulls.size(); i++) {
 
         // Position
         float angle = i * 30.0f;
         rp3d::Vector3 position(radius * std::cos(angle),
-            30 + i * (CAPSULE_HEIGHT + 0.3f),
+            30 + i * (HULL_HEIGHT + 0.3f),
             radius * std::sin(angle));
 
-        mConvexMeshes[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
+        mConvexHulls[i]->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
     }
 
     // ---------- Create the triangular mesh ---------- //
