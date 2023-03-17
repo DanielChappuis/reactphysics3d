@@ -305,7 +305,6 @@ class TestCollisionWorld : public Test {
         ConvexMesh* mConvexMesh1;
         ConvexMesh* mConvexMesh2;
 
-        TriangleVertexArray* mConcaveMeshTriangleVertexArray;
         float mConvexMesh1CubeVertices[8 * 3];
         float mConvexMesh2CubeVertices[8 * 3];
 		int mConvexMeshCubeIndices[24];
@@ -484,9 +483,6 @@ class TestCollisionWorld : public Test {
             mPhysicsCommon.destroyConcaveMeshShape(mConcaveMeshShape);
 
             mPhysicsCommon.destroyTriangleMesh(mConcaveTriangleMesh);
-
-            delete mConcaveMeshTriangleVertexArray;
-
         }
 
         /// Run the tests
