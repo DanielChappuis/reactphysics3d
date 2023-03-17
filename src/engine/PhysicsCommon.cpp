@@ -187,6 +187,12 @@ void PhysicsCommon::release() {
     }
     mTriangleMeshes.clear();
 
+    // Destroy the height-field mesh
+    for (auto it = mHeightFields.begin(); it != mHeightFields.end(); ++it) {
+        deleteHeightField(*it);
+    }
+    mHeightFields.clear();
+
     // Destroy the default loggers
     for (auto it = mDefaultLoggers.begin(); it != mDefaultLoggers.end(); ++it) {
         deleteDefaultLogger(*it);

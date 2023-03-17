@@ -16,6 +16,7 @@ set (RP3D_TESTS_HEADERS
     "tests/collision/TestRaycast.h"
     "tests/collision/TestTriangleVertexArray.h"
     "tests/collision/TestConvexMesh.h"
+    "tests/collision/TestHeightField.h"
     "tests/collision/TestTriangleMesh.h"
     "tests/containers/TestArray.h"
     "tests/containers/TestMap.h"

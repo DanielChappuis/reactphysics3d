@@ -75,10 +75,10 @@ class HeightField {
         /// Height field length
         decimal mLength;
 
-        /// Minimum height of the height field
+        /// Minimum height value of the height field
         decimal mMinHeight;
 
-        /// Maximum height of the height field
+        /// Maximum height value of the height field
         decimal mMaxHeight;
 
         /// Height values scale for height field with integer height values
@@ -133,24 +133,33 @@ class HeightField {
     public:
 
         /// Deleted copy-constructor
-        HeightField(const HeightField& shape) = delete;
+        HeightField(const HeightField& heightField) = delete;
 
         /// Deleted assignment operator
-        HeightField& operator=(const HeightField& shape) = delete;
+        HeightField& operator=(const HeightField& heightField) = delete;
 
-        /// Return the number of rows in the height field (along the local x direction)
+        /// Return the number of rows in the height-field (along the local x direction)
         uint32 getNbRows() const;
 
-        /// Return the number of columns in the height field (along the local z direction)
+        /// Return the number of columns in the height-field (along the local z direction)
         uint32 getNbColumns() const;
 
-        /// Return the vertex (local-coordinates) of the height field at a given (x,y) position
+        /// Return the minimum height value of the height-field
+        decimal getMinHeight() const;
+
+        /// Return the maximum height value of the height-field
+        decimal getMaxHeight() const;
+
+        /// Return the integer height scale
+        decimal getIntegerHeightScale() const;
+
+        /// Return the vertex (local-coordinates) of the height-field at a given (x,y) position
         Vector3 getVertexAt(uint32 x, uint32 y) const;
 
         /// Return the height value of a given (x,y) point in the height-field (in local-space)
         decimal getHeightAt(uint32 x, uint32 y) const;
 
-        /// Return the type of height value in the height field
+        /// Return the type of height value in the height-field
         HeightDataType getHeightDataType() const;
 
         /// Return the minimum bounds of the height-field in the x,y,z direction
@@ -189,6 +198,30 @@ RP3D_FORCE_INLINE uint32 HeightField::getNbRows() const {
  */
 RP3D_FORCE_INLINE uint32 HeightField::getNbColumns() const {
     return mNbColumns;
+}
+
+// Return the minimum height value of the height-field
+/**
+ * @return The mimimum height value of the height-field
+ */
+RP3D_FORCE_INLINE decimal HeightField::getMinHeight() const {
+    return mMinHeight;
+}
+
+// Return the maximum height value of the height-field
+/**
+ * @return The maximum height value of the height-field
+ */
+RP3D_FORCE_INLINE decimal HeightField::getMaxHeight() const {
+    return mMaxHeight;
+}
+
+// Return the integer height scale
+/**
+ * @return The integer height scale
+ */
+RP3D_FORCE_INLINE decimal HeightField::getIntegerHeightScale() const {
+    return mIntegerHeightScale;
 }
 
 // Return the type of height value in the height-field

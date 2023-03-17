@@ -79,7 +79,7 @@ bool HeightField::init(int nbGridColumns, int nbGridRows,
     mBounds.setMin(Vector3(-mWidth * decimal(0.5), -halfHeight, -mLength * decimal(0.5)));
     mBounds.setMax(Vector3(mWidth * decimal(0.5), halfHeight, mLength * decimal(0.5)));
 
-    assert(mHeightFieldData.size() == mNbColumns * mNbColumns);
+    assert(mHeightFieldData.size() == mNbRows * mNbColumns);
 
     return isValid;
 }

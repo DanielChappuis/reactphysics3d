@@ -41,6 +41,7 @@
 #include "tests/collision/TestTriangleVertexArray.h"
 #include "tests/collision/TestConvexMesh.h"
 #include "tests/collision/TestTriangleMesh.h"
+#include "tests/collision/TestHeightField.h"
 #include "tests/containers/TestArray.h"
 #include "tests/containers/TestMap.h"
 #include "tests/containers/TestSet.h"
@@ -84,6 +85,7 @@ int main() {
     testSuite.addTest(new TestHalfEdgeStructure("HalfEdgeStructure"));
     testSuite.addTest(new TestConvexMesh("ConvexMesh"));
     testSuite.addTest(new TestTriangleMesh("TriangleMesh"));
+    testSuite.addTest(new TestHeightField("HeightField"));
 
     // ---------- Utils tests ---------- //
 
