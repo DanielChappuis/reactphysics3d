@@ -45,7 +45,7 @@ class TestConvexMesh : public Test {
 
         PhysicsCommon mPhysicsCommon;
         ConvexMesh* mConvexMesh;
-        decimal mVertices[24];
+        float mVertices[24];
         uint32 mIndices[24];
 
     public :
