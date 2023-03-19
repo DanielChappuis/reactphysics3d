@@ -26,6 +26,7 @@
 // Libraries
 #include "ConvexMesh.h"
 #include <unordered_set>
+#include <vector>
 #include <reactphysics3d/utils/Message.h>
 
 // Constructor

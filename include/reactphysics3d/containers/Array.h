@@ -95,19 +95,19 @@ class Array {
 
                 /// Deferencable
                 reference operator*() {
-                    assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
+                    assert(mCurrentIndex < mSize);
                     return mBuffer[mCurrentIndex];
                 }
 
                 /// Const Deferencable
                 const_reference operator*() const {
-                    assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
+                    assert(mCurrentIndex < mSize);
                     return mBuffer[mCurrentIndex];
                 }
 
                 /// Deferencable
                 const_pointer operator->() const {
-                    assert(mCurrentIndex >= 0 && mCurrentIndex < mSize);
+                    assert(mCurrentIndex < mSize);
                     return &(mBuffer[mCurrentIndex]);
                 }
 
@@ -190,7 +190,7 @@ class Array {
 
                 /// Equality operator (it == end())
                 bool operator==(const Iterator& iterator) const {
-                    assert(mCurrentIndex >= 0 && mCurrentIndex <= mSize);
+                    assert(mCurrentIndex <= mSize);
 
                     // If both iterators points to the end of the array
                     if (mCurrentIndex == mSize && iterator.mCurrentIndex == iterator.mSize) {

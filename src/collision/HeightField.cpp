@@ -30,6 +30,7 @@
 #include <reactphysics3d/utils/Profiler.h>
 #include <reactphysics3d/utils/Message.h>
 #include <iostream>
+#include <vector>
 
 using namespace reactphysics3d;
 

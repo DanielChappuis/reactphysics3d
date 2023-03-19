@@ -25,6 +25,7 @@
 
 // Libraries
 #include <reactphysics3d/collision/TriangleMesh.h>
+#include <vector>
 #include <reactphysics3d/utils/Message.h>
 #include <reactphysics3d/collision/TriangleVertexArray.h>
 
