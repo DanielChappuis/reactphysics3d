@@ -29,7 +29,6 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -41,7 +40,6 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -53,7 +51,6 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: true,
             coverage: false,
           }
@@ -65,7 +62,6 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: true,
             coverage: false,
           }
@@ -77,7 +73,6 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -89,7 +84,6 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -101,7 +95,6 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: true,
             coverage: false,
           }
@@ -113,7 +106,6 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: true,
             coverage: false,
           }
@@ -149,7 +141,6 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -161,7 +152,6 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -173,7 +163,6 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -185,7 +174,6 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -197,7 +185,6 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
-            architecture: "x64",
             double_precision: false,
             coverage: true,
           }
@@ -235,7 +222,27 @@ jobs:
           ninja --version
           cmake --version
           
-      - name: CMake Configure
+      - name: CMake Configure (Linux/MacOS)
+        if: ${{ !startsWith(matrix.config.os, 'windows') }}
+        shell: bash
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          mkdir build
+          cmake \
+            -S . \
+            -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
+            -DRP3D_CODE_COVERAGE_ENABLED=${{ matrix.config.coverage }} \
+            -DCODE_COVERAGE_VERBOSE=True \
+            -DRP3D_COMPILE_TESTS=True \
+            -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
+            -G "${{ matrix.config.generators }}" \
+
+      - name: CMake Configure (Windows)
+        if: startsWith(matrix.config.os, 'windows')
         shell: bash
         env:
           CC: ${{ matrix.config.cc }}
@@ -278,8 +285,25 @@ jobs:
         shell: bash
         run: "./build/test/${{ matrix.config.build_type }}/tests.exe"
 
-      - name: Build Hello World
-        if: ${{ !matrix.config.coverage }}
+      - name: Build Hello World (Linux/MacOS)
+        if: ${{ !startsWith(matrix.config.os, 'windows') && !matrix.config.coverage }}
+        shell: bash
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          mkdir build_hello_world
+          cmake \
+            -S helloworld \
+            -B build_hello_world \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
+            -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
+            -G "${{ matrix.config.generators }}"
+          cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
+
+      - name: Build Hello World (Windows)
+        if: ${{ startsWith(matrix.config.os, 'windows') && !matrix.config.coverage }}
         shell: bash
         env:
           CC: ${{ matrix.config.cc }}
