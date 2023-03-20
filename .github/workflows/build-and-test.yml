@@ -29,6 +29,7 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -40,6 +41,7 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -51,6 +53,7 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: true,
             coverage: false,
           }
@@ -62,6 +65,7 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: true,
             coverage: false,
           }
@@ -73,6 +77,7 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -84,6 +89,7 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -95,6 +101,7 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: true,
             coverage: false,
           }
@@ -106,6 +113,7 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: true,
             coverage: false,
           }
@@ -117,6 +125,7 @@ jobs:
             cxx: "cl",
             cxx_flags: "",
             generators: "Visual Studio 17 2022",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -128,6 +137,7 @@ jobs:
             cxx: "cl",
             cxx_flags: "",
             generators: "Visual Studio 17 2022",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -139,6 +149,7 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -150,6 +161,7 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -161,6 +173,7 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -172,6 +185,7 @@ jobs:
             cxx: "clang++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: false,
           }
@@ -183,6 +197,7 @@ jobs:
             cxx: "g++",
             cxx_flags: "-Wall -Wextra -pedantic",
             generators: "Ninja",
+            architecture: "x64",
             double_precision: false,
             coverage: true,
           }
@@ -237,6 +252,7 @@ jobs:
             -DRP3D_COMPILE_TESTS=True \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
             -G "${{ matrix.config.generators }}" \
+            -A "${{ matrix.config.architecture }}" \
 
       - name: Build
         shell: bash
@@ -277,6 +293,7 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
             -G "${{ matrix.config.generators }}"
+            -A "${{ matrix.config.architecture }}"
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
 
       - name: Run Hello World (Linux / MacOS / Windows MinGW)
