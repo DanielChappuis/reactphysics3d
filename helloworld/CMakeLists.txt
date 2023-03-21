@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.8)
 # Help CMake to find the installed library on Windows
 if(WIN32)
   list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")
+  list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files\\ReactPhysics3D")
 elseif(APPLE)
   list(APPEND CMAKE_PREFIX_PATH "/usr/local/lib/cmake/ReactPhysics3D")
 endif()
