@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 
 # Project configuration
 project(ReactPhysics3D VERSION 0.9.0 LANGUAGES CXX)
-
+ 
 # In order to install libraries into correct locations on all platforms.
 include(GNUInstallDirs)
 
