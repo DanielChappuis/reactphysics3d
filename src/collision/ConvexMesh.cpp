@@ -31,6 +31,7 @@
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/utils/Message.h>
 #include <cstdlib>
+#include <vector>
 
 using namespace reactphysics3d;
 
