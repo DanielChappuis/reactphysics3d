@@ -117,7 +117,6 @@ jobs:
             cxx: "cl",
             cxx_flags: "",
             generators: "Visual Studio 17 2022",
-            architecture: x64,
             double_precision: false,
             coverage: false,
           }
@@ -129,7 +128,6 @@ jobs:
             cxx: "cl",
             cxx_flags: "",
             generators: "Visual Studio 17 2022",
-            architecture: x64,
             double_precision: false,
             coverage: false,
           }
@@ -259,7 +257,6 @@ jobs:
             -DRP3D_COMPILE_TESTS=True \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
             -G "${{ matrix.config.generators }}" \
-            -A x64 \
 
       - name: Build
         shell: bash
@@ -317,7 +314,6 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
             -G "${{ matrix.config.generators }}" \
-            -A x64
           cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
 
       - name: Run Hello World (Linux / MacOS / Windows MinGW)
