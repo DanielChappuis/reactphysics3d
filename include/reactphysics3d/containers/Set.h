@@ -471,6 +471,7 @@ class Set {
         Array<V> toArray(MemoryAllocator& arrayAllocator) const {
 
             Array<V> array(arrayAllocator);
+            array.reserve(this->size());
 
             for (auto it = begin(); it != end(); ++it) {
                 array.add(*it);
