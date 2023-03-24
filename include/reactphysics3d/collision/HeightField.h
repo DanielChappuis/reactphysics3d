@@ -96,6 +96,13 @@ class HeightField {
         /// Reference to the half-edge structure
         HalfEdgeStructure& mTriangleHalfEdgeStructure;
 
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+        /// Pointer to the profiler
+        Profiler* mProfiler;
+
+#endif
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -167,6 +174,13 @@ class HeightField {
 
         /// Return the string representation of the shape
         std::string to_string() const;
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+        /// Set the profiler
+        void setProfiler(Profiler* profiler);
+
+#endif
 
         // ---------- Friendship ----------- //
 
@@ -240,6 +254,15 @@ RP3D_FORCE_INLINE decimal HeightField::getHeightAt(uint32 x, uint32 y) const {
 RP3D_FORCE_INLINE uint32 HeightField::computeTriangleShapeId(uint32 iIndex, uint32 jIndex, uint32 secondTriangleIncrement) const {
     return (jIndex * (mNbColumns - 1) + iIndex) * 2 + secondTriangleIncrement;
 }
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+// Set the profiler
+RP3D_FORCE_INLINE void HeightField::setProfiler(Profiler* profiler) {
+    mProfiler = profiler;
+}
+
+#endif
 
 }
 

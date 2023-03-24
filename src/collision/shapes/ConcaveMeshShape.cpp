@@ -289,3 +289,15 @@ std::string ConcaveMeshShape::to_string() const {
 
     return ss.str();
 }
+
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+// Set the profiler
+void ConcaveMeshShape::setProfiler(Profiler* profiler) {
+
+    CollisionShape::setProfiler(profiler);
+
+    mTriangleMesh->setProfiler(profiler);
+}
+
+#endif

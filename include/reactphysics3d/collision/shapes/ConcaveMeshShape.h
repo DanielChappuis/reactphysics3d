@@ -245,19 +245,6 @@ RP3D_FORCE_INLINE uint32 ConcaveMeshShape::computeTriangleShapeId(uint32 triangl
     return getNbTriangles() + triangleIndex;
 }
 
-#ifdef IS_RP3D_PROFILING_ENABLED
-
-// Set the profiler
-RP3D_FORCE_INLINE void ConcaveMeshShape::setProfiler(Profiler* profiler) {
-
-    CollisionShape::setProfiler(profiler);
-
-    mDynamicAABBTree.setProfiler(profiler);
-}
-
-
-#endif
-
 }
 #endif
 

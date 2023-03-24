@@ -128,6 +128,13 @@ class TriangleMesh {
         /// Return the normal of a given vertex
         const Vector3& getVertexNormal(uint32 vertexIndex) const;
 
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+        /// Set the profiler
+        void setProfiler(Profiler* profiler);
+
+#endif
+
         // ---------- Friendship ---------- //
 
         friend class PhysicsCommon;
@@ -191,6 +198,14 @@ RP3D_FORCE_INLINE const Vector3& TriangleMesh::getVertexNormal(uint32 vertexInde
    return mVerticesNormals[vertexIndex];
 }
 
+#ifdef IS_RP3D_PROFILING_ENABLED
+
+// Set the profiler
+RP3D_FORCE_INLINE void TriangleMesh::setProfiler(Profiler* profiler) {
+    mDynamicAABBTree.setProfiler(profiler);
+}
+
+#endif
 }
 
 #endif
