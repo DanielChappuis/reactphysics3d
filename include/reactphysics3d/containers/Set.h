@@ -470,7 +470,7 @@ class Set {
         /// Return an array with all the values of the set
         Array<V> toArray(MemoryAllocator& arrayAllocator) const {
 
-            Array<V> array(arrayAllocator);
+            Array<V> array(arrayAllocator, size());
 
             for (auto it = begin(); it != end(); ++it) {
                 array.add(*it);
