@@ -33,7 +33,7 @@ jobs:
             coverage: false,
           }
         - {
-            name: "Linux / GCC (Release, Single Precision)",
+            name: "Linux / GCC (Release, Single Precision)",
             os: ubuntu-latest,
             build_type: "Release",
             cc: "gcc",
@@ -55,7 +55,7 @@ jobs:
             coverage: false,
           }
         - {
-            name: "Linux / GCC (Release, Double Precision)",
+            name: "Linux / GCC (Release, Double Precision)",
             os: ubuntu-latest,
             build_type: "Release",
             cc: "gcc",
@@ -110,7 +110,7 @@ jobs:
             coverage: false,
           }
         - {
-            name: "Windows / MSVC (Debug, Single Precision)",
+            name: "Windows / MSVC (Debug, Single Precision)",
             os: windows-latest,
             build_type: "Debug",
             cc: "cl",
@@ -121,7 +121,7 @@ jobs:
             coverage: false,
           }
         - {
-            name: "Windows / MSVC (Release, Single Precision)",
+            name: "Windows / MSVC (Release, Single Precision)",
             os: windows-latest,
             build_type: "Release",
             cc: "cl",
@@ -154,7 +154,7 @@ jobs:
             coverage: false,
           }
         - {
-            name: "MacOS / Clang (Debug, Single Precision)",
+            name: "MacOS / Clang (Debug, Single Precision)",
             os: macos-latest,
             build_type: "Debug",
             cc: "clang",
@@ -165,7 +165,7 @@ jobs:
             coverage: false,
           }
         - {
-            name: "MacOS / Clang (Release, Single Precision)",
+            name: "MacOS / Clang (Release, Single Precision)",
             os: macos-latest,
             build_type: "Release",
             cc: "clang",
@@ -220,8 +220,7 @@ jobs:
           ninja --version
           cmake --version
           
-      - name: CMake Configure (Linux/MacOS)
-        if: ${{ !startsWith(matrix.config.os, 'windows') }}
+      - name: CMake Configure
         shell: bash
         env:
           CC: ${{ matrix.config.cc }}
@@ -237,53 +236,34 @@ jobs:
             -DCODE_COVERAGE_VERBOSE=True \
             -DRP3D_COMPILE_TESTS=True \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
-            -G "${{ matrix.config.generators }}" 
-
-      - name: CMake Configure (Windows)
-        if: startsWith(matrix.config.os, 'windows')
-        shell: bash
-        env:
-          CC: ${{ matrix.config.cc }}
-          CXX: ${{ matrix.config.cxx }}
-        run: |
-          mkdir build
-          cmake \
-            -S . \
-            -B build \
-            -DCMAKE_CONFIGURATION_TYPES=${{ matrix.config.build_type }} \
-            -DRP3D_DOUBLE_PRECISION_ENABLED=${{ matrix.config.double_precision }} \
-            -DRP3D_CODE_COVERAGE_ENABLED=${{ matrix.config.coverage }} \
-            -DCODE_COVERAGE_VERBOSE=True \
-            -DRP3D_COMPILE_TESTS=True \
-            -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
-            -G "${{ matrix.config.generators }}" 
+            -G "${{ matrix.config.generators }}" \
 
       - name: Build
         shell: bash
-        run: cmake --build build/ 
+        run: cmake --build build/ --config ${{ matrix.config.build_type }}
 
       - name: Install Library on Linux/MacOS
         if: ${{ !startsWith(matrix.config.os, 'windows') }}
         shell: bash
-        run: sudo cmake --install build/ 
+        run: sudo cmake --install build/ --config ${{ matrix.config.build_type }}
 
       - name: Install Library on Windows
         if: startsWith(matrix.config.os, 'windows')
         shell: bash
-        run: cmake --install build/ 
+        run: cmake --install build/ --config ${{ matrix.config.build_type }}
 
-      - name: Run Unit Tests (Linux / MacOS / Windows MinGW)
+      - name: Run Unit Tests (Linux / MacOS / Windows MinGW)
         if: ${{ !startsWith(matrix.config.os, 'windows') }}
         shell: bash
         run: ./build/test/tests
         
       - name: Run Unit Tests (Windows MSVC)
-        if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
+        if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
         shell: bash
         run: "./build/test/${{ matrix.config.build_type }}/tests.exe"
 
-      - name: Build Hello World (Linux/MacOS)
-        if: ${{ !startsWith(matrix.config.os, 'windows') && !matrix.config.coverage }}
+      - name: Build Hello World
+        if: ${{ !matrix.config.coverage }}
         shell: bash
         env:
           CC: ${{ matrix.config.cc }}
@@ -297,32 +277,15 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
             -G "${{ matrix.config.generators }}"
-          cmake --build build_hello_world/ 
+          cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
 
-      - name: Build Hello World (Windows)
-        if: ${{ startsWith(matrix.config.os, 'windows') && !matrix.config.coverage }}
-        shell: bash
-        env:
-          CC: ${{ matrix.config.cc }}
-          CXX: ${{ matrix.config.cxx }}
-        run: |
-          mkdir build_hello_world
-          cmake \
-            -S helloworld \
-            -B build_hello_world \
-            -DCMAKE_CONFIGURATION_TYPES=${{ matrix.config.build_type }} \
-            -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
-            -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
-            -G "${{ matrix.config.generators }}" 
-          cmake --build build_hello_world/
-
-      - name: Run Hello World (Linux / MacOS / Windows MinGW)
-        if: ${{ !startsWith(matrix.config.name, 'Windows / MSVC') && !matrix.config.coverage }}
+      - name: Run Hello World (Linux / MacOS / Windows MinGW)
+        if: ${{ !startsWith(matrix.config.name, 'Windows / MSVC') && !matrix.config.coverage }}
         shell: bash
         run: "./build_hello_world/helloworld"
         
       - name: Run Hello World (Windows MSVC)
-        if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
+        if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
         shell: bash
         run: "./build_hello_world/${{ matrix.config.build_type }}/helloworld.exe"
 
