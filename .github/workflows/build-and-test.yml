@@ -265,7 +265,7 @@ jobs:
       - name: Install Library on Linux/MacOS
         if: ${{ !startsWith(matrix.config.os, 'windows') }}
         shell: bash
-        run: sudo cmake --install build/ --config ${{ matrix.config.build_type }}
+        run: sudo cmake --install build/ 
 
       - name: Install Library on Windows
         if: startsWith(matrix.config.os, 'windows')
@@ -297,7 +297,7 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
             -G "${{ matrix.config.generators }}"
-          cmake --build build_hello_world/ --config ${{ matrix.config.build_type }}
+          cmake --build build_hello_world/ 
 
       - name: Build Hello World (Windows)
         if: ${{ startsWith(matrix.config.os, 'windows') && !matrix.config.coverage }}
