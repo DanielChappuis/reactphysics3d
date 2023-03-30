@@ -237,7 +237,7 @@ jobs:
             -DCODE_COVERAGE_VERBOSE=True \
             -DRP3D_COMPILE_TESTS=True \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
-            -G "${{ matrix.config.generators }}" \
+            -G "${{ matrix.config.generators }}" 
 
       - name: CMake Configure (Windows)
         if: startsWith(matrix.config.os, 'windows')
@@ -256,7 +256,7 @@ jobs:
             -DCODE_COVERAGE_VERBOSE=True \
             -DRP3D_COMPILE_TESTS=True \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
-            -G "${{ matrix.config.generators }}" \
+            -G "${{ matrix.config.generators }}" 
 
       - name: Build
         shell: bash
@@ -313,7 +313,7 @@ jobs:
             -DCMAKE_CONFIGURATION_TYPES=${{ matrix.config.build_type }} \
             -DCMAKE_EXE_LINKER_FLAGS=-no-pie \
             -DCMAKE_CXX_FLAGS="${{ matrix.config.cxx_flags }}" \
-            -G "${{ matrix.config.generators }}" \
+            -G "${{ matrix.config.generators }}" 
           cmake --build build_hello_world/
 
       - name: Run Hello World (Linux / MacOS / Windows MinGW)
