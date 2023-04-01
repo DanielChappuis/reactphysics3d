@@ -72,7 +72,7 @@ struct RaycastInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastInfo() : triangleIndex(-1), body(nullptr), collider(nullptr) {
+        RaycastInfo() : hitFraction(-1), triangleIndex(-1), body(nullptr), collider(nullptr) {
 
         }
 

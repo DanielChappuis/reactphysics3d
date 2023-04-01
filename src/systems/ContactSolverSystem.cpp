@@ -48,8 +48,9 @@ const decimal ContactSolverSystem::SLOP = decimal(0.01);
 ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, PhysicsWorld& world, Islands& islands,
                                          BodyComponents& bodyComponents, RigidBodyComponents& rigidBodyComponents,
                                          ColliderComponents& colliderComponents, decimal& restitutionVelocityThreshold)
-              :mMemoryManager(memoryManager), mWorld(world), mRestitutionVelocityThreshold(restitutionVelocityThreshold),
+              :mMemoryManager(memoryManager), mWorld(world), mTimeStep(-1), mRestitutionVelocityThreshold(restitutionVelocityThreshold),
                mContactConstraints(nullptr), mContactPoints(nullptr),
+               mNbContactPoints(0), mNbContactManifolds(0),
                mIslands(islands), mAllContactManifolds(nullptr), mAllContactPoints(nullptr),
                mBodyComponents(bodyComponents), mRigidBodyComponents(rigidBodyComponents),
                mColliderComponents(colliderComponents), mIsSplitImpulseActive(true) {
