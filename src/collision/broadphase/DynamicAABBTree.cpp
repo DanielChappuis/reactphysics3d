@@ -147,6 +147,7 @@ int32 DynamicAABBTree::addObjectInternal(const AABB& aabb) {
 
     // Get the next available node (or allocate new ones if necessary)
     int32 nodeID = allocateNode();
+    assert(nodeID >= 0);
 
     // Create the fat aabb to use in the tree (inflate the aabb by a constant percentage of its size)
     const Vector3 gap(aabb.getExtent() * mFatAABBInflatePercentage * decimal(0.5f));
@@ -159,8 +160,6 @@ int32 DynamicAABBTree::addObjectInternal(const AABB& aabb) {
     // Insert the new leaf node in the tree
     insertLeafNode(nodeID);
     assert(mNodes[nodeID].isLeaf());
-
-    assert(nodeID >= 0);
 
     // Return the Id of the node
     return nodeID;
