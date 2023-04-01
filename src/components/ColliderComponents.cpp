@@ -115,7 +115,6 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     }
 
     mBuffer = newBuffer;
-    mCollidersEntities = newCollidersEntities;
     mBodiesEntities = newBodiesEntities;
     mCollidersEntities = newCollidersEntities;
     mColliders = newColliders;
