@@ -51,7 +51,6 @@ class DefaultAllocator : public MemoryAllocator {
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
         virtual void* allocate(size_t size) override {
-
             return std::malloc(size);
         }
 
