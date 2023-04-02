@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef REACTPHYSICS3D_DEFAULT_ALLOCATOR_H
-#define REACTPHYSICS3D_DEFAULT_ALLOCATOR_H
+#ifndef REACTPHYSICS3D_LOCKFREE_ALLOCATOR_H
+#define REACTPHYSICS3D_LOCKFREE_ALLOCATOR_H
 
 // Libraries
 #include <reactphysics3d/memory/MemoryAllocator.h>
@@ -36,30 +36,33 @@ namespace reactphysics3d {
 
 // Class DefaultAllocator
 /**
- * This class represents a default memory allocator that uses default malloc/free methods
+ * This class implements various allocation methods that are usefull for debugging 
+ * memory.
  */
-class DefaultAllocator : public MemoryAllocator {
+class LockfreeAllocator : public MemoryAllocator {
 
     public:
-
         /// Destructor
-        virtual ~DefaultAllocator() override = default;
-
+        virtual ~LockfreeAllocator() override = default;
+        
         /// Assignment operator
-        DefaultAllocator& operator=(DefaultAllocator& allocator) = default;
-
+        LockfreeAllocator &operator=(LockfreeAllocator &allocator) = default;
+        
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
-        virtual void* allocate(size_t size) override {
-            return std::malloc(size);
-        }
+        virtual void *allocate(size_t size) override;
 
+        /// Duplicate a block of memory.
+        virtual void *duplicate(const void *vmem);
+        
+        /// Returns the allocation size of the specified memory block, the block 
+        /// has to have benn allocated by this allocator.
+        virtual size_t getAllocLen(const void *vmem);
+        
         /// Release previously allocated memory.
-        virtual void release(void* pointer, size_t /*size*/) override {
-            std::free(pointer);
-        }
+        virtual void release(void *pointer, size_t /*size*/) override;
 };
 
-}
+} // namespace reactphysics3d
 
 #endif
