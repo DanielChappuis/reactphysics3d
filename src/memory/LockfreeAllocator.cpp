@@ -21,7 +21,16 @@ void *LockfreeAllocator::allocate ( size_t size ) {
     return NULL;
 }
 
-size_t LockfreeAllocator::getAllocLen ( const void *vmem ) const {
+void *LockfreeAllocator::duplicate(const void *vmem) {
+    const size_t len = getAllocLen(vmem);
+    void *ptr = allocate(len);
+        if (ptr) {
+        memcpy(ptr, vmem, len);
+    }
+    return ptr;
+}
+
+size_t LockfreeAllocator::getAllocLen ( const void *vmem ) {
     if (vmem) {
         return MEMHEAD_LEN(MEMHEAD_FROM_PTR(vmem));
     }

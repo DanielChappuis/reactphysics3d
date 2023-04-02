@@ -51,10 +51,13 @@ class LockfreeAllocator : public MemoryAllocator {
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory.
         virtual void *allocate(size_t size) override;
+
+        /// Duplicate a block of memory.
+        virtual void *duplicate(const void *vmem);
         
         /// Returns the allocation size of the specified memory block, the block 
         /// has to have benn allocated by this allocator.
-        virtual size_t getAllocLen(const void *vmem) const;
+        virtual size_t getAllocLen(const void *vmem);
         
         /// Release previously allocated memory.
         virtual void release(void *pointer, size_t /*size*/) override;
