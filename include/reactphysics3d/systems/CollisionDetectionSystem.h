@@ -294,6 +294,10 @@ class CollisionDetectionSystem {
         /// Remove the duplicated contact points in a given contact manifold
         void removeDuplicatedContactPointsInManifold(ContactManifoldInfo& manifold, const Array<ContactPointInfo>& potentialContactPoints) const;
 
+        std::string getTypeString(CollisionShapeType type) const;
+
+        std::string getNameString(CollisionShapeName name) const;
+
     public :
 
         // -------------------- Methods -------------------- //

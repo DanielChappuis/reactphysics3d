@@ -322,6 +322,29 @@ void CollisionDetectionSystem::updateOverlappingPairs(const Array<Pair<int32, in
     }
 }
 
+std::string CollisionDetectionSystem::getTypeString(CollisionShapeType type) const {
+
+    switch(type) {
+        case reactphysics3d::CollisionShapeType::SPHERE: return "SPHERE";
+        case reactphysics3d::CollisionShapeType::CAPSULE: return "CAPSULE";
+        case reactphysics3d::CollisionShapeType::CONVEX_POLYHEDRON: return "CONVEX_POLYHEDRON";
+        case reactphysics3d::CollisionShapeType::CONCAVE_SHAPE: return "CONCAVE_SHAPE";
+    }
+}
+
+std::string CollisionDetectionSystem::getNameString(CollisionShapeName name) const {
+
+    switch(name) {
+        case reactphysics3d::CollisionShapeName::TRIANGLE: return "TRIANGLE";
+        case reactphysics3d::CollisionShapeName::SPHERE: return "SPHERE";
+        case reactphysics3d::CollisionShapeName::CAPSULE: return "CAPSULE";
+        case reactphysics3d::CollisionShapeName::BOX: return "BOX";
+        case reactphysics3d::CollisionShapeName::CONVEX_MESH: return "CONVEX_MESH";
+        case reactphysics3d::CollisionShapeName::TRIANGLE_MESH: return "TRIANGLE_MESH";
+        case reactphysics3d::CollisionShapeName::HEIGHTFIELD: return "HEIGHTFIELD";
+    }
+}
+
 // Compute the middle-phase collision detection
 void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseInput, bool needToReportContacts) {
 
@@ -343,7 +366,6 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider2) != -1);
         assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider1) != mCollidersComponents.getBroadPhaseId(overlappingPair.collider2));
 
-
         const Entity collider1Entity = overlappingPair.collider1;
         const Entity collider2Entity = overlappingPair.collider2;
 
@@ -352,6 +374,9 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
 
         CollisionShape* collisionShape1 = mCollidersComponents.mCollisionShapes[collider1Index];
         CollisionShape* collisionShape2 = mCollidersComponents.mCollisionShapes[collider2Index];
+
+        std::cout << "Convex vs Convex => " << getTypeString(collisionShape1->getType()) << " (" << getNameString(collisionShape1->getName()) <<
+                     ") vs " << getTypeString(collisionShape2->getType()) << " (" << getNameString(collisionShape2->getName()) << ")" << std::endl;
 
         NarrowPhaseAlgorithmType algorithmType = overlappingPair.narrowPhaseAlgorithmType;
 
@@ -379,6 +404,17 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider1) != -1);
         assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider2) != -1);
         assert(mCollidersComponents.getBroadPhaseId(overlappingPair.collider1) != mCollidersComponents.getBroadPhaseId(overlappingPair.collider2));
+
+        const Entity collider1Entity = overlappingPair.collider1;
+        const Entity collider2Entity = overlappingPair.collider2;
+
+        const uint32 collider1Index = mCollidersComponents.getEntityIndex(collider1Entity);
+        const uint32 collider2Index = mCollidersComponents.getEntityIndex(collider2Entity);
+
+        CollisionShape* collisionShape1 = mCollidersComponents.mCollisionShapes[collider1Index];
+        CollisionShape* collisionShape2 = mCollidersComponents.mCollisionShapes[collider2Index];
+        std::cout << "Concave vs Convex => " << getTypeString(collisionShape1->getType()) << " (" << getNameString(collisionShape1->getName()) <<
+                     ") vs " << getTypeString(collisionShape2->getType()) << " (" << getNameString(collisionShape2->getName()) << ")" << std::endl;
 
         computeConvexVsConcaveMiddlePhase(overlappingPair, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput, needToReportContacts);
 
