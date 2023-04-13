@@ -298,6 +298,8 @@ class CollisionDetectionSystem {
 
         std::string getNameString(CollisionShapeName name) const;
 
+        std::string getBodyTypeString(BodyType type) const;
+
     public :
 
         // -------------------- Methods -------------------- //

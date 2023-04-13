@@ -345,6 +345,15 @@ std::string CollisionDetectionSystem::getNameString(CollisionShapeName name) con
     }
 }
 
+std::string CollisionDetectionSystem::getBodyTypeString(BodyType type) const {
+
+    switch(type) {
+        case reactphysics3d::BodyType::DYNAMIC: return "DYNAMIC";
+    case reactphysics3d::BodyType::STATIC: return "STATIC";
+    case reactphysics3d::BodyType::KINEMATIC: return "KINEMATIC";
+    }
+}
+
 // Compute the middle-phase collision detection
 void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseInput, bool needToReportContacts) {
 
@@ -375,8 +384,23 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         CollisionShape* collisionShape1 = mCollidersComponents.mCollisionShapes[collider1Index];
         CollisionShape* collisionShape2 = mCollidersComponents.mCollisionShapes[collider2Index];
 
+        const Collider* collider1 = mCollidersComponents.getCollider(overlappingPair.collider1);
+        const Collider* collider2 = mCollidersComponents.getCollider(overlappingPair.collider2);
+
+        CollisionBody* body1 = collider1->getBody();
+        CollisionBody* body2 = collider2->getBody();
+        RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(body1);
+        RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(body2);
+
+        std::string bodyType1 = rigidBody1 != nullptr ? getBodyTypeString(rigidBody1->getType()) : "CollisionBody";
+        std::string bodyType2 = rigidBody2 != nullptr ? getBodyTypeString(rigidBody2->getType()) : "CollisionBody";
+
+        std::string id1 = std::to_string(body1->getEntity().id);
+        std::string id2 = std::to_string(body2->getEntity().id);
+
         std::cout << "Convex vs Convex => " << getTypeString(collisionShape1->getType()) << " (" << getNameString(collisionShape1->getName()) <<
-                     ") vs " << getTypeString(collisionShape2->getType()) << " (" << getNameString(collisionShape2->getName()) << ")" << std::endl;
+                     ") vs " << getTypeString(collisionShape2->getType()) << " (" << getNameString(collisionShape2->getName()) << ") [" <<
+                     bodyType1 << " vs " << bodyType2 << "]" <<  "] <Entity1=" << id1 << ", Entity2=" << id2 << ">" << std::endl;
 
         NarrowPhaseAlgorithmType algorithmType = overlappingPair.narrowPhaseAlgorithmType;
 
@@ -413,8 +437,24 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
 
         CollisionShape* collisionShape1 = mCollidersComponents.mCollisionShapes[collider1Index];
         CollisionShape* collisionShape2 = mCollidersComponents.mCollisionShapes[collider2Index];
+
+        const Collider* collider1 = mCollidersComponents.getCollider(overlappingPair.collider1);
+        const Collider* collider2 = mCollidersComponents.getCollider(overlappingPair.collider2);
+
+        CollisionBody* body1 = collider1->getBody();
+        CollisionBody* body2 = collider2->getBody();
+        RigidBody* rigidBody1 = dynamic_cast<RigidBody*>(body1);
+        RigidBody* rigidBody2 = dynamic_cast<RigidBody*>(body2);
+
+        std::string bodyType1 = rigidBody1 != nullptr ? getBodyTypeString(rigidBody1->getType()) : "CollisionBody";
+        std::string bodyType2 = rigidBody2 != nullptr ? getBodyTypeString(rigidBody2->getType()) : "CollisionBody";
+
+        std::string id1 = std::to_string(body1->getEntity().id);
+        std::string id2 = std::to_string(body2->getEntity().id);
+
         std::cout << "Concave vs Convex => " << getTypeString(collisionShape1->getType()) << " (" << getNameString(collisionShape1->getName()) <<
-                     ") vs " << getTypeString(collisionShape2->getType()) << " (" << getNameString(collisionShape2->getName()) << ")" << std::endl;
+                     ") vs " << getTypeString(collisionShape2->getType()) << " (" << getNameString(collisionShape2->getName()) << ") [" <<
+                     bodyType1 << " vs " << bodyType2 << "] <Entity1=" << id1 << ", Entity2=" << id2 << ">" << std::endl;
 
         computeConvexVsConcaveMiddlePhase(overlappingPair, mMemoryManager.getSingleFrameAllocator(), narrowPhaseInput, needToReportContacts);
 
