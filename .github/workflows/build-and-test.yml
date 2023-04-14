@@ -132,28 +132,6 @@ jobs:
             coverage: false,
           }
         - {
-            name: "Windows / MinGW (Debug, Single Precision)",
-            os: windows-latest,
-            build_type: "Debug",
-            cc: "gcc",
-            cxx: "g++",
-            cxx_flags: "-Wall -Wextra -pedantic",
-            generators: "Ninja",
-            double_precision: false,
-            coverage: false,
-          }
-        - {
-            name: "Windows / MinGW (Release, Single Precision)",
-            os: windows-latest,
-            build_type: "Release",
-            cc: "gcc",
-            cxx: "g++",
-            cxx_flags: "-Wall -Wextra -pedantic",
-            generators: "Ninja",
-            double_precision: false,
-            coverage: false,
-          }
-        - {
             name: "MacOS / Clang (Debug, Single Precision)",
             os: macos-latest,
             build_type: "Debug",
