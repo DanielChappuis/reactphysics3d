@@ -36,6 +36,19 @@
 #include <reactphysics3d/decimal.h>
 #include <reactphysics3d/containers/Pair.h>
 
+// OS
+#if defined(_WIN32) || defined(_WIN64)
+    #define RP3D_PLATFORM_WINDOWS
+#elif defined(__APPLE__)
+    #define RP3D_PLATFORM_APPLE
+#elif defined(__ANDROID__)
+    #define RP3D_PLATFORM_ANDROID
+#elif defined(__linux__)
+    #define RP3D_PLATFORM_LINUX
+#else
+    #define RP3D_PLATFORM_UNKNOWN
+#endif
+
 // Compilers
 #if defined(_MSC_VER)
     #define RP3D_COMPILER_VISUAL_STUDIO

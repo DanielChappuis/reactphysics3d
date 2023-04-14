@@ -57,7 +57,7 @@ class DefaultAllocator : public MemoryAllocator {
         virtual void* allocate(size_t size) override {
 
 // If compiler is Visual Studio
-#ifdef RP3D_COMPILER_VISUAL_STUDIO
+#ifdef RP3D_PLATFORM_WINDOWS
 
                 // Visual Studio doesn't not support standard std:aligned_alloc() method from C++ 17
                 return _aligned_malloc(size, GLOBAL_ALIGNMENT);
