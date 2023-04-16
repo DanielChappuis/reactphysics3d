@@ -41,7 +41,7 @@ SingleFrameAllocator::SingleFrameAllocator(MemoryAllocator& baseAllocator) : mBa
 
     assert(allocatedMemory != nullptr);
 
-    // Check that allocated memory is 16-bytes aligned
+    // Check that allocated memory is 8-bytes aligned
     assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
 
     mMemoryBufferStart = static_cast<char*>(allocatedMemory);
@@ -55,7 +55,7 @@ SingleFrameAllocator::~SingleFrameAllocator() {
 }
 
 // Allocate memory of a given size (in bytes) and return a pointer to the
-// allocated memory. Allocated memory must be 16-bytes aligned.
+// allocated memory. Allocated memory must be 8-bytes aligned.
 void* SingleFrameAllocator::allocate(size_t size) {
 
     // Lock the method with a mutex
@@ -83,7 +83,7 @@ void* SingleFrameAllocator::allocate(size_t size) {
     // Increment the offset
     mCurrentOffset += totalSize;
 
-    // Check that allocated memory is 16-bytes aligned
+    // Check that allocated memory is 8-bytes aligned
     assert(reinterpret_cast<uintptr_t>(nextAvailableMemory) % GLOBAL_ALIGNMENT == 0);
 
     // Return the next available memory location

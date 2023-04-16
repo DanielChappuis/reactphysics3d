@@ -182,7 +182,7 @@ void* HeapAllocator::allocate(size_t size) {
     // Offset the allocated address such that it is properly aligned
     allocatedMemory = computeAlignedAddress(allocatedMemory);
 
-    // Check that allocated memory is 16-bytes aligned
+    // Check that allocated memory is 8-bytes aligned
     assert(reinterpret_cast<uintptr_t>(allocatedMemory) % GLOBAL_ALIGNMENT == 0);
 
     return allocatedMemory;
@@ -324,7 +324,7 @@ void HeapAllocator::reserve(size_t sizeToAllocate) {
     void* memory = mBaseAllocator.allocate(sizeToAllocate + sizeof(MemoryUnitHeader));
     assert(memory != nullptr);
 
-    // Check that allocated memory is 16-bytes aligned
+    // Check that allocated memory is 8-bytes aligned
     assert(reinterpret_cast<uintptr_t>(memory) % GLOBAL_ALIGNMENT == 0);
 
     // Create a new memory unit for the allocated memory
