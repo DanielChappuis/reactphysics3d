@@ -29,6 +29,7 @@
 // Libraries
 #include <limits>
 #include <cfloat>
+#include <cstdint>
 #include <utility>
 #include <sstream>
 #include <string>
