@@ -82,7 +82,7 @@ class PoolAllocator : public MemoryAllocator {
         static const int NB_HEAPS = 128;
 
         /// Minimum unit size
-        static const size_t MIN_UNIT_SIZE = 16;
+        static const size_t MIN_UNIT_SIZE = GLOBAL_ALIGNMENT;
 
         /// Maximum memory unit size. An allocation request of a size smaller or equal to
         /// this size will be handled using the small block allocator. However, for an

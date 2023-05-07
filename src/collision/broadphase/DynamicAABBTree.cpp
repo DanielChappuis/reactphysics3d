@@ -53,7 +53,7 @@ void DynamicAABBTree::init() {
 
     mRootNodeID = TreeNode::NULL_TREE_NODE;
     mNbNodes = 0;
-    mNbAllocatedNodes = 8;
+    mNbAllocatedNodes = GLOBAL_ALIGNMENT;
 
     // Allocate memory for the nodes of the tree
     mNodes = static_cast<TreeNode*>(mAllocator.allocate(static_cast<size_t>(mNbAllocatedNodes) * sizeof(TreeNode)));

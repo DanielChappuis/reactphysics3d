@@ -225,7 +225,10 @@ class OverlappingPairs {
                     auto it = lastFrameCollisionInfos.find(shapesId);
                     if (it == lastFrameCollisionInfos.end()) {
 
-                        LastFrameCollisionInfo* lastFrameInfo = new (mPoolAllocator->allocate(sizeof(LastFrameCollisionInfo))) LastFrameCollisionInfo();
+                        // Make sure capacity is an integral multiple of alignment
+                        const size_t allocatedMemory = std::ceil(sizeof(LastFrameCollisionInfo) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+
+                        LastFrameCollisionInfo* lastFrameInfo = new (mPoolAllocator->allocate(allocatedMemory)) LastFrameCollisionInfo();
 
                         // Add it into the map of collision infos
                         lastFrameCollisionInfos.add(Pair<uint64, LastFrameCollisionInfo*>(shapesId, lastFrameInfo));
@@ -253,8 +256,11 @@ class OverlappingPairs {
                             // Call the destructor
                             it->second->LastFrameCollisionInfo::~LastFrameCollisionInfo();
 
+                            // Make sure capacity is an integral multiple of alignment
+                            const size_t allocatedMemory = std::ceil(sizeof(LastFrameCollisionInfo) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+
                             // Release memory
-                            mPoolAllocator->release(it->second, sizeof(LastFrameCollisionInfo));
+                            mPoolAllocator->release(it->second, allocatedMemory);
 
                             it = lastFrameCollisionInfos.remove(it);
                         }

@@ -32,6 +32,9 @@
 
 using namespace reactphysics3d;
 
+// TriangleShape allocated size
+const size_t NarrowPhaseInfoBatch::mTriangleShapeAllocatedSize = std::ceil(sizeof(TriangleShape) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+
 // Constructor
 NarrowPhaseInfoBatch::NarrowPhaseInfoBatch(OverlappingPairs& overlappingPairs, MemoryAllocator& allocator)
                      : mMemoryAllocator(allocator), mOverlappingPairs(overlappingPairs), narrowPhaseInfos(allocator){
@@ -63,11 +66,11 @@ void NarrowPhaseInfoBatch::clear() {
         // MiddlePhaseTriangleCallback::testTriangle() method)
         if (narrowPhaseInfos[i].collisionShape1->getName() == CollisionShapeName::TRIANGLE) {
             narrowPhaseInfos[i].collisionShape1->~CollisionShape();
-            narrowPhaseInfos[i].collisionShapeAllocator->release(narrowPhaseInfos[i].collisionShape1, sizeof(TriangleShape));
+            narrowPhaseInfos[i].collisionShapeAllocator->release(narrowPhaseInfos[i].collisionShape1, mTriangleShapeAllocatedSize);
         }
         if (narrowPhaseInfos[i].collisionShape2->getName() == CollisionShapeName::TRIANGLE) {
             narrowPhaseInfos[i].collisionShape2->~CollisionShape();
-            narrowPhaseInfos[i].collisionShapeAllocator->release(narrowPhaseInfos[i].collisionShape2, sizeof(TriangleShape));
+            narrowPhaseInfos[i].collisionShapeAllocator->release(narrowPhaseInfos[i].collisionShape2, mTriangleShapeAllocatedSize);
         }
     }
 

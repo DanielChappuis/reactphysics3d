@@ -111,6 +111,9 @@ struct NarrowPhaseInfoBatch {
         /// Cached capacity
         uint32 mCachedCapacity = 0;
 
+        /// TriangleShape allocated size
+        static const size_t mTriangleShapeAllocatedSize;
+
     public:
 
         /// For each collision test, we keep some meta data

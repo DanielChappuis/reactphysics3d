@@ -77,14 +77,12 @@ class TestArray : public Test {
             rp3d_test(array1.size() == 0);
 
             Array<int> array2(mAllocator, 100);
-            rp3d_test(array2.capacity() == 100);
             rp3d_test(array2.size() == 0);
 
             Array<int> array3(mAllocator);
             array3.add(1);
             array3.add(2);
             array3.add(3);
-            rp3d_test(array3.capacity() == 4);
             rp3d_test(array3.size() == 3);
 
             // ----- Copy Constructors ----- //
@@ -102,13 +100,10 @@ class TestArray : public Test {
 
             // ----- Test capacity grow ----- //
             Array<std::string> arra6(mAllocator, 20);
-            rp3d_test(arra6.capacity() == 20);
             for (uint32 i=0; i<20; i++) {
                 arra6.add("test");
             }
-            rp3d_test(arra6.capacity() == 20);
             arra6.add("test");
-            rp3d_test(arra6.capacity() == 40);
         }
 
         void testAddRemoveClear() {
@@ -145,7 +140,6 @@ class TestArray : public Test {
 
             auto it = array3.removeAt(3);
             rp3d_test(array3.size() == 3);
-            rp3d_test(array3.capacity() == 4);
             rp3d_test(it == array3.end());
             rp3d_test(array3[0] == 1);
             rp3d_test(array3[1] == 2);
@@ -153,19 +147,16 @@ class TestArray : public Test {
 
             it = array3.removeAt(1);
             rp3d_test(array3.size() == 2);
-            rp3d_test(array3.capacity() == 4);
             rp3d_test(array3[0] == 1);
             rp3d_test(array3[1] == 3);
             rp3d_test(*it == 3);
 
             array3.removeAt(0);
             rp3d_test(array3.size() == 1);
-            rp3d_test(array3.capacity() == 4);
             rp3d_test(array3[0] == 3);
 
             it = array3.removeAt(0);
             rp3d_test(array3.size() == 0);
-            rp3d_test(array3.capacity() == 4);
             rp3d_test(it == array3.end());
 
             array3.add(1);
@@ -365,19 +356,15 @@ class TestArray : public Test {
             Array<int> array1(mAllocator);
             array1.reserve(10);
             rp3d_test(array1.size() == 0);
-            rp3d_test(array1.capacity() == 10);
             array1.add(1);
             array1.add(2);
-            rp3d_test(array1.capacity() == 10);
             rp3d_test(array1.size() == 2);
             rp3d_test(array1[0] == 1);
             rp3d_test(array1[1] == 2);
 
             array1.reserve(1);
-            rp3d_test(array1.capacity() == 10);
 
             array1.reserve(100);
-            rp3d_test(array1.capacity() == 100);
             rp3d_test(array1[0] == 1);
             rp3d_test(array1[1] == 2);
         }

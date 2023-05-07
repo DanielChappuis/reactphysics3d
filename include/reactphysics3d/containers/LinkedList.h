@@ -66,6 +66,9 @@ class LinkedList {
         /// Memory allocator used to allocate the list elements
         MemoryAllocator& mAllocator;
 
+        /// Size to allocate for a single element
+        size_t mElementAllocationSize;
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -73,6 +76,8 @@ class LinkedList {
         /// Constructor
         LinkedList(MemoryAllocator& allocator) : mListHead(nullptr), mAllocator(allocator) {
 
+            // Make sure capacity is an integral multiple of alignment
+            mElementAllocationSize = std::ceil(sizeof(ListElement) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
         }
 
         /// Destructor
@@ -99,7 +104,8 @@ RP3D_FORCE_INLINE typename LinkedList<T>::ListElement* LinkedList<T>::getListHea
 // Insert an element at the beginning of the linked list
 template<typename T>
 RP3D_FORCE_INLINE void LinkedList<T>::insert(const T& data) {
-    ListElement* element = new (mAllocator.allocate(sizeof(ListElement))) ListElement(data, mListHead);
+
+    ListElement* element = new (mAllocator.allocate(mElementAllocationSize)) ListElement(data, mListHead);
     mListHead = element;
 }
 
@@ -111,7 +117,7 @@ RP3D_FORCE_INLINE void LinkedList<T>::reset() {
     ListElement* element = mListHead;
     while (element != nullptr) {
         ListElement* nextElement = element->next;
-        mAllocator.release(element, sizeof(ListElement));
+        mAllocator.release(element, mElementAllocationSize);
         element = nextElement;
     }
 

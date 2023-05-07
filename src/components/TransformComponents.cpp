@@ -33,11 +33,9 @@
 // We want to use the ReactPhysics3D namespace
 using namespace reactphysics3d;
 
-
 // Constructor
 TransformComponents::TransformComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Transform), 2 * GLOBAL_ALIGNMENT) {
-
 
 }
 
@@ -45,6 +43,9 @@ TransformComponents::TransformComponents(MemoryAllocator& allocator)
 void TransformComponents::allocate(uint32 nbComponentsToAllocate) {
 
     assert(nbComponentsToAllocate > mNbAllocatedComponents);
+
+    // Make sure capacity is an integral multiple of alignment
+    nbComponentsToAllocate = std::ceil(nbComponentsToAllocate / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
 
     // Size for the data of a single component (in bytes)
     const size_t totalSizeBytes = nbComponentsToAllocate * mComponentDataSize + mAlignmentMarginSize;

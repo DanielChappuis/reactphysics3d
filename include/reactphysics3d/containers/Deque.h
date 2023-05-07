@@ -52,36 +52,19 @@ class Deque {
 
     private:
 
-        // -------------------- Constants -------------------- //
-
-        /// Number of items in a chunk
-        const uint8 CHUNK_NB_ITEMS = 17;
-
-        /// First item index in a chunk
-        const uint8 CHUNK_FIRST_ITEM_INDEX = CHUNK_NB_ITEMS / 2;
-
         // -------------------- Attributes -------------------- //
 
-        /// Array of chunks
-        T** mChunks;
+        /// Buffer of elements
+        T* mBuffer;
 
         /// Number of current elements in the deque
         uint64 mSize;
 
-        /// Number of chunks
-        uint64 mNbChunks;
+        /// Capacity
+        uint64 mCapacity;
 
-        /// Index of the chunk with the first element of the deque
-        uint64 mFirstChunkIndex;
-
-        /// Index of the chunk with the last element of the deque
-        uint64 mLastChunkIndex;
-
-        /// Index of the first element in the first chunk
-        uint8 mFirstItemIndex;
-
-        /// Index of the last element in the last chunk
-        uint8 mLastItemIndex;
+        /// Index in the buffer of the first item of the deque
+        uint64 mFirstItemIndex;
 
         /// Memory allocator
         MemoryAllocator& mAllocator;
@@ -89,83 +72,52 @@ class Deque {
         // -------------------- Methods -------------------- //
 
         /// Return a reference to an item at the given virtual index in range [0; mSize-1]
-        T& getItem(uint64 virtualIndex) const {
+        T& getItem(uint64 index) const {
 
             // Ensure the virtual index is valid
-            assert(virtualIndex < mSize);
+            assert(index < mSize);
 
-            uint64 chunkIndex = mFirstChunkIndex;
-            uint64 itemIndex = mFirstItemIndex;
-
-            const uint64 nbItemsFirstChunk = CHUNK_NB_ITEMS - mFirstItemIndex;
-            if (virtualIndex < nbItemsFirstChunk) {
-               itemIndex += virtualIndex;
-            }
-            else {
-
-                virtualIndex -= nbItemsFirstChunk;
-                chunkIndex++;
-
-                chunkIndex += virtualIndex / CHUNK_NB_ITEMS;
-                itemIndex = virtualIndex % CHUNK_NB_ITEMS;
-            }
-
-            return mChunks[chunkIndex][itemIndex];
+            return mBuffer[mFirstItemIndex + index];
         }
 
         /// Add more chunks
-        void expandChunks(uint64 atLeastNbChunks = 0) {
+        void reserve(uint64 capacity) {
 
-            // If it is not necessary to expand the chunks
-            if (atLeastNbChunks > 0 && atLeastNbChunks <= mNbChunks) {
-                return;
-            }
+            if (capacity <= mCapacity) return;
 
-            uint64 newNbChunks = mNbChunks == 0 ? 3 : 2 * mNbChunks - 1;
-            if (atLeastNbChunks > 0 && newNbChunks < atLeastNbChunks) {
-                newNbChunks = uint64(atLeastNbChunks / 2) * 2 + 1;
-            }
-            const uint64 halfNbChunksToAdd = mNbChunks == 0 ? 1 : (mNbChunks - 1) / 2;
+            // Make sure capacity is an integral multiple of alignment
+            capacity = std::ceil(capacity / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
 
-            // Allocate memory for the new array of pointers to chunk
-            void* newMemory = mAllocator.allocate(newNbChunks * sizeof(T*));
-            assert(newMemory != nullptr);
-            T** newChunks = static_cast<T**>(newMemory);
+            // Allocate memory for the new array
+            void* newMemory = mAllocator.allocate(capacity * sizeof(T));
+            T* destination = static_cast<T*>(newMemory);
 
-            // If chunks have already been allocated
-            if (mNbChunks > 0) {
+            const uint64 newStartIndex = capacity / 2 - 1;
 
-                // Copy the pointers to the previous chunks to the new allocated memory location
-                std::uninitialized_copy(mChunks, mChunks + mNbChunks, newChunks + halfNbChunksToAdd);
+            if (mBuffer != nullptr) {
+
+                if (mSize > 0) {
+
+                    // Copy the elements to the new allocated memory location
+                    std::uninitialized_copy(mBuffer + mFirstItemIndex, mBuffer + mFirstItemIndex + mSize, destination + newStartIndex);
+
+                    // Destruct the previous items
+                    for (uint64 i=0; i < mSize; i++) {
+                        mBuffer[mFirstItemIndex + i].~T();
+                    }
+                }
 
                 // Release the previously allocated memory
-                mAllocator.release(mChunks, mNbChunks * sizeof(T*));
+                mAllocator.release(mBuffer, mCapacity * sizeof(T));
             }
 
-            mChunks = newChunks;
+            mBuffer = destination;
+            assert(mBuffer != nullptr);
 
-            // If we need to allocate the first chunk (in the middle of the chunks array)
-            if (mNbChunks == 0) {
-                mChunks[newNbChunks / 2] = static_cast<T*>(mAllocator.allocate(sizeof(T) * CHUNK_NB_ITEMS));
-                assert(mChunks[newNbChunks / 2] != nullptr);
-            }
-
-            mNbChunks = newNbChunks;
-
-            // Allocate memory for each new chunk
-            for (uint64 i=0; i < halfNbChunksToAdd; i++) {
-
-                // Allocate memory for the new chunk
-                mChunks[i] = static_cast<T*>(mAllocator.allocate(sizeof(T) * CHUNK_NB_ITEMS));
-                assert(mChunks[i] != nullptr);
-
-                mChunks[mNbChunks - 1 - i] = static_cast<T*>(mAllocator.allocate(sizeof(T) * CHUNK_NB_ITEMS));
-                assert(mChunks[mNbChunks - 1 -i] != nullptr);
-            }
+            mCapacity = capacity;
 
             // Update the first and last chunk index
-            mFirstChunkIndex += halfNbChunksToAdd;
-            mLastChunkIndex += halfNbChunksToAdd;
+            mFirstItemIndex = newStartIndex;
         }
 
     public:
@@ -193,7 +145,7 @@ class Deque {
                 using iterator_category = std::random_access_iterator_tag;
 
                 /// Constructor
-                Iterator(const Deque<T>* deque, uint64 virtualIndex) : mVirtualIndex(virtualIndex), mDeque(deque) {
+                Iterator(const Deque<T>* deque, uint64 index) : mVirtualIndex(index), mDeque(deque) {
 
                 }
 
@@ -314,35 +266,28 @@ class Deque {
 
         /// Constructor
         Deque(MemoryAllocator& allocator)
-            : mChunks(nullptr), mSize(0), mNbChunks(0), mFirstChunkIndex(1),
-              mLastChunkIndex(1), mFirstItemIndex(CHUNK_FIRST_ITEM_INDEX),
-              mLastItemIndex(CHUNK_FIRST_ITEM_INDEX), mAllocator(allocator) {
+            : mBuffer(nullptr), mSize(0), mCapacity(0), mFirstItemIndex(0), mAllocator(allocator) {
 
-            // Allocate memory for the chunks array
-            expandChunks();
         }
 
         /// Copy constructor
         Deque(const Deque<T>& deque)
-            : mSize(0), mNbChunks(0), mFirstChunkIndex(1),
-              mLastChunkIndex(1), mFirstItemIndex(CHUNK_FIRST_ITEM_INDEX),
-              mLastItemIndex(CHUNK_FIRST_ITEM_INDEX), mAllocator(deque.mAllocator) {
+            : mBuffer(nullptr), mSize(0), mCapacity(0), mFirstItemIndex(deque.mFirstItemIndex),
+              mAllocator(deque.mAllocator) {
 
-            // Allocate memory for the array of chunks
-            expandChunks(deque.mNbChunks);
+            // Allocate memory
+            reserve(deque.mCapacity);
 
             if (deque.mSize > 0) {
 
-                const uint64 dequeHalfSize1 = std::ceil(deque.mSize / 2.0f);
-                const uint64 dequeHalfSize2 = deque.mSize - dequeHalfSize1;
-
                 // Add the items into the deque
-                for(uint64 i=0; i < dequeHalfSize1; i++) {
-                   addFront(deque[dequeHalfSize1 - 1 - i]);
+                for(uint64 i=0; i < deque.mSize; i++) {
+
+                    // Construct the element at its location in the buffer
+                    new (static_cast<void*>(&(mBuffer[deque.mFirstItemIndex + i]))) T(deque.mBuffer[deque.mFirstItemIndex + i]);
                 }
-                for(uint64 i=0; i < dequeHalfSize2; i++) {
-                   addBack(deque[dequeHalfSize1 + i]);
-                }
+
+                mSize = deque.mSize;
             }
         }
 
@@ -351,76 +296,53 @@ class Deque {
 
             clear();
 
-            // Release each chunk
-            for (uint64 i=0; i < mNbChunks; i++) {
-
-                mAllocator.release(mChunks[i], sizeof(T) * CHUNK_NB_ITEMS);
-            }
-
             // Release the chunks array
-            mAllocator.release(mChunks, sizeof(T*) * mNbChunks);
+            mAllocator.release(mBuffer, sizeof(T) * mCapacity);
+
+            mCapacity = 0;
+            mBuffer = nullptr;
         }
 
         /// Add an element at the end of the deque
         void addBack(const T& element) {
 
             // If we need to add the item in a another chunk
-            if (mLastItemIndex == CHUNK_NB_ITEMS - 1) {
+            if (mFirstItemIndex + mSize >= mCapacity) {
 
-                // If we need to add more chunks
-                if (mLastChunkIndex == mNbChunks - 1) {
-
-                    // Add more chunks
-                    expandChunks();
-                }
-
-                mLastItemIndex = 0;
-                mLastChunkIndex++;
+                reserve(mCapacity == 0 ? GLOBAL_ALIGNMENT : mCapacity * 2);
             }
-            else if (mSize != 0) {
-                mLastItemIndex++;
-            }
+
+            assert(mFirstItemIndex + mSize < mCapacity);
 
             // Construct the element at its location in the chunk
-            new (static_cast<void*>(&(mChunks[mLastChunkIndex][mLastItemIndex]))) T(element);
+            new (static_cast<void*>(&(mBuffer[mFirstItemIndex + mSize]))) T(element);
 
             mSize++;
 
-            assert(mFirstChunkIndex >= 0 && mLastChunkIndex < mNbChunks);
-            assert(mFirstItemIndex >= 0 && mFirstItemIndex < CHUNK_NB_ITEMS);
-            assert(mLastItemIndex >= 0 && mLastItemIndex < CHUNK_NB_ITEMS);
-            assert(mFirstChunkIndex <= mLastChunkIndex);
+            assert(mFirstItemIndex + mSize <= mCapacity);
+            assert(mSize <= mCapacity);
         }
 
         /// Add an element at the front of the deque
         void addFront(const T& element) {
 
-            // If we need to add the item in another chunk
+            // If we need to add the item in a another chunk
             if (mFirstItemIndex == 0) {
 
-                // If we need to add more chunks
-                if (mFirstChunkIndex == 0) {
-
-                    // Add more chunks
-                    expandChunks();
-                }
-
-                mFirstItemIndex = CHUNK_NB_ITEMS - 1;
-                mFirstChunkIndex--;
+                reserve(mCapacity == 0 ? GLOBAL_ALIGNMENT : mCapacity * 2);
             }
-            else if (mSize != 0) {
-                mFirstItemIndex--;
-            }
+
+            assert(mFirstItemIndex > 0);
+
+            mFirstItemIndex--;
 
             // Construct the element at its location in the chunk
-            new (static_cast<void*>(&(mChunks[mFirstChunkIndex][mFirstItemIndex]))) T(element);
+            new (static_cast<void*>(&(mBuffer[mFirstItemIndex]))) T(element);
 
             mSize++;
 
-            assert(mFirstChunkIndex >= 0 && mLastChunkIndex < mNbChunks);
-            assert(mFirstItemIndex >= 0 && mFirstItemIndex < CHUNK_NB_ITEMS);
-            assert(mLastItemIndex >= 0 && mLastItemIndex < CHUNK_NB_ITEMS);
-            assert(mFirstChunkIndex <= mLastChunkIndex);
+            assert(mFirstItemIndex + mSize <= mCapacity);
+            assert(mSize <= mCapacity);
         }
 
         /// Remove the first element of the deque
@@ -429,28 +351,17 @@ class Deque {
             if (mSize > 0) {
 
                 // Call the destructor of the first element
-                mChunks[mFirstChunkIndex][mFirstItemIndex].~T();
+                mBuffer[mFirstItemIndex].~T();
 
                 mSize--;
+                mFirstItemIndex++;
 
                 if (mSize == 0) {
-                    mFirstChunkIndex = mNbChunks / 2;
-                    mFirstItemIndex = CHUNK_FIRST_ITEM_INDEX;
-                    mLastChunkIndex = mFirstChunkIndex;
-                    mLastItemIndex = CHUNK_FIRST_ITEM_INDEX;
-                }
-                else if (mFirstItemIndex == CHUNK_NB_ITEMS - 1){
-                    mFirstChunkIndex++;
-                    mFirstItemIndex = 0;
-                }
-                else {
-                    mFirstItemIndex++;
+                    mFirstItemIndex = mCapacity / 2 - 1;
                 }
 
-                assert(mFirstChunkIndex >= 0 && mLastChunkIndex < mNbChunks);
-                assert(mFirstItemIndex >= 0 && mFirstItemIndex < CHUNK_NB_ITEMS);
-                assert(mLastItemIndex >= 0 && mLastItemIndex < CHUNK_NB_ITEMS);
-                assert(mFirstChunkIndex <= mLastChunkIndex);
+                assert(mFirstItemIndex + mSize <= mCapacity);
+                assert(mSize <= mCapacity);
             }
         }
 
@@ -460,41 +371,29 @@ class Deque {
             if (mSize > 0) {
 
                 // Call the destructor of the last element
-                mChunks[mLastChunkIndex][mLastItemIndex].~T();
+                mBuffer[mFirstItemIndex + mSize - 1].~T();
 
                 mSize--;
 
                 if (mSize == 0) {
-                    mFirstChunkIndex = mNbChunks / 2;
-                    mFirstItemIndex = CHUNK_FIRST_ITEM_INDEX;
-                    mLastChunkIndex = mFirstChunkIndex;
-                    mLastItemIndex = CHUNK_FIRST_ITEM_INDEX;
-                }
-                else if (mLastItemIndex == 0){
-                    mLastChunkIndex--;
-                    mLastItemIndex = CHUNK_NB_ITEMS - 1;
-                }
-                else {
-                    mLastItemIndex--;
+                    mFirstItemIndex = mCapacity / 2 - 1;
                 }
 
-                assert(mFirstChunkIndex >= 0 && mLastChunkIndex < mNbChunks);
-                assert(mFirstItemIndex >= 0 && mFirstItemIndex < CHUNK_NB_ITEMS);
-                assert(mLastItemIndex >= 0 && mLastItemIndex < CHUNK_NB_ITEMS);
-                assert(mFirstChunkIndex <= mLastChunkIndex);
+                assert(mFirstItemIndex + mSize <= mCapacity);
+                assert(mSize <= mCapacity);
             }
         }
 
         /// Return a reference to the first item of the deque
         const T& getFront() const {
             assert(mSize > 0);
-            return mChunks[mFirstChunkIndex][mFirstItemIndex];
+            return mBuffer[mFirstItemIndex];
         }
 
         /// Return a reference to the last item of the deque
         const T& getBack() const {
             assert(mSize > 0);
-            return mChunks[mLastChunkIndex][mLastItemIndex];
+            return mBuffer[mFirstItemIndex + mSize - 1];
         }
 
         /// Clear the elements of the deque
@@ -508,11 +407,7 @@ class Deque {
                 }
 
                 mSize = 0;
-
-                mFirstChunkIndex = mNbChunks / 2;
-                mLastChunkIndex = mFirstChunkIndex;
-                mFirstItemIndex = CHUNK_FIRST_ITEM_INDEX;
-                mLastItemIndex = CHUNK_FIRST_ITEM_INDEX;
+                mFirstItemIndex = mCapacity / 2 - 1;
             }
         }
 
@@ -561,26 +456,24 @@ class Deque {
                 // Clear all the elements
                 clear();
 
+                reserve(deque.mCapacity);
+
                 if (deque.mSize > 0) {
 
-                    // Number of used chunks
-                    const uint64 nbUsedChunks = deque.mLastChunkIndex - deque.mFirstChunkIndex + 1;
-
-                    // Expand the chunk if necessary
-                    expandChunks(nbUsedChunks);
-
-                    const uint64 dequeHalfSize1 = std::ceil(deque.mSize / 2.0f);
-                    const uint64 dequeHalfSize2 = deque.mSize - dequeHalfSize1;
-
                     // Add the items into the deque
-                    for(uint64 i=0; i < dequeHalfSize1; i++) {
-                       addFront(deque[dequeHalfSize1 - 1 - i]);
+                    for(uint64 i=0; i < deque.mSize; i++) {
+
+                        // Construct the element at its location in the buffer
+                        new (static_cast<void*>(&(mBuffer[mFirstItemIndex + i]))) T(deque.mBuffer[deque.mFirstItemIndex + i]);
                     }
-                    for(uint64 i=0; i < dequeHalfSize2; i++) {
-                       addBack(deque[dequeHalfSize1 + i]);
-                    }
+
                 }
+
+                mSize = deque.mSize;
             }
+
+            assert(mFirstItemIndex + mSize <= mCapacity);
+            assert(mSize <= mCapacity);
 
             return *this;
         }

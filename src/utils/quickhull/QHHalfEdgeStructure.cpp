@@ -31,6 +31,12 @@
 
 using namespace reactphysics3d;
 
+// Make sure capacity is an integral multiple of alignment
+const size_t QHHalfEdgeStructure::mVertexAllocatedSize = std::ceil(sizeof(Vertex) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+const size_t QHHalfEdgeStructure::mEdgeAllocatedSize = std::ceil(sizeof(Edge) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+const size_t QHHalfEdgeStructure::mFaceAllocatedSize = std::ceil(sizeof(Face) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+
+
 // Destructor
 QHHalfEdgeStructure::~QHHalfEdgeStructure() {
 
@@ -41,7 +47,7 @@ QHHalfEdgeStructure::~QHHalfEdgeStructure() {
         Face* nextFace = face->nextFace;
 
         face->~Face();
-        mAllocator.release(face, sizeof(Face));
+        mAllocator.release(face, mFaceAllocatedSize);
 
         face = nextFace;
     }
@@ -53,7 +59,7 @@ QHHalfEdgeStructure::~QHHalfEdgeStructure() {
         Edge* nextEdge = edge->nextEdge;
 
         edge->~Edge();
-        mAllocator.release(edge, sizeof(Edge));
+        mAllocator.release(edge, mEdgeAllocatedSize);
 
         edge = nextEdge;
     }
@@ -65,7 +71,7 @@ QHHalfEdgeStructure::~QHHalfEdgeStructure() {
         Vertex* nextVertex = vertex->nextVertex;
 
         vertex->~Vertex();
-        mAllocator.release(vertex, sizeof(Vertex));
+        mAllocator.release(vertex, mVertexAllocatedSize);
 
         vertex = nextVertex;
     }
@@ -78,7 +84,7 @@ QHHalfEdgeStructure::~QHHalfEdgeStructure() {
 QHHalfEdgeStructure::Vertex* QHHalfEdgeStructure::addVertex(uint32 externalIndex) {
 
     // Create a new vertex
-    Vertex* vertex = new (mAllocator.allocate(sizeof(Vertex))) Vertex(externalIndex, nullptr, mVertices);
+    Vertex* vertex = new (mAllocator.allocate(mVertexAllocatedSize)) Vertex(externalIndex, nullptr, mVertices);
 
     if (mVertices != nullptr) {
        mVertices->previousVertex = vertex;
@@ -102,7 +108,7 @@ QHHalfEdgeStructure::Face* QHHalfEdgeStructure::addFace(const Array<Vertex*>& fa
     assert(faceVertices.size() >= 3);
 
     // Create a new face
-    Face* face = new (mAllocator.allocate(sizeof(Face))) Face(allocator);
+    Face* face = new (mAllocator.allocate(mFaceAllocatedSize)) Face(allocator);
 
     Edge* prevFaceEdge = nullptr;
     Edge* firstFaceEdge = nullptr;
@@ -116,7 +122,7 @@ QHHalfEdgeStructure::Face* QHHalfEdgeStructure::addFace(const Array<Vertex*>& fa
         assert(!mMapVerticesToEdge.containsKey(EdgeVertices(v1, v2)));
 
         // Create an edge
-        Edge* edge = new (mAllocator.allocate(sizeof(Edge))) Edge(v1, v2, face);
+        Edge* edge = new (mAllocator.allocate(mEdgeAllocatedSize)) Edge(v1, v2, face);
         edge->previousFaceEdge = prevFaceEdge;
 
         // Get twin edge (if any)
@@ -258,7 +264,7 @@ void QHHalfEdgeStructure::removeHalfEdge(Edge* edge) {
     removeEdgeFromLinkedList(edge);
 
     edge->~Edge();
-    mAllocator.release(edge, sizeof(Edge));
+    mAllocator.release(edge, mEdgeAllocatedSize);
 
     mNbHalfEdges--;
 }
@@ -289,7 +295,7 @@ void QHHalfEdgeStructure::deleteFace(Face* face) {
     removeFaceFromLinkedList(face);
 
     face->~Face();
-    mAllocator.release(face, sizeof(Face));
+    mAllocator.release(face, mFaceAllocatedSize);
 
     mNbFaces--;
 }
@@ -309,7 +315,7 @@ void QHHalfEdgeStructure::removeVertex(Vertex* vertex) {
     }
 
     vertex->~Vertex();
-    mAllocator.release(vertex, sizeof(Vertex));
+    mAllocator.release(vertex, mVertexAllocatedSize);
 
     mNbVertices--;
 }

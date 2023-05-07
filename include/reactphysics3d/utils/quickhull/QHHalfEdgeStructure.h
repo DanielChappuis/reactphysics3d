@@ -260,6 +260,10 @@ class QHHalfEdgeStructure {
         /// Linked-list of half-edges
         Edge* mHalfEdges = nullptr;
 
+        static const size_t mVertexAllocatedSize;
+        static const size_t mEdgeAllocatedSize;
+        static const size_t mFaceAllocatedSize;
+
         // ---------- Methods ---------- //
 
         /// Add an edge before another one in the linked-list of edges

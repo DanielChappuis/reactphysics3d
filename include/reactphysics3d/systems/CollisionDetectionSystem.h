@@ -172,6 +172,9 @@ class CollisionDetectionSystem {
         /// Reference to the half-edge structure of the triangle polyhedron
         HalfEdgeStructure& mTriangleHalfEdgeStructure;
 
+        /// Allocated size for a triangle shape
+        static const size_t mTriangleShapeAllocatedSize;
+
 #ifdef IS_RP3D_PROFILING_ENABLED
 
     /// Pointer to the profiler

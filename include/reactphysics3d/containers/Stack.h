@@ -61,6 +61,9 @@ class Stack {
         /// Allocate more memory
         void allocate(uint64 capacity) {
 
+            // Make sure capacity is an integral multiple of alignment
+            capacity = std::ceil(capacity / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+
             T* newArray = static_cast<T*>(mAllocator.allocate(capacity * sizeof(T)));
             assert(newArray != nullptr);
 

@@ -66,7 +66,8 @@ HeapAllocator::~HeapAllocator() {
 
         // Destroy the unit
         unit->~MemoryUnitHeader();
-        mBaseAllocator.release(static_cast<void*>(unit), unitSize + sizeof(MemoryUnitHeader));
+        const size_t sizeHeader = std::ceil(sizeof(MemoryUnitHeader) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+        mBaseAllocator.release(static_cast<void*>(unit), unitSize + sizeHeader);
 
         unit = nextUnit;
     }
@@ -320,8 +321,10 @@ void HeapAllocator::mergeUnits(MemoryUnitHeader* unit1, MemoryUnitHeader* unit2)
 // Reserve more memory for the allocator
 void HeapAllocator::reserve(size_t sizeToAllocate) {
 
+    const size_t sizeHeader = std::ceil(sizeof(MemoryUnitHeader) / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+
     // Allocate memory
-    void* memory = mBaseAllocator.allocate(sizeToAllocate + sizeof(MemoryUnitHeader));
+    void* memory = mBaseAllocator.allocate(sizeToAllocate + sizeHeader);
     assert(memory != nullptr);
 
     // Check that allocated memory is 16-bytes aligned

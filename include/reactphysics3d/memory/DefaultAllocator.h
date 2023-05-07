@@ -30,6 +30,7 @@
 #include <reactphysics3d/memory/MemoryAllocator.h>
 #include <reactphysics3d/configuration.h>
 #include <cstdlib>
+#include <cassert>
 #include <iostream>
 #include <stdlib.h>
 
@@ -55,6 +56,8 @@ class DefaultAllocator : public MemoryAllocator {
         /// Allocate memory of a given size (in bytes) and return a pointer to the
         /// allocated memory. The returned allocated memory must be 16 bytes aligned.
         virtual void* allocate(size_t size) override {
+
+            assert(size % GLOBAL_ALIGNMENT == 0);
 
 // If compiler is Visual Studio
 #ifdef RP3D_PLATFORM_WINDOWS

@@ -62,6 +62,14 @@ class CollisionDispatch {
         /// Memory allocator
         MemoryAllocator& mAllocator;
 
+        /// Allocation sizes
+        size_t mSphereVsSphereAllocatedSize;
+        size_t mSphereVsCapsuleAllocatedSize;
+        size_t mCapsuleVsCapsuleAllocatedSize;
+        size_t mSphereVsConvexPolyAllocatedSize;
+        size_t mCapsuleVsConvexPolyAllocatedSize;
+        size_t mConvexPolyVsConvexPolyAllocatedSize;
+
         /// True if the sphere vs sphere algorithm is the default one
         bool mIsSphereVsSphereDefault = true;
 

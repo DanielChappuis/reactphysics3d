@@ -276,8 +276,12 @@ class Map {
             uint64* newBuckets = static_cast<uint64*>(mAllocator.allocate(capacity * sizeof(uint64)));
 
             // Allocate memory for the entries
-            const uint64 nbAllocatedEntries = static_cast<uint64>(capacity * double(DEFAULT_LOAD_FACTOR));
+            uint64 nbAllocatedEntries = static_cast<uint64>(capacity * double(DEFAULT_LOAD_FACTOR));
             assert(nbAllocatedEntries > 0);
+
+            // Make sure capacity is an integral multiple of alignment
+            nbAllocatedEntries = std::ceil(nbAllocatedEntries / float(GLOBAL_ALIGNMENT)) * GLOBAL_ALIGNMENT;
+
             Pair<K, V>* newEntries = static_cast<Pair<K, V>*>(mAllocator.allocate(nbAllocatedEntries * sizeof(Pair<K, V>)));
             uint64* newNextEntries = static_cast<uint64*>(mAllocator.allocate(nbAllocatedEntries * sizeof(uint64)));
 
