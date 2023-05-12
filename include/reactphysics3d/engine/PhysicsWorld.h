@@ -270,6 +270,9 @@ class PhysicsWorld {
         /// becomes smaller than the sleep velocity.
         decimal mTimeBeforeSleep;
 
+        /// List of "destroyed" rigid bodies
+        std::vector<RigidBody*> mRigidBodyFreeList;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -452,6 +455,12 @@ class PhysicsWorld {
 
         /// Return a reference to the Debug Renderer of the world
         DebugRenderer& getDebugRenderer();
+
+        /// Add a rigid body to the free list
+        void addRigidBodyToFreeList(RigidBody* rigidBody);
+
+        /// Remove a rigid body from the free list
+        RigidBody* removeRigidBodyFromFreeList();
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
