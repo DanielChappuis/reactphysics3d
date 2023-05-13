@@ -511,6 +511,24 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
     RigidBody* freeBody = removeRigidBodyFromFreeList();
     if (freeBody != nullptr) {
         freeBody->setTransform(transform);
+        
+        // Reset the rigid body
+        freeBody->setIsAllowedToSleep(true);
+        freeBody->enableGravity(true);
+        freeBody->setType(BodyType::DYNAMIC);
+        
+        freeBody->setMass(1);
+        freeBody->setLinearDamping(0);
+        freeBody->setAngularDamping(0);
+        
+        Vector3 centerOfMass(0, 0, 0);
+        freeBody->setLocalCenterOfMass(centerOfMass);
+        
+        Vector3 damping(1, 1, 1);
+        freeBody->setLinearLockAxisFactor(damping);
+        freeBody->setAngularLockAxisFactor(damping);
+        
+        freeBody->updateLocalInertiaTensorFromColliders();
         return freeBody;
     }
 
