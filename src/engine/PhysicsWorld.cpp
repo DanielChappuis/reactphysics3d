@@ -156,7 +156,34 @@ PhysicsWorld::~PhysicsWorld() {
     i = static_cast<uint32>(mRigidBodies.size());
     while (i != 0) {
         i--;
-        destroyRigidBody(mRigidBodies[i]);
+        RigidBody* rigidBody = mRigidBodies[i];
+        
+        RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
+                 "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body destroyed",  __FILE__, __LINE__);
+
+        // Remove all the collision shapes of the body
+        rigidBody->removeAllColliders();
+
+        // Destroy all the joints in which the rigid body to be destroyed is involved
+        const Array<Entity>& joints = mRigidBodyComponents.getJoints(rigidBody->getEntity());
+        while (joints.size() > 0) {
+            destroyJoint(mJointsComponents.getJoint(joints[0]));
+        }
+
+        // Destroy the corresponding entity and its components
+        mCollisionBodyComponents.removeComponent(rigidBody->getEntity());
+        mRigidBodyComponents.removeComponent(rigidBody->getEntity());
+        mTransformComponents.removeComponent(rigidBody->getEntity());
+        mEntityManager.destroyEntity(rigidBody->getEntity());
+
+        // Call the destructor of the rigid body
+        rigidBody->~RigidBody();
+
+        // Remove the rigid body from the array of rigid bodies
+        mRigidBodies.remove(rigidBody);
+
+        // Free the object from the memory allocator
+        mMemoryManager.release(MemoryManager::AllocationType::Pool, rigidBody, sizeof(RigidBody));
     }
 
     assert(mJointsComponents.getNbComponents() == 0);
@@ -480,6 +507,31 @@ void PhysicsWorld::enableDisableJoints() {
  */
 RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
 
+    // Check the free list for an available rigid body
+    RigidBody* freeBody = removeRigidBodyFromFreeList();
+    if (freeBody != nullptr) {
+        freeBody->setTransform(transform);
+        
+        // Reset the rigid body
+        freeBody->setIsAllowedToSleep(true);
+        freeBody->enableGravity(true);
+        freeBody->setType(BodyType::DYNAMIC);
+        
+        freeBody->setMass(1);
+        freeBody->setLinearDamping(0);
+        freeBody->setAngularDamping(0);
+        
+        Vector3 centerOfMass(0, 0, 0);
+        freeBody->setLocalCenterOfMass(centerOfMass);
+        
+        Vector3 damping(1, 1, 1);
+        freeBody->setLinearLockAxisFactor(damping);
+        freeBody->setAngularLockAxisFactor(damping);
+        
+        freeBody->updateLocalInertiaTensorFromColliders();
+        return freeBody;
+    }
+
     // Create a new entity for the body
     Entity entity = mEntityManager.createEntity();
 
@@ -528,7 +580,7 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
 void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
 
     RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body destroyed",  __FILE__, __LINE__);
+        "Body " + std::to_string(rigidBody->getEntity().id) + ": rigid body freed",  __FILE__, __LINE__);
 
     // Remove all the collision shapes of the body
     rigidBody->removeAllColliders();
@@ -539,20 +591,28 @@ void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
         destroyJoint(mJointsComponents.getJoint(joints[0]));
     }
 
-    // Destroy the corresponding entity and its components
-    mCollisionBodyComponents.removeComponent(rigidBody->getEntity());
-    mRigidBodyComponents.removeComponent(rigidBody->getEntity());
-    mTransformComponents.removeComponent(rigidBody->getEntity());
-    mEntityManager.destroyEntity(rigidBody->getEntity());
+    addRigidBodyToFreeList(rigidBody);
+}
 
-    // Call the destructor of the rigid body
-    rigidBody->~RigidBody();
+// Add the rigid body to a list of freed rigid bodies
+/**
+ * @param rigidBody The rigid body object to add to the free list
+ */
+void PhysicsWorld::addRigidBodyToFreeList(RigidBody* rigidBody) {
+    mRigidBodyFreeList.push_back(rigidBody);
+    rigidBody->setIsActive(false);
+}
 
-    // Remove the rigid body from the array of rigid bodies
-    mRigidBodies.remove(rigidBody);
-
-    // Free the object from the memory allocator
-    mMemoryManager.release(MemoryManager::AllocationType::Pool, rigidBody, sizeof(RigidBody));
+// Remove the rigid body from the list of freed rigid bodies and return a pointer to the rigid body
+/**
+ * @return A pointer to the rigid body removed from the free list
+ */
+RigidBody* PhysicsWorld::removeRigidBodyFromFreeList(void) {
+    if (mRigidBodyFreeList.size() == 0) return nullptr;
+    RigidBody* rigidBody = mRigidBodyFreeList[mRigidBodyFreeList.size()-1];
+    rigidBody->setIsActive(true);
+    mRigidBodyFreeList.erase( mRigidBodyFreeList.end()-1 );
+    return rigidBody;
 }
 
 // Create a joint between two bodies in the world and return a pointer to the new joint
