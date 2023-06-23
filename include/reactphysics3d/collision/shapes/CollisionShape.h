@@ -54,7 +54,7 @@ enum class CollisionShapeName { TRIANGLE, SPHERE, CAPSULE, BOX, CONVEX_MESH, TRI
 
 // Declarations
 class Collider;
-class CollisionBody;
+class Body;
 
 // Class CollisionShape
 /**
@@ -162,7 +162,7 @@ class CollisionShape {
         // -------------------- Friendship -------------------- //
 
         friend class Collider;
-        friend class CollisionBody;
+        friend class Body;
         friend class RigidBody;
         friend class PhysicsWorld;
         friend class BroadPhaseSystem;

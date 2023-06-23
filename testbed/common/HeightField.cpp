@@ -28,7 +28,7 @@
 #include "PerlinNoise.h"
 
 // Constructor
-HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
+HeightField::HeightField(reactphysics3d::BodyType type, bool isSimulationCollider, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
            : PhysicsObject(physicsCommon), mPhysicsWorld(physicsWorld), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
@@ -55,16 +55,12 @@ HeightField::HeightField(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
     mPreviousTransform = rp3d::Transform::identity();
 
     // Create a body
-    if (createRigidBody) {
-        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity());
-        body->updateMassPropertiesFromColliders();
-        mBody = body;
-    }
-    else {
-        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
-        mCollider = mBody->addCollider(mHeightFieldShape, rp3d::Transform::identity());
-    }
+    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+    body->setType(type);
+    mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity());
+    mCollider->setIsSimulationCollider(isSimulationCollider);
+    body->updateMassPropertiesFromColliders();
+    mBody = body;
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -85,13 +81,7 @@ HeightField::~HeightField() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (body != nullptr) {
-        mPhysicsWorld->destroyRigidBody(body);
-    }
-    else {
-        mPhysicsWorld->destroyCollisionBody(mBody);
-    }
+    mPhysicsWorld->destroyRigidBody(mBody);
     mPhysicsCommon.destroyHeightFieldShape(mHeightFieldShape);
     mPhysicsCommon.destroyHeightField(mHeightField);
 }

@@ -103,9 +103,8 @@ void HingeJointScene::createHingeJoint() {
     // --------------- Create the boxes --------------- //
 
     // Create a box and a corresponding rigid in the physics world
-    mBox1 = new Box(true, Vector3(4, 4, 4), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox1 = new Box(rp3d::BodyType::STATIC, true, Vector3(4, 4, 4), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox1->setTransform(rp3d::Transform(rp3d::Vector3(0, 4, 0), rp3d::Quaternion::identity()));
-    mBox1->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Set the box color
     mBox1->setColor(mObjectColorDemo);
@@ -115,7 +114,7 @@ void HingeJointScene::createHingeJoint() {
     mPhysicsObjects.push_back(mBox1);
 
     // Create a box and a corresponding rigid in the physics world
-    mBox2 = new Box(true, Vector3(4, 4, 4), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox2 = new Box(rp3d::BodyType::DYNAMIC, true, Vector3(4, 4, 4), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox2->setTransform(rp3d::Transform(rp3d::Vector3(4, 4, 0), rp3d::Quaternion::identity()));
 
     // Set the box color

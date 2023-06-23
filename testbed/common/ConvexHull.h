@@ -43,7 +43,7 @@ class ConvexHull : public ConvexMesh {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexHull(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+        ConvexHull(reactphysics3d::BodyType type, bool isSimulationCollider, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                    const std::string& meshPath, const rp3d::Vector3& scaling = rp3d::Vector3(1, 1, 1));
 };
 

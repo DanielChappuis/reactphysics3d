@@ -72,7 +72,7 @@ void BoxTowerScene::createPhysicsWorld() {
     for (int i=0; i<NB_BOXES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Box* box = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Box* box = new Box(rp3d::BodyType::DYNAMIC, true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         box->setColor(mObjectColorDemo);
@@ -89,15 +89,12 @@ void BoxTowerScene::createPhysicsWorld() {
 
     // ---------- Create the floor ---------
 
-    mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor = new Box(rp3d::BodyType::STATIC, true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mPhysicsObjects.push_back(mFloor);
 
     // Set the box color
     mFloor->setColor(mFloorColorDemo);
     mFloor->setSleepingColor(mFloorColorDemo);
-
-    // The floor must be a static rigid body
-    mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getCollider()->getMaterial();

@@ -174,7 +174,7 @@ void TestbedApplication::start() {
 #endif
 
     // Select the initial scene
-    const int firstSceneIndex = 0;
+    const int firstSceneIndex = 19;
     switchScene(mScenes[firstSceneIndex]);
 
     mGui.drawAll();

@@ -69,7 +69,7 @@ void HeightFieldScene::createPhysicsWorld() {
     for (int i = 0; i<NB_COMPOUND_SHAPES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        Dumbbell* dumbbell = new Dumbbell(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Dumbbell* dumbbell = new Dumbbell(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         dumbbell->setColor(mObjectColorDemo);
@@ -92,7 +92,7 @@ void HeightFieldScene::createPhysicsWorld() {
     for (int i = 0; i<NB_BOXES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Box* box = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Box* box = new Box(rp3d::BodyType::DYNAMIC, true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         box->setColor(mObjectColorDemo);
@@ -111,7 +111,7 @@ void HeightFieldScene::createPhysicsWorld() {
     for (int i = 0; i<NB_SPHERES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Sphere* sphere = new Sphere(rp3d::BodyType::DYNAMIC, true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         sphere->setColor(mObjectColorDemo);
@@ -130,7 +130,7 @@ void HeightFieldScene::createPhysicsWorld() {
     for (int i = 0; i<NB_CAPSULES; i++) {
 
         // Create a cylinder and a corresponding rigid in the physics world
-        Capsule* capsule = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Capsule* capsule = new Capsule(rp3d::BodyType::DYNAMIC, true, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         capsule->setColor(mObjectColorDemo);
@@ -149,7 +149,7 @@ void HeightFieldScene::createPhysicsWorld() {
     for (int i = 0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -167,7 +167,7 @@ void HeightFieldScene::createPhysicsWorld() {
     // ---------- Create the height field ---------- //
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mHeightField = new HeightField(true, mPhysicsCommon, mPhysicsWorld);
+    mHeightField = new HeightField(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld);
 
     // Set the mesh as beeing static
     mHeightField->getRigidBody()->setType(rp3d::BodyType::STATIC);

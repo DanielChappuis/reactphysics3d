@@ -237,8 +237,8 @@ decimal BroadPhaseRaycastCallback::raycastBroadPhaseShape(int32 nodeId, const Ra
     // Get the collider from the node
     Collider* collider = static_cast<Collider*>(mDynamicAABBTree.getNodeDataPointer(nodeId));
 
-    // Check if the raycast filtering mask allows raycast against this shape
-    if ((mRaycastWithCategoryMaskBits & collider->getCollisionCategoryBits()) != 0) {
+    // Check if the raycast filtering mask allows raycast against this shape and if world query is enabled for this collider
+    if ((mRaycastWithCategoryMaskBits & collider->getCollisionCategoryBits()) != 0 && collider->getIsWorldQueryCollider()) {
 
         // Ask the collision detection to perform a ray cast test against
         // the collider of this node because the ray is overlapping

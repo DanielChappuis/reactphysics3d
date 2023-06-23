@@ -90,7 +90,7 @@ class Material {
         // ---------- Friendship ---------- //
 
         friend class Collider;
-        friend class CollisionBody;
+        friend class Body;
         friend class RigidBody;
 };
 

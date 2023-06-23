@@ -38,7 +38,7 @@ openglframework::VertexArrayObject Box::mVAO;
 int Box::totalNbBoxes = 0;
 
 // Constructor
-Box::Box(bool createRigidBody, const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world,
+Box::Box(reactphysics3d::BodyType type, bool isSimulationCollider, const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world,
          const std::string& meshFolderPath)
     : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj"), mPhysicsWorld(world) {
 
@@ -60,20 +60,13 @@ Box::Box(bool createRigidBody, const openglframework::Vector3& size, reactphysic
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    if (createRigidBody) {
-
-        // Create a rigid body in the physics world
-        rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mBoxShape, rp3d::Transform::identity());
-        body->updateMassPropertiesFromColliders();
-        mBody = body;
-    }
-    else {
-
-        // Create a body in the physics world
-        mBody = world->createCollisionBody(mPreviousTransform);
-        mCollider = mBody->addCollider(mBoxShape, rp3d::Transform::identity());
-    }
+    // Create a rigid body in the physics world
+    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
+    body->setType(type);
+    mCollider = body->addCollider(mBoxShape, rp3d::Transform::identity());
+    mCollider->setIsSimulationCollider(isSimulationCollider);
+    body->updateMassPropertiesFromColliders();
+    mBody = body;
 
     // If the Vertex Buffer object has not been created yet
     if (totalNbBoxes == 0) {
@@ -97,13 +90,7 @@ Box::~Box() {
         mVBONormals.destroy();
         mVAO.destroy();
     }
-    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (body != nullptr) {
-        mPhysicsWorld->destroyRigidBody(body);
-    }
-    else {
-        mPhysicsWorld->destroyCollisionBody(mBody);
-    }
+    mPhysicsWorld->destroyRigidBody(mBody);
     mPhysicsCommon.destroyBoxShape(mBoxShape);
     totalNbBoxes--;
 }

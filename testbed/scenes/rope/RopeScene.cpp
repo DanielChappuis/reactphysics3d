@@ -154,7 +154,8 @@ void RopeScene::createPhysicsWorld() {
             const uint capsuleIndex = r * NB_CAPSULES_PER_ROPE + i;
 
             // Create a capsule and a corresponding rigid in the physics world
-            mCapsules[capsuleIndex] = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            rp3d::BodyType type = i == 0 ? rp3d::BodyType::STATIC : rp3d::BodyType::DYNAMIC;
+            mCapsules[capsuleIndex] = new Capsule(type, true, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
             // Set the capsule color
             mCapsules[capsuleIndex]->setColor(mObjectColorDemo);
@@ -168,10 +169,6 @@ void RopeScene::createPhysicsWorld() {
             mCapsules[capsuleIndex]->getRigidBody()->setAngularDamping(angularDamping);
             mCapsules[capsuleIndex]->getRigidBody()->setLinearDamping(linearDamping);
 
-            if (i == 0) {
-                mCapsules[capsuleIndex]->getRigidBody()->setType(rp3d::BodyType::STATIC);
-            }
-
             // Add the capsule the list of capsules in the scene
             mPhysicsObjects.push_back(mCapsules[capsuleIndex]);
         }
@@ -180,7 +177,7 @@ void RopeScene::createPhysicsWorld() {
     // ---------- Create the first box --------- //
 
     // Create a box and a corresponding rigid in the physics world
-    mBox1 = new Box(true, Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox1 = new Box(rp3d::BodyType::DYNAMIC, true, Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox1->getRigidBody()->setAngularDamping(angularDamping);
     mBox1->getRigidBody()->setLinearDamping(linearDamping);
 
@@ -199,7 +196,7 @@ void RopeScene::createPhysicsWorld() {
     // ---------- Create the second box --------- //
 
     // Create a box and a corresponding rigid in the physics world
-    mBox2 = new Box(true, Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox2 = new Box(rp3d::BodyType::DYNAMIC, true, Vector3(BOX_SIZE, BOX_SIZE, BOX_SIZE), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox2->getRigidBody()->setAngularDamping(angularDamping);
     mBox2->getRigidBody()->setLinearDamping(linearDamping);
 
@@ -218,8 +215,7 @@ void RopeScene::createPhysicsWorld() {
     // ---------- Create plank box --------- //
 
     // Create a box and a corresponding rigid in the physics world
-    mPlank = new Box(true, Vector3(10, 2, 15), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
-    mPlank->getRigidBody()->setType(rp3d::BodyType::STATIC);
+    mPlank = new Box(rp3d::BodyType::STATIC, true, Vector3(10, 2, 15), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mPlank->setColor(mFloorColorDemo);
     mPlank->setSleepingColor(mSleepingColorDemo);
 

@@ -100,9 +100,14 @@ class ColliderComponents : public Components {
         /// True if the collider is a trigger
         bool* mIsTrigger;
 
+        /// True if the collider is simulation collider
+        bool* mIsSimulationCollider;
+
+        /// True if the collider is a world query collider
+        bool* mIsWorldQueryCollider;
+
         /// Array with the material of each collider
         Material* mMaterials;
-
 
         // -------------------- Methods -------------------- //
 
@@ -208,6 +213,18 @@ class ColliderComponents : public Components {
 
         /// Set whether a collider is a trigger
         void setIsTrigger(Entity colliderEntity, bool isTrigger);
+
+        /// Return true if a collider is a simulation collider
+        bool getIsSimulationCollider(Entity colliderEntity) const;
+
+        /// Set whether a collider is a simulation collider
+        void setIsSimulationCollider(Entity colliderEntity, bool isSimulationCollider);
+
+        /// Return true if a collider is a world query collider
+        bool getIsWorldQueryCollider(Entity colliderEntity) const;
+
+        /// Set whether a collider is a world query collider
+        void setIsWorldQueryCollider(Entity colliderEntity, bool isWorldQueryCollider);
 
         /// Return a reference to the material of a collider
         Material& getMaterial(Entity colliderEntity);
@@ -368,6 +385,38 @@ RP3D_FORCE_INLINE void ColliderComponents::setIsTrigger(Entity colliderEntity, b
     assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
 
     mIsTrigger[mMapEntityToComponentIndex[colliderEntity]] = isTrigger;
+}
+
+// Return true if a collider is a simulation collider
+RP3D_FORCE_INLINE bool ColliderComponents::getIsSimulationCollider(Entity colliderEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    return mIsSimulationCollider[mMapEntityToComponentIndex[colliderEntity]];
+}
+
+// Set whether a collider is a simulation collider
+RP3D_FORCE_INLINE void ColliderComponents::setIsSimulationCollider(Entity colliderEntity, bool isSimulationCollider) {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    mIsSimulationCollider[mMapEntityToComponentIndex[colliderEntity]] = isSimulationCollider;
+}
+
+// Return true if a collider is a world query collider
+RP3D_FORCE_INLINE bool ColliderComponents::getIsWorldQueryCollider(Entity colliderEntity) const {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    return mIsWorldQueryCollider[mMapEntityToComponentIndex[colliderEntity]];
+}
+
+// Set whether a collider is a world query collider
+RP3D_FORCE_INLINE void ColliderComponents::setIsWorldQueryCollider(Entity colliderEntity, bool isWorldQueryCollider) {
+
+    assert(mMapEntityToComponentIndex.containsKey(colliderEntity));
+
+    mIsWorldQueryCollider[mMapEntityToComponentIndex[colliderEntity]] = isWorldQueryCollider;
 }
 
 // Return a reference to the material of a collider

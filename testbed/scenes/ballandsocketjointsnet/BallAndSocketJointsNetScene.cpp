@@ -62,7 +62,7 @@ BallAndSocketJointsNetScene::BallAndSocketJointsNetScene(const std::string& name
         for (int j=0; j<NB_ROWS_NET_SPHERES; j++) {
 
             // Create a sphere and a corresponding rigid in the physics world
-            Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
+            Sphere* sphere = new Sphere(rp3d::BodyType::DYNAMIC, true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
 
             // Set the sphere color
             sphere->setColor(mObjectColorDemo);
@@ -85,14 +85,13 @@ BallAndSocketJointsNetScene::BallAndSocketJointsNetScene(const std::string& name
     createJoints();
 
     // Create the main sphere
-    mMainSphere = new Sphere(true, 7, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
+    mMainSphere = new Sphere(rp3d::BodyType::STATIC, true, 7, mPhysicsCommon, mPhysicsWorld, meshFolderPath);
     mMainSphere->setColor(mObjectColorDemo);
     mMainSphere->setSleepingColor(mSleepingColorDemo);
     rp3d::Vector3 initPosition(0, 0, 0);
     rp3d::Quaternion initOrientation = rp3d::Quaternion::identity();
     rp3d::Transform transform(initPosition, initOrientation);
     mMainSphere->setTransform(transform);
-    mMainSphere->getRigidBody()->setType(rp3d::BodyType::STATIC);
     rp3d::Material& material = mMainSphere->getCollider()->getMaterial();
     material.setBounciness(rp3d::decimal(0.0));
     mPhysicsObjects.push_back(mMainSphere);

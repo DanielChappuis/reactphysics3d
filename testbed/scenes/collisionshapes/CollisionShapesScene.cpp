@@ -66,7 +66,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_COMPOUND_SHAPES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        Dumbbell* dumbbell = new Dumbbell(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Dumbbell* dumbbell = new Dumbbell(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         dumbbell->setColor(mObjectColorDemo);
@@ -89,7 +89,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_BOXES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Box* box = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Box* box = new Box(rp3d::BodyType::DYNAMIC, true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         box->setColor(mObjectColorDemo);
@@ -108,7 +108,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_SPHERES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        Sphere* sphere = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Sphere* sphere = new Sphere(rp3d::BodyType::DYNAMIC, true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         sphere->setColor(mObjectColorDemo);
@@ -127,7 +127,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_CAPSULES; i++) {
 
         // Create a cylinder and a corresponding rigid in the physics world
-        Capsule* capsule = new Capsule(true, CAPSULE_RADIUS, CAPSULE_HEIGHT,
+        Capsule* capsule = new Capsule(rp3d::BodyType::DYNAMIC, true, CAPSULE_RADIUS, CAPSULE_HEIGHT,
                                        mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
@@ -147,7 +147,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -166,7 +166,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_HULLS; i++) {
 
         // Create a convex hull and a corresponding rigid in the physics world
-        ConvexHull* mesh = new ConvexHull(true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "cow.obj", rp3d::Vector3(5, 5, 5));
+        ConvexHull* mesh = new ConvexHull(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "cow.obj", rp3d::Vector3(5, 5, 5));
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -183,15 +183,12 @@ void CollisionShapesScene::createPhysicsWorld() {
 
     // ---------- Create the floor ---------
 
-    mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor = new Box(rp3d::BodyType::STATIC, true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mPhysicsObjects.push_back(mFloor);
 
     // Set the box color
     mFloor->setColor(mFloorColorDemo);
     mFloor->setSleepingColor(mFloorColorDemo);
-
-    // The floor must be a static rigid body
-    mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material = mFloor->getCollider()->getMaterial();

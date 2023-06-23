@@ -30,7 +30,7 @@
 #include "Test.h"
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
-#include <reactphysics3d/body/CollisionBody.h>
+#include <reactphysics3d/body/Body.h>
 #include <reactphysics3d/collision/shapes/BoxShape.h>
 #include <reactphysics3d/collision/shapes/SphereShape.h>
 #include <reactphysics3d/collision/shapes/CapsuleShape.h>
@@ -94,7 +94,7 @@ class WorldRaycastCallback : public RaycastCallback {
 
 // Class TestPointInside
 /**
- * Unit test for the CollisionBody::testPointInside() method.
+ * Unit test for the RigidBody::testPointInside() method.
  */
 class TestRaycast : public Test {
 
@@ -116,14 +116,14 @@ class TestRaycast : public Test {
         PhysicsWorld* mWorld;
 
         // Bodies
-        CollisionBody* mBoxBody;
-        CollisionBody* mSphereBody;
-        CollisionBody* mCapsuleBody;
-        CollisionBody* mConvexMeshBody;
-        CollisionBody* mCylinderBody;
-        CollisionBody* mCompoundBody;
-        CollisionBody* mConcaveMeshBody;
-        CollisionBody* mHeightFieldBody;
+        Body* mBoxBody;
+        Body* mSphereBody;
+        Body* mCapsuleBody;
+        Body* mConvexMeshBody;
+        Body* mCylinderBody;
+        Body* mCompoundBody;
+        Body* mConcaveMeshBody;
+        Body* mHeightFieldBody;
 
         // Transform
         Transform mBodyTransform;
@@ -178,14 +178,14 @@ class TestRaycast : public Test {
             mBodyTransform = Transform(position, orientation);
 
             // Create the bodies
-            mBoxBody = mWorld->createCollisionBody(mBodyTransform);
-            mSphereBody = mWorld->createCollisionBody(mBodyTransform);
-            mCapsuleBody = mWorld->createCollisionBody(mBodyTransform);
-            mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
-            mCylinderBody = mWorld->createCollisionBody(mBodyTransform);
-            mCompoundBody = mWorld->createCollisionBody(mBodyTransform);
-            mConcaveMeshBody = mWorld->createCollisionBody(mBodyTransform);
-            mHeightFieldBody = mWorld->createCollisionBody(mBodyTransform);
+            mBoxBody = mWorld->createRigidBody(mBodyTransform);
+            mSphereBody = mWorld->createRigidBody(mBodyTransform);
+            mCapsuleBody = mWorld->createRigidBody(mBodyTransform);
+            mConvexMeshBody = mWorld->createRigidBody(mBodyTransform);
+            mCylinderBody = mWorld->createRigidBody(mBodyTransform);
+            mCompoundBody = mWorld->createRigidBody(mBodyTransform);
+            mConcaveMeshBody = mWorld->createRigidBody(mBodyTransform);
+            mHeightFieldBody = mWorld->createRigidBody(mBodyTransform);
 
             // Collision shape transform
             Vector3 shapePosition(1, -4, -3);
@@ -198,12 +198,15 @@ class TestRaycast : public Test {
             // Create collision shapes
             mBoxShape = mPhysicsCommon.createBoxShape(Vector3(2, 3, 4));
             mBoxCollider = mBoxBody->addCollider(mBoxShape, mShapeTransform);
+            mBoxCollider->setIsSimulationCollider(false);
 
             mSphereShape = mPhysicsCommon.createSphereShape(3);
             mSphereCollider = mSphereBody->addCollider(mSphereShape, mShapeTransform);
+            mSphereCollider->setIsSimulationCollider(false);
 
             mCapsuleShape = mPhysicsCommon.createCapsuleShape(2, 5);
             mCapsuleCollider = mCapsuleBody->addCollider(mCapsuleShape, mShapeTransform);
+            mCapsuleCollider->setIsSimulationCollider(false);
 
             mConvexMeshVertices[0] = -2; mConvexMeshVertices[1] = -3; mConvexMeshVertices[2] = 4;
             mConvexMeshVertices[3] = 2; mConvexMeshVertices[4] = -3; mConvexMeshVertices[5] = 4;
@@ -241,6 +244,7 @@ class TestRaycast : public Test {
             rp3d_test(mConvexMesh != nullptr);
             mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);
             mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);
+            mConvexMeshCollider->setIsSimulationCollider(false);
 
             // Compound shape is a cylinder and a sphere
             Vector3 positionShape2(Vector3(4, 2, -3));
@@ -249,6 +253,8 @@ class TestRaycast : public Test {
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
             mCompoundCapsuleCollider = mCompoundBody->addCollider(mCapsuleShape, mShapeTransform);
             mCompoundSphereCollider = mCompoundBody->addCollider(mSphereShape, shapeTransform2);
+            mCompoundCapsuleCollider->setIsSimulationCollider(false);
+            mCompoundSphereCollider->setIsSimulationCollider(false);
 
             // Concave Mesh shape
             mConcaveMeshVertices.push_back(Vector3(-2, -3, -4));
@@ -283,6 +289,7 @@ class TestRaycast : public Test {
             mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh(concaveMeshVertexArray, errors);
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
             mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, mShapeTransform);
+            mConcaveMeshCollider->setIsSimulationCollider(false);
 
             // Heightfield shape (plane height field at height=4)
             for (int i=0; i<100; i++) mHeightFieldData[i] = 4;
@@ -292,6 +299,7 @@ class TestRaycast : public Test {
 
             mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(mHeightField);
             mHeightFieldCollider = mHeightFieldBody->addCollider(mHeightFieldShape, mShapeTransform);
+            mHeightFieldCollider->setIsSimulationCollider(false);
 
             // Assign colliders to the different categories
             mBoxCollider->setCollisionCategoryBits(CATEGORY1);
@@ -329,7 +337,7 @@ class TestRaycast : public Test {
             testHeightField();
         }
 
-        /// Test the Collider::raycast(), CollisionBody::raycast() and
+        /// Test the Collider::raycast(), RigidBody::raycast() and
         /// PhysicsWorld::raycast() methods.
         void testBox() {
 
@@ -362,7 +370,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray, &mCallback, CATEGORY2);
             rp3d_test(!mCallback.isHit);
 
-            // CollisionBody::raycast()
+            // RigidBody::raycast()
             RaycastInfo raycastInfo2;
             rp3d_test(mBoxBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mBoxBody);
@@ -541,7 +549,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
         }
 
-        /// Test the Collider::raycast(), CollisionBody::raycast() and
+        /// Test the Collider::raycast(), RigidBody::raycast() and
         /// PhysicsWorld::raycast() methods.
         void testSphere() {
 
@@ -574,7 +582,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray, &mCallback, CATEGORY2);
             rp3d_test(!mCallback.isHit);
 
-            // CollisionBody::raycast()
+            // RigidBody::raycast()
             RaycastInfo raycastInfo2;
             rp3d_test(mSphereBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mSphereBody);
@@ -751,7 +759,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
         }
 
-        /// Test the Collider::raycast(), CollisionBody::raycast() and
+        /// Test the Collider::raycast(), RigidBody::raycast() and
         /// PhysicsWorld::raycast() methods.
         void testCapsule() {
 
@@ -794,7 +802,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray, &mCallback, CATEGORY2);
             rp3d_test(!mCallback.isHit);
 
-            // CollisionBody::raycast()
+            // RigidBody::raycast()
             RaycastInfo raycastInfo2;
             rp3d_test(mCapsuleBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mCapsuleBody);
@@ -991,7 +999,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
         }
 
-        /// Test the Collider::raycast(), CollisionBody::raycast() and
+        /// Test the Collider::raycast(), RigidBody::raycast() and
         /// PhysicsWorld::raycast() methods.
         void testConvexMesh() {
 
@@ -1024,7 +1032,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray, &mCallback, CATEGORY1);
             rp3d_test(!mCallback.isHit);
 
-            // CollisionBody::raycast()
+            // RigidBody::raycast()
             RaycastInfo raycastInfo2;
             rp3d_test(mConvexMeshBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mConvexMeshBody);
@@ -1204,7 +1212,7 @@ class TestRaycast : public Test {
             rp3d_test(mCallback.isHit);
         }
 
-        /// Test the CollisionBody::raycast() and
+        /// Test the RigidBody::raycast() and
         /// PhysicsWorld::raycast() methods.
         void testCompound() {
 
@@ -1370,7 +1378,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray, &mCallback, CATEGORY1);
             rp3d_test(!mCallback.isHit);
 
-            // CollisionBody::raycast()
+            // RigidBody::raycast()
             RaycastInfo raycastInfo2;
             rp3d_test(mConcaveMeshBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mConcaveMeshBody);
@@ -1605,7 +1613,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray, &mCallback, CATEGORY1);
             rp3d_test(!mCallback.isHit);
 
-            // CollisionBody::raycast()
+            // RigidBody::raycast()
             RaycastInfo raycastInfo2;
             rp3d_test(mHeightFieldBody->raycast(ray, raycastInfo2));
             rp3d_test(raycastInfo2.body == mHeightFieldBody);
@@ -1635,7 +1643,7 @@ class TestRaycast : public Test {
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.y, hitPoint2.y, epsilon));
             rp3d_test(approxEqual(mCallback.raycastInfo.worldPoint.z, hitPoint2.z, epsilon));
 
-            // CollisionBody::raycast()
+            // RigidBody::raycast()
             RaycastInfo raycastInfo5;
             rp3d_test(mHeightFieldBody->raycast(rayBottom, raycastInfo5));
             rp3d_test(raycastInfo5.body == mHeightFieldBody);

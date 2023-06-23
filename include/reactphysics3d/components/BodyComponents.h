@@ -38,14 +38,14 @@ namespace reactphysics3d {
 // Class declarations
 class MemoryAllocator;
 class EntityManager;
-class CollisionBody;
+class Body;
 
-// Class CollisionBodyComponents
+// Class BodyComponents
 /**
- * This class represent the component of the ECS that contains data about a collision body.
+ * This class represent the component of the ECS that contains data about a body.
  * The components of the sleeping entities (bodies) are always stored at the end of the array.
  */
-class CollisionBodyComponents : public Components {
+class BodyComponents : public Components {
 
     private:
 
@@ -55,7 +55,7 @@ class CollisionBodyComponents : public Components {
         Entity* mBodiesEntities;
 
         /// Array of pointers to the corresponding bodies
-        CollisionBody** mBodies;
+        Body** mBodies;
 
         /// Array with the colliders of each body
         Array<Entity>* mColliders;
@@ -65,6 +65,9 @@ class CollisionBodyComponents : public Components {
 
         /// Array of pointers that can be used to attach user data to the body
         void** mUserData;
+
+        /// For each body, true if it has a least one simulation collider
+        bool* mHasSimulationCollider;
 
         // -------------------- Methods -------------------- //
 
@@ -83,12 +86,12 @@ class CollisionBodyComponents : public Components {
     public:
 
         /// Structure for the data of a collision body component
-        struct CollisionBodyComponent {
+        struct BodyComponent {
 
-            CollisionBody* body;
+            Body* body;
 
             /// Constructor
-            CollisionBodyComponent(CollisionBody* body) : body(body) {
+            BodyComponent(Body* body) : body(body) {
 
             }
         };
@@ -96,13 +99,13 @@ class CollisionBodyComponents : public Components {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionBodyComponents(MemoryAllocator& allocator);
+        BodyComponents(MemoryAllocator& allocator);
 
         /// Destructor
-        virtual ~CollisionBodyComponents() override = default;
+        virtual ~BodyComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity bodyEntity, bool isSleeping, const CollisionBodyComponent& component);
+        void addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component);
 
         /// Add a collider to a body component
         void addColliderToBody(Entity bodyEntity, Entity colliderEntity);
@@ -111,7 +114,7 @@ class CollisionBodyComponents : public Components {
         void removeColliderFromBody(Entity bodyEntity, Entity colliderEntity);
 
         /// Return a pointer to a body
-        CollisionBody* getBody(Entity bodyEntity);
+        Body* getBody(Entity bodyEntity);
 
         /// Return the array of colliders of a body
         const Array<Entity>& getColliders(Entity bodyEntity) const;
@@ -127,10 +130,20 @@ class CollisionBodyComponents : public Components {
 
         /// Set the user data associated with the body
         void setUserData(Entity bodyEntity, void* userData) const;
+
+        /// Return true if the body has at least one simulation collider
+        bool getHasSimulationCollider(Entity bodyEntity) const;
+
+        /// Set whether the body has at least one simulation collider
+        void setHasSimulationCollider(Entity bodyEntity, bool hasSimulationCollider) const;
+
+        // -------------------- Friendship -------------------- //
+
+        friend class Body;
 };
 
 // Add a collider to a body component
-RP3D_FORCE_INLINE void CollisionBodyComponents::addColliderToBody(Entity bodyEntity, Entity colliderEntity) {
+RP3D_FORCE_INLINE void BodyComponents::addColliderToBody(Entity bodyEntity, Entity colliderEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -138,7 +151,7 @@ RP3D_FORCE_INLINE void CollisionBodyComponents::addColliderToBody(Entity bodyEnt
 }
 
 // Remove a collider from a body component
-RP3D_FORCE_INLINE void CollisionBodyComponents::removeColliderFromBody(Entity bodyEntity, Entity colliderEntity) {
+RP3D_FORCE_INLINE void BodyComponents::removeColliderFromBody(Entity bodyEntity, Entity colliderEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -146,7 +159,7 @@ RP3D_FORCE_INLINE void CollisionBodyComponents::removeColliderFromBody(Entity bo
 }
 
 // Return a pointer to a body
-RP3D_FORCE_INLINE CollisionBody *CollisionBodyComponents::getBody(Entity bodyEntity) {
+RP3D_FORCE_INLINE Body *BodyComponents::getBody(Entity bodyEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -154,7 +167,7 @@ RP3D_FORCE_INLINE CollisionBody *CollisionBodyComponents::getBody(Entity bodyEnt
 }
 
 // Return the array of colliders of a body
-RP3D_FORCE_INLINE const Array<Entity>& CollisionBodyComponents::getColliders(Entity bodyEntity) const {
+RP3D_FORCE_INLINE const Array<Entity>& BodyComponents::getColliders(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -162,7 +175,7 @@ RP3D_FORCE_INLINE const Array<Entity>& CollisionBodyComponents::getColliders(Ent
 }
 
 // Return true if the body is active
-RP3D_FORCE_INLINE bool CollisionBodyComponents::getIsActive(Entity bodyEntity) const {
+RP3D_FORCE_INLINE bool BodyComponents::getIsActive(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -170,7 +183,7 @@ RP3D_FORCE_INLINE bool CollisionBodyComponents::getIsActive(Entity bodyEntity) c
 }
 
 // Set the value to know if the body is active
-RP3D_FORCE_INLINE void CollisionBodyComponents::setIsActive(Entity bodyEntity, bool isActive) const {
+RP3D_FORCE_INLINE void BodyComponents::setIsActive(Entity bodyEntity, bool isActive) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -178,7 +191,7 @@ RP3D_FORCE_INLINE void CollisionBodyComponents::setIsActive(Entity bodyEntity, b
 }
 
 // Return the user data associated with the body
-RP3D_FORCE_INLINE void* CollisionBodyComponents::getUserData(Entity bodyEntity) const {
+RP3D_FORCE_INLINE void* BodyComponents::getUserData(Entity bodyEntity) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
@@ -186,11 +199,25 @@ RP3D_FORCE_INLINE void* CollisionBodyComponents::getUserData(Entity bodyEntity) 
 }
 
 // Set the user data associated with the body
-RP3D_FORCE_INLINE void CollisionBodyComponents::setUserData(Entity bodyEntity, void* userData) const {
+RP3D_FORCE_INLINE void BodyComponents::setUserData(Entity bodyEntity, void* userData) const {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
     mUserData[mMapEntityToComponentIndex[bodyEntity]] = userData;
+}
+
+// Return true if the body has at least one simulation collider
+RP3D_FORCE_INLINE bool BodyComponents::getHasSimulationCollider(Entity bodyEntity) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+   return mHasSimulationCollider[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set whether the body has at least one simulation collider
+RP3D_FORCE_INLINE void BodyComponents::setHasSimulationCollider(Entity bodyEntity, bool hasSimulationCollider) const {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+   mHasSimulationCollider[mMapEntityToComponentIndex[bodyEntity]] = hasSimulationCollider;
 }
 
 }

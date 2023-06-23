@@ -78,7 +78,8 @@ class Sphere : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        Sphere(bool createRigidBody, float radius, rp3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world, const std::string& meshFolderPath);
+        Sphere(reactphysics3d::BodyType type, bool isSimulationCollider, float radius, rp3d::PhysicsCommon& physicsCommon,
+               reactphysics3d::PhysicsWorld* world, const std::string& meshFolderPath);
 
         /// Destructor
         virtual ~Sphere() override;

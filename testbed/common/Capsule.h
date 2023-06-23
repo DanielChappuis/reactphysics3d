@@ -81,7 +81,7 @@ class Capsule : public PhysicsObject {
 		// -------------------- Methods -------------------- //
 
 		/// Constructor
-        Capsule(bool createRigidBody, float radius, float height, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+        Capsule(reactphysics3d::BodyType type, bool isSimulationCollider, float radius, float height, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                 const std::string& meshFolderPath);
 
 		/// Destructor

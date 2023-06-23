@@ -34,7 +34,7 @@ openglframework::VertexArrayObject Dumbbell::mVAO;
 int Dumbbell::totalNbDumbbells = 0;
 
 // Constructor
-Dumbbell::Dumbbell(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshFolderPath)
+Dumbbell::Dumbbell(reactphysics3d::BodyType type, bool isSimulationCollider, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshFolderPath)
          : PhysicsObject(physicsCommon, meshFolderPath + "dumbbell.obj"), mPhysicsWorld(physicsWorld) {
 
     // Identity scaling matrix
@@ -67,25 +67,18 @@ Dumbbell::Dumbbell(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3
     rp3d::Transform transformCylinderShape(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
 
     // Create a body corresponding to the dumbbell in the physics world
-    if (createRigidBody) {
-
-        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mColliderSphere1 = body->addCollider(mSphereShape, transformSphereShape1);
-        mColliderSphere2 = body->addCollider(mSphereShape, transformSphereShape2);
-        mColliderCapsule = body->addCollider(mCapsuleShape, transformCylinderShape);
-        mColliderSphere1->getMaterial().setMassDensity(2);
-        mColliderSphere2->getMaterial().setMassDensity(2);
-        body->updateMassPropertiesFromColliders();
-        mBody = body;
-    }
-    else {
-
-        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
-        mColliderSphere1 = mBody->addCollider(mSphereShape, transformSphereShape1);
-        mColliderSphere2 = mBody->addCollider(mSphereShape, transformSphereShape2);
-        mColliderCapsule = mBody->addCollider(mCapsuleShape, transformCylinderShape);
-    }
-
+    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+    body->setType(type);
+    mColliderSphere1 = body->addCollider(mSphereShape, transformSphereShape1);
+    mColliderSphere1->setIsSimulationCollider(isSimulationCollider);
+    mColliderSphere2 = body->addCollider(mSphereShape, transformSphereShape2);
+    mColliderSphere2->setIsSimulationCollider(isSimulationCollider);
+    mColliderCapsule = body->addCollider(mCapsuleShape, transformCylinderShape);
+    mColliderCapsule->setIsSimulationCollider(isSimulationCollider);
+    mColliderSphere1->getMaterial().setMassDensity(2);
+    mColliderSphere2->getMaterial().setMassDensity(2);
+    body->updateMassPropertiesFromColliders();
+    mBody = body;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -113,13 +106,7 @@ Dumbbell::~Dumbbell() {
         mVAO.destroy();
     }
 
-    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (body != nullptr) {
-        mPhysicsWorld->destroyRigidBody(body);
-    }
-    else {
-        mPhysicsWorld->destroyCollisionBody(mBody);
-    }
+    mPhysicsWorld->destroyRigidBody(mBody);
     mPhysicsCommon.destroySphereShape(mSphereShape);
     mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
     totalNbDumbbells--;

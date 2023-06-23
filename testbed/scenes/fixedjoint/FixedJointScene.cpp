@@ -107,9 +107,8 @@ void FixedJointScene::createFixedJoint() {
 
     // Create a box and a corresponding rigid in the physics world
     openglframework::Vector3 boxDimension(4, 4, 4);
-    mBox1 = new Box(true, boxDimension, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox1 = new Box(rp3d::BodyType::STATIC, true, boxDimension, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox1->setTransform(rp3d::Transform(positionBox1, rp3d::Quaternion::identity()));
-    mBox1->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Set the box color
     mBox1->setColor(mObjectColorDemo);
@@ -123,7 +122,7 @@ void FixedJointScene::createFixedJoint() {
     rp3d::Vector3 positionBox2(4, 8, 4);
 
     // Create a box and a corresponding rigid in the physics world
-    mBox2 = new Box(true, boxDimension, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox2 = new Box(rp3d::BodyType::DYNAMIC, true, boxDimension, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox2->setTransform(rp3d::Transform(positionBox2, rp3d::Quaternion::identity()));
 
     // Set the box color

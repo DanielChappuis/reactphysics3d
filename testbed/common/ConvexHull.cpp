@@ -29,7 +29,7 @@
 #include <reactphysics3d/utils/Message.h>
 
 // Constructor
-ConvexHull::ConvexHull(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+ConvexHull::ConvexHull(reactphysics3d::BodyType type, bool isSimulationCollider, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                        const std::string& meshPath, const reactphysics3d::Vector3& scaling)
            : ConvexMesh(physicsCommon, physicsWorld, meshPath) {
 
@@ -60,17 +60,12 @@ ConvexHull::ConvexHull(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
     mPreviousTransform = rp3d::Transform::identity();
 
     // Create a rigid body corresponding in the physics world
-    if (createRigidBody) {
-        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity());
-        body->updateMassPropertiesFromColliders();
-        mBody = body;
-    }
-    else {
-
-        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
-        mCollider = mBody->addCollider(mConvexShape, rp3d::Transform::identity());
-    }
+    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+    body->setType(type);
+    mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity());
+    mCollider->setIsSimulationCollider(isSimulationCollider);
+    body->updateMassPropertiesFromColliders();
+    mBody = body;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }

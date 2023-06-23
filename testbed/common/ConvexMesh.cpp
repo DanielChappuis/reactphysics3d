@@ -30,7 +30,7 @@
 #include <reactphysics3d/utils/Message.h>
 
 // Constructor
-ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+ConvexMesh::ConvexMesh(reactphysics3d::BodyType type, bool isSimulationCollider, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                        const std::string& meshPath, const rp3d::Vector3& scaling)
            : ConvexMesh(physicsCommon, physicsWorld, meshPath) {
 
@@ -93,18 +93,12 @@ ConvexMesh::ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon,
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create a rigid body corresponding to the sphere in the physics world
-    if (createRigidBody) {
-        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity());
-        body->updateMassPropertiesFromColliders();
-        mBody = body;
-    }
-    else {
-
-        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
-        mCollider = mBody->addCollider(mConvexShape, rp3d::Transform::identity());
-    }
+    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+    body->setType(type);
+    mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity());
+    mCollider->setIsSimulationCollider(isSimulationCollider);
+    body->updateMassPropertiesFromColliders();
+    mBody = body;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
@@ -134,13 +128,7 @@ ConvexMesh::~ConvexMesh() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (body != nullptr) {
-        mPhysicsWorld->destroyRigidBody(body);
-    }
-    else {
-        mPhysicsWorld->destroyCollisionBody(mBody);
-    }
+    mPhysicsWorld->destroyRigidBody(mBody);
 
     mPhysicsCommon.destroyConvexMeshShape(mConvexShape);
     mPhysicsCommon.destroyConvexMesh(mConvexMesh);

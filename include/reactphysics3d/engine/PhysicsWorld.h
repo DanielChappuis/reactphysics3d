@@ -32,7 +32,7 @@
 #include <reactphysics3d/constraint/Joint.h>
 #include <reactphysics3d/memory/MemoryManager.h>
 #include <reactphysics3d/engine/EntityManager.h>
-#include <reactphysics3d/components/CollisionBodyComponents.h>
+#include <reactphysics3d/components/BodyComponents.h>
 #include <reactphysics3d/components/RigidBodyComponents.h>
 #include <reactphysics3d/components/TransformComponents.h>
 #include <reactphysics3d/components/ColliderComponents.h>
@@ -181,7 +181,7 @@ class PhysicsWorld {
         bool mIsDebugRenderingEnabled;
 
         /// Collision Body Components
-        CollisionBodyComponents mCollisionBodyComponents;
+        BodyComponents mBodyComponents;
 
         /// Rigid Body Components
         RigidBodyComponents mRigidBodyComponents;
@@ -211,7 +211,7 @@ class PhysicsWorld {
         CollisionDetectionSystem mCollisionDetection;
 
         /// All the collision bodies of the world
-        Array<CollisionBody*> mCollisionBodies;
+        Array<Body*> mCollisionBodies;
 
         /// Pointer to an event listener object
         EventListener* mEventListener;
@@ -309,12 +309,6 @@ class PhysicsWorld {
 
         // -------------------- Methods -------------------- //
 
-        /// Create a collision body
-        CollisionBody* createCollisionBody(const Transform& transform);
-
-        /// Destroy a collision body
-        void destroyCollisionBody(CollisionBody* collisionBody);
-
         /// Get the collision dispatch configuration
         CollisionDispatch& getCollisionDispatch();
 
@@ -322,19 +316,19 @@ class PhysicsWorld {
         void raycast(const Ray& ray, RaycastCallback* raycastCallback, unsigned short raycastWithCategoryMaskBits = 0xFFFF) const;
 
         /// Return true if two bodies overlap (collide)
-        bool testOverlap(CollisionBody* body1, CollisionBody* body2);
+        bool testOverlap(Body* body1, Body* body2);
 
         /// Report all the bodies that overlap (collide) with the body in parameter
-        void testOverlap(CollisionBody* body, OverlapCallback& overlapCallback);
+        void testOverlap(Body* body, OverlapCallback& overlapCallback);
 
         /// Report all the bodies that overlap (collide) in the world
         void testOverlap(OverlapCallback& overlapCallback);
 
         /// Test collision and report contacts between two bodies.
-        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback);
+        void testCollision(Body* body1, Body* body2, CollisionCallback& callback);
 
         /// Test collision and report all the contacts involving the body in parameter
-        void testCollision(CollisionBody* body, CollisionCallback& callback);
+        void testCollision(Body* body, CollisionCallback& callback);
 
         /// Test collision and report contacts between each colliding bodies in the world
         void testCollision(CollisionCallback& callback);
@@ -426,15 +420,6 @@ class PhysicsWorld {
         /// Set an event listener object to receive events callbacks.
         void setEventListener(EventListener* eventListener);
 
-        /// Return the number of CollisionBody in the physics world
-        uint32 getNbCollisionBodies() const;
-
-        /// Return a constant pointer to a given CollisionBody of the world
-        const CollisionBody* getCollisionBody(uint32 index) const;
-
-        /// Return a pointer to a given CollisionBody of the world
-        CollisionBody* getCollisionBody(uint32 index) ;
-
         /// Return the number of RigidBody in the physics world
         uint32 getNbRigidBodies() const;
 
@@ -463,7 +448,7 @@ class PhysicsWorld {
         // -------------------- Friendship -------------------- //
 
         friend class CollisionDetectionSystem;
-        friend class CollisionBody;
+        friend class Body;
         friend class Collider;
         friend class ConvexMeshShape;
         friend class CollisionCallback::ContactPair;
@@ -514,7 +499,7 @@ RP3D_FORCE_INLINE void PhysicsWorld::raycast(const Ray& ray,
  * @param body2 Pointer to the second body to test
  * @param callback Pointer to the object with the callback method
  */
-RP3D_FORCE_INLINE void PhysicsWorld::testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback) {
+RP3D_FORCE_INLINE void PhysicsWorld::testCollision(Body* body1, Body* body2, CollisionCallback& callback) {
     mCollisionDetection.testCollision(body1, body2, callback);
 }
 
@@ -527,7 +512,7 @@ RP3D_FORCE_INLINE void PhysicsWorld::testCollision(CollisionBody* body1, Collisi
  * @param body Pointer to the body against which we need to test collision
  * @param callback Pointer to the object with the callback method to report contacts
  */
-RP3D_FORCE_INLINE void PhysicsWorld::testCollision(CollisionBody* body, CollisionCallback& callback) {
+RP3D_FORCE_INLINE void PhysicsWorld::testCollision(Body* body, CollisionCallback& callback) {
     mCollisionDetection.testCollision(body, callback);
 }
 
@@ -551,7 +536,7 @@ RP3D_FORCE_INLINE void PhysicsWorld::testCollision(CollisionCallback& callback) 
  * @param body Pointer to the collision body to test overlap with
  * @param overlapCallback Pointer to the callback class to report overlap
  */
-RP3D_FORCE_INLINE void PhysicsWorld::testOverlap(CollisionBody* body, OverlapCallback& overlapCallback) {
+RP3D_FORCE_INLINE void PhysicsWorld::testOverlap(Body* body, OverlapCallback& overlapCallback) {
     mCollisionDetection.testOverlap(body, overlapCallback);
 }
 
@@ -677,15 +662,6 @@ RP3D_FORCE_INLINE decimal PhysicsWorld::getTimeBeforeSleep() const {
  */
 RP3D_FORCE_INLINE void PhysicsWorld::setEventListener(EventListener* eventListener) {
     mEventListener = eventListener;
-}
-
-// Return the number of CollisionBody in the physics world
-/// Note that even if a RigidBody is also a collision body, this method does not return the rigid bodies
-/**
- * @return The number of collision bodies in the physics world
- */
-RP3D_FORCE_INLINE uint32 PhysicsWorld::getNbCollisionBodies() const {
-   return static_cast<uint32>(mCollisionBodies.size());
 }
 
 // Return the number of RigidBody in the physics world

@@ -397,14 +397,13 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
 	const bool drawColliderBroadphaseAABB = getIsDebugItemDisplayed(DebugItem::COLLIDER_BROADPHASE_AABB);
 	const bool drawCollisionShape = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE);
 	
-    const uint32 nbCollisionBodies = world.getNbCollisionBodies();
     const uint32 nbRigidBodies = world.getNbRigidBodies();
 
     // For each body of the world
-    for (uint32 b = 0; b < nbCollisionBodies + nbRigidBodies; b++) {
+    for (uint32 b = 0; b < nbRigidBodies; b++) {
 
 		// Get a body
-        const CollisionBody* body = b < nbCollisionBodies ? world.getCollisionBody(b) : world.getRigidBody(b - nbCollisionBodies);
+        const Body* body = world.getRigidBody(b);
 
         if (body->isActive()) {
 

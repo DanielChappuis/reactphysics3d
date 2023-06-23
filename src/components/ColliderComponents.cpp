@@ -38,7 +38,7 @@ ColliderComponents::ColliderComponents(MemoryAllocator& allocator)
                     :Components(allocator, sizeof(Entity) + sizeof(Entity) + sizeof(Collider*) + sizeof(int32) +
                 sizeof(Transform) + sizeof(CollisionShape*) + sizeof(unsigned short) +
                 sizeof(unsigned short) + sizeof(Transform) + sizeof(Array<uint64>) + sizeof(bool) +
-                sizeof(bool) + sizeof(Material), 13 * GLOBAL_ALIGNMENT) {
+                sizeof(bool) + sizeof(bool) + sizeof(bool) + sizeof(Material), 15 * GLOBAL_ALIGNMENT) {
 
 }
 
@@ -82,7 +82,11 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     assert(reinterpret_cast<uintptr_t>(hasCollisionShapeChangedSize) % GLOBAL_ALIGNMENT == 0);
     bool* isTrigger = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(hasCollisionShapeChangedSize + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
     assert(reinterpret_cast<uintptr_t>(isTrigger) % GLOBAL_ALIGNMENT == 0);
-    Material* materials = reinterpret_cast<Material*>(MemoryAllocator::alignAddress(isTrigger + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    bool* isSimulationCollider = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(isTrigger + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(isSimulationCollider) % GLOBAL_ALIGNMENT == 0);
+    bool* isWorldQueryCollider = reinterpret_cast<bool*>(MemoryAllocator::alignAddress(isSimulationCollider + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
+    assert(reinterpret_cast<uintptr_t>(isWorldQueryCollider) % GLOBAL_ALIGNMENT == 0);
+    Material* materials = reinterpret_cast<Material*>(MemoryAllocator::alignAddress(isWorldQueryCollider + nbComponentsToAllocate, GLOBAL_ALIGNMENT));
     assert(reinterpret_cast<uintptr_t>(materials) % GLOBAL_ALIGNMENT == 0);
     assert(reinterpret_cast<uintptr_t>(materials + nbComponentsToAllocate) <= reinterpret_cast<uintptr_t>(newBuffer) + totalSizeBytes);
 
@@ -102,6 +106,8 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
         memcpy(newOverlappingPairs, mOverlappingPairs, mNbComponents * sizeof(Array<uint64>));
         memcpy(hasCollisionShapeChangedSize, mHasCollisionShapeChangedSize, mNbComponents * sizeof(bool));
         memcpy(isTrigger, mIsTrigger, mNbComponents * sizeof(bool));
+        memcpy(isSimulationCollider, mIsSimulationCollider, mNbComponents * sizeof(bool));
+        memcpy(isWorldQueryCollider, mIsWorldQueryCollider, mNbComponents * sizeof(bool));
         memcpy(materials, mMaterials, mNbComponents * sizeof(Material));
 
         // Deallocate previous memory
@@ -122,6 +128,8 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
     mOverlappingPairs = newOverlappingPairs;
     mHasCollisionShapeChangedSize = hasCollisionShapeChangedSize;
     mIsTrigger = isTrigger;
+    mIsSimulationCollider = isSimulationCollider;
+    mIsWorldQueryCollider = isWorldQueryCollider;
     mMaterials = materials;
 
     mNbAllocatedComponents = nbComponentsToAllocate;
@@ -146,6 +154,8 @@ void ColliderComponents::addComponent(Entity colliderEntity, bool isSleeping, co
     new (mOverlappingPairs + index) Array<uint64>(mMemoryAllocator);
     mHasCollisionShapeChangedSize[index] = false;
     mIsTrigger[index] = false;
+    mIsSimulationCollider[index] = true;
+    mIsWorldQueryCollider[index] = true;
     mMaterials[index] = component.material;
 
     // Map the entity with the new component lookup index
@@ -175,6 +185,8 @@ void ColliderComponents::moveComponentToIndex(uint32 srcIndex, uint32 destIndex)
     new (mOverlappingPairs + destIndex) Array<uint64>(mOverlappingPairs[srcIndex]);
     mHasCollisionShapeChangedSize[destIndex] = mHasCollisionShapeChangedSize[srcIndex];
     mIsTrigger[destIndex] = mIsTrigger[srcIndex];
+    mIsSimulationCollider[destIndex] = mIsSimulationCollider[srcIndex];
+    mIsWorldQueryCollider[destIndex] = mIsWorldQueryCollider[srcIndex];
     mMaterials[destIndex] = mMaterials[srcIndex];
 
     // Destroy the source component
@@ -204,6 +216,8 @@ void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
     Array<uint64> overlappingPairs = mOverlappingPairs[index1];
     bool hasCollisionShapeChangedSize = mHasCollisionShapeChangedSize[index1];
     bool isTrigger = mIsTrigger[index1];
+    bool isSimulationCollider = mIsSimulationCollider[index1];
+    bool isWorldQueryCollider = mIsWorldQueryCollider[index1];
     Material material = mMaterials[index1];
 
     // Destroy component 1
@@ -224,6 +238,8 @@ void ColliderComponents::swapComponents(uint32 index1, uint32 index2) {
     new (mOverlappingPairs + index2) Array<uint64>(overlappingPairs);
     mHasCollisionShapeChangedSize[index2] = hasCollisionShapeChangedSize;
     mIsTrigger[index2] = isTrigger;
+    mIsSimulationCollider[index2] = isSimulationCollider;
+    mIsWorldQueryCollider[index2] = isWorldQueryCollider;
     mMaterials[index2] = material;
 
     // Update the entity to component index mapping

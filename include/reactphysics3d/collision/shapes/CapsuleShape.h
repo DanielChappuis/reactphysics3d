@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class CollisionBody;
+class Body;
 
 // Class CapsuleShape
 /**

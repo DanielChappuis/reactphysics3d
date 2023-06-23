@@ -37,7 +37,7 @@
 // Libraries
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/mathematics/mathematics.h>
-#include <reactphysics3d/body/CollisionBody.h>
+#include <reactphysics3d/body/Body.h>
 #include <reactphysics3d/body/RigidBody.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>

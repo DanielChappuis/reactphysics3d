@@ -9,7 +9,7 @@ set (RP3D_TESTS_HEADERS
     "Test.h"
     "TestSuite.h"
     "tests/collision/TestAABB.h"
-    "tests/collision/TestCollisionWorld.h"
+    "tests/collision/TestWorldQueries.h"
     "tests/collision/TestDynamicAABBTree.h"
     "tests/collision/TestHalfEdgeStructure.h"
     "tests/collision/TestPointInside.h"

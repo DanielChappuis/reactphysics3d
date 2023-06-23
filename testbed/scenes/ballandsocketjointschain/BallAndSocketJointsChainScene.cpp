@@ -68,7 +68,8 @@ void BallAndSocketJointsChainScene::createPhysicsWorld() {
     for (int i=0; i<NB_SPHERES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        mSpheres[i] = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        rp3d::BodyType type = i == 0 ? rp3d::BodyType::STATIC : rp3d::BodyType::DYNAMIC;
+        mSpheres[i] = new Sphere(type, true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the sphere color
         mSpheres[i]->setColor(mObjectColorDemo);
@@ -77,10 +78,6 @@ void BallAndSocketJointsChainScene::createPhysicsWorld() {
         // Change the material properties of the rigid body
         rp3d::Material& material = mSpheres[i]->getCollider()->getMaterial();
         material.setBounciness(rp3d::decimal(0.0));
-
-        if (i == 0) {
-            mSpheres[i]->getRigidBody()->setType(rp3d::BodyType::STATIC);
-        }
 
         // Add the sphere the list of sphere in the scene
         mPhysicsObjects.push_back(mSpheres[i]);

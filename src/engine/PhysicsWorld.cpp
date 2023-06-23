@@ -57,20 +57,20 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, PhysicsCommon& physicsC
                            Profiler* /*profiler*/)
 #endif
               : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()), mDebugRenderer(mMemoryManager.getHeapAllocator()),
-                mIsDebugRenderingEnabled(false), mCollisionBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
+                mIsDebugRenderingEnabled(false), mBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
                 mTransformComponents(mMemoryManager.getHeapAllocator()), mCollidersComponents(mMemoryManager.getHeapAllocator()),
                 mJointsComponents(mMemoryManager.getHeapAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getHeapAllocator()),
                 mFixedJointsComponents(mMemoryManager.getHeapAllocator()), mHingeJointsComponents(mMemoryManager.getHeapAllocator()),
-                mSliderJointsComponents(mMemoryManager.getHeapAllocator()), mCollisionDetection(this, mCollidersComponents, mTransformComponents, mCollisionBodyComponents, mRigidBodyComponents,
+                mSliderJointsComponents(mMemoryManager.getHeapAllocator()), mCollisionDetection(this, mCollidersComponents, mTransformComponents, mBodyComponents, mRigidBodyComponents,
                                         mMemoryManager, physicsCommon.mTriangleShapeHalfEdgeStructure),
                 mCollisionBodies(mMemoryManager.getHeapAllocator()), mEventListener(nullptr),
                 mName(worldSettings.worldName),  mIslands(mMemoryManager.getSingleFrameAllocator()), mProcessContactPairsOrderIslands(mMemoryManager.getSingleFrameAllocator()),
-                mContactSolverSystem(mMemoryManager, *this, mIslands, mCollisionBodyComponents, mRigidBodyComponents,
+                mContactSolverSystem(mMemoryManager, *this, mIslands, mBodyComponents, mRigidBodyComponents,
                                mCollidersComponents, mConfig.restitutionVelocityThreshold),
                 mConstraintSolverSystem(*this, mIslands, mRigidBodyComponents, mTransformComponents, mJointsComponents,
                                         mBallAndSocketJointsComponents, mFixedJointsComponents, mHingeJointsComponents,
                                         mSliderJointsComponents),
-                mDynamicsSystem(*this, mCollisionBodyComponents, mRigidBodyComponents, mTransformComponents, mCollidersComponents, mIsGravityEnabled, mConfig.gravity),
+                mDynamicsSystem(*this, mBodyComponents, mRigidBodyComponents, mTransformComponents, mCollidersComponents, mIsGravityEnabled, mConfig.gravity),
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
@@ -108,7 +108,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, PhysicsCommon& physicsC
 
     mTransformComponents.init();
     mCollidersComponents.init();
-    mCollisionBodyComponents.init();
+    mBodyComponents.init();
     mRigidBodyComponents.init();
     mJointsComponents.init();
     mBallAndSocketJointsComponents.init();
@@ -132,13 +132,6 @@ PhysicsWorld::~PhysicsWorld() {
     RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);
 
-    // Destroy all the collision bodies that have not been removed
-    uint32 i = static_cast<uint32>(mCollisionBodies.size());
-    while (i != 0) {
-        i--;
-        destroyCollisionBody(mCollisionBodies[i]);
-    }
-
 #ifdef IS_RP3D_PROFILING_ENABLED
 
 
@@ -153,7 +146,7 @@ PhysicsWorld::~PhysicsWorld() {
     }
 
     // Destroy all the rigid bodies that have not been removed
-    i = static_cast<uint32>(mRigidBodies.size());
+    uint32 i = static_cast<uint32>(mRigidBodies.size());
     while (i != 0) {
         i--;
         destroyRigidBody(mRigidBodies[i]);
@@ -162,7 +155,7 @@ PhysicsWorld::~PhysicsWorld() {
     assert(mJointsComponents.getNbComponents() == 0);
     assert(mRigidBodies.size() == 0);
     assert(mCollisionBodies.size() == 0);
-    assert(mCollisionBodyComponents.getNbComponents() == 0);
+    assert(mBodyComponents.getNbComponents() == 0);
     assert(mTransformComponents.getNbComponents() == 0);
     assert(mCollidersComponents.getNbComponents() == 0);
 
@@ -170,86 +163,13 @@ PhysicsWorld::~PhysicsWorld() {
              "Physics World: Physics world " + mName + " has been destroyed",  __FILE__, __LINE__);
 }
 
-// Create a collision body and add it to the world
-/**
- * @param transform Transformation mapping the local-space of the body to world-space
- * @return A pointer to the body that has been created in the world
- */
-CollisionBody* PhysicsWorld::createCollisionBody(const Transform& transform) {
-
-    // Create a new entity for the body
-    Entity entity = mEntityManager.createEntity();
-
-    // Check that the transform is valid
-    if (!transform.isValid()) {
-        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::Body,
-                 "Error when creating a collision body: the init transform is not valid",  __FILE__, __LINE__);
-    }
-    assert(transform.isValid());
-
-    mTransformComponents.addComponent(entity, false, TransformComponents::TransformComponent(transform));
-
-    // Create the collision body
-    CollisionBody* collisionBody = new (mMemoryManager.allocate(MemoryManager::AllocationType::Pool,
-                                        sizeof(CollisionBody)))
-                                        CollisionBody(*this, entity);
-
-    assert(collisionBody != nullptr);
-
-    // Add the components
-    CollisionBodyComponents::CollisionBodyComponent bodyComponent(collisionBody);
-    mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
-
-    // Add the collision body to the world
-    mCollisionBodies.add(collisionBody);
-
-#ifdef IS_RP3D_PROFILING_ENABLED
-
-
-    collisionBody->setProfiler(mProfiler);
-
-#endif
-
-    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(entity.id) + ": New collision body created",  __FILE__, __LINE__);
-
-    // Return the pointer to the rigid body
-    return collisionBody;
-}
-
-// Destroy a collision body
-/**
- * @param collisionBody Pointer to the body to destroy
- */
-void PhysicsWorld::destroyCollisionBody(CollisionBody* collisionBody) {
-
-    RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
-             "Body " + std::to_string(collisionBody->getEntity().id) + ": collision body destroyed",  __FILE__, __LINE__);
-
-    // Remove all the collision shapes of the body
-    collisionBody->removeAllColliders();
-
-    mCollisionBodyComponents.removeComponent(collisionBody->getEntity());
-    mTransformComponents.removeComponent(collisionBody->getEntity());
-    mEntityManager.destroyEntity(collisionBody->getEntity());
-
-    // Call the destructor of the collision body
-    collisionBody->~CollisionBody();
-
-    // Remove the collision body from the array of bodies
-    mCollisionBodies.remove(collisionBody);
-
-    // Free the object from the memory allocator
-    mMemoryManager.release(MemoryManager::AllocationType::Pool, collisionBody, sizeof(CollisionBody));
-}
-
 // Notify the world if a body is disabled (sleeping) or not
 void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
 
-    if (isDisabled == mCollisionBodyComponents.getIsEntityDisabled(bodyEntity)) return;
+    if (isDisabled == mBodyComponents.getIsEntityDisabled(bodyEntity)) return;
 
     // Notify all the components
-    mCollisionBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
+    mBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
     mTransformComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
     assert(mRigidBodyComponents.hasComponent(bodyEntity));
@@ -257,7 +177,7 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
     mRigidBodyComponents.setIsEntityDisabled(bodyEntity, isDisabled);
 
     // For each collider of the body
-    const Array<Entity>& collidersEntities = mCollisionBodyComponents.getColliders(bodyEntity);
+    const Array<Entity>& collidersEntities = mBodyComponents.getColliders(bodyEntity);
     const uint32 nbColliderEntities = static_cast<uint32>(collidersEntities.size());
     for (uint32 i=0; i < nbColliderEntities; i++) {
 
@@ -294,7 +214,7 @@ void PhysicsWorld::setJointDisabled(Entity jointEntity, bool isDisabled) {
  * @param body2 Pointer to a second body
  * @return True if the two bodies overlap
  */
-bool PhysicsWorld::testOverlap(CollisionBody* body1, CollisionBody* body2) {
+bool PhysicsWorld::testOverlap(Body* body1, Body* body2) {
     return mCollisionDetection.testOverlap(body1, body2);
 }
 
@@ -460,7 +380,7 @@ void PhysicsWorld::enableDisableJoints() {
         Entity body2 = mJointsComponents.mBody2Entities[jointEntityIndex];
 
         // If both bodies of the joint are disabled
-        if (mCollisionBodyComponents.getIsEntityDisabled(body1) || mCollisionBodyComponents.getIsEntityDisabled(body2)) {
+        if (mBodyComponents.getIsEntityDisabled(body1) || mBodyComponents.getIsEntityDisabled(body2)) {
 
             // Disable the joint
             setJointDisabled(jointsEntites[i], true);
@@ -497,8 +417,8 @@ RigidBody* PhysicsWorld::createRigidBody(const Transform& transform) {
                                      sizeof(RigidBody))) RigidBody(*this, entity);
     assert(rigidBody != nullptr);
 
-    CollisionBodyComponents::CollisionBodyComponent bodyComponent(rigidBody);
-    mCollisionBodyComponents.addComponent(entity, false, bodyComponent);
+    BodyComponents::BodyComponent bodyComponent(rigidBody);
+    mBodyComponents.addComponent(entity, false, bodyComponent);
 
     RigidBodyComponents::RigidBodyComponent rigidBodyComponent(rigidBody, BodyType::DYNAMIC, transform.getPosition());
     mRigidBodyComponents.addComponent(entity, false, rigidBodyComponent);
@@ -540,7 +460,7 @@ void PhysicsWorld::destroyRigidBody(RigidBody* rigidBody) {
     }
 
     // Destroy the corresponding entity and its components
-    mCollisionBodyComponents.removeComponent(rigidBody->getEntity());
+    mBodyComponents.removeComponent(rigidBody->getEntity());
     mRigidBodyComponents.removeComponent(rigidBody->getEntity());
     mTransformComponents.removeComponent(rigidBody->getEntity());
     mEntityManager.destroyEntity(rigidBody->getEntity());
@@ -808,6 +728,9 @@ void PhysicsWorld::createIslands() {
         // If the body is static, we go to the next body
         if (mRigidBodyComponents.mBodyTypes[b] == BodyType::STATIC) continue;
 
+        // If the body does not have any simulation collider, we skip it
+        if (!mBodyComponents.getHasSimulationCollider(mRigidBodyComponents.mRigidBodies[b]->getEntity())) continue;
+
         // Reset the stack of bodies to visit
         bodyEntitiesToVisit.clear();
 
@@ -855,12 +778,29 @@ void PhysicsWorld::createIslands() {
                 // Check if the current contact pair has already been added into an island
                 if (pair.isAlreadyInIsland) continue;
 
+                pair.isAlreadyInIsland = true;
+
+                const bool isCollider1SimulationCollider = mCollidersComponents.getIsSimulationCollider(pair.collider1Entity);
+                const bool isCollider2SimulationCollider = mCollidersComponents.getIsSimulationCollider(pair.collider2Entity);
+
+                // Check that both colliders are simulation collider
+                if (!isCollider1SimulationCollider || !isCollider2SimulationCollider) {
+                    continue;
+                }
+
                 const Entity otherBodyEntity = pair.body1Entity == bodyToVisitEntity ? pair.body2Entity : pair.body1Entity;
 
-                // If the colliding body is a RigidBody (and not a CollisionBody) and is not a trigger
+                assert(mCollidersComponents.getIsSimulationCollider(pair.collider1Entity));
+                assert(mCollidersComponents.getIsSimulationCollider(pair.collider2Entity));
+                assert(!mCollidersComponents.getIsTrigger(pair.collider1Entity));
+                assert(!mCollidersComponents.getIsTrigger(pair.collider2Entity));
+
                 uint32 otherBodyIndex;
-                if (mRigidBodyComponents.hasComponentGetIndex(otherBodyEntity, otherBodyIndex)
-                    && !mCollidersComponents.getIsTrigger(pair.collider1Entity) && !mCollidersComponents.getIsTrigger(pair.collider2Entity)) {
+                const bool isFound = mRigidBodyComponents.hasComponentGetIndex(otherBodyEntity, otherBodyIndex);
+                assert(isFound);
+
+                // If the body is a simulation collider
+                if (mBodyComponents.getHasSimulationCollider(otherBodyEntity)) {
 
                     mProcessContactPairsOrderIslands.add(contactPairIndex);
 
@@ -869,7 +809,6 @@ void PhysicsWorld::createIslands() {
 
                     // Add the contact manifold into the island
                     mIslands.nbContactManifolds[islandIndex] += pair.nbPotentialContactManifolds;
-                    pair.isAlreadyInIsland = true;
 
                     // Check if the other body has already been added to the island
                     if (mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex]) continue;
@@ -877,11 +816,6 @@ void PhysicsWorld::createIslands() {
                     // Insert the other body into the stack of bodies to visit
                     bodyEntitiesToVisit.push(otherBodyEntity);
                     mRigidBodyComponents.mIsAlreadyInIsland[otherBodyIndex] = true;
-                }
-                else {
-
-                    // Add the contact pair index in the array of contact pairs that won't be part of islands
-                    pair.isAlreadyInIsland = true;
                 }
             }
 
@@ -1093,42 +1027,6 @@ void PhysicsWorld::setIsGravityEnabled(bool isGravityEnabled) {
 
     RP3D_LOG(mConfig.worldName, Logger::Level::Information, Logger::Category::World,
              "Physics World: isGravityEnabled= " + (isGravityEnabled ? std::string("true") : std::string("false")),  __FILE__, __LINE__);
-}
-
-// Return a constant pointer to a given CollisionBody of the world
-/**
- * @param index Index of a CollisionBody in the world
- * @return Constant pointer to a given CollisionBody
- */
-const CollisionBody* PhysicsWorld::getCollisionBody(uint32 index) const {
-
-    if (index >= getNbCollisionBodies()) {
-
-        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::World,
-                 "Error when getting collision body: index is out of bounds",  __FILE__, __LINE__);
-    }
-
-    assert(index < mCollisionBodies.size());
-
-    return mCollisionBodies[index];
-}
-
-// Return a pointer to a given CollisionBody of the world
-/**
- * @param index Index of a CollisionBody in the world
- * @return Pointer to a given CollisionBody
- */
-CollisionBody* PhysicsWorld::getCollisionBody(uint32 index) {
-
-    if (index >= getNbCollisionBodies()) {
-
-        RP3D_LOG(mConfig.worldName, Logger::Level::Error, Logger::Category::World,
-                 "Error when getting collision body: index is out of bounds",  __FILE__, __LINE__);
-    }
-
-    assert(index < mCollisionBodies.size());
-
-    return mCollisionBodies[index];
 }
 
 // Return a constant pointer to a given RigidBody of the world

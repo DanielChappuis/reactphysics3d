@@ -34,7 +34,7 @@ openglframework::VertexArrayObject Capsule::mVAO;
 int Capsule::totalNbCapsules = 0;
 
 // Constructor
-Capsule::Capsule(bool createRigidBody, float radius, float height, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+Capsule::Capsule(reactphysics3d::BodyType type, bool isSimulationCollider, float radius, float height, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                  const std::string& meshFolderPath)
         : PhysicsObject(physicsCommon, meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height), mPhysicsWorld(physicsWorld) {
 
@@ -51,20 +51,13 @@ Capsule::Capsule(bool createRigidBody, float radius, float height, reactphysics3
     // it is OK if this object is destroyed right after calling RigidBody::addCollisionShape()
     mCapsuleShape = mPhysicsCommon.createCapsuleShape(mRadius, mHeight);
 
-    // Create a body corresponding in the physics world
-    if (createRigidBody) {
-
-        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mCapsuleShape, rp3d::Transform::identity());
-        body->updateMassPropertiesFromColliders();
-        mBody = body;
-    }
-    else {
-
-        // Create a rigid body corresponding in the physics world
-        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
-        mCollider = mBody->addCollider(mCapsuleShape, rp3d::Transform::identity());
-    }
+    // Create the body
+    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+    body->setType(type);
+    mCollider = body->addCollider(mCapsuleShape, rp3d::Transform::identity());
+    mCollider->setIsSimulationCollider(isSimulationCollider);
+    body->updateMassPropertiesFromColliders();
+    mBody = body;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -92,13 +85,7 @@ Capsule::~Capsule() {
         mVAO.destroy();
     }
 
-    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (body != nullptr) {
-        mPhysicsWorld->destroyRigidBody(body);
-    }
-    else {
-        mPhysicsWorld->destroyCollisionBody(mBody);
-    }
+    mPhysicsWorld->destroyRigidBody(mBody);
     mPhysicsCommon.destroyCapsuleShape(mCapsuleShape);
 
     totalNbCapsules--;

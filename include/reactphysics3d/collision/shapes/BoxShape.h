@@ -34,7 +34,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class CollisionBody;
+class Body;
 class DefaultAllocator;
 class PhysicsCommon;
 class AABB;

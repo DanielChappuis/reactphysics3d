@@ -28,7 +28,7 @@
 
 // Libraries
 #include <cassert>
-#include <reactphysics3d/body/CollisionBody.h>
+#include <reactphysics3d/body/Body.h>
 #include <reactphysics3d/mathematics/mathematics.h>
 
 /// Namespace reactphysics3d
@@ -45,9 +45,9 @@ enum class BodyType;
  * This class represents a rigid body of the physics
  * engine. A rigid body is a non-deformable body that
  * has a constant mass. This class inherits from the
- * CollisionBody class.
+ * Body class.
   */
-class RigidBody : public CollisionBody {
+class RigidBody : public Body {
 
     protected :
 

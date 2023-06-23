@@ -116,7 +116,8 @@ void BridgeScene::createPhysicsWorld() {
             const uint boxIndex = b * NB_BOXES + i;
 
             // Create a box and a corresponding rigid in the physics world
-            mBoxes[boxIndex] = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            rp3d::BodyType type = i == 0 || i == NB_BOXES-1 ? rp3d::BodyType::STATIC : rp3d::BodyType::DYNAMIC;
+            mBoxes[boxIndex] = new Box(type, true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
             // Set the box color
             mBoxes[boxIndex]->setColor(mFloorColorDemo);
@@ -125,10 +126,6 @@ void BridgeScene::createPhysicsWorld() {
             // Change the material properties of the rigid body
             rp3d::Material& material = mBoxes[boxIndex]->getCollider()->getMaterial();
             material.setBounciness(rp3d::decimal(0.0));
-
-            if (i == 0 || i == NB_BOXES-1) {
-                mBoxes[boxIndex]->getRigidBody()->setType(rp3d::BodyType::STATIC);
-            }
 
             // Add the box the list of boxes in the scene
             mPhysicsObjects.push_back(mBoxes[boxIndex]);
@@ -139,7 +136,7 @@ void BridgeScene::createPhysicsWorld() {
     for (int i=0; i<NB_BRIDGES; i++) {
 
         // Create a sphere and a corresponding rigid in the physics world
-        mSpheres[i] = new Sphere(true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        mSpheres[i] = new Sphere(rp3d::BodyType::DYNAMIC, true, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         mSpheres[i]->setColor(mObjectColorDemo);

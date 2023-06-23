@@ -40,7 +40,7 @@ using namespace reactphysics3d;
  * @param transform Transformation from collision shape local-space to body local-space
  * @param mass Mass of the collision shape (in kilograms)
  */
-Collider::Collider(Entity entity, CollisionBody* body, MemoryManager& memoryManager)
+Collider::Collider(Entity entity, Body* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mEntity(entity), mBody(body),
             mUserData(nullptr) {
 
@@ -243,11 +243,61 @@ bool Collider::getIsTrigger() const {
 }
 
 // Set whether the collider is a trigger
+/// Note that a collider cannot be a simulation collider and a trigger at the same time. If you set
+/// this to true, this collider will stop being a simulation collider.
 /**
  * @param isTrigger True if you want to set this collider as a trigger and false otherwise
  */
 void Collider::setIsTrigger(bool isTrigger) const {
    mBody->mWorld.mCollidersComponents.setIsTrigger(mEntity, isTrigger);
+
+   // The collider cannot be a simulation collider anymore
+   if (isTrigger && getIsSimulationCollider()) {
+       setIsSimulationCollider(false);
+   }
+}
+
+// Return true if the collider can generate contacts for the simulation of the associated body
+bool Collider::getIsSimulationCollider() const {
+   return mBody->mWorld.mCollidersComponents.getIsSimulationCollider(mEntity);
+}
+
+// Set whether the collider can generate contacts for the simulation of the associated body
+/// Note that a collider cannot be a simulation collider and a trigger at the same time. If you set
+/// this to true, this collider will stop being a trigger.
+/**
+ * @param isSimulationCollider True if this collider can generate contacts for the simulation of the
+ *                             associated body.
+ */
+void Collider::setIsSimulationCollider(bool isSimulationCollider) const {
+
+    mBody->mWorld.mCollidersComponents.setIsSimulationCollider(mEntity, isSimulationCollider);
+
+    if (isSimulationCollider) {
+
+        mBody->mWorld.mBodyComponents.setHasSimulationCollider(mBody->getEntity(), true);
+    }
+    else {
+        mBody->updateHasSimulationCollider();
+    }
+
+   // The collider cannot be a trigger anymore
+   if (isSimulationCollider && getIsTrigger()) {
+       setIsTrigger(false);
+   }
+}
+
+// Return true if the collider will be part of results of queries on the PhysicsWorld
+bool Collider::getIsWorldQueryCollider() const {
+   return mBody->mWorld.mCollidersComponents.getIsWorldQueryCollider(mEntity);
+}
+
+// Set whether the collider will be part of results of queries on the PhysicsWorld
+/**
+ * @param isWorldQueryCollider True if this collider will be part of results of queries on the PhysicsWorld
+ */
+void Collider::setIsWorldQueryCollider(bool isWorldQueryCollider) const {
+   mBody->mWorld.mCollidersComponents.setIsWorldQueryCollider(mEntity, isWorldQueryCollider);
 }
 
 // Return a reference to the material properties of the collider

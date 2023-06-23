@@ -41,7 +41,7 @@ namespace reactphysics3d {
 // Declarations
 class CollisionDetectionSystem;
 class BroadPhaseSystem;
-class CollisionBody;
+class Body;
 class Collider;
 class MemoryManager;
 class Profiler;

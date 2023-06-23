@@ -34,7 +34,7 @@ openglframework::VertexArrayObject Sphere::mVAO;
 int Sphere::totalNbSpheres = 0;
 
 // Constructor
-Sphere::Sphere(bool createRigidBody, float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world,
+Sphere::Sphere(rp3d::BodyType type, bool isSimulationCollider, float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world,
                const std::string& meshFolderPath)
        : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius), mPhysicsWorld(world) {
 
@@ -51,20 +51,13 @@ Sphere::Sphere(bool createRigidBody, float radius, rp3d::PhysicsCommon& physicsC
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    if (createRigidBody) {
-
-        // Create a rigid body corresponding to the sphere in the physics world
-        rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mCollisionShape, rp3d::Transform::identity());
-        body->updateMassPropertiesFromColliders();
-        mBody = body;
-    }
-    else {
-
-        // Create a body corresponding to the sphere in the physics world
-        mBody = world->createCollisionBody(mPreviousTransform);
-        mCollider = mBody->addCollider(mCollisionShape, rp3d::Transform::identity());
-    }
+    // Create a rigid body corresponding to the sphere in the physics world
+    rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
+    body->setType(type);
+    mCollider = body->addCollider(mCollisionShape, rp3d::Transform::identity());
+    mCollider->setIsSimulationCollider(isSimulationCollider);
+    body->updateMassPropertiesFromColliders();
+    mBody = body;
 
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 
@@ -91,13 +84,8 @@ Sphere::~Sphere() {
         mVBOTextureCoords.destroy();
         mVAO.destroy();
     }
-    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (body != nullptr) {
-        mPhysicsWorld->destroyRigidBody(body);
-    }
-    else {
-        mPhysicsWorld->destroyCollisionBody(mBody);
-    }
+
+    mPhysicsWorld->destroyRigidBody(mBody);
     mPhysicsCommon.destroySphereShape(mCollisionShape);
     totalNbSpheres--;
 }

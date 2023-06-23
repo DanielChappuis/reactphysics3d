@@ -38,7 +38,7 @@ namespace reactphysics3d {
 class BroadPhaseSystem;
 class BroadPhaseRaycastTestCallback;
 class DynamicAABBTreeOverlapCallback;
-class CollisionBody;
+class Body;
 struct RaycastTest;
 class AABB;
 class Profiler;

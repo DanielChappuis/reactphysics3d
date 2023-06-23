@@ -28,7 +28,7 @@
 #include <reactphysics3d/utils/Message.h>
 
 // Constructor
-ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+ConcaveMesh::ConcaveMesh(reactphysics3d::BodyType type, bool isSimulationCollider, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                          const std::string& meshPath, const rp3d::Vector3& scaling)
            : PhysicsObject(physicsCommon, meshPath), mPhysicsWorld(physicsWorld), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
@@ -71,17 +71,12 @@ ConcaveMesh::ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& ph
 
     mPreviousTransform = rp3d::Transform::identity();
 
-    // Create the body
-    if (createRigidBody) {
-        rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
-        mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity());
-        body->updateMassPropertiesFromColliders();
-        mBody = body;
-    }
-    else {
-        mBody = physicsWorld->createCollisionBody(mPreviousTransform);
-        mCollider = mBody->addCollider(mConcaveShape, rp3d::Transform::identity());
-    }
+    rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
+    body->setType(type);
+    mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity());
+    mCollider->setIsSimulationCollider(isSimulationCollider);
+    body->updateMassPropertiesFromColliders();
+    mBody = body;
 
     // Create the VBOs and VAO
     createVBOAndVAO();
@@ -102,13 +97,7 @@ ConcaveMesh::~ConcaveMesh() {
     mVBOTextureCoords.destroy();
     mVAO.destroy();
 
-    rp3d::RigidBody* body = dynamic_cast<rp3d::RigidBody*>(mBody);
-    if (body != nullptr) {
-        mPhysicsWorld->destroyRigidBody(body);
-    }
-    else {
-        mPhysicsWorld->destroyCollisionBody(mBody);
-    }
+    mPhysicsWorld->destroyRigidBody(mBody);
     mPhysicsCommon.destroyConcaveMeshShape(mConcaveShape);
 
     mPhysicsCommon.destroyTriangleMesh(mPhysicsTriangleMesh);

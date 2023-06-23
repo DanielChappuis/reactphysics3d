@@ -60,7 +60,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Sphere 1 ---------- //
 
     // Create a sphere and a corresponding collision body in the physics world
-    mSphere1 = new Sphere(false, 4, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mSphere1 = new Sphere(rp3d::BodyType::STATIC, false, 4, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mSphere1);
 
     // Set the color
@@ -72,7 +72,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Sphere 2 ---------- //
 
     // Create a sphere and a corresponding collision body in the physics world
-    mSphere2 = new Sphere(false, 2, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mSphere2 = new Sphere(rp3d::BodyType::STATIC, false, 2, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mSphere2);
 
     // Set the color
@@ -80,11 +80,10 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     mSphere2->setSleepingColor(mSleepingColorDemo);
     mPhysicsObjects.push_back(mSphere2);
 
-
     // ---------- Capsule 1 ---------- //
 
     // Create a cylinder and a corresponding collision body in the physics world
-    mCapsule1 = new Capsule(false, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mCapsule1 = new Capsule(rp3d::BodyType::STATIC, false, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mCapsule1);
 
     // Set the color
@@ -95,7 +94,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Capsule 2 ---------- //
 
     // Create a cylinder and a corresponding collision body in the physics world
-    mCapsule2 = new Capsule(false, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mCapsule2 = new Capsule(rp3d::BodyType::STATIC, false, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mCapsule2);
 
     // Set the color
@@ -106,7 +105,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.3, 0.3, 0.3));
+    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.3, 0.3, 0.3));
     mAllShapes.push_back(mConcaveMesh);
 
     // Set the color
@@ -117,7 +116,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Box 1 ---------- //
 
     // Create a cylinder and a corresponding collision body in the physics world
-    mBox1 = new Box(false, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox1 = new Box(rp3d::BodyType::STATIC, false, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mBox1);
 
     // Set the color
@@ -128,7 +127,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Box 2 ---------- //
 
     // Create a cylinder and a corresponding collision body in the physics world
-    mBox2 = new Box(false, openglframework::Vector3(3, 2, 5), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox2 = new Box(rp3d::BodyType::STATIC, false, openglframework::Vector3(3, 2, 5), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mAllShapes.push_back(mBox2);
 
     // Set the color
@@ -139,7 +138,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Convex Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConvexMesh = new ConvexMesh(false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
     mAllShapes.push_back(mConvexMesh);
 
     // Set the color
@@ -150,7 +149,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Heightfield ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mHeightField = new HeightField(false, mPhysicsCommon, mPhysicsWorld);
+    mHeightField = new HeightField(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld);
 
     // Set the color
     mHeightField->setColor(mObjectColorDemo);

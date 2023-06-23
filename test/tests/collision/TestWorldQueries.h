@@ -23,8 +23,8 @@
 *                                                                               *
 ********************************************************************************/
 
-#ifndef TEST_COLLISION_WORLD_H
-#define TEST_COLLISION_WORLD_H
+#ifndef TEST_WORLD_QUERIES_H
+#define TEST_WORLD_QUERIES_H
 
 // Libraries
 #include <reactphysics3d/reactphysics3d.h>
@@ -93,7 +93,7 @@ struct ContactPairData {
 struct CollisionData {
 
     std::pair<const Collider*, const Collider*> colliders;
-	std::pair<CollisionBody*, CollisionBody*> bodies;
+	std::pair<Body*, Body*> bodies;
     std::vector<ContactPairData> contactPairs;
 
     int getNbContactPairs() const {
@@ -113,11 +113,11 @@ struct CollisionData {
 		return nbPoints;
 	}
 
-	const CollisionBody* getBody1() const {
+	const Body* getBody1() const {
 		return bodies.first;
 	}
 
-	const CollisionBody* getBody2() const {
+	const Body* getBody2() const {
 		return bodies.second;
 	}
 
@@ -217,7 +217,7 @@ class WorldOverlapCallback : public OverlapCallback {
 
 	private:
 
-        std::vector<std::pair<CollisionBody*, CollisionBody*>> mOverlapBodies;
+        std::vector<std::pair<Body*, Body*>> mOverlapBodies;
 
 	public:
 
@@ -241,11 +241,11 @@ class WorldOverlapCallback : public OverlapCallback {
 			mOverlapBodies.clear();
 		}
 
-        bool hasOverlapWithBody(CollisionBody* collisionBody) const {
+        bool hasOverlapWithBody(RigidBody* body) const {
 
             for (uint32 i=0; i < mOverlapBodies.size(); i++) {
 
-                if (mOverlapBodies[i].first == collisionBody || mOverlapBodies[i].second == collisionBody) {
+                if (mOverlapBodies[i].first == body || mOverlapBodies[i].second == body) {
                     return true;
                 }
             }
@@ -254,11 +254,11 @@ class WorldOverlapCallback : public OverlapCallback {
 		}
 };
 
-// Class TestCollisionWorld
+// Class TestWorldQueries
 /**
- * Unit test for the CollisionWorld class.
+ * Unit test for the world queries
  */
-class TestCollisionWorld : public Test {
+class TestWorldQueries : public Test {
 
     private :
 
@@ -270,15 +270,15 @@ class TestCollisionWorld : public Test {
         PhysicsWorld* mWorld;
 
         // Bodies
-        CollisionBody* mBoxBody1;
-		CollisionBody* mBoxBody2;
-        CollisionBody* mSphereBody1;
-        CollisionBody* mSphereBody2;
-		CollisionBody* mCapsuleBody1;
-		CollisionBody* mCapsuleBody2;
-		CollisionBody* mConvexMeshBody1;
-		CollisionBody* mConvexMeshBody2;
-        CollisionBody* mConcaveMeshBody;
+        RigidBody* mBoxBody1;
+        RigidBody* mBoxBody2;
+        RigidBody* mSphereBody1;
+        RigidBody* mSphereBody2;
+        RigidBody* mCapsuleBody1;
+        RigidBody* mCapsuleBody2;
+        RigidBody* mConvexMeshBody1;
+        RigidBody* mConvexMeshBody2;
+        RigidBody* mConcaveMeshBody;
 
         // Collision shapes
         BoxShape* mBoxShape1;
@@ -324,43 +324,53 @@ class TestCollisionWorld : public Test {
         // ---------- Methods ---------- //
 
         /// Constructor
-        TestCollisionWorld(const std::string& name) : Test(name) {
+        TestWorldQueries(const std::string& name) : Test(name) {
 
             // Create the collision world
             mWorld = mPhysicsCommon.createPhysicsWorld();
 
             // ---------- Boxes ---------- //
             Transform boxTransform1(Vector3(-20, 20, 0), Quaternion::identity());
-            mBoxBody1 = mWorld->createCollisionBody(boxTransform1);
+            mBoxBody1 = mWorld->createRigidBody(boxTransform1);
             mBoxShape1 = mPhysicsCommon.createBoxShape(Vector3(3, 3, 3));
             mBoxCollider1 = mBoxBody1->addCollider(mBoxShape1, Transform::identity());
+            mBoxCollider1->setIsSimulationCollider(false);
 
 			Transform boxTransform2(Vector3(-10, 20, 0), Quaternion::identity());
-			mBoxBody2 = mWorld->createCollisionBody(boxTransform2);
+            mBoxBody2 = mWorld->createRigidBody(boxTransform2);
             mBoxShape2 = mPhysicsCommon.createBoxShape(Vector3(4, 2, 8));
             mBoxCollider2 = mBoxBody2->addCollider(mBoxShape2, Transform::identity());
+            mBoxCollider2->setIsSimulationCollider(false);
 
 			// ---------- Spheres ---------- //
             mSphereShape1 = mPhysicsCommon.createSphereShape(3.0);
             Transform sphereTransform1(Vector3(10, 20, 0), Quaternion::identity());
-            mSphereBody1 = mWorld->createCollisionBody(sphereTransform1);
+            mSphereBody1 = mWorld->createRigidBody(sphereTransform1);
+            mSphereBody1->setType(rp3d::BodyType::STATIC);
             mSphereCollider1 = mSphereBody1->addCollider(mSphereShape1, Transform::identity());
+            mSphereCollider1->setIsSimulationCollider(false);
 
             mSphereShape2 = mPhysicsCommon.createSphereShape(5.0);
 			Transform sphereTransform2(Vector3(20, 20, 0), Quaternion::identity());
-			mSphereBody2 = mWorld->createCollisionBody(sphereTransform2);
+            mSphereBody2 = mWorld->createRigidBody(sphereTransform2);
+            mSphereBody2->setType(rp3d::BodyType::STATIC);
             mSphereCollider2 = mSphereBody2->addCollider(mSphereShape2, Transform::identity());
+            mSphereCollider2->setIsSimulationCollider(false);
 
 			// ---------- Capsules ---------- //
             mCapsuleShape1 = mPhysicsCommon.createCapsuleShape(2, 6);
             Transform capsuleTransform1(Vector3(-10, 0, 0), Quaternion::identity());
-            mCapsuleBody1 = mWorld->createCollisionBody(capsuleTransform1);
+            mCapsuleBody1 = mWorld->createRigidBody(capsuleTransform1);
+            mCapsuleBody1->setType(rp3d::BodyType::STATIC);
             mCapsuleCollider1 = mCapsuleBody1->addCollider(mCapsuleShape1, Transform::identity());
+            mCapsuleCollider1->setIsSimulationCollider(false);
 
             mCapsuleShape2 = mPhysicsCommon.createCapsuleShape(3, 4);
 			Transform capsuleTransform2(Vector3(-20, 0, 0), Quaternion::identity());
-			mCapsuleBody2 = mWorld->createCollisionBody(capsuleTransform2);
+            mCapsuleBody2 = mWorld->createRigidBody(capsuleTransform2);
+            mCapsuleBody2->setType(rp3d::BodyType::STATIC);
             mCapsuleCollider2 = mCapsuleBody2->addCollider(mCapsuleShape2, Transform::identity());
+            mCapsuleCollider2->setIsSimulationCollider(false);
 
 			// ---------- Convex Meshes ---------- //
             mConvexMesh1CubeVertices[0] = -3; mConvexMesh1CubeVertices[1] = -3; mConvexMesh1CubeVertices[2] = 3;
@@ -395,8 +405,10 @@ class TestCollisionWorld : public Test {
             rp3d_test(mConvexMesh1 != nullptr);
             mConvexMeshShape1 = mPhysicsCommon.createConvexMeshShape(mConvexMesh1);
             Transform convexMeshTransform1(Vector3(10, 0, 0), Quaternion::identity());
-            mConvexMeshBody1 = mWorld->createCollisionBody(convexMeshTransform1);
+            mConvexMeshBody1 = mWorld->createRigidBody(convexMeshTransform1);
+            mConvexMeshBody1->setType(rp3d::BodyType::STATIC);
             mConvexMeshCollider1 = mConvexMeshBody1->addCollider(mConvexMeshShape1, Transform::identity());
+            mConvexMeshCollider1->setIsSimulationCollider(false);
 
             mConvexMesh2CubeVertices[0] = -4; mConvexMesh2CubeVertices[1] = -2; mConvexMesh2CubeVertices[2] = 8;
             mConvexMesh2CubeVertices[3] = 4; mConvexMesh2CubeVertices[4] = -2; mConvexMesh2CubeVertices[5] = 8;
@@ -416,8 +428,10 @@ class TestCollisionWorld : public Test {
             rp3d_test(mConvexMesh2 != nullptr);
             mConvexMeshShape2 = mPhysicsCommon.createConvexMeshShape(mConvexMesh2);
             Transform convexMeshTransform2(Vector3(20, 0, 0), Quaternion::identity());
-            mConvexMeshBody2 = mWorld->createCollisionBody(convexMeshTransform2);
+            mConvexMeshBody2 = mWorld->createRigidBody(convexMeshTransform2);
+            mConvexMeshBody2->setType(rp3d::BodyType::STATIC);
             mConvexMeshCollider2 = mConvexMeshBody2->addCollider(mConvexMeshShape2, Transform::identity());
+            mConvexMeshCollider2->setIsSimulationCollider(false);
 
             // ---------- Concave Mesh ---------- //
 			for (int i = 0; i < 6; i++) {
@@ -456,12 +470,14 @@ class TestCollisionWorld : public Test {
             mConcaveTriangleMesh = mPhysicsCommon.createTriangleMesh(concaveMeshTriangleVertexArray, errors);
             rp3d_test(mConcaveTriangleMesh != nullptr);
             mConcaveMeshShape = mPhysicsCommon.createConcaveMeshShape(mConcaveTriangleMesh);
-            mConcaveMeshBody = mWorld->createCollisionBody(concaveMeshTransform);
+            mConcaveMeshBody = mWorld->createRigidBody(concaveMeshTransform);
+            mConcaveMeshBody->setType(rp3d::BodyType::STATIC);
             mConcaveMeshCollider = mConcaveMeshBody->addCollider(mConcaveMeshShape, rp3d::Transform::identity());
+            mConcaveMeshCollider->setIsSimulationCollider(false);
         }
 
         /// Destructor
-        virtual ~TestCollisionWorld() {
+        virtual ~TestWorldQueries() {
 
             mPhysicsCommon.destroyPhysicsWorld(mWorld);
 

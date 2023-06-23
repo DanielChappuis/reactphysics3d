@@ -52,8 +52,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
 
     // ---------- Dumbbell ---------- //
 
-    // Create a convex mesh and a corresponding collision body in the physics world
-    mDumbbell = new Dumbbell(false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    // Create a convex mesh and a corresponding body in the physics world
+    mDumbbell = new Dumbbell(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
     // Set the box color
     mDumbbell->setColor(mObjectColorDemo);
@@ -63,8 +63,8 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Box ---------- //
 
     // Create a box and a corresponding collision body in the physics world
-    mBox = new Box(false, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
-    mBox->getCollisionBody()->setIsActive(false);
+    mBox = new Box(rp3d::BodyType::STATIC, false, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox->getRigidBody()->setIsActive(false);
 
     // Set the box color
     mBox->setColor(mObjectColorDemo);
@@ -74,7 +74,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Sphere ---------- //
 
     // Create a sphere and a corresponding collision body in the physics world
-    mSphere = new Sphere(false, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mSphere = new Sphere(rp3d::BodyType::STATIC, false, SPHERE_RADIUS, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
     // Set the color
     mSphere->setColor(mObjectColorDemo);
@@ -85,7 +85,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     openglframework::Vector3 position6(0, 0, 0);
 
     // Create a cylinder and a corresponding collision body in the physics world
-    mCapsule = new Capsule(false, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mCapsule = new Capsule(rp3d::BodyType::STATIC, false, CAPSULE_RADIUS, CAPSULE_HEIGHT, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
     // Set the color
     mCapsule->setColor(mObjectColorDemo);
@@ -95,7 +95,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Convex Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConvexMesh = new ConvexMesh(false,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(rp3d::BodyType::STATIC, false,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
 
     // Set the color
     mConvexMesh->setColor(mObjectColorDemo);
@@ -105,7 +105,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj");
+    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj");
 
     // Set the color
     mConcaveMesh->setColor(mObjectColorDemo);
@@ -115,7 +115,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Heightfield ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mHeightField = new HeightField(false, mPhysicsCommon, mPhysicsWorld);
+    mHeightField = new HeightField(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld);
 
     // Set the color
     mHeightField->setColor(mObjectColorDemo);
@@ -166,28 +166,28 @@ void RaycastScene::changeBody() {
     mCurrentBodyIndex++;
     if (mCurrentBodyIndex >= NB_BODIES) mCurrentBodyIndex = 0;
 
-    mSphere->getCollisionBody()->setIsActive(false);
-    mBox->getCollisionBody()->setIsActive(false);
-    mCapsule->getCollisionBody()->setIsActive(false);
-    mConvexMesh->getCollisionBody()->setIsActive(false);
-    mDumbbell->getCollisionBody()->setIsActive(false);
-    mConcaveMesh->getCollisionBody()->setIsActive(false);
-    mHeightField->getCollisionBody()->setIsActive(false);
+    mSphere->getRigidBody()->setIsActive(false);
+    mBox->getRigidBody()->setIsActive(false);
+    mCapsule->getRigidBody()->setIsActive(false);
+    mConvexMesh->getRigidBody()->setIsActive(false);
+    mDumbbell->getRigidBody()->setIsActive(false);
+    mConcaveMesh->getRigidBody()->setIsActive(false);
+    mHeightField->getRigidBody()->setIsActive(false);
 
     switch(mCurrentBodyIndex) {
-        case 0: mSphere->getCollisionBody()->setIsActive(true);
+        case 0: mSphere->getRigidBody()->setIsActive(true);
                 break;
-        case 1: mBox->getCollisionBody()->setIsActive(true);
+        case 1: mBox->getRigidBody()->setIsActive(true);
                 break;
-        case 2: mCapsule->getCollisionBody()->setIsActive(true);
+        case 2: mCapsule->getRigidBody()->setIsActive(true);
                 break;
-        case 3: mConvexMesh->getCollisionBody()->setIsActive(true);
+        case 3: mConvexMesh->getRigidBody()->setIsActive(true);
                 break;
-        case 4: mDumbbell->getCollisionBody()->setIsActive(true);
+        case 4: mDumbbell->getRigidBody()->setIsActive(true);
                 break;
-        case 5: mConcaveMesh->getCollisionBody()->setIsActive(true);
+        case 5: mConcaveMesh->getRigidBody()->setIsActive(true);
                 break;
-        case 6: mHeightField->getCollisionBody()->setIsActive(true);
+        case 6: mHeightField->getRigidBody()->setIsActive(true);
                 break;
 
     }
@@ -312,7 +312,7 @@ void RaycastScene::renderSinglePass(openglframework::Shader& shader, const openg
 
 	// Render all the physics objects of the scene
 	for (std::vector<PhysicsObject*>::iterator it = mPhysicsObjects.begin(); it != mPhysicsObjects.end(); ++it) {
-		if ((*it)->getCollisionBody()->isActive()) {
+        if ((*it)->getRigidBody()->isActive()) {
             (*it)->render(shader, worldToCameraMatrix);
 		}
 	}

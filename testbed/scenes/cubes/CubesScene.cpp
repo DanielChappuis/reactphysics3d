@@ -65,7 +65,7 @@ void CubesScene::createPhysicsWorld() {
     for (int i=0; i<NB_CUBES; i++) {
 
         // Create a cube and a corresponding rigid in the physics world
-        Box* cube = new Box(true, BOX_SIZE,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        Box* cube = new Box(rp3d::BodyType::DYNAMIC, true, BOX_SIZE,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         cube->setColor(mObjectColorDemo);
@@ -83,12 +83,9 @@ void CubesScene::createPhysicsWorld() {
     // ------------------------- FLOOR ----------------------- //
 
     // Create the floor
-    mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor = new Box(rp3d::BodyType::STATIC, true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFloor->setColor(mFloorColorDemo);
     mFloor->setSleepingColor(mFloorColorDemo);
-
-    // The floor must be a static rigid body
-    mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
     mPhysicsObjects.push_back(mFloor);
 }
 
@@ -104,9 +101,18 @@ void CubesScene::initBodiesPositions() {
 
         // Position of the cubes
        float angle = i * 30.0f;
-       rp3d::Vector3 position(radius * std::cos(angle),
-                              10 + i * (BOX_SIZE.y + 0.3f),
-                              0);
+       rp3d::Vector3 position;
+
+       if (i == 0) {
+
+           position = rp3d::Vector3(0, 5, 0);
+       }
+       else {
+
+           position = rp3d::Vector3(radius * std::cos(angle),
+                                  10 + i * (BOX_SIZE.y + 0.3f),
+                                  0);
+       }
 
        (*it)->setTransform(rp3d::Transform(position, rp3d::Quaternion::identity()));
 

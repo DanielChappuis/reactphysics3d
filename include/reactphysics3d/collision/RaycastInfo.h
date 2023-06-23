@@ -33,7 +33,7 @@
 namespace reactphysics3d {
 
 // Declarations
-class CollisionBody;
+class Body;
 class Collider;
 class CollisionShape;
 struct Ray;
@@ -64,7 +64,7 @@ struct RaycastInfo {
         int triangleIndex;
 
         /// Pointer to the hit collision body
-        CollisionBody* body;
+        Body* body;
 
         /// Pointer to the hit collider
         Collider* collider;

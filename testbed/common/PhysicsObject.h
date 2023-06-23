@@ -39,7 +39,7 @@ class PhysicsObject : public openglframework::Mesh {
         rp3d::PhysicsCommon& mPhysicsCommon;
 
         /// Body used to simulate the dynamics of the box
-        rp3d::CollisionBody* mBody;
+        rp3d::RigidBody* mBody;
 
         /// Previous transform of the body (for interpolation)
         rp3d::Transform mPreviousTransform;
@@ -80,9 +80,6 @@ class PhysicsObject : public openglframework::Mesh {
         /// Set the transform
         void setTransform(const rp3d::Transform& transform);
 
-        /// Return a pointer to the collision body of the box
-        reactphysics3d::CollisionBody* getCollisionBody();
-
         /// Return a pointer to the rigid body of the box
         reactphysics3d::RigidBody* getRigidBody();
 };
@@ -102,14 +99,9 @@ inline const rp3d::Transform& PhysicsObject::getTransform() const {
     return mBody->getTransform();
 }
 
-// Return a pointer to the collision body of the box
-inline rp3d::CollisionBody* PhysicsObject::getCollisionBody() {
-    return mBody;
-}
-
 // Return a pointer to the rigid body of the box (NULL if it's not a rigid body)
 inline rp3d::RigidBody* PhysicsObject::getRigidBody() {
-    return dynamic_cast<rp3d::RigidBody*>(mBody);
+    return mBody;
 }
 
 #endif

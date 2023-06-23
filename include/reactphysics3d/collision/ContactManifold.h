@@ -36,7 +36,7 @@ namespace reactphysics3d {
 class ContactManifold;
 struct ContactManifoldInfo;
 struct ContactPointInfo;
-class CollisionBody;
+class Body;
 class ContactPoint;
 class DefaultPoolAllocator;
 
@@ -110,7 +110,7 @@ class ContactManifold {
 
         friend class PhysicsWorld;
         friend class Island;
-        friend class CollisionBody;
+        friend class Body;
         friend class ContactManifoldSet;
         friend class ContactSolverSystem;
         friend class CollisionDetectionSystem;

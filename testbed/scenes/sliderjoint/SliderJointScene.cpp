@@ -108,15 +108,12 @@ void SliderJointScene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the physics world
     openglframework::Vector3 box1Dimension(2, 4, 2);
-    mBox1 = new Box(true, box1Dimension, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox1 = new Box(rp3d::BodyType::STATIC, true, box1Dimension, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox1->setTransform(rp3d::Transform(rp3d::Vector3(0, 4, 0), rp3d::Quaternion::identity()));
 
     // Set the box color
     mBox1->setColor(mObjectColorDemo);
     mBox1->setSleepingColor(mSleepingColorDemo);
-
-    // The fist box cannot move
-    mBox1->getRigidBody()->setType(rp3d::BodyType::STATIC);
 
     // Change the material properties of the rigid body
     rp3d::Material& material1 = mBox1->getCollider()->getMaterial();
@@ -127,7 +124,7 @@ void SliderJointScene::createSliderJoint() {
 
     // Create a box and a corresponding rigid in the physics world
     openglframework::Vector3 box2Dimension(2, 4, 2);
-    mBox2 = new Box(true, box2Dimension, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox2 = new Box(rp3d::BodyType::DYNAMIC, true, box2Dimension, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity()));
 
     // Set the box color

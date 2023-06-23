@@ -87,7 +87,7 @@ class ConvexMesh : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConvexMesh(bool createRigidBody, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+        ConvexMesh(reactphysics3d::BodyType type, bool isSimulationCollider, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                    const std::string& meshPath, const reactphysics3d::Vector3& scaling = rp3d::Vector3(1, 1, 1));
 
         /// Destructor

@@ -42,6 +42,11 @@
  - The HeightFiedShape::getNbColumns() method has been removed (HeightFieldShape::getHeightField()->getNbColumns() must be used instead)
  - The HeightFiedShape::getNbRows() method has been removed (HeightFieldShape::getHeightField()->getNbRows() must be used instead)
  - The HeightFiedShape::getHeightAt() method has been removed (HeightFieldShape::getHeightField()->getHeightAt() must be used instead)
+ - The CollisionBody class has been removed (RigidBody class must be used instead with a Collider where isSimulationCollider is disabled)
+ - The PhysicsWorld::createCollisionBody() method has been removed 
+ - The PhysicsWorld::destroyCollisionBody() method has been removed 
+ - The PhysicsWorld::getCollisionBody() method has been removed 
+ - The PhysicsWorld::getNbCollisionBodies() method has been removed 
 
 
 ### Fixed

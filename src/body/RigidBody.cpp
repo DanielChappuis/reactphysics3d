@@ -39,7 +39,7 @@ using namespace reactphysics3d;
 * @param world The world where the body has been added
 * @param id The ID of the body
 */
-RigidBody::RigidBody(PhysicsWorld& world, Entity entity) : CollisionBody(world, entity) {
+RigidBody::RigidBody(PhysicsWorld& world, Entity entity) : Body(world, entity) {
 
 }
 
@@ -383,7 +383,7 @@ Vector3 RigidBody::computeCenterOfMass() const {
     Vector3 centerOfMassLocal(0, 0, 0);
 
     // Compute the local center of mass
-    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    const Array<Entity>& colliderEntities = mWorld.mBodyComponents.getColliders(mEntity);
     for (uint32 i=0; i < colliderEntities.size(); i++) {
 
         const uint32 colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
@@ -415,7 +415,7 @@ void RigidBody::computeMassAndInertiaTensorLocal(Vector3& inertiaTensorLocal, de
     const Vector3 centerOfMassLocal = mWorld.mRigidBodyComponents.getCenterOfMassLocal(mEntity);
 
     // Compute the inertia tensor using all the colliders
-    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    const Array<Entity>& colliderEntities = mWorld.mBodyComponents.getColliders(mEntity);
     for (uint32 i=0; i < colliderEntities.size(); i++) {
 
         const uint32 colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
@@ -495,7 +495,7 @@ void RigidBody::updateMassFromColliders() {
     decimal totalMass = decimal(0.0);
 
     // Compute the total mass of the body
-    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    const Array<Entity>& colliderEntities = mWorld.mBodyComponents.getColliders(mEntity);
     for (uint32 i=0; i < colliderEntities.size(); i++) {
 
         const uint32 colliderIndex = mWorld.mCollidersComponents.getEntityIndex(colliderEntities[i]);
@@ -673,7 +673,7 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
     bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
     mWorld.mCollidersComponents.addComponent(colliderEntity, isSleeping, colliderComponent);
 
-    mWorld.mCollisionBodyComponents.addColliderToBody(mEntity, colliderEntity);
+    mWorld.mBodyComponents.addColliderToBody(mEntity, colliderEntity);
 
     // Assign the collider with the collision shape
     collisionShape->addCollider(collider);
@@ -699,6 +699,8 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
              "Collider " + std::to_string(collider->getBroadPhaseId()) + ":  collisionShape=" +
              collider->getCollisionShape()->to_string(),  __FILE__, __LINE__);
 
+    mWorld.mBodyComponents.setHasSimulationCollider(mEntity, true);
+
     // Return a pointer to the collider
     return collider;
 }
@@ -711,7 +713,7 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
 void RigidBody::removeCollider(Collider* collider) {
 
     // Remove the collision shape
-    CollisionBody::removeCollider(collider);
+    Body::removeCollider(collider);
 }
 
 // Set the variable to know if the gravity is applied to this rigid body
@@ -829,7 +831,7 @@ void RigidBody::setTransform(const Transform& transform) {
     linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
 
-    CollisionBody::setTransform(transform);
+    Body::setTransform(transform);
 
     // Awake the body if it is sleeping
     setIsSleeping(false);
@@ -984,7 +986,7 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     if (isBodySleeping == isSleeping) return;
 
     // If the body is not active, do nothing (it is sleeping)
-    if (!mWorld.mCollisionBodyComponents.getIsActive(mEntity)) {
+    if (!mWorld.mBodyComponents.getIsActive(mEntity)) {
         assert(isBodySleeping);
         return;
     }
@@ -1023,7 +1025,7 @@ void RigidBody::setIsSleeping(bool isSleeping) {
 void RigidBody::resetOverlappingPairs() {
 
     // For each collider of the body
-    const Array<Entity>& colliderEntities = mWorld.mCollisionBodyComponents.getColliders(mEntity);
+    const Array<Entity>& colliderEntities = mWorld.mBodyComponents.getColliders(mEntity);
     for (uint32 i=0; i < colliderEntities.size(); i++) {
 
         // Get the currently overlapping pairs for this collider
@@ -1078,9 +1080,9 @@ bool RigidBody::isSleeping() const {
 void RigidBody::setIsActive(bool isActive) {
 
     // If the state does not change
-    if (mWorld.mCollisionBodyComponents.getIsActive(mEntity) == isActive) return;
+    if (mWorld.mBodyComponents.getIsActive(mEntity) == isActive) return;
 
     setIsSleeping(!isActive);
 
-    CollisionBody::setIsActive(isActive);
+    Body::setIsActive(isActive);
 }

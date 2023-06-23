@@ -71,7 +71,8 @@ void HingeJointsChainScene::createPhysicsWorld() {
     for (int i=0; i<NB_BOXES; i++) {
 
         // Create a box and a corresponding rigid in the physics world
-        mBoxes[i] = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+        rp3d::BodyType type = i == 0 ? rp3d::BodyType::STATIC : rp3d::BodyType::DYNAMIC;
+        mBoxes[i] = new Box(type, true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
         // Set the box color
         mBoxes[i]->setColor(mObjectColorDemo);
@@ -80,10 +81,6 @@ void HingeJointsChainScene::createPhysicsWorld() {
         // Change the material properties of the rigid body
         rp3d::Material& material = mBoxes[i]->getCollider()->getMaterial();
         material.setBounciness(rp3d::decimal(0.0));
-
-        if (i == 0) {
-            mBoxes[i]->getRigidBody()->setType(rp3d::BodyType::STATIC);
-        }
 
         // Add the box the list of boxes in the scene
         mPhysicsObjects.push_back(mBoxes[i]);

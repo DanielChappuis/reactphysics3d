@@ -34,7 +34,7 @@
 #include <reactphysics3d/containers/containers_common.h>
 #include <reactphysics3d/utils/Profiler.h>
 #include <reactphysics3d/components/ColliderComponents.h>
-#include <reactphysics3d/components/CollisionBodyComponents.h>
+#include <reactphysics3d/components/BodyComponents.h>
 #include <reactphysics3d/components/RigidBodyComponents.h>
 #include <cstddef>
 
@@ -300,8 +300,8 @@ class OverlappingPairs {
         /// Reference to the colliders components
         ColliderComponents& mColliderComponents;
 
-        /// Reference to the collision body components
-        CollisionBodyComponents& mCollisionBodyComponents;
+        /// Reference to the body components
+        BodyComponents& mBodyComponents;
 
         /// Reference to the rigid bodies components
         RigidBodyComponents& mRigidBodyComponents;
@@ -333,7 +333,7 @@ class OverlappingPairs {
 
         /// Constructor
         OverlappingPairs(MemoryManager& memoryManager,  ColliderComponents& colliderComponents,
-                         CollisionBodyComponents& collisionBodyComponents,
+                         BodyComponents& bodyComponents,
                          RigidBodyComponents& rigidBodyComponents, Set<bodypair>& noCollisionPairs,
                          CollisionDispatch& collisionDispatch);
 

@@ -27,7 +27,7 @@
 #define REACTPHYSICS3D_COLLISION_DETECTION_SYSTEM_H
 
 // Libraries
-#include <reactphysics3d/body/CollisionBody.h>
+#include <reactphysics3d/body/Body.h>
 #include <reactphysics3d/systems/BroadPhaseSystem.h>
 #include <reactphysics3d/collision/shapes/CollisionShape.h>
 #include <reactphysics3d/collision/ContactPointInfo.h>
@@ -160,9 +160,6 @@ class CollisionDetectionSystem {
         /// Pointer to the contact points of the current frame (either mContactPoints1 or mContactPoints2)
         Array<ContactPoint>* mCurrentContactPoints;
 
-        /// Array with the indices of all the contact pairs that have at least one CollisionBody
-        Array<uint32> mCollisionBodyContactPairsIndices;
-
         /// Number of potential contact manifolds in the previous frame
         uint32 mNbPreviousPotentialContactManifolds;
 
@@ -188,7 +185,7 @@ class CollisionDetectionSystem {
         void computeBroadPhase();
 
         /// Compute the middle-phase collision detection
-        void computeMiddlePhase(NarrowPhaseInput& narrowPhaseInput, bool needToReportContacts);
+        void computeMiddlePhase(NarrowPhaseInput& narrowPhaseInput, bool needToReportContacts, bool isWorldQuery);
 
         // Compute the middle-phase collision detection
         void computeMiddlePhaseCollisionSnapshot(Array<uint64>& convexPairs, Array<uint64>& concavePairs, NarrowPhaseInput& narrowPhaseInput,
@@ -303,7 +300,7 @@ class CollisionDetectionSystem {
 
         /// Constructor
         CollisionDetectionSystem(PhysicsWorld* world, ColliderComponents& collidersComponents,
-                           TransformComponents& transformComponents, CollisionBodyComponents& collisionBodyComponents, RigidBodyComponents& rigidBodyComponents,
+                           TransformComponents& transformComponents, BodyComponents& bodyComponents, RigidBodyComponents& rigidBodyComponents,
                            MemoryManager& memoryManager, HalfEdgeStructure& triangleHalfEdgeStructure);
 
         /// Destructor
@@ -353,19 +350,19 @@ class CollisionDetectionSystem {
                      unsigned short raycastWithCategoryMaskBits) const;
 
         /// Return true if two bodies (collide) overlap
-        bool testOverlap(CollisionBody* body1, CollisionBody* body2);
+        bool testOverlap(Body* body1, Body* body2);
 
         /// Report all the bodies that overlap (collide) with the body in parameter
-        void testOverlap(CollisionBody* body, OverlapCallback& callback);
+        void testOverlap(Body* body, OverlapCallback& callback);
 
         /// Report all the bodies that overlap (collide) in the world
         void testOverlap(OverlapCallback& overlapCallback);
 
         /// Test collision and report contacts between two bodies.
-        void testCollision(CollisionBody* body1, CollisionBody* body2, CollisionCallback& callback);
+        void testCollision(Body* body1, Body* body2, CollisionCallback& callback);
 
         /// Test collision and report all the contacts involving the body in parameter
-        void testCollision(CollisionBody* body, CollisionCallback& callback);
+        void testCollision(Body* body, CollisionCallback& callback);
 
         /// Test collision and report contacts between each colliding bodies in the world
         void testCollision(CollisionCallback& callback);

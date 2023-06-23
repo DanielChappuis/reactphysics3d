@@ -102,20 +102,18 @@ void BallAndSocketJointScene::reset() {
 void BallAndSocketJointScene::createBallAndSocketJoint() {
 
     // --------------- Create the box 1 --------------- //
-    mBox1 = new Box(true, Vector3(4, 4, 4) ,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox1 = new Box(rp3d::BodyType::STATIC, true, Vector3(4, 4, 4) ,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox1->setTransform(rp3d::Transform(rp3d::Vector3(0, 8, 0), rp3d::Quaternion::identity()));
 
     // Set the box color
     mBox1->setColor(mObjectColorDemo);
     mBox1->setSleepingColor(mSleepingColorDemo);
 
-    mBox1->getRigidBody()->setType(rp3d::BodyType::STATIC);
-
     mPhysicsObjects.push_back(mBox1);
 
     // --------------- Create the box 2 --------------- //
 
-    mBox2 = new Box(true, Vector3(4, 8, 4),  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mBox2 = new Box(rp3d::BodyType::DYNAMIC, true, Vector3(4, 8, 4),  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mBox2->setTransform(rp3d::Transform(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity()));
 
     // Set the box color

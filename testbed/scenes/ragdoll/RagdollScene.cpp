@@ -68,40 +68,36 @@ void RagdollScene::createPhysicsWorld() {
     // ------------------------- FLOOR 1 ----------------------- //
 
     // Create the floor
-    mFloor1 = new Box(true, FLOOR_1_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor1 = new Box(rp3d::BodyType::STATIC, true, FLOOR_1_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFloor1->setTransform(rp3d::Transform(rp3d::Vector3(0, 5, -4), rp3d::Quaternion::identity()));
     mFloor1->setColor(mFloorColorDemo);
     mFloor1->setSleepingColor(mFloorColorDemo);
-    mFloor1->getRigidBody()->setType(rp3d::BodyType::STATIC);
     mPhysicsObjects.push_back(mFloor1);
 
     // ------------------------- FLOOR 2 ----------------------- //
 
     // Create the floor
-    mFloor2 = new Box(true, FLOOR_2_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor2 = new Box(rp3d::BodyType::STATIC, true, FLOOR_2_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFloor2->setColor(mFloorColorDemo);
     mFloor2->setTransform(rp3d::Transform(rp3d::Vector3(0, -10, 0), rp3d::Quaternion::identity()));
     mFloor2->setSleepingColor(mFloorColorDemo);
-    mFloor2->getRigidBody()->setType(rp3d::BodyType::STATIC);
     mPhysicsObjects.push_back(mFloor2);
 
     // ------------------------- Large Box ----------------------- //
 
-    mLargeBox = new Box(true, Vector3(36, 15, 18), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mLargeBox = new Box(rp3d::BodyType::STATIC, true, Vector3(36, 15, 18), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mLargeBox->setTransform(rp3d::Transform(rp3d::Vector3(0, 10, -14), rp3d::Quaternion::identity()));
     mLargeBox->setColor(mFloorColorDemo);
     mLargeBox->setSleepingColor(mFloorColorDemo);
-    mLargeBox->getRigidBody()->setType(rp3d::BodyType::STATIC);
     mPhysicsObjects.push_back(mLargeBox);
 
     // ------------------------- Inclined Plane Box ----------------------- //
 
-    mInclinedPlaneBox = new Box(true, Vector3(36, 1, 25), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mInclinedPlaneBox = new Box(rp3d::BodyType::STATIC, true, Vector3(36, 1, 25), mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     const rp3d::decimal planeAngle = 30 * rp3d::PI_RP3D / 180.0f;
     mInclinedPlaneBox->setTransform(rp3d::Transform(rp3d::Vector3(0, 10.82, 5.56), rp3d::Quaternion::fromEulerAngles(planeAngle, 0, 0)));
     mInclinedPlaneBox->setColor(mFloorColorDemo);
     mInclinedPlaneBox->setSleepingColor(mFloorColorDemo);
-    mInclinedPlaneBox->getRigidBody()->setType(rp3d::BodyType::STATIC);
     mPhysicsObjects.push_back(mInclinedPlaneBox);
 }
 
@@ -189,7 +185,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the head box --------------- //
             mHeadPos[ragdollIndex] = ragdollPosition;
-            mHeadBox[ragdollIndex] = new Sphere(true, 0.75f,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mHeadBox[ragdollIndex] = new Sphere(rp3d::BodyType::DYNAMIC, true, 0.75f,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mHeadBox[ragdollIndex]->setTransform(rp3d::Transform(mHeadPos[ragdollIndex], rp3d::Quaternion::identity()));
             mHeadBox[ragdollIndex]->setColor(mObjectColorDemo);
             mHeadBox[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -202,7 +198,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the chest capsule --------------- //
             mChestPos[ragdollIndex] = mHeadPos[ragdollIndex] + rp3d::Vector3(0, -1.75, 0);
-            mChestCapsule[ragdollIndex] = new Capsule(true, 1, 1.5,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mChestCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 1, 1.5,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mChestCapsule[ragdollIndex]->setTransform(rp3d::Transform(mChestPos[ragdollIndex], rp3d::Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D / 2.0)));
             mChestCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mChestCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -215,7 +211,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the waist capsule --------------- //
             mWaistPos[ragdollIndex] = mChestPos[ragdollIndex] + rp3d::Vector3(0, -2, 0);
-            mWaistCapsule[ragdollIndex] = new Capsule(true, 1, 1.5,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mWaistCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 1, 1.5,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mWaistCapsule[ragdollIndex]->setTransform(rp3d::Transform(mWaistPos[ragdollIndex], rp3d::Quaternion::identity()));
             mWaistCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mWaistCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -224,12 +220,11 @@ void RagdollScene::createRagdolls() {
             mWaistCapsule[ragdollIndex]->getRigidBody()->updateMassPropertiesFromColliders();
             mWaistCapsule[ragdollIndex]->getRigidBody()->setLinearDamping(linearDamping);
             mWaistCapsule[ragdollIndex]->getRigidBody()->setAngularDamping(angularDamping);
-            //mWaistCapsule[ragdollIndex]->getRigidBody()->setType(rp3d::BodyType::STATIC);
             mPhysicsObjects.push_back(mWaistCapsule[ragdollIndex]);
 
             // --------------- Create the hips capsule --------------- //
             mHipPos[ragdollIndex] = mWaistPos[ragdollIndex] + rp3d::Vector3(0, -2, 0);
-            mHipCapsule[ragdollIndex] = new Capsule(true, 1, 1,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mHipCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 1, 1,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mHipCapsule[ragdollIndex]->setTransform(rp3d::Transform(mHipPos[ragdollIndex], rp3d::Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D / 2.0)));
             mHipCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mHipCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -242,7 +237,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the left upper arm capsule --------------- //
             mLeftUpperArmPos[ragdollIndex] = mChestPos[ragdollIndex] + rp3d::Vector3(2.25, 0, 0);
-            mLeftUpperArmCapsule[ragdollIndex] = new Capsule(true, 0.5, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mLeftUpperArmCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 0.5, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mLeftUpperArmCapsule[ragdollIndex]->setTransform(rp3d::Transform(mLeftUpperArmPos[ragdollIndex], rp3d::Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D / 2.0)));
             mLeftUpperArmCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mLeftUpperArmCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -255,7 +250,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the left lower arm capsule --------------- //
             mLeftLowerArmPos[ragdollIndex] = mLeftUpperArmPos[ragdollIndex] + rp3d::Vector3(2.5, 0, 0);
-            mLeftLowerArmCapsule[ragdollIndex] = new Capsule(true, 0.5, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mLeftLowerArmCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 0.5, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mLeftLowerArmCapsule[ragdollIndex]->setTransform(rp3d::Transform(mLeftLowerArmPos[ragdollIndex], rp3d::Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D / 2.0)));
             mLeftLowerArmCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mLeftLowerArmCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -268,7 +263,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the left upper leg capsule --------------- //
             mLeftUpperLegPos[ragdollIndex] = mHipPos[ragdollIndex] + rp3d::Vector3(0.8, -1.5, 0);
-            mLeftUpperLegCapsule[ragdollIndex] = new Capsule(true, 0.75, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mLeftUpperLegCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 0.75, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mLeftUpperLegCapsule[ragdollIndex]->setTransform(rp3d::Transform(mLeftUpperLegPos[ragdollIndex], rp3d::Quaternion::identity()));
             mLeftUpperLegCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mLeftUpperLegCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -281,7 +276,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the left lower leg capsule --------------- //
             mLeftLowerLegPos[ragdollIndex] = mLeftUpperLegPos[ragdollIndex] + rp3d::Vector3(0, -3, 0);
-            mLeftLowerLegCapsule[ragdollIndex] = new Capsule(true, 0.5, 3,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mLeftLowerLegCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 0.5, 3,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mLeftLowerLegCapsule[ragdollIndex]->setTransform(rp3d::Transform(mLeftLowerLegPos[ragdollIndex], rp3d::Quaternion::identity()));
             mLeftLowerLegCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mLeftLowerLegCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -294,7 +289,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the right upper arm capsule --------------- //
             mRightUpperArmPos[ragdollIndex] = mChestPos[ragdollIndex] + rp3d::Vector3(-2.25, 0, 0);
-            mRightUpperArmCapsule[ragdollIndex] = new Capsule(true, 0.5, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mRightUpperArmCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 0.5, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mRightUpperArmCapsule[ragdollIndex]->setTransform(rp3d::Transform(mRightUpperArmPos[ragdollIndex], rp3d::Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D / 2.0)));
             mRightUpperArmCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mRightUpperArmCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -307,7 +302,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the right lower arm capsule --------------- //
             mRightLowerArmPos[ragdollIndex] = mRightUpperArmPos[ragdollIndex] + rp3d::Vector3(-2.5, 0, 0);
-            mRightLowerArmCapsule[ragdollIndex] = new Capsule(true, 0.5, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mRightLowerArmCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 0.5, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mRightLowerArmCapsule[ragdollIndex]->setTransform(rp3d::Transform(mRightLowerArmPos[ragdollIndex], rp3d::Quaternion::fromEulerAngles(0, 0, rp3d::PI_RP3D / 2.0)));
             mRightLowerArmCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mRightLowerArmCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -320,7 +315,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the right upper leg capsule --------------- //
             mRightUpperLegPos[ragdollIndex] = mHipPos[ragdollIndex] + rp3d::Vector3(-0.8, -1.5, 0);
-            mRightUpperLegCapsule[ragdollIndex] = new Capsule(true, 0.75, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mRightUpperLegCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 0.75, 2,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mRightUpperLegCapsule[ragdollIndex]->setTransform(rp3d::Transform(mRightUpperLegPos[ragdollIndex], rp3d::Quaternion::identity()));
             mRightUpperLegCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mRightUpperLegCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);
@@ -333,7 +328,7 @@ void RagdollScene::createRagdolls() {
 
             // --------------- Create the right lower leg capsule --------------- //
             mRightLowerLegPos[ragdollIndex] = mRightUpperLegPos[ragdollIndex] + rp3d::Vector3(0, -3, 0);
-            mRightLowerLegCapsule[ragdollIndex] = new Capsule(true, 0.5, 3, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            mRightLowerLegCapsule[ragdollIndex] = new Capsule(rp3d::BodyType::DYNAMIC, true, 0.5, 3, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
             mRightLowerLegCapsule[ragdollIndex]->setTransform(rp3d::Transform(mRightLowerLegPos[ragdollIndex], rp3d::Quaternion::identity()));
             mRightLowerLegCapsule[ragdollIndex]->setColor(mObjectColorDemo);
             mRightLowerLegCapsule[ragdollIndex]->setSleepingColor(mSleepingColorDemo);

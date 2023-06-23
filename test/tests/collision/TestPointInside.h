@@ -42,7 +42,7 @@ namespace reactphysics3d {
 
 // Class TestPointInside
 /**
- * Unit test for the CollisionBody::testPointInside() method.
+ * Unit test for the RigidBody::testPointInside() method.
  */
 class TestPointInside : public Test {
 
@@ -57,14 +57,14 @@ class TestPointInside : public Test {
         PhysicsWorld* mWorld;
 
         // Bodies
-        CollisionBody* mBoxBody;
-        CollisionBody* mSphereBody;
-        CollisionBody* mCapsuleBody;
-        CollisionBody* mConeBody;
-        CollisionBody* mConvexMeshBody;
-        CollisionBody* mConvexMeshBodyEdgesInfo;
-        CollisionBody* mCylinderBody;
-        CollisionBody* mCompoundBody;
+        RigidBody* mBoxBody;
+        RigidBody* mSphereBody;
+        RigidBody* mCapsuleBody;
+        RigidBody* mConeBody;
+        RigidBody* mConvexMeshBody;
+        RigidBody* mConvexMeshBodyEdgesInfo;
+        RigidBody* mCylinderBody;
+        RigidBody* mCompoundBody;
 
         float mConvexMeshCubeVertices[8 * 3];
         int mConvexMeshCubeIndices[24];
@@ -104,15 +104,15 @@ class TestPointInside : public Test {
             mBodyTransform = Transform(position, orientation);
 
             // Create the bodies
-            mBoxBody = mWorld->createCollisionBody(mBodyTransform);
-            mSphereBody = mWorld->createCollisionBody(mBodyTransform);
-            mCapsuleBody = mWorld->createCollisionBody(mBodyTransform);
-            mConeBody = mWorld->createCollisionBody(mBodyTransform);
-            mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
-            mConvexMeshBodyEdgesInfo = mWorld->createCollisionBody(mBodyTransform);
-            mCylinderBody = mWorld->createCollisionBody(mBodyTransform);
-            mConvexMeshBody = mWorld->createCollisionBody(mBodyTransform);
-            mCompoundBody = mWorld->createCollisionBody(mBodyTransform);
+            mBoxBody = mWorld->createRigidBody(mBodyTransform);
+            mSphereBody = mWorld->createRigidBody(mBodyTransform);
+            mCapsuleBody = mWorld->createRigidBody(mBodyTransform);
+            mConeBody = mWorld->createRigidBody(mBodyTransform);
+            mConvexMeshBody = mWorld->createRigidBody(mBodyTransform);
+            mConvexMeshBodyEdgesInfo = mWorld->createRigidBody(mBodyTransform);
+            mCylinderBody = mWorld->createRigidBody(mBodyTransform);
+            mConvexMeshBody = mWorld->createRigidBody(mBodyTransform);
+            mCompoundBody = mWorld->createRigidBody(mBodyTransform);
 
             // Collision shape transform
             Vector3 shapePosition(1, -4, -3);
@@ -125,12 +125,15 @@ class TestPointInside : public Test {
             // Create collision shapes
             mBoxShape = mPhysicsCommon.createBoxShape(Vector3(2, 3, 4));
             mBoxCollider = mBoxBody->addCollider(mBoxShape, mShapeTransform);
+            mBoxCollider->setIsSimulationCollider(false);
 
             mSphereShape = mPhysicsCommon.createSphereShape(3);
             mSphereCollider = mSphereBody->addCollider(mSphereShape, mShapeTransform);
+            mSphereCollider->setIsSimulationCollider(false);
 
             mCapsuleShape = mPhysicsCommon.createCapsuleShape(3, 10);
             mCapsuleCollider = mCapsuleBody->addCollider(mCapsuleShape, mShapeTransform);
+            mCapsuleCollider->setIsSimulationCollider(false);
 
             mConvexMeshCubeVertices[0] = -2; mConvexMeshCubeVertices[1] = -3; mConvexMeshCubeVertices[2] = 4;
             mConvexMeshCubeVertices[3] = 2; mConvexMeshCubeVertices[4] = -3; mConvexMeshCubeVertices[5] = 4;
@@ -165,14 +168,17 @@ class TestPointInside : public Test {
             mConvexMeshShape = mPhysicsCommon.createConvexMeshShape(mConvexMesh);
             Transform convexMeshTransform(Vector3(10, 0, 0), Quaternion::identity());
             mConvexMeshCollider = mConvexMeshBody->addCollider(mConvexMeshShape, mShapeTransform);
+            mConvexMeshCollider->setIsSimulationCollider(false);
 
             // Compound shape is a capsule and a sphere
             Vector3 positionShape2(Vector3(4, 2, -3));
             Quaternion orientationShape2 = Quaternion::fromEulerAngles(-3 * PI_RP3D / 8, 1.5 * PI_RP3D/ 3, PI_RP3D / 13);
             Transform shapeTransform2(positionShape2, orientationShape2);
             mLocalShape2ToWorld = mBodyTransform * shapeTransform2;
-            mCompoundBody->addCollider(mCapsuleShape, mShapeTransform);
-            mCompoundBody->addCollider(mSphereShape, shapeTransform2);
+            Collider* collider1 = mCompoundBody->addCollider(mCapsuleShape, mShapeTransform);
+            Collider* collider2 = mCompoundBody->addCollider(mSphereShape, shapeTransform2);
+            collider1->setIsSimulationCollider(false);
+            collider2->setIsSimulationCollider(false);
 
             delete[] convexMeshPolygonFaces;
         }
@@ -197,10 +203,10 @@ class TestPointInside : public Test {
         }
 
         /// Test the testPointInside() and
-        /// CollisionBody::testPointInside() methods
+        /// RigidBody::testPointInside() methods
         void testBox() {
 
-            // Tests with CollisionBody
+            // Tests with RigidBody
             rp3d_test(mBoxBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
             rp3d_test(mBoxBody->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
             rp3d_test(mBoxBody->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
@@ -254,10 +260,10 @@ class TestPointInside : public Test {
         }
 
         /// Test the Collider::testPointInside() and
-        /// CollisionBody::testPointInside() methods
+        /// RigidBody::testPointInside() methods
         void testSphere() {
 
-            // Tests with CollisionBody
+            // Tests with RigidBody
             rp3d_test(mSphereBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
             rp3d_test(mSphereBody->testPointInside(mLocalShapeToWorld * Vector3(2.9, 0, 0)));
             rp3d_test(mSphereBody->testPointInside(mLocalShapeToWorld * Vector3(-2.9, 0, 0)));
@@ -303,10 +309,10 @@ class TestPointInside : public Test {
         }
 
         /// Test the Collider::testPointInside() and
-        /// CollisionBody::testPointInside() methods
+        /// RigidBody::testPointInside() methods
         void testCapsule() {
 
-            // Tests with CollisionBody
+            // Tests with RigidBody
             rp3d_test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
             rp3d_test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, 5, 0)));
             rp3d_test(mCapsuleBody->testPointInside(mLocalShapeToWorld * Vector3(0, -5, 0)));
@@ -402,10 +408,10 @@ class TestPointInside : public Test {
         }
 
         /// Test the Collider::testPointInside() and
-        /// CollisionBody::testPointInside() methods
+        /// RigidBody::testPointInside() methods
         void testConvexMesh() {
 
-            // Tests with CollisionBody
+            // Tests with RigidBody
             rp3d_test(mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(0, 0, 0)));
             rp3d_test(mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(-1.9, 0, 0)));
             rp3d_test(mConvexMeshBody->testPointInside(mLocalShapeToWorld * Vector3(1.9, 0, 0)));
@@ -458,7 +464,7 @@ class TestPointInside : public Test {
             rp3d_test(!mConvexMeshCollider->testPointInside(mLocalShapeToWorld * Vector3(1, -2, 4.5)));
         }
 
-        /// Test the CollisionBody::testPointInside() method
+        /// Test the RigidBody::testPointInside() method
         void testCompound() {
 
             // Points on the capsule

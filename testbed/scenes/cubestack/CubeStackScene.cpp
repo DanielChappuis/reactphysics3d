@@ -62,7 +62,7 @@ void CubeStackScene::createPhysicsWorld() {
         for (int j=0; j<i; j++) {
 
             // Create a cube and a corresponding rigid in the physics world
-            Box* cube = new Box(true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+            Box* cube = new Box(rp3d::BodyType::DYNAMIC, true, BOX_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
 
             // Set the box color
             cube->setColor(mObjectColorDemo);
@@ -81,12 +81,9 @@ void CubeStackScene::createPhysicsWorld() {
     // ------------------------- FLOOR ----------------------- //
 
     // Create the floor
-    mFloor = new Box(true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
+    mFloor = new Box(rp3d::BodyType::STATIC, true, FLOOR_SIZE, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath);
     mFloor->setColor(mFloorColorDemo);
     mFloor->setSleepingColor(mFloorColorDemo);
-
-    // The floor must be a static rigid body
-    mFloor->getRigidBody()->setType(rp3d::BodyType::STATIC);
     mPhysicsObjects.push_back(mFloor);
 }
 
@@ -94,11 +91,10 @@ void CubeStackScene::createPhysicsWorld() {
 void CubeStackScene::initBodiesPositions() {
 
     int index = 0;
-    for (int i=NB_FLOORS; i > 0; i--) {
+    for (int i=1; i <= NB_FLOORS; i++) {
 
         for (int j=0; j<i; j++) {
 
-            // Create all the cubes of the scene
             Box* box = mBoxes[index];
 
             // Position of the cubes

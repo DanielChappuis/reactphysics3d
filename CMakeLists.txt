@@ -44,7 +44,7 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/configuration.h"
     "include/reactphysics3d/decimal.h"
     "include/reactphysics3d/reactphysics3d.h"
-    "include/reactphysics3d/body/CollisionBody.h"
+    "include/reactphysics3d/body/Body.h"
     "include/reactphysics3d/body/RigidBody.h"
     "include/reactphysics3d/collision/ContactPointInfo.h"
     "include/reactphysics3d/collision/ContactManifoldInfo.h"
@@ -110,7 +110,7 @@ set (REACTPHYSICS3D_HEADERS
     "include/reactphysics3d/engine/OverlappingPairs.h"
     "include/reactphysics3d/systems/BroadPhaseSystem.h"
     "include/reactphysics3d/components/Components.h"
-    "include/reactphysics3d/components/CollisionBodyComponents.h"
+    "include/reactphysics3d/components/BodyComponents.h"
     "include/reactphysics3d/components/RigidBodyComponents.h"
     "include/reactphysics3d/components/TransformComponents.h"
     "include/reactphysics3d/components/ColliderComponents.h"
@@ -155,7 +155,7 @@ set (REACTPHYSICS3D_HEADERS
 
 # Source files
 set (REACTPHYSICS3D_SOURCES
-    "src/body/CollisionBody.cpp"
+    "src/body/Body.cpp"
     "src/body/RigidBody.cpp"
     "src/collision/broadphase/DynamicAABBTree.cpp"
     "src/collision/narrowphase/CollisionDispatch.cpp"
@@ -215,7 +215,7 @@ set (REACTPHYSICS3D_SOURCES
     "src/engine/EntityManager.cpp"
     "src/systems/BroadPhaseSystem.cpp"
     "src/components/Components.cpp"
-    "src/components/CollisionBodyComponents.cpp"
+    "src/components/BodyComponents.cpp"
     "src/components/RigidBodyComponents.cpp"
     "src/components/TransformComponents.cpp"
     "src/components/ColliderComponents.cpp"

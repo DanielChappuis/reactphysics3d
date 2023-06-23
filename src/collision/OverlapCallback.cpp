@@ -47,13 +47,13 @@ Collider* OverlapCallback::OverlapPair::getCollider2() const {
 }
 
 // Return a pointer to the first body in contact
-CollisionBody* OverlapCallback::OverlapPair::getBody1() const {
-    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mContactPair.body1Entity));
+Body* OverlapCallback::OverlapPair::getBody1() const {
+    return static_cast<Body*>(mWorld.mBodyComponents.getBody(mContactPair.body1Entity));
 }
 
 // Return a pointer to the second body in contact
-CollisionBody* OverlapCallback::OverlapPair::getBody2() const {
-    return static_cast<CollisionBody*>(mWorld.mCollisionBodyComponents.getBody(mContactPair.body2Entity));
+Body* OverlapCallback::OverlapPair::getBody2() const {
+    return static_cast<Body*>(mWorld.mBodyComponents.getBody(mContactPair.body2Entity));
 }
 
 // Return the corresponding type of event for this overlapping pair

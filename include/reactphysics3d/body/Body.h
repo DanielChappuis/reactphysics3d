@@ -45,12 +45,11 @@ class DefaultPoolAllocator;
 class Profiler;
 class Logger;
 
-// Class CollisionBody
+// Class Body
 /**
- * This class represents a body that is able to collide with others
- * bodies.
+ * This class represents a body
  */
-class CollisionBody {
+class Body {
 
     protected :
 
@@ -81,21 +80,24 @@ class CollisionBody {
         /// (as if the body has moved).
         void askForBroadPhaseCollisionCheck() const;
 
+        /// Update whether the body has at least one simulation provider
+        void updateHasSimulationCollider();
+
     public :
 
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        CollisionBody(PhysicsWorld& world, Entity entity);
+        Body(PhysicsWorld& world, Entity entity);
 
         /// Destructor
-        virtual ~CollisionBody();
+        virtual ~Body();
 
         /// Deleted copy-constructor
-        CollisionBody(const CollisionBody& body) = delete;
+        Body(const Body& body) = delete;
 
         /// Deleted assignment operator
-        CollisionBody& operator=(const CollisionBody& body) = delete;
+        Body& operator=(const Body& body) = delete;
 
         /// Return the corresponding entity of the body
         Entity getEntity() const;
@@ -178,7 +180,7 @@ class CollisionBody {
 * @param worldAABB The AABB (in world-space coordinates) that will be used to test overlap
 * @return True if the given AABB overlaps with the AABB of the collision body
 */
-RP3D_FORCE_INLINE bool CollisionBody::testAABBOverlap(const AABB& worldAABB) const {
+RP3D_FORCE_INLINE bool Body::testAABBOverlap(const AABB& worldAABB) const {
     return worldAABB.testCollision(getAABB());
 }
 
@@ -186,7 +188,7 @@ RP3D_FORCE_INLINE bool CollisionBody::testAABBOverlap(const AABB& worldAABB) con
 /**
  * @return The entity of the body
  */
-RP3D_FORCE_INLINE Entity CollisionBody::getEntity() const {
+RP3D_FORCE_INLINE Entity Body::getEntity() const {
     return mEntity;
 }
 

@@ -75,7 +75,7 @@ class ConcaveMesh : public PhysicsObject {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        ConcaveMesh(bool createRigidBody, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+        ConcaveMesh(reactphysics3d::BodyType type, bool isSimulationCollider, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                     const std::string& meshPath, const reactphysics3d::Vector3& scaling = rp3d::Vector3(1, 1, 1));
 
         /// Destructor

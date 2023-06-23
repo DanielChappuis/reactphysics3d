@@ -31,7 +31,7 @@
 #include <reactphysics3d/utils/Profiler.h>
 #include <reactphysics3d/engine/Island.h>
 #include <reactphysics3d/collision/Collider.h>
-#include <reactphysics3d/components/CollisionBodyComponents.h>
+#include <reactphysics3d/components/BodyComponents.h>
 #include <reactphysics3d/components/ColliderComponents.h>
 #include <reactphysics3d/collision/ContactManifold.h>
 #include <algorithm>
@@ -46,7 +46,7 @@ const decimal ContactSolverSystem::SLOP = decimal(0.01);
 
 // Constructor
 ContactSolverSystem::ContactSolverSystem(MemoryManager& memoryManager, PhysicsWorld& world, Islands& islands,
-                                         CollisionBodyComponents& bodyComponents, RigidBodyComponents& rigidBodyComponents,
+                                         BodyComponents& bodyComponents, RigidBodyComponents& rigidBodyComponents,
                                          ColliderComponents& colliderComponents, decimal& restitutionVelocityThreshold)
               :mMemoryManager(memoryManager), mWorld(world), mRestitutionVelocityThreshold(restitutionVelocityThreshold),
                mContactConstraints(nullptr), mContactPoints(nullptr),
