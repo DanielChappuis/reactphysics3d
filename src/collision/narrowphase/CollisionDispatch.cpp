@@ -83,7 +83,7 @@ NarrowPhaseAlgorithmType CollisionDispatch::selectAlgorithm(int type1, int type2
     CollisionShapeType shape2Type = static_cast<CollisionShapeType>(type2);
 
     if (type1 > type2) {
-        return NarrowPhaseAlgorithmType::None;
+        return NarrowPhaseAlgorithmType::NoCollisionTest;
     }
     // Sphere vs Sphere algorithm
     if (shape1Type == CollisionShapeType::SPHERE && shape2Type == CollisionShapeType::SPHERE) {
@@ -111,7 +111,7 @@ NarrowPhaseAlgorithmType CollisionDispatch::selectAlgorithm(int type1, int type2
         return NarrowPhaseAlgorithmType::ConvexPolyhedronVsConvexPolyhedron;
     }
 
-    return NarrowPhaseAlgorithmType::None;
+    return NarrowPhaseAlgorithmType::NoCollisionTest;
 }
 
 // Set the Sphere vs Sphere narrow-phase collision detection algorithm

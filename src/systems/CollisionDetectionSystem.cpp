@@ -483,7 +483,7 @@ void CollisionDetectionSystem::computeConvexVsConcaveMiddlePhase(OverlappingPair
 
     assert(convexShape->isConvex());
     assert(!concaveShape->isConvex());
-    assert(overlappingPair.narrowPhaseAlgorithmType != NarrowPhaseAlgorithmType::None);
+    assert(overlappingPair.narrowPhaseAlgorithmType != NarrowPhaseAlgorithmType::NoCollisionTest);
 
     // Compute the convex shape AABB in the local-space of the concave shape
     const AABB aabb = convexShape->computeTransformedAABB(convexToConcaveTransform);
@@ -1191,7 +1191,7 @@ void CollisionDetectionSystem::processPotentialContacts(NarrowPhaseInfoBatch& na
 
                 ContactPair* pairContact = &((*contactPairs)[newContactPairIndex]);
 
-                // If there are contact points (not the case with collision with a trigger)
+                // If there are contact points (not the case with collision with a trigger)
                 if (narrowPhaseInfoBatch.narrowPhaseInfos[i].nbContactPoints > 0) {
 
                     // Create a new potential contact manifold for the overlapping pair
