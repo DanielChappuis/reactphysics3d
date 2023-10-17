@@ -91,7 +91,7 @@ void CubeStackScene::createPhysicsWorld() {
 void CubeStackScene::initBodiesPositions() {
 
     int index = 0;
-    for (int i=1; i <= NB_FLOORS; i++) {
+    for (int i=NB_FLOORS; i > 0; i--) {
 
         for (int j=0; j<i; j++) {
 
