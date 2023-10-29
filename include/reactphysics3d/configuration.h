@@ -30,10 +30,10 @@
 #include <limits>
 #include <cfloat>
 #include <utility>
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <reactphysics3d/decimal.h>
-#include <reactphysics3d/containers/Pair.h>
 
 // Compilers
 #if defined(_MSC_VER)
@@ -75,6 +75,8 @@ using int64 = std::int64_t;
 using uint64 = std::uint64_t;
 
 struct Entity;
+
+template<typename T1, typename T2> struct Pair;
 using bodypair = Pair<Entity, Entity>;
 
 // ------------------- Enumerations ------------------- //
