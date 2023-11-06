@@ -76,7 +76,7 @@ using uint64 = std::uint64_t;
 
 struct Entity;
 
-template<typename T1, typename T2> struct Pair;
+template<typename T1, typename T2> class Pair;
 using bodypair = Pair<Entity, Entity>;
 
 // ------------------- Enumerations ------------------- //
