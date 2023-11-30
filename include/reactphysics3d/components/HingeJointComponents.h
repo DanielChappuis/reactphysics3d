@@ -202,7 +202,7 @@ class HingeJointComponents : public Components {
         virtual ~HingeJointComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity jointEntity, bool isSleeping, const HingeJointComponent& component);
+        void addComponent(Entity jointEntity, bool isDisabled, const HingeJointComponent& component);
 
         /// Return a pointer to a given joint
         HingeJoint* getJoint(Entity jointEntity) const;

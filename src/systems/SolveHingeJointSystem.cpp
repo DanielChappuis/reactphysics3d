@@ -63,8 +63,7 @@ void SolveHingeJointSystem::initBeforeSolve() {
         const uint32 componentIndexBody1 = mRigidBodyComponents.getEntityIndex(body1Entity);
         const uint32 componentIndexBody2 = mRigidBodyComponents.getEntityIndex(body2Entity);
 
-        assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity));
-        assert(!mRigidBodyComponents.getIsEntityDisabled(body2Entity));
+        assert(!mRigidBodyComponents.getIsEntityDisabled(body1Entity) || !mRigidBodyComponents.getIsEntityDisabled(body2Entity));
 
         // Get the inertia tensor of bodies
         mHingeJointComponents.mI1[i] = mRigidBodyComponents.mInverseInertiaTensorsWorld[componentIndexBody1];

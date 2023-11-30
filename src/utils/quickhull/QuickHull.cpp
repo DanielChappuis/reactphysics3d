@@ -100,8 +100,6 @@ bool QuickHull::computeConvexHull(const VertexArray& vertexArray, PolygonVertexA
     assert(convexHull.getNbVertices() == 4);
     assert(convexHull.getNbFaces() == 4);
 
-    //std::cout << " Initial hull: " << std::endl << convexHull.to_string() << std::endl;
-
     assert(convexHull.getNbVertices() == 4);
 
     // Associate all the remaining points with the closest faces of the initial hull
@@ -561,8 +559,6 @@ void QuickHull::mergeConcaveFaces(QHHalfEdgeStructure& convexHull, Array<QHHalfE
 void QuickHull::mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfEdgeStructure& convexHull, const Array<Vector3>& points,
                                         Set<QHHalfEdgeStructure::Face*>& deletedFaces) {
 
-    //std::cout << "Merge Concave Faces at edge with vertices (" << edge->startVertex->externalIndex << ", " << edge->endVertex->externalIndex << ")" << std::endl;
-
     // We merge the face next to the 'twin edge' into the face next to 'edge'
 
     QHHalfEdgeStructure::Face* faceToRemove = edge->twinEdge->face;
@@ -576,9 +572,6 @@ void QuickHull::mergeConcaveFacesAtEdge(QHHalfEdgeStructure::Edge* edge, QHHalfE
 
     // Make sure the face to keep does not reference the edge to be removed
     faceToKeep->edge = edge->previousFaceEdge;
-
-    //std::cout << "Removing face with vertices: " << faceToRemove->verticesString() << std::endl;
-    //std::cout << "Merging into face with vertices: " << faceToKeep->verticesString() << std::endl;
 
     // Make sure the edges of the face to delete reference the face to keep
     QHHalfEdgeStructure::Edge* firstFaceEdge = edge->twinEdge;
@@ -678,8 +671,6 @@ void QuickHull::fixTopologicalIssues(QHHalfEdgeStructure& convexHull, QHHalfEdge
 void QuickHull::fixTopologicalIssueAtEdge(QHHalfEdgeStructure& convexHull, QHHalfEdgeStructure::Face* face,
                                           QHHalfEdgeStructure::Edge* inEdge, const Array<Vector3>& points,
                                           Set<QHHalfEdgeStructure::Face*>& deletedFaces) {
-
-    //std::cout << "Fix topological issue at edge" << std::endl;
 
     assert(inEdge->face == face);
 
@@ -829,8 +820,6 @@ void QuickHull::findNextVertexCandidate(Array<Vector3>& points, uint32& outNextV
         // If the face has remaining candidates points
         if (face->conflictPoints.size() > 0) {
 
-            //std::cout << "Face with vertices " << face->verticesString() << " has candidates points" << std::endl;
-
             const Vector3& faceNormal = face->normal;
 
             // For each remaining candidate point of the face
@@ -850,8 +839,6 @@ void QuickHull::findNextVertexCandidate(Array<Vector3>& points, uint32& outNextV
             }
         }
     }
-
-    //std::cout << "Next vertex candidate: " << std::to_string(outNextVertexIndex) << " is furthest" << std::endl;
 
     // Remove the vertex from the array of remaining vertices for that face
     if (outNextFace != nullptr) {

@@ -131,7 +131,7 @@ class FixedJointComponents : public Components {
         virtual ~FixedJointComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity jointEntity, bool isSleeping, const FixedJointComponent& component);
+        void addComponent(Entity jointEntity, bool isDisabled, const FixedJointComponent& component);
 
         /// Return a pointer to a given joint
         FixedJoint* getJoint(Entity jointEntity) const;

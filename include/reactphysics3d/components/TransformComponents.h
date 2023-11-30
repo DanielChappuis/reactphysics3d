@@ -93,7 +93,7 @@ class TransformComponents : public Components {
         virtual ~TransformComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity bodyEntity, bool isSleeping, const TransformComponent& component);
+        void addComponent(Entity bodyEntity, bool isDisabled, const TransformComponent& component);
 
         /// Return the transform of an entity
         Transform& getTransform(Entity bodyEntity) const;

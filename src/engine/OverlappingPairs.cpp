@@ -38,7 +38,8 @@ using namespace reactphysics3d;
 OverlappingPairs::OverlappingPairs(MemoryManager& memoryManager, ColliderComponents& colliderComponents,
                                    BodyComponents& bodyComponents, RigidBodyComponents& rigidBodyComponents, Set<bodypair> &noCollisionPairs, CollisionDispatch &collisionDispatch)
                 : mPoolAllocator(memoryManager.getPoolAllocator()), mHeapAllocator(memoryManager.getHeapAllocator()), mConvexPairs(memoryManager.getHeapAllocator()),
-                  mConcavePairs(memoryManager.getHeapAllocator()), mMapConvexPairIdToPairIndex(memoryManager.getHeapAllocator()), mMapConcavePairIdToPairIndex(memoryManager.getHeapAllocator()),
+                  mConcavePairs(memoryManager.getHeapAllocator()), mDisabledPairs(memoryManager.getHeapAllocator()), mMapConvexPairIdToPairIndex(memoryManager.getHeapAllocator()), mMapConcavePairIdToPairIndex(memoryManager.getHeapAllocator()),
+                  mMapDisabledPairIdToPairIndex(memoryManager.getHeapAllocator()),
                   mColliderComponents(colliderComponents), mBodyComponents(bodyComponents),
                   mRigidBodyComponents(rigidBodyComponents), mNoCollisionPairs(noCollisionPairs), mCollisionDispatch(collisionDispatch) {
     
@@ -50,87 +51,187 @@ OverlappingPairs::~OverlappingPairs() {
     // Destroy the convex pairs
     while (mConvexPairs.size() > 0) {
 
-        removePair(mConvexPairs.size() - 1, true);
+        removeConvexPairPairWithIndex(mConvexPairs.size() - 1, true);
     }
 
     // Destroy the concave pairs
     while (mConcavePairs.size() > 0) {
 
-        removePair(mConcavePairs.size() - 1, false);
+        removeConcavePairPairWithIndex(mConcavePairs.size() - 1, true);
+    }
+
+    // Destroy the disabled pairs
+    while (mDisabledPairs.size() > 0) {
+
+        removeDisabledPairWithIndex(mDisabledPairs.size() - 1, true);
     }
 }
 
-// Remove a component at a given index
+// Remove an overlapping pair
 void OverlappingPairs::removePair(uint64 pairId) {
-
-    assert(mMapConvexPairIdToPairIndex.containsKey(pairId) || mMapConcavePairIdToPairIndex.containsKey(pairId));
-
-    auto it = mMapConvexPairIdToPairIndex.find(pairId);
-    if (it != mMapConvexPairIdToPairIndex.end()) {
-        removePair(it->second, true);
-    }
-    else {
-        removePair(mMapConcavePairIdToPairIndex[pairId], false);
-    }
-}
-
-// Remove a component at a given index
-void OverlappingPairs::removePair(uint64 pairIndex, bool isConvexVsConvex) {
 
     RP3D_PROFILE("OverlappingPairs::removePair()", mProfiler);
 
-    if (isConvexVsConvex) {
+    assert(mMapConvexPairIdToPairIndex.containsKey(pairId) || mMapConcavePairIdToPairIndex.containsKey(pairId) ||
+           mMapDisabledPairIdToPairIndex.containsKey(pairId));
 
-        const uint64 nbConvexPairs = mConvexPairs.size();
+    auto it = mMapConvexPairIdToPairIndex.find(pairId);
+    if (it != mMapConvexPairIdToPairIndex.end()) {
+        removeConvexPairPairWithIndex(it->second, true);
+        return;
+    }
 
-        assert(pairIndex < nbConvexPairs);
+    auto it2 = mMapConcavePairIdToPairIndex.find(pairId);
+    if (it2 != mMapConcavePairIdToPairIndex.end()) {
+        removeConcavePairPairWithIndex(it2->second, true);
+        return;
+    }
+
+    removeDisabledPairWithIndex(mMapDisabledPairIdToPairIndex[pairId], true);
+}
+
+// Remove an overlapping pair
+void OverlappingPairs::removeDisabledPairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+
+    // Remove the involved overlapping pair from the two colliders
+    assert(mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider1).find(mDisabledPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider1).end());
+    assert(mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider2).find(mDisabledPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider2).end());
+
+    if (removeFromColliders) {
+
+        mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider1).remove(mDisabledPairs[pairIndex].pairID);
+        mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider2).remove(mDisabledPairs[pairIndex].pairID);
+    }
+
+    assert(mMapDisabledPairIdToPairIndex[mDisabledPairs[pairIndex].pairID] == pairIndex);
+    mMapDisabledPairIdToPairIndex.remove(mDisabledPairs[pairIndex].pairID);
+
+    const uint64 nbDisabledPairs = mDisabledPairs.size();
+
+    // Change the mapping between the pairId and the index in the disabled pairs array if we swap the last item with the one to remove
+    if (mDisabledPairs.size() > 1 && pairIndex < (nbDisabledPairs - 1)) {
+
+        mMapDisabledPairIdToPairIndex[mDisabledPairs[nbDisabledPairs - 1].pairID] = pairIndex;
+    }
+
+    // We want to keep the arrays tightly packed. Therefore, when a pair is removed,
+    // we replace it with the last element of the array.
+    mDisabledPairs.removeAtAndReplaceByLast(pairIndex);
+}
+
+// Remove a convex pair at a given index
+void OverlappingPairs::removeConvexPairPairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+
+    const uint64 nbConvexPairs = mConvexPairs.size();
+
+    assert(pairIndex < nbConvexPairs);
+
+    assert(mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider1).find(mConvexPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider1).end());
+    assert(mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider2).find(mConvexPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider2).end());
+
+    if (removeFromColliders) {
 
         // Remove the involved overlapping pair from the two colliders
-        assert(mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider1).find(mConvexPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider1).end());
-        assert(mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider2).find(mConvexPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider2).end());
         mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider1).remove(mConvexPairs[pairIndex].pairID);
         mColliderComponents.getOverlappingPairs(mConvexPairs[pairIndex].collider2).remove(mConvexPairs[pairIndex].pairID);
-
-        assert(mMapConvexPairIdToPairIndex[mConvexPairs[pairIndex].pairID] == pairIndex);
-        mMapConvexPairIdToPairIndex.remove(mConvexPairs[pairIndex].pairID);
-
-        // Change the mapping between the pairId and the index in the convex pairs array if we swap the last item with the one to remove
-        if (mConvexPairs.size() > 1 && pairIndex < (nbConvexPairs - 1)) {
-
-            mMapConvexPairIdToPairIndex[mConvexPairs[nbConvexPairs - 1].pairID] = pairIndex;
-        }
-
-        // We want to keep the arrays tightly packed. Therefore, when a pair is removed,
-        // we replace it with the last element of the array.
-        mConvexPairs.removeAtAndReplaceByLast(pairIndex);
     }
-    else {
 
-        const uint64 nbConcavePairs = mConcavePairs.size();
+    assert(mMapConvexPairIdToPairIndex[mConvexPairs[pairIndex].pairID] == pairIndex);
+    mMapConvexPairIdToPairIndex.remove(mConvexPairs[pairIndex].pairID);
 
-        assert(pairIndex < nbConcavePairs);
+    // Change the mapping between the pairId and the index in the convex pairs array if we swap the last item with the one to remove
+    if (mConvexPairs.size() > 1 && pairIndex < (nbConvexPairs - 1)) {
 
-        // Remove the involved overlapping pair to the two colliders
-        assert(mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider1).find(mConcavePairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider1).end());
-        assert(mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider2).find(mConcavePairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider2).end());
+        mMapConvexPairIdToPairIndex[mConvexPairs[nbConvexPairs - 1].pairID] = pairIndex;
+    }
+
+    // We want to keep the arrays tightly packed. Therefore, when a pair is removed,
+    // we replace it with the last element of the array.
+    mConvexPairs.removeAtAndReplaceByLast(pairIndex);
+}
+
+// Remove a concave pair at a given index
+void OverlappingPairs::removeConcavePairPairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+
+    const uint64 nbConcavePairs = mConcavePairs.size();
+
+    assert(pairIndex < nbConcavePairs);
+
+    assert(mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider1).find(mConcavePairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider1).end());
+    assert(mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider2).find(mConcavePairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider2).end());
+
+    if (removeFromColliders) {
+
+        // Remove the involved overlapping pair from the two colliders
         mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider1).remove(mConcavePairs[pairIndex].pairID);
         mColliderComponents.getOverlappingPairs(mConcavePairs[pairIndex].collider2).remove(mConcavePairs[pairIndex].pairID);
+    }
 
-        assert(mMapConcavePairIdToPairIndex[mConcavePairs[pairIndex].pairID] == pairIndex);
-        mMapConcavePairIdToPairIndex.remove(mConcavePairs[pairIndex].pairID);
+    assert(mMapConcavePairIdToPairIndex[mConcavePairs[pairIndex].pairID] == pairIndex);
+    mMapConcavePairIdToPairIndex.remove(mConcavePairs[pairIndex].pairID);
 
-        // Destroy all the LastFrameCollisionInfo objects
-        mConcavePairs[pairIndex].destroyLastFrameCollisionInfos();
+    // Destroy all the LastFrameCollisionInfo objects
+    mConcavePairs[pairIndex].destroyLastFrameCollisionInfos();
 
-        // Change the mapping between the pairId and the index in the convex pairs array if we swap the last item with the one to remove
-        if (mConcavePairs.size() > 1 && pairIndex < (nbConcavePairs - 1)) {
+    // Change the mapping between the pairId and the index in the convex pairs array if we swap the last item with the one to remove
+    if (mConcavePairs.size() > 1 && pairIndex < (nbConcavePairs - 1)) {
 
-            mMapConcavePairIdToPairIndex[mConcavePairs[nbConcavePairs - 1].pairID] = pairIndex;
+        mMapConcavePairIdToPairIndex[mConcavePairs[nbConcavePairs - 1].pairID] = pairIndex;
+    }
+
+    // We want to keep the arrays tightly packed. Therefore, when a pair is removed,
+    // we replace it with the last element of the array.
+    mConcavePairs.removeAtAndReplaceByLast(pairIndex);
+}
+
+// Disable an overlapping pair (because both bodies of the pair are disabled)
+void OverlappingPairs::disablePair(uint64 pairId) {
+
+    assert(!isPairDisabled(pairId));
+    assert(mMapConvexPairIdToPairIndex.find(pairId) != mMapConvexPairIdToPairIndex.end() ||
+           mMapConcavePairIdToPairIndex.find(pairId) != mMapConcavePairIdToPairIndex.end());
+
+    bool isConvexPair = true;
+    uint64 oldPairIndex = 0;
+
+    // Get the existing overlapping pair from the convex/concave array
+    OverlappingPair* pair = nullptr;
+    auto it = mMapConvexPairIdToPairIndex.find(pairId);
+    if (it != mMapConvexPairIdToPairIndex.end()) {
+        pair = &(mConvexPairs[static_cast<uint32>(it->second)]);
+        oldPairIndex = it->second;
+    }
+    else {
+        it = mMapConcavePairIdToPairIndex.find(pairId);
+        if (it != mMapConcavePairIdToPairIndex.end()) {
+            pair = &(mConcavePairs[static_cast<uint32>(it->second)]);
+            isConvexPair = false;
+            oldPairIndex = it->second;
         }
+        else {
+            // Should not happen
+            assert(false);
+            return;
+        }
+    }
 
-        // We want to keep the arrays tightly packed. Therefore, when a pair is removed,
-        // we replace it with the last element of the array.
-        mConcavePairs.removeAtAndReplaceByLast(pairIndex);
+    const uint64 pairIndex = mDisabledPairs.size();
+
+    // Map the entity with the new pair lookup index
+    mMapDisabledPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, pairIndex));
+
+    // Create a new pair to be added into the array of disable pairs
+    mDisabledPairs.emplace(pairId, pair->broadPhaseId1, pair->broadPhaseId2, pair->collider1,
+                           pair->collider2, pair->narrowPhaseAlgorithmType);
+    mDisabledPairs[pairIndex].collidingInCurrentFrame = pair->collidingInCurrentFrame;
+    mDisabledPairs[pairIndex].collidingInPreviousFrame = pair->collidingInPreviousFrame;
+
+    // Remove the previous overlapping pair from the convex/concave array
+    if (isConvexPair) {
+        removeConvexPairPairWithIndex(oldPairIndex, false);
+    }
+    else {
+        removeConcavePairPairWithIndex(oldPairIndex, false);
     }
 }
 
@@ -163,7 +264,7 @@ uint64 OverlappingPairs::addPair(uint32 collider1Index, uint32 collider2Index, b
         mMapConvexPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, mConvexPairs.size()));
 
         // Create and add a new convex pair
-        mConvexPairs.emplace(pairId, broadPhase1Id, broadPhase2Id, collider1Entity, collider2Entity, algorithmType);
+        mConvexPairs.emplace(pairId, broadPhase1Id, broadPhase2Id, collider1Entity, collider2Entity, algorithmType);    
     }
     else {
 

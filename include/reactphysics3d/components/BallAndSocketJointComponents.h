@@ -144,7 +144,7 @@ class BallAndSocketJointComponents : public Components {
         virtual ~BallAndSocketJointComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity jointEntity, bool isSleeping, const BallAndSocketJointComponent& component);
+        void addComponent(Entity jointEntity, bool isDisabled, const BallAndSocketJointComponent& component);
 
         /// Return a pointer to a given joint
         BallAndSocketJoint* getJoint(Entity jointEntity) const;

@@ -148,10 +148,10 @@ void BallAndSocketJointComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void BallAndSocketJointComponents::addComponent(Entity jointEntity, bool isSleeping, const BallAndSocketJointComponent& component) {
+void BallAndSocketJointComponents::addComponent(Entity jointEntity, bool isDisabled, const BallAndSocketJointComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
-    uint32 index = prepareAddComponent(isSleeping);
+    uint32 index = prepareAddComponent(isDisabled);
 
     // Insert the new component data
     new (mJointEntities + index) Entity(jointEntity);

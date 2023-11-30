@@ -213,6 +213,18 @@ class CollisionDetectionSystem {
         /// Remove pairs that are not overlapping anymore
         void removeNonOverlappingPairs();
 
+        /// Disable an overlapping pair (because both bodies of the pair are disabled)
+        void disableOverlappingPair(uint64 pairId);
+
+        /// Remove an overlapping pair
+        void removeOverlappingPair(uint64 pairId);
+
+        /// Remove a convex overlapping pair at a given index
+        void removeConvexOverlappingPairWithIndex(uint64 pairIndex);
+
+        /// Remove a concave overlapping pair at a given index
+        void removeConcaveOverlappingPairWithIndex(uint64 pairIndex);
+
         /// Add a lost contact pair (pair of colliders that are not in contact anymore)
         void addLostContactPair(OverlappingPairs::OverlappingPair& overlappingPair);
 

@@ -105,7 +105,7 @@ class BodyComponents : public Components {
         virtual ~BodyComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component);
+        void addComponent(Entity bodyEntity, bool isDisabled, const BodyComponent& component);
 
         /// Add a collider to a body component
         void addColliderToBody(Entity bodyEntity, Entity colliderEntity);

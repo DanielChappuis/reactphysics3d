@@ -119,7 +119,7 @@ void BroadPhaseSystem::updateCollider(Entity colliderEntity) {
     assert(mCollidersComponents.mMapEntityToComponentIndex.containsKey(colliderEntity));
 
     // Get the index of the collider component in the array
-    uint32 index = mCollidersComponents.mMapEntityToComponentIndex[colliderEntity];
+    const uint32 index = mCollidersComponents.mMapEntityToComponentIndex[colliderEntity];
 
     // Update the collider component
     updateCollidersComponents(index, 1);
@@ -163,11 +163,6 @@ void BroadPhaseSystem::updateCollidersComponents(uint32 startIndex, uint32 nbIte
     assert(nbItems > 0);
     assert(startIndex < mCollidersComponents.getNbComponents());
     assert(startIndex + nbItems <= mCollidersComponents.getNbComponents());
-
-    // Make sure we do not update disabled components
-    startIndex = std::min(startIndex, mCollidersComponents.getNbEnabledComponents());
-    uint32 endIndex = std::min(startIndex + nbItems, mCollidersComponents.getNbEnabledComponents());
-    nbItems = endIndex - startIndex;
 
     // For each collider component to update
     for (uint32 i = startIndex; i < startIndex + nbItems; i++) {

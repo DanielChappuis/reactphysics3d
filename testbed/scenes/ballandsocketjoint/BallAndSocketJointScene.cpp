@@ -137,5 +137,4 @@ void BallAndSocketJointScene::createBallAndSocketJoint() {
     mJoint = dynamic_cast<rp3d::BallAndSocketJoint*>(mPhysicsWorld->createJoint(jointInfo));
     mJoint->setConeLimitHalfAngle(90.0 * rp3d::PI_RP3D / 180.0);
     mJoint->enableConeLimit(true);
-
 }

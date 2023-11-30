@@ -38,8 +38,6 @@ namespace ballandsocketjointscene {
 const float SCENE_RADIUS = 30.0f;
 const openglframework::Vector3 BOX_SIZE(2, 2, 2);           // Box dimensions in meters
 const openglframework::Vector3 FLOOR_SIZE(50, 0.5f, 50);    // Floor dimensions in meters
-const int NB_BALLSOCKETJOINT_BOXES = 7;                     // Number of Ball-And-Socket chain boxes
-const int NB_HINGE_BOXES = 7;                               // Number of Hinge chain boxes
 
 // Class BallAndSocketJointScene
 class BallAndSocketJointScene : public SceneDemo {

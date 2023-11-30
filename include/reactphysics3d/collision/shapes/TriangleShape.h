@@ -31,9 +31,6 @@
 #include <reactphysics3d/collision/shapes/AABB.h>
 #include <reactphysics3d/collision/shapes/ConvexPolyhedronShape.h>
 
-// TODO : REMOVE
-#include <iostream>
-
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
 

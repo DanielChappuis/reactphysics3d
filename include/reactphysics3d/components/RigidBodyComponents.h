@@ -32,6 +32,8 @@
 #include <reactphysics3d/engine/Entity.h>
 #include <reactphysics3d/components/Components.h>
 #include <reactphysics3d/containers/Map.h>
+#include <reactphysics3d/containers/Set.h>
+#include <iostream>
 
 // ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -196,7 +198,7 @@ class RigidBodyComponents : public Components {
         virtual ~RigidBodyComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity bodyEntity, bool isSleeping, const RigidBodyComponent& component);
+        void addComponent(Entity bodyEntity, bool isDisabled, const RigidBodyComponent& component);
 
         /// Return a pointer to a rigid body
         RigidBody* getRigidBody(Entity bodyEntity);
@@ -272,6 +274,9 @@ class RigidBodyComponents : public Components {
 
         /// Return the inverse world inertia tensor of an entity
         const Matrix3x3& getInertiaTensorWorldInverse(Entity bodyEntity);
+
+        /// Set the inverse world inertia tensor of an entity
+        void setInertiaTensorWorldInverse(Entity bodyEntity, const Matrix3x3& inertiaTensor);
 
         /// Set the external force of an entity
         void setExternalForce(Entity bodyEntity, const Vector3& externalForce);
@@ -371,6 +376,9 @@ class RigidBodyComponents : public Components {
 
         /// A an associated contact pairs into the contact pairs array of the body
         void addContacPair(Entity bodyEntity, uint32 contactPairIndex);
+
+        /// Remove all the contact pairs of a body
+        void removeAllContacPairs(Entity bodyEntity);
 
         // -------------------- Friendship -------------------- //
 
@@ -554,6 +562,14 @@ RP3D_FORCE_INLINE const Matrix3x3& RigidBodyComponents::getInertiaTensorWorldInv
    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
    return mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]];
+}
+
+// Set the inverse world inertia tensor of an entity
+RP3D_FORCE_INLINE void RigidBodyComponents::setInertiaTensorWorldInverse(Entity bodyEntity, const Matrix3x3& inertiaTensor) {
+
+   assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+
+   mInverseInertiaTensorsWorld[mMapEntityToComponentIndex[bodyEntity]] = inertiaTensor;
 }
 
 // Set the external force of an entity
@@ -844,6 +860,13 @@ RP3D_FORCE_INLINE void RigidBodyComponents::addContacPair(Entity bodyEntity, uin
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
     mContactPairs[mMapEntityToComponentIndex[bodyEntity]].add(contactPairIndex);
+}
+
+// Remove all the contact pairs of a body
+RP3D_FORCE_INLINE void RigidBodyComponents::removeAllContacPairs(Entity bodyEntity) {
+
+    assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
+    mContactPairs[mMapEntityToComponentIndex[bodyEntity]].clear();
 }
 
 }

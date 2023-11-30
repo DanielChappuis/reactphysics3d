@@ -53,8 +53,14 @@ class RigidBody : public Body {
 
         // -------------------- Methods -------------------- //
 
-        /// Update whether the current overlapping pairs where this body is involed are active or not
-        void resetOverlappingPairs();
+        /// Awake the disabled neighbor bodies
+        void awakeNeighborDisabledBodies();
+
+        /// Remove the disabled overlapping pairs
+        void removeDisabledOverlappingPairs();
+
+        /// Disable the overlapping pairs if both bodies of the pair are disabled (sleeping or static)
+        void checkForDisabledOverlappingPairs();
 
         /// Compute and return the local-space center of mass of the body using its colliders
         Vector3 computeCenterOfMass() const;

@@ -65,7 +65,7 @@ void Components::init() {
 }
 
 // Compute the index where we need to insert the new component
-uint32 Components::prepareAddComponent(bool isSleeping) {
+uint32 Components::prepareAddComponent(bool isDisabled) {
 
     // If we need to allocate more components
     if (mNbComponents == mNbAllocatedComponents) {
@@ -75,7 +75,7 @@ uint32 Components::prepareAddComponent(bool isSleeping) {
     uint32 index;
 
     // If the component to add is part of a disabled entity or there are no disabled entity
-    if (isSleeping) {
+    if (isDisabled) {
 
         // Add the component at the end of the array
         index = mNbComponents;

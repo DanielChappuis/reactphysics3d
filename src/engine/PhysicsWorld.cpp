@@ -35,6 +35,7 @@
 #include <reactphysics3d/engine/Island.h>
 #include <reactphysics3d/collision/ContactManifold.h>
 #include <reactphysics3d/containers/Stack.h>
+#include <iostream>
 
 // Namespaces
 using namespace reactphysics3d;
@@ -180,7 +181,6 @@ void PhysicsWorld::setBodyDisabled(Entity bodyEntity, bool isDisabled) {
     const Array<Entity>& collidersEntities = mBodyComponents.getColliders(bodyEntity);
     const uint32 nbColliderEntities = static_cast<uint32>(collidersEntities.size());
     for (uint32 i=0; i < nbColliderEntities; i++) {
-
         mCollidersComponents.setIsEntityDisabled(collidersEntities[i], isDisabled);
     }
 }
@@ -380,7 +380,7 @@ void PhysicsWorld::enableDisableJoints() {
         Entity body2 = mJointsComponents.mBody2Entities[jointEntityIndex];
 
         // If both bodies of the joint are disabled
-        if (mBodyComponents.getIsEntityDisabled(body1) || mBodyComponents.getIsEntityDisabled(body2)) {
+        if (mBodyComponents.getIsEntityDisabled(body1) && mBodyComponents.getIsEntityDisabled(body2)) {
 
             // Disable the joint
             setJointDisabled(jointsEntites[i], true);
@@ -728,7 +728,7 @@ void PhysicsWorld::createIslands() {
         // If the body is static, we go to the next body
         if (mRigidBodyComponents.mBodyTypes[b] == BodyType::STATIC) continue;
 
-        // If the body does not have any simulation collider, we skip it
+        // If the body does not have any simulation collider, we skip it
         if (!mBodyComponents.getHasSimulationCollider(mRigidBodyComponents.mRigidBodies[b]->getEntity())) continue;
 
         // Reset the stack of bodies to visit
@@ -768,7 +768,7 @@ void PhysicsWorld::createIslands() {
             }
 
             // If the body is involved in contacts with other bodies
-            // For each contact pair in which the current body is involded
+            // For each contact pair in which the current body is involved
             const uint32 nbBodyContactPairs = static_cast<uint32>(mRigidBodyComponents.mContactPairs[bodyToVisitIndex].size());
             for (uint32 p=0; p < nbBodyContactPairs; p++) {
 
@@ -783,7 +783,7 @@ void PhysicsWorld::createIslands() {
                 const bool isCollider1SimulationCollider = mCollidersComponents.getIsSimulationCollider(pair.collider1Entity);
                 const bool isCollider2SimulationCollider = mCollidersComponents.getIsSimulationCollider(pair.collider2Entity);
 
-                // Check that both colliders are simulation collider
+                // Check that both colliders are simulation collider
                 if (!isCollider1SimulationCollider || !isCollider2SimulationCollider) {
                     continue;
                 }
@@ -859,10 +859,12 @@ void PhysicsWorld::createIslands() {
         staticBodiesAddedToIsland.clear();
     }
 
-    // Clear the associated contacts pairs of rigid bodies
-    const uint32 nbRigidBodyEnabledComponents = mRigidBodyComponents.getNbEnabledComponents();
-    for (uint32 b=0; b < nbRigidBodyEnabledComponents; b++) {
-        mRigidBodyComponents.mContactPairs[b].clear();
+    // Clear the contacts pairs that have been associated to rigid bodies
+    for (uint32 i=0; i < mCollisionDetection.mCurrentContactPairs->size(); i++) {
+       const ContactPair& pair = (*mCollisionDetection.mCurrentContactPairs)[i];
+
+       mRigidBodyComponents.removeAllContacPairs(pair.body1Entity);
+       mRigidBodyComponents.removeAllContacPairs(pair.body2Entity);
     }
 }
 

@@ -130,10 +130,6 @@ void ContactSolverSystem::initializeForIsland(uint32 islandIndex) {
         const uint32 rigidBodyIndex1 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity1);
         const uint32 rigidBodyIndex2 = mRigidBodyComponents.getEntityIndex(externalManifold.bodyEntity2);
 
-        // Get the two bodies of the contact
-        assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity1));
-        assert(!mBodyComponents.getIsEntityDisabled(externalManifold.bodyEntity2));
-
         const uint32 collider1Index = mColliderComponents.getEntityIndex(externalManifold.colliderEntity1);
         const uint32 collider2Index = mColliderComponents.getEntityIndex(externalManifold.colliderEntity2);
 

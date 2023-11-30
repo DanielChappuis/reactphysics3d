@@ -99,6 +99,11 @@ struct LastFrameCollisionInfo {
  * the two colliders start to overlap and is destroyed when they do not
  * overlap anymore. Each contains a contact manifold that
  * store all the contact points between the two bodies.
+ *
+ * Once the two bodies of an overlapping pair are disabled (sleeping or static),
+ * we put the overlapping pair to the array of disabled pairs. We keep it so that
+ * we can awake the other body if one body is destroyed and we can also correclty
+ * track the lost contacts between bodies even after they go to sleep.
  */
 class OverlappingPairs {
 
@@ -291,11 +296,17 @@ class OverlappingPairs {
         /// Array of convex vs concave overlapping pairs
         Array<ConcaveOverlappingPair> mConcavePairs;
 
-        /// Map a pair id to the internal array index
+        /// Array of disabled overlapping pairs (pairs with both bodies disabled)
+        Array<OverlappingPair> mDisabledPairs;
+
+        /// Map a convex pair id to the internal array index
         Map<uint64, uint64> mMapConvexPairIdToPairIndex;
 
-        /// Map a pair id to the internal array index
+        /// Map a concave pair id to the internal array index
         Map<uint64, uint64> mMapConcavePairIdToPairIndex;
+
+        /// Map a disable pair id to the internal array index
+        Map<uint64, uint64> mMapDisabledPairIdToPairIndex;
 
         /// Reference to the colliders components
         ColliderComponents& mColliderComponents;
@@ -327,6 +338,9 @@ class OverlappingPairs {
         /// Swap two pairs in the array
         void swapPairs(uint64 index1, uint64 index2);
 
+        /// Remove a disabled overlapping pair
+        void removeDisabledPairWithIndex(uint64 pairIndex, bool removeFromColliders);
+
     public:
 
         // -------------------- Methods -------------------- //
@@ -346,14 +360,23 @@ class OverlappingPairs {
         /// Deleted assignment operator
         OverlappingPairs& operator=(const OverlappingPairs& pair) = delete;
 
+        /// Disable an overlapping pair (because both bodies of the pair are disabled)
+        void disablePair(uint64 pairId);
+
+        /// Return true if a given pair is disabled (both bodies of the pair are disabled)
+        bool isPairDisabled(uint64 pairId) const;
+
         /// Add an overlapping pair
         uint64 addPair(uint32 collider1Index, uint32 collider2Index, bool isConvexVsConvex);
 
-        /// Remove a component at a given index
+        /// Remove an overlapping pair
         void removePair(uint64 pairId);
 
-        /// Remove a pair
-        void removePair(uint64 pairIndex, bool isConvexVsConvex);
+        /// Remove a convex pair at a given index
+        void removeConvexPairPairWithIndex(uint64 pairIndex, bool removeFromColliders = true);
+
+        // Remove a concave pair at a given index
+        void removeConcavePairPairWithIndex(uint64 pairIndex, bool removeFromColliders = true);
 
         /// Delete all the obsolete last frame collision info
         void clearObsoleteLastFrameCollisionInfos();
@@ -419,8 +442,19 @@ RP3D_FORCE_INLINE OverlappingPairs::OverlappingPair* OverlappingPairs::getOverla
     if (it != mMapConcavePairIdToPairIndex.end()) {
         return &(mConcavePairs[static_cast<uint32>(it->second)]);
     }
+    else {
+        it = mMapDisabledPairIdToPairIndex.find(pairId);
+        if (it != mMapDisabledPairIdToPairIndex.end()) {
+            return &(mDisabledPairs[static_cast<uint32>(it->second)]);
+        }
+    }
 
     return nullptr;
+}
+
+// Return true if a given pair is disabled (both bodies of the pair are disabled)
+RP3D_FORCE_INLINE bool OverlappingPairs::isPairDisabled(uint64 pairId) const {
+    return mMapDisabledPairIdToPairIndex.containsKey(pairId);
 }
 
 #ifdef IS_RP3D_PROFILING_ENABLED

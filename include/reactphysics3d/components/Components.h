@@ -80,7 +80,7 @@ class Components {
         uint32 mDisabledStartIndex;
 
         /// Compute the index where we need to insert the new component
-        uint32 prepareAddComponent(bool isSleeping);
+        uint32 prepareAddComponent(bool isDisabled);
 
         /// Allocate memory for a given number of components
         virtual void allocate(uint32 nbComponentsToAllocate)=0;

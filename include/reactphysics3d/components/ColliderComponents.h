@@ -158,7 +158,7 @@ class ColliderComponents : public Components {
         virtual ~ColliderComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity colliderEntity, bool isSleeping, const ColliderComponent& component);
+        void addComponent(Entity colliderEntity, bool isDisabled, const ColliderComponent& component);
 
         /// Return the body entity of a given collider
         Entity getBody(Entity colliderEntity) const;

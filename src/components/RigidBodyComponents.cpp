@@ -204,10 +204,10 @@ void RigidBodyComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void RigidBodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const RigidBodyComponent& component) {
+void RigidBodyComponents::addComponent(Entity bodyEntity, bool isDisabled, const RigidBodyComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
-    uint32 index = prepareAddComponent(isSleeping);
+    uint32 index = prepareAddComponent(isDisabled);
 
     // Insert the new component data
     new (mBodiesEntities + index) Entity(bodyEntity);

@@ -120,7 +120,7 @@ class JointComponents : public Components {
         virtual ~JointComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity jointEntity, bool isSleeping, const JointComponent& component);
+        void addComponent(Entity jointEntity, bool isDisabled, const JointComponent& component);
 
         /// Return the entity of the first body of a joint
         Entity getBody1Entity(Entity jointEntity) const;

@@ -219,10 +219,10 @@ void HingeJointComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void HingeJointComponents::addComponent(Entity jointEntity, bool isSleeping, const HingeJointComponent& component) {
+void HingeJointComponents::addComponent(Entity jointEntity, bool isDisabled, const HingeJointComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
-    uint32 index = prepareAddComponent(isSleeping);
+    uint32 index = prepareAddComponent(isDisabled);
 
     // Insert the new component data
     new (mJointEntities + index) Entity(jointEntity);

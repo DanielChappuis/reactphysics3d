@@ -217,7 +217,7 @@ class SliderJointComponents : public Components {
         virtual ~SliderJointComponents() override = default;
 
         /// Add a component
-        void addComponent(Entity jointEntity, bool isSleeping, const SliderJointComponent& component);
+        void addComponent(Entity jointEntity, bool isDisabled, const SliderJointComponent& component);
 
         /// Return a pointer to a given joint
         SliderJoint* getJoint(Entity jointEntity) const;

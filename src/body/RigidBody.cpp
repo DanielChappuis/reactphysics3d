@@ -76,6 +76,10 @@ void RigidBody::setType(BodyType type) {
         // Reset the velocity to zero
         mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
         mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
+
+        const Transform& transform = getTransform();
+        mWorld.mRigidBodyComponents.setConstrainedPosition(mEntity, transform.getPosition());
+        mWorld.mRigidBodyComponents.setConstrainedOrientation(mEntity, transform.getOrientation());
     }
 
     // If it is a static or a kinematic body
@@ -84,6 +88,7 @@ void RigidBody::setType(BodyType type) {
         // Reset the inverse mass and inverse inertia tensor to zero
         mWorld.mRigidBodyComponents.setMassInverse(mEntity, decimal(0));
         mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setInertiaTensorWorldInverse(mEntity, Matrix3x3::zero());
     }
     else {  // If it is a dynamic body
 
@@ -104,11 +109,17 @@ void RigidBody::setType(BodyType type) {
         mWorld.mRigidBodyComponents.setInverseInertiaTensorLocal(mEntity, inverseInertiaTensorLocal);
     }
 
+    // Disable/Enable the body if necessary (components of static bodies are disabled)
+    mWorld.setBodyDisabled(mEntity, type == BodyType::STATIC);
+
     // Awake the body
     setIsSleeping(false);
 
-    // Update the active status of currently overlapping pairs
-    resetOverlappingPairs();
+    if (type == BodyType::STATIC) {
+
+        // Disable overlapping pairs if both bodies are disabled (sleeping or static)
+        checkForDisabledOverlappingPairs();
+    }
 
     // Reset the force and torque on the body
     mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
@@ -670,8 +681,8 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
     Material material(mWorld.mConfig.defaultFrictionCoefficient, mWorld.mConfig.defaultBounciness);
     ColliderComponents::ColliderComponent colliderComponent(mEntity, collider, shapeAABB,
                                                             transform, collisionShape, 0x0001, 0xFFFF, localToWorldTransform, material);
-    bool isSleeping = mWorld.mRigidBodyComponents.getIsSleeping(mEntity);
-    mWorld.mCollidersComponents.addComponent(colliderEntity, isSleeping, colliderComponent);
+    bool isDisabled = mWorld.mRigidBodyComponents.getIsEntityDisabled(mEntity);
+    mWorld.mCollidersComponents.addComponent(colliderEntity, isDisabled, colliderComponent);
 
     mWorld.mBodyComponents.addColliderToBody(mEntity, colliderEntity);
 
@@ -711,6 +722,9 @@ Collider* RigidBody::addCollider(CollisionShape* collisionShape, const Transform
  * @param collider The pointer of the collider you want to remove
  */
 void RigidBody::removeCollider(Collider* collider) {
+
+    // Awake all the sleeping neighbor bodies of the current one
+    awakeNeighborDisabledBodies();
 
     // Remove the collision shape
     Body::removeCollider(collider);
@@ -830,6 +844,12 @@ void RigidBody::setTransform(const Transform& transform) {
     const Vector3& centerOfMassWorld = mWorld.mRigidBodyComponents.getCenterOfMassWorld(mEntity);
     linearVelocity += angularVelocity.cross(centerOfMassWorld - oldCenterOfMass);
     mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, linearVelocity);
+
+    if (getType() == BodyType::STATIC) {
+
+        mWorld.mRigidBodyComponents.setConstrainedPosition(mEntity, transform.getPosition());
+        mWorld.mRigidBodyComponents.setConstrainedOrientation(mEntity, transform.getOrientation());
+    }
 
     Body::setTransform(transform);
 
@@ -985,6 +1005,9 @@ void RigidBody::setIsSleeping(bool isSleeping) {
 
     if (isBodySleeping == isSleeping) return;
 
+    // A static body is always awake
+    if (mWorld.mRigidBodyComponents.getBodyType(mEntity) == BodyType::STATIC) return;
+
     // If the body is not active, do nothing (it is sleeping)
     if (!mWorld.mBodyComponents.getIsActive(mEntity)) {
         assert(isBodySleeping);
@@ -1005,15 +1028,23 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     // Notify all the components
     mWorld.setBodyDisabled(mEntity, isSleeping);
 
-    // Update the currently overlapping pairs
-    resetOverlappingPairs();
-
     if (isSleeping) {
+
+        // Disable overlapping pairs if both bodies are disabled (sleeping or static)
+        checkForDisabledOverlappingPairs();
 
         mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
         mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
         mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
         mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3::zero());
+    }
+    else {
+
+        // Remove disabled overlapping pairs
+        removeDisabledOverlappingPairs();
+
+        // Make sure the broad-phase with recompute the overlapping pairs with this body
+        askForBroadPhaseCollisionCheck();
     }
 
     RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
@@ -1021,8 +1052,28 @@ void RigidBody::setIsSleeping(bool isSleeping) {
          (isSleeping ? "true" : "false"),  __FILE__, __LINE__);
 }
 
-// Remove all the overlapping pairs in which this body is involved and ask the broad-phase to recompute pairs in the next frame
-void RigidBody::resetOverlappingPairs() {
+// Remove the disabled overlapping pairs
+void RigidBody::removeDisabledOverlappingPairs() {
+
+    // For each collider of the body
+    const Array<Entity>& colliderEntities = mWorld.mBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
+
+        // Get the currently overlapping pairs for this collider
+        Array<uint64> overlappingPairs = mWorld.mCollidersComponents.getOverlappingPairs(colliderEntities[i]);
+
+        // We remove all the overlapping pairs (there should be only disabled overlapping pairs at this point)
+        const uint64 nbOverlappingPairs = overlappingPairs.size();
+        for (uint64 j=0; j < nbOverlappingPairs; j++) {
+
+            mWorld.mCollisionDetection.removeOverlappingPair(overlappingPairs[j]);
+            std::cout << "Removing overlapping pair " << overlappingPairs[j] << std::endl;
+        }
+    }
+}
+
+// Awake the disabled neighbor bodies
+void RigidBody::awakeNeighborDisabledBodies() {
 
     // For each collider of the body
     const Array<Entity>& colliderEntities = mWorld.mBodyComponents.getColliders(mEntity);
@@ -1034,12 +1085,61 @@ void RigidBody::resetOverlappingPairs() {
         const uint64 nbOverlappingPairs = overlappingPairs.size();
         for (uint64 j=0; j < nbOverlappingPairs; j++) {
 
-            mWorld.mCollisionDetection.mOverlappingPairs.removePair(overlappingPairs[j]);
+            OverlappingPairs::OverlappingPair* pair = mWorld.mCollisionDetection.mOverlappingPairs.getOverlappingPair(overlappingPairs[j]);
+
+            // If both collider where colliding in the previous frame
+            if (pair->collidingInPreviousFrame) {
+
+                const Entity body1Entity = mWorld.mCollidersComponents.getBody(pair->collider1);
+                const Entity body2Entity = mWorld.mCollidersComponents.getBody(pair->collider2);
+
+                const bool isCurrentBody1 = mEntity == body1Entity;
+
+                const bool isNeighborDisabled = mWorld.mRigidBodyComponents.getIsEntityDisabled(isCurrentBody1 ? body2Entity : body1Entity);
+
+                // If both bodies of the pair are disabled we awake the neighbor body
+                if (isNeighborDisabled) {
+
+                    // Awake the neighbor colliding body
+                    RigidBody* neighborBody = mWorld.mRigidBodyComponents.getRigidBody(isCurrentBody1 ? body2Entity : body1Entity);
+                    neighborBody->setIsSleeping(false);
+
+                    std::cout << "Awake neighbor body " << neighborBody->getEntity().id << std::endl;
+                }
+            }
         }
     }
+}
 
-    // Make sure we recompute the overlapping pairs with this body in the next frame
-    askForBroadPhaseCollisionCheck();
+// Disable the overlapping pairs if both bodies are disabled (sleeping or static)
+void RigidBody::checkForDisabledOverlappingPairs() {
+
+    // For each collider of the body
+    const Array<Entity>& colliderEntities = mWorld.mBodyComponents.getColliders(mEntity);
+    for (uint32 i=0; i < colliderEntities.size(); i++) {
+
+        // Get the currently overlapping pairs for this collider
+        Array<uint64> overlappingPairs = mWorld.mCollidersComponents.getOverlappingPairs(colliderEntities[i]);
+
+        const uint64 nbOverlappingPairs = overlappingPairs.size();
+        for (uint64 j=0; j < nbOverlappingPairs; j++) {
+
+            OverlappingPairs::OverlappingPair* pair = mWorld.mCollisionDetection.mOverlappingPairs.getOverlappingPair(overlappingPairs[j]);
+
+            const Entity body1Entity = mWorld.mCollidersComponents.getBody(pair->collider1);
+            const Entity body2Entity = mWorld.mCollidersComponents.getBody(pair->collider2);
+
+            const bool isBody1Disabled = mWorld.mRigidBodyComponents.getIsEntityDisabled(body1Entity);
+            const bool isBody2Disabled = mWorld.mRigidBodyComponents.getIsEntityDisabled(body2Entity);
+
+            // If both bodies of the pair are disabled, we disable the overlapping pair
+            if (isBody1Disabled && isBody2Disabled) {
+
+                mWorld.mCollisionDetection.disableOverlappingPair(overlappingPairs[j]);
+                std::cout << "Disabling overlapping pair " << overlappingPairs[j] << std::endl;
+            }
+        }
+    }
 }
 
 // Set whether or not the body is allowed to go to sleep

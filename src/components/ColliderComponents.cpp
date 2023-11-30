@@ -136,10 +136,10 @@ void ColliderComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void ColliderComponents::addComponent(Entity colliderEntity, bool isSleeping, const ColliderComponent& component) {
+void ColliderComponents::addComponent(Entity colliderEntity, bool isDisabled, const ColliderComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
-    uint32 index = prepareAddComponent(isSleeping);
+    uint32 index = prepareAddComponent(isDisabled);
 
     // Insert the new component data
     new (mCollidersEntities + index) Entity(colliderEntity);

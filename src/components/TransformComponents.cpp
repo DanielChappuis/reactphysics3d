@@ -80,10 +80,10 @@ void TransformComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void TransformComponents::addComponent(Entity bodyEntity, bool isSleeping, const TransformComponent& component) {
+void TransformComponents::addComponent(Entity bodyEntity, bool isDisabled, const TransformComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
-    uint32 index = prepareAddComponent(isSleeping);
+    uint32 index = prepareAddComponent(isDisabled);
 
     // Insert the new component data
     new (mBodies + index) Entity(bodyEntity);

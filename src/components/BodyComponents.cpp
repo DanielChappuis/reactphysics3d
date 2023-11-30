@@ -96,10 +96,10 @@ void BodyComponents::allocate(uint32 nbComponentsToAllocate) {
 }
 
 // Add a component
-void BodyComponents::addComponent(Entity bodyEntity, bool isSleeping, const BodyComponent& component) {
+void BodyComponents::addComponent(Entity bodyEntity, bool isDisabled, const BodyComponent& component) {
 
     // Prepare to add new component (allocate memory if necessary and compute insertion index)
-    uint32 index = prepareAddComponent(isSleeping);
+    uint32 index = prepareAddComponent(isDisabled);
 
     // Insert the new component data
     new (mBodiesEntities + index) Entity(bodyEntity);
