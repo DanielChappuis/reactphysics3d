@@ -4,8 +4,9 @@
 
 ### Added
 
- - The library will now return errors found in input data during ConvexMesh, TriangularMesh and HeighField creation
+ - The library will now return errors found in input data during the creation of ConvexMesh, TriangularMesh and HeighField
  - It is now possible to create a ConvexMesh by specifying only a list of vertices (automatic computation of convex hull using internal QuickHull algorithm)
+ - The performance of static bodies has been improved 
 
 ### Changed
 
