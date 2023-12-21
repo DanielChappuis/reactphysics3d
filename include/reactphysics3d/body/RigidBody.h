@@ -57,7 +57,7 @@ class RigidBody : public Body {
         void awakeNeighborDisabledBodies();
 
         /// Remove the disabled overlapping pairs
-        void removeDisabledOverlappingPairs();
+        void enableOverlappingPairs();
 
         /// Disable the overlapping pairs if both bodies of the pair are disabled (sleeping or static)
         void checkForDisabledOverlappingPairs();

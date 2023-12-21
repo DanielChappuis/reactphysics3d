@@ -1040,8 +1040,8 @@ void RigidBody::setIsSleeping(bool isSleeping) {
     }
     else {
 
-        // Remove disabled overlapping pairs
-        removeDisabledOverlappingPairs();
+        // We need to enable the currently disabled overlapping pairs
+        enableOverlappingPairs();
 
         // Make sure the broad-phase with recompute the overlapping pairs with this body
         askForBroadPhaseCollisionCheck();
@@ -1052,8 +1052,8 @@ void RigidBody::setIsSleeping(bool isSleeping) {
          (isSleeping ? "true" : "false"),  __FILE__, __LINE__);
 }
 
-// Remove the disabled overlapping pairs
-void RigidBody::removeDisabledOverlappingPairs() {
+// Enable the currently disabled overlapping pairs
+void RigidBody::enableOverlappingPairs() {
 
     // For each collider of the body
     const Array<Entity>& colliderEntities = mWorld.mBodyComponents.getColliders(mEntity);
@@ -1062,12 +1062,16 @@ void RigidBody::removeDisabledOverlappingPairs() {
         // Get the currently overlapping pairs for this collider
         Array<uint64> overlappingPairs = mWorld.mCollidersComponents.getOverlappingPairs(colliderEntities[i]);
 
-        // We remove all the overlapping pairs (there should be only disabled overlapping pairs at this point)
+        // We enable all the overlapping pairs (there should be only disabled overlapping pairs at this point)
         const uint64 nbOverlappingPairs = overlappingPairs.size();
         for (uint64 j=0; j < nbOverlappingPairs; j++) {
 
-            mWorld.mCollisionDetection.removeOverlappingPair(overlappingPairs[j]);
-            std::cout << "Removing overlapping pair " << overlappingPairs[j] << std::endl;
+            OverlappingPairs::OverlappingPair* pair = mWorld.mCollisionDetection.mOverlappingPairs.getOverlappingPair(overlappingPairs[j]);
+
+            if (!pair->isEnabled) {
+
+                mWorld.mCollisionDetection.mOverlappingPairs.enablePair(overlappingPairs[j]);
+            }
         }
     }
 }
@@ -1103,8 +1107,6 @@ void RigidBody::awakeNeighborDisabledBodies() {
                     // Awake the neighbor colliding body
                     RigidBody* neighborBody = mWorld.mRigidBodyComponents.getRigidBody(isCurrentBody1 ? body2Entity : body1Entity);
                     neighborBody->setIsSleeping(false);
-
-                    std::cout << "Awake neighbor body " << neighborBody->getEntity().id << std::endl;
                 }
             }
         }
@@ -1136,7 +1138,6 @@ void RigidBody::checkForDisabledOverlappingPairs() {
             if (isBody1Disabled && isBody2Disabled) {
 
                 mWorld.mCollisionDetection.disableOverlappingPair(overlappingPairs[j]);
-                std::cout << "Disabling overlapping pair " << overlappingPairs[j] << std::endl;
             }
         }
     }

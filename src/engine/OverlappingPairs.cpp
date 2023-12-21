@@ -38,8 +38,8 @@ using namespace reactphysics3d;
 OverlappingPairs::OverlappingPairs(MemoryManager& memoryManager, ColliderComponents& colliderComponents,
                                    BodyComponents& bodyComponents, RigidBodyComponents& rigidBodyComponents, Set<bodypair> &noCollisionPairs, CollisionDispatch &collisionDispatch)
                 : mPoolAllocator(memoryManager.getPoolAllocator()), mHeapAllocator(memoryManager.getHeapAllocator()), mConvexPairs(memoryManager.getHeapAllocator()),
-                  mConcavePairs(memoryManager.getHeapAllocator()), mDisabledPairs(memoryManager.getHeapAllocator()), mMapConvexPairIdToPairIndex(memoryManager.getHeapAllocator()), mMapConcavePairIdToPairIndex(memoryManager.getHeapAllocator()),
-                  mMapDisabledPairIdToPairIndex(memoryManager.getHeapAllocator()),
+                  mConcavePairs(memoryManager.getHeapAllocator()), mDisabledConvexPairs(memoryManager.getHeapAllocator()), mDisabledConcavePairs(memoryManager.getHeapAllocator()), mMapConvexPairIdToPairIndex(memoryManager.getHeapAllocator()), mMapConcavePairIdToPairIndex(memoryManager.getHeapAllocator()),
+                  mMapDisabledConvexPairIdToPairIndex(memoryManager.getHeapAllocator()), mMapDisabledConcavePairIdToPairIndex(memoryManager.getHeapAllocator()),
                   mColliderComponents(colliderComponents), mBodyComponents(bodyComponents),
                   mRigidBodyComponents(rigidBodyComponents), mNoCollisionPairs(noCollisionPairs), mCollisionDispatch(collisionDispatch) {
     
@@ -51,19 +51,25 @@ OverlappingPairs::~OverlappingPairs() {
     // Destroy the convex pairs
     while (mConvexPairs.size() > 0) {
 
-        removeConvexPairPairWithIndex(mConvexPairs.size() - 1, true);
+        removeConvexPairWithIndex(mConvexPairs.size() - 1, true);
     }
 
     // Destroy the concave pairs
     while (mConcavePairs.size() > 0) {
 
-        removeConcavePairPairWithIndex(mConcavePairs.size() - 1, true);
+        removeConcavePairWithIndex(mConcavePairs.size() - 1, true);
     }
 
-    // Destroy the disabled pairs
-    while (mDisabledPairs.size() > 0) {
+    // Destroy the disabled convex pairs
+    while (mDisabledConvexPairs.size() > 0) {
 
-        removeDisabledPairWithIndex(mDisabledPairs.size() - 1, true);
+        removeDisabledConvexPairWithIndex(mDisabledConvexPairs.size() - 1, true);
+    }
+
+    // Destroy the disabled concave pairs
+    while (mDisabledConcavePairs.size() > 0) {
+
+        removeDisabledConcavePairWithIndex(mDisabledConcavePairs.size() - 1, true);
     }
 }
 
@@ -73,54 +79,97 @@ void OverlappingPairs::removePair(uint64 pairId) {
     RP3D_PROFILE("OverlappingPairs::removePair()", mProfiler);
 
     assert(mMapConvexPairIdToPairIndex.containsKey(pairId) || mMapConcavePairIdToPairIndex.containsKey(pairId) ||
-           mMapDisabledPairIdToPairIndex.containsKey(pairId));
+           mMapDisabledConvexPairIdToPairIndex.containsKey(pairId) || mMapDisabledConcavePairIdToPairIndex.containsKey(pairId));
 
     auto it = mMapConvexPairIdToPairIndex.find(pairId);
     if (it != mMapConvexPairIdToPairIndex.end()) {
-        removeConvexPairPairWithIndex(it->second, true);
+        removeConvexPairWithIndex(it->second, true);
         return;
     }
 
     auto it2 = mMapConcavePairIdToPairIndex.find(pairId);
     if (it2 != mMapConcavePairIdToPairIndex.end()) {
-        removeConcavePairPairWithIndex(it2->second, true);
+        removeConcavePairWithIndex(it2->second, true);
         return;
     }
 
-    removeDisabledPairWithIndex(mMapDisabledPairIdToPairIndex[pairId], true);
-}
-
-// Remove an overlapping pair
-void OverlappingPairs::removeDisabledPairWithIndex(uint64 pairIndex, bool removeFromColliders) {
-
-    // Remove the involved overlapping pair from the two colliders
-    assert(mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider1).find(mDisabledPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider1).end());
-    assert(mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider2).find(mDisabledPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider2).end());
-
-    if (removeFromColliders) {
-
-        mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider1).remove(mDisabledPairs[pairIndex].pairID);
-        mColliderComponents.getOverlappingPairs(mDisabledPairs[pairIndex].collider2).remove(mDisabledPairs[pairIndex].pairID);
+    auto it3 = mMapDisabledConvexPairIdToPairIndex.find(pairId);
+    if (it3 != mMapDisabledConvexPairIdToPairIndex.end()) {
+        removeDisabledConvexPairWithIndex(it3->second, true);
+        return;
     }
 
-    assert(mMapDisabledPairIdToPairIndex[mDisabledPairs[pairIndex].pairID] == pairIndex);
-    mMapDisabledPairIdToPairIndex.remove(mDisabledPairs[pairIndex].pairID);
+    auto it4 = mMapDisabledConcavePairIdToPairIndex.find(pairId);
+    if (it4 != mMapDisabledConcavePairIdToPairIndex.end()) {
+        removeDisabledConcavePairWithIndex(it4->second, true);
+        return;
+    }
+}
 
-    const uint64 nbDisabledPairs = mDisabledPairs.size();
+// Remove an disabled convex overlapping pair
+void OverlappingPairs::removeDisabledConvexPairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+
+    RP3D_PROFILE("OverlappingPairs::removeDisabledConvexPairWithIndex()", mProfiler);
+
+    // Remove the involved overlapping pair from the two colliders
+    assert(mColliderComponents.getOverlappingPairs(mDisabledConvexPairs[pairIndex].collider1).find(mDisabledConvexPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mDisabledConvexPairs[pairIndex].collider1).end());
+    assert(mColliderComponents.getOverlappingPairs(mDisabledConvexPairs[pairIndex].collider2).find(mDisabledConvexPairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mDisabledConvexPairs[pairIndex].collider2).end());
+    if (removeFromColliders) {
+
+        mColliderComponents.getOverlappingPairs(mDisabledConvexPairs[pairIndex].collider1).remove(mDisabledConvexPairs[pairIndex].pairID);
+        mColliderComponents.getOverlappingPairs(mDisabledConvexPairs[pairIndex].collider2).remove(mDisabledConvexPairs[pairIndex].pairID);
+    }
+
+    assert(mMapDisabledConvexPairIdToPairIndex[mDisabledConvexPairs[pairIndex].pairID] == pairIndex);
+    mMapDisabledConvexPairIdToPairIndex.remove(mDisabledConvexPairs[pairIndex].pairID);
+
+    const uint64 nbDisabledPairs = mDisabledConvexPairs.size();
 
     // Change the mapping between the pairId and the index in the disabled pairs array if we swap the last item with the one to remove
-    if (mDisabledPairs.size() > 1 && pairIndex < (nbDisabledPairs - 1)) {
+    if (mDisabledConvexPairs.size() > 1 && pairIndex < (nbDisabledPairs - 1)) {
 
-        mMapDisabledPairIdToPairIndex[mDisabledPairs[nbDisabledPairs - 1].pairID] = pairIndex;
+        mMapDisabledConvexPairIdToPairIndex[mDisabledConvexPairs[nbDisabledPairs - 1].pairID] = pairIndex;
     }
 
     // We want to keep the arrays tightly packed. Therefore, when a pair is removed,
     // we replace it with the last element of the array.
-    mDisabledPairs.removeAtAndReplaceByLast(pairIndex);
+    mDisabledConvexPairs.removeAtAndReplaceByLast(pairIndex);
+}
+
+// Remove an disabled concave overlapping pair
+void OverlappingPairs::removeDisabledConcavePairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+
+    RP3D_PROFILE("OverlappingPairs::removeDisabledConcavePairWithIndex()", mProfiler);
+
+    // Remove the involved overlapping pair from the two colliders
+    assert(mColliderComponents.getOverlappingPairs(mDisabledConcavePairs[pairIndex].collider1).find(mDisabledConcavePairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mDisabledConcavePairs[pairIndex].collider1).end());
+    assert(mColliderComponents.getOverlappingPairs(mDisabledConcavePairs[pairIndex].collider2).find(mDisabledConcavePairs[pairIndex].pairID) != mColliderComponents.getOverlappingPairs(mDisabledConcavePairs[pairIndex].collider2).end());
+    if (removeFromColliders) {
+
+        mColliderComponents.getOverlappingPairs(mDisabledConcavePairs[pairIndex].collider1).remove(mDisabledConcavePairs[pairIndex].pairID);
+        mColliderComponents.getOverlappingPairs(mDisabledConcavePairs[pairIndex].collider2).remove(mDisabledConcavePairs[pairIndex].pairID);
+    }
+
+    assert(mMapDisabledConcavePairIdToPairIndex[mDisabledConcavePairs[pairIndex].pairID] == pairIndex);
+    mMapDisabledConcavePairIdToPairIndex.remove(mDisabledConcavePairs[pairIndex].pairID);
+
+    const uint64 nbDisabledPairs = mDisabledConcavePairs.size();
+
+    // Change the mapping between the pairId and the index in the disabled pairs array if we swap the last item with the one to remove
+    if (mDisabledConcavePairs.size() > 1 && pairIndex < (nbDisabledPairs - 1)) {
+
+        mMapDisabledConcavePairIdToPairIndex[mDisabledConcavePairs[nbDisabledPairs - 1].pairID] = pairIndex;
+    }
+
+    // We want to keep the arrays tightly packed. Therefore, when a pair is removed,
+    // we replace it with the last element of the array.
+    mDisabledConcavePairs.removeAtAndReplaceByLast(pairIndex);
 }
 
 // Remove a convex pair at a given index
-void OverlappingPairs::removeConvexPairPairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+void OverlappingPairs::removeConvexPairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+
+    RP3D_PROFILE("OverlappingPairs::removeConvexPairWithIndex()", mProfiler);
 
     const uint64 nbConvexPairs = mConvexPairs.size();
 
@@ -151,7 +200,9 @@ void OverlappingPairs::removeConvexPairPairWithIndex(uint64 pairIndex, bool remo
 }
 
 // Remove a concave pair at a given index
-void OverlappingPairs::removeConcavePairPairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+void OverlappingPairs::removeConcavePairWithIndex(uint64 pairIndex, bool removeFromColliders) {
+
+    RP3D_PROFILE("OverlappingPairs::removeConcavePairWithIndex()", mProfiler);
 
     const uint64 nbConcavePairs = mConcavePairs.size();
 
@@ -184,29 +235,59 @@ void OverlappingPairs::removeConcavePairPairWithIndex(uint64 pairIndex, bool rem
     mConcavePairs.removeAtAndReplaceByLast(pairIndex);
 }
 
+// Enable an overlapping pair (because at least one body of the pair is awaken or not static anymore)
+void OverlappingPairs::enablePair(uint64 pairId) {
+
+    RP3D_PROFILE("OverlappingPairs::enablePair()", mProfiler);
+
+    assert(isPairDisabled(pairId));
+    assert(mMapConvexPairIdToPairIndex.find(pairId) == mMapConvexPairIdToPairIndex.end() &&
+           mMapConcavePairIdToPairIndex.find(pairId) == mMapConcavePairIdToPairIndex.end());
+
+    // Get the existing overlapping pair from the convex/concave array
+    auto it = mMapDisabledConvexPairIdToPairIndex.find(pairId);
+    if (it != mMapDisabledConvexPairIdToPairIndex.end()) {
+
+        // Enable the pair
+        enableConvexPairWithIndex(it->second);
+    }
+    else {
+        it = mMapDisabledConcavePairIdToPairIndex.find(pairId);
+        if (it != mMapDisabledConcavePairIdToPairIndex.end()) {
+
+            // Enable the pair
+            enableConcavePairWithIndex(it->second);
+        }
+        else {
+            // Should not happen
+            assert(false);
+            return;
+        }
+    }
+}
+
 // Disable an overlapping pair (because both bodies of the pair are disabled)
 void OverlappingPairs::disablePair(uint64 pairId) {
+
+    RP3D_PROFILE("OverlappingPairs::disablePair()", mProfiler);
 
     assert(!isPairDisabled(pairId));
     assert(mMapConvexPairIdToPairIndex.find(pairId) != mMapConvexPairIdToPairIndex.end() ||
            mMapConcavePairIdToPairIndex.find(pairId) != mMapConcavePairIdToPairIndex.end());
 
-    bool isConvexPair = true;
-    uint64 oldPairIndex = 0;
-
     // Get the existing overlapping pair from the convex/concave array
-    OverlappingPair* pair = nullptr;
     auto it = mMapConvexPairIdToPairIndex.find(pairId);
     if (it != mMapConvexPairIdToPairIndex.end()) {
-        pair = &(mConvexPairs[static_cast<uint32>(it->second)]);
-        oldPairIndex = it->second;
+
+        // Disable the pair
+        disableConvexPairWithIndex(it->second);
     }
     else {
         it = mMapConcavePairIdToPairIndex.find(pairId);
         if (it != mMapConcavePairIdToPairIndex.end()) {
-            pair = &(mConcavePairs[static_cast<uint32>(it->second)]);
-            isConvexPair = false;
-            oldPairIndex = it->second;
+
+            // Disable the pair
+            disableConcavePairWithIndex(it->second);
         }
         else {
             // Should not happen
@@ -214,25 +295,102 @@ void OverlappingPairs::disablePair(uint64 pairId) {
             return;
         }
     }
+}
 
-    const uint64 pairIndex = mDisabledPairs.size();
+// Enable a convex overlapping pair
+void OverlappingPairs::enableConvexPairWithIndex(uint64 pairIndex) {
+
+    RP3D_PROFILE("OverlappingPairs::enableConvexPairWithIndex()", mProfiler);
+
+    ConvexOverlappingPair* pair = &(mDisabledConvexPairs[static_cast<uint32>(pairIndex)]);
+
+    assert(!pair->isEnabled);
+
+    const uint64 newPairIndex = mConvexPairs.size();
 
     // Map the entity with the new pair lookup index
-    mMapDisabledPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, pairIndex));
+    mMapConvexPairIdToPairIndex.add(Pair<uint64, uint64>(pair->pairID, newPairIndex));
+
+    // Create a new pair to be added into the array of pairs
+    mConvexPairs.emplace(pair->pairID, pair->broadPhaseId1, pair->broadPhaseId2, pair->collider1, pair->collider2,
+                            pair->narrowPhaseAlgorithmType, true);
+    mConvexPairs[newPairIndex].collidingInCurrentFrame = pair->collidingInCurrentFrame;
+    mConvexPairs[newPairIndex].collidingInPreviousFrame = pair->collidingInPreviousFrame;
+
+    // Remove the previous overlapping pair from the convex array
+    removeDisabledConvexPairWithIndex(pairIndex, false);
+}
+
+// Disable a convex overlapping pair (because both bodies of the pair are disabled)
+void OverlappingPairs::disableConvexPairWithIndex(uint64 pairIndex) {
+
+    RP3D_PROFILE("OverlappingPairs::disableConvexPairWithIndex()", mProfiler);
+
+    ConvexOverlappingPair* pair = &(mConvexPairs[static_cast<uint32>(pairIndex)]);
+
+    assert(pair->isEnabled);
+
+    const uint64 newPairIndex = mDisabledConvexPairs.size();
+
+    // Map the entity with the new pair lookup index
+    mMapDisabledConvexPairIdToPairIndex.add(Pair<uint64, uint64>(pair->pairID, newPairIndex));
 
     // Create a new pair to be added into the array of disable pairs
-    mDisabledPairs.emplace(pairId, pair->broadPhaseId1, pair->broadPhaseId2, pair->collider1,
-                           pair->collider2, pair->narrowPhaseAlgorithmType);
-    mDisabledPairs[pairIndex].collidingInCurrentFrame = pair->collidingInCurrentFrame;
-    mDisabledPairs[pairIndex].collidingInPreviousFrame = pair->collidingInPreviousFrame;
+    mDisabledConvexPairs.emplace(pair->pairID, pair->broadPhaseId1, pair->broadPhaseId2, pair->collider1, pair->collider2,
+                            pair->narrowPhaseAlgorithmType, false);
+    mDisabledConvexPairs[newPairIndex].collidingInCurrentFrame = pair->collidingInCurrentFrame;
+    mDisabledConvexPairs[newPairIndex].collidingInPreviousFrame = pair->collidingInPreviousFrame;
 
-    // Remove the previous overlapping pair from the convex/concave array
-    if (isConvexPair) {
-        removeConvexPairPairWithIndex(oldPairIndex, false);
-    }
-    else {
-        removeConcavePairPairWithIndex(oldPairIndex, false);
-    }
+    // Remove the previous overlapping pair from the convex array
+    removeConvexPairWithIndex(pairIndex, false);
+}
+
+// Enable a concave overlapping pair
+void OverlappingPairs::enableConcavePairWithIndex(uint64 pairIndex) {
+
+    RP3D_PROFILE("OverlappingPairs::enableConcavePairWithIndex()", mProfiler);
+
+    ConcaveOverlappingPair* pair = &(mDisabledConcavePairs[static_cast<uint32>(pairIndex)]);
+
+    assert(!pair->isEnabled);
+
+    const uint64 newPairIndex = mConcavePairs.size();
+
+    // Map the entity with the new pair lookup index
+    mMapConcavePairIdToPairIndex.add(Pair<uint64, uint64>(pair->pairID, newPairIndex));
+
+    // Create a new pair to be added into the array of disable pairs
+    mConcavePairs.emplace(pair->pairID, pair->broadPhaseId1, pair->broadPhaseId2, pair->collider1, pair->collider2,
+                            pair->narrowPhaseAlgorithmType, pair->isShape1Convex, mPoolAllocator, mHeapAllocator, true);
+    mConcavePairs[newPairIndex].collidingInCurrentFrame = pair->collidingInCurrentFrame;
+    mConcavePairs[newPairIndex].collidingInPreviousFrame = pair->collidingInPreviousFrame;
+
+    // Remove the previous overlapping pair from the concave array
+    removeDisabledConcavePairWithIndex(pairIndex, false);
+}
+
+// Disable a concave overlapping pair (because both bodies of the pair are disabled)
+void OverlappingPairs::disableConcavePairWithIndex(uint64 pairIndex) {
+
+    RP3D_PROFILE("OverlappingPairs::disableConcavePairWithIndex()", mProfiler);
+
+    ConcaveOverlappingPair* pair = &(mConcavePairs[static_cast<uint32>(pairIndex)]);
+
+    assert(pair->isEnabled);
+
+    const uint64 newPairIndex = mDisabledConcavePairs.size();
+
+    // Map the entity with the new pair lookup index
+    mMapDisabledConcavePairIdToPairIndex.add(Pair<uint64, uint64>(pair->pairID, newPairIndex));
+
+    // Create a new pair to be added into the array of disable pairs
+    mDisabledConcavePairs.emplace(pair->pairID, pair->broadPhaseId1, pair->broadPhaseId2, pair->collider1, pair->collider2,
+                            pair->narrowPhaseAlgorithmType, pair->isShape1Convex, mPoolAllocator, mHeapAllocator, false, false);
+    mDisabledConcavePairs[newPairIndex].collidingInCurrentFrame = pair->collidingInCurrentFrame;
+    mDisabledConcavePairs[newPairIndex].collidingInPreviousFrame = pair->collidingInPreviousFrame;
+
+    // Remove the previous overlapping pair from the concave array
+    removeConcavePairWithIndex(pairIndex, false);
 }
 
 // Add an overlapping pair
@@ -264,7 +422,7 @@ uint64 OverlappingPairs::addPair(uint32 collider1Index, uint32 collider2Index, b
         mMapConvexPairIdToPairIndex.add(Pair<uint64, uint64>(pairId, mConvexPairs.size()));
 
         // Create and add a new convex pair
-        mConvexPairs.emplace(pairId, broadPhase1Id, broadPhase2Id, collider1Entity, collider2Entity, algorithmType);    
+        mConvexPairs.emplace(pairId, broadPhase1Id, broadPhase2Id, collider1Entity, collider2Entity, algorithmType, true);
     }
     else {
 
@@ -278,7 +436,7 @@ uint64 OverlappingPairs::addPair(uint32 collider1Index, uint32 collider2Index, b
 
         // Create and add a new concave pair
         mConcavePairs.emplace(pairId, broadPhase1Id, broadPhase2Id, collider1Entity, collider2Entity, algorithmType,
-                              isShape1Convex, mPoolAllocator, mHeapAllocator);
+                              isShape1Convex, mPoolAllocator, mHeapAllocator, true);
     }
 
     // Add the involved overlapping pair to the two colliders

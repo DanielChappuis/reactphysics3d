@@ -166,18 +166,18 @@ void CollisionDetectionSystem::removeNonOverlappingPairs() {
     }
 }
 
-// Disable an overlapping pair (because both bodies of the pair are disabled)
+// Disable an overlapping pair (because both bodies of the pair are disabled)
 void CollisionDetectionSystem::disableOverlappingPair(uint64 pairId) {
     mOverlappingPairs.disablePair(pairId);
 }
 
 // Remove an overlapping pair with an index
-void CollisionDetectionSystem::removeOverlappingPair(uint64 pairId) {
+void CollisionDetectionSystem::removeOverlappingPair(uint64 pairId, bool notifyLostContact) {
 
     OverlappingPairs::OverlappingPair* pair = mOverlappingPairs.getOverlappingPair(pairId);
 
     // If the two colliders of the pair were colliding in the previous frame
-    if (pair->collidingInPreviousFrame) {
+    if (pair->collidingInPreviousFrame && notifyLostContact) {
 
         // Create a new lost contact pair
         addLostContactPair(*pair);
@@ -186,7 +186,7 @@ void CollisionDetectionSystem::removeOverlappingPair(uint64 pairId) {
     mOverlappingPairs.removePair(pairId);
 }
 
-// Remove a convex overlapping pair with an index
+// Remove a convex overlapping pair with an index
 void CollisionDetectionSystem::removeConvexOverlappingPairWithIndex(uint64 pairIndex) {
 
     OverlappingPairs::OverlappingPair& pair = mOverlappingPairs.mConvexPairs[pairIndex];
@@ -198,7 +198,7 @@ void CollisionDetectionSystem::removeConvexOverlappingPairWithIndex(uint64 pairI
         addLostContactPair(pair);
     }
 
-    mOverlappingPairs.removeConvexPairPairWithIndex(pairIndex, true);
+    mOverlappingPairs.removeConvexPairWithIndex(pairIndex, true);
 }
 
 // Remove a concave overlapping pair with an index
@@ -213,7 +213,7 @@ void CollisionDetectionSystem::removeConcaveOverlappingPairWithIndex(uint64 pair
         addLostContactPair(pair);
     }
 
-    mOverlappingPairs.removeConcavePairPairWithIndex(pairIndex, true);
+    mOverlappingPairs.removeConcavePairWithIndex(pairIndex, true);
 }
 
 // Add a lost contact pair (pair of colliders that are not in contact anymore)
@@ -262,7 +262,7 @@ void CollisionDetectionSystem::addNoCollisionPair(Entity body1Entity, Entity bod
 
     // Remove the overlapping pairs that needs to be removed
     for (uint32 i = 0; i < toBeRemoved.size(); ++i) {
-        removeOverlappingPair(toBeRemoved[i]);
+        removeOverlappingPair(toBeRemoved[i], true);
     }
 }
 
@@ -396,7 +396,7 @@ void CollisionDetectionSystem::computeMiddlePhase(NarrowPhaseInput& narrowPhaseI
         if ((isWorldQuery && isWorldQueryCollider1 && isWorldQueryCollider2) ||
             (!isWorldQuery && isCollider1SimulationColliderOrTrigger && isCollider2SimulationColliderOrTrigger)) {
 
-            // If it is not a world query, we make sure that the two bodies are enabled
+            // If it is not a world query, we make sure that the two bodies are enabled
             if (isWorldQuery || (!isWorldQuery && (isBody1Enabled || isBody2Enabled))) {
 
                 const bool reportContacts = needToReportContacts && !isCollider1Trigger && !isCollider2Trigger;
@@ -1173,7 +1173,7 @@ void CollisionDetectionSystem::removeCollider(Collider* collider) {
 
         // TODO : Remove all the contact manifold of the overlapping pair from the contact manifolds array of the two bodies involved
 
-        removeOverlappingPair(overlappingPairs[0]);
+        removeOverlappingPair(overlappingPairs[0], false);
     }
 
     mMapBroadPhaseIdToColliderEntity.remove(colliderBroadPhaseId);

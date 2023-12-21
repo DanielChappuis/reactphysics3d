@@ -217,7 +217,7 @@ class CollisionDetectionSystem {
         void disableOverlappingPair(uint64 pairId);
 
         /// Remove an overlapping pair
-        void removeOverlappingPair(uint64 pairId);
+        void removeOverlappingPair(uint64 pairId, bool notifyLostContact);
 
         /// Remove a convex overlapping pair at a given index
         void removeConvexOverlappingPairWithIndex(uint64 pairIndex);

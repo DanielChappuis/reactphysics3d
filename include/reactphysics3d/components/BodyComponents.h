@@ -159,7 +159,7 @@ RP3D_FORCE_INLINE void BodyComponents::removeColliderFromBody(Entity bodyEntity,
 }
 
 // Return a pointer to a body
-RP3D_FORCE_INLINE Body *BodyComponents::getBody(Entity bodyEntity) {
+RP3D_FORCE_INLINE Body* BodyComponents::getBody(Entity bodyEntity) {
 
     assert(mMapEntityToComponentIndex.containsKey(bodyEntity));
 
