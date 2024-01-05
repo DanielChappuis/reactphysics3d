@@ -32,7 +32,7 @@ using namespace cubestackscene;
 
 // Constructor
 CubeStackScene::CubeStackScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
-      : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
+      : SceneDemo(name, settings, physicsCommon, true) {
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 16, 0);

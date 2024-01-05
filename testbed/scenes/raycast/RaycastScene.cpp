@@ -32,7 +32,7 @@ using namespace raycastscene;
 
 // Constructor
 RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
-       : SceneDemo(name, settings, physicsCommon, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
+       : SceneDemo(name, settings, physicsCommon, false), mMeshFolderPath("meshes/"),
          mRaycastManager(mMeshFolderPath, mSnapshotsContactPoints), mCurrentBodyIndex(-1),
          mAreNormalsDisplayed(false), mVBOVertices(GL_ARRAY_BUFFER) {
 

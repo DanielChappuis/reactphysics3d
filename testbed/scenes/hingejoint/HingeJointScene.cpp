@@ -33,7 +33,7 @@ using namespace hingejointscene;
 
 // Constructor
 HingeJointScene::HingeJointScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
-      : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
+      : SceneDemo(name, settings, physicsCommon, true) {
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 5, 0);

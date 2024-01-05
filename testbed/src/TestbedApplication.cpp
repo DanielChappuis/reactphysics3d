@@ -191,6 +191,7 @@ void TestbedApplication::start() {
 
         // Enable OpenGL error reporting
         glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(onOpenGLError, 0);
     }
 #endif
@@ -544,14 +545,14 @@ void TestbedApplication::notifyEngineSetttingsChanged() {
    mCurrentScene->updateEngineSettings();
 }
 
-void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/,
+void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/,
                               const GLchar* message, const void* /*userParam*/ ) {
 
 #ifdef GL_DEBUG_OUTPUT
     if (type == GL_DEBUG_TYPE_ERROR) {
-        fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+        fprintf( stderr, "GL CALLBACK: %s source = 0x%x, type = 0x%x, severity = 0x%x, message = %s\n",
                    ("** GL ERROR **" ),
-                    type, severity, message );
+                    source, type, severity, message );
     }
 #endif
 

@@ -32,7 +32,7 @@ using namespace heightfieldscene;
 
 // Constructor
 HeightFieldScene::HeightFieldScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
-                 : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
+                 : SceneDemo(name, settings, physicsCommon, true) {
 
     mWorldSettings.gravity = rp3d::Vector3(settings.gravity.x, settings.gravity.y, settings.gravity.z);
 

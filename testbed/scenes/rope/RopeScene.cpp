@@ -33,7 +33,7 @@ using namespace ropescene;
 
 // Constructor
 RopeScene::RopeScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
-      : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS), nbIterations(0), nbTorqueIterations(200) {
+      : SceneDemo(name, settings, physicsCommon, true), nbIterations(0), nbTorqueIterations(200) {
 
     std::string meshFolderPath("meshes/");
 

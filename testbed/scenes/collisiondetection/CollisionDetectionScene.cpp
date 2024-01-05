@@ -34,7 +34,7 @@ using namespace collisiondetectionscene;
 
 // Constructor
 CollisionDetectionScene::CollisionDetectionScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
-       : SceneDemo(name, settings, physicsCommon, SCENE_RADIUS, false), mMeshFolderPath("meshes/"),
+       : SceneDemo(name, settings, physicsCommon, false), mMeshFolderPath("meshes/"),
          mContactManager(mPhongShader, mMeshFolderPath, mSnapshotsContactPoints),
          mAreNormalsDisplayed(false) {
 

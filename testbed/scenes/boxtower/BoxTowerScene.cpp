@@ -34,7 +34,7 @@ using namespace boxtowerscene;
 
 // Constructor
 BoxTowerScene::BoxTowerScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
-       : SceneDemo(name, settings, physicsCommon, true, SCENE_RADIUS) {
+       : SceneDemo(name, settings, physicsCommon, true) {
 
     std::string meshFolderPath("meshes/");
 
