@@ -264,8 +264,10 @@ void SceneDemo::render() {
     mPhongShader.setVector3Uniform("light0DiffuseColor", Vector3(mLight0.getDiffuseColor().r, mLight0.getDiffuseColor().g, mLight0.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light1DiffuseColor", Vector3(mLight1.getDiffuseColor().r, mLight1.getDiffuseColor().g, mLight1.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light2DiffuseColor", Vector3(mLight2.getDiffuseColor().r, mLight2.getDiffuseColor().g, mLight2.getDiffuseColor().b));
-    mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
-    mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
+    if (mIsShadowMappingEnabled) {
+        mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
+        mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
+    }
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
     mPhongShader.setVector2Uniform("shadowMapDimension", Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 	mPhongShader.unbind();
@@ -302,8 +304,6 @@ void SceneDemo::render() {
 			mShadowMapTexture[i].unbind();
 		}
 	}
-
-    mPhongShader.unbind();
 
    //drawTextureQuad();
 }
