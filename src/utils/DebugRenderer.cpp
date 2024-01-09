@@ -405,7 +405,7 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
 		// Get a body
         const Body* body = world.getRigidBody(b);
 
-        if (body->isActive()) {
+        if (body->isActive() && body->isDebugEnabled()) {
 
             // For each collider of the body
             for (uint32 c = 0; c < body->getNbColliders(); c++) {
