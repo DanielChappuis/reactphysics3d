@@ -69,6 +69,7 @@ Dumbbell::Dumbbell(reactphysics3d::BodyType type, bool isSimulationCollider, rp3
     // Create a body corresponding to the dumbbell in the physics world
     rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
     body->setType(type);
+    body->setIsDebugEnabled(true);
     mColliderSphere1 = body->addCollider(mSphereShape, transformSphereShape1);
     mColliderSphere1->setIsSimulationCollider(isSimulationCollider);
     mColliderSphere2 = body->addCollider(mSphereShape, transformSphereShape2);

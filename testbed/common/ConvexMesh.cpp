@@ -95,6 +95,7 @@ ConvexMesh::ConvexMesh(reactphysics3d::BodyType type, bool isSimulationCollider,
 
     rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
     body->setType(type);
+    body->setIsDebugEnabled(true);
     mCollider = body->addCollider(mConvexShape, rp3d::Transform::identity());
     mCollider->setIsSimulationCollider(isSimulationCollider);
     body->updateMassPropertiesFromColliders();

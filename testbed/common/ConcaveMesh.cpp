@@ -73,6 +73,7 @@ ConcaveMesh::ConcaveMesh(reactphysics3d::BodyType type, bool isSimulationCollide
 
     rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
     body->setType(type);
+    body->setIsDebugEnabled(true);
     mCollider = body->addCollider(mConcaveShape, rp3d::Transform::identity());
     mCollider->setIsSimulationCollider(isSimulationCollider);
     body->updateMassPropertiesFromColliders();

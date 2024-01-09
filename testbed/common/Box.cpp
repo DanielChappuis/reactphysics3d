@@ -63,6 +63,7 @@ Box::Box(reactphysics3d::BodyType type, bool isSimulationCollider, const openglf
     // Create a rigid body in the physics world
     rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
     body->setType(type);
+    body->setIsDebugEnabled(true);
     mCollider = body->addCollider(mBoxShape, rp3d::Transform::identity());
     mCollider->setIsSimulationCollider(isSimulationCollider);
     body->updateMassPropertiesFromColliders();

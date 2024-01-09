@@ -54,6 +54,7 @@ Capsule::Capsule(reactphysics3d::BodyType type, bool isSimulationCollider, float
     // Create the body
     rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
     body->setType(type);
+    body->setIsDebugEnabled(true);
     mCollider = body->addCollider(mCapsuleShape, rp3d::Transform::identity());
     mCollider->setIsSimulationCollider(isSimulationCollider);
     body->updateMassPropertiesFromColliders();

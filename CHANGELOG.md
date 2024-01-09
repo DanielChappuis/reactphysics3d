@@ -32,6 +32,7 @@
  - The signature of the TriangleVertexArray::getTriangleVerticesIndices() method has changed
  - The signature of the TriangleVertexArray::getNormal() method has changed
  - The getLocalBounds() methods of the collision shapes now returns an AABB
+ - It is now necessary to enable debug rendering for each body that you want to debug using the Body::setIsDebugEnabled() method
 
 ### Removed
 

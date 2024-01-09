@@ -62,7 +62,7 @@ class Body {
         PhysicsWorld& mWorld;
 
         /// Determines if debug information is computed for this body
-        bool mDebugEnabled;
+        bool mIsDebugEnabled;
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -163,7 +163,7 @@ class Body {
         Vector3 getLocalVector(const Vector3& worldVector) const;
 
         /// Set whether or not debug lines are computed for this body
-        void setDebugEnabled(bool enabled);
+        void setIsDebugEnabled(bool enabled);
 
         /// Return true if debug lines should be computed for this body
         bool isDebugEnabled() const;

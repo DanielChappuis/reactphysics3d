@@ -57,6 +57,7 @@ HeightField::HeightField(reactphysics3d::BodyType type, bool isSimulationCollide
     // Create a body
     rp3d::RigidBody* body = physicsWorld->createRigidBody(mPreviousTransform);
     body->setType(type);
+    body->setIsDebugEnabled(true);
     mCollider = body->addCollider(mHeightFieldShape, rp3d::Transform::identity());
     mCollider->setIsSimulationCollider(isSimulationCollider);
     body->updateMassPropertiesFromColliders();

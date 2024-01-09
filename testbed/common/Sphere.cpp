@@ -54,6 +54,7 @@ Sphere::Sphere(rp3d::BodyType type, bool isSimulationCollider, float radius, rp3
     // Create a rigid body corresponding to the sphere in the physics world
     rp3d::RigidBody* body = world->createRigidBody(mPreviousTransform);
     body->setType(type);
+    body->setIsDebugEnabled(true);
     mCollider = body->addCollider(mCollisionShape, rp3d::Transform::identity());
     mCollider->setIsSimulationCollider(isSimulationCollider);
     body->updateMassPropertiesFromColliders();

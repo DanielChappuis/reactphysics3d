@@ -41,7 +41,7 @@ using namespace reactphysics3d;
  * @param id ID of the body
  */
 Body::Body(PhysicsWorld& world, Entity entity)
-              : mEntity(entity), mWorld(world)  {
+              : mEntity(entity), mWorld(world), mIsDebugEnabled(false)  {
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -500,18 +500,18 @@ void Body::setProfiler(Profiler* profiler) {
 
 #endif
 
-// Set whether to compute debug lines on this body
+// Set whether to compute debug information on this body
 /**
  * @param enabled Set to true if this body should have it's debug information computed
  */
-void CollisionBody::setDebugEnabled(bool enabled) {
-    mDebugEnabled = enabled;
+void Body::setIsDebugEnabled(bool enabled) {
+    mIsDebugEnabled = enabled;
 }
 
 // Returns true if this collision body is computing debug information
 /**
  * @return Returns true if this body is computing debug information
  */
-bool CollisionBody::isDebugEnabled() const {
-    return mDebugEnabled;
+bool Body::isDebugEnabled() const {
+    return mIsDebugEnabled;
 }
