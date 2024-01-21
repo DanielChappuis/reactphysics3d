@@ -89,7 +89,7 @@ class BoxShape : public ConvexPolyhedronShape {
         BoxShape& operator=(const BoxShape& shape) = delete;
 
         /// Return the half-extents of the box
-        Vector3 getHalfExtents() const;
+        const Vector3& getHalfExtents() const;
 
         /// Set the half-extents of the box
         void setHalfExtents(const Vector3& halfExtents);
@@ -142,7 +142,7 @@ class BoxShape : public ConvexPolyhedronShape {
 /**
  * @return The vector with the three half-extents of the box shape
  */
-RP3D_FORCE_INLINE Vector3 BoxShape::getHalfExtents() const {
+RP3D_FORCE_INLINE const Vector3& BoxShape::getHalfExtents() const {
     return mHalfExtents;
 }
 

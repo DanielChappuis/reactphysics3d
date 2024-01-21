@@ -7,7 +7,9 @@
  - The library will now return errors found in input data during the creation of ConvexMesh, TriangularMesh and HeighField
  - It is now possible to create a ConvexMesh by specifying only a list of vertices (automatic computation of convex hull using internal QuickHull algorithm)
  - The performance of static bodies has been improved 
- - The reporting of contact state is now correct even if body goes to sleep
+ - The reporting of contact state is now correct even if the body goes to sleep
+ - The DebugRenderer can now display the normals of the collider faces for debugging purpose
+ - It is now possible to select for which bodies the debug information from the DebugRenderer is displayed
 
 ### Changed
 
@@ -54,7 +56,11 @@
 
 ### Fixed
 
+- Issue [#206](https://github.com/DanielChappuis/reactphysics3d/issues/206) Collision issue and scaling of collider normals
+- Issue [#235](https://github.com/DanielChappuis/reactphysics3d/issues/235) Removing a body should wake up its neighbors
 - Issue [#237](https://github.com/DanielChappuis/reactphysics3d/issues/237) Wrong assert has been removed 
+- Issue [#239](https://github.com/DanielChappuis/reactphysics3d/issues/239) Memory allocation alignment
+- Issue [#240](https://github.com/DanielChappuis/reactphysics3d/issues/240) Uninitialized variable
 
 ## Version 0.9.0 (January 4, 2022)
 

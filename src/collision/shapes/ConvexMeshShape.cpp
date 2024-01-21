@@ -41,8 +41,32 @@ using namespace reactphysics3d;
  */
 ConvexMeshShape::ConvexMeshShape(ConvexMesh* convexMesh, MemoryAllocator& allocator, const Vector3& scale)
                 : ConvexPolyhedronShape(CollisionShapeName::CONVEX_MESH, allocator), mConvexMesh(convexMesh),
-                  mScale(scale) {
+                  mScale(scale), mScaledFacesNormals(allocator, convexMesh->getNbFaces()) {
 
+    computeScaledFacesNormals();
+}
+
+// Compute the scaled faces normals
+void ConvexMeshShape::computeScaledFacesNormals() {
+
+    mScaledFacesNormals.clear();
+
+    // For each face
+    const uint32 nbFaces = mConvexMesh->getNbFaces();
+    for (uint32 f=0; f < nbFaces; f++) {
+
+        Vector3 normal = mConvexMesh->getFaceNormal(f);
+
+        // Scale the normal
+        normal = Vector3(1.0 / mScale.x, 1.0 / mScale.y, 1.0 / mScale.z) * normal;
+
+        // Normalize the normal
+        const decimal normalLength = normal.length();
+        assert(normalLength > MACHINE_EPSILON);
+        normal /= normalLength;
+
+        mScaledFacesNormals.add(normal);
+    }
 }
 
 // Return a local support point in a given direction without the object margin.
@@ -96,7 +120,7 @@ bool ConvexMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider
     for (uint32 f=0; f < mConvexMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
-        const Vector3& faceNormal = mConvexMesh->getFaceNormal(f);
+        const Vector3& faceNormal = getFaceNormal(f);
         const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
         const Vector3& facePoint = mConvexMesh->getVertex(faceVertex.vertexPointIndex);
         decimal denom = faceNormal.dot(direction);
@@ -166,7 +190,7 @@ bool ConvexMeshShape::testPointInside(const Vector3& localPoint, Collider* /*col
     for (uint32 f=0; f < mConvexMesh->getNbFaces(); f++) {
 
         const HalfEdgeStructure::Face& face = halfEdgeStructure.getFace(f);
-        const Vector3& faceNormal = mConvexMesh->getFaceNormal(f);
+        const Vector3& faceNormal = getFaceNormal(f);
         const HalfEdgeStructure::Vertex& faceVertex = halfEdgeStructure.getVertex(face.faceVertices[0]);
         const Vector3& facePoint = mConvexMesh->getVertex(faceVertex.vertexPointIndex);
 

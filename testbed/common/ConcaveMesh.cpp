@@ -41,7 +41,7 @@ ConcaveMesh::ConcaveMesh(reactphysics3d::BodyType type, bool isSimulationCollide
                                               0, 0, 0, 1);
 
 
-    // Vertex and Indices array for the triangle mesh (data in shared and not copied)
+    // Vertex and Indices array for the triangle mesh
     rp3d::TriangleVertexArray vertexArray(getNbVertices(), &(mVertices[0]), sizeof(openglframework::Vector3),
                                           getNbFaces(0), &(mIndices[0][0]), 3 * sizeof(int),
                                           rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
@@ -67,7 +67,8 @@ ConcaveMesh::ConcaveMesh(reactphysics3d::BodyType type, bool isSimulationCollide
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mConcaveShape = mPhysicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh, scaling);
+    mConcaveShape = mPhysicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh, rp3d::Vector3(1, 1, 1));
+    mConcaveShape->setScale(scaling);
 
     mPreviousTransform = rp3d::Transform::identity();
 

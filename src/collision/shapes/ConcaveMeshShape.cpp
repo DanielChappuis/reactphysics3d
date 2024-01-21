@@ -34,10 +34,45 @@ using namespace reactphysics3d;
 
 // Constructor
 ConcaveMeshShape::ConcaveMeshShape(TriangleMesh* triangleMesh, MemoryAllocator& allocator, HalfEdgeStructure& triangleHalfEdgeStructure, const Vector3& scaling)
-                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH, allocator, scaling), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure) {
+                 : ConcaveShape(CollisionShapeName::TRIANGLE_MESH, allocator, scaling), mTriangleHalfEdgeStructure(triangleHalfEdgeStructure),
+                   mScaledVerticesNormals(allocator, triangleMesh->getNbVertices()) {
 
     mTriangleMesh = triangleMesh;
     mRaycastTestType = TriangleRaycastSide::FRONT;
+
+    computeScaledVerticesNormals();
+}
+
+// Set the scale of the shape
+void ConcaveMeshShape::setScale(const Vector3& scale) {
+
+    ConcaveShape::setScale(scale);
+
+    // Recompute the scale vertices normals
+    computeScaledVerticesNormals();
+}
+
+// Compute the scaled faces normals
+void ConcaveMeshShape::computeScaledVerticesNormals() {
+
+    mScaledVerticesNormals.clear();
+
+    // For each vertex
+    const uint32 nbVertices = mTriangleMesh->getNbVertices();
+    for (uint32 v=0; v < nbVertices; v++) {
+
+        Vector3 normal = mTriangleMesh->getVertexNormal(v);
+
+        // Scale the normal
+        normal = Vector3(1.0 / mScale.x, 1.0 / mScale.y, 1.0 / mScale.z) * normal;
+
+        // Normalize the normal
+        const decimal normalLength = normal.length();
+        assert(normalLength > MACHINE_EPSILON);
+        normal /= normalLength;
+
+        mScaledVerticesNormals.add(normal);
+    }
 }
 
 // Return the three vertices coordinates (in the array outTriangleVertices) of a triangle
@@ -53,11 +88,18 @@ void ConcaveMeshShape::getTriangleVertices(uint32 triangleIndex, Vector3& outV1,
 }
 
 // Return the three vertex normals (in the array outVerticesNormals) of a triangle
-void ConcaveMeshShape::getTriangleVerticesNormals(uint32 triangleIndex,
-                                                  Vector3& outN1, Vector3& outN2, Vector3& outN3) const {
+void ConcaveMeshShape::getTriangleVerticesNormals(uint32 triangleIndex, Vector3& outN1, Vector3& outN2, Vector3& outN3) const {
 
-    // Get the vertices coordinates of the triangle
-    mTriangleMesh->getTriangleVerticesNormals(triangleIndex, outN1, outN2, outN3);
+    assert(triangleIndex < mTriangleMesh->getNbTriangles());
+
+    // Get the triangle vertices indices
+    uint32 v1, v2, v3;
+    mTriangleMesh->getTriangleVerticesIndices(triangleIndex, v1, v2, v3);
+
+    // Return the scaled vertices normals
+    outN1 = mScaledVerticesNormals[v1];
+    outN2 = mScaledVerticesNormals[v2];
+    outN3 = mScaledVerticesNormals[v3];
 }
 
 // Return the indices of the three vertices of a given triangle in the array
@@ -73,9 +115,20 @@ uint32 ConcaveMeshShape::getNbVertices() const {
 }
 
 // Return the number of triangles in a sub part of the mesh
-uint32 ConcaveMeshShape::getNbTriangles() const
-{
+uint32 ConcaveMeshShape::getNbTriangles() const {
     return mTriangleMesh->getNbTriangles();
+}
+
+// Return the coordinates of a given vertex
+const Vector3 ConcaveMeshShape::getVertex(uint32 vertexIndex) const {
+    assert(vertexIndex < mTriangleMesh->getNbVertices());
+    return mTriangleMesh->getVertex(vertexIndex) * mScale;
+}
+
+// Return the normal of a given vertex
+const Vector3& ConcaveMeshShape::getVertexNormal(uint32 vertexIndex) const {
+    assert(vertexIndex < mTriangleMesh->getNbVertices());
+    return mScaledVerticesNormals[vertexIndex];
 }
 
 // Compute all the triangles of the mesh that are overlapping with the AABB in parameter
@@ -263,7 +316,7 @@ std::string ConcaveMeshShape::to_string() const {
     // For each vertex of the concave mesh
     for (uint32 v=0; v<getNbVertices(); v++) {
 
-        Vector3 normal = mTriangleMesh->getVertexNormal(v);
+        Vector3 normal = mScaledVerticesNormals[v];
 
         ss << normal.to_string() << ", ";
     }

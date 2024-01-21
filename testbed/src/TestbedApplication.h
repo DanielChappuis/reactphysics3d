@@ -127,6 +127,9 @@ class TestbedApplication {
         /// True if the collision shapes are displayed
         bool mAreCollisionShapesDisplayed;
 
+        /// True if the collision shapes normals are displayed
+        bool mAreCollisionShapesNormalsDisplayed;
+
         /// True if the wireframe rendering is enabled
         bool mAreObjectsWireframeEnabled;
 

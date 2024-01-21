@@ -85,8 +85,8 @@ TestbedApplication::TestbedApplication()
                      mWindowToFramebufferRatio(Vector2(1, 1)), mIsShadowMappingEnabled(true),
                      mAreContactPointsDisplayed(false), mAreContactNormalsDisplayed(false),
                      mAreBroadPhaseAABBsDisplayed(false), mAreCollidersAABBsDisplayed(false),
-                     mAreCollisionShapesDisplayed(false), mAreObjectsWireframeEnabled(false),
-                     mIsVSyncEnabled(false), mIsDebugRendererEnabled(false) {
+                     mAreCollisionShapesDisplayed(false), mAreCollisionShapesNormalsDisplayed(false),
+                     mAreObjectsWireframeEnabled(false), mIsVSyncEnabled(false), mIsDebugRendererEnabled(false) {
 
     init();
 }
@@ -474,6 +474,9 @@ void TestbedApplication::update() {
 
     // Display/Hide the collision shapes
     mCurrentScene->setAreCollisionShapesDisplayed(mAreCollisionShapesDisplayed);
+
+    // Display/Hide the collision shapes normals
+    mCurrentScene->setAreCollisionShapesNormalsDisplayed(mAreCollisionShapesNormalsDisplayed);
 
     // Enable/Disable wireframe mode
     mCurrentScene->setIsWireframeEnabled(mAreObjectsWireframeEnabled);

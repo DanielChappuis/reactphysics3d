@@ -135,6 +135,7 @@ void SceneDemo::update() {
     mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB, mAreBroadPhaseAABBsDisplayed);
     mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_AABB, mAreCollidersAABBsDisplayed);
     mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE, mAreCollisionShapesDisplayed);
+    mPhysicsWorld->getDebugRenderer().setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLISION_SHAPE_NORMAL, mAreCollisionShapesNormalsDisplayed);
 
     // Update the contact points
     updateSnapshotContactPoints();

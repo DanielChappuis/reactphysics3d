@@ -37,8 +37,8 @@ Scene::Scene(const std::string& name, EngineSettings& engineSettings, bool isSha
         mCurrentCameraVerticalAngle(0.0), mViewportX(0), mViewportY(0),
         mViewportWidth(0), mViewportHeight(0), mIsShadowMappingEnabled(isShadowMappingEnabled),
         mAreContactPointsDisplayed(true), mAreContactNormalsDisplayed(false), mAreBroadPhaseAABBsDisplayed(false),
-        mAreCollidersAABBsDisplayed(false), mAreCollisionShapesDisplayed(false), mIsWireframeEnabled(false),
-        mInitZoom(2.0f), mIsCameraRotationAnimationEnabled(false) {
+        mAreCollidersAABBsDisplayed(false), mAreCollisionShapesDisplayed(false), mAreCollisionShapesNormalsDisplayed(false),
+        mIsWireframeEnabled(false), mInitZoom(2.0f), mIsCameraRotationAnimationEnabled(false) {
 
 }
 

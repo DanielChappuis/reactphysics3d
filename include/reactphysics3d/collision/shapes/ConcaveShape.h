@@ -99,7 +99,7 @@ class ConcaveShape : public CollisionShape {
         const Vector3& getScale() const;
 
         /// Set the scale of the shape
-        void setScale(const Vector3& scale);
+        virtual void setScale(const Vector3& scale);
 
         /// Return the local inertia tensor of the collision shape
         virtual Vector3 getLocalInertiaTensor(decimal mass) const override;

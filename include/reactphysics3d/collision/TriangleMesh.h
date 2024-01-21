@@ -179,11 +179,6 @@ RP3D_FORCE_INLINE void TriangleMesh::getTriangleVerticesNormals(uint32 triangleI
     outN1 = mVerticesNormals[mTriangles[triangleIndex * 3]];
     outN2 = mVerticesNormals[mTriangles[triangleIndex * 3 + 1]];
     outN3 = mVerticesNormals[mTriangles[triangleIndex * 3 + 2]];
-
-    // TODO : REMOVE
-    assert(outN1.length() > MACHINE_EPSILON);
-    assert(outN2.length() > MACHINE_EPSILON);
-    assert(outN3.length() > MACHINE_EPSILON);
 }
 
 // Return the coordinates of a given vertex

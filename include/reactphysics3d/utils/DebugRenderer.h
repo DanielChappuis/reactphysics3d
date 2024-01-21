@@ -40,6 +40,7 @@ namespace reactphysics3d {
 class ConcaveMeshShape;
 class ConvexMeshShape;
 class HeightFieldShape;
+class BoxShape;
 class Collider;
 class PhysicsWorld;
 
@@ -86,6 +87,9 @@ class DebugRenderer : public EventListener {
 
             /// Display the contact normals
             CONTACT_NORMAL				= 1 << 4,
+
+            /// Display the face normals of the collision shapes
+            COLLISION_SHAPE_NORMAL		= 1 << 5,
         };
 
 		/// Struture that represents a line of the DebugRenderer
@@ -151,10 +155,13 @@ class DebugRenderer : public EventListener {
         /// Default radius of the sphere displayed to represent contact points
         static constexpr decimal DEFAULT_CONTACT_POINT_SPHERE_RADIUS = decimal(0.1);
 
-        /// Default radius of the sphere displayed to represent contact points
+        /// Default length for the displayed contacts normals
         static constexpr decimal DEFAULT_CONTACT_NORMAL_LENGTH = decimal(1.0);
 
-		// -------------------- Attributes -------------------- //
+        /// Default length for the displayed faces normals of the collision shapes
+        static constexpr decimal DEFAULT_COLLISION_SHAPE_NORMAL_LENGTH = decimal(1.0);
+
+        // -------------------- Attributes -------------------- //
 
 		/// Memory allocator
 		MemoryAllocator& mAllocator;
@@ -174,8 +181,11 @@ class DebugRenderer : public EventListener {
         /// Radius of the sphere displayed to represent contact points
         decimal mContactPointSphereRadius;
 
-        /// Lenght of contact normal
+        /// Length of contact normal
         decimal mContactNormalLength;
+
+        /// Length of collision shape face normal
+        decimal mCollisionShapeNormalLength;
 
         // -------------------- Methods -------------------- //
 
@@ -183,7 +193,7 @@ class DebugRenderer : public EventListener {
 		void drawAABB(const AABB& aabb, uint32 color);
 
 		/// Draw a box
-		void drawBox(const Transform& transform, const Vector3& extents, uint32 color);
+        void drawBox(const Transform& transform, const BoxShape* boxShape, uint32 colorShape, uint32 colorShapeNormals);
 
 		/// Draw a sphere
 		void drawSphere(const Vector3& position, decimal radius, uint32 color);
@@ -192,13 +202,15 @@ class DebugRenderer : public EventListener {
 		void drawCapsule(const Transform& transform, decimal radius, decimal height, uint32 color);
 
 		/// Draw a convex mesh
-		void drawConvexMesh(const Transform& transform, const ConvexMeshShape* convexMesh, uint32 color);
+        void drawConvexMesh(const Transform& transform, const ConvexMeshShape* convexMesh, uint32 colorShape, uint32 colorShapeNormals);
 
 		/// Draw a concave mesh shape
-		void drawConcaveMeshShape(const Transform& transform, const ConcaveMeshShape* concaveMeshShape, uint32 color);
+        void drawConcaveMeshShape(const Transform& transform, const ConcaveMeshShape* concaveMeshShape,
+                                  uint32 colorShape, uint32 colorShapeNormals);
 
 		/// Draw a height field shape
-		void drawHeightFieldShape(const Transform& transform, const HeightFieldShape* heightFieldShape, uint32 color);
+        void drawHeightFieldShape(const Transform& transform, const HeightFieldShape* heightFieldShape,
+                                  uint32 colorShape, uint32 colorShapeNormals);
 
 		/// Draw the collision shape of a collider
 		void drawCollisionShapeOfCollider(const Collider* collider, uint32 color);

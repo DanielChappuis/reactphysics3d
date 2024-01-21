@@ -133,6 +133,9 @@ class ConcaveMeshShape : public ConcaveShape {
         /// Reference to the triangle half-edge structure
         HalfEdgeStructure& mTriangleHalfEdgeStructure;
 
+        /// Array with the scaled face normals
+        Array<Vector3> mScaledVerticesNormals;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -161,6 +164,9 @@ class ConcaveMeshShape : public ConcaveShape {
         // Return the integer data of leaf node of the dynamic AABB tree
         int32 getDynamicAABBTreeNodeDataInt(int32 nodeID) const;
 
+        /// Compute the scaled faces normals
+        void computeScaledVerticesNormals();
+
     public:
 
         /// Deleted copy-constructor
@@ -168,6 +174,9 @@ class ConcaveMeshShape : public ConcaveShape {
 
         /// Deleted assignment operator
         ConcaveMeshShape& operator=(const ConcaveMeshShape& shape) = delete;
+
+        /// Set the scale of the shape
+        virtual void setScale(const Vector3& scale) override;
 
         /// Return the number of vertices in the mesh
         uint32 getNbVertices() const;
@@ -187,7 +196,7 @@ class ConcaveMeshShape : public ConcaveShape {
                                         Vector3& outN2, Vector3& outN3) const;
 
         /// Return the coordinates of a given vertex
-        const Vector3& getVertex(uint32 vertexIndex) const;
+        const Vector3 getVertex(uint32 vertexIndex) const;
 
         /// Return the normal of a given vertex
         const Vector3& getVertexNormal(uint32 vertexIndex) const;

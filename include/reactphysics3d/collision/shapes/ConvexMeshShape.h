@@ -57,6 +57,9 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
         /// Scale to apply to the mesh
         Vector3 mScale;
 
+        /// Array with the scaled face normals
+        Array<Vector3> mScaledFacesNormals;
+
         // -------------------- Methods -------------------- //
 
         /// Constructor
@@ -73,6 +76,9 @@ class ConvexMeshShape : public ConvexPolyhedronShape {
 
         /// Return the number of bytes used by the collision shape
         virtual size_t getSizeInBytes() const override;
+
+        // Compute the scaled faces normals
+        void computeScaledFacesNormals();
 
         /// Destructor
         virtual ~ConvexMeshShape() override = default;
@@ -151,7 +157,12 @@ RP3D_FORCE_INLINE const Vector3& ConvexMeshShape::getScale() const {
 /// Note that you might want to recompute the inertia tensor and center of mass of the body
 /// after changing the scale of a collision shape
 RP3D_FORCE_INLINE void ConvexMeshShape::setScale(const Vector3& scale) {
+
     mScale = scale;
+
+    // Recompute the scaled face normals
+    computeScaledFacesNormals();
+
     notifyColliderAboutChangedSize();
 }
 
@@ -207,7 +218,7 @@ RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getVertexPosition(uint32 vertexIndex)
 // Return the normal vector of a given face of the mesh
 RP3D_FORCE_INLINE Vector3 ConvexMeshShape::getFaceNormal(uint32 faceIndex) const {
     assert(faceIndex < getNbFaces());
-    return mConvexMesh->getFaceNormal(faceIndex);
+    return mScaledFacesNormals[faceIndex];
 }
 
 // Return the centroid of the mesh

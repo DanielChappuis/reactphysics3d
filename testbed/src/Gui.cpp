@@ -491,11 +491,19 @@ void Gui::createSettingsPanel() {
     });
 
     // Display/Hide the collision shapes
-    CheckBox* checkboxCollisionShapes = new CheckBox(mRenderingPanel, "Collision shapes");
+    CheckBox* checkboxCollisionShapes = new CheckBox(mRenderingPanel, "Colliders shapes");
     checkboxCollisionShapes->set_checked(mApp->mAreCollisionShapesDisplayed);
     checkboxCollisionShapes->set_enabled(false);
     checkboxCollisionShapes->set_callback([&](bool value) {
         mApp->mAreCollisionShapesDisplayed = value;
+    });
+
+    // Display/Hide the collision shapes normals
+    CheckBox* checkboxCollisionShapesNormals = new CheckBox(mRenderingPanel, "Colliders normals");
+    checkboxCollisionShapesNormals->set_checked(mApp->mAreCollisionShapesNormalsDisplayed);
+    checkboxCollisionShapesNormals->set_enabled(false);
+    checkboxCollisionShapesNormals->set_callback([&](bool value) {
+        mApp->mAreCollisionShapesNormalsDisplayed = value;
     });
 
     // Enable/Disable wireframe mode
@@ -521,13 +529,14 @@ void Gui::createSettingsPanel() {
 
     checkboxDebugRendererEnabled->set_callback([&, checkboxContactPoints, checkboxContactNormals,
                                                checkboxBroadPhaseAABBs, checkboxColliderAABBs,
-                                               checkboxCollisionShapes](bool value) {
+                                               checkboxCollisionShapes, checkboxCollisionShapesNormals](bool value) {
         mApp->mIsDebugRendererEnabled = value;
         checkboxContactPoints->set_enabled(value);
         checkboxContactNormals->set_enabled(value);
         checkboxBroadPhaseAABBs->set_enabled(value);
         checkboxColliderAABBs->set_enabled(value);
         checkboxCollisionShapes->set_enabled(value);
+        checkboxCollisionShapesNormals->set_enabled(value);
     });
 
     mPhysicsPanel->set_visible(true);

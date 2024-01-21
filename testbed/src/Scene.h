@@ -146,8 +146,11 @@ class Scene : public rp3d::EventListener {
         /// True if the AABBs of the colliders are displayed
         bool mAreCollidersAABBsDisplayed;
 
-        /// True if the AABBs of the colliders are displayed
+        /// True if the collision shapes are displayed
         bool mAreCollisionShapesDisplayed;
+
+        /// True if collision shapes normals are displayed
+        bool mAreCollisionShapesNormalsDisplayed;
 
         /// True if we render shapes in wireframe mode
         bool mIsWireframeEnabled;
@@ -263,6 +266,9 @@ class Scene : public rp3d::EventListener {
         /// Display/Hide the collision shapes
         void setAreCollisionShapesDisplayed(bool display);
 
+        /// Display/Hide the collision shapes normals
+        void setAreCollisionShapesNormalsDisplayed(bool display);
+
         /// Return true if wireframe rendering is enabled
         bool getIsWireframeEnabled() const;
 
@@ -374,6 +380,11 @@ inline void Scene::setAreCollidersAABBsDisplayed(bool display) {
 // Display/Hide the collision shapes
 inline void Scene::setAreCollisionShapesDisplayed(bool display) {
     mAreCollisionShapesDisplayed = display;
+}
+
+// Display/Hide the collision shapes normals
+inline void Scene::setAreCollisionShapesNormalsDisplayed(bool display) {
+    mAreCollisionShapesNormalsDisplayed = display;
 }
 
 // Return true if wireframe rendering is enabled

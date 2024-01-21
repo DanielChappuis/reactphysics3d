@@ -42,13 +42,15 @@ using namespace reactphysics3d;
 // Constructor
 DebugRenderer::DebugRenderer(MemoryAllocator& allocator)
               :mAllocator(allocator), mLines(allocator), mTriangles(allocator), mDisplayedDebugItems(0), mMapDebugItemWithColor(allocator),
-               mContactPointSphereRadius(DEFAULT_CONTACT_POINT_SPHERE_RADIUS), mContactNormalLength(DEFAULT_CONTACT_NORMAL_LENGTH) {
+               mContactPointSphereRadius(DEFAULT_CONTACT_POINT_SPHERE_RADIUS), mContactNormalLength(DEFAULT_CONTACT_NORMAL_LENGTH),
+               mCollisionShapeNormalLength(DEFAULT_COLLISION_SHAPE_NORMAL_LENGTH) {
 
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLIDER_AABB, static_cast<uint32>(DebugColor::MAGENTA)));
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLIDER_BROADPHASE_AABB, static_cast<uint32>(DebugColor::YELLOW)));
 	mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLISION_SHAPE, static_cast<uint32>(DebugColor::GREEN)));
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::CONTACT_POINT, static_cast<uint32>(DebugColor::RED)));
     mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::CONTACT_NORMAL, static_cast<uint32>(DebugColor::WHITE)));
+    mMapDebugItemWithColor.add(Pair<DebugItem, uint32>(DebugItem::COLLISION_SHAPE_NORMAL, static_cast<uint32>(DebugColor::BLUE)));
 }
 
 // Destructor
@@ -89,8 +91,12 @@ void DebugRenderer::drawAABB(const AABB& aabb, uint32 color) {
 }
 
 // Draw a box
-void DebugRenderer::drawBox(const Transform& transform, const Vector3& halfExtents, uint32 color) {
+void DebugRenderer::drawBox(const Transform& transform, const BoxShape* boxShape, uint32 colorShape, uint32 colorShapeNormals) {
 
+    const bool drawShape = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE);
+    const bool drawNormal = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE_NORMAL);
+
+    Vector3 halfExtents = boxShape->getHalfExtents();
 	Vector3 vertices[8];
 
 	// Vertices
@@ -103,19 +109,37 @@ void DebugRenderer::drawBox(const Transform& transform, const Vector3& halfExten
 	vertices[6] = transform * Vector3(halfExtents.x, halfExtents.y, -halfExtents.z);
 	vertices[7] = transform * Vector3(-halfExtents.x, halfExtents.y, -halfExtents.z);
 
-	// Triangle faces
-	mTriangles.add(DebugTriangle(vertices[0], vertices[1], vertices[5], color));
-	mTriangles.add(DebugTriangle(vertices[0], vertices[5], vertices[4], color));
-	mTriangles.add(DebugTriangle(vertices[1], vertices[2], vertices[6], color));
-	mTriangles.add(DebugTriangle(vertices[1], vertices[6], vertices[5], color));
-	mTriangles.add(DebugTriangle(vertices[2], vertices[3], vertices[6], color));
-	mTriangles.add(DebugTriangle(vertices[3], vertices[7], vertices[6], color));
-	mTriangles.add(DebugTriangle(vertices[0], vertices[7], vertices[3], color));
-	mTriangles.add(DebugTriangle(vertices[0], vertices[4], vertices[7], color));
-	mTriangles.add(DebugTriangle(vertices[0], vertices[2], vertices[1], color));
-	mTriangles.add(DebugTriangle(vertices[0], vertices[3], vertices[2], color));
-	mTriangles.add(DebugTriangle(vertices[5], vertices[6], vertices[4], color));
-	mTriangles.add(DebugTriangle(vertices[4], vertices[6], vertices[7], color));
+    if (drawShape) {
+
+        // Triangle faces
+        mTriangles.add(DebugTriangle(vertices[0], vertices[1], vertices[5], colorShape));
+        mTriangles.add(DebugTriangle(vertices[0], vertices[5], vertices[4], colorShape));
+        mTriangles.add(DebugTriangle(vertices[1], vertices[2], vertices[6], colorShape));
+        mTriangles.add(DebugTriangle(vertices[1], vertices[6], vertices[5], colorShape));
+        mTriangles.add(DebugTriangle(vertices[2], vertices[3], vertices[6], colorShape));
+        mTriangles.add(DebugTriangle(vertices[3], vertices[7], vertices[6], colorShape));
+        mTriangles.add(DebugTriangle(vertices[0], vertices[7], vertices[3], colorShape));
+        mTriangles.add(DebugTriangle(vertices[0], vertices[4], vertices[7], colorShape));
+        mTriangles.add(DebugTriangle(vertices[0], vertices[2], vertices[1], colorShape));
+        mTriangles.add(DebugTriangle(vertices[0], vertices[3], vertices[2], colorShape));
+        mTriangles.add(DebugTriangle(vertices[5], vertices[6], vertices[4], colorShape));
+        mTriangles.add(DebugTriangle(vertices[4], vertices[6], vertices[7], colorShape));
+    }
+
+    if (drawNormal) {
+
+        // Face normals
+        for (int f=0; f < 6; f++) {
+
+            const HalfEdgeStructure::Face& face = boxShape->getFace(f);
+            const Vector3 facePoint = 0.25 * (boxShape->getVertexPosition(face.faceVertices[0]) + boxShape->getVertexPosition(face.faceVertices[1]) +
+                         boxShape->getVertexPosition(face.faceVertices[2]) + boxShape->getVertexPosition(face.faceVertices[3]));
+            const Vector3 normalPoint = facePoint + mCollisionShapeNormalLength * boxShape->getFaceNormal(f);
+
+            mLines.add(DebugLine(transform * facePoint, transform * normalPoint, colorShapeNormals));
+        }
+    }
+
 }
 
 /// Draw a sphere
@@ -272,13 +296,19 @@ void DebugRenderer::drawCapsule(const Transform& transform, decimal radius, deci
 }
 
 // Draw a convex mesh
-void DebugRenderer::drawConvexMesh(const Transform& transform, const ConvexMeshShape* convexMesh, uint32 color) {
+void DebugRenderer::drawConvexMesh(const Transform& transform, const ConvexMeshShape* convexMesh,
+                                   uint32 colorShape, uint32 colorShapeNormals) {
 
-	// For each face of the convex mesh
+    const bool drawShape = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE);
+    const bool drawNormal = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE_NORMAL);
+
+    // For each face of the convex mesh
 	for (uint32 f = 0; f < convexMesh->getNbFaces(); f++) {
 
 		const HalfEdgeStructure::Face& face = convexMesh->getFace(f);
 		assert(face.faceVertices.size() >= 3);
+
+        Vector3 centroid;
 
 		// Perform a fan triangulation of the convex polygon face
         const uint32 nbFaceVertices = static_cast<uint32>(face.faceVertices.size());
@@ -296,30 +326,67 @@ void DebugRenderer::drawConvexMesh(const Transform& transform, const ConvexMeshS
             v2 = transform * v2;
             v3 = transform * v3;
 
-            mTriangles.add(DebugTriangle(v1, v2, v3, color));
+            if (v == 2) {
+                centroid += v1 + v2;
+            }
+
+            centroid += v3;
+
+            if (drawShape) {
+                mTriangles.add(DebugTriangle(v1, v2, v3, colorShape));
+            }
 		}
-	}
+
+        if (drawNormal) {
+
+            centroid /= nbFaceVertices;
+            const Vector3 normalPoint = centroid + transform.getOrientation() * convexMesh->getFaceNormal(f) * mCollisionShapeNormalLength;
+            mLines.add(DebugLine(centroid, normalPoint, colorShapeNormals));
+        }
+    }
 }
 
 // Draw a concave mesh shape
-void DebugRenderer::drawConcaveMeshShape(const Transform& transform, const ConcaveMeshShape* concaveMeshShape, uint32 color) {
+void DebugRenderer::drawConcaveMeshShape(const Transform& transform, const ConcaveMeshShape* concaveMeshShape,
+                                         uint32 colorShape, uint32 colorShapeNormals) {
 
-    // For each triangle of the mesh
-    for (uint32 t = 0; t < concaveMeshShape->getNbTriangles(); t++) {
+    const bool drawShape = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE);
+    const bool drawNormal = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE_NORMAL);
 
-        Vector3 v1, v2, v3;
-        concaveMeshShape->getTriangleVertices(t, v1, v2, v3);
+    if (drawShape) {
 
-        v1 = transform * v1;
-        v2 = transform * v2;
-        v3 = transform * v3;
+        // For each triangle of the mesh
+        for (uint32 t = 0; t < concaveMeshShape->getNbTriangles(); t++) {
 
-        mTriangles.add(DebugTriangle(v1, v2, v3, color));
+            Vector3 v1, v2, v3;
+            concaveMeshShape->getTriangleVertices(t, v1, v2, v3);
+
+            v1 = transform * v1;
+            v2 = transform * v2;
+            v3 = transform * v3;
+
+            mTriangles.add(DebugTriangle(v1, v2, v3, colorShape));
+        }
+    }
+
+    if (drawNormal) {
+
+        // For each vertex of the mesh
+        for (uint32 v = 0; v < concaveMeshShape->getNbVertices(); v++) {
+
+            const Vector3& vertex = transform * concaveMeshShape->getVertex(v);
+            const Vector3 normalPoint = vertex + transform.getOrientation() * concaveMeshShape->getVertexNormal(v) * mCollisionShapeNormalLength;
+            mLines.add(DebugLine(vertex, normalPoint, colorShapeNormals));
+        }
     }
 }
 
 // Draw a height field shape
-void DebugRenderer::drawHeightFieldShape(const Transform& transform, const HeightFieldShape* heightFieldShape, uint32 color) {
+void DebugRenderer::drawHeightFieldShape(const Transform& transform, const HeightFieldShape* heightFieldShape,
+                                         uint32 colorShape, uint32 colorShapeNormals) {
+
+    const bool drawShape = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE);
+    const bool drawNormal = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE_NORMAL);
 
     // For each sub-grid points (except the last ones one each dimension)
     for (uint32 i = 0; i < heightFieldShape->getHeightField()->getNbColumns() - 1; i++) {
@@ -336,8 +403,26 @@ void DebugRenderer::drawHeightFieldShape(const Transform& transform, const Heigh
             p3 = transform * p3;
             p4 = transform * p4;
 
-            mTriangles.add(DebugTriangle(p1, p2, p3, color));
-			mTriangles.add(DebugTriangle(p3, p2, p4, color));
+            if (drawShape) {
+
+                mTriangles.add(DebugTriangle(p1, p2, p3, colorShape));
+                mTriangles.add(DebugTriangle(p3, p2, p4, colorShape));
+            }
+
+            if (drawNormal) {
+
+               // Compute the triangle normal
+               Vector3 triangle1Normal = (p2 - p1).cross(p3 - p1).getUnit();
+
+                const Vector3 normalPoint1 = p1 + triangle1Normal * mCollisionShapeNormalLength;
+                const Vector3 normalPoint2 = p2 + triangle1Normal * mCollisionShapeNormalLength;
+                const Vector3 normalPoint3 = p3 + triangle1Normal * mCollisionShapeNormalLength;
+                const Vector3 normalPoint4 = p4 + triangle1Normal * mCollisionShapeNormalLength;
+                mLines.add(DebugLine(p1, normalPoint1, colorShapeNormals));
+                mLines.add(DebugLine(p2, normalPoint2, colorShapeNormals));
+                mLines.add(DebugLine(p3, normalPoint3, colorShapeNormals));
+                mLines.add(DebugLine(p4, normalPoint4, colorShapeNormals));
+            }
        }
    }
 }
@@ -345,42 +430,45 @@ void DebugRenderer::drawHeightFieldShape(const Transform& transform, const Heigh
 // Draw the collision shape of a collider
 void DebugRenderer::drawCollisionShapeOfCollider(const Collider* collider, uint32 color) {
 	
+    uint32 colorShape = mMapDebugItemWithColor[DebugItem::COLLISION_SHAPE];
+    uint32 colorShapeNormals = mMapDebugItemWithColor[DebugItem::COLLISION_SHAPE_NORMAL];
+
     switch (collider->getCollisionShape()->getName()) {
 		
         case CollisionShapeName::BOX:
         {
             const BoxShape* boxShape = static_cast<const BoxShape*>(collider->getCollisionShape());
-            drawBox(collider->getLocalToWorldTransform(), boxShape->getHalfExtents(), color);
+            drawBox(collider->getLocalToWorldTransform(), boxShape, colorShape, colorShapeNormals);
             break;
         }
         case CollisionShapeName::SPHERE:
         {
             const SphereShape* sphereShape = static_cast<const SphereShape*>(collider->getCollisionShape());
-            drawSphere(collider->getLocalToWorldTransform().getPosition(), sphereShape->getRadius(), color);
+            drawSphere(collider->getLocalToWorldTransform().getPosition(), sphereShape->getRadius(), colorShape);
             break;
         }
         case CollisionShapeName::CAPSULE:
         {
             const CapsuleShape* capsuleShape = static_cast<const CapsuleShape*>(collider->getCollisionShape());
-            drawCapsule(collider->getLocalToWorldTransform(), capsuleShape->getRadius(), capsuleShape->getHeight(), color);
+            drawCapsule(collider->getLocalToWorldTransform(), capsuleShape->getRadius(), capsuleShape->getHeight(), colorShape);
             break;
         }
         case CollisionShapeName::CONVEX_MESH:
         {
-            const ConvexMeshShape*  convexMeshShape = static_cast<const ConvexMeshShape*>(collider->getCollisionShape());
-            drawConvexMesh(collider->getLocalToWorldTransform(), convexMeshShape, color);
+            const ConvexMeshShape* convexMeshShape = static_cast<const ConvexMeshShape*>(collider->getCollisionShape());
+            drawConvexMesh(collider->getLocalToWorldTransform(), convexMeshShape, colorShape, colorShapeNormals);
             break;
         }
         case CollisionShapeName::TRIANGLE_MESH:
         {
             const ConcaveMeshShape* concaveMeshShape = static_cast<const ConcaveMeshShape*>(collider->getCollisionShape());
-            drawConcaveMeshShape(collider->getLocalToWorldTransform(), concaveMeshShape, color);
+            drawConcaveMeshShape(collider->getLocalToWorldTransform(), concaveMeshShape, colorShape, colorShapeNormals);
             break;
         }
         case CollisionShapeName::HEIGHTFIELD:
         {
             const HeightFieldShape* heighFieldShape = static_cast<const HeightFieldShape*>(collider->getCollisionShape());
-            drawHeightFieldShape(collider->getLocalToWorldTransform(), heighFieldShape, color);
+            drawHeightFieldShape(collider->getLocalToWorldTransform(), heighFieldShape, colorShape, colorShapeNormals);
             break;
         }
         default:
@@ -396,7 +484,8 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
 	const bool drawColliderAABB = getIsDebugItemDisplayed(DebugItem::COLLIDER_AABB);
 	const bool drawColliderBroadphaseAABB = getIsDebugItemDisplayed(DebugItem::COLLIDER_BROADPHASE_AABB);
 	const bool drawCollisionShape = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE);
-	
+    const bool drawCollisionShapeNormals = getIsDebugItemDisplayed(DebugItem::COLLISION_SHAPE_NORMAL);
+
     const uint32 nbRigidBodies = world.getNbRigidBodies();
 
     // For each body of the world
@@ -428,7 +517,7 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
                 }
 
                 // If we need to draw the collision shape
-                if (drawCollisionShape) {
+                if (drawCollisionShape || drawCollisionShapeNormals) {
 
                     drawCollisionShapeOfCollider(collider, mMapDebugItemWithColor[DebugItem::COLLISION_SHAPE]);
                 }
