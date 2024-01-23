@@ -720,7 +720,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
         // stability. To do this, we use a relative and absolute bias to move penetrationDepth2 a little bit to the right.
         // Now if:
         //  penetrationDepth1 < penetrationDepth2: Nothing happens and we use axis of polygon 1
-        //  penetrationDepth1 ~ penetrationDepth2: Until penetrationDepth1 becomes significantly less than penetrationDepth2 we still use axis of polygon 1
+        //  penetrationDepth1 ~ penetrationDepth2: Until penetrationDepth2 becomes significantly less than penetrationDepth1 we still use axis of polygon 1
         //  penetrationDepth1 >> penetrationDepth2: penetrationDepth2 is now significantly less than penetrationDepth1 and we use polygon 2 axis
         if (penetrationDepth1 < penetrationDepth2 * SEPARATING_AXIS_RELATIVE_TOLERANCE + SEPARATING_AXIS_ABSOLUTE_TOLERANCE) {
 
@@ -760,8 +760,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                 const Vector3 edge2B = polyhedron2->getVertexPosition(polyhedron2->getHalfEdge(edge2.nextEdgeIndex).vertexIndex);
                 const Vector3 edge2Direction = edge2B - edge2A;
 
-                // If the two edges build a minkowski face (and the cross product is
-                // therefore a candidate for separating axis
+                // If the two edges build a minkowski face (and the cross product is therefore a candidate for separating axis
                 if (testEdgesBuildMinkowskiFace(polyhedron1, edge1, polyhedron2, edge2, polyhedron1ToPolyhedron2)) {
 
                     Vector3 separatingAxisPolyhedron2Space;
@@ -784,7 +783,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     }
 
                     // If the current minimum penetration depth is along a face normal axis (isMinPenetrationFaceNormal=true) and we have found a new
-                    // smaller pentration depth along an edge-edge cross-product axis we want to favor the face normal axis because contact manifolds between
+                    // smaller penetration depth along an edge-edge cross-product axis we want to favor the face normal axis because contact manifolds between
                     // faces have more contact points and therefore more stable than the single contact point of an edge-edge collision. It means that if the new minimum
                     // penetration depth from the edge-edge contact is only a little bit smaller than the current minPenetrationDepth (from a face contact), we favor
                     // the face contact and do not generate an edge-edge contact. However, if the new penetration depth from the edge-edge contact is really smaller than
