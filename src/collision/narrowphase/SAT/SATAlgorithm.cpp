@@ -789,7 +789,7 @@ bool SATAlgorithm::testCollisionConvexPolyhedronVsConvexPolyhedron(NarrowPhaseIn
                     // the face contact and do not generate an edge-edge contact. However, if the new penetration depth from the edge-edge contact is really smaller than
                     // the current one, we generate an edge-edge contact.
                     // To do this, we use a relative and absolute bias to increase a little bit the new penetration depth from the edge-edge contact during the comparison test
-                    if ((isMinPenetrationFaceNormal && penetrationDepth1 * SEPARATING_AXIS_RELATIVE_TOLERANCE + SEPARATING_AXIS_ABSOLUTE_TOLERANCE < minPenetrationDepth) ||
+                    if ((isMinPenetrationFaceNormal && penetrationDepth * SEPARATING_AXIS_RELATIVE_TOLERANCE + SEPARATING_AXIS_ABSOLUTE_TOLERANCE < minPenetrationDepth) ||
                         (!isMinPenetrationFaceNormal && penetrationDepth < minPenetrationDepth)) {
 
                         minPenetrationDepth = penetrationDepth;
