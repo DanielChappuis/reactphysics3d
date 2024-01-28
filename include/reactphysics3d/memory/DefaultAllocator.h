@@ -67,7 +67,9 @@ class DefaultAllocator : public MemoryAllocator {
 #else
 
                 // Return 16-bytes aligned memory
-                return std::aligned_alloc(GLOBAL_ALIGNMENT, size);
+                void* address = nullptr;
+                posix_memalign(&address, GLOBAL_ALIGNMENT, size);
+                return address;
 #endif
         }
 
