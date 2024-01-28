@@ -299,7 +299,7 @@ install(TARGETS reactphysics3d
 # not support subfolders
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-# This is required so that the exported target has the name JSONUtils and not jsonutils
+# This is required so that the exported target has the name ReactPhysics3D and not reactphysics3d
 set_target_properties(reactphysics3d PROPERTIES EXPORT_NAME ReactPhysics3D)
 
 # Give CMake access to the version number of the library so that the user is able to use the find_package() function
