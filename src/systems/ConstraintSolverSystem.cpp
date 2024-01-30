@@ -40,7 +40,7 @@ ConstraintSolverSystem::ConstraintSolverSystem(PhysicsWorld& world, Islands& isl
                                                FixedJointComponents& fixedJointComponents,
                                                HingeJointComponents& hingeJointComponents,
                                                SliderJointComponents& sliderJointComponents)
-                 : mIsWarmStartingActive(true), mIslands(islands),
+                 : mTimeStep(-1), mIsWarmStartingActive(true), mIslands(islands),
                    mConstraintSolverData(rigidBodyComponents, jointComponents),
                    mSolveBallAndSocketJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, ballAndSocketJointComponents),
                    mSolveFixedJointSystem(world, rigidBodyComponents, transformComponents, jointComponents, fixedJointComponents),

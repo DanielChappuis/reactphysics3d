@@ -58,7 +58,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, PhysicsCommon& physicsC
                            Profiler* /*profiler*/)
 #endif
               : mMemoryManager(memoryManager), mConfig(worldSettings), mEntityManager(mMemoryManager.getHeapAllocator()), mDebugRenderer(mMemoryManager.getHeapAllocator()),
-                mIsDebugRenderingEnabled(false), mBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
+                mIsDebugRenderingEnabled(false), mIsGravityEnabled(true), mBodyComponents(mMemoryManager.getHeapAllocator()), mRigidBodyComponents(mMemoryManager.getHeapAllocator()),
                 mTransformComponents(mMemoryManager.getHeapAllocator()), mCollidersComponents(mMemoryManager.getHeapAllocator()),
                 mJointsComponents(mMemoryManager.getHeapAllocator()), mBallAndSocketJointsComponents(mMemoryManager.getHeapAllocator()),
                 mFixedJointsComponents(mMemoryManager.getHeapAllocator()), mHingeJointsComponents(mMemoryManager.getHeapAllocator()),
@@ -75,7 +75,7 @@ PhysicsWorld::PhysicsWorld(MemoryManager& memoryManager, PhysicsCommon& physicsC
                 mNbVelocitySolverIterations(mConfig.defaultVelocitySolverNbIterations),
                 mNbPositionSolverIterations(mConfig.defaultPositionSolverNbIterations), 
                 mIsSleepingEnabled(mConfig.isSleepingEnabled), mRigidBodies(mMemoryManager.getPoolAllocator()),
-                mIsGravityEnabled(true), mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
+                mSleepLinearVelocity(mConfig.defaultSleepLinearVelocity),
                 mSleepAngularVelocity(mConfig.defaultSleepAngularVelocity), mTimeBeforeSleep(mConfig.defaultTimeBeforeSleep) {
 
     // Automatically generate a name for the world

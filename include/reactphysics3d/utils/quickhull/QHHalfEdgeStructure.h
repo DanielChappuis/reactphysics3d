@@ -101,7 +101,7 @@ class QHHalfEdgeStructure {
 
             /// Constructor
             Face(MemoryAllocator& allocator)
-                : nextFace(nullptr), previousFace(nullptr), normal(0, 0, 0), area(0), conflictPoints(allocator, 8) {
+                : nextFace(nullptr), previousFace(nullptr), edge(nullptr), normal(0, 0, 0), area(0), conflictPoints(allocator, 8) {
 
             }
 
