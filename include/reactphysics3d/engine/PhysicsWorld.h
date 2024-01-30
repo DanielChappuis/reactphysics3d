@@ -180,6 +180,9 @@ class PhysicsWorld {
         /// True if debug rendering is enabled
         bool mIsDebugRenderingEnabled;
 
+        /// True if the gravity force is on
+        bool mIsGravityEnabled;
+
         /// Collision Body Components
         BodyComponents mBodyComponents;
 
@@ -256,9 +259,6 @@ class PhysicsWorld {
 
         /// All the rigid bodies of the physics world
         Array<RigidBody*> mRigidBodies;
-
-        /// True if the gravity force is on
-        bool mIsGravityEnabled;
 
         /// Sleep linear velocity threshold
         decimal mSleepLinearVelocity;
