@@ -31,11 +31,11 @@
 #include <limits>
 #include <cfloat>
 #include <utility>
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <cmath>
 #include <reactphysics3d/decimal.h>
-#include <reactphysics3d/containers/Pair.h>
 
 // OS
 #if defined(_WIN32) || defined(_WIN64)
@@ -90,6 +90,8 @@ using int64 = std::int64_t;
 using uint64 = std::uint64_t;
 
 struct Entity;
+
+template<typename T1, typename T2> class Pair;
 using bodypair = Pair<Entity, Entity>;
 
 // ------------------- Enumerations ------------------- //

@@ -52,7 +52,7 @@ class Set {
         static constexpr float DEFAULT_LOAD_FACTOR = 0.75;
 
         /// Invalid index in the array
-        static constexpr uint64 INVALID_INDEX = -1;
+        static constexpr uint64 INVALID_INDEX = static_cast<uint64_t>(-1);
 
         // -------------------- Attributes -------------------- //
 
