@@ -31,7 +31,6 @@
 #include <limits>
 #include <cfloat>
 #include <utility>
-#include <cstdint>
 #include <sstream>
 #include <string>
 #include <cmath>
@@ -91,7 +90,9 @@ using uint64 = std::uint64_t;
 
 struct Entity;
 
+// Forward declaration
 template<typename T1, typename T2> class Pair;
+
 using bodypair = Pair<Entity, Entity>;
 
 // ------------------- Enumerations ------------------- //
