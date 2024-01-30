@@ -27,6 +27,7 @@
 #define	REACTPHYSICS3D_CONFIGURATION_H
 
 // Libraries
+#include <cstdint>
 #include <limits>
 #include <cfloat>
 #include <utility>
