@@ -62,6 +62,7 @@
 - Issue [#239](https://github.com/DanielChappuis/reactphysics3d/issues/239) Memory allocation alignment
 - Issue [#240](https://github.com/DanielChappuis/reactphysics3d/issues/240) Uninitialized variable
 - Issue with edge vs edge collision detection for BoxShape, ConvexMeshShape, ConcaveMeshShape and HeightFieldShape (SAT algorithm)
+- Compilation error on Clang 19
 
 ## Version 0.9.0 (January 4, 2022)
 
