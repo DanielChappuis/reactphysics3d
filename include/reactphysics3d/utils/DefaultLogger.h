@@ -389,9 +389,7 @@ class DefaultLogger : public Logger {
                    :Destination(maxLevelFlag, formatter), mFilePath(filePath),
                     mFileStream(filePath, std::ios::binary) {
 
-                    if(!mFileStream.is_open()) {
-                        throw(std::runtime_error("ReactPhysics3D Logger: Unable to open an output stream to file " + mFilePath));
-                    }
+                    assert(mFileStream.is_open());
 
                     // Write the header
                     mFileStream << formatter->getHeader() << std::endl;
