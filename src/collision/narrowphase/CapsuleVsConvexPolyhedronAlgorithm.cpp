@@ -82,10 +82,8 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
             // If we need to report contacts
             if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
 
-                bool noContact = false;
-
-                // GJK has found a shallow contact. If the face of the polyhedron mesh is orthogonal to the
-                // capsule inner segment and parallel to the contact point normal, we would like to create
+                // GJK has found a shallow contact. If the normal of face of the polyhedron mesh is orthogonal to the
+                // capsule inner segment (the face normal is parallel to the contact point normal), we would like to create
                 // two contact points instead of a single one (as in the deep contact case with SAT algorithm)
 
                 // Get the contact point created by GJK
@@ -116,13 +114,13 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
                     bool isFaceNormalInDirectionOfContactNormal = faceNormalWorld.dot(contactPoint.normal) > decimal(0.0);
                     bool isFaceNormalInContactDirection = (isCapsuleShape1 && !isFaceNormalInDirectionOfContactNormal) || (!isCapsuleShape1 && isFaceNormalInDirectionOfContactNormal);
 
-                    // If the polyhedron face normal is orthogonal to the capsule inner segment and parallel to the contact point normal and the face normal
+                    // If the polyhedron face normal is orthogonal to the capsule inner segment (the face normal is parallel to the contact point normal) and the face normal
                     // is in direction of the contact normal (from the polyhedron point of view).
                     if (isFaceNormalInContactDirection && areOrthogonalVectors(faceNormalWorld, capsuleInnerSegmentDirection)
                         && areParallelVectors(faceNormalWorld, contactPoint.normal)) {
 
                         // Remove the previous contact point computed by GJK
-                        narrowPhaseInfoBatch.resetContactPoints(batchIndex);
+                        //narrowPhaseInfoBatch.resetContactPoints(batchIndex);
 
                         const Transform capsuleToWorld = isCapsuleShape1 ? narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape1ToWorldTransform : narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform;
                         const Transform polyhedronToCapsuleTransform = capsuleToWorld.getInverse() * polyhedronToWorld;
@@ -147,23 +145,12 @@ bool CapsuleVsConvexPolyhedronAlgorithm::testCollision(NarrowPhaseInfoBatch& nar
                                                                   polyhedronToCapsuleTransform, faceNormalWorld, separatingAxisCapsuleSpace,
                                                                   capsuleSegAPolyhedronSpace, capsuleSegBPolyhedronSpace,
                                                                   narrowPhaseInfoBatch, batchIndex, isCapsuleShape1);
-                        if (!contactsFound) {
-                            noContact = true;
-                            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = false;
+                        if (contactsFound) {
                             break;
                         }
-
-                        break;
                     }
                 }
-
-                if (noContact) {
-                    continue;
-                }
             }
-
-            lastFrameCollisionInfo->wasUsingSAT = false;
-            lastFrameCollisionInfo->wasUsingGJK = false;
 
             // Colision found
             narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;

@@ -438,6 +438,10 @@ bool SATAlgorithm::computeCapsulePolyhedronFaceContactPoints(uint32 referenceFac
 		// If the clipped point is one that produce this penetration depth, we keep it
 		if (clipPointPenDepth > penetrationDepth - capsuleRadius - decimal(0.001)) {
 
+            if (!contactFound) {
+                narrowPhaseInfoBatch.resetContactPoints(batchIndex);
+            }
+
             contactFound = true;
 
             Vector3 contactPointPolyhedron = clipSegment[i] + delta;
