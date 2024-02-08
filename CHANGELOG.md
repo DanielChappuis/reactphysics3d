@@ -62,6 +62,7 @@
 - Issue [#239](https://github.com/DanielChappuis/reactphysics3d/issues/239) Memory allocation alignment
 - Issue [#240](https://github.com/DanielChappuis/reactphysics3d/issues/240) Uninitialized variable
 - Issue [#347](https://github.com/DanielChappuis/reactphysics3d/issues/347) Missing collision between capsule and triangle edge in some case
+- Issue [#362](https://github.com/DanielChappuis/reactphysics3d/issues/362) Bug in Collider::setLocalToBodyTransform()
 - Issue with edge vs edge collision detection for BoxShape, ConvexMeshShape, ConcaveMeshShape and HeightFieldShape (SAT algorithm)
 - Compilation error on Clang 19
 
