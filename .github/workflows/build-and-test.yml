@@ -203,7 +203,7 @@ jobs:
           choco install ninja cmake
           ninja --version
           cmake --version
-          set PATH=%PATH%;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin   # Fix issue with MinGW
+          #set PATH=%PATH%;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin   # Fix issue with MinGW
 
       - name: Install dependencies on Linux
         if: startsWith(matrix.config.os, 'ubuntu')
