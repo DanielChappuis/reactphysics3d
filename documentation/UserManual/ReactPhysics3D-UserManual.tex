@@ -487,19 +487,12 @@ physicsCommon.destroyPhysicsWorld(world);
     Once you have created a \texttt{PhysicsCommon} object (see section \ref{sec:physicscommon}), you will have to create a physics world. A physics world is
     a place where you can add the bodies that you want to simulate. It is possible to create multiple physics worlds but you will probably never need more
     than one. \\
-
-    There are two main ways to use ReactPhysics3D. The first one is to create bodies that you have to manually move in the physics world and test for
-    collision between them or do some raycasting. To do this, you need to add some collision bodies (class \texttt{CollisionBody}) in the world as
-    described in section \ref{sec:collisionbody}. In this case, the physics engine will not be responsible to animate your bodies. You will have to move
-    the bodies manually by yourself because you are only interested in the collision between your bodies. A possible use case for this could be an
-    application where the user has to place furniture in a room and you need to give the user some feedback when the 3D shapes of the furniture are
-    intersecting and therefore in an invalid configuration. Here are some methods that use can use in this case: \\
-    
+ 
     \begin{description}
        \item[testOverlap()] This group of methods can be used to test whether the colliders of two bodies overlap or not. You can use this if you just want to
 	       know if bodies are colliding but your are not interested in the contact information. 
        \item[testCollision()] This group of methods will give you the collision information (contact points, normals, ...) for colliding bodies.
-       \item[testPointInside()] This method will tell you if a 3D point is inside a given \texttt{CollisionBody}, \texttt{RigidBody} or \texttt{Collider}. 
+       \item[testPointInside()] This method will tell you if a 3D point is inside a \texttt{RigidBody} or \texttt{Collider}. 
     \end{description}
 
     The second way to use the library is to create bodies and let ReactPhysics3D animate their motions automatically using the laws of physics. This is
@@ -685,85 +678,15 @@ physicsCommon.destroyPhysicsWorld(world);
     Note that the pointer to the physics world and all the objects that have been created inside it (bodies, colliders, \dots) will become invalid after
     this call.
 
-    \section{Collision Body}
-    \label{sec:collisionbody}
-
-    Once you have created a physics world, it is time to add bodies into it. At this point, you will have to choose between the two types of bodies of
-    ReactPhysics3D. You can create either a \texttt{CollisionBody} or a \texttt{RigidBody}. If you only want to add bodies into your world, move them
-    manually and test if they collide without simulating their motion using the laws of physics, you can create bodies of type \texttt{CollisionBody}.
-    However, if you want your bodies to be physically animated, you will need to use bodies of type \texttt{RigidBody}. The \texttt{RigidBody} class is
-    described in section \ref{sec:rigidbody}. The current section explains how to use a \texttt{CollisionBody}. 
-
-    \subsection{Creating a Collision Body}
-
-    When you create a collision body, you need to specify its initial transform. This transform describes the initial
-    position and orientation of the body in the world. You need to create an instance of the \texttt{Transform} class with a vector describing the
-    initial position and a quaternion for the initial orientation of the body. \\
-
-    You need to call the \texttt{PhysicsWorld::createCollisionBody()} method to create a collision body in the physics world you have previously created.
-    This method will return a pointer to the instance of the \texttt{CollisionBody} object that has been created internally. You will then be able to
-    use that pointer to get or set values of the body. \\
-
-    The following code describes how to create a collision body in the physics world. \\
-
-    \begin{lstlisting}
-
-// Initial position and orientation of the collision body
-Vector3 position(0.0, 3.0, 0.0);
-Quaternion orientation = Quaternion::identity();
-Transform transform(position, orientation);
-
-// Create a collision body in the world
-CollisionBody* body;
-body = world->createCollisionBody(transform);
-  \end{lstlisting}
-
-    \vspace{0.6cm}
-
-    In order to test collision between your body and other bodies in the world, you probably want to add some colliders to your body.
-    Take a look at section \ref{sec:collider} to learn what is a collider and how to use it.
-
-    \subsection{Moving a Collision Body}
-
-    A collision body has to be moved manually in the world because it is not simulated by the physics engine. In order to move it, you need to
-    use the \texttt{CollisionBody::setTransform()} method to set a new position and new orientation to the body. \\
-
-     \begin{lstlisting}
-
-// New position and orientation of the collision body
-Vector3 position(10.0, 3.0, 0.0);
-Quaternion orientation = Quaternion::identity();
-Transform newTransform(position, orientation);
-
-// Move the collision body
-body->setTransform(newTransform);
-  \end{lstlisting}
-
-    \subsection{Destroying a Collision Body}
-
-    \begin{sloppypar}
-    In order to destroy a collision body, you need to use the \texttt{PhysicsWorld::destroyCollisionBody()} method. You need to use the pointer to the
-    body you want to destroy in argument. Note that after calling this method, the pointer will not be valid anymore and therefore, you should not use it. \\
-    \end{sloppypar}
-
-    The following code shows how to destroy a collision body: \\
-
-    \begin{lstlisting}
-// Here, world is an instance of the PhysicsWorld class
-// and body is a CollisionBody* pointer
-
-// Destroy the collision body and remove it from the world
-world->destroyCollisionBody(body);
-  \end{lstlisting}
-
     \section{Rigid Body}
     \label{sec:rigidbody}
 
-    Once the physics world has been created, you can add rigid bodies into it. A rigid body is an object that will be simulated using the laws of physics.
-    It has a mass, a position, an orientation and one or several colliders. It will react to forces and collisions. The physics world will compute contacts
-    between the bodies and will update their positions and orientations accordingly at each time step. You can also create joints between bodies to link
-    them in different configurations. In ReactPhysics3D, the \texttt{RigidBody} class (which inherits from the \texttt{CollisionBody} class) is used to
-    describe a rigid body.
+    Once the physics world has been created, you can add rigid bodies into it. A rigid body is an object that can be simulated using the laws of physics.
+    It has a mass, a position, an orientation and one or several colliders. A rigid body can be used in different situations. It can be used to simulate a
+    real world object simulated by the laws of physics (it will react to forces and collisions) or moved manually (like a character).  It can also be used
+    to represent a static objects that is not moving in the world (like a building for instance). We can also use a rigid body that is not simulated but
+    there to launch a given action when colliding or overlapping with another rigid body of the world. In ReactPhysics3D, the \texttt{RigidBody} class
+    is used to describe a rigid body.
 
     \subsection{Creating a Rigid Body}
 
@@ -1079,13 +1002,13 @@ world->destroyRigidBody(body);
     \section{Collider}
     \label{sec:collider}
 
-    A body can only collide against an other body if it has at least one collider. A collider (class \texttt{Collider}) describes the collision shape
-    of the body. A body can have multiple colliders attached to it. When adding a collider to a body, you need to specify its collision
+    To allow bodies to collide against each others, we need \texttt{colliders}. A collider (class \texttt{Collider}) describes the collision shape
+    of a body. A body can have multiple colliders attached to it. When adding a collider to a body, you need to specify its collision
     shape (box, sphere, capsule, \dots) and its transform relative to the origin of the body. \\
 
     Before adding a collider to a body, you need to create a collision shape. A collision shape can be instantiated by calling a method of the
     main \texttt{PhysicsCommon} object. The following example shows how instantiate a collision shape (a sphere shape) from the \texttt{PhysicsCommon}
-    object and use it to add a new collider to a rigid body. \\
+    object and use it to add a new collider to a body. \\
 
     \begin{lstlisting}
 // Instantiate a sphere collision shape
@@ -1182,15 +1105,7 @@ CapsuleShape* capsuleShape = physicsCommon.createCapsuleShape(1.0, 2.0);
 
     \subsubsection{Convex Mesh Shape}
 
-
-    \begin{sloppypar}
-    The \texttt{ConvexMeshShape} class can be used to describe the shape of a convex mesh centered at the origin of the collider. In order to create a
-    convex mesh shape, you first need to create an array of \texttt{PolygonFace} to describe each face of your mesh. You also need to have an array with
-    the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a \texttt{PolygonVertexArray} with
-    your vertices coordinates and indices array. You also need to specify your array of \texttt{PolygonFace}. Then, you have to create a
-    \texttt{PolyhedronMesh} with your \texttt{PolygonVertexArray}. Once this is done, you can create the \texttt{ConvexMeshShape} by passing your
-    \texttt{PolyhedronMesh} in parameter. \\
-    \end{sloppypar}
+    The \texttt{ConvexMeshShape} class can be used to describe the shape of a convex mesh centered at the origin of the collider.
 
     \begin{figure}[!ht]
         \centering
@@ -1198,8 +1113,24 @@ CapsuleShape* capsuleShape = physicsCommon.createCapsuleShape(1.0, 2.0);
         \label{fig:convexshape}
     \end{figure}
 
-    The following example shows how to create a convex mesh shape. In this example, we create a cube as a convex mesh shape. Of course, this is only
-    for the example.  If you really need a cube collision shape, you should use the \texttt{BoxShape} instead. \\
+    In order to create a \texttt{ConvexMeshShape}, we first need to create a \texttt{ConvexMesh}. A \texttt{ConvexMesh} can be instanciated once and
+    used to create multiple \texttt{ConvexMeshShapes} with different scaling if necessary. There are two ways to create a \texttt{ConvexMesh}. \\
+    
+    If you know the vertices and faces of your mesh, you can use the following method to create a \texttt{ConvexMesh}:
+
+    \begin{lstlisting}
+       PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& messages)
+    \end{lstlisting}
+
+    To use this method, you first need to create an array of \texttt{PolygonFace} to describe each face of your mesh. You also need to have an array with
+    the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a \texttt{PolygonVertexArray} with
+    your vertices coordinates and indices array. You also need to specify your array of \texttt{PolygonFace}. Then, you can call the previous method
+    to instantiate a \texttt{ConvexMesh} using your \texttt{PolygonVertexArray}. Now that you have a \texttt{ConvexMesh}, you can create the
+    \texttt{ConvexMeshShape}
+
+    The following example shows how to create a convex mesh shape when you know the vertices and faces of your mesh.
+    In this example, we create a cube as a convex mesh shape. Of course, this is only for the example. If you really need a cube collision
+    shape, you should use the \texttt{BoxShape} instead. \\
 
     \begin{lstlisting}
 // Array with the vertices coordinates of the convex mesh
@@ -1242,17 +1173,27 @@ indices, sizeof(int), 6, polygonFaces,
 PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
-// Create the polyhedron mesh
-PolyhedronMesh* polyhedronMesh = physicsCommon.createPolyhedronMesh(polygonVertexArray);
+    // Create the convex mesh
+    std::vector<rp3d::Message> messages;
+    ConvexMesh* convexMesh = physicsCommon.createConvexMesh(polygonVertexArray, messages);
 
-// Create the convex mesh collision shape
-ConvexMeshShape* convexMeshShape = physicsCommon.createConvexMeshShape(polyhedronMesh);
+    // If there was an error during mesh creation
+    if (convexMesh == nullptr) {
+
+    	std::cout << "Error while creating a ConvexMesh:" << std::endl;
+
+	// Display all error messages
+        for (const rp3d::Message& message: messages) {
+            std::cout << "Error: " << message.text << std::endl;
+        }
+    }
+
   \end{lstlisting}
 
     \vspace{0.6cm}
 
-    Note that the vertex coordinates and indices array are not copied and therefore you need to make sure that they exist until the collision shape
-    exists. This is also true for the all the \texttt{PolygonFace}, the \texttt{PolygonVertexArray} and the \texttt{PolyhedronMesh} objects. \\
+    Note that the vertex coordinates and indices array are copied into the \texttt{ConvexMesh}. Therefore, you can release the memory of the
+    \texttt{PolygonVertexArray} after the \texttt{ConvexMesh} creation.
 
     You need to make sure that the mesh you provide is indeed convex. Secondly, you should provide the simplest possible convex mesh. It means
     that you need to avoid coplanar faces in your convex mesh shape. Coplanar faces have to be merged together. Remember that convex meshes are
@@ -1267,10 +1208,72 @@ ConvexMeshShape* convexMeshShape = physicsCommon.createConvexMeshShape(polyhedro
     You also need to make sure that the origin of your mesh is inside the convex mesh. A mesh with an origin outside the
     convex mesh is not currently supported by the library. \\
 
+    There is a second way to create a \texttt{ConvexMesh}. In case you only know the vertices of your mesh (you don't know the faces), you can use the
+    following method:
+
+    \begin{lstlisting}
+       PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std::vector<Message>& messages)
+    \end{lstlisting}
+
+    With this method, you only need to specify the array of vertices (\texttt{VertexArray}) of your mesh (not the faces). The library will use the
+    QuickHull algorithm to compute a convex mesh that includes all the vertices.
+
+    \begin{lstlisting}
+
+// Array with the vertices coordinates of the convex mesh
+float vertices[24];
+vertices[0] = -3; vertices[1] = -3; vertices[2] = 3;
+vertices[3] = 3; vertices[4] = -3; vertices[5] = 3;
+vertices[6] = 3; vertices[7] = -3; vertices[8] = -3;
+vertices[9] = -3; vertices[10] = -3; vertices[11] = -3;
+vertices[12] = -3; vertices[13] = 3; vertices[14] = 3;
+vertices[15] = 3; vertices[16] = 3; vertices[17] = 3;
+vertices[18] = 3; vertices[19] = 3; vertices[20] = -3;
+vertices[21] = -3; vertices[22] = 3; vertices[23] = -3;
+
+    // Vertex array with all vertices of the mesh
+    rp3d::VertexArray vertexArray(vertices, 3 * sizeof(float),
+                                  24, rp3d::VertexArray::DataType::VERTEX_FLOAT_TYPE);
+
+    // Compute the convex mesh from the array of vertices
+    std::vector<rp3d::Message> messages;
+    ConvexMesh* convexMesh = physicsCommon.createConvexMesh(vertexArray, messages);
+
+    // If there was an error during mesh creation
+    if (convexMesh == nullptr) {
+
+        std::cout << "Error while creating a ConvexMesh:" << std::endl;
+
+	// Display all error messages
+        for (const rp3d::Message& message: messages) {
+            std::cout << "Error: " << message.text << std::endl;
+        }
+    }
+
+    \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    Note that the \texttt{PhysicsCommon::createConvexMesh()} method takes a reference to an array of messages as parameter. If there are errors
+    during the convex mesh creation, the method will return \texttt{null} and the array with contain some error messages describing the issues. //
+
+    Now that we have a \texttt{ConvexMesh}, we can create a \texttt{ConvexMeshShape} as in the following example: //
+
+    \begin{lstlisting}
+
+    // Scaling factor
+    Vector3 scaling(1, 1, 1);
+    
+    // Create the ConvexMeshShape
+    ConvexMeshShape* convexMeshShape = physicsCommon.createConvexMeshShape(convexMesh, scaling);
+    \end{lstlisting}
+
+    \vspace{0.6cm}
+
     \begin{sloppypar}
-    You can also specify a scaling factor in the \texttt{PhysicsCommon::createConvexMeshShape()} method when you create a
+    As you can see, you can specify a scaling factor in the \texttt{PhysicsCommon::createConvexMeshShape()} method when you create a
     \texttt{Convex\allowbreak MeshShape}. All the vertices of your mesh
-    will be scaled from the origin by this factor when used in the collision shape. It means that you can use the same \texttt{PolyhedronMesh} for
+    will be scaled from the origin by this factor when used in the collision shape. It means that you can use the same \texttt{ConvexMesh} for
     multiple \texttt{ConvexMeshShape} with a different scaling factor each time. \\
     \end{sloppypar}
 
@@ -1499,15 +1502,65 @@ material.setBounciness(0.4);
 material.setFrictionCoefficient(0.2);
   \end{lstlisting}
 
+    \vspace{0.6cm}
+
+    A collider can have different behaviors. It can be a \emph{simulation collider}, a \emph{world query collider} or a
+    \emph{trigger}.  It can have also have two behaviors (except \emph{simulation collider} and \emph{trigger}
+    at the same time). By default, when you create a collider, it will be a \emph{simulation collider} and a \emph{world query collider} but not a
+    \emph{trigger}. We will now take a look at those behaviors. \\
+
+    \subsection{Simulation Collider}
+    \label{sec:simulationcollider}
+    
+    A simulation collider is a collider that will be able to collide against other simulation colliders in the world. It means that when two simulation
+    colliders collide, contacts will be created and used to compute the forces/torques needed to make their bodies to bump into each other. For instance,
+    if you want to simulate a body that is falling on the floor and bumping against it, you will need to have a least of simulation collider in both the
+    falling body and the floor body. \\
+
+    To set a collider as being a simulation collider, you need to use the \texttt{Collider::setIsSimulationCollider()} method as in the following example: \\
+
+    \begin{lstlisting}
+bombCollider->setIsSimulationCollider(true);
+   \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    When you create a collider, it is a simulation collider by default.
+
+    \subsection{World Query Collider}
+    \label{sec:worldquerycollider}
+
+    A world query collider is a collider used to perform world queries on it. World queries are manual queries perform on the physics world like raycasting
+    or testing if two collider collide or overlap using the following method for instance:
+
+    \begin{description}
+       \item[testOverlap()] Those methods can be used to test whether the colliders of two bodies overlap or not. 
+       \item[testCollision()] Those methods will give you the collision information (contact points, normals, ...) between two colliding bodies.
+       \item[testPointInside()] This method will tell you if a 3D point is inside a \texttt{RigidBody} or \texttt{Collider}. 
+       \item[raycast()] Those methods will try to find intersection between a ray and colliders of the world.
+    \end{description}
+
+    For instance, if you want to test a body of your scene with raycasting, you need to set the collider of that body as being a world query collider.
+
+    To set a collider as being a world query collider, you need to use the \texttt{Collider::setIsWorldQueryCollider()} method as in the following example: \\
+
+    \begin{lstlisting}
+bombCollider->setIsWorldQueryCollider(true);
+   \end{lstlisting}
+
+    \vspace{0.6cm}
+
+    A collider can be a world query collider and a simulation collider at the same time. When you create a collider, it is a world query collider by default.
+
     \subsection{Trigger}
     \label{sec:trigger}
 
     A trigger, is a collider that cannot collide with any other colliders but can only report when it is overlapping with another collider. For instance,
     consider a game where a player moves around and has to avoid touching some bombs. The player has a rigid body with a capsule collider for instance and
     the bombs are rigid bodies where each one has a sphere collider. Now, you do not want the player to bump against the bombs but you only want to know
-    when the collider of the player rigid body overlaps with a collider of a bomb. In this case, you can set bombs colliders as being triggers. In this
+    when the collider of the player overlaps with the collider of a bomb. In this case, you can set bombs colliders as being triggers. In this
     case, no rigid bodies in the world will be able to collide against the bombs colliders but you can receive notifications when a collider (the player
-    body collider for instance) overlaps a bomb collider. Therefore, you can use this to know when the player touches a bomb of the world. \\
+    body collider for instance) overlaps with a bomb collider. Therefore, you can use this to know when the player touches a bomb of the world. \\
     
     To set a collider as being a trigger, you need to use the \texttt{Collider::setIsTrigger()} method as in the following example: \\
 
@@ -1515,6 +1568,9 @@ material.setFrictionCoefficient(0.2);
 bombCollider->setIsTrigger(true);
    \end{lstlisting}
 
+    \vspace{0.6cm}
+
+   Note that a collider cannot be a trigger and a simulation collider at the same time. When you create a collide it is not a trigger by default.
   
    \vspace{0.6cm}
 
@@ -1905,7 +1961,7 @@ Ray ray(startPoint, endPoint);
          \item[worldNormal] Surface normal of the collider at the hit point in world-space coordinates
          \item[hitFraction] Fraction distance of the hit point between \emph{startPoint}  and \emph{endPoint} of the ray. The hit point \emph{p} is such that
            $p = startPoint + hitFraction \cdot (endPoint - startPoint)$
-         \item[body] Pointer to the collision body or rigid body that has been hit by the ray
+         \item[body] Pointer to the rigid body that has been hit by the ray
          \item[collider] Pointer to the collider that has been hit by the ray
     \end{description}
 
@@ -1983,8 +2039,8 @@ world->raycast(ray, &callbackObject);
 
     \begin{sloppypar}
 
-    You can also perform ray casting against a single specific collision body or rigid body of the world. To do this, you need to use the
-    \texttt{CollisionBody::raycast()} method. This method takes two parameters. The first one is a reference to the \texttt{Ray} object and the second one
+    You can also perform ray casting against a single specific rigid body of the world. To do this, you need to use the
+    \texttt{RigidBody::raycast()} method. This method takes two parameters. The first one is a reference to the \texttt{Ray} object and the second one
     is a reference to the \texttt{RaycastInfo} object that will contain hit information if the ray hits the body. This method returns true if the ray hits the
     body. The \texttt{RaycastInfo} object will only be valid if the returned value is \emph{true} (a hit occured). \\
 
@@ -2010,7 +2066,7 @@ bool isHit = body->raycast(ray, raycastInfo);
 
     \subsection{Ray casting against the collider of a body}
 
-    You can also perform ray casting against a single specific collider of a collision body or rigid body of the world. To do this, you need to use the
+    You can also perform ray casting against a single specific collider of a rigid body of the world. To do this, you need to use the
     \texttt{Collider::raycast()} method of the given collider. This method takes two parameters. The first one is a reference to the \texttt{Ray}
     object and the second one is a reference to the \texttt{RaycastInfo} object that will contain hit information if the ray hits the body. This method returns
     true if the ray hits the body. The \texttt{RaycastInfo} object will only be valid if the returned value is \emph{true} (a hit occured). \\
