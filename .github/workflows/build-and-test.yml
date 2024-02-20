@@ -203,7 +203,6 @@ jobs:
           choco install ninja cmake
           ninja --version
           cmake --version
-          PATH="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin:$PATH"
 
       - name: Install dependencies on Linux
         if: startsWith(matrix.config.os, 'ubuntu')
@@ -289,7 +288,9 @@ jobs:
       - name: Run Hello World (Windows MSVC)
         if: ${{ startsWith(matrix.config.name, 'Windows / MSVC') }}
         shell: bash
-        run: "./build_hello_world/${{ matrix.config.build_type }}/helloworld.exe"
+        run: |
+          PATH="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin:$PATH"
+          "./build_hello_world/${{ matrix.config.build_type }}/helloworld.exe"
 
       - name: Memory Leaks Test
         if: ${{ startsWith(matrix.config.name, 'Linux / GCC (Debug, Single Precision)') }}
