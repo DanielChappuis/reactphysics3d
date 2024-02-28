@@ -1,11 +1,12 @@
 # Changelog
 
-## Release Candidate
+## Version 0.10.0 (March 15, 2024)
 
 ### Added
 
  - The library will now return errors found in input data during the creation of ConvexMesh, TriangularMesh and HeighField
- - It is now possible to create a ConvexMesh by specifying only a list of vertices (automatic computation of convex hull using internal QuickHull algorithm)
+ - It is now possible to create a ConvexMeshShape by specifying only a list of vertices (automatic computation of convex hull using internal
+   QuickHull algorithm)
  - The performance of static bodies has been improved 
  - The reporting of contact state is now correct even if the body goes to sleep
  - The DebugRenderer can now display the normals of the collider faces for debugging purpose
@@ -22,7 +23,6 @@
  - The PhysicsCommon::createConvexMesh() nows outputs a list of errors that might have happened during the mesh creation
  - The PhysicsCommon::createConvexMesh() method now takes a reference to PolygonVertexArray
  - When creating a ConvexMesh with PhysicsCommon::createConvexMesh(), the user data (vertices, faces) is now copied into the ConvexMesh and not shared anymore
- - The input data (vertices, indices, ...) are now copied into the ConvexMesh, TriangularMesh and HeighField and not shared anymore
  - The PhysicsCommon::createTriangleMesh() method now directly takes a TriangleVertexArray
  - The PhysicsCommon::createTriangleMesh() nows outputs a list of errors that might have happened during the mesh creation
  - When creating a TriangleMesh with PhysicsCommon::createTriangleMesh(), the user data (vertices, faces) is now copied into the TriangleMesh and not shared anymore
@@ -53,7 +53,6 @@
  - The PhysicsWorld::getCollisionBody() method has been removed 
  - The PhysicsWorld::getNbCollisionBodies() method has been removed 
 
-
 ### Fixed
 
 - Issue [#206](https://github.com/DanielChappuis/reactphysics3d/issues/206) Collision issue and scaling of collider normals
@@ -63,6 +62,13 @@
 - Issue [#240](https://github.com/DanielChappuis/reactphysics3d/issues/240) Uninitialized variable
 - Issue [#347](https://github.com/DanielChappuis/reactphysics3d/issues/347) Missing collision between capsule and triangle edge in some case
 - Issue [#362](https://github.com/DanielChappuis/reactphysics3d/issues/362) Bug in Collider::setLocalToBodyTransform()
+- Issue [#275](https://github.com/DanielChappuis/reactphysics3d/issues/275) Compilation warning
+- Issue [#286](https://github.com/DanielChappuis/reactphysics3d/issues/286) Compilation error on Android
+- Issue [#323](https://github.com/DanielChappuis/reactphysics3d/issues/323) Avoid conflict with X11 library
+- Issue [#362](https://github.com/DanielChappuis/reactphysics3d/issues/362) Crash
+- Issue [#364](https://github.com/DanielChappuis/reactphysics3d/issues/364) Assert in createContacts() method
+- Issue [#366](https://github.com/DanielChappuis/reactphysics3d/issues/366) Crash when creating islands
+- Issue [#370](https://github.com/DanielChappuis/reactphysics3d/issues/370) Compilation error on recent compiler
 - Issue with edge vs edge collision detection for BoxShape, ConvexMeshShape, ConcaveMeshShape and HeightFieldShape (SAT algorithm)
 - Compilation error on Clang 19
 
