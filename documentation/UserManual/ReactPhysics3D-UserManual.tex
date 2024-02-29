@@ -447,9 +447,11 @@ SphereShape* sphereShape = physicsCommon.createSphereShape(radius);
    \section{Memory Management}
 
    The \texttt{PhysicsCommon} class is responsible for all the memory allocations that occur in ReactPhysics3D. The base memory allocations in ReactPhysics3D
-   are done using the \texttt{std::malloc()} and \texttt{std::free()} methods. If you want to use your own behavior to allocate and free memory, you can pass
-   a custom memory allocator to the constructor of the \texttt{PhysicsCommon} object. You simply need to create a class that inherits from the
-   \texttt{MemoryAllocator} class of ReactPhysics3D and overrides the \texttt{allocate()} and \texttt{release()} methods. \\
+   are done by default using the \texttt{std::malloc()} and \texttt{std::free()} methods. If you want to use your own behavior to allocate and free
+   memory, you can pass a custom memory allocator to the constructor of the \texttt{PhysicsCommon} object. You simply need to create a class
+   that inherits from the \texttt{MemoryAllocator} class of ReactPhysics3D and overrides the \texttt{allocate()} and \texttt{release()} methods. \\
+
+   Note that the allocated memory returned by the \texttt{allocate()} method must be 16 bytes aligned. \\
 
    Note that several methods of ReactPhysics3D will create an instance of an object and return a pointer so that you can use that object. This the case
    for the creation of a \texttt{PhysicsWorld} or a \texttt{RigidBody} as you can see in the following code: \\
@@ -1116,87 +1118,68 @@ CapsuleShape* capsuleShape = physicsCommon.createCapsuleShape(1.0, 2.0);
     In order to create a \texttt{ConvexMeshShape}, we first need to create a \texttt{ConvexMesh}. A \texttt{ConvexMesh} can be instanciated once and
     used to create multiple \texttt{ConvexMeshShapes} with different scaling if necessary. There are two ways to create a \texttt{ConvexMesh}. \\
     
-    If you know the vertices and faces of your mesh, you can use the following method to create a \texttt{ConvexMesh}:
+    If you know the vertices and faces of your mesh, you can use the following method to create a \texttt{ConvexMesh}: \\
 
     \begin{lstlisting}
-       PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& messages)
+PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& messages)
     \end{lstlisting}
 
-    To use this method, you first need to create an array of \texttt{PolygonFace} to describe each face of your mesh. You also need to have an array with
+    \vspace{0.6cm}
+
+    To use this method, you need to create an array of \texttt{PolygonFace} to describe each face of your mesh. You also need to have an array with
     the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a \texttt{PolygonVertexArray} with
     your vertices coordinates and indices array. You also need to specify your array of \texttt{PolygonFace}. Then, you can call the previous method
-    to instantiate a \texttt{ConvexMesh} using your \texttt{PolygonVertexArray}. Now that you have a \texttt{ConvexMesh}, you can create the
-    \texttt{ConvexMeshShape}
+    to instantiate a \texttt{ConvexMesh} using your \texttt{PolygonVertexArray}. \\ 
 
-    The following example shows how to create a convex mesh shape when you know the vertices and faces of your mesh.
+    The following example shows how to create a \texttt{ConvexMeshShape} when you know the vertices and faces of your mesh.
     In this example, we create a cube as a convex mesh shape. Of course, this is only for the example. If you really need a cube collision
     shape, you should use the \texttt{BoxShape} instead. \\
 
     \begin{lstlisting}
 // Array with the vertices coordinates of the convex mesh
-float vertices[24];
-vertices[0] = -3; vertices[1] = -3; vertices[2] = 3;
-vertices[3] = 3; vertices[4] = -3; vertices[5] = 3;
-vertices[6] = 3; vertices[7] = -3; vertices[8] = -3;
-vertices[9] = -3; vertices[10] = -3; vertices[11] = -3;
-vertices[12] = -3; vertices[13] = 3; vertices[14] = 3;
-vertices[15] = 3; vertices[16] = 3; vertices[17] = 3;
-vertices[18] = 3; vertices[19] = 3; vertices[20] = -3;
-vertices[21] = -3; vertices[22] = 3; vertices[23] = -3;
+float vertices[24] = {-3, -3, 3,
+                      3, -3, 3,
+                      3, -3, -3,
+                      3, -3, -3,
+                      -3, 3, 3,
+                      3, 3, 3,
+                      3, 3, -3,
+                      -3, 3, -3};
 
-// Array with the vertices indices for each face of the mesh
-int indices[24];
-indices[0]=0; indices[1]=3; indices[2]=2; indices[3]=1;
-indices[4]=4; indices[5]=5; indices[6]=6; indices[7]=7;
-indices[8]=0; indices[9]=1; indices[10]=5; indices[11]=4;
-indices[12]=1; indices[13]=2; indices[14]=6; indices[15]=5;
-indices[16]=2; indices[17]=3; indices[18]=7; indices[19]=6;
-indices[20]=0; indices[21]=4; indices[22]=7; indices[23]=3;
+// Vertex array with all vertices of the mesh
+rp3d::VertexArray vertexArray(vertices, 3 * sizeof(float),
+			  24, rp3d::VertexArray::DataType::VERTEX_FLOAT_TYPE);
 
-// Description of the six faces of the convex mesh
-PolygonVertexArray::PolygonFace* polygonFaces = new PolygonVertexArray::PolygonFace[6];
-PolygonVertexArray::PolygonFace* face = polygonFaces;
-for (int f = 0; f < 6; f++) {
+// Compute the convex mesh from the array of vertices
+std::vector<rp3d::Message> messages;
+ConvexMesh* convexMesh = physicsCommon.createConvexMesh(vertexArray, messages);
 
-    // First vertex of the face in the indices array
-    face->indexBase = f * 4;   
+// Display the messages (info, warning and errors)
+if (messages.size() > 0) {
 
-    // Number of vertices in the face
-    face->nbVertices = 4;
+  for (const rp3d::Message& message: messages) {
 
-    face++;
+    std::string messageType;
+    switch(message.type) {
+      case rp3d::Message::Type::Information:
+        messageType = "info";
+        break;
+      case rp3d::Message::Type::Warning:
+        messageType = "warning";
+        break;
+      case rp3d::Message::Type::Error:
+        messageType = "error";
+        break;
+    }
+
+    std::cout << "Message (" << messageType << "): " << message.text << std::endl;
+  }
 }
 
-// Create the polygon vertex array
-PolygonVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 * sizeof(float),
-indices, sizeof(int), 6, polygonFaces,
-PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+// Make sure there was no errors during mesh creation
+assert(convexMesh != nullptr);
 
-    // Create the convex mesh
-    std::vector<rp3d::Message> messages;
-    ConvexMesh* convexMesh = physicsCommon.createConvexMesh(polygonVertexArray, messages);
-
-  // Display the messages (info, warning and errors)
-  if (messages.size() > 0) {
-
-    for (const rp3d::Message& message: messages) {
-
-      std::string messageType;
-      switch(message.type) {
-        case rp3d::Message::Type::Information: messageType = "info"; break;
-        case rp3d::Message::Type::Warning: messageType = "warning"; break;
-        case rp3d::Message::Type::Error: messageType = "error"; break;
-      }
-
-      std::cout << "Message (" << messageType << "): " << message.text << std::endl;
-    }
-  }
-
-  // Make sure there was no errors during mesh creation
-  assert(convexMesh != nullptr);
-
-  \end{lstlisting}
+    \end{lstlisting}
 
     \vspace{0.6cm}
 
@@ -1208,8 +1191,8 @@ PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
     that you need to avoid coplanar faces in your convex mesh shape. Coplanar faces have to be merged together. Remember that convex meshes are
     not limited to triangular faces, you can create faces with more than three vertices. \\
 
-    Also note that meshes with duplicated vertices are not supported. The number of vertices you pass to create the PolygonVertexArray must be exactly
-    the number of vertices in your convex mesh. \\
+    Also note that meshes with duplicated vertices are not supported. The number of vertices you pass to create the \texttt{PolygonVertexArray} must
+    be exactly the number of vertices in your convex mesh. \\
 
     When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in
     counter clockwise order as seen from the outside of your convex mesh. \\
@@ -1217,81 +1200,83 @@ PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
     You also need to make sure that the origin of your mesh is inside the convex mesh. A mesh with an origin outside the
     convex mesh is not currently supported by the library. \\
 
-    There is a second way to create a \texttt{ConvexMesh}. In case you only know the vertices of your mesh (you don't know the faces), you can use the
-    following method:
+    As discussed before, there is a second way to create a \texttt{ConvexMesh}. In case you only know the vertices of your
+    mesh (you don't know the faces), you can use the following method: \\
 
     \begin{lstlisting}
-       PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std::vector<Message>& messages)
+PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std::vector<Message>& messages)
     \end{lstlisting}
 
     With this method, you only need to specify the array of vertices (\texttt{VertexArray}) of your mesh (not the faces). The library will use the
-    QuickHull algorithm to compute a convex mesh that includes all the vertices.
+    QuickHull algorithm to compute a convex mesh that includes all the vertices. \\
 
     \begin{lstlisting}
-
 // Array with the vertices coordinates of the convex mesh
-float vertices[24];
-vertices[0] = -3; vertices[1] = -3; vertices[2] = 3;
-vertices[3] = 3; vertices[4] = -3; vertices[5] = 3;
-vertices[6] = 3; vertices[7] = -3; vertices[8] = -3;
-vertices[9] = -3; vertices[10] = -3; vertices[11] = -3;
-vertices[12] = -3; vertices[13] = 3; vertices[14] = 3;
-vertices[15] = 3; vertices[16] = 3; vertices[17] = 3;
-vertices[18] = 3; vertices[19] = 3; vertices[20] = -3;
-vertices[21] = -3; vertices[22] = 3; vertices[23] = -3;
+float vertices[24] = {-3, -3, 3,
+                      3, -3, 3,
+                      3, -3, -3,
+                      3, -3, -3,
+                      -3, 3, 3,
+                      3, 3, 3,
+                      3, 3, -3,
+                      -3, 3, -3};
 
-    // Vertex array with all vertices of the mesh
-    rp3d::VertexArray vertexArray(vertices, 3 * sizeof(float),
-                                  24, rp3d::VertexArray::DataType::VERTEX_FLOAT_TYPE);
+// Vertex array with all vertices of the mesh
+rp3d::VertexArray vertexArray(vertices, 3 * sizeof(float),
+			  24, rp3d::VertexArray::DataType::VERTEX_FLOAT_TYPE);
 
-    // Compute the convex mesh from the array of vertices
-    std::vector<rp3d::Message> messages;
-    ConvexMesh* convexMesh = physicsCommon.createConvexMesh(vertexArray, messages);
+// Compute the convex mesh using only the array of vertices
+std::vector<rp3d::Message> messages;
+ConvexMesh* convexMesh = physicsCommon.createConvexMesh(vertexArray, messages);
 
-  // Display the messages (info, warning and errors)
-  if (messages.size() > 0) {
+// Display the messages (info, warning and errors)
+if (messages.size() > 0) {
 
-    for (const rp3d::Message& message: messages) {
+  for (const rp3d::Message& message: messages) {
 
-      std::string messageType;
-      switch(message.type) {
-        case rp3d::Message::Type::Information: messageType = "info"; break;
-        case rp3d::Message::Type::Warning: messageType = "warning"; break;
-        case rp3d::Message::Type::Error: messageType = "error"; break;
-      }
+  std::string messageType;
+  switch(message.type) {
+    case rp3d::Message::Type::Information:
+      messageType = "info";
+      break;
+    case rp3d::Message::Type::Warning:
+      messageType = "warning";
+      break;
+    case rp3d::Message::Type::Error:
+      messageType = "error";
+      break;
+  }
 
-      std::cout << "Message (" << messageType << "): " << message.text << std::endl;
-    }
+  std::cout << "Message (" << messageType << "): " << message.text << std::endl;
+  }
 }
 
-  // Make sure there was no errors during mesh creation
-  assert(convexMesh != nullptr);
+// Make sure there was no errors during mesh creation
+assert(convexMesh != nullptr);
 
     \end{lstlisting}
 
     \vspace{0.6cm}
 
     Note that the \texttt{PhysicsCommon::createConvexMesh()} method takes a reference to an array of messages as parameter. If there are errors
-    during the convex mesh creation, the method will return \texttt{null} and the array with contain some error messages describing the issues. //
+    during the convex mesh creation, the method will return \texttt{null} and the array with contain some error messages describing the issues. \\
 
-    Now that we have a \texttt{ConvexMesh}, we can create a \texttt{ConvexMeshShape} as in the following example: //
+    Now that we have a \texttt{ConvexMesh}, we can create a \texttt{ConvexMeshShape} as in the following example: \\
 
     \begin{lstlisting}
+// Scaling factor
+Vector3 scaling(1, 1, 1);
 
-    // Scaling factor
-    Vector3 scaling(1, 1, 1);
-    
-    // Create the ConvexMeshShape
-    ConvexMeshShape* convexMeshShape = physicsCommon.createConvexMeshShape(convexMesh, scaling);
+// Create the ConvexMeshShape
+ConvexMeshShape* convexMeshShape = physicsCommon.createConvexMeshShape(convexMesh, scaling);
     \end{lstlisting}
 
     \vspace{0.6cm}
 
     \begin{sloppypar}
     As you can see, you can specify a scaling factor in the \texttt{PhysicsCommon::createConvexMeshShape()} method when you create a
-    \texttt{Convex\allowbreak MeshShape}. All the vertices of your mesh
-    will be scaled from the origin by this factor when used in the collision shape. It means that you can use the same \texttt{ConvexMesh} for
-    multiple \texttt{ConvexMeshShape} with a different scaling factor each time. \\
+    \texttt{Convex\allowbreak MeshShape}. All the vertices of your mesh will be scaled from the local origin of the mesh by this factor.
+    It means that you can use the same \texttt{ConvexMesh} for multiple \texttt{ConvexMeshShape} with a different scaling factor each time. \\
     \end{sloppypar}
 
     Note that collision detection with a \texttt{ConvexMeshShape} is more expensive than with a \texttt{SphereShape} or a \texttt{CapsuleShape}. \\
@@ -1307,10 +1292,10 @@ vertices[21] = -3; vertices[22] = 3; vertices[23] = -3;
   The \texttt{ConcaveMeshShape} class can be used for a static concave triangular mesh. It can be used to describe an environment for
   instance. Note that it cannot be used with a dynamic body that is allowed to move. Moreover, make sure to use a \texttt{ConcaveMeshShape} only
   when you are not able to use a convex shape and also try to limit the number of triangles of that mesh because collision detection
-  with \texttt{ConcaveMeshShape} is quite expensive compared to convex shapes. Note collsions between two concave mesh shape are not supported. \\
+  with \texttt{ConcaveMeshShape} is quite expensive compared to convex shapes. Note that collsions between two concave mesh shape are not supported. \\
 
-  In order to create a concave mesh shape, we first need to create a \texttt{TriangleMesh}. A \texttt{TriangleMesh} describes your mesh made of triangles
-  and can be reused multiple times to instantiate \texttt{ConcaveMeshShapes} with different scaling factors for instance. 
+  In order to create a \texttt{ConcaveMeshShape}, we first need to create a \texttt{TriangleMesh}. A \texttt{TriangleMesh} describes your
+  mesh made of triangles and can be reused multiple times to instantiate \texttt{ConcaveMeshShapes} with different scaling factors for instance. 
   In order to create the \texttt{TriangleMesh}, we first need to instantiate a \texttt{TriangleVertexArray} describing the vertices and triangle faces
   of the mesh. We then pass the \texttt{TriangleVertex\allowbreak Array} to the \texttt{PhysicsCommon::createTriangleMesh()} method to create the
   \texttt{TriangleMesh}. \\
@@ -1321,7 +1306,7 @@ vertices[21] = -3; vertices[22] = 3; vertices[23] = -3;
   The following code shows how to create a \texttt{TriangleVertexArray} and use it to create a \texttt{TriangleMesh}: \\
 
   \begin{lstlisting}
-// Create the TriangleVertexArray
+// Create the TriangleVertexArray
 const int nbVertices = 8;
 const int nbTriangles = 12;
 float vertices[3 * nbVertices] = ...;
@@ -1332,28 +1317,34 @@ indices, 3 * sizeof(int),
 TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
 TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
-// Create the TriangleMesh
+// Create the TriangleMesh
 std::vector<rp3d::Message> messages;
 TriangleMesh* triangleMesh = physicsCommon.createTriangleMesh(vertexArray, messages);
 
-// Display the messages (info, warning and errors)
+// Display the messages (info, warning and errors)
 if (messages.size() > 0) {
 
   for (const rp3d::Message& message: messages) {
 
     std::string messageType;
     switch(message.type) {
-      case rp3d::Message::Type::Information: messageType = "info"; break;
-      case rp3d::Message::Type::Warning: messageType = "warning"; break;
-      case rp3d::Message::Type::Error: messageType = "error"; break;
+      case rp3d::Message::Type::Information:
+        messageType = "info";
+        break;
+      case rp3d::Message::Type::Warning:
+        messageType = "warning";
+        break;
+      case rp3d::Message::Type::Error:
+        messageType = "error";
+        break;
     }
 
     std::cout << "Message (" << messageType << "): " << message.text << std::endl;
   }
 }
 
-  // Make sure there was no errors during mesh creation
-  assert(triangleMesh != nullptr);
+// Make sure there was no errors during mesh creation
+assert(triangleMesh != nullptr);
   \end{lstlisting}
 
   \vspace{0.6cm}
@@ -1368,23 +1359,23 @@ if (messages.size() > 0) {
   \emph{TriangleVertexArray}, the automatic vertices normals computation will not give correct normals because each vertex of the mesh will only be
   part of a single triangle face. In this case, you must provide your own vertices normals when you create the \emph{TriangleVertexArray}. \\
 
-  Now that we have a \texttt{TriangleVertexArray}, we need to create a \texttt{TriangleMesh} and add the \texttt{TriangleVertexArray}
-  into it as a subpart. Once this is done, we can create the actual \texttt{ConcaveMeshShape}. \\
+  Now that we have a \texttt{TriangleMesh}, we can create the actual \texttt{ConcaveMeshShape}. \\
 
   \begin{lstlisting}
 
-  const Vector3 scaling(1, 1, 1);
-  
-  // Create the ConcaveMeshShape using the TriangleMesh
-  ConcaveMeshShape* concaveMeshShape = physicsCommon.createConcaveMeshShape(triangleMesh, scaling);
+const Vector3 scaling(1, 1, 1);
+
+// Create the ConcaveMeshShape using the TriangleMesh
+ConcaveMeshShape* concaveMeshShape = physicsCommon.createConcaveMeshShape(triangleMesh, scaling);
   \end{lstlisting}
 
   \vspace{0.6cm}
 
   \begin{sloppypar}
   As you can see, you can specify a scaling factor in the \texttt{PhysicsCommon::createConcaveMeshShape()} method when you create a
-  \texttt{Concave\allowbreak MeshShape}. Note that you can use the same \texttt{TriangleMesh} instance for creating multiple
-  \texttt{ConcaveMeshShape} with a different scaling factor each time. \\
+  \texttt{Concave\allowbreak MeshShape}. All the vertices of your mesh will be scaled from the local origin of the mesh by this factor.
+  Note that you can use the same \texttt{TriangleMesh} instance for creating multiple \texttt{ConcaveMeshShape} with a different scaling 
+  factor each time. \\
   \end{sloppypar}
 
   \subsubsection{Heightfield Shape}
@@ -1398,9 +1389,9 @@ if (messages.size() > 0) {
   The \texttt{HeightFieldShape} is a collision shape that can be used to represent a static terrain for instance. This shape is 
   a two dimensional grid that has a given height value at each point of the grid. \\
 
-  First, you need to create an \texttt{HeightField}. To do that, you need to have an array with all the height values of your field.
-  You can have height values of type integer, float or double. You need to specify the number of rows and columns of your two
-  dimensional grid. Note that the height values in your array must be organized such that the value at row
+  First, we need to create an \texttt{HeightField}. To do that, we need to have an array with all the height values of our field.
+  We can have height values of type integer, float or double. We need to specify the number of rows and columns of our two
+  dimensional grid. Note that the height values in our array must be organized such that the value at row
   \texttt{indexRow} and column \texttt{indexColumn} is located at the following position in the array: \\
 
   \begin{lstlisting}
@@ -1425,25 +1416,30 @@ HeightField* heightField = physicsCommon.createHeightField(NB_POINTS_WIDTH, NB_P
 					    heightValues, rp3d::HeightField::HeightDataType::HEIGHT_FLOAT_TYPE,
 					    messages);
 
-// Display the messages (info, warning and errors)
+// Display the messages (info, warning and errors)
 if (messages.size() > 0) {
 
   for (const rp3d::Message& message: messages) {
 
     std::string messageType;
     switch(message.type) {
-      case rp3d::Message::Type::Information: messageType = "info"; break;
-      case rp3d::Message::Type::Warning: messageType = "warning"; break;
-      case rp3d::Message::Type::Error: messageType = "error"; break;
+      case rp3d::Message::Type::Information:
+        messageType = "info";
+        break;
+      case rp3d::Message::Type::Warning:
+        messageType = "warning";
+        break;
+      case rp3d::Message::Type::Error:
+        messageType = "error";
+        break;
     }
 
     std::cout << "Message (" << messageType << "): " << message.text << std::endl;
   }
 }
 
-  // Make sure there was no errors during the height field creation
-  assert(heightField != nullptr);
-
+// Make sure there was no errors during the height field creation
+assert(heightField != nullptr);
   \end{lstlisting}
 
   \vspace{0.6cm}
@@ -1452,10 +1448,15 @@ if (messages.size() > 0) {
   of your array of height values but you need to keep the \texttt{TriangleMesh} until all the \texttt{HeightFieldShapes} that have been instantiated from
   it are destroyed. \\
 
-  TODO ...
+  Once we have our \texttt{HeightField} instance, we can use it to create an actual \texttt{HeightFieldShape} as in the following example: \\
 
-  You can also specify a scaling factor in the \texttt{PhysicsCommon::createHeightShape()} method  when you create a \texttt{Height\allowbreak FieldShape}.
-  All the vertices of your mesh will be scaled from the origin by this factor when used in the collision shape. \\
+  \begin{lstlisting}
+  HeightFieldShape* heightFieldShape = physicsCommon.createHeightFieldShape(heightField);
+  \end{lstlisting}
+
+  \vspace{0.6cm}
+  You can also specify a scaling factor in the \texttt{PhysicsCommon::createHeightShape()} method when you create a \texttt{Height\allowbreak FieldShape}.
+  All the vertices of your mesh will be scaled from the local origin of the shape by this factor. \\
 
   When creating a \texttt{HeightFieldShape}, the origin of the shape will be at the center of its bounding volume.
   Therefore, if you create a \texttt{HeightFieldShape} with a minimum height of 100 and a maximum height of 500, the
