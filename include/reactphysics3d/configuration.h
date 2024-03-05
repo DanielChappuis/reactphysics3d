@@ -35,7 +35,6 @@
 #include <string>
 #include <cmath>
 #include <reactphysics3d/decimal.h>
-#include <reactphysics3d/containers/Pair.h>
 
 // OS
 #if defined(_WIN32) || defined(_WIN64)
@@ -72,6 +71,10 @@
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
+
+// Forward declarations
+template<typename T1, typename T2>
+class Pair;
 
 // ------------------- Type definitions ------------------- //
 

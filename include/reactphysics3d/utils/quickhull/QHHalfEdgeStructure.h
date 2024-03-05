@@ -167,26 +167,6 @@ class QHHalfEdgeStructure {
                return verticesString;
             }
 
-            // TODO: DELETE THIS
-            bool hasVertexWithIndex(uint32 externalIndex) const {
-
-                const QHHalfEdgeStructure::Edge* firstFaceEdge = edge;
-                const QHHalfEdgeStructure::Edge* faceEdge = firstFaceEdge;
-                do {
-
-                   QHHalfEdgeStructure::Vertex* vertex = faceEdge->startVertex;
-
-                   if (vertex->externalIndex == externalIndex) {
-                       return true;
-                   }
-
-                   faceEdge = faceEdge->nextFaceEdge;
-
-                } while(faceEdge != firstFaceEdge);
-
-                return false;
-            }
-
             // Return true if the face is a triangle
             bool isTriangle() {
 

@@ -58,12 +58,10 @@ class MemoryAllocator {
         virtual void release(void* pointer, size_t size)=0;
 
         /// Given a pointer to memory, this method returns the next aligned address
-        // TODO : We need to use uint8 type instead of uint8_t here
-        static void* alignAddress(void* pointer, std::uint8_t alignment);
+        static void* alignAddress(void* pointer, uint8 alignment);
 
         /// Given a pointer to memory, this method returns the next aligned address and also output the alignment offset
-        // TODO : We need to use uint8 type instead of uint8_t here
-        static void* alignAddress(void* pointer, std::uint8_t alignment, ptrdiff_t& alignmentOffset);
+        static void* alignAddress(void* pointer, uint8 alignment, ptrdiff_t& alignmentOffset);
 };
 
 }

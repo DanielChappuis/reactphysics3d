@@ -2467,7 +2467,6 @@ class TestWorldQueries : public Test {
             rp3d_test(collisionData != nullptr);
             rp3d_test(collisionData->getNbContactPairs() == 1);
             rp3d_test(collisionData->getTotalNbContactPoints() == 4);
-            auto test = collisionData->getTotalNbContactPoints();
 
             for (size_t i=0; i<collisionData->contactPairs[0].contactPoints.size(); i++) {
                 rp3d_test(approxEqual(collisionData->contactPairs[0].contactPoints[i].penetrationDepth, 1.0f));

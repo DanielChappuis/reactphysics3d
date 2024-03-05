@@ -35,7 +35,7 @@ using namespace reactphysics3d;
 * @param alignment Desired alignment
 * @return Pointer to the next aligned memory location
 */
-void* MemoryAllocator::alignAddress(void* pointer, std::uint8_t alignment) {
+void* MemoryAllocator::alignAddress(void* pointer, uint8 alignment) {
 
     ptrdiff_t alignmentOffset;
     return alignAddress(pointer, alignment, alignmentOffset);
@@ -48,7 +48,7 @@ void* MemoryAllocator::alignAddress(void* pointer, std::uint8_t alignment) {
 * @param outAlignmentOffset Output alignment offset needed to align the initial pointer
 * @return Pointer to the next aligned memory location
 */
-void* MemoryAllocator::alignAddress(void* pointer, std::uint8_t alignment, ptrdiff_t& outAlignmentOffset) {
+void* MemoryAllocator::alignAddress(void* pointer, uint8 alignment, ptrdiff_t& outAlignmentOffset) {
 
     // Take care of alignment to make sure that we always return an address to the
     // enforce the global alignment of the library

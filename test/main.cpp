@@ -34,7 +34,7 @@
 #include "tests/mathematics/TestMathematicsFunctions.h"
 #include "tests/collision/TestPointInside.h"
 #include "tests/collision/TestRaycast.h"
-#include "tests/collision/TestWorldQueries.h".h"
+#include "tests/collision/TestWorldQueries.h"
 #include "tests/collision/TestAABB.h"
 #include "tests/collision/TestDynamicAABBTree.h"
 #include "tests/collision/TestHalfEdgeStructure.h"

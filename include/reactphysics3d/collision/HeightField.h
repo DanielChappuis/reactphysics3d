@@ -81,6 +81,9 @@ class HeightField {
         /// Maximum height value of the height field
         decimal mMaxHeight;
 
+        /// Height origin
+        decimal mHeightOrigin;
+
         /// Height values scale for height field with integer height values
         decimal mIntegerHeightScale;
 

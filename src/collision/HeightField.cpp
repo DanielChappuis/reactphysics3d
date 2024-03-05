@@ -127,6 +127,9 @@ void HeightField::copyData(const void* heightFieldData) {
             }
         }
     }
+
+    // Compute the height origin
+    mHeightOrigin = -(mMaxHeight - mMinHeight) * decimal(0.5) - mMinHeight;
 }
 
 // Test collision with the triangles of the height field shape. The idea is to use the AABB
@@ -398,11 +401,7 @@ Vector3 HeightField::getVertexAt(uint32 x, uint32 y) const {
     // Get the height value
     const decimal height = getHeightAt(x, y);
 
-    // Height values origin
-    // TODO: DO not compute this here but store as constant as class member
-    const decimal heightOrigin = -(mMaxHeight - mMinHeight) * decimal(0.5) - mMinHeight;
-
-    const Vector3 vertex = Vector3(-mWidth * decimal(0.5) + x, heightOrigin + height, -mLength * decimal(0.5) + y);
+    const Vector3 vertex = Vector3(-mWidth * decimal(0.5) + x, mHeightOrigin + height, -mLength * decimal(0.5) + y);
 
     assert(mBounds.contains(vertex));
 
