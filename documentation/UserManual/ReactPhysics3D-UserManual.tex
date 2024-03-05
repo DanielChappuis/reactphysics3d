@@ -98,7 +98,7 @@
     \item Documentation (user manual and Doxygen API)
     \item Testbed application with demos
     \item Integrated profiler
-    \item Debugging renderer
+    \item Debug renderer
     \item Logs
     \item Unit tests
    \end{itemize}
@@ -1192,7 +1192,8 @@ assert(convexMesh != nullptr);
     not limited to triangular faces, you can create faces with more than three vertices. \\
 
     Also note that meshes with duplicated vertices are not supported. The number of vertices you pass to create the \texttt{PolygonVertexArray} must
-    be exactly the number of vertices in your convex mesh. \\
+    be exactly the number of vertices in your convex mesh. The \texttt{PhysicsCommon::createConvexMesh()} will also report errors if some faces of your
+    mesh have almost zero area (degenerated face). You will need to fix those errors in order to create the \texttt{ConvexMesh}. \\
 
     When you specify the vertices for each face of your convex mesh, be careful with their order. The vertices of a face must be specified in
     counter clockwise order as seen from the outside of your convex mesh. \\
@@ -1358,6 +1359,10 @@ assert(triangleMesh != nullptr);
   of the face normals of all the neighboring triangle faces. Therefore, if you specify your mesh with duplicated vertices when you create the
   \emph{TriangleVertexArray}, the automatic vertices normals computation will not give correct normals because each vertex of the mesh will only be
   part of a single triangle face. In this case, you must provide your own vertices normals when you create the \emph{TriangleVertexArray}. \\
+
+  The \texttt{PhysicsCommon::createTriangleMesh()} will also report errors if some faces of your mesh have almost zero area
+  (degenerated face). You will need to fix those errors in order to create the \texttt{TriangleMesh}. It is also a good idea to avoid coplanar faces
+  for better collision detection. \\
 
   Now that we have a \texttt{TriangleMesh}, we can create the actual \texttt{ConcaveMeshShape}. \\
 
@@ -1575,7 +1580,8 @@ material.setFrictionCoefficient(0.2);
     if you want to simulate a body that is falling on the floor and bumping against it, you will need to have a least of simulation collider in both the
     falling body and the floor body. \\
 
-    To set a collider as being a simulation collider, you need to use the \texttt{Collider::setIsSimulationCollider()} method as in the following example: \\
+    To set a collider as being a simulation collider, you need to use the
+    \texttt{Collider::\allowbreak setIsSimulationCollider()} method as in the following example: \\
 
     \begin{lstlisting}
 bombCollider->setIsSimulationCollider(true);
@@ -1600,7 +1606,7 @@ bombCollider->setIsSimulationCollider(true);
 
     For instance, if you want to test a body of your scene with raycasting, you need to set the collider of that body as being a world query collider.
 
-    To set a collider as being a world query collider, you need to use the \texttt{Collider::setIsWorldQueryCollider()} method as in the following example: \\
+    To set a collider as being a world query collider, you need to use the \texttt{Collider::\allowbreak setIsWorldQueryCollider()} method as in the following example: \\
 
     \begin{lstlisting}
 bombCollider->setIsWorldQueryCollider(true);
@@ -2360,7 +2366,9 @@ physicsCommon.setLogger(logger);
   \begin{sloppypar}
    By default, the debug rendering is disabled. You can activate it using the \texttt{PhysicsWorld::setIsDebugRenderingEnabled()} method. Note that you
    should disable it for the final release because this can be quite expensive to compute. You can get a reference to \texttt{DebugRenderer} of the physics
-   world using the \texttt{PhysicsWorld::getDebugRenderer()} method. Then, you need to select the debug items
+   world using the \texttt{PhysicsWorld::getDebugRenderer()} method. You also need to enable debugging for each body that you want to debug using the
+   \texttt{Body::setIsDebugEnabled()} method. By default,
+   debuging is disabled for all bodies. Then, you need to select the debug items
    (class \texttt{DebugRenderer:DebugItem}) you want to display. For instance, you might want to display the shapes of the colliders
    (\texttt{DebugItem::COLLISION\_SHAPE}), the broad-phase AABBs of the colliders (\texttt{DebugItem::COLLIDER\_BROADPHASE\_AABB}), the colliders AABBs
    (\texttt{DebugItem::COLLIDER\_AABB}), the contact points (\texttt{DebugItem::CONTACT\_POINT}) or the contact normals (\texttt{DebugItem::CONTACT\_NORMAL}).
@@ -2372,6 +2380,11 @@ physicsCommon.setLogger(logger);
     \begin{lstlisting}
 // Enable debug rendering
 physicsWorld->setIsDebugRenderingEnabled(true);
+
+// Enable debugging for each rigid body that we want to display
+for (RigidBody* body: rigidBodies) {
+  body->setIsDebugEnabled(true);
+}
 
 // Get a reference to the debug renderer
 DebugRenderer& debugRenderer = physicsWorld->getDebugRenderer();
