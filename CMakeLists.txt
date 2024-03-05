@@ -21,6 +21,9 @@ endif()
 # CMake modules path
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 
+# Add INSTALL target in Visual Studio solution
+set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
+
 # Enable testing
 enable_testing()
 
