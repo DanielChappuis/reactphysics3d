@@ -29,7 +29,6 @@
 // Libraries
 #include <cstddef>
 #include <functional>
-#include <reactphysics3d/configuration.h>
 
 namespace reactphysics3d {
 

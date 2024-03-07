@@ -27,8 +27,6 @@
 #define REACTPHYSICS3D_PAIR_H
 
 // Libraries
-#include <reactphysics3d/configuration.h>
-#include <reactphysics3d/memory/MemoryAllocator.h>
 #include <reactphysics3d/containers/containers_common.h>
 #include <cstring>
 #include <iterator>
