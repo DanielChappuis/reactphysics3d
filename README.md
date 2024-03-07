@@ -58,9 +58,14 @@ your application, it is recommended to checkout the "master" branch.
 
 If you have any questions about the library and how to use it, you should use <a href="https://github.com/DanielChappuis/reactphysics3d/discussions" target="_blank">Github Discussions</a> to read previous questions and answers or to ask new questions. If you want, you can also share your project there if you are using the ReactPhysics3D library.
 
+## Questions/Discussions
+
+You can use the <a href="https://github.com/DanielChappuis/reactphysics3d/discussions" target="_blank">Discussions</a> section to ask your questions or answer questions from other users of the library. Please, do not open a new issue to ask a question.
+
 ## Issues
 
 If you find any issue with the library, you can report it on the issue tracker <a href="https://github.com/DanielChappuis/reactphysics3d/issues" target="_blank">here</a>.
+Please, do not open a new issue to ask a question. Use the <a href="https://github.com/DanielChappuis/reactphysics3d/discussions" target="_blank">Discussion</a> section for your questions.
 
 ## Author
 
