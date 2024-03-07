@@ -65,7 +65,7 @@ You can use the <a href="https://github.com/DanielChappuis/reactphysics3d/discus
 ## Issues
 
 If you find any issue with the library, you can report it on the issue tracker <a href="https://github.com/DanielChappuis/reactphysics3d/issues" target="_blank">here</a>.
-Please, do not open a new issue to ask a question. Use the <a href="https://github.com/DanielChappuis/reactphysics3d/discussions" target="_blank">Discussion</a> section for your questions.
+Please, do not open a new issue to ask a question. Use the <a href="https://github.com/DanielChappuis/reactphysics3d/discussions" target="_blank">Discussions</a> section for your questions.
 
 ## Author
 
