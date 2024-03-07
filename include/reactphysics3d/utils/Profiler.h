@@ -229,7 +229,7 @@ class Profiler {
                    :Destination(format), mFilePath(filePath),
                     mFileStream(filePath, std::ios::binary) {
 
-                    assert(mFileStream.is_open())
+                    assert(mFileStream.is_open());
                 }
 
                 /// Destructor
