@@ -22,7 +22,7 @@
   <img src="https://github.com/DanielChappuis/reactphysics3d/blob/images/showreel.gif?raw=true" alt="Drawing" />
 </p>
 
-## :dart: Features
+## Features
 
  - Rigid body dynamics
  - Discrete collision detection
@@ -44,37 +44,37 @@
  - Logs
  - Unit tests
 
-## :book: Documentation
+## Documentation
 
 You can find the user manual and the Doxygen API documentation <a href="https://www.reactphysics3d.com/documentation.html" target="_blank">here</a>.
 
-## :information_source: Branches
+## Branches
 
 The "master" branch always contains the last released version of the library and some possible hot fixes. This is the most stable version. On the other side,
 the "develop" branch is used for development. This branch is frequently updated and can be quite unstable. Therefore, if you want to use the library in
 your application, it is recommended to checkout the "master" branch.
 
-## :question: Questions
+## Questions
 
 If you have any questions about the library and how to use it, you should use <a href="https://github.com/DanielChappuis/reactphysics3d/discussions" target="_blank">Github Discussions</a> to read previous questions and answers or to ask new questions. If you want, you can also share your project there if you are using the ReactPhysics3D library.
 
-## :warning: Issues
+## Issues
 
 If you find any issue with the library, you can report it on the issue tracker <a href="https://github.com/DanielChappuis/reactphysics3d/issues" target="_blank">here</a>.
 
-## :man: Author
+## Author
 
 The ReactPhysics3D library has been created and is maintained by <a href="https://github.com/DanielChappuis" target="_blank">Daniel Chappuis</a>.
 
-## :copyright: License
+## License
 
 The ReactPhysics3D library is released under the open-source <a href="http://opensource.org/licenses/zlib" target="_blank">ZLib license</a>.
 
-## :+1: Sponsorship
+## Sponsorship
 
 If you are using this library and want to support its development, you can sponsor it <a href="https://github.com/sponsors/DanielChappuis" target="_blank">here</a>.
 
-## :clap: Credits
+## Credits
 
 Thanks a lot to Erin Catto, Dirk Gregorius, Erwin Coumans, Pierre Terdiman and Christer Ericson for their amazing GDC presentations,
 their physics engines, their books or articles and their contributions on many physics engine forums.
