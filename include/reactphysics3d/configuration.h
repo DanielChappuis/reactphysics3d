@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2022 Daniel Chappuis                                       *
+* Copyright (c) 2010-2024 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -149,7 +149,7 @@ constexpr decimal SAME_CONTACT_POINT_DISTANCE_THRESHOLD = decimal(0.01);
 constexpr uint8 GLOBAL_ALIGNMENT = 16;
 
 /// Current version of ReactPhysics3D
-const std::string RP3D_VERSION = std::string("0.9.0");
+const std::string RP3D_VERSION = std::string("0.10.0");
 
 }
 
