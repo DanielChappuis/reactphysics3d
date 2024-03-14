@@ -293,14 +293,16 @@ class Deque {
 
         /// Destructor
         ~Deque() {
+            if (mCapacity > 0) {
 
-            clear();
+                clear();
 
-            // Release the chunks array
-            mAllocator.release(mBuffer, sizeof(T) * mCapacity);
+                // Release the chunks array
+                mAllocator.release(mBuffer, sizeof(T) * mCapacity);
 
-            mCapacity = 0;
-            mBuffer = nullptr;
+                mCapacity = 0;
+                mBuffer = nullptr;
+            }
         }
 
         /// Add an element at the end of the deque
