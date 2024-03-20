@@ -31,6 +31,7 @@ enable_testing()
 option(RP3D_COMPILE_TESTBED "Select this if you want to build the testbed application with demos" OFF)
 option(RP3D_COMPILE_TESTS "Select this if you want to build the unit tests" OFF)
 option(RP3D_PROFILING_ENABLED "Select this if you want to compile for performanace profiling" OFF)
+option(RP3D_GENERATE_DOCUMENTATION "Select this if you want to generate the project documentation" OFF)
 option(RP3D_CODE_COVERAGE_ENABLED "Select this if you need to build for code coverage calculation" OFF)
 option(RP3D_DOUBLE_PRECISION_ENABLED "Select this if you want to compile using double precision floating values" OFF)
 
@@ -272,6 +273,11 @@ endif()
 # If we need to compile the tests
 if(RP3D_COMPILE_TESTS)
    add_subdirectory(test/)
+endif()
+
+# Documentation generation
+if(RP3D_GENERATE_DOCUMENTATION)
+   add_subdirectory(documentation/)
 endif()
 
 # Enable profiling if necessary
