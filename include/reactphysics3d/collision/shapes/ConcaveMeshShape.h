@@ -40,6 +40,9 @@ class TriangleShape;
 class TriangleMesh;
 
 // class ConvexTriangleAABBOverlapCallback
+/**
+ * This class represents a callback when an overlap occurs
+ */
 class ConvexTriangleAABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
     private:

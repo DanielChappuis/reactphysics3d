@@ -47,6 +47,9 @@ class MemoryManager;
 class Profiler;
 
 // class AABBOverlapCallback
+/**
+ * This class represents a callback when two AABB overlap
+ */
 class AABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
     public:
