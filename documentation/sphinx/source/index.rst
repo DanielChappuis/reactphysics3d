@@ -8,24 +8,6 @@ ReactPhysics3D
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-User Manual
-===========
-
-
-.. include:: user_manual/user_manual.rst
-
-C++ API Reference
-=================
-
-.. doxygenindex::
+   introduction
+   api/library_root

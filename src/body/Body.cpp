@@ -36,9 +36,8 @@ using namespace reactphysics3d;
 
 // Constructor
 /**
- * @param transform The transform of the body
- * @param world The physics world where the body is created
- * @param id ID of the body
+ * @param world The reference to the physics world where the body is created
+ * @param entity Entity of the body
  */
 Body::Body(PhysicsWorld& world, Entity entity)
               : mEntity(entity), mWorld(world), mIsDebugEnabled(false)  {
@@ -133,8 +132,8 @@ uint32 Body::getNbColliders() const {
 
 // Return a const pointer to a given collider of the body
 /**
-* @param index Index of a Collider of the body
-* @return The const pointer of a given collider of the body
+* @param colliderIndex Index of a Collider of the body
+* @return The const pointer to the requested collider
 */
 const Collider* Body::getCollider(uint32 colliderIndex) const {
 
@@ -147,8 +146,8 @@ const Collider* Body::getCollider(uint32 colliderIndex) const {
 
 // Return a pointer to a given collider of the body
 /**
-* @param index Index of a Collider of the body
-* @return The pointer of a given collider of the body
+* @param colliderIndex Index of a Collider of the body
+* @return The pointer to the requested collider
 */
 Collider* Body::getCollider(uint32 colliderIndex) {
 
