@@ -109,6 +109,10 @@ class OverlappingPairs {
 
     public:
 
+        // Struct OverlappingPair
+        /**
+         * A base overlapping pair
+         */
         struct OverlappingPair {
 
             /// Ids of the convex vs convex pairs
@@ -156,7 +160,10 @@ class OverlappingPairs {
             virtual ~OverlappingPair() = default;
         };
 
-        // Overlapping pair between two convex colliders
+        // Struct ConvexOverlappingPair
+        /**
+         * An overlapping pair between two convex colliders
+         */
         struct ConvexOverlappingPair : public OverlappingPair {
 
             /// Temporal coherence collision data for each overlapping collision shapes of this pair.
@@ -173,7 +180,10 @@ class OverlappingPairs {
             }
         };
 
-        // Overlapping pair between two a convex collider and a concave collider
+        // Struct ConvexOverlappingPair
+        /**
+         * An overlapping pair between a convex collider and a concave collider
+         */
         struct ConcaveOverlappingPair : public OverlappingPair {
 
             private:

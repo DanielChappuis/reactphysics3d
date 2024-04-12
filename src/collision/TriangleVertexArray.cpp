@@ -80,6 +80,7 @@ TriangleVertexArray::TriangleVertexArray(uint32 nbVertices, const void* vertices
  * @param indexesStart Pointer to the first triangle index
  * @param indexesStride Number of bytes between the beginning of two consecutive triangle indices
  * @param vertexDataType Type of data for the vertices (float, double)
+ * @param normalDataType Type of data for the normals (float, double)
  * @param indexDataType Type of data for the indices (short, int)
  */
 TriangleVertexArray::TriangleVertexArray(uint32 nbVertices, const void* verticesStart, uint32 verticesStride,

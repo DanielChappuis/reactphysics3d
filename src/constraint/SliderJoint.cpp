@@ -177,7 +177,7 @@ void SliderJoint::setMinTranslationLimit(decimal lowerLimit) {
 
 // Set the maximum translation limit
 /**
- * @param lowerLimit The maximum translation limit of the joint (in meters)
+ * @param upperLimit The maximum translation limit of the joint (in meters)
  */
 void SliderJoint::setMaxTranslationLimit(decimal upperLimit) {
 

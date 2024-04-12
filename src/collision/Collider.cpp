@@ -35,10 +35,9 @@ using namespace reactphysics3d;
 
 // Constructor
 /**
- * @param body Pointer to the parent body
- * @param shape Pointer to the collision shape
- * @param transform Transformation from collision shape local-space to body local-space
- * @param mass Mass of the collision shape (in kilograms)
+ * @param entity Entity of the collider
+ * @param body Pointer to the body
+ * @param memoryManager Reference to the memory manager
  */
 Collider::Collider(Entity entity, Body* body, MemoryManager& memoryManager)
            :mMemoryManager(memoryManager), mEntity(entity), mBody(body),

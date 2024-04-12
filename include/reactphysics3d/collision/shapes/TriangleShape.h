@@ -221,9 +221,8 @@ RP3D_FORCE_INLINE AABB TriangleShape::getLocalBounds() const {
 
 // Return the local inertia tensor of the triangle shape
 /**
- * @param[out] tensor The 3x3 inertia tensor matrix of the shape in local-space
- *                    coordinates
  * @param mass Mass to use to compute the inertia tensor of the collision shape
+ * @return A vector with the three diagonal values of the local inertia tensor
  */
 RP3D_FORCE_INLINE Vector3 TriangleShape::getLocalInertiaTensor(decimal /*mass*/) const {
     return Vector3(0, 0, 0);

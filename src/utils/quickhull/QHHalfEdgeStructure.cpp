@@ -79,7 +79,8 @@ QHHalfEdgeStructure::~QHHalfEdgeStructure() {
 
 // Add a vertex
 /**
- * @param vertexPointIndex Index of the vertex in the external user vertex data array
+ * @param externalIndex Index of the vertex in the external user vertex data array
+ * @return A pointer to the new vertex
  */
 QHHalfEdgeStructure::Vertex* QHHalfEdgeStructure::addVertex(uint32 externalIndex) {
 
@@ -101,6 +102,9 @@ QHHalfEdgeStructure::Vertex* QHHalfEdgeStructure::addVertex(uint32 externalIndex
 /**
  * @param faceVertices Array of the vertices in a face (ordered in CCW order as seen from outside
  *                     the polyhedron). The indices are the internal indices of the vertices inside the HalfEdgeStructure.
+ * @param points Array with the points (coordinates) of the face vertices
+ * @param allocator Reference to a memory allocator
+ * @return A Pointer to the new face
  */
 QHHalfEdgeStructure::Face* QHHalfEdgeStructure::addFace(const Array<Vertex*>& faceVertices, const Array<Vector3>& points,
                                                         MemoryAllocator& allocator) {

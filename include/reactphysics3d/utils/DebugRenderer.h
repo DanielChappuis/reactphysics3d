@@ -378,9 +378,9 @@ RP3D_FORCE_INLINE void DebugRenderer::setContactNormalLength(decimal contactNorm
 
 }
 
-// Hash function for a DebugItem
 namespace std {
 
+  // Hash function for a DebugItem
   template <> struct hash<reactphysics3d::DebugRenderer::DebugItem> {
 
     size_t operator()(const reactphysics3d::DebugRenderer::DebugItem& debugItem) const {

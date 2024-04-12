@@ -47,6 +47,11 @@ struct ContactPointInfo;
  */
 struct NarrowPhaseInfoBatch {
 
+    // Struct NarrowPhaseInfo
+    /**
+     * A potential collision between two colliders from the middle-phase algorithm
+     * that have to be tested during narrow-phase collision detection.
+     */
     struct NarrowPhaseInfo {
 
         /// Broadphase overlapping pairs ids

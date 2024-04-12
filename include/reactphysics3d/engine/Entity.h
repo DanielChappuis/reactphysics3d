@@ -125,9 +125,9 @@ RP3D_FORCE_INLINE bool Entity::operator!=(const Entity& entity) const {
 
 }
 
-// Hash function for a reactphysics3d Entity
 namespace std {
 
+  // Hash function for a reactphysics3d Entity
   template <> struct hash<reactphysics3d::Entity> {
 
     size_t operator()(const reactphysics3d::Entity& entity) const {

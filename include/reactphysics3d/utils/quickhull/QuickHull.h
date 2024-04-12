@@ -44,7 +44,10 @@ template<typename T>
 class Array;
 
 // Class QuickHull
-// This algorithm is based on 'Implementing Quickhull' presentation at GDC from Dirk Gregorius
+// This algorithm is based on 'Implementing Quickhull' presentation at GDC from Dirk Gregorius
+/**
+ * This class implements the Quickhull algorithm to compute a convex mesh from a set of 3D points
+ */
 class QuickHull {
 
     private:
