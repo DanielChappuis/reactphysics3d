@@ -93,7 +93,7 @@ class OverlapCallback {
                 // -------------------- Methods -------------------- //
 
                 /// Copy constructor
-                OverlapPair(const OverlapPair& contactPair) = delete;
+                OverlapPair(const OverlapPair& contactPair) = default;
 
                 /// Assignment operator
                 OverlapPair& operator=(const OverlapPair& contactPair) = delete;
