@@ -1,0 +1,28 @@
+# Build, run tests and create a new release
+name: release 
+
+# Controls when the action will run. Triggers the workflow on push
+on:
+  push:
+    tags:
+      #- "v[0-9]+.[0-9]+.[0-9]+"
+    - "test[0-9]+.[0-9]+.[0-9]+"
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # Reuse the workflow to build and test the library
+  build-and-test:
+    uses: ./.github/workflows/build-and-test.yml
+
+  # Create a new release
+  create-release:
+    uses: docker://antonyurchenko/git-release:v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DRAFT_RELEASE: "true"
+        PRE_RELEASE: "false"
+        CHANGELOG_FILE: "CHANGELOG.md"
+        ALLOW_EMPTY_CHANGELOG: "false"
+        ALLOW_TAG_PREFIX: "true"
+
