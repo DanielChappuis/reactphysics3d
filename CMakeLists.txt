@@ -1,8 +1,12 @@
 # Minimum cmake version required
 cmake_minimum_required(VERSION 3.10)
 
+# Extract ReactPhysics3D version number from VERSION file
+file(READ VERSION RP3D_VERSION)
+string(STRIP ${RP3D_VERSION} RP3D_VERSION)
+
 # Project configuration
-project(ReactPhysics3D VERSION 0.10.0 LANGUAGES CXX)
+project(ReactPhysics3D VERSION "${RP3D_VERSION}" LANGUAGES CXX)
  
 # In order to install libraries into correct locations on all platforms.
 include(GNUInstallDirs)
@@ -290,10 +294,13 @@ if(RP3D_DOUBLE_PRECISION_ENABLED)
     target_compile_definitions(reactphysics3d PUBLIC IS_RP3D_DOUBLE_PRECISION_ENABLED)
 endif()
 
+# Extract SOVERSION from VERSION number (for instance extract 0.10 from 0.10.0)
+string(REGEX MATCH "^[0-9]+\.[0-9]+" RP3D_SOVERSION "${RP3D_VERSION}")
+
 # Version number and soname for the library
-set_target_properties(reactphysics3d  PROPERTIES
-          VERSION "0.10.0" 
-          SOVERSION "0.10"
+set_target_properties(reactphysics3d PROPERTIES
+          VERSION "${RP3D_VERSION}"
+	  SOVERSION "${RP3D_SO_VERSION}" 
 )
 
 # Install target (install library only, not headers)
