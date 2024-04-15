@@ -17,7 +17,7 @@ jobs:
 
   # Create a new release
   create-release:
-    uses: docker://antonyurchenko/git-release:v5
+    uses: docker://antonyurchenko/git-release:v6
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       DRAFT_RELEASE: "true"
