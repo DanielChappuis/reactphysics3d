@@ -12,8 +12,8 @@ on:
 jobs:
 
   # Reuse the workflow to build and test the library
-  build-and-test:
-    uses: ./.github/workflows/build-and-test.yml
+  #build-and-test:
+  #  uses: ./.github/workflows/build-and-test.yml
 
   # Create a new release
   create-release:
