@@ -19,15 +19,14 @@ jobs:
   create-release:
     name: create-release
     runs-on: ubuntu-latest
-    #needs: [build-and-test]
     steps:
       - name: Create Release
         uses: docker://antonyurchenko/git-release:v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DRAFT_RELEASE: "true"
+          DRAFT_RELEASE: "true"
           PRE_RELEASE: "false"
-          CHANGELOG_FILE: "CHANGELOG.md"
+          CHANGELOG_FILE: CHANGELOG.md
           ALLOW_EMPTY_CHANGELOG: "false"
           ALLOW_TAG_PREFIX: "true"
 
