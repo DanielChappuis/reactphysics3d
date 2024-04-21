@@ -42,7 +42,7 @@ configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
 file(COPY doxygen-awesome-css DESTINATION ${DOXYGEN_OUTPUT_DIR})
 
 # Copy the "images" folder to build directory
-file(COPY images DESTINATION ${DOXYGEN_OUTPUT_DIR})
+file(COPY images DESTINATION ${DOXYGEN_OUTPUT_DIR}/html)
 
 # Create the Doxygen output directory
 file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR})
