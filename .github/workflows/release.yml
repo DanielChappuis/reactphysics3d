@@ -7,7 +7,7 @@ on:
     tags:
       #- "v[0-9]+.[0-9]+.[0-9]+"
       - "test[0-9]+.[0-9]+.[0-9]+"
-
+    :w
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
@@ -30,4 +30,6 @@ jobs:
           CHANGELOG_FILE: "CHANGELOG.md"
           ALLOW_EMPTY_CHANGELOG: "false"
           ALLOW_TAG_PREFIX: "true"
+
+
 
