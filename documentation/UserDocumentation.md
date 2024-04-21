@@ -925,6 +925,7 @@ If you know the vertices and faces of your mesh, you can use the following metho
 PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& messages)
 ~~~
 
+
 To use this method, you need to create an array of `PolygonFace` to describe each face of your mesh. You also need to have an array with
 the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a `PolygonVertexArray` with
 your vertices coordinates and indices array. You also need to specify your array of `PolygonFace`. Then, you can call the previous method
