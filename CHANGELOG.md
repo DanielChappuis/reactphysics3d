@@ -1,6 +1,24 @@
 # Changelog
 
-## Version 0.10.0 (March 10, 2024)
+## [0.25.0] - 2024.04.22
+
+### Added
+
+ - Test 1 added
+ - Test 2 added
+
+### Changed
+
+ - Test 3 changed
+### Removed
+
+ - Test 4 removed
+
+### Fixed
+
+ - Test 5 fixed
+
+## [0.10.0] - 2024.03.10
 
 ### Added
 
@@ -72,7 +90,7 @@
 - Issue with edge vs edge collision detection for BoxShape, ConvexMeshShape, ConcaveMeshShape and HeightFieldShape (SAT algorithm)
 - Compilation error on Clang 19
 
-## Version 0.9.0 (January 4, 2022)
+## [0.9.0] - 2022.01.04
 
 ### Added
 
@@ -140,7 +158,7 @@
 - The default warning level is not set anymore in CMakeLists.txt file (Issue [#220](https://github.com/DanielChappuis/reactphysics3d/issues/220)) 
 - Issue [#225](https://github.com/DanielChappuis/reactphysics3d/issues/225) with collision not working when setting a body to be static before calling updateMassPropertiesFromColliders() 
 
-## Version 0.8.0 (May 31, 2020)
+## [0.8.0] - 2020.05.31
 
 Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
 do not hesitate to take a look at the user manual.
@@ -227,7 +245,7 @@ do not hesitate to take a look at the user manual.
  - The RigidBody::getInverseInertiaTensorWorld() method has been removed.
  - The Collider::getMass() method has been removed.
 
-## Version 0.7.1 (July 01, 2019)
+## [0.7.1] - 2019.07.01
 
 ### Added
 
@@ -263,7 +281,7 @@ do not hesitate to take a look at the user manual.
    CollisionBody::getProxyShape(uint proxyShapeIndex) method to get a given proxy-shape of the body.
  - The CollisionWorld::testAABBOverlap() methods have been removed.
 
-## Version 0.7.0 (May 1, 2018)
+## [0.7.0] - 2018.05.01
 
 ### Added
  
@@ -309,7 +327,7 @@ do not hesitate to take a look at the user manual.
  - Issue [#34](https://github.com/DanielChappuis/reactphysics3d/issues/34) has been fixed.
  - Issue [#37](https://github.com/DanielChappuis/reactphysics3d/issues/37) has been fixed.
 
-## Version 0.6.0 (April 15, 2016)
+## [0.6.0] - 2016.04.15
 
 ### Added
 
@@ -326,7 +344,7 @@ do not hesitate to take a look at the user manual.
 
  - The DynamicsWorld::update() method now takes the time step for the next simulation step in parameter.
 
-## Version 0.5.0 (March 4, 2015)
+## [0.5.0] - 2015.03.04
 
 ### Added
 
@@ -356,7 +374,7 @@ do not hesitate to take a look at the user manual.
 
  - Fix two issues in the EPA algorithm.
 
-## Version 0.4.0 (October 7, 2013)
+## [0.4.0] - 2013.10.07
 
 ### Added
 
@@ -386,8 +404,7 @@ do not hesitate to take a look at the user manual.
  - Fix issue in the Sweep-And-Prune broad-phase collision detection (thanks to Aleksi Sapon).
  - Fix issue in the contact solver resulting in less jittering.
 
-
-## Version 0.3.0
+## [0.3.0] 
 
 ### Added
 
@@ -403,7 +420,7 @@ do not hesitate to take a look at the user manual.
  - Make GJK/EPA algorithm more robust for spheres.
  - Change the structure of the code for a better separation between the collision detection and the dynamics simulation code.
 
-## Version 0.2.0
+## [0.2.0] 
 
 ### Added
 
