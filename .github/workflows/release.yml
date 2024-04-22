@@ -30,7 +30,7 @@ jobs:
           DRAFT_RELEASE: "true"
           PRE_RELEASE: "false"
           ALLOW_EMPTY_CHANGELOG: "false"
-          TAG_PREFIX_REGEX: "test[0-9]+.[0-9]+.[0-9]+"
+          TAG_PREFIX_REGEX: "test"
 
 
 
