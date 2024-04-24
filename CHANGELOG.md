@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.26.0] - 2024.04.22
+## [0.27.0] - 2024-04-22
 
 ### Added
 
@@ -18,7 +18,7 @@
 
  - Test 5 fixed
 
-## [0.10.0] - 2024.03.10
+## [0.10.0] - 2024-03-10
 
 ### Added
 
@@ -90,7 +90,7 @@
 - Issue with edge vs edge collision detection for BoxShape, ConvexMeshShape, ConcaveMeshShape and HeightFieldShape (SAT algorithm)
 - Compilation error on Clang 19
 
-## [0.9.0] - 2022.01.04
+## [0.9.0] - 2022-01-04
 
 ### Added
 
@@ -158,7 +158,7 @@
 - The default warning level is not set anymore in CMakeLists.txt file (Issue [#220](https://github.com/DanielChappuis/reactphysics3d/issues/220)) 
 - Issue [#225](https://github.com/DanielChappuis/reactphysics3d/issues/225) with collision not working when setting a body to be static before calling updateMassPropertiesFromColliders() 
 
-## [0.8.0] - 2020.05.31
+## [0.8.0] - 2020-05-31
 
 Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
 do not hesitate to take a look at the user manual.
@@ -245,7 +245,7 @@ do not hesitate to take a look at the user manual.
  - The RigidBody::getInverseInertiaTensorWorld() method has been removed.
  - The Collider::getMass() method has been removed.
 
-## [0.7.1] - 2019.07.01
+## [0.7.1] - 2019-07-01
 
 ### Added
 
@@ -281,7 +281,7 @@ do not hesitate to take a look at the user manual.
    CollisionBody::getProxyShape(uint proxyShapeIndex) method to get a given proxy-shape of the body.
  - The CollisionWorld::testAABBOverlap() methods have been removed.
 
-## [0.7.0] - 2018.05.01
+## [0.7.0] - 2018-05-01
 
 ### Added
  
@@ -327,7 +327,7 @@ do not hesitate to take a look at the user manual.
  - Issue [#34](https://github.com/DanielChappuis/reactphysics3d/issues/34) has been fixed.
  - Issue [#37](https://github.com/DanielChappuis/reactphysics3d/issues/37) has been fixed.
 
-## [0.6.0] - 2016.04.15
+## [0.6.0] - 2016-04-15
 
 ### Added
 
@@ -344,7 +344,7 @@ do not hesitate to take a look at the user manual.
 
  - The DynamicsWorld::update() method now takes the time step for the next simulation step in parameter.
 
-## [0.5.0] - 2015.03.04
+## [0.5.0] - 2015-03-04
 
 ### Added
 
@@ -374,7 +374,7 @@ do not hesitate to take a look at the user manual.
 
  - Fix two issues in the EPA algorithm.
 
-## [0.4.0] - 2013.10.07
+## [0.4.0] - 2013-10-07
 
 ### Added
 

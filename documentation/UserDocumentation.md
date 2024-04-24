@@ -47,7 +47,7 @@ Then, you will need to build (compile) the library and install it on your system
 The best way is to use CMake for that. CMake will generate the necessary files on your platform (Windows, OS X or Linux) to build
 the library.
 
-CMake can be downloaded at [http://www.cmake.org](http://www.cmake.org) or using your package-management program (apt, yum, \dots) on Linux.
+CMake can be downloaded at [http://www.cmake.org](http://www.cmake.org) or using your package-management program (apt, yum, ...) on Linux.
 If you have never used CMake before, you should read [this page](http://www.cmake.org/cmake/help/runningcmake.html) as
 it contains a lot of useful information. 
 
@@ -66,10 +66,10 @@ First, we will see how to configure CMake and generate the native build tool fil
 First, you need to create a folder where you want to build the library. Then go into that folder and run the following `ccmake` command:
 
 ~~~
-ccmake path\_to\_library\_source\textgreater
+ccmake path_to_library_source
 ~~~
 
-where `path\_to\_library\_source\textgreater` must be replaced
+where `path_to_library_source` must be replaced
 by the path to the the `reactphysics3d/` folder of the repository you have cloned. It is the folder that
 contains the `CMakeLists.txt` file of ReactPhysics3D. Running this command will launch the CMake command line interface.
 Hit the 'c' key to configure the project. There, you can also change some predefined options (see this [section](#cmakevariables) for more details)
@@ -86,7 +86,7 @@ build the library. Select any empty folder that is on your system. Then, you can
 choose an IDE that is on your system that will be used to compile the library. For instance, you can select Visual Studio,
 Qt Creator, XCode, ... Then, click on the **Finish** button. Then, you can change the compilation options. See this
 [section](#cmake-options) to see what are the possible options.
-Once this is done, click on **Configure** again and finally on **Generate** as you can see in the following picture. \\
+Once this is done, click on **Configure** again and finally on **Generate** as you can see in the following picture. 
 
 ![CMakeWin](images/CMakeWin.png)
 
@@ -145,7 +145,7 @@ Visual Studio with administrator rights.
 Then, you need to open the Visual Studio solution (.sln file) of ReactPhysics3D that has been generated
 previously with CMake. To do that, click on **File** in the top menu of Visual Studio, then on **Open** and **Project/Solution...**. Then,
 you need to select the ReactPhysics3D Visual Studio solution (.sln file) on your system. Once the solution is open, you first need to change the mode
-at the top to \emph{Release} instead of **Debug**. Then, right click on the **INSTALL**
+at the top to **Release**} instead of **Debug**. Then, right click on the **INSTALL**
 project in the Solution Explorer menu and click on **Build** (see the following picture). This will install the ReactPhysics3D library in a
 standard location on your system like `C:\Program Files (x86)\ReactPhysics3D\` for instance.
 
@@ -183,8 +183,8 @@ You can find below the different CMake options that you can set before building 
 ## Using ReactPhysics3D in your application {#usingrp3d}
 
 If you have built and installed the ReactPhysics3D on your system with CMake as explained in the section \ref{sec:building}, it is easy to import the
-library in your project. You probably already have a `CMakeLists.txt$` file for your project. Therefore, to import the ReactPhysics3D
-library, you simply need to add the following line in the `CMakeLists.txt file of your project.
+library in your project. You probably already have a `CMakeLists.txt` file for your project. Therefore, to import the ReactPhysics3D
+library, you simply need to add the following line in the `CMakeLists.txt` file of your project.
 
 
 ~~~
@@ -245,7 +245,7 @@ Then in your C++ source file, you need to include the main ReactPhysics3D header
 ~~~
 
 
-Also note that all the classes of the library are available in the \texttt{reactphysics3d} namespace or its shorter alias
+Also note that all the classes of the library are available in the `reactphysics3d` namespace or its shorter alias
 `rp3d`. Therefore, you can use this namespace in your code with the following declaration: 
 
 ~~~.cpp
@@ -371,7 +371,7 @@ physicsCommon.destroyPhysicsWorld(world);
 
 ## Physics World {#physicsworld}
 
-Once you have created a \texttt{PhysicsCommon} object (see this [section](#physicscommon)), you will have to create a physics world. A physics world is
+Once you have created a `PhysicsCommon` object (see this [section](#physicscommon)), you will have to create a physics world. A physics world is
 a place where you can add the bodies that you want to simulate. It is possible to create multiple physics worlds but you will probably never need more
 than one. 
 
@@ -381,8 +381,8 @@ than one.
 - `testPointInside()` This method will tell you if a 3D point is inside a `RigidBody` or `Collider`. 
 
 The second way to use the library is to create bodies and let ReactPhysics3D animate their motions automatically using the laws of physics. This is
-done by creating rigid bodies (class \texttt{RigidBody}) in your physics world and by updating the simulation by calling the 
-\texttt{PhysicsWorld::update()} method each frame. The rigid bodies will move according to the forces, collision between bodies and joint constraints of
+done by creating rigid bodies (class `RigidBody`) in your physics world and by updating the simulation by calling the 
+`PhysicsWorld::update()` method each frame. The rigid bodies will move according to the forces, collision between bodies and joint constraints of
 the physics world. A typical use case is a 3D real-time game for instance.
 
 ### Creating the Physics World
@@ -465,18 +465,18 @@ want to simulate a step forward in time (for instance each frame in a real-time 
 To update the physics world, you need to use the `PhysicsWorld::update()` method. This method will perform collision detection and update the
 position and orientation of the bodies according to the forces, joints constraints and collision contacts. Once you have updated the world, you will be
 able to retrieve the new position and orientation of your bodies in order to render the next frame. The `PhysicsWorld::update()` method
-requires a \emph{timeStep} parameter. This is the amount of time you want to advance the physics simulation (in seconds). 
+requires a **timeStep** parameter. This is the amount of time you want to advance the physics simulation (in seconds). 
 
 The smaller the time step you pick, the more precise the simulation will be. For a real-time application, you probably want to use a time step of
-at most $\frac{1}{60}$ seconds to have at least a 60 Hz framerate. Most of the time, physics engines prefer to work with a constant time step.
+at most \f$ \frac{1}{60} \f$ seconds to have at least a 60 Hz framerate. Most of the time, physics engines prefer to work with a constant time step.
 It means that you should always call the `PhysicsWorld::update()` method with the same time step parameter. You do not want to use the exact time
 between two frames as your time step because it will not be constant. 
 
-You can use the following technique. First, you need to choose a constant time step. Let say the time step is $\frac{1}{60}$ seconds.
+You can use the following technique. First, you need to choose a constant time step. Let say the time step is \f$\frac{1}{60}\f$ seconds.
 Then, at each frame, you compute the time difference between the current frame and the previous one and you accumulate this difference in a variable
 called **accumulator**. The accumulator is initialized to zero at the beginning of your application and is updated at each frame. The idea is to
-divide the time in the accumulator in several constant time steps.  For instance, if your accumulator contains $0.145$ seconds, it means that
-we can take $8$ physics steps of $\frac{1}{60}$ seconds during the current frame. Note that $0.012$ seconds will remain in the accumulator
+divide the time in the accumulator in several constant time steps.  For instance, if your accumulator contains 0.145 seconds, it means that
+we can take 8 physics steps of \f$\frac{1}{60}\f$ seconds during the current frame. Note that 0.012 seconds will remain in the accumulator
 and will probably be used in the next frame. As you can see, with this technique, multiple physics steps can be taken at each frame.
 It is important to understand that each call to the `PhysicsWorld::update()` method is done using a constant time step that is
 not varying with the framerate of the application. 
@@ -503,11 +503,11 @@ accumulator += mDeltaTime;
 // one or several physics steps
 while (accumulator >= timeStep) {
 
-// Update the Dynamics world with a constant time step
-world->update(timeStep);
+	// Update the Dynamics world with a constant time step
+	world->update(timeStep);
 
-// Decrease the accumulated time
-accumulator -= timeStep;
+	// Decrease the accumulated time
+	accumulator -= timeStep;
 }
 
 ~~~
@@ -517,7 +517,7 @@ at [https://gafferongames.com/post/fix_your_timestep](https://gafferongames.com/
 
 ### Retrieving contacts
 
-Sometimes, you might need to get the contacts information (contact point, normal, penetration depth, \dots) that occurs in your physics world. 
+Sometimes, you might need to get the contacts information (contact point, normal, penetration depth, ...) that occurs in your physics world. 
 
 If you are using a physics world to only test for collisions (you never call the `PhysicsWorld::update()` method), you can retrieve contacts
 information directly when you call the `PhysicsWorld::testCollision()` group of methods. Those methods take a pointer to a
@@ -526,7 +526,7 @@ information directly when you call the `PhysicsWorld::testCollision()` group of 
 of your class will be called with all the information about the contacts in parameters.
 
 However, if you are using ReactPhysics3D for a real-time simulation by calling the `PhysicsWorld::update()` method each frame, you should
-use the \texttt{EventListener} class to retrieve contacts as described in this [section](#receiving_feedback).
+use the `EventListener` class to retrieve contacts as described in this [section](#receiving_feedback).
 
 ### Destroying the Physics World
 
@@ -539,7 +539,7 @@ be destroyed.
 physicsCommon.destroyPhysicsWorld(world);
 ~~~
 
-Note that the pointer to the physics world and all the objects that have been created inside it (bodies, colliders, \dots) will become invalid after
+Note that the pointer to the physics world and all the objects that have been created inside it (bodies, colliders, ...) will become invalid after
 this call.
 
 ## Rigid Body {#rigidbody}
@@ -631,7 +631,7 @@ rigidBody->setIsAllowedToSleep(false);
 ### Applying Force or Torque to a Rigid Body
 
 During the simulation, you can apply a force or a torque to a given rigid body. This force can be applied to the center of mass of the rigid body
-by using the \texttt{RigidBody::\allowbreak applyForceToCenterOfMass()} method. You need to specify the force vector (in Newton) as a parameter. If
+by using the `RigidBody::applyForceToCenterOfMass()` method. You need to specify the force vector (in Newton) as a parameter. If
 the force is applied to the center of mass, no torque will be created and only the linear motion of the body will be affected. 
 
 ~~~.cpp
@@ -659,7 +659,7 @@ rigidBody->applyForceAtLocalPosition(force, point);
 ~~~
 
 It is also possible to apply a torque to a given body using the `RigidBody::applyTorque()` method. You simply need to specify
-the torque vector (in Newton $\cdot$ meter) as in the following example: 
+the torque vector (in Newton \f$\cdot\f$ meter) as in the following example: 
 
 ~~~.cpp
 // Torque vector
@@ -719,11 +719,11 @@ accumulator += mDeltaTime;
 // one or several physics steps
 while (accumulator >= timeStep) {
 
-// Update the physics world with a constant time step
-physicsWorld->update(timeStep);
+	// Update the physics world with a constant time step
+	physicsWorld->update(timeStep);
 
-// Decrease the accumulated time
-accumulator -= timeStep;
+	// Decrease the accumulated time
+	accumulator -= timeStep;
 }
 
 // Compute the time interpolation factor
@@ -742,7 +742,7 @@ prevTransform = currTranform;
 
 ~~~
 
-If you need the array with the corresponding $4 \times 4$ OpenGL transformation matrix for rendering, you can use
+If you need the array with the corresponding \f$4 \times 4\f$ OpenGL transformation matrix for rendering, you can use
 the `Transform::getOpenGLMatrix()` method as in the following code: 
 
 ~~~.cpp
@@ -760,7 +760,7 @@ The mass, center of mass and inertia tensor of a rigid body are important parame
 #### Mass
 
 The `RigidBody` has a mass value (in kilograms) which is 1 kilogram by default. There are two ways to set the mass of a rigid body. First, you
-can set it directly using the \texttt{RigidBody::setMass()} method. Secondly, it is also possible to compute this mass
+can set it directly using the `RigidBody::setMass()` method. Secondly, it is also possible to compute this mass
 automatically using the mass of the colliders of the rigid body. As described in section \ref{sec:material}, the material of each collider has a 
 mass density value. This value is 1 by default. You change change the mass density value of the colliders of a rigid body and then use the
 `RigidBody::updateMassFromColliders()` method to automatically compute the mass of the rigid body using the mass density and shape of
@@ -778,11 +778,11 @@ Note that you will need to call this method again if you add another collider to
 
 #### Inertia Tensor
 
-The inertia tensor of a `RigidBody` is a $3 \times 3$ matrix describing how the mass is distributed inside the rigid body which is
+The inertia tensor of a `RigidBody` is a \f$3 \times 3\f$ matrix describing how the mass is distributed inside the rigid body which is
 used to calculate its rotation. The inertia tensor depends on the mass and the shape of the body. By default the local inertia tensor of a rigid body
 is the identity matrix. There are two ways to set the inertia tensor of
 a rigid body. First, you can set it directly using the `RigidBody::setLocalInertiaTensor()` method. Note that this will set the inertia tensor
-of the body in local-space coordinates which is usually a diagonal matrix. This method takes a \texttt{Vector3} with the three diagonal entries of the
+of the body in local-space coordinates which is usually a diagonal matrix. This method takes a `Vector3` with the three diagonal entries of the
 matrix. Secondly, the local inertia tensor can be computed automatically using the mass density, shape and transform of all the colliders of the body.
 As described in section \ref{sec:material}, the material of each collider has a mass density value which is 1 by default. You can set the mass density
 value of the colliders and then use the `RigidBody::updateLocalInertiaTensorFromColliders()` method to automatically compute the local inertia
@@ -833,7 +833,7 @@ world->destroyRigidBody(body);
 
 To allow bodies to collide against each others, we need `colliders`. A collider (class `Collider`) describes the collision shape
 of a body. A body can have multiple colliders attached to it. When adding a collider to a body, you need to specify its collision
-shape (box, sphere, capsule, \dots) and its transform relative to the origin of the body. 
+shape (box, sphere, capsule, ...) and its transform relative to the origin of the body. 
 
 Before adding a collider to a body, you need to create a collision shape. A collision shape can be instantiated by calling a method of the
 main `PhysicsCommon` object. The following example shows how instantiate a collision shape (a sphere shape) from the `PhysicsCommon`
@@ -925,7 +925,6 @@ If you know the vertices and faces of your mesh, you can use the following metho
 PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, std::vector<Message>& messages)
 ~~~
 
-
 To use this method, you need to create an array of `PolygonFace` to describe each face of your mesh. You also need to have an array with
 the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a `PolygonVertexArray` with
 your vertices coordinates and indices array. You also need to specify your array of `PolygonFace`. Then, you can call the previous method
@@ -933,7 +932,7 @@ to instantiate a `ConvexMesh` using your `PolygonVertexArray`. \\ 
 
 The following example shows how to create a `ConvexMeshShape` when you know the vertices and faces of your mesh.
 In this example, we create a cube as a convex mesh shape. Of course, this is only for the example. If you really need a cube collision
-shape, you should use the `BoxShape` instead. \\
+shape, you should use the `BoxShape` instead. 
 
 ~~~.cpp
 // Array with the vertices coordinates of the convex mesh
@@ -1183,7 +1182,7 @@ dimensional grid. Note that the height values in our array must be organized suc
 heightValues[indexRow * nbColumns + indexColumn]
 ~~~
 
-Here is an example that shows how to create a \texttt{HeightField}: \\
+Here is an example that shows how to create a `HeightField`:
 
 ~~~.cpp
 const int nbRows = 40;
@@ -1336,71 +1335,751 @@ A collider can have different behaviors. It can be a **simulation collider**, a 
 at the same time). By default, when you create a collider, it will be a **simulation collider** and a **world query collider** but not a
 **trigger**. We will now take a look at those behaviors. 
 
-\subsection{Simulation Collider}
-\label{sec:simulationcollider}
+### Simulation Collider {#simulationcollider}
 
 A simulation collider is a collider that will be able to collide against other simulation colliders in the world. It means that when two simulation
 colliders collide, contacts will be created and used to compute the forces/torques needed to make their bodies to bump into each other. For instance,
 if you want to simulate a body that is falling on the floor and bumping against it, you will need to have a least of simulation collider in both the
-falling body and the floor body. \\
+falling body and the floor body. 
 
 To set a collider as being a simulation collider, you need to use the
-\texttt{Collider::\allowbreak setIsSimulationCollider()} method as in the following example: \\
+**Collider::setIsSimulationCollider()** method as in the following example: 
 
-\begin{lstlisting}
+~~~.cpp
 bombCollider->setIsSimulationCollider(true);
-\end{lstlisting}
-
-\vspace{0.6cm}
+~~~
 
 When you create a collider, it is a simulation collider by default.
 
-\subsection{World Query Collider}
-\label{sec:worldquerycollider}
+### World Query Collider {#worldquerycollider}
 
 A world query collider is a collider used to perform world queries on it. World queries are manual queries perform on the physics world like raycasting
 or testing if two collider collide or overlap using the following method for instance:
 
-\begin{description}
-\item[testOverlap()] Those methods can be used to test whether the colliders of two bodies overlap or not. 
-\item[testCollision()] Those methods will give you the collision information (contact points, normals, ...) between two colliding bodies.
-\item[testPointInside()] This method will tell you if a 3D point is inside a \texttt{RigidBody} or \texttt{Collider}. 
-\item[raycast()] Those methods will try to find intersection between a ray and colliders of the world.
-\end{description}
+- `testOverlap()` Those methods can be used to test whether the colliders of two bodies overlap or not. 
+- `testCollision()` Those methods will give you the collision information (contact points, normals, ...) between two colliding bodies.
+- `testPointInside()` This method will tell you if a 3D point is inside a `RigidBody` or `Collider`. 
+- `raycast()` Those methods will try to find intersection between a ray and colliders of the world.
 
 For instance, if you want to test a body of your scene with raycasting, you need to set the collider of that body as being a world query collider.
 
-To set a collider as being a world query collider, you need to use the \texttt{Collider::\allowbreak setIsWorldQueryCollider()} method as in the following example: \\
+To set a collider as being a world query collider, you need to use the `Collider::setIsWorldQueryCollider()` method as in the following example: 
 
-\begin{lstlisting}
+~~~.cpp
 bombCollider->setIsWorldQueryCollider(true);
-\end{lstlisting}
-
-\vspace{0.6cm}
+~~~
 
 A collider can be a world query collider and a simulation collider at the same time. When you create a collider, it is a world query collider by default.
 
-\subsection{Trigger}
-\label{sec:trigger}
+### Trigger {#trigger}
 
 A trigger, is a collider that cannot collide with any other colliders but can only report when it is overlapping with another collider. For instance,
 consider a game where a player moves around and has to avoid touching some bombs. The player has a rigid body with a capsule collider for instance and
 the bombs are rigid bodies where each one has a sphere collider. Now, you do not want the player to bump against the bombs but you only want to know
 when the collider of the player overlaps with the collider of a bomb. In this case, you can set bombs colliders as being triggers. In this
 case, no rigid bodies in the world will be able to collide against the bombs colliders but you can receive notifications when a collider (the player
-body collider for instance) overlaps with a bomb collider. Therefore, you can use this to know when the player touches a bomb of the world. \\
+body collider for instance) overlaps with a bomb collider. Therefore, you can use this to know when the player touches a bomb of the world. 
 
-To set a collider as being a trigger, you need to use the \texttt{Collider::setIsTrigger()} method as in the following example: \\
+To set a collider as being a trigger, you need to use the `Collider::setIsTrigger()` method as in the following example: 
 
-\begin{lstlisting}
+~~~.cpp
 bombCollider->setIsTrigger(true);
-\end{lstlisting}
-
-\vspace{0.6cm}
+~~~
 
 Note that a collider cannot be a trigger and a simulation collider at the same time. When you create a collide it is not a trigger by default.
 
-\vspace{0.6cm}
-
-The section \ref{sec:eventlistenertriggers} describes how to use the \texttt{EventListener} class to receive notifications when colliders overlap
+This [section](#eventlistenertriggers) describes how to use the `EventListener` class to receive notifications when colliders overlap
 with some triggers.
+
+## Joints
+
+Joints are used to constrain the motion of the rigid bodies between each other. A single joint represents a constraint between two rigid bodies.
+When the motion of the first body of the joint is known, the relative motion of the second body has at most six degrees of freedom (three for the
+translation and three for the rotation). The different joints can reduce the number of degrees of freedom between two rigid bodies. 
+
+Some joints have limits to control the range of motion and some joints have motors to automatically move the bodies of the joint at a given speed. 
+
+### Ball and Socket Joint
+
+The `BallAndSocketJoint` class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot
+translate with respect to each other. However, they can rotate freely around a common anchor point. This joint has three degrees of freedom
+and can be used to simulate a chain of bodies for instance. 
+
+In order to create a ball and socket joint, you first need to create an instance of the `BallAndSocketJointInfo` class with the necessary
+information. You need to provide the pointers to the two rigid bodies and also the coordinates of the anchor point. The `BallAndSocketJointInfo`
+class contains different constructors that you can use whether you want to specify the anchor point in world-space or local-space coordinates.
+The joint will make sure that the two local-space anchor points match in world-space. Make sure that the two bodies are in a valid position (with
+respect to the joint constraint) at the beginning of the simulation. 
+
+Here is the code to create the `BallAndSocketJointInfo` object: 
+
+~~~.cpp
+// Anchor point in world-space
+const Vector3 anchorPoint(2.0, 4.0, 0.0);
+
+// Create the joint info object
+BallAndSocketJointInfo jointInfo(body1, body2, anchorPoint);
+~~~
+
+Now, it is time to create the actual joint in the physics world using the `PhysicsWorld::createJoint()` method.
+Note that this method will also return a pointer to the `BallAndSocketJoint` object that has been created internally. You will then
+be able to use that pointer to change properties of the joint and also to destroy it at the end. 
+
+Here is how to create the joint in the world: 
+
+~~~.cpp
+// Create the joint in the physics world
+BallAndSocketJoint* joint;
+joint = dynamic_cast<BallAndSocketJoint*>(world->createJoint(jointInfo));
+~~~
+
+#### Cone limit
+
+With the ball and socket joint, it is possible to enable a cone limit. Let's call the **anchor axis** for body 1 the axis from body 1 center of mass
+to the joint anchor point. The cone limit can be used to constraint the angle between the anchor axis of body 1 and the anchor axis of body 2.
+The idea is to limit the angle of the anchor axis of body 2 inside a cone around the anchor axis of body 1. The cone is defined by its main axis
+which is the anchor axis of body 1 and is also defined by the cone half angle. 
+
+In the following example, we enable the cone limit for a given ball and socket joint. 
+
+~~~.cpp
+// Set the maximum half angle (in radians) 
+joint->setConeLimitHalfAngle(45.0 * PI / 180.0);
+
+// Enable the cone limit for this joint
+joint->enableConeLimit(true);
+~~~
+
+### Hinge Joint
+
+The `HingeJoint?  class describes a hinge joint (or revolute joint) between two rigid bodies. The hinge joint only allows rotation around an
+anchor point and around a single axis (the hinge axis). This joint can be used to simulate doors or pendulums for instance. 
+
+In order to create a hinge joint, you first need to create a `HingeJointInfo` object with the necessary information. You need to provide
+the pointers to the two rigid bodies, the coordinates of the anchor point and also the hinge rotation axis. The `HingeJointInfo` class contains
+different constructors that you can use whether you want to specify the anchor point or the rotation axis in local-space or world-space.
+Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning of the simulation. 
+
+Here is the code to create the `HingeJointInfo` object: 
+
+~~~.cpp
+// Anchor point in world-space
+const Vector3 anchorPoint(2.0, 4.0, 0.0);
+
+// Hinge rotation axis in world-space
+const Vector3 axis(0.0, 0.0, 1.0);
+
+// Create the joint info object
+HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
+~~~
+
+Now, it is time to create the actual joint in the physics world using the `PhysicsWorld::createJoint()` method.
+Note that this method will also return a pointer to the `HingeJoint` object that has been created internally. You will then
+be able to use that pointer to change properties of the joint and also to destroy it at the end. 
+
+Here is how to create the joint in the world: 
+
+~~~.cpp
+// Create the hinge joint in the physics world
+HingeJoint* joint;
+joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
+~~~
+
+#### Limits
+
+With the hinge joint, you can constrain the motion range using limits. The limits of the hinge joint are the minimum and maximum angle of
+rotation allowed with respect to the initial angle between the bodies when the joint is created. The limits are disabled by default.
+If you want to use the limits, you first need to enable them by setting the `isLimitEnabled` variable of the `HingeJointInfo`
+object to `true` before you create the joint. You also have to specify the minimum and maximum limit angles (in radians) using
+the `minAngleLimit` and `maxAngleLimit` variables of the joint info object. Note that the minimum limit angle must be in the
+range \f$[ -2 \pi; 0 ]\f$ and the maximum limit angle must be in the range \f$[ 0; 2 \pi ]\f$. 
+
+For instance, here is the way to use the limits for a hinge joint when the joint is created: 
+
+~~~.cpp
+// Create the joint info object
+HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+// Enable the limits of the joint
+jointInfo.isLimitEnabled = true;
+
+// Minimum limit angle
+jointInfo.minAngleLimit = -PI / 2.0;
+
+// Maximum limit angle
+jointInfo.maxAngleLimit = PI / 2.0;
+
+// Create the hinge joint in the physis world
+HingeJoint* joint;
+joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
+~~~
+
+It is also possible to use the `HingeJoint::enableLimit()`, `HingeJoint::setMinAngleLimit()` and `HingeJoint::setMaxAngleLimit()` methods to specify
+the limits of the joint after its creation. See the API documentation for more information.
+
+#### Motor
+
+A motor is also available for the hinge joint. It can be used to rotate the bodies around the hinge axis at a given angular speed and such that the torque applied to
+rotate the bodies does not exceed a maximum allowed torque. The motor is disabled by default. If you want to use it, you first have to activate it using the
+`isMotorEnabled` boolean variable of the `HingeJointInfo` object before you create the joint. Then, you need to specify the angular motor speed (in radians/seconds)
+using the `motorSpeed` variable and also the maximum allowed torque (in Newton \f$\cdot\f$ meters) with the ̀maxMotorTorque` variable. 
+
+For instance, here is how to enable the motor of the hinge joint when the joint is created: 
+
+~~~.cpp
+// Create the joint info object
+HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+// Enable the motor of the joint
+jointInfo.isMotorEnabled = true;
+
+// Motor angular speed
+jointInfo.motorSpeed = PI / 4.0;
+
+// Maximum allowed torque
+jointInfo.maxMotorTorque = 10.0;
+
+// Create the hinge joint in the physics world
+HingeJoint* joint;
+joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
+~~~
+
+It is also possible to use the `HingeJoint::enableMotor()`, `HingeJoint::setMotorSpeed()` and `HingeJoint::setMaxMotorTorque()` methods to
+enable the motor of the joint after its creation. See the API documentation for more information.
+
+### Slider Joint
+
+The `SliderJoint` class describes a slider joint (or prismatic joint) that only allows relative translation along a single direction.
+It has a single degree of freedom and allows no relative rotation. 
+
+In order to create a slider joint, you first need to specify the anchor point and the slider axis direction.
+The constructor of the `SliderJointInfo` object needs two pointers to the bodies of the joint, the anchor point and the axis direction.
+The `SliderJointInfo` class contains different constructors that you can use whether you want to specify the anchor point and the direction axis
+in local-space or world-space. Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning
+of the simulation.
+
+You can see in the following code how to specify the information to create a slider joint: 
+
+~~~.cpp
+// Anchor point in world-space
+const Vector3 anchorPoint = 0.5 * (body2Position + body1Position);
+
+// Slider axis in world-space
+const Vector3 axis = (body2Position - body1Position);
+
+// Create the joint info object
+SliderJointInfo jointInfo(body1, body2, anchorPoint, axis);
+~~~
+
+Now, it is possible to create the actual joint in the physics world using the `PhysicsWorld::createJoint()` method.
+Note that this method will also return a pointer to the `SliderJoint` object that has been created internally. You will then
+be able to use that pointer to change properties of the joint and also to destroy it at the end. 
+
+Here is how to create the joint in the world: 
+
+~~~.cpp
+// Create the slider joint in the physics world
+SliderJoint* joint;
+joint = dynamic_cast<SliderJoint*>(world->createJoint(jointInfo));
+~~~
+
+#### Limits
+
+It is also possible to control the range of the slider joint motion using limits. The limits are disabled by default. In order to use the limits when the joint is created, you first
+need to activate them using the `isLimitEnabled` variable of the `SliderJointInfo` class. Then, you need to specify the minimum and maximum translation limits
+(in meters) using the `minTranslationLimit` and `maxTranslationLimit` variables. Note that the initial position of the two bodies when the joint is created
+corresponds to a translation of zero. Therefore, the minimum limit must be smaller or equal to zero and the maximum limit must be larger or equal to zero. 
+
+You can see in the following example how to set the limits when the slider joint is created: 
+
+~~~.cpp
+// Create the joint info object
+SliderJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+// Enable the limits of the joint
+jointInfo.isLimitEnabled = true;
+
+// Minimum translation limit
+jointInfo.minTranslationLimit = -1.7;
+
+// Maximum translation limit
+jointInfo.maxTranslationLimit = 1.7;
+
+// Create the hinge joint in the physics world
+SliderJoint* joint;
+joint = dynamic_cast<SliderJoint*>(world->createJoint(jointInfo));
+~~~
+
+You can also use the `SliderJoint::enableLimit()`, `SliderJoint::setMinTranslationLimit()` and `SliderJoint::setMaxTranslationLimit()` methods to
+enable the limits of the joint after its creation. See the API documentation for more information.
+
+#### Motor
+
+The slider joint also has a motor. You can use it to translate the bodies along the slider axis at a given linear speed and such that the force applied to
+move the bodies does not exceed a maximum allowed force. The motor is disabled by default. If you want to use it when the joint is created, you first have to activate it using the
+`isMotorEnabled` boolean variable of the `SliderJointInfo` object before you create the joint. Then, you need to specify the linear motor speed (in meters/seconds)
+using the `motorSpeed` variable and also the maximum allowed force (in Newtons) with the `maxMotorForce` variable. 
+
+For instance, here is how to enable the motor of the slider joint when the joint is created: 
+
+~~~.cpp
+// Create the joint info object
+SliderJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+// Enable the motor of the joint
+jointInfo.isMotorEnabled = true;
+
+// Motor linear speed
+jointInfo.motorSpeed = 2.0;
+
+// Maximum allowed force
+jointInfo.maxMotorForce = 10.0;
+
+// Create the slider joint in the physics world
+SliderJoint* joint;
+joint = dynamic_cast<SliderJoint*>(world->createJoint(jointInfo));
+~~~
+
+It is also possible to use the `SliderJoint::enableMotor()`, `SliderJoint::setMotorSpeed()` and `SliderJoint::setMaxMotorForce()` methods to enable the
+motor of the joint after its creation. See the API documentation for more information.
+
+### Fixed Joint
+
+The `FixedJoint` class describes a fixed joint between two bodies. In a fixed joint, there is no degree of freedom, the bodies are not
+allowed to translate or rotate with respect to each other. 
+
+In order to create a fixed joint, you simply need to specify an anchor point to create the ̀FixedJointInfo`
+object. The `FixedJointInfo` class contains different constructors that you can use whether you want to specify the anchor point in local-space
+or world-space. Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning of the simulation.
+
+For instance, here is how to create the joint info object for a fixed joint: 
+
+~~~.cpp
+// Anchor point in world-space
+Vector3 anchorPoint(2.0, 3.0, 4.0);
+
+// Create the joint info object
+FixedJointInfo jointInfo1(body1, body2, anchorPoint);
+~~~
+
+Now, it is possible to create the actual joint in the physics world using the `PhysicsWorld::createJoint()` method.
+Note that this method will also return a pointer to the `FixedJoint` object that has been created internally. You will then
+be able to use that pointer to change properties of the joint and also to destroy it at the end. 
+
+Here is how to create the joint in the world: 
+
+~~~.cpp
+// Create the fixed joint in the physics world
+FixedJoint* joint;
+joint = dynamic_cast<FixedJoint*>(world->createJoint(jointInfo));
+~~~
+
+### Collision between the bodies of a Joint
+
+By default, the two bodies involved in a joint are able to collide with each other. However, it is possible to disable the collision between the two bodies that are part
+of the joint. To do it, you simply need to set the variable `isCollisionEnabled` of the joint info object to **false** when you create the joint. 
+
+For instance, when you create a `HingeJointInfo` object in order to construct a hinge joint, you can disable the collision between the two bodies of the joint as in the following example: 
+
+~~~.cpp
+// Create the joint info object
+HingeJointInfo jointInfo(body1, body2, anchorPoint, axis);
+
+// Disable the collision between the bodies
+jointInfo.isCollisionEnabled = false;
+
+// Create the joint in the physics world
+HingeJoint* joint;
+joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
+~~~
+
+### Destroying a Joint
+
+In order to destroy a joint, you simply need to call the `PhysicsWorld::destroyJoint()` method using the pointer to
+a previously created joint object as argument as shown in the following code: 
+
+~~~.cpp
+// BallAndSocketJoint* joint is a previously created joint
+
+// Destroy the joint
+world->destroyJoint(joint);
+~~~
+
+It is important that you destroy all the joints that you have created at the end of the simulation. Also note that destroying a
+rigid body involved in a joint will automatically destroy that joint.
+
+## Ray casting {#raycasting}
+
+You can use ReactPhysics3D to test intersection between a ray and the bodies of the world you have created. Ray casting can be performed against
+multiple bodies, a single body or any collider of a given body. Note that ray casting only works from the outside of the bodies. If the origin
+of a ray is inside a collision shape, no hit will be reported. 
+
+The first thing you need to do is to create a ray using the `Ray` class of ReactPhysics3D. As you can see in the following example, this is
+very easy. You simply need to specify the point where the ray starts and the point where the ray ends (in world-space coordinates). \\
+
+~~~.cpp
+// Start and end points of the ray
+Vector3 startPoint(0.0, 5.0, 1.0);
+Vector3 endPoint(0.0, 5.0, 30);
+
+// Create the ray
+Ray ray(startPoint, endPoint);
+~~~
+
+Any ray casting test that will be described in the following sections returns a `RaycastInfo` object in case of intersection with the ray.
+This structure contains the following attributes: 
+
+ - **worldPoint** Hit point in world-space coordinates
+ - **worldNormal** Surface normal of the collider at the hit point in world-space coordinates
+ - **hitFraction** Fraction distance of the hit point between **startPoint**  and **endPoint** of the ray. The hit point **p** is such that
+   \f$p = startPoint + hitFraction \cdot (endPoint - startPoint)\f$
+ - **body** Pointer to the rigid body that has been hit by the ray
+ - **collide** Pointer to the collider that has been hit by the ray
+
+Note that you can also use collision filtering with ray casting in order to only test ray intersection with specific colliders.
+Collision filtering is described in this [section](#collisionfiltering).
+
+### Ray casting against multiple bodies
+
+This section describes how to get all the colliders of all bodies in the world that are intersected by a given ray.
+
+#### The RaycastCallback class
+
+First, you have to implement your own class that inherits from the `RaycastCallback` class. Then, you need to override the
+`RaycastCallback::notifyRaycastHit()` method in your own class. An instance of your class have to be provided as a parameter
+of the raycast method and the `notifyRaycastHit()` method will be called for each collider that is hit by the ray. You will receive, as a parameter
+of this method, a `RaycastInfo` object that will contain the information about the raycast hit (hit point, hit surface normal, hit body, hit collider, ...).
+
+In your `notifyRaycastHit()` method, you need to return a fraction value that will specify the continuation of the ray cast after a hit.
+The return value is the next maxFraction value to use. If you return a fraction of 0.0, it means that the raycast should terminate. If you return a
+fraction of 1.0, it indicates that the ray is not clipped and the ray cast should continue as if no hit occurred. If you return the fraction in the
+parameter (hitFraction value in the `RaycastInfo` object), the current ray will be clipped to this fraction in the next queries. If you return -1.0, it will
+ignore this collider and continue the ray cast. Note that no assumption can be done about the order of the calls of the `notifyRaycastHit()` method. 
+
+Here is an example about creating your own raycast callback class that inherits from the `RaycastCallback` class and how to override the
+`notifyRaycastHit()` method: 
+
+~~~.cpp
+// Class WorldRaycastCallback
+class MyCallbackClass : public RaycastCallback {
+
+	public:
+
+	virtual decimal notifyRaycastHit(const RaycastInfo& info) {
+
+		// Display the world hit point coordinates
+		std::cout << "Hit point : " <<
+			    info.worldPoint.x <<
+			    info.worldPoint.y <<
+			    info.worldPoint.z <<
+			    std::endl;
+
+		// Return a fraction of 1.0 to gather all hits
+		return decimal(1.0);
+	}
+};
+~~~
+
+#### Raycast query in the world
+
+Now that you have your own raycast callback class, you can use the `PhysicsWorld::raycast()` method to perform a ray casting test
+on a physics world. 
+
+The first parameter of this method is a reference to the `Ray` object representing the ray you need to test intersection with. The second parameter is a pointer to the object of your raycast callback object. You can specify an optional third parameter which is the bit mask for collision filtering.
+It can be used to raycast only against selected categories of colliders as described in this [section](#collisionfiltering). 
+
+~~~.cpp
+// Create the ray
+Vector3 startPoint(1 , 2, 10);
+Vector3 endPoint(1, 2, -20);
+Ray ray(startPoint, endPoint);
+
+// Create an instance of your callback class
+MyCallbackClass callbackObject;
+
+// Raycast test
+world->raycast(ray, &callbackObject);
+~~~
+
+### Ray casting against a single body
+
+You can also perform ray casting against a single specific rigid body of the world. To do this, you need to use the
+`RigidBody::raycast()` method. This method takes two parameters. The first one is a reference to the `Ray` object and the second one
+is a reference to the `RaycastInfo` object that will contain hit information if the ray hits the body. This method returns true if the ray hits the
+body. The `RaycastInfo` object will only be valid if the returned value is **true** (a hit occured). 
+
+The following example shows how test ray intersection with a body: 
+
+~~~.cpp
+// Create the ray
+Vector3 startPoint(1 , 2, 10);
+Vector3 endPoint(1, 2, -20);
+Ray ray(startPoint, endPoint);
+
+// Create the raycast info object for the
+// raycast result
+RaycastInfo raycastInfo;
+
+// Raycast test
+bool isHit = body->raycast(ray, raycastInfo);
+~~~
+
+### Ray casting against the collider of a body
+
+You can also perform ray casting against a single specific collider of a rigid body of the world. To do this, you need to use the
+`Collider::raycast()` method of the given collider. This method takes two parameters. The first one is a reference to the `Ray`
+object and the second one is a reference to the  ̀RaycastInfo} object that will contain hit information if the ray hits the body. This method returns
+true if the ray hits the body. The `RaycastInfo` object will only be valid if the returned value is **true** (a hit occured). 
+
+The following example shows how to test ray intersection with a given collider: 
+
+~~~.cpp
+// Create the ray
+Vector3 startPoint(1 , 2, 10);
+Vector3 endPoint(1, 2, -20);
+Ray ray(startPoint, endPoint);
+
+// Create the raycast info object for the
+// raycast result
+RaycastInfo raycastInfo;
+
+// Test raycasting against a collider
+bool isHit = collider->raycast(ray, raycastInfo);
+~~~
+
+## Testbed application {#testbed}
+
+![Testbed](images/testbed.png)
+
+The testbed application contains a graphical interface where you can select and see several demo scenes using the ReactPhysics3D library.
+
+As described in this [section](#building), you can enable a `CMake` option to build the testbed application when you build the library.
+Note that OpenGL is required to compile it. 
+
+The testbed application can be found in the `testbed/` folder of
+the ReactPhysics3D library. Do not hesitate to take a look at the code of the demo scenes to better understand how
+to use the library in your application. 
+
+## Receiving Feedback {#receiving_feedback}
+
+Sometimes, you want to receive notifications from the physics engine when a given event occurs. The `EventListener` class can be used for that
+purpose. In order to use it, you need to create a new class that inherits from the `EventListener` class and overrides some methods that will
+be called by the ReactPhysics3D library when some events occur. You also need to register your class in the physics world using the
+`PhysicsWorld::setEventListener()` as in the following code: 
+
+~~~.cpp
+// Your event listener class
+class YourEventListener : public EventListener {
+
+...
+};
+
+YourEventListener listener;
+
+// Register your event listener class
+world->setEventListener(&listener);
+~~~
+
+### Contacts
+
+The `EventListener` contains a `onContact()` method. If you override this method in your custom event listener class, this method will
+be called when you call the `PhysicsWorld::update()` method if there are contacts to report during the current update. 
+
+The `onContact()` method will be called with a `CollisionCallback::CallbackData` object in parameter. This object has a
+`getNbContactPairs()` and a `getContactPair()` methods that will allow you to get each contact pair (class
+`CollisionCallback::ContactPair`) that occured during the physics world update. Note that a contact pair contains a list of contact
+points between two bodies. Once you get a contact pair, you can use the `getBody1()` or `getBody2()` methods to get the bodies in
+contact, you can use the `getCollider1()` or `getCollider2()` methods to get the colliders in contact and the
+`getNbContactPoints()` and `getContactPoint()` methods to get the contact points (class `CollisionCallback::ContactPoint`) 
+of the contact pair. Note that the `onContact()` method will report contacts after the collision detection phase and before the contact
+resolution. 
+
+The contact pair also has a `getEventType()` method that gives information about the type of contact event for the pair. It can be
+`ContactStart` if the two bodies of the contact pair where not colliding in the previous call to `PhysicsWorld::update()` and are now
+colliding. It can be `ContactStay`, if the two bodies where colliding in the previous frame and are still colliding or it can be
+`ContactExit` if the two bodies where colliding in the previous frame but are not colliding anymore. Note that in this last situation, there
+will be no contact points in the contact pair. 
+
+As you know, rigid bodies can sleep. During that time, no contacts will be reported using the `EventListener::onContact()` method. Therefore,
+If you stop receiving contact notifications for a rigid body, it does not necessarily mean that there is no contacts anymore but it could mean that the
+body has fallen asleep. You need to use the `getEventType()` method to know if the body is not colliding anymore (when you receive an event of type
+`ContactExit`). 
+
+In the following example, you can see how to override the `EventListener::onContact()` method to get the current contact points of the physics
+world:
+
+~~~.cpp
+// Your event listener class
+class YourEventListener : public EventListener {
+
+// Override the onContact() method
+virtual void onContact(const CollisionCallback::CallbackData& callbackData) overrride {
+
+	// For each contact pair
+	for (uint p = 0; p < callbackData.getNbContactPairs(); p++) {
+
+		// Get the contact pair
+		CollisionCallback::ContactPair contactPair = callbackData.getContactPair(p);
+
+		// For each contact point of the contact pair
+		for (uint c = 0; c < contactPair.getNbContactPoints(); c++) {
+
+		    // Get the contact point
+		    CollisionCallback::ContactPoint contactPoint = contactPair.getContactPoint(c);
+
+		    // Get the contact point on the first collider and convert it in world-space
+		    Vector3 worldPoint = contactPair.getCollider1()->getLocalToWorldTransform() * contactPoint.getLocalPointOnCollider1();
+
+		    ...
+		}
+	}
+}
+
+};
+~~~
+
+### Triggers {#eventlistenertriggers}
+
+As described in this [section](#trigger) it is possible to set a collider as being a trigger. You can do this if you do not want any collision with
+this collider but you are only interested in knowing when another collider enters or exit the volume of the collider. If you do this, you will need
+to override the `onTrigger()` method of the `EventListener`. This method will be called and report all the collision with your triggers
+when you call the `PhysicsWorld::update()` method. 
+
+The `onTrigger()` method will be called with an `OverlapCallback::CallbackData` object in parameter. This object has a
+`getNbOverlappingPairs()` and a `getOverlappingPair()` methods that will allow you to get each overlapping pair (class
+`OverlapCallback::OverlapPair`) that occured during the physics world update. Once you get an overlapping pair, you can use
+the `getBody1()` or `getBody2()` methods to get the bodies in
+contact and the `getCollider1()` or `getCollider2()` methods to get the trigger colliders in contact.
+Note that the `onTrigger()` method will report overlaping triggers after the collision detection phase and before the contact resolution. 
+
+The overlapping pair also has a `getEventType()` method that gives information about the type of overlapping event for the pair. It can be
+`OverlapStart` if the two bodies of the pair where not overlapping in the previous call to `PhysicsWorld::update()` and are now
+overlapping. It can be `OverlapStay`, if the two bodies where overlapping in the previous frame and are still overlapping or it can be
+`OverlapExit` if the two bodies where overlapping in the previous frame but are not overlapping anymore. 
+
+As you know, rigid bodies can sleep. During that time, no overlap will be reported using the `EventListener::onTrigger()` method. Therefore,
+If you stop receiving trigger overlap notifications for a rigid body, it does not necessarily mean that there is no overlap anymore but it could mean
+that the body has fallen asleep. You need to use the `getEventType()` method to know if the body is not overlapping anymore (when you receive an
+event of type `OverlapExit`).
+
+Note that the `onTrigger()` method is only called for colliders that you have set as triggers using the `Collider::setIsTrigger()` method.
+
+## Profiler {#profiler}
+
+If you build the library with the `RP3D_PROFILING_ENABLED` variable enabled (see this [section](#cmakevariables)), a real-time profiler
+will collect information while the application is running. Then, at the end of your application, when the destructor of the `PhysicsWorld`
+class is called, information about the running time of the library will written to a file.
+This can be useful to know where time is spent in the different parts of the ReactPhysics3D library in case your application is too slow. 
+
+Each physics world has its own profiler. By default, the profiling report wil be written in a text file next to the executable.
+If you have multiple worlds in your application, there will be one profile file for each world. The profile files will be named after the
+name of the worlds. By defaults worlds will have names: world, world1, world2, world3, ... You can change the name of the world by
+setting it into the `WorldSettings` object when you create the world (see this [section](#physicsworld)).
+
+## Logger {#logger}
+
+ReactPhysics3D has an internal logger that can be used to get logs from the library while the application is running. This can be useful for
+debugging for instance. 
+
+The logger is part of the `PhysicsCommon` class. By default there is no logger set. If you want to create your custom logger to receive logs
+from ReactPhysics3D, you can inherit the `Logger` class and override the `Logger::log()` method. Then, you have to use the
+`PhysicsCommon::setLogger()` method to set the logger. 
+
+Getting the logs is the way for you to see the errors reported by the library and therefore, you should not just ignore the errors from the logs.
+You should at least redirect the logs (warnings and errors) in the standard output while debugging your application as described in the example
+below. 
+
+If you don't want to create your custom logger class, you can use the default logger of ReactPhysics3D (class `DefaultLogger`). With this
+logger, you can output the logs into
+a file or a std::stream. The logs can have different format like raw text of HTML. In order to instantiate the default logger, you need to call the
+`PhysicsCommon::createDefaultLogger()` method. Then, you can customize this logger and finally, you need to set this logger using the
+`PhysicsCommon::setLogger()` method. 
+
+The following code shows how to create a default logger that will output logs (warning and errors) in HTML into a file and in raw text into
+the standard output: 
+
+~~~.cpp
+// Create the default logger
+DefaultLogger* logger = physicsCommon.createDefaultLogger();
+
+// Log level (warnings and errors)
+uint logLevel = static_cast<uint>(static_cast<uint>(Logger::Level::Warning) | static_cast<uint>(Logger::Level::Error);
+
+// Output the logs into an HTML file
+logger->addFileDestination("rp3d_log_" + name + ".html", logLevel, DefaultLogger::Format::HTML);
+
+// Output the logs into the standard output
+logger->addStreamDestination(std::cout, logLevel, DefaultLogger::Format::Text);
+
+// Set the logger
+physicsCommon.setLogger(logger);
+~~~
+
+## Debug Renderer
+
+For debugging purpose, it can be useful to display the physics objects of ReactPhysics3D on top of your simulation. This is possible using the
+`DebugRenderer` class of the library that allows you to display the colliders shapes, the AABB of the colliders or the contact points for
+instance. This can help you to check for instance if the physics collider of ReactPhysics3D is correctly aligned with the object you are rendering.
+When debug rendering is enabled, ReactPhysics3D will generate each time you call the `PhysicsWorld::update()` method (each frame), some rendering
+primitives (lines and triangles) that you will be able to retrieve and display on you simulation (with OpenGL or DirectX for instance). Note that
+ReactPhysics3D will only generate the arrays of lines and triangles but you are responsible to draw them. 
+
+![Debug Rendering](images/DebugRendering.png)
+
+By default, the debug rendering is disabled. You can activate it using the `PhysicsWorld::setIsDebugRenderingEnabled()` method. Note that you
+should disable it for the final release because this can be quite expensive to compute. You can get a reference to `DebugRenderer` of the physics
+world using the `PhysicsWorld::getDebugRenderer()` method. You also need to enable debugging for each body that you want to debug using the
+`Body::setIsDebugEnabled()` method. By default, debuging is disabled for all bodies. Then, you need to select the debug items
+(class `DebugRenderer:DebugItem`) you want to display. For instance, you might want to display the shapes of the colliders
+(`DebugItem::COLLISION_SHAPE`), the broad-phase AABBs of the colliders (`DebugItem::COLLIDER_BROADPHASE_AABB`), the colliders AABBs
+(`DebugItem::COLLIDER_AABB`), the contact points (`DebugItem::CONTACT_POINT`) or the contact normals (`DebugItem::CONTACT_NORMAL`).
+You need to use the `DebugRenderer::setIsDebugItemDisplayed()` method to select if you want or not a given debug item to be displayed. 
+
+The following code shows how to enable debug rendering in order to display contact points and contact normals: 
+
+~~~.cpp
+// Enable debug rendering
+physicsWorld->setIsDebugRenderingEnabled(true);
+
+// Enable debugging for each rigid body that we want to display
+for (RigidBody* body: rigidBodies) {
+body->setIsDebugEnabled(true);
+}
+
+// Get a reference to the debug renderer
+DebugRenderer& debugRenderer = physicsWorld->getDebugRenderer();
+
+// Select the contact points and contact normals to be displayed
+debugRenderer.setIsDebugItemDisplayed(DebugRenderer::DebugItem::CONTACT_POINT, true);
+debugRenderer.setIsDebugItemDisplayed(DebugRenderer::DebugItem::CONTACT_NORMAL, true);
+~~~
+
+Now each time you call the `PhysicsWorld::update()` method, ReactPhysics3D will generate arrays with lines and triangles so that you can
+draw them in your application. You can use the `DebugRenderer::getNbLines()` and `DebugRenderer::getNbTriangles()` methods to know
+the number of lines and triangles to draw. Then, you need to call the `DebugRenderer::getLinesArray()` and
+`DebugRenderer::getTrianglesArray()` methods to get pointers to the beginning of the lines and triangles arrays. The lines array contain
+elements of type `DebugRenderer:DebugLine` with the two points of a line and their colors and the triangles array has elements of
+type `DebugRenderer:DebugTriangle` with the three points of each triangle and their colors. Note that the vertices of the lines and triangles
+are defined in world-space coordinates of the physics world.
+
+## Determinism {#determinism}
+
+Sometimes, it is important that the simulation of a physics world behaves exactly the same each time we run it. Because of the differences in
+compilers and computer hardware it is quite difficult to achieve this between different machines. However, ReactPhysics3D should be deterministic when
+compiled with the same compiler and running on the same machine. In order to obtain two similar runs of the simulation of a physics world, it is
+adviced to completely destroy and recreate the physics world, the bodies and the joints inside it (in order to reset all the internal data cached
+for the simulation). You must also create the bodies and joints in the same order each time and make sure that all the calls to the methods
+of your physics world, bodies and joints happen in the same order.
+
+## Discussions
+
+If you have any questions about the library, you can ask them [here](https://github.com/DanielChappuis/reactphysics3d/discussions) in
+the **Discussions** section. Ask your question there instead of opening a new issue on the repository.
+
+## Issues
+
+If you find some bugs, do not hesitate to report them on our issue tracker here: 
+
+[https://github.com/DanielChappuis/reactphysics3d/issues](https://github.com/DanielChappuis/reactphysics3d/issues) 
+
+Thanks a lot for reporting the issues that you find. It will help us correct and improve the library.
