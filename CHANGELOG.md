@@ -438,3 +438,4 @@ do not hesitate to take a look at the user manual.
  - Optimization of the constraint solver
  - ReactPhysics3D is now under the zlib license
 
+[0.10.1]: https://github.com/DanielChappuis/reactphysics3d/releases/tag/v0.10.1
