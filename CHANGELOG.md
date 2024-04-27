@@ -404,7 +404,7 @@ do not hesitate to take a look at the user manual.
  - Fix issue in the Sweep-And-Prune broad-phase collision detection (thanks to Aleksi Sapon).
  - Fix issue in the contact solver resulting in less jittering.
 
-## [0.3.0] 
+## [0.3.0]  - 2013-03-20
 
 ### Added
 
@@ -420,7 +420,7 @@ do not hesitate to take a look at the user manual.
  - Make GJK/EPA algorithm more robust for spheres.
  - Change the structure of the code for a better separation between the collision detection and the dynamics simulation code.
 
-## [0.2.0] 
+## [0.2.0] - 2013-01-01
 
 ### Added
 
@@ -438,5 +438,13 @@ do not hesitate to take a look at the user manual.
  - Optimization of the constraint solver
  - ReactPhysics3D is now under the zlib license
 
-[0.10.1]: https://github.com/DanielChappuis/reactphysics3d/releases/compare/v0.10.0...v0.10.1
-[0.10.0]: https://github.com/DanielChappuis/reactphysics3d/releases/compare/v0.9.0...v0.10.0
+[0.10.1]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.10.0...v0.10.1
+[0.10.0]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.9.0...v0.10.0
+[0.9.0]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.8.0...v0.9.0
+[0.8.0]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.7.1...v0.8.0
+[0.7.1]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.7.0...v0.7.1
+[0.7.0]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/DanielChappuis/reactphysics3d/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/DanielChappuis/reactphysics3d/releases/tag/v0.3.0

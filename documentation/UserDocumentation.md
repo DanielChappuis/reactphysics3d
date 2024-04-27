@@ -53,7 +53,7 @@ it contains a lot of useful information.
 
 The remaining of this section will describe how to build and install the library with CMake. 
 
-### Configure and generate the native tool files
+### Configure and generate the native tool files {#configurecmake}
 
 Now we need to configure CMake to tell it what you want to build. Maybe you simply want to build the library in **debug** or **release**
 mode or maybe you also want to build the unit tests or the testbed application with demos. At the end of this step, CMake will generate the
@@ -93,7 +93,7 @@ Once this is done, click on **Configure** again and finally on **Generate** as y
 Now, if you go into the folder you have chosen to build the library, you should find the native build tool files that you will use to build
 the library on your platform.
 
-### Building the library
+### Building the library {#buildinglibrary}
 
 Now, that you have generated the native build tool files on your system, you will need to build (compile) the library.
 
@@ -119,7 +119,7 @@ Explorer and click on **Build** in order to compile the library (see the followi
 
 The library will start compiling.
 
-### Installing the library
+### Installing the library {#installinglibrary}
 
 Now that you have compiled the library, you can install it on your system in order to put the compiled library file, the header files and the exported
 CMake targets in a standard location on your system so that it can be easily imported into your project.
@@ -375,7 +375,7 @@ Once you have created a `PhysicsCommon` object (see this [section](#physicscommo
 a place where you can add the bodies that you want to simulate. It is possible to create multiple physics worlds but you will probably never need more
 than one. 
 
-- `testOverlap()` This group of methods can be used to test whether the colliders of two bodies overlap or not. You can use this if you just want to
+- `testOverlap()` This group of methods can be used to test whether the colliders of two bodies overlap or not. You can use this if you just want to
        know if bodies are colliding but your are not interested in the contact information. 
 - `testCollision()` This group of methods will give you the collision information (contact points, normals, ...) for colliding bodies.
 - `testPointInside()` This method will tell you if a 3D point is inside a `RigidBody` or `Collider`. 
@@ -385,7 +385,7 @@ done by creating rigid bodies (class `RigidBody`) in your physics world and by u
 `PhysicsWorld::update()` method each frame. The rigid bodies will move according to the forces, collision between bodies and joint constraints of
 the physics world. A typical use case is a 3D real-time game for instance.
 
-### Creating the Physics World
+### Creating the Physics World {#creatingphysicsworld}
 
 In order to create a physics world, you need to call the `createPhysicsWorld()` method of the main `PhysicsCommon` object: 
 
@@ -515,7 +515,7 @@ while (accumulator >= timeStep) {
 If you want to know more about physics simulation time interpolation, you can read the nice article from Glenn Fiedler
 at [https://gafferongames.com/post/fix_your_timestep](https://gafferongames.com/post/fix_your_timestep).
 
-### Retrieving contacts
+### Retrieving contacts {#retrievingcontacts}
 
 Sometimes, you might need to get the contacts information (contact point, normal, penetration depth, ...) that occurs in your physics world. 
 
@@ -528,7 +528,7 @@ of your class will be called with all the information about the contacts in para
 However, if you are using ReactPhysics3D for a real-time simulation by calling the `PhysicsWorld::update()` method each frame, you should
 use the `EventListener` class to retrieve contacts as described in this [section](#receiving_feedback).
 
-### Destroying the Physics World
+### Destroying the Physics World {#destroyingworld}
 
 When you don't need the physics world anymore, you can destroy it to release some memory. 
 When the physics world is destroyed, all the bodies that have been added into it and that have not been destroyed already will
@@ -551,7 +551,7 @@ to represent a static objects that is not moving in the world (like a building f
 there to launch a given action when colliding or overlapping with another rigid body of the world. In ReactPhysics3D, the `RigidBody` class
 is used to describe a rigid body.
 
-### Creating a Rigid Body
+### Creating a Rigid Body {#creatingbody}
 
 In order to create a rigid body, you need to specify its transform. The transform describes the initial
 position and orientation of the body in the world. You need to create an instance of the `Transform` class with a vector describing the
@@ -600,7 +600,7 @@ method as follows:
 body->setType(BodyType::KINEMATIC);
 ~~~
 
-### Gravity
+### Gravity {#gravity}
 
 By default, all the rigid bodies with react to the gravity force of the world. If you do not want the gravity to be applied to a given body, you can disable
 it using the `RigidBody::enableGravity()` method as in the following example: 
@@ -610,7 +610,7 @@ it using the `RigidBody::enableGravity()` method as in the following example:
 rigidBody->enableGravity(false);
 ~~~
 
-### Velocity Damping
+### Velocity Damping {#velocitydamping}
 
 Damping is the effect of reducing the velocity of the rigid body during the simulation to simulate effects like air friction for instance. By default,
 no damping is applied. However, you can choose to damp the linear or/and the angular velocity of a rigid body. For instance, without angular
@@ -628,7 +628,7 @@ allowed to sleep when they come to rest. However, if you do not want a given bod
 rigidBody->setIsAllowedToSleep(false);
 ~~~
 
-### Applying Force or Torque to a Rigid Body
+### Applying Force or Torque to a Rigid Body {#applyingforcetorque}
 
 During the simulation, you can apply a force or a torque to a given rigid body. This force can be applied to the center of mass of the rigid body
 by using the `RigidBody::applyForceToCenterOfMass()` method. You need to specify the force vector (in Newton) as a parameter. If
@@ -673,7 +673,7 @@ Note that when you call the previous methods, the specified force/torque will be
 at the end of each call to the `PhysicsWorld::update()`, the total force/torque of all the rigid bodies will be reset to zero.
 Therefore, you need to call the previous methods during several frames if you want the force/torque to be applied during a certain amount of time.
 
-### Updating a Rigid Body
+### Updating a Rigid Body {#updatingrigidbody}
 
 When you call the `PhysicsWorld::update()` method, the bodies positions and orientations are updated to satisfy the contacts and joints
 constraint between the bodies. After calling this method, you can retrieve the updated position and orientation of each body to render it.
@@ -791,7 +791,7 @@ tensor of the body. Note that you will need to call this method again if you add
 Note that it is also possible to automatically compute the mass, center of mass and inertia tensor of a rigid body at the same time using the
 `RigidBody::updateMassPropertiesFromColliders()`.
 
-### Restricting linear/angular motion of a Rigid Body
+### Restricting linear/angular motion of a Rigid Body {#restrictmotion}
 
 It is possible to use the `RigidBody::setLinearLockAxisFactor()` method to restrict the linear motion of a rigid body along the world-space
 X,Y and Z axes. For instance, the following code shows how to disable the linear motion of a rigid body along the world-space Y axis by setting the lock
@@ -811,7 +811,7 @@ by setting the lock factor to zero for this axis.
 rigidBody->setAngularAxisFactor(Vector3(1, 0, 1));
 ~~~
 
-### Destroying a Rigid Body
+### Destroying a Rigid Body {#destroyingbody}
 
 It is really simple to destroy a rigid body when you don't need it anymore. You simply need to use the `PhysicsWorld::destroyRigidBody()`
 method. You need to use the pointer to the body you want to destroy as a parameter. Note that after calling that method, the pointer will not be valid
@@ -860,13 +860,13 @@ shapes that are available in ReactPhysics3D.
 As we have just seen, a collision shape is used to describe the shape of a collider for collision detection. They are many types of
 collision shapes that you can use. They all inherit from the `CollisionShape` class.
 
-Note that ReactPhysics3D does not support collision between two concave shapes `ConcaveMeshShape` and `HeightFieldShape`).
+Note that ReactPhysics3D does not support collision between two concave shapes `ConcaveMeshShape` and `HeightFieldShape`.
 
-#### Box Shape
+#### Box Shape {#boxshape}
 
 ![BoxShape](images/boxshape.png)
 
-The `BoxShape} class describes a box collision shape centered at the origin of the collider. The box is aligned with the shape
+The `BoxShape` class describes a box collision shape centered at the origin of the collider. The box is aligned with the shape
 local X, Y and Z axis.  In order to create a box shape, you only need to specify the three half extents dimensions of the box in the three X, Y and
 Z directions. 
 
@@ -881,7 +881,7 @@ const Vector3 halfExtents(2.0, 3.0, 5.0);
 BoxShape* boxShape = phycsicsCommon.createBoxShape(halfExtents);
 ~~~
 
-#### Sphere Shape
+#### Sphere Shape {#sphereshape}
 
 ![SphereShape](images/sphereshape.png)
 
@@ -895,7 +895,7 @@ For instance, if you want to create a sphere shape with a radius of 2 meters, yo
 SphereShape* sphereShape = physicsCommon.createSphereShape(2.0);
 ~~~
 
-#### Capsule Shape
+#### Capsule Shape {#capsuleshape}
 
 ![CapsuleShape](images/capsuleshape.png)
 
@@ -910,7 +910,7 @@ For instance, if you want to create a capsule shape with a radius of 1 meter and
 CapsuleShape* capsuleShape = physicsCommon.createCapsuleShape(1.0, 2.0);
 ~~~
 
-#### Convex Mesh Shape
+#### Convex Mesh Shape {#convexmeshshape}
 
 The `ConvexMeshShape` class can be used to describe the shape of a convex mesh centered at the origin of the collider.
 
@@ -928,7 +928,7 @@ PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVertexArray, st
 To use this method, you need to create an array of `PolygonFace` to describe each face of your mesh. You also need to have an array with
 the vertices coordinates and an array with the vertex indices of each face of you mesh. Then, you have to create a `PolygonVertexArray` with
 your vertices coordinates and indices array. You also need to specify your array of `PolygonFace`. Then, you can call the previous method
-to instantiate a `ConvexMesh` using your `PolygonVertexArray`. \\ 
+to instantiate a `ConvexMesh` using your `PolygonVertexArray`. 
 
 The following example shows how to create a `ConvexMeshShape` when you know the vertices and faces of your mesh.
 In this example, we create a cube as a convex mesh shape. Of course, this is only for the example. If you really need a cube collision
@@ -1076,7 +1076,7 @@ It means that you can use the same `ConvexMesh` for multiple `ConvexMeshShape` w
 
 Note that collision detection with a `ConvexMeshShape` is more expensive than with a `SphereShape` or a `CapsuleShape`.
 
-#### Concave Mesh Shape
+#### Concave Mesh Shape {#concavemeshshape}
 
 ![ConcaveMeshShape](images/concavemeshshape.png)
 
@@ -1137,7 +1137,7 @@ if (messages.size() > 0) {
 assert(triangleMesh != nullptr);
 ~~~
 
-The vertices and faces data are copied into the `TriangleMesh}. Therefore, after the `TriangleMesh` creation, you can release your
+The vertices and faces data are copied into the `TriangleMesh`. Therefore, after the `TriangleMesh` creation, you can release your
 `TriangleVertexArray` but you need to keep the `TriangleMesh` until all the `ConcaveMeshShapes` that have been instantiated from
 it are destroyed. 
 
@@ -1161,12 +1161,12 @@ const Vector3 scaling(1, 1, 1);
 ConcaveMeshShape* concaveMeshShape = physicsCommon.createConcaveMeshShape(triangleMesh, scaling);
 ~~~
 
-As you can see, you can specify a scaling factor in the ̀PhysicsCommon::createConcaveMeshShape()` method when you create a
+As you can see, you can specify a scaling factor in the `PhysicsCommon::createConcaveMeshShape()` method when you create a
 `ConcaveMeshShape`. All the vertices of your mesh will be scaled from the local origin of the mesh by this factor.
 Note that you can use the same `TriangleMesh` instance for creating multiple `ConcaveMeshShape` with a different scaling 
 factor each time. 
 
-#### Heightfield Shape
+#### Heightfield Shape {#heightfieldshape}
 
 ![HeightFieldShape](images/heightfieldshape.png)
 
@@ -1225,7 +1225,7 @@ if (messages.size() > 0) {
 assert(heightField != nullptr);
 ~~~
 
-The height values are copied into the  ̀HeightField` instance. Therefore, after the `HeightField` creation, you can release the memory
+The height values are copied into the `HeightField` instance. Therefore, after the `HeightField` creation, you can release the memory
 of your array of height values but you need to keep the `TriangleMesh` until all the `HeightFieldShapes` that have been instantiated from
 it are destroyed. 
 
@@ -1343,7 +1343,7 @@ if you want to simulate a body that is falling on the floor and bumping against 
 falling body and the floor body. 
 
 To set a collider as being a simulation collider, you need to use the
-**Collider::setIsSimulationCollider()** method as in the following example: 
+`Collider::setIsSimulationCollider()` method as in the following example: 
 
 ~~~.cpp
 bombCollider->setIsSimulationCollider(true);
@@ -1391,7 +1391,7 @@ Note that a collider cannot be a trigger and a simulation collider at the same t
 This [section](#eventlistenertriggers) describes how to use the `EventListener` class to receive notifications when colliders overlap
 with some triggers.
 
-## Joints
+## Joints {#joints}
 
 Joints are used to constrain the motion of the rigid bodies between each other. A single joint represents a constraint between two rigid bodies.
 When the motion of the first body of the joint is known, the relative motion of the second body has at most six degrees of freedom (three for the
@@ -1399,7 +1399,7 @@ translation and three for the rotation). The different joints can reduce the num
 
 Some joints have limits to control the range of motion and some joints have motors to automatically move the bodies of the joint at a given speed. 
 
-### Ball and Socket Joint
+### Ball and Socket Joint {#ballsocketjoint}
 
 The `BallAndSocketJoint` class describes a ball and socket joint between two bodies. In a ball and socket joint, the two bodies cannot
 translate with respect to each other. However, they can rotate freely around a common anchor point. This joint has three degrees of freedom
@@ -1450,7 +1450,7 @@ joint->setConeLimitHalfAngle(45.0 * PI / 180.0);
 joint->enableConeLimit(true);
 ~~~
 
-### Hinge Joint
+### Hinge Joint {#hingejoint}
 
 The `HingeJoint?  class describes a hinge joint (or revolute joint) between two rigid bodies. The hinge joint only allows rotation around an
 anchor point and around a single axis (the hinge axis). This joint can be used to simulate doors or pendulums for instance. 
@@ -1547,7 +1547,7 @@ joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
 It is also possible to use the `HingeJoint::enableMotor()`, `HingeJoint::setMotorSpeed()` and `HingeJoint::setMaxMotorTorque()` methods to
 enable the motor of the joint after its creation. See the API documentation for more information.
 
-### Slider Joint
+### Slider Joint {#sliderjoint}
 
 The `SliderJoint` class describes a slider joint (or prismatic joint) that only allows relative translation along a single direction.
 It has a single degree of freedom and allows no relative rotation. 
@@ -1643,12 +1643,12 @@ joint = dynamic_cast<SliderJoint*>(world->createJoint(jointInfo));
 It is also possible to use the `SliderJoint::enableMotor()`, `SliderJoint::setMotorSpeed()` and `SliderJoint::setMaxMotorForce()` methods to enable the
 motor of the joint after its creation. See the API documentation for more information.
 
-### Fixed Joint
+### Fixed Joint {#fixedjoint}
 
 The `FixedJoint` class describes a fixed joint between two bodies. In a fixed joint, there is no degree of freedom, the bodies are not
 allowed to translate or rotate with respect to each other. 
 
-In order to create a fixed joint, you simply need to specify an anchor point to create the ̀FixedJointInfo`
+In order to create a fixed joint, you simply need to specify an anchor point to create the `FixedJointInfo`
 object. The `FixedJointInfo` class contains different constructors that you can use whether you want to specify the anchor point in local-space
 or world-space. Make sure that the two bodies are in a valid position (with respect to the joint constraint) at the beginning of the simulation.
 
@@ -1693,7 +1693,7 @@ HingeJoint* joint;
 joint = dynamic_cast<HingeJoint*>(world->createJoint(jointInfo));
 ~~~
 
-### Destroying a Joint
+### Destroying a Joint {#destroyjoint}
 
 In order to destroy a joint, you simply need to call the `PhysicsWorld::destroyJoint()` method using the pointer to
 a previously created joint object as argument as shown in the following code: 
@@ -2015,7 +2015,7 @@ logger->addStreamDestination(std::cout, logLevel, DefaultLogger::Format::Text);
 physicsCommon.setLogger(logger);
 ~~~
 
-## Debug Renderer
+## Debug Renderer {#debugrenderer}
 
 For debugging purpose, it can be useful to display the physics objects of ReactPhysics3D on top of your simulation. This is possible using the
 `DebugRenderer` class of the library that allows you to display the colliders shapes, the AABB of the colliders or the contact points for
@@ -2043,7 +2043,7 @@ physicsWorld->setIsDebugRenderingEnabled(true);
 
 // Enable debugging for each rigid body that we want to display
 for (RigidBody* body: rigidBodies) {
-body->setIsDebugEnabled(true);
+	body->setIsDebugEnabled(true);
 }
 
 // Get a reference to the debug renderer
@@ -2071,12 +2071,12 @@ adviced to completely destroy and recreate the physics world, the bodies and the
 for the simulation). You must also create the bodies and joints in the same order each time and make sure that all the calls to the methods
 of your physics world, bodies and joints happen in the same order.
 
-## Discussions
+## Discussions {#discussions}
 
 If you have any questions about the library, you can ask them [here](https://github.com/DanielChappuis/reactphysics3d/discussions) in
-the **Discussions** section. Ask your question there instead of opening a new issue on the repository.
+the Discussions section. Ask your question there instead of opening a new issue on the repository.
 
-## Issues
+## Issues {#issues}
 
 If you find some bugs, do not hesitate to report them on our issue tracker here: 
 
