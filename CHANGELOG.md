@@ -1,9 +1,7 @@
 # Changelog
 
 ## [0.10.1] - 2024-04-22
-
 ### Added
-
  - The library will now return errors found in input data during the creation of ConvexMesh, TriangularMesh and HeighField
  - It is now possible to create a ConvexMeshShape by specifying only a list of vertices (automatic computation of convex hull using internal
    QuickHull algorithm)
@@ -13,7 +11,6 @@
  - It is now possible to select for which bodies the debug information from the DebugRenderer is displayed
 
 ### Changed
-
  - The library must now be compiled with a C++ 17 compiler
  - The internal allocators now allocates memory that is 16-bytes aligned
  - If the user sets its own custom allocator, the return allocated memory must now be 16 bytes aligned
@@ -37,7 +34,6 @@
  - It is now necessary to enable debug rendering for each body that you want to debug using the Body::setIsDebugEnabled() method
 
 ### Removed
-
  - The TriangleMesh does not support adding multiple parts of a mesh anymore. 
  - The TriangleMesh::addSubpart() method has been removed. The PhysicsCommon::createTriangleMesh() method should be used instead
  - The TriangleMesh::getSubpart() method has been removed. 
@@ -54,7 +50,6 @@
  - The PhysicsWorld::getNbCollisionBodies() method has been removed 
 
 ### Fixed
-
 - Issue [#206](https://github.com/DanielChappuis/reactphysics3d/issues/206) Collision issue and scaling of collider normals
 - Issue [#235](https://github.com/DanielChappuis/reactphysics3d/issues/235) Removing a body should wake up its neighbors
 - Issue [#237](https://github.com/DanielChappuis/reactphysics3d/issues/237) Wrong assert has been removed 
