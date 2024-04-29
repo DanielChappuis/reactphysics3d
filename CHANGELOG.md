@@ -2,39 +2,15 @@
 
 ## [0.10.1] - 2024-04-22
 
-### Added
-
-- The library will now return errors found in input data during the creation of ConvexMesh, TriangularMesh and HeighField
-- It is now possible to create a ConvexMeshShape by specifying only a list of vertices (automatic computation of convex hull using internal
-  QuickHull algorithm)
-- The performance of static bodies has been improved 
-- The reporting of contact state is now correct even if the body goes to sleep
-- The DebugRenderer can now display the normals of the collider faces for debugging purpose
-- It is now possible to select for which bodies the debug information from the DebugRenderer is displayed
-
 ### Changed
 
-- The library must now be compiled with a C++ 17 compiler
-- The internal allocators now allocates memory that is 16-bytes aligned
-- If the user sets its own custom allocator, the return allocated memory must now be 16 bytes aligned
-- The PolyhedronMesh class has been renamed to ConvexMesh
-- The PhysicsCommon::createPolyhedronMesh() method has been renamed to PhysicsCommon::createConvexMesh()
-- The PhysicsCommon::destroyPolyhedronMesh() method has been renamed to PhysicsCommon::destroyConvexMesh()
-- The PhysicsCommon::createConvexMesh() nows outputs a list of errors that might have happened during the mesh creation
-- The PhysicsCommon::createConvexMesh() method now takes a reference to PolygonVertexArray
-- When creating a ConvexMesh with PhysicsCommon::createConvexMesh(), the user data (vertices, faces) is now copied into the ConvexMesh and not shared anymore
-- The PhysicsCommon::createTriangleMesh() method now directly takes a TriangleVertexArray
-- The PhysicsCommon::createTriangleMesh() nows outputs a list of errors that might have happened during the mesh creation
-- When creating a TriangleMesh with PhysicsCommon::createTriangleMesh(), the user data (vertices, faces) is now copied into the TriangleMesh and not shared anymore
-- The PhysicsCommon::createHeightField() must be used to create a HeightField object 
-- The PhysicsCommon::createHeightFieldShape() method now takes a HeightField object
-- It is not necessary anymore to specify the min/max height when creating a HeightFieldShape
-- It is not possible anymore to specify the up axis when creating a HeightFieldShape
-- When creating a HeightField with PhysicsCommon::createHeightField(), the user data (heights values) is now copied into the HeightField and not shared anymore
-- The signature of the TriangleVertexArray::getTriangleVerticesIndices() method has changed
-- The signature of the TriangleVertexArray::getNormal() method has changed
-- The getLocalBounds() methods of the collision shapes now returns an AABB
-- It is now necessary to enable debug rendering for each body that you want to debug using the Body::setIsDebugEnabled() method
+- Test 123
+- Test 456
+
+### Added
+
+- Test 123
+- Test 456
 
 ### Removed
 
@@ -74,16 +50,6 @@
 
 ## [0.10.0] - 2024-03-10
 
-### Added
-
-- The library will now return errors found in input data during the creation of ConvexMesh, TriangularMesh and HeighField
-- It is now possible to create a ConvexMeshShape by specifying only a list of vertices (automatic computation of convex hull using internal
-QuickHull algorithm)
-- The performance of static bodies has been improved 
-- The reporting of contact state is now correct even if the body goes to sleep
-- The DebugRenderer can now display the normals of the collider faces for debugging purpose
-- It is now possible to select for which bodies the debug information from the DebugRenderer is displayed
-
 ### Changed
 
 - The library must now be compiled with a C++ 17 compiler
@@ -107,6 +73,16 @@ QuickHull algorithm)
 - The signature of the TriangleVertexArray::getNormal() method has changed
 - The getLocalBounds() methods of the collision shapes now returns an AABB
 - It is now necessary to enable debug rendering for each body that you want to debug using the Body::setIsDebugEnabled() method
+
+### Added
+
+- The library will now return errors found in input data during the creation of ConvexMesh, TriangularMesh and HeighField
+- It is now possible to create a ConvexMeshShape by specifying only a list of vertices (automatic computation of convex hull using internal
+QuickHull algorithm)
+- The performance of static bodies has been improved 
+- The reporting of contact state is now correct even if the body goes to sleep
+- The DebugRenderer can now display the normals of the collider faces for debugging purpose
+- It is now possible to select for which bodies the debug information from the DebugRenderer is displayed
 
 ### Removed
 
@@ -146,6 +122,21 @@ QuickHull algorithm)
 
 ## [0.9.0] - 2022-01-04
 
+### Changed
+
+- The PhysicsWorld::setGravity() method now takes a const parameter
+- Rolling resistance constraint is not solved anymore in the solver. Angular damping needs to be used instead to simulate it.
+- The List class has been renamed to Array
+- The default number of iterations for the velocity solver is now 6 instead of 10
+- The default number of iterations for the position solver is now 3 instead of 5
+- Rename method RigidBody::applyForceAtWorldPosition() into RigidBody::applyWorldForceAtWorldPosition()
+- Rename method RigidBody::applyForceAtLocalPosition() into RigidBody::applyWorldForceAtLocalPosition()
+- Rename method RigidBody::applyForceToCenterOfMass() into RigidBody::applyWorldForceAtCenterOfMass()
+- Rename method RigidBody::applyTorque() into RigidBody::applyWorldTorque()
+- The raycasting broad-phase performance has been improved
+- The raycasting performance against HeighFieldShape has been improved (better middle-phase algorithm)
+- Robustness of polyhedron vs polyhedron collision detection has been improved in SAT algorithm (face contacts are favored over edge-edge contacts for better stability)
+
 ### Added
 
 - The performance of the collision detection and rigid bodies simulation (PhysicsWorld::update() method) has been improved significantly (1.7x speedup on average measured in [PEEL](https://github.com/Pierre-Terdiman/PEEL) scenes) 
@@ -168,21 +159,6 @@ QuickHull algorithm)
 - New scenes have been added to the testbed application (Box Tower, Ragdoll, Rope, Ball And Socket Joint, Bridge, Hinge Joint, Hinge Joint chain, Ball and
 Socket Joint chain, Ball and Socket Joint net, ...)
 - It is now possible to move bodies using the mouse (CTRL + click and drag) in the testbed application
-
-### Changed
-
-- The PhysicsWorld::setGravity() method now takes a const parameter
-- Rolling resistance constraint is not solved anymore in the solver. Angular damping needs to be used instead to simulate it.
-- The List class has been renamed to Array
-- The default number of iterations for the velocity solver is now 6 instead of 10
-- The default number of iterations for the position solver is now 3 instead of 5
-- Rename method RigidBody::applyForceAtWorldPosition() into RigidBody::applyWorldForceAtWorldPosition()
-- Rename method RigidBody::applyForceAtLocalPosition() into RigidBody::applyWorldForceAtLocalPosition()
-- Rename method RigidBody::applyForceToCenterOfMass() into RigidBody::applyWorldForceAtCenterOfMass()
-- Rename method RigidBody::applyTorque() into RigidBody::applyWorldTorque()
-- The raycasting broad-phase performance has been improved
-- The raycasting performance against HeighFieldShape has been improved (better middle-phase algorithm)
-- Robustness of polyhedron vs polyhedron collision detection has been improved in SAT algorithm (face contacts are favored over edge-edge contacts for better stability)
 
 ### Removed
 
@@ -216,41 +192,6 @@ Socket Joint chain, Ball and Socket Joint net, ...)
 
 Note that this release contains some public API changes. Please read carefully the following changes before upgrading to this new version and
 do not hesitate to take a look at the user manual.
-
-### Added
-
-- It is now possible to change the size of a BoxShape using the BoxShape::setHalfExtents() method
-- It is now possible to change the radius of a SphereShape using the SphereShape::setRadius() method
-- It is now possible to change the height and radius of a CapsuleShape using the CapsuleShape::setHeight() and CapsuleShape::setRadius() methods
-- It is now possible to change the scale of a ConvexMeshShape using the ConvexMeshShape::setScale() method
-- It is now possible to change the scale of a ConcaveMeshShape using the ConcaveMeshShape::setScale() method
-- It is now possible to change the scale of a HeightFieldShape using the HeightFieldShape::setScale() method
-- A method PhysicsWorld::getCollisionBody(uint index) has been added on a physics world to retrieve a given CollisionBody
-- A method PhysicsWorld::getRigidBody(uint index) has been added on a physics world to retrieve a given RigidBody
-- A RigidBody::getLocalCenterOfMass() method has been added to retrieve the current local-space center of mass of a rigid body
-- Add PhysicsCommon class that needs to be instanciated at the beginning and is used as a factory for other objects of the library (see the user manual)
-- The RigidBody::updateLocalCenterOfMassFromColliders() method has been added to compute and set the center of mass of a body using its colliders
-- The RigidBody::updateLocalInertiaTensorFromColliders() method has been added to compute and set the local inertia tensor of a body using its colliders
-- The RigidBody::getLocalInertiaTensor() method has been added to retrieve the local-space inertia tensor of a rigid body
-- The RigidBody::updateMassFromColliders() method has been added to compute and set the mass of a body using its colliders
-- A Material nows has a mass density parameter that can be set using the Material::setMassDensity() method. The mass density is used to compute the mass of a collider when computing the mass of a rigid body
-- A Collider can now be a trigger. This collider will be used to only report collisions with another collider but no collision response will be applied. You can use the Collider::setIsTrigger() method for this.
-- The EventListener class now has a onTrigger() method that is called when a trigger collider is colling with another collider
-- In the EventListener, the onContact() and onTrigger() method now reports the type of event (start, stay, exit) for each contact. This way the user can know whether it's a new contact or not or when two colliders are not in contact anymore 
-- A DebugRenderer class has been added in order to display debug info (colliders, AABBs, contacts, ...) in your simulation using graphics primitives (lines, triangles).
-- A RigidBody::applyForceAtLocalPosition() method has been added to apply a force at a given position of the rigid body in local-space
-- A default logger can be instanciated using the PhysicsCommon::createDefaultLogger() method
-- The CMakeLists.txt file of the library has been refactored to use modern CMake. The targets are now exported when you install the library so that you can import the library with the find_package(ReactPhysics3D) function in your own CMakeLists.txt file
-- A Hello World project has been added to show a very simple project that shows how to compile and use the ReactPhysics3D library
-
-### Fixed
-
-- Issues [#125](https://github.com/DanielChappuis/reactphysics3d/issues/125) and [#106](https://github.com/DanielChappuis/reactphysics3d/issues/106) with CMake install of the library have been fixed
-- Issue [#141](https://github.com/DanielChappuis/reactphysics3d/issues/141) with limits of hinge and slider joints has been fixed
-- Issue [#117](https://github.com/DanielChappuis/reactphysics3d/issues/117) in documentation has been fixed
-- Issue [#131](https://github.com/DanielChappuis/reactphysics3d/issues/131) in documentation has been fixed
-- Issue [#139](https://github.com/DanielChappuis/reactphysics3d/issues/139) in API documentation has been fixed
-- Issue [#122](https://github.com/DanielChappuis/reactphysics3d/issues/122) in logger has been fixed
 
 ### Changed
 
@@ -287,6 +228,32 @@ colliders and a different material for each Collider
 - The Logger class is now an abstract class that you can inherit from in order to receive log events from the library
 - User manual and API documentation have been updated
 
+### Added
+
+- It is now possible to change the size of a BoxShape using the BoxShape::setHalfExtents() method
+- It is now possible to change the radius of a SphereShape using the SphereShape::setRadius() method
+- It is now possible to change the height and radius of a CapsuleShape using the CapsuleShape::setHeight() and CapsuleShape::setRadius() methods
+- It is now possible to change the scale of a ConvexMeshShape using the ConvexMeshShape::setScale() method
+- It is now possible to change the scale of a ConcaveMeshShape using the ConcaveMeshShape::setScale() method
+- It is now possible to change the scale of a HeightFieldShape using the HeightFieldShape::setScale() method
+- A method PhysicsWorld::getCollisionBody(uint index) has been added on a physics world to retrieve a given CollisionBody
+- A method PhysicsWorld::getRigidBody(uint index) has been added on a physics world to retrieve a given RigidBody
+- A RigidBody::getLocalCenterOfMass() method has been added to retrieve the current local-space center of mass of a rigid body
+- Add PhysicsCommon class that needs to be instanciated at the beginning and is used as a factory for other objects of the library (see the user manual)
+- The RigidBody::updateLocalCenterOfMassFromColliders() method has been added to compute and set the center of mass of a body using its colliders
+- The RigidBody::updateLocalInertiaTensorFromColliders() method has been added to compute and set the local inertia tensor of a body using its colliders
+- The RigidBody::getLocalInertiaTensor() method has been added to retrieve the local-space inertia tensor of a rigid body
+- The RigidBody::updateMassFromColliders() method has been added to compute and set the mass of a body using its colliders
+- A Material nows has a mass density parameter that can be set using the Material::setMassDensity() method. The mass density is used to compute the mass of a collider when computing the mass of a rigid body
+- A Collider can now be a trigger. This collider will be used to only report collisions with another collider but no collision response will be applied. You can use the Collider::setIsTrigger() method for this.
+- The EventListener class now has a onTrigger() method that is called when a trigger collider is colling with another collider
+- In the EventListener, the onContact() and onTrigger() method now reports the type of event (start, stay, exit) for each contact. This way the user can know whether it's a new contact or not or when two colliders are not in contact anymore 
+- A DebugRenderer class has been added in order to display debug info (colliders, AABBs, contacts, ...) in your simulation using graphics primitives (lines, triangles).
+- A RigidBody::applyForceAtLocalPosition() method has been added to apply a force at a given position of the rigid body in local-space
+- A default logger can be instanciated using the PhysicsCommon::createDefaultLogger() method
+- The CMakeLists.txt file of the library has been refactored to use modern CMake. The targets are now exported when you install the library so that you can import the library with the find_package(ReactPhysics3D) function in your own CMakeLists.txt file
+- A Hello World project has been added to show a very simple project that shows how to compile and use the ReactPhysics3D library
+
 ### Removed
 
 - The method DynamicsWorld::getContactsList() has been removed. You need to use the EventListener class to retrieve contacts now (see the user manual).
@@ -298,6 +265,15 @@ colliders and a different material for each Collider
 - The RigidBody::setInverseInertiaTensorLocal() method has been removed. The RigidBody::setInertiaTensorLocal() has to be used instead.
 - The RigidBody::getInverseInertiaTensorWorld() method has been removed.
 - The Collider::getMass() method has been removed.
+
+### Fixed
+
+- Issues [#125](https://github.com/DanielChappuis/reactphysics3d/issues/125) and [#106](https://github.com/DanielChappuis/reactphysics3d/issues/106) with CMake install of the library have been fixed
+- Issue [#141](https://github.com/DanielChappuis/reactphysics3d/issues/141) with limits of hinge and slider joints has been fixed
+- Issue [#117](https://github.com/DanielChappuis/reactphysics3d/issues/117) in documentation has been fixed
+- Issue [#131](https://github.com/DanielChappuis/reactphysics3d/issues/131) in documentation has been fixed
+- Issue [#139](https://github.com/DanielChappuis/reactphysics3d/issues/139) in API documentation has been fixed
+- Issue [#122](https://github.com/DanielChappuis/reactphysics3d/issues/122) in logger has been fixed
 
 ## [0.7.1] - 2019-07-01
 
