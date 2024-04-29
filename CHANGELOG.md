@@ -1,6 +1,7 @@
 # Changelog
 
 ## [0.10.1] - 2024-04-22
+
 ### Added
 
  - The library will now return errors found in input data during the creation of ConvexMesh, TriangularMesh and HeighField
