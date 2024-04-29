@@ -1,4 +1,5 @@
 ## [0.10.1] - 2024-04-22
+
 ### Added
 - Glob pattern support
 - Unit Tests
