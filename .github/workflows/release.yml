@@ -1,4 +1,4 @@
-# Build, run tests and create a new release
+# Build, run tests and create a new release using the CHANGELOG.md file as release notes
 name: release 
 
 # Controls when the action will run. Triggers the workflow on push with a release tag
