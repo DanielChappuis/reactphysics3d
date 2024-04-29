@@ -11,12 +11,13 @@ on:
 jobs:
 
   # Reuse the workflow to build and test the library
-  #build-and-test:
-  #  uses: ./.github/workflows/build-and-test.yml
+  build-and-test:
+    name: Build and Test
+    uses: ./.github/workflows/build-and-test.yml
 
   # Create a new release
   create-release:
-    name: create-release
+    name: Create Release
     runs-on: ubuntu-latest
     #needs: [build-and-test]
     steps:
