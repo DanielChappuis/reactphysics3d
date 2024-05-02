@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install cmake doxygen texlive-base
+          sudo apt-get install cmake doxygen texlive
           cmake --version
           doxygen --version
 
@@ -44,5 +44,5 @@ jobs:
           server: ftp.cluster010.ovh.net
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
-          local-dir:  .build/documentation/html/
+          local-dir:  ./build/documentation/html/
           server-dir: /wwwrp3d/doc_test/

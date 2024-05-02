@@ -307,9 +307,8 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.config.coverage }}
-        uses: codecov/codecov-action@v2
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}   
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
           verbose: false
