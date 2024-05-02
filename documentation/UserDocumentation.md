@@ -182,7 +182,7 @@ You can find below the different CMake options that you can set before building 
 
 ## Using ReactPhysics3D in your application {#usingrp3d}
 
-If you have built and installed the ReactPhysics3D on your system with CMake as explained in the section \ref{sec:building}, it is easy to import the
+If you have built and installed the ReactPhysics3D on your system with CMake as explained in this [section](#building), it is easy to import the
 library in your project. You probably already have a `CMakeLists.txt` file for your project. Therefore, to import the ReactPhysics3D
 library, you simply need to add the following line in the `CMakeLists.txt` file of your project.
 
@@ -449,7 +449,7 @@ world->enableSleeping(false);
 ~~~
 
 Note that it is not recommended to disable the sleeping technique because the simulation might become slower. It is also possible to deactivate
-the sleeping technique on a per body basis. See section \ref{sec:rigidbodysleeping} for more information. 
+the sleeping technique on a per body basis. See this [section](#rigidbodysleeping) for more information. 
 
 A body is put to sleep when its linear and angular velocity stay under a given velocity threshold for a certain amount of time
 (one second by default). It is possible to change the linear and angular velocity thresholds using the two methods
@@ -761,7 +761,7 @@ The mass, center of mass and inertia tensor of a rigid body are important parame
 
 The `RigidBody` has a mass value (in kilograms) which is 1 kilogram by default. There are two ways to set the mass of a rigid body. First, you
 can set it directly using the `RigidBody::setMass()` method. Secondly, it is also possible to compute this mass
-automatically using the mass of the colliders of the rigid body. As described in section \ref{sec:material}, the material of each collider has a 
+automatically using the mass of the colliders of the rigid body. As described in this [section](#material), the material of each collider has a 
 mass density value. This value is 1 by default. You change change the mass density value of the colliders of a rigid body and then use the
 `RigidBody::updateMassFromColliders()` method to automatically compute the mass of the rigid body using the mass density and shape of
 its colliders. Note that you will need to call this method again if you add another collider to the rigid body.
@@ -771,7 +771,7 @@ its colliders. Note that you will need to call this method again if you add anot
 The center of mass of a `RigidBody` is the mean location of the distribution of mass of the body in space. By default the center of mass
 of the rigid body is located at its origin. There are two ways to set the center of mass of a rigid body. First, you can set it directly using the
 `RigidBody::setLocalCenterOfMass()` method. Secondly, as for the mass, the center of mass can also be computed automatically using the
-mass, shape and transform of all the colliders of the rigid body. As described in section \ref{sec:material}, the material of each collider has a
+mass, shape and transform of all the colliders of the rigid body. As described in this [section](#material), the material of each collider has a
 mass density value. This value is 1 by default. You can set the mass density value of the colliders and then use the
 `RigidBody::updateLocalCenterOfMassFromColliders()` method to automatically compute the center of mass of the rigid body.
 Note that you will need to call this method again if you add another collider to the rigid body.
@@ -784,7 +784,7 @@ is the identity matrix. There are two ways to set the inertia tensor of
 a rigid body. First, you can set it directly using the `RigidBody::setLocalInertiaTensor()` method. Note that this will set the inertia tensor
 of the body in local-space coordinates which is usually a diagonal matrix. This method takes a `Vector3` with the three diagonal entries of the
 matrix. Secondly, the local inertia tensor can be computed automatically using the mass density, shape and transform of all the colliders of the body.
-As described in section \ref{sec:material}, the material of each collider has a mass density value which is 1 by default. You can set the mass density
+As described in this [section](#material), the material of each collider has a mass density value which is 1 by default. You can set the mass density
 value of the colliders and then use the `RigidBody::updateLocalInertiaTensorFromColliders()` method to automatically compute the local inertia
 tensor of the body. Note that you will need to call this method again if you add another collider to the rigid body.
 

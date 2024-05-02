@@ -31,6 +31,7 @@ jobs:
           cmake \
             -S . \
             -B build \
+            -DRP3D_COMPILE_LIBRARY=False \
             -DRP3D_GENERATE_DOCUMENTATION=True \
             -DRP3D_COMPILE_TESTS=False \
             -DRP3D_COMPILE_TESTBED=False
@@ -38,3 +39,12 @@ jobs:
       - name: Build Documentation
         shell: bash
         run: cmake --build build/ 
+
+      - name: Publish to FTP of website
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.cluster010.ovh.net
+          username: ${{ secrets.ftp_username }}
+          password: ${{ secrets.ftp_password }}
+          local-dir:  ./documentation/html/
+          server-dir: /wwwrp3d/doc_test/
