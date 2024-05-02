@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install cmake doxygen texlive
+          sudo apt-get install cmake doxygen texlive-latex-extra
           cmake --version
           doxygen --version
 
@@ -46,3 +46,4 @@ jobs:
           password: ${{ secrets.ftp_password }}
           local-dir:  ./build/documentation/html/
           server-dir: /wwwrp3d/doc_test/
+          dangerous-clean-slate: true
