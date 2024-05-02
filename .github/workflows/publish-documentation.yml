@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install cmake doxygen texlive-latex-extra
+          sudo apt-get install cmake doxygen texlive-latex-extra ghostscript
           cmake --version
           doxygen --version
 
