@@ -6,10 +6,8 @@
  # Dependencies
 
   - Doxygen
-  - Sphinx
-  - Breathe (bridge between Doxygen and Sphinx)
-  - Exhale (used to better display the API documentation from Doxygen)
   - CMake
+  - doxygen-awesome-css (https://jothepro.github.io/doxygen-awesome-css)
 
  # How to generate the documentation
 
