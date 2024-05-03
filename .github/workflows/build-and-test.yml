@@ -8,7 +8,6 @@ on:
       - master
       - develop
   pull_request:
-  release:
   workflow_call:
     secrets:
       codecov_token:

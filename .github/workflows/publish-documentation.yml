@@ -5,7 +5,7 @@ name: Publish Documentation
 on: 
   push:
     branches:
-      - documentation
+      - master
 
 jobs:
   documentation:
