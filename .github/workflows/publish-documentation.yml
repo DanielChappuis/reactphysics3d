@@ -45,5 +45,5 @@ jobs:
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
           local-dir:  ./build/documentation/html/
-          server-dir: /wwwrp3d/doc_test/
+          server-dir: /wwwrp3d/documentation/
           dangerous-clean-slate: true

@@ -14,6 +14,8 @@ jobs:
   build-and-test:
     name: Build and Test
     uses: ./.github/workflows/build-and-test.yml
+    secrets:
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   # Create a new release
   create-release:
