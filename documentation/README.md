@@ -1,12 +1,11 @@
 
  This file describes how the documentation of the project is generated.
 
- Reference: https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sphinx-breathe-doxygen-cmake
-
  # Dependencies
 
   - Doxygen
-  - CMake
+  - CMake (to build the documentation)
+  - LateX (for formulas in the documentation)
   - doxygen-awesome-css (https://jothepro.github.io/doxygen-awesome-css)
 
  # How to generate the documentation

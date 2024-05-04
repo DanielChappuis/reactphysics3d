@@ -1,52 +1,6 @@
 # Changelog
 
-## [0.10.1] - 2024-04-22
-
-### Changed
-
-- Test 123
-- Test 456
-
-### Added
-
-- Test 123
-- Test 456
-
-### Removed
-
-- The TriangleMesh does not support adding multiple parts of a mesh anymore. 
-- The TriangleMesh::addSubpart() method has been removed. The PhysicsCommon::createTriangleMesh() method should be used instead
-- The TriangleMesh::getSubpart() method has been removed. 
-- The TriangleMesh::getNbSubparts() method has been removed.
-- When creating a HeightField, it is not possible to specify the up axis anymore (changing the Transform of the Collider must be used instead)
-- No need to specify the min/max height when creating a HeightField anymore (this is now automatically computed)
-- The HeightFiedShape::getNbColumns() method has been removed (HeightFieldShape::getHeightField()->getNbColumns() must be used instead)
-- The HeightFiedShape::getNbRows() method has been removed (HeightFieldShape::getHeightField()->getNbRows() must be used instead)
-- The HeightFiedShape::getHeightAt() method has been removed (HeightFieldShape::getHeightField()->getHeightAt() must be used instead)
-- The CollisionBody class has been removed (RigidBody class must be used instead with a Collider where isSimulationCollider is disabled)
-- The PhysicsWorld::createCollisionBody() method has been removed 
-- The PhysicsWorld::destroyCollisionBody() method has been removed 
-- The PhysicsWorld::getCollisionBody() method has been removed 
-- The PhysicsWorld::getNbCollisionBodies() method has been removed 
-
-### Fixed
-
-- Issue [#206](https://github.com/DanielChappuis/reactphysics3d/issues/206) Collision issue and scaling of collider normals
-- Issue [#235](https://github.com/DanielChappuis/reactphysics3d/issues/235) Removing a body should wake up its neighbors
-- Issue [#237](https://github.com/DanielChappuis/reactphysics3d/issues/237) Wrong assert has been removed 
-- Issue [#239](https://github.com/DanielChappuis/reactphysics3d/issues/239) Memory allocation alignment
-- Issue [#240](https://github.com/DanielChappuis/reactphysics3d/issues/240) Uninitialized variable
-- Issue [#347](https://github.com/DanielChappuis/reactphysics3d/issues/347) Missing collision between capsule and triangle edge in some case
-- Issue [#362](https://github.com/DanielChappuis/reactphysics3d/issues/362) Bug in Collider::setLocalToBodyTransform()
-- Issue [#275](https://github.com/DanielChappuis/reactphysics3d/issues/275) Compilation warning
-- Issue [#286](https://github.com/DanielChappuis/reactphysics3d/issues/286) Compilation error on Android
-- Issue [#323](https://github.com/DanielChappuis/reactphysics3d/issues/323) Avoid conflict with X11 library
-- Issue [#362](https://github.com/DanielChappuis/reactphysics3d/issues/362) Crash
-- Issue [#364](https://github.com/DanielChappuis/reactphysics3d/issues/364) Assert in createContacts() method
-- Issue [#366](https://github.com/DanielChappuis/reactphysics3d/issues/366) Crash when creating islands
-- Issue [#370](https://github.com/DanielChappuis/reactphysics3d/issues/370) Compilation error on recent compiler
-- Issue with edge vs edge collision detection for BoxShape, ConvexMeshShape, ConcaveMeshShape and HeightFieldShape (SAT algorithm)
-- Compilation error on Clang 19
+## [Unreleased] - 2024-04-22
 
 ## [0.10.0] - 2024-03-10
 
