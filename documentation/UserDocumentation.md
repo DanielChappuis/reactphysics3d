@@ -914,7 +914,7 @@ CapsuleShape* capsuleShape = physicsCommon.createCapsuleShape(1.0, 2.0);
 
 The `ConvexMeshShape` class can be used to describe the shape of a convex mesh centered at the origin of the collider.
 
-![ConvexShape](images/convexshape.png)
+![ConvexMeshShape](images/convexshape.png)
 
 In order to create a `ConvexMeshShape`, we first need to create a `ConvexMesh`. A `ConvexMesh` can be instanciated once and
 used to create multiple `ConvexMeshShapes` with different scaling if necessary. There are two ways to create a `ConvexMesh`.
@@ -935,23 +935,48 @@ In this example, we create a cube as a convex mesh shape. Of course, this is onl
 shape, you should use the `BoxShape` instead. 
 
 ~~~.cpp
+
 // Array with the vertices coordinates of the convex mesh
 float vertices[24] = {-3, -3, 3,
 	      3, -3, 3,
 	      3, -3, -3,
-	      3, -3, -3,
+	      -3, -3, -3,
 	      -3, 3, 3,
 	      3, 3, 3,
 	      3, 3, -3,
 	      -3, 3, -3};
 
-// Vertex array with all vertices of the mesh
-rp3d::VertexArray vertexArray(vertices, 3 * sizeof(float),
-		  24, rp3d::VertexArray::DataType::VERTEX_FLOAT_TYPE);
 
-// Compute the convex mesh from the array of vertices
+// Array with the vertices indices for each face of the mesh
+int indices[24] = {0, 3, 2, 1,
+                   4, 5, 6, 7,
+                   0, 1, 5, 4,
+                   1, 2, 6, 5,
+                   2, 3, 7, 6,
+                   0, 4, 7, 3};
+
+// Description of the six faces of the convex mesh
+PolygonVertexArray::PolygonFace* polygonFaces = new PolygonVertexArray::PolygonFace[6];
+PolygonVertexArray::PolygonFace* face = polygonFaces;
+for (int f = 0; f < 6; f++) {
+
+    // First vertex of the face in the indices array
+    face->indexBase = f * 4;   
+
+    // Number of vertices in the face
+    face->nbVertices = 4;
+
+    face++;
+}
+
+// Create the polygon vertex array
+PolygonVertexArray* polygonVertexArray = new PolygonVertexArray(8, vertices, 3 * sizeof(float), indices, sizeof(int), 6, polygonFaces,
+PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+
+// Create the convex mesh
 std::vector<rp3d::Message> messages;
-ConvexMesh* convexMesh = physicsCommon.createConvexMesh(vertexArray, messages);
+ConvexMesh* convexMesh = physicsCommon.createConvexMesh(polygonVertexArray, messages);
 
 // Display the messages (info, warning and errors)
 if (messages.size() > 0) {
@@ -959,9 +984,7 @@ if (messages.size() > 0) {
 	for (const rp3d::Message& message: messages) {
 
 		std::string messageType;
-
 		switch(message.type) {
-
 			case rp3d::Message::Type::Information:
 				messageType = "info";
 				break;
@@ -981,7 +1004,6 @@ if (messages.size() > 0) {
 assert(convexMesh != nullptr);
 
 ~~~
-
 
 Note that the vertex coordinates and indices array are copied into the `ConvexMesh`. Therefore, you can release the memory of the
 `PolygonVertexArray` after the `ConvexMesh` creation. However, the mesh data is stored inside the `ConvexMesh`. Therefore,
@@ -1016,15 +1038,14 @@ QuickHull algorithm to compute a convex mesh that includes all the vertices.
 float vertices[24] = {-3, -3, 3,
 	      3, -3, 3,
 	      3, -3, -3,
-	      3, -3, -3,
+	      -3, -3, -3,
 	      -3, 3, 3,
 	      3, 3, 3,
 	      3, 3, -3,
 	      -3, 3, -3};
 
 // Vertex array with all vertices of the mesh
-rp3d::VertexArray vertexArray(vertices, 3 * sizeof(float),
-		  24, rp3d::VertexArray::DataType::VERTEX_FLOAT_TYPE);
+rp3d::VertexArray vertexArray(vertices, 3 * sizeof(float), 8, rp3d::VertexArray::DataType::VERTEX_FLOAT_TYPE);
 
 // Compute the convex mesh using only the array of vertices
 std::vector<rp3d::Message> messages;
