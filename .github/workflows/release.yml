@@ -30,7 +30,7 @@ jobs:
         uses: docker://antonyurchenko/git-release:v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DRAFT_RELEASE: "true"
+          DRAFT_RELEASE: "false"
           PRE_RELEASE: "false"
           ALLOW_EMPTY_CHANGELOG: "false"
 
