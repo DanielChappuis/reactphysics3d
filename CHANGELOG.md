@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased] - 2024-04-22
+## [Unreleased] - 2024-05-16
+
+### Fixed
+
+- Fix crash within testbed application in raycasting scene
 
 ## [0.10.0] - 2024-03-10
 

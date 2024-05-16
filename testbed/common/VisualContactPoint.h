@@ -58,25 +58,31 @@ class VisualContactPoint : public openglframework::Object3D {
         static openglframework::VertexArrayObject mVAO;
 
 		/// Vertex Buffer Object for the vertices data
-		openglframework::VertexBufferObject mVBOVerticesNormalLine;
+        static openglframework::VertexBufferObject mVBOVerticesNormalLine;
 
 		/// Vertex Array Object for the vertex data
-		openglframework::VertexArrayObject mVAONormalLine;
+        static openglframework::VertexArrayObject mVAONormalLine;
 
         /// True if static data (VBO, VAO) has been created already
         static bool mStaticDataCreated;
 
-		// Two end-points of the contact normal line
+        /// Two end-points of the contact normal line (static points for the VBO)
+        static openglframework::Vector3 mContactNormalLineStaticPoints[2];
+
+        /// Two end-points of the contact normal line
 		openglframework::Vector3 mContactNormalLinePoints[2];
 
         /// Color
         openglframework::Color mColor;
 
-        // Create the Vertex Buffer Objects used to render the contact point sphere with OpenGL.
-        static void createVBOAndVAO();
+        /// Rotation of the contact normal
+        rp3d::Quaternion mNormalRotation;
 
-		// Create the Vertex Buffer Objects used to render the contact normal line with OpenGL.
-		void createContactNormalLineVBOAndVAO();
+        /// Create the Vertex Buffer Objects used to render the contact point sphere with OpenGL.
+        static void createSphereVBOAndVAO();
+
+        /// Create the Vertex Buffer Objects used to render the contact normal line with OpenGL.
+        static void createContactNormalLineVBOAndVAO();
 
 		/// Render the contact normal line
 		void renderContactNormalLine(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix);
@@ -90,9 +96,6 @@ class VisualContactPoint : public openglframework::Object3D {
         /// Constructor
         VisualContactPoint(const openglframework::Vector3& position, const openglframework::Vector3& normalLineEndPointLocal,
                            const openglframework::Color& color);
-
-        /// Destructor
-        ~VisualContactPoint();
 
         /// Load and initialize the mesh for all the contact points
         static void createStaticData(const std::string& meshFolderPath);
