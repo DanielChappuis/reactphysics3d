@@ -105,7 +105,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj");
+    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.7, 0.7, 0.7));
 
     // Set the color
     mConcaveMesh->setColor(mObjectColorDemo);
@@ -115,7 +115,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Heightfield ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mHeightField = new HeightField(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld);
+    mHeightField = new HeightField(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, rp3d::Vector3(0.7, 0.7, 0.7));
 
     // Set the color
     mHeightField->setColor(mObjectColorDemo);
