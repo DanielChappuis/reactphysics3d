@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Issue [#378](https://github.com/DanielChappuis/reactphysics3d/issues/378) Fix issue with raycasting of HeightFieldShape
 - Fix crash within testbed application in raycasting scene
 
 ## [0.10.0] - 2024-03-10

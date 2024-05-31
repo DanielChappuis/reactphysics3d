@@ -124,7 +124,7 @@ class HeightField {
 
         /// Raycast method with feedback information
         bool raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, TriangleRaycastSide testSide,
-                     MemoryAllocator& allocator, const Vector3& scale) const;
+                     MemoryAllocator& allocator) const;
 
         /// Compute the min/max grid coords corresponding to the intersection of the AABB of the height field and the AABB to collide
         void computeMinMaxGridCoordinates(uint32* minCoords, uint32* maxCoords, const AABB& aabbToCollide) const;

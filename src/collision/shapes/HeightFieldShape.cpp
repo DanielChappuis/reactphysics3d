@@ -77,12 +77,20 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
 
     RP3D_PROFILE("HeightFieldShape::raycast()", mProfiler);
 
-    // Apply the collision shape inverse scaling factor because the height-field is stored without scaling
+    // Apply the height-field scale inverse scale factor because the mesh is stored without scaling
     // inside the dynamic AABB tree
     const Vector3 inverseScale(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z);
     Ray scaledRay(ray.point1 * inverseScale, ray.point2 * inverseScale, ray.maxFraction);
 
-    return mHeightField->raycast(scaledRay, raycastInfo, collider, getRaycastTestType(), allocator, mScale);
+    if (mHeightField->raycast(scaledRay, raycastInfo, collider, getRaycastTestType(), allocator)) {
+
+        // Scale back the contact point because we used a ray scale with inverse height-field scale
+        raycastInfo.worldPoint = raycastInfo.worldPoint * mScale;
+
+        return true;
+    }
+
+    return false;
 }
 
 // Return the string representation of the shape

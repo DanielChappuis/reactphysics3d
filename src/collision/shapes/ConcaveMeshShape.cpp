@@ -186,7 +186,7 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     Ray scaledRay(ray.point1 * inverseScale, ray.point2 * inverseScale, ray.maxFraction);
 
     // Create the callback object that will compute ray casting against triangles
-    ConcaveMeshRaycastCallback raycastCallback(*this, collider, raycastInfo, scaledRay, mScale, allocator);
+    ConcaveMeshRaycastCallback raycastCallback(*this, collider, raycastInfo, ray, allocator);
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -197,7 +197,8 @@ bool ConcaveMeshShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
 
     // Ask the Dynamic AABB Tree to report all AABB nodes that are hit by the ray.
     // The raycastCallback object will then compute ray casting against the triangles
-    // in the hit AABBs.
+    // in the hit AABBs. Note that we use the inverse scaled ray here because AABBs of the TriangleMesh
+    // are stored without scaling
     mTriangleMesh->raycast(scaledRay, raycastCallback);
 
     raycastCallback.raycastTriangles();
@@ -239,7 +240,6 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
 		
 #ifdef IS_RP3D_PROFILING_ENABLED
 
-
 		// Set the profiler to the triangle shape
 		triangleShape.setProfiler(mProfiler);
 
@@ -257,7 +257,7 @@ void ConcaveMeshRaycastCallback::raycastTriangles() {
             mRaycastInfo.body = raycastInfo.body;
             mRaycastInfo.collider = raycastInfo.collider;
             mRaycastInfo.hitFraction = raycastInfo.hitFraction;
-            mRaycastInfo.worldPoint = raycastInfo.worldPoint * mMeshScale;
+            mRaycastInfo.worldPoint = raycastInfo.worldPoint;
             mRaycastInfo.worldNormal = raycastInfo.worldNormal;
             mRaycastInfo.triangleIndex = data;
 
