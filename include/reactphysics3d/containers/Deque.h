@@ -296,7 +296,10 @@ class Deque {
 
             clear();
 
-            if (mBuffer != nullptr && mCapacity > 0) {
+            if (mCapacity > 0) {
+
+                assert(mBuffer != nullptr);
+
                 // Release the chunks array
                 mAllocator.release(mBuffer, sizeof(T) * mCapacity);
             }

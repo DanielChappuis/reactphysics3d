@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Issue [#377](https://github.com/DanielChappuis/reactphysics3d/issues/377) Fix assert when destroying an empty PhysicsWorld
 - Issue [#378](https://github.com/DanielChappuis/reactphysics3d/issues/378) Fix issue with raycasting of HeightFieldShape
 - Fix crash within testbed application in raycasting scene
 
