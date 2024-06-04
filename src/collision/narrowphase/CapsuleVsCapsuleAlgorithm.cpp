@@ -176,71 +176,66 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
         // If the collision shapes overlap
         if (closestPointsDistanceSquare < sumRadius * sumRadius) {
 
-            decimal closestPointsDistance = std::sqrt(closestPointsDistanceSquare);
-            decimal penetrationDepth = sumRadius - closestPointsDistance;
+            if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
 
-            // Make sure the penetration depth is not zero (even if the previous condition test was true the penetration depth can still be
-            // zero because of precision issue of the computation at the previous line)
-            if (penetrationDepth > 0) {
-                
-                if (narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].reportContacts) {
-                    
-                    // If the distance between the inner segments is not zero
-                    if (closestPointsDistanceSquare > MACHINE_EPSILON) {
-                        
-                        closestPointsSeg1ToSeg2 /= closestPointsDistance;
-                        
-                        const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsule1Radius);
-                        const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsule2Radius;
-                        
-                        const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * closestPointsSeg1ToSeg2;
-                        
+                // If the distance between the inner segments is not zero
+                if (closestPointsDistanceSquare > MACHINE_EPSILON) {
+
+                    decimal closestPointsDistance = std::sqrt(closestPointsDistanceSquare);
+                    closestPointsSeg1ToSeg2 /= closestPointsDistance;
+
+                    const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsule1Radius);
+                    const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsule2Radius;
+
+                    const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * closestPointsSeg1ToSeg2;
+
+                    decimal penetrationDepth = sumRadius - closestPointsDistance;
+
+                    // Create the contact info object
+                    narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
+                }
+                else { // The segment are overlapping (degenerate case)
+
+                    // If the capsule segments are parralel
+                    if (areCapsuleInnerSegmentsParralel) {
+
+                        // The segment are parallel, not overlapping and their distance is zero.
+                        // Therefore, the capsules are just touching at the top of their inner segments
+                        decimal squareDistCapsule2PointToCapsuleSegA = (capsule1SegA - closestPointCapsule2Seg).lengthSquare();
+
+                        Vector3 capsule1SegmentMostExtremePoint = squareDistCapsule2PointToCapsuleSegA > MACHINE_EPSILON ? capsule1SegA : capsule1SegB;
+                        Vector3 normalCapsuleSpace2 = (closestPointCapsule2Seg - capsule1SegmentMostExtremePoint);
+                        normalCapsuleSpace2.normalize();
+
+                        const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsule1Radius);
+                        const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsule2Radius;
+
+                        const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * normalCapsuleSpace2;
+
                         // Create the contact info object
-                        narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
+                        narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, sumRadius, contactPointCapsule1Local, contactPointCapsule2Local);
                     }
-                    else { // The segment are overlapping (degenerate case)
-                        
-                        // If the capsule segments are parralel
-                        if (areCapsuleInnerSegmentsParralel) {
-                            
-                            // The segment are parallel, not overlapping and their distance is zero.
-                            // Therefore, the capsules are just touching at the top of their inner segments
-                            decimal squareDistCapsule2PointToCapsuleSegA = (capsule1SegA - closestPointCapsule2Seg).lengthSquare();
-                            
-                            Vector3 capsule1SegmentMostExtremePoint = squareDistCapsule2PointToCapsuleSegA > MACHINE_EPSILON ? capsule1SegA : capsule1SegB;
-                            Vector3 normalCapsuleSpace2 = (closestPointCapsule2Seg - capsule1SegmentMostExtremePoint);
-                            normalCapsuleSpace2.normalize();
-                            
-                            const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsule1Radius);
-                            const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsule2Radius;
-                            
-                            const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * normalCapsuleSpace2;
-                            
-                            // Create the contact info object
-                            narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, sumRadius, contactPointCapsule1Local, contactPointCapsule2Local);
-                        }
-                        else {   // If the capsules inner segments are not parallel
-                            
-                            // We cannot use a vector between the segments as contact normal. We need to compute a new contact normal with the cross
-                            // product between the two segments.
-                            Vector3 normalCapsuleSpace2 = seg1.cross(seg2);
-                            normalCapsuleSpace2.normalize();
-                            
-                            // Compute the contact points on both shapes
-                            const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsule1Radius);
-                            const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsule2Radius;
-                            
-                            const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * normalCapsuleSpace2;
-                            
-                            // Create the contact info object
-                            narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, sumRadius, contactPointCapsule1Local, contactPointCapsule2Local);
-                        }
+                    else {   // If the capsules inner segments are not parallel
+
+                        // We cannot use a vector between the segments as contact normal. We need to compute a new contact normal with the cross
+                        // product between the two segments.
+                        Vector3 normalCapsuleSpace2 = seg1.cross(seg2);
+                        normalCapsuleSpace2.normalize();
+
+                        // Compute the contact points on both shapes
+                        const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + normalCapsuleSpace2 * capsule1Radius);
+                        const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - normalCapsuleSpace2 * capsule2Radius;
+
+                        const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * normalCapsuleSpace2;
+
+                        // Create the contact info object
+                        narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, sumRadius, contactPointCapsule1Local, contactPointCapsule2Local);
                     }
                 }
-                
-                narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
-                isCollisionFound = true;
             }
+
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
+            isCollisionFound = true;
         }
     }
 
