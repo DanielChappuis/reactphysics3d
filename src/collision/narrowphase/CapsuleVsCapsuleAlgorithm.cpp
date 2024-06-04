@@ -29,7 +29,7 @@
 #include <reactphysics3d/collision/narrowphase/NarrowPhaseInfoBatch.h>
 
 // We want to use the ReactPhysics3D namespace
-using namespace reactphysics3d;  
+using namespace reactphysics3d;
 
 // Compute the narrow-phase collision detection between two capsules
 // This technique is based on the "Robust Contact Creation for Physics Simulations" presentation
@@ -133,8 +133,8 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                         Vector3 seg2Normalized = seg2.getUnit();
 
                         // Get the vectors (among vec1 and vec2) that is the most orthogonal to the capsule 2 inner segment (smallest absolute dot product)
-                        decimal cosA1 = std::abs(seg2Normalized.x);		// abs(vec1.dot(seg2))
-                        decimal cosA2 = std::abs(seg2Normalized.y);	    // abs(vec2.dot(seg2))
+                        decimal cosA1 = std::abs(seg2Normalized.x);        // abs(vec1.dot(seg2))
+                        decimal cosA2 = std::abs(seg2Normalized.y);        // abs(vec2.dot(seg2))
 
                         segment1ToSegment2.setToZero();
 
@@ -189,7 +189,7 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
 
                     const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * closestPointsSeg1ToSeg2;
 
-                    decimal penetrationDepth = sumRadius - closestPointsDistance;
+                    decimal penetrationDepth = std::max(sumRadius - closestPointsDistance, MACHINE_EPSILON);
 
                     // Create the contact info object
                     narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
