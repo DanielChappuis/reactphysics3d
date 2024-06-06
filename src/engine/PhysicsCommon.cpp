@@ -617,7 +617,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVer
     // If the mesh is not valid
     if (!isValid) {
         mesh->~ConvexMesh();
-        allocator.release(mesh, sizeof(ConvexMesh));
+        mMemoryManager.release(MemoryManager::AllocationType::Pool, mesh, sizeof(ConvexMesh));
         return nullptr;
     }
 
@@ -661,7 +661,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std:
     // If the mesh is not valid
     if (!isValid) {
         mesh->~ConvexMesh();
-        allocator.release(mesh, sizeof(ConvexMesh));
+        mMemoryManager.release(MemoryManager::AllocationType::Pool, mesh, sizeof(ConvexMesh));
         return nullptr;
     }
 
