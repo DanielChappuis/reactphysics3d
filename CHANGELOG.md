@@ -7,6 +7,7 @@
 - Issue [#377](https://github.com/DanielChappuis/reactphysics3d/issues/377) Assert when destroying an empty PhysicsWorld
 - Issue [#378](https://github.com/DanielChappuis/reactphysics3d/issues/378) Wrong raycasting result against the HeightFieldShape
 - Fix crash within testbed application in raycasting scene
+- Fix robustness issue with CapsuleShape vs CapsuleShape collision
 
 ## [0.10.0] - 2024-03-10
 
