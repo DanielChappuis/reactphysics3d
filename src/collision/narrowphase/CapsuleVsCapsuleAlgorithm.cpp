@@ -182,19 +182,27 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                 if (closestPointsDistanceSquare > MACHINE_EPSILON) {
 
                     decimal closestPointsDistance = std::sqrt(closestPointsDistanceSquare);
-                    closestPointsSeg1ToSeg2 /= closestPointsDistance;
-
-                    const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsule1Radius);
-                    const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsule2Radius;
-
-                    const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * closestPointsSeg1ToSeg2;
-
                     decimal penetrationDepth = sumRadius - closestPointsDistance;
 
-                    // Create the contact info object
-                    narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
+                    // Make sure the penetration depth is not zero (even if the previous condition test was true the penetration depth can still be
+                    // zero because of precision issue of the computation at the previous line)
+                    if (penetrationDepth > 0) {
+
+                        closestPointsSeg1ToSeg2 /= closestPointsDistance;
+
+                        const Vector3 contactPointCapsule1Local = capsule1ToCapsule2SpaceTransform.getInverse() * (closestPointCapsule1Seg + closestPointsSeg1ToSeg2 * capsule1Radius);
+                        const Vector3 contactPointCapsule2Local = closestPointCapsule2Seg - closestPointsSeg1ToSeg2 * capsule2Radius;
+
+                        const Vector3 normalWorld = narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].shape2ToWorldTransform.getOrientation() * closestPointsSeg1ToSeg2;
+
+                        // Create the contact info object
+                        narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
+
+                        narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
+                        isCollisionFound = true;
+                    }
                 }
-                else { // The segment are overlapping (degenerate case)
+                else if (sumRadius > 0){ // The segment are overlapping (degenerate case)
 
                     // If the capsule segments are parralel
                     if (areCapsuleInnerSegmentsParralel) {
@@ -231,11 +239,11 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                         // Create the contact info object
                         narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, sumRadius, contactPointCapsule1Local, contactPointCapsule2Local);
                     }
+
+                    narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
+                    isCollisionFound = true;
                 }
             }
-
-            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
-            isCollisionFound = true;
         }
     }
 
