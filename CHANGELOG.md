@@ -7,8 +7,8 @@
 - Issue [#377](https://github.com/DanielChappuis/reactphysics3d/issues/377) Assert when destroying an empty PhysicsWorld
 - Issue [#378](https://github.com/DanielChappuis/reactphysics3d/issues/378) Wrong raycasting result against the HeightFieldShape
 - Issue [#387](https://github.com/DanielChappuis/reactphysics3d/issues/387) Fix memory allocation issue when destroying a ConvexMesh
+- Issue [#381](https://github.com/DanielChappuis/reactphysics3d/issues/381) Fix robustness issue with CapsuleShape vs CapsuleShape collision
 - Fix crash within testbed application in raycasting scene
-- Fix robustness issue with CapsuleShape vs CapsuleShape collision
 
 ## [0.10.0] - 2024-03-10
 

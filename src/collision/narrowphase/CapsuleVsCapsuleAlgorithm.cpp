@@ -197,9 +197,6 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
 
                         // Create the contact info object
                         narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, penetrationDepth, contactPointCapsule1Local, contactPointCapsule2Local);
-
-                        narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
-                        isCollisionFound = true;
                     }
                 }
                 else if (sumRadius > 0){ // The segment are overlapping (degenerate case)
@@ -239,11 +236,11 @@ bool CapsuleVsCapsuleAlgorithm::testCollision(NarrowPhaseInfoBatch& narrowPhaseI
                         // Create the contact info object
                         narrowPhaseInfoBatch.addContactPoint(batchIndex, normalWorld, sumRadius, contactPointCapsule1Local, contactPointCapsule2Local);
                     }
-
-                    narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
-                    isCollisionFound = true;
                 }
             }
+
+            narrowPhaseInfoBatch.narrowPhaseInfos[batchIndex].isColliding = true;
+            isCollisionFound = true;
         }
     }
 
