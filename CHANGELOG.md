@@ -1,13 +1,14 @@
 # Changelog
 
-## [Unreleased] - 2024-05-16
+## [0.10.1] - 2024-06-23
 
 ### Fixed
 
 - Issue [#377](https://github.com/DanielChappuis/reactphysics3d/issues/377) Assert when destroying an empty PhysicsWorld
 - Issue [#378](https://github.com/DanielChappuis/reactphysics3d/issues/378) Wrong raycasting result against the HeightFieldShape
-- Issue [#387](https://github.com/DanielChappuis/reactphysics3d/issues/387) Fix memory allocation issue when destroying a ConvexMesh
 - Issue [#381](https://github.com/DanielChappuis/reactphysics3d/issues/381) Fix robustness issue with CapsuleShape vs CapsuleShape collision
+- Issue [#387](https://github.com/DanielChappuis/reactphysics3d/issues/387) Fix memory allocation issue when destroying a ConvexMesh
+- Issue [#388](https://github.com/DanielChappuis/reactphysics3d/issues/388) Fix bodies without simulation collider not taken into account during islands creation
 - Fix crash within testbed application in raycasting scene
 
 ## [0.10.0] - 2024-03-10
