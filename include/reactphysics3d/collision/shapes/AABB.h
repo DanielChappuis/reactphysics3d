@@ -28,7 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
-#include <reactphysics3d/configuration.h>>
+#include <reactphysics3d/configuration.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
