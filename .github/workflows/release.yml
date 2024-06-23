@@ -1,0 +1,38 @@
+# Build, run tests and create a new release using the CHANGELOG.md file as release notes
+name: release 
+
+# Controls when the action will run. Triggers the workflow on push with a release tag
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # Reuse the workflow to build and test the library
+  build-and-test:
+    name: Build and Test
+    uses: ./.github/workflows/build-and-test.yml
+    secrets:
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  # Create a new release
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+          
+      - name: Build Documentation
+        uses: docker://antonyurchenko/git-release:v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRAFT_RELEASE: "false"
+          PRE_RELEASE: "false"
+          ALLOW_EMPTY_CHANGELOG: "false"
+
+
+

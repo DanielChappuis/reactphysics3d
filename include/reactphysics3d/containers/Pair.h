@@ -70,9 +70,9 @@ class Pair {
 
 }
 
-// Hash function for a reactphysics3d Pair
 namespace std {
 
+  // Hash function for a reactphysics3d Pair
   template <typename T1, typename T2> struct hash<reactphysics3d::Pair<T1, T2>> {
 
     size_t operator()(const reactphysics3d::Pair<T1, T2>& pair) const {

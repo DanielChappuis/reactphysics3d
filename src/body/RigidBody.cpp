@@ -35,9 +35,8 @@ using namespace reactphysics3d;
 
 // Constructor
 /**
-* @param transform The transformation of the body
 * @param world The world where the body has been added
-* @param id The ID of the body
+* @param entity The entity of the rigidbody
 */
 RigidBody::RigidBody(PhysicsWorld& world, Entity entity) : Body(world, entity) {
 

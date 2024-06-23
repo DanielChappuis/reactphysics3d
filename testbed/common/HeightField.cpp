@@ -28,13 +28,14 @@
 #include "PerlinNoise.h"
 
 // Constructor
-HeightField::HeightField(reactphysics3d::BodyType type, bool isSimulationCollider, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld)
+HeightField::HeightField(reactphysics3d::BodyType type, bool isSimulationCollider, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+                         const reactphysics3d::Vector3& scaling)
            : PhysicsObject(physicsCommon), mPhysicsWorld(physicsWorld), mVBOVertices(GL_ARRAY_BUFFER),
              mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
              mVBOIndices(GL_ELEMENT_ARRAY_BUFFER) {
 
     // Compute the scaling matrix
-    mScalingMatrix = openglframework::Matrix4(0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1);
+    mScalingMatrix = openglframework::Matrix4(scaling.x, 0, 0, 0, 0, scaling.y, 0, 0, 0, 0, scaling.z, 0, 0, 0, 0, 1);
 
     // Generate the height field
     generateHeightField();
@@ -50,7 +51,7 @@ HeightField::HeightField(reactphysics3d::BodyType type, bool isSimulationCollide
                                                     messages);
     assert(mHeightField != nullptr);
     mHeightFieldShape = mPhysicsCommon.createHeightFieldShape(mHeightField);
-    mHeightFieldShape->setScale(rp3d::Vector3(0.5, 0.5, 0.5));
+    mHeightFieldShape->setScale(scaling);
 
     mPreviousTransform = rp3d::Transform::identity();
 

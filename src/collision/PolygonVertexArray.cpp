@@ -45,7 +45,7 @@ PolygonVertexArray::PolygonVertexArray() {
  * @param indexesStart Pointer to the start of the face indices data
  * @param indexesStride The number of bytes between two consecutive face indices in the array
  * @param nbFaces The number of faces in the array
- * @param nbFaces Pointer to the start of the faces data
+ * @param facesStart Pointer to the start of the faces data
  * @param vertexDataType Data type of the vertices data
  * @param indexDataType Data type of the face indices data
  */

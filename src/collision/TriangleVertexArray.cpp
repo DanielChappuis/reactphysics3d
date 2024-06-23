@@ -80,6 +80,7 @@ TriangleVertexArray::TriangleVertexArray(uint32 nbVertices, const void* vertices
  * @param indexesStart Pointer to the first triangle index
  * @param indexesStride Number of bytes between the beginning of two consecutive triangle indices
  * @param vertexDataType Type of data for the vertices (float, double)
+ * @param normalDataType Type of data for the normals (float, double)
  * @param indexDataType Type of data for the indices (short, int)
  */
 TriangleVertexArray::TriangleVertexArray(uint32 nbVertices, const void* verticesStart, uint32 verticesStride,
@@ -107,7 +108,9 @@ TriangleVertexArray::TriangleVertexArray(uint32 nbVertices, const void* vertices
 // Return the indices of the three vertices of a given triangle in the array
 /**
  * @param triangleIndex Index of a given triangle in the array
- * @param[out] outVerticesIndices Pointer to the three output vertex indices
+ * @param[out] outV1Index Index of the first vertex of the triangle in the vertex array
+ * @param[out] outV2Index Index of the first vertex of the triangle in the vertex array
+ * @param[out] outV3Index Index of the first vertex of the triangle in the vertex array
  */
 void TriangleVertexArray::getTriangleVerticesIndices(uint32 triangleIndex, uint32& outV1Index, uint32& outV2Index, uint32& outV3Index) const {
 
@@ -135,7 +138,7 @@ void TriangleVertexArray::getTriangleVerticesIndices(uint32 triangleIndex, uint3
 // Return a vertex of the array
 /**
  * @param vertexIndex Index of a given vertex of the array
- * @param[out] outVertex Pointer to the output vertex coordinates
+ * @return The vertex coordinates
  */
 Vector3 TriangleVertexArray::getVertex(uint32 vertexIndex) const {
 
@@ -162,7 +165,7 @@ Vector3 TriangleVertexArray::getVertex(uint32 vertexIndex) const {
 // Return a vertex normal of the array
 /**
  * @param vertexIndex Index of a given vertex of the array
- * @param[out] outNormal Pointer to the output vertex normal
+ * @return The normal vector of the vertex
  */
 Vector3 TriangleVertexArray::getVertexNormal(uint32 vertexIndex) const {
 

@@ -52,17 +52,35 @@ class QHHalfEdgeStructure {
         using VerticesPair = Pair<uint32, uint32>;
         using EdgeVertices = Pair<const Vertex*, const Vertex*>;
 
-        /// Edge
+        // Struct Edge
+        /**
+         * An half-edge
+         */
         struct Edge {
 
-            Vertex* startVertex;        // Vertex at the beginning of the edge
-            Vertex* endVertex;          // Vertex at the end of the edge
-            Face* face;                 // Adjacent face of the edge
-            Edge* previousEdge;         // Previous edge in the linked-list of edges
-            Edge* nextEdge;             // Next edge in the linked-list of edges
-            Edge* previousFaceEdge;     // Previous edge around the face of the edge
-            Edge* nextFaceEdge;         // Next edge around the face of the edge
-            Edge* twinEdge;             // Twin edge
+            /// Vertex at the beginning of the edge
+            Vertex* startVertex;
+
+            /// Vertex at the end of the edge
+            Vertex* endVertex;
+
+            /// Adjacent face of the edge
+            Face* face;
+
+            /// Previous edge in the linked-list of edges
+            Edge* previousEdge;
+
+            /// Next edge in the linked-list of edges
+            Edge* nextEdge;
+
+            /// Previous edge around the face of the edge
+            Edge* previousFaceEdge;
+
+            /// Next edge around the face of the edge
+            Edge* nextFaceEdge;
+
+            /// Twin edge
+            Edge* twinEdge;
 
             Edge(Vertex* startVertex, Vertex* endVertex, Face* face)
                 :startVertex(startVertex), endVertex(endVertex), face(face), previousEdge(nullptr), nextEdge(nullptr),
@@ -88,16 +106,32 @@ class QHHalfEdgeStructure {
             }
         };
 
-        /// Face
+        // Struct Face
+        /**
+         * A face
+         */
         struct Face {
 
+            /// Pointer to the next face
             Face* nextFace;
+
+            /// Pointer to the previous face
             Face* previousFace;
-            Edge* edge;             // One half-edge of the face
+
+            /// One half-edge of the face
+            Edge* edge;
+
+            /// Face normal
             Vector3 normal;
-            Vector3 centroid;         // Center of the face (average of the face vertices)
-            decimal area;             // Area of the face
-            Array<uint32> conflictPoints;   // Array with some remaining points visible from this face that need to be processed
+
+            /// Center of the face (average of the face vertices)
+            Vector3 centroid;
+
+            /// Area of the face
+            decimal area;
+
+            /// Array with some remaining points visible from this face that need to be processed
+            Array<uint32> conflictPoints;
 
             /// Constructor
             Face(MemoryAllocator& allocator)
@@ -105,12 +139,12 @@ class QHHalfEdgeStructure {
 
             }
 
-            // Return a vertex of the face
+            /// Return a vertex of the face
             const Vertex* getVertex() const {
                 return edge->startVertex;
             }
 
-            // Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
+            /// Recalculate the face centroid and normal to better fit its new vertices (using Newell method)
             void recalculateFace(const Array<Vector3>& points) {
 
                 centroid.setToZero();
@@ -144,7 +178,7 @@ class QHHalfEdgeStructure {
                 area = normalLength * decimal(0.5);
             }
 
-            // Return a string with the vertices of the face
+            /// Return a string with the vertices of the face
             std::string verticesString() const {
 
                std::string verticesString = "(";
@@ -167,13 +201,13 @@ class QHHalfEdgeStructure {
                return verticesString;
             }
 
-            // Return true if the face is a triangle
+            /// Return true if the face is a triangle
             bool isTriangle() {
 
                 return edge->nextFaceEdge->nextFaceEdge->nextFaceEdge == edge;
             }
 
-            // Return true if the face structure is valid (for debugging purpose)
+            /// Return true if the face structure is valid (for debugging purpose)
             bool isValid() {
                bool isValid = true;
 
@@ -198,12 +232,19 @@ class QHHalfEdgeStructure {
 
         };
 
-        /// Vertex
+        // Struct Vertex
+        /**
+         * A vertex
+         */
         struct Vertex {
 
-            uint32 externalIndex;       // Index of the vertex point in the user vertex array
+            /// Index of the vertex point in the user vertex array
+            uint32 externalIndex;
 
+            /// Pointer to the previous vertex
             Vertex* previousVertex;
+
+            /// Pointer to the next vertex
             Vertex* nextVertex;
 
             /// Constructor

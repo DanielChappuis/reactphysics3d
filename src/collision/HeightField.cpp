@@ -256,7 +256,7 @@ void HeightField::computeMinMaxGridCoordinates(uint32* minCoords, uint32* maxCoo
 /// Note that only the first triangle hit by the ray in the mesh will be returned, even if
 /// the ray hits many triangles.
 bool HeightField::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, TriangleRaycastSide testSide,
-                          MemoryAllocator& allocator, const Vector3& scale) const {
+                          MemoryAllocator& allocator) const {
 
     RP3D_PROFILE("HeightField::raycast()", mProfiler);
 
@@ -290,10 +290,10 @@ bool HeightField::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* co
         while (i >= 0 && i < nbCellsI && j >= 0 && j < nbCellsJ) {
 
            // Compute the four point of the current quad
-           const Vector3 p1 = getVertexAt(i, j) * scale;
-           const Vector3 p2 = getVertexAt(i, j + 1) * scale;
-           const Vector3 p3 = getVertexAt(i + 1, j) * scale;
-           const Vector3 p4 = getVertexAt(i + 1, j + 1) * scale;
+           const Vector3 p1 = getVertexAt(i, j);
+           const Vector3 p2 = getVertexAt(i, j + 1);
+           const Vector3 p3 = getVertexAt(i + 1, j);
+           const Vector3 p4 = getVertexAt(i + 1, j + 1);
 
            // Raycast against the first triangle of the cell
            uint32 shapeId = computeTriangleShapeId(i, j, 0);
@@ -403,7 +403,7 @@ Vector3 HeightField::getVertexAt(uint32 x, uint32 y) const {
 
     const Vector3 vertex = Vector3(-mWidth * decimal(0.5) + x, mHeightOrigin + height, -mLength * decimal(0.5) + y);
 
-    assert(mBounds.contains(vertex));
+    assert(mBounds.contains(vertex, decimal(0.0001)));
 
     return vertex;
 }

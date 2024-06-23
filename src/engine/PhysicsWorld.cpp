@@ -728,9 +728,6 @@ void PhysicsWorld::createIslands() {
         // If the body is static, we go to the next body
         if (mRigidBodyComponents.mBodyTypes[b] == BodyType::STATIC) continue;
 
-        // If the body does not have any simulation collider, we skip it
-        if (!mBodyComponents.getHasSimulationCollider(mRigidBodyComponents.mRigidBodies[b]->getEntity())) continue;
-
         // Reset the stack of bodies to visit
         bodyEntitiesToVisit.clear();
 

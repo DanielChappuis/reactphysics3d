@@ -8,7 +8,10 @@ on:
       - master
       - develop
   pull_request:
-  release:
+  workflow_call:
+    secrets:
+      codecov_token:
+        required: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -306,8 +309,8 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.config.coverage }}
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
+          token: ${{ secrets.codecov_token }}
           verbose: false
-

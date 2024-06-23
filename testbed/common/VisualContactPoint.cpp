@@ -28,9 +28,13 @@
 
 // Initialization of static variables
 openglframework::VertexBufferObject VisualContactPoint::mVBOVertices(GL_ARRAY_BUFFER);
+openglframework::VertexBufferObject VisualContactPoint::mVBOVerticesNormalLine(GL_ARRAY_BUFFER);
 openglframework::VertexBufferObject VisualContactPoint::mVBONormals(GL_ARRAY_BUFFER);
 openglframework::VertexBufferObject VisualContactPoint::mVBOIndices(GL_ELEMENT_ARRAY_BUFFER);
 openglframework::VertexArrayObject VisualContactPoint::mVAO;
+openglframework::VertexArrayObject VisualContactPoint::mVAONormalLine;
+openglframework::Vector3 VisualContactPoint::mContactNormalLineStaticPoints[2] = {openglframework::Vector3(0, 0, 0), openglframework::Vector3(0, 1, 0)};
+
 int VisualContactPoint::mNbTotalPoints = 0;
 openglframework::Mesh VisualContactPoint::mMesh;
 bool VisualContactPoint::mStaticDataCreated = false;
@@ -38,7 +42,7 @@ bool VisualContactPoint::mStaticDataCreated = false;
 // Constructor
 VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
 									   const openglframework::Vector3& normalLineEndPointLocal, const openglframework::Color& color)
-                   : mVBOVerticesNormalLine(GL_ARRAY_BUFFER), mColor(color) {
+                   : mColor(color) {
 
 	mContactNormalLinePoints[0] = openglframework::Vector3(0, 0, 0);
 	mContactNormalLinePoints[1] = (normalLineEndPointLocal - position) * 0.5f;
@@ -46,14 +50,34 @@ VisualContactPoint::VisualContactPoint(const openglframework::Vector3& position,
     // Initialize the position where the mesh will be rendered
     translateWorld(position);
 
-	// Create the VBO and VAO to render the contact normal line
-	createContactNormalLineVBOAndVAO();
-}
-
-// Destructor
-VisualContactPoint::~VisualContactPoint() {
-	mVAONormalLine.destroy();
-	mVBOVerticesNormalLine.destroy();
+    // Compute the rotation quaternion from unit (0, 1, 0) to the actual normal vector in local-space
+    openglframework::Vector3 normalLineEndPointLocalVec(normalLineEndPointLocal.x, normalLineEndPointLocal.y, normalLineEndPointLocal.z);
+    openglframework::Vector3 positionVec(position.x, position.y, position.z);
+    openglframework::Vector3 v1(0, 1, 0);
+    openglframework::Vector3 v2 = (normalLineEndPointLocalVec - positionVec);
+    v2.normalize();
+    const float dot = v1.dot(v2);
+    openglframework::Vector3 xUnitVec(1, 0, 0);
+    openglframework::Vector3 yUnitVec(0, 1, 0);
+    openglframework::Vector3 rotVector;
+    // Handle parallel vectors
+    if (dot < -0.99999f) {
+        rotVector = xUnitVec.cross(v1);
+        if (rotVector.lengthSquared() < 0.000001f) {
+            rotVector = yUnitVec.cross(v1);
+        }
+        rotVector.normalize();
+        mNormalRotation.setAllValues(rotVector.x, rotVector.y, rotVector.z, openglframework::PI);
+    }
+    else if (dot > 0.99999f) {
+        mNormalRotation.setAllValues(0, 0, 0, 1);
+    }
+    else { // Handlee other vectors
+        rotVector = v1.cross(v2);
+        const float w = sqrt(v1.lengthSquared() * v2.lengthSquared());
+        mNormalRotation.setAllValues(rotVector.x, rotVector.y, rotVector.z, w + dot);
+        mNormalRotation.normalize();
+    }
 }
 
 // Load and initialize the mesh for all the contact points
@@ -69,7 +93,9 @@ void VisualContactPoint::createStaticData(const std::string& meshFolderPath) {
 
     mMesh.scaleVertices(VISUAL_CONTACT_POINT_RADIUS);
 
-    createVBOAndVAO();
+    createSphereVBOAndVAO();
+
+    createContactNormalLineVBOAndVAO();
 
     mStaticDataCreated = true;
 }
@@ -84,6 +110,9 @@ void VisualContactPoint::destroyStaticData() {
     mVBOVertices.destroy();
     mVBONormals.destroy();
     mVAO.destroy();
+
+    mVAONormalLine.destroy();
+    mVBOVerticesNormalLine.destroy();
 
     mMesh.destroy();
 
@@ -161,8 +190,13 @@ void VisualContactPoint::renderContactNormalLine(openglframework::Shader& shader
 	mVBOVerticesNormalLine.bind();
 
 	// Set the model to camera matrix
-	const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix;
-	shader.setMatrix4x4Uniform("localToWorldMatrix", mTransformMatrix);
+    const rp3d::Matrix3x3 m = mNormalRotation.getMatrix();
+    const openglframework::Matrix4 contactNormalRotation(m[0][0], m[0][1], m[0][2], 0,
+                                                         m[1][0], m[1][1], m[1][2], 0,
+                                                         m[2][0], m[2][1], m[2][2], 0,
+                                                        0, 0, 0, 1);
+    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * mTransformMatrix * contactNormalRotation;
+    shader.setMatrix4x4Uniform("localToWorldMatrix", mTransformMatrix* contactNormalRotation);
 	shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
 
 	// Set the normal matrix (inverse transpose of the 3x3 upper-left sub matrix of the
@@ -197,7 +231,7 @@ void VisualContactPoint::renderContactNormalLine(openglframework::Shader& shader
 
 // Create the Vertex Buffer Objects used to render the contact point sphere with OpenGL.
 /// We create two VBOs (one for vertices and one for indices)
-void VisualContactPoint::createVBOAndVAO() {
+void VisualContactPoint::createSphereVBOAndVAO() {
 
     // Create the VBO for the vertices data
     mVBOVertices.create();
@@ -244,7 +278,7 @@ void VisualContactPoint::createContactNormalLineVBOAndVAO() {
 	mVBOVerticesNormalLine.create();
 	mVBOVerticesNormalLine.bind();
 	size_t sizeNormalLineVertices = 2 * sizeof(openglframework::Vector3);
-	mVBOVerticesNormalLine.copyDataIntoVBO(sizeNormalLineVertices, &mContactNormalLinePoints[0], GL_STATIC_DRAW);
+    mVBOVerticesNormalLine.copyDataIntoVBO(sizeNormalLineVertices, &mContactNormalLineStaticPoints[0], GL_STATIC_DRAW);
 	mVBOVerticesNormalLine.unbind();
 
 	// Create the VAO for both VBOs

@@ -28,6 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/mathematics/mathematics.h>
+#include <reactphysics3d/configuration.h>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -101,7 +102,7 @@ class AABB {
         bool contains(const AABB& aabb) const;
 
         /// Return true if a point is inside the AABB
-        bool contains(const Vector3& point) const;
+        bool contains(const Vector3& point, decimal epsilon = MACHINE_EPSILON) const;
 
         /// Return true if the AABB of a triangle intersects the AABB
         bool testCollisionTriangleAABB(const Vector3* trianglePoints) const;
@@ -206,11 +207,11 @@ RP3D_FORCE_INLINE bool AABB::testCollisionTriangleAABB(const Vector3* trianglePo
 }
 
 // Return true if a point is inside the AABB
-RP3D_FORCE_INLINE bool AABB::contains(const Vector3& point) const {
+RP3D_FORCE_INLINE bool AABB::contains(const Vector3& point, decimal epsilon) const {
 
-    return (point.x >= mMinCoordinates.x - MACHINE_EPSILON && point.x <= mMaxCoordinates.x + MACHINE_EPSILON &&
-            point.y >= mMinCoordinates.y - MACHINE_EPSILON && point.y <= mMaxCoordinates.y + MACHINE_EPSILON &&
-            point.z >= mMinCoordinates.z - MACHINE_EPSILON && point.z <= mMaxCoordinates.z + MACHINE_EPSILON);
+    return (point.x >= mMinCoordinates.x - epsilon && point.x <= mMaxCoordinates.x + epsilon &&
+            point.y >= mMinCoordinates.y - epsilon && point.y <= mMaxCoordinates.y + epsilon &&
+            point.z >= mMinCoordinates.z - epsilon && point.z <= mMaxCoordinates.z + epsilon);
 }
 
 // Apply a scale factor to the AABB

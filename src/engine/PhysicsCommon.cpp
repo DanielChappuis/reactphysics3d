@@ -473,7 +473,8 @@ void PhysicsCommon::deleteConvexMeshShape(ConvexMeshShape* convexMeshShape) {
  * @param nbGridRows Number of rows in the grid of the height field (along the local z axis)
  * @param heightFieldData Pointer to the first height value data (note that values are copied into the heigh-field)
  * @param dataType Data type for the height values (int, float, double)
- * @param integerHeightScale Scaling factor used to scale the height values (only used when height values type is integer)
+ * @param[out] messages A reference to the array where the messages (warnings, errors, ...) will be stored
+ * @param integerHeightScale Scaling factor for the height values of the height field
  * @return A pointer to the created height-field
  */
 HeightField* PhysicsCommon::createHeightField(int nbGridColumns, int nbGridRows,
@@ -505,6 +506,7 @@ HeightField* PhysicsCommon::createHeightField(int nbGridColumns, int nbGridRows,
 // Create and return a height-field collision shape
 /**
  * @param heightField A pointer to a HeightField object
+ * @param scaling Scaling vector for the height field
  * @return A pointer to the created height field shape
  */
 HeightFieldShape* PhysicsCommon::createHeightFieldShape(HeightField* heightField, const Vector3& scaling) {
@@ -615,7 +617,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const PolygonVertexArray& polygonVer
     // If the mesh is not valid
     if (!isValid) {
         mesh->~ConvexMesh();
-        allocator.release(mesh, sizeof(ConvexMesh));
+        mMemoryManager.release(MemoryManager::AllocationType::Pool, mesh, sizeof(ConvexMesh));
         return nullptr;
     }
 
@@ -659,7 +661,7 @@ ConvexMesh* PhysicsCommon::createConvexMesh(const VertexArray& vertexArray, std:
     // If the mesh is not valid
     if (!isValid) {
         mesh->~ConvexMesh();
-        allocator.release(mesh, sizeof(ConvexMesh));
+        mMemoryManager.release(MemoryManager::AllocationType::Pool, mesh, sizeof(ConvexMesh));
         return nullptr;
     }
 
@@ -696,6 +698,8 @@ void PhysicsCommon::deleteConvexMesh(ConvexMesh* convexMesh) {
 // Create a triangle mesh from a TriangleVertexArray
 /// The data (vertices, faces indices) are copied from the TriangleVertexArray into the created ConvexMesh.
 /**
+ * @param triangleVertexArray A reference to the input TriangleVertexArray
+ * @param messages A reference to the array to stored the messages (warnings, erros, ...)
  * @return A pointer to the created triangle mesh
  */
 TriangleMesh* PhysicsCommon::createTriangleMesh(const TriangleVertexArray& triangleVertexArray, std::vector<Message>& messages) {
@@ -719,7 +723,7 @@ TriangleMesh* PhysicsCommon::createTriangleMesh(const TriangleVertexArray& trian
 
 // Destroy a triangle mesh
 /**
- * @param A pointer to the triangle mesh to destroy
+ * @param triangleMesh A pointer to the triangle mesh to destroy
  */
 void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
 
@@ -729,6 +733,9 @@ void PhysicsCommon::destroyTriangleMesh(TriangleMesh* triangleMesh) {
 }
 
 // Destroy a height-field
+/**
+ * @param heightField A pointer to the height field to destroy
+ */
 void PhysicsCommon::destroyHeightField(HeightField* heightField) {
 
     deleteHeightField(heightField);
@@ -738,7 +745,7 @@ void PhysicsCommon::destroyHeightField(HeightField* heightField) {
 
 // Delete a triangle mesh
 /**
- * @param A pointer to the triangle mesh to destroy
+ * @param triangleMesh A pointer to the triangle mesh to destroy
  */
 void PhysicsCommon::deleteTriangleMesh(TriangleMesh* triangleMesh) {
 
@@ -751,7 +758,7 @@ void PhysicsCommon::deleteTriangleMesh(TriangleMesh* triangleMesh) {
 
 // Delete a height-field
 /**
- * @param A pointer to the height-field to destroy
+ * @param heightField A pointer to the height-field to destroy
  */
 void PhysicsCommon::deleteHeightField(HeightField* heightField) {
 
@@ -777,7 +784,7 @@ DefaultLogger* PhysicsCommon::createDefaultLogger() {
 
 // Destroy a logger
 /**
- * @param A pointer to the default logger to destroy
+ * @param logger A pointer to the default logger to destroy
  */
 void PhysicsCommon::destroyDefaultLogger(DefaultLogger* logger) {
 
@@ -788,7 +795,7 @@ void PhysicsCommon::destroyDefaultLogger(DefaultLogger* logger) {
 
 // Delete a logger
 /**
- * @param A pointer to the default logger to destroy
+ * @param logger A pointer to the default logger to destroy
  */
 void PhysicsCommon::deleteDefaultLogger(DefaultLogger* logger) {
 

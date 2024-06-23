@@ -1,0 +1,49 @@
+# Build the Doxygen documentation (User manual and API reference) and publish it to www.reactphysics3d.com website
+name: Publish Documentation 
+
+# Controls when the action will run. Triggers the workflow on push
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+  documentation:
+    name: Build/Publish Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+          
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install cmake doxygen texlive-latex-extra ghostscript
+          cmake --version
+          doxygen --version
+
+      - name: CMake Configure
+        shell: bash
+        run: |
+          mkdir build
+          cmake \
+            -S . \
+            -B build \
+            -DRP3D_COMPILE_LIBRARY=False \
+            -DRP3D_GENERATE_DOCUMENTATION=True \
+            -DRP3D_COMPILE_TESTS=False \
+            -DRP3D_COMPILE_TESTBED=False
+
+      - name: Build Documentation
+        shell: bash
+        run: cmake --build build/ 
+
+      - name: Publish to FTP of website
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.cluster010.ovh.net
+          username: ${{ secrets.ftp_username }}
+          password: ${{ secrets.ftp_password }}
+          local-dir:  ./build/documentation/html/
+          server-dir: /wwwrp3d/documentation/
+          dangerous-clean-slate: true

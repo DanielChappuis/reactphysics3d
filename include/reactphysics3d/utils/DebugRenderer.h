@@ -31,7 +31,6 @@
 #include <reactphysics3d/containers/Map.h>
 #include <reactphysics3d/mathematics/mathematics.h>
 #include <reactphysics3d/engine/EventListener.h>
-#include <string>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
@@ -213,7 +212,7 @@ class DebugRenderer : public EventListener {
                                   uint32 colorShape, uint32 colorShapeNormals);
 
 		/// Draw the collision shape of a collider
-		void drawCollisionShapeOfCollider(const Collider* collider, uint32 color);
+        void drawCollisionShapeOfCollider(const Collider* collider);
 
     public :
 
@@ -378,9 +377,9 @@ RP3D_FORCE_INLINE void DebugRenderer::setContactNormalLength(decimal contactNorm
 
 }
 
-// Hash function for a DebugItem
 namespace std {
 
+  // Hash function for a DebugItem
   template <> struct hash<reactphysics3d::DebugRenderer::DebugItem> {
 
     size_t operator()(const reactphysics3d::DebugRenderer::DebugItem& debugItem) const {

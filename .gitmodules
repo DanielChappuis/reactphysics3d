@@ -2,3 +2,6 @@
 	path = testbed/extern/nanogui
 	url = https://github.com/mitsuba-renderer/nanogui.git
 	ignore = dirty
+[submodule "documentation/doxygen-awesome-css"]
+	path = documentation/doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css.git

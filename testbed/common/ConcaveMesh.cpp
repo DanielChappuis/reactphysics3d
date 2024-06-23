@@ -67,7 +67,7 @@ ConcaveMesh::ConcaveMesh(reactphysics3d::BodyType type, bool isSimulationCollide
 
     // Create the collision shape for the rigid body (convex mesh shape) and
     // do not forget to delete it at the end
-    mConcaveShape = mPhysicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh, rp3d::Vector3(1, 1, 1));
+    mConcaveShape = mPhysicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh);
     mConcaveShape->setScale(scaling);
 
     mPreviousTransform = rp3d::Transform::identity();

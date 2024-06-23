@@ -428,7 +428,7 @@ void DebugRenderer::drawHeightFieldShape(const Transform& transform, const Heigh
 }
 
 // Draw the collision shape of a collider
-void DebugRenderer::drawCollisionShapeOfCollider(const Collider* collider, uint32 color) {
+void DebugRenderer::drawCollisionShapeOfCollider(const Collider* collider) {
 	
     uint32 colorShape = mMapDebugItemWithColor[DebugItem::COLLISION_SHAPE];
     uint32 colorShapeNormals = mMapDebugItemWithColor[DebugItem::COLLISION_SHAPE_NORMAL];
@@ -519,7 +519,7 @@ void DebugRenderer::computeDebugRenderingPrimitives(const PhysicsWorld& world) {
                 // If we need to draw the collision shape
                 if (drawCollisionShape || drawCollisionShapeNormals) {
 
-                    drawCollisionShapeOfCollider(collider, mMapDebugItemWithColor[DebugItem::COLLISION_SHAPE]);
+                    drawCollisionShapeOfCollider(collider);
                 }
             }
         }

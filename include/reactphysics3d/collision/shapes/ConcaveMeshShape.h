@@ -40,6 +40,9 @@ class TriangleShape;
 class TriangleMesh;
 
 // class ConvexTriangleAABBOverlapCallback
+/**
+ * This class represents a callback when an overlap occurs
+ */
 class ConvexTriangleAABBOverlapCallback : public DynamicAABBTreeOverlapCallback {
 
     private:
@@ -75,7 +78,6 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
         const Ray& mRay;
         bool mIsHit;
         MemoryAllocator& mAllocator;
-        const Vector3& mMeshScale;
 
 #ifdef IS_RP3D_PROFILING_ENABLED
 
@@ -88,9 +90,9 @@ class ConcaveMeshRaycastCallback : public DynamicAABBTreeRaycastCallback {
 
         // Constructor
         ConcaveMeshRaycastCallback(const ConcaveMeshShape& concaveMeshShape,
-                                   Collider* collider, RaycastInfo& raycastInfo, const Ray& ray, const Vector3& meshScale, MemoryAllocator& allocator)
+                                   Collider* collider, RaycastInfo& raycastInfo, const Ray& ray, MemoryAllocator& allocator)
             : mHitAABBNodes(allocator), mConcaveMeshShape(concaveMeshShape), mCollider(collider),
-              mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false), mAllocator(allocator), mMeshScale(meshScale) {
+              mRaycastInfo(raycastInfo), mRay(ray), mIsHit(false), mAllocator(allocator) {
 
         }
 

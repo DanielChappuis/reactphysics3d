@@ -90,7 +90,8 @@ class HeightField : public PhysicsObject {
 
         /// Constructor
         HeightField(reactphysics3d::BodyType type, bool isSimulationCollider,
-                    rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld);
+                    rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
+                    const reactphysics3d::Vector3& scaling = reactphysics3d::Vector3(1, 1, 1));
 
         /// Destructor
         virtual ~HeightField() override;
