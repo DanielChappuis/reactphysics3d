@@ -105,11 +105,15 @@ Collider* Body::addCollider(CollisionShape* collisionShape, const Transform& tra
 
 #endif
 
-    // Compute the world-space AABB of the new collision shape
-    const AABB aabb = collisionShape->computeTransformedAABB(mWorld.mTransformComponents.getTransform(mEntity) * transform);
+    // If the body is active
+    if (isActive) {
 
-    // Notify the collision detection about this new collision shape
-    mWorld.mCollisionDetection.addCollider(collider, aabb);
+        // Compute the world-space AABB of the new collision shape
+        const AABB aabb = collisionShape->computeTransformedAABB(mWorld.mTransformComponents.getTransform(mEntity) * transform);
+
+        // Notify the collision detection about this new collision shape
+        mWorld.mCollisionDetection.addCollider(collider, aabb);
+    }
 
     RP3D_LOG(mWorld.mConfig.worldName, Logger::Level::Information, Logger::Category::Body,
              "Body " + std::to_string(mEntity.id) + ": Collider " + std::to_string(collider->getBroadPhaseId()) + " added to body",  __FILE__, __LINE__);
