@@ -29,6 +29,7 @@
 // Libraries
 #include <cassert>
 #include <cmath>
+#include <iostream>
 #include <reactphysics3d/configuration.h>
 
 namespace reactphysics3d {

@@ -28,6 +28,7 @@
 
 // Libraries
 #include <reactphysics3d/configuration.h>
+#include <bitset>
 
 /// Namespace reactphysics3d
 namespace reactphysics3d {
@@ -56,7 +57,26 @@ namespace reactphysics3d {
  */
 struct Entity {
 
+    public:
+
+        // -------------------- Types -------------------- //
+
+        // Type used for the Ids of components
+        using ComponentId = uint8;
+
+        // ----- Constants ----- //
+
+        // Maximum number of components in an entity
+        static const ComponentId MAX_COMPONENTS = 16;
+
+        // -------------------- Types -------------------- //
+
+        // Type for the signature of an entity (represents the components of the entity)
+        using Signature = std::bitset<MAX_COMPONENTS>;
+
     private:
+
+        // -------------------- Constants -------------------- //
 
         /// Number of bits reserved for the index
         static const uint32 ENTITY_INDEX_BITS;
@@ -72,6 +92,15 @@ struct Entity {
 
         /// Minimum of free indices in the queue before we reuse one from the queue
         static const uint32 MINIMUM_FREE_INDICES;
+
+        /// Maximum number of components in an entity
+        // TODO : Check that this value is correct
+        static const uint32 MAXIMUM_COMPONENTS;
+
+        // -------------------- Attributes -------------------- //
+
+        /// Signature of the entity (bit mask with the components that are part of the entity)
+        Signature mSignature;
 
     public:
 
@@ -91,15 +120,24 @@ struct Entity {
         /// Return the generation number of the entity
         uint32 getGeneration() const;
 
+        /// Return the signature of the entity
+        const Signature& getSignature() const;
+
+        /// Add a new component to this entity
+        void addComponent(uint32 componentId);
+
+        /// Remove a component from this entity
+        void removeComponent(uint32 componentId);
+
         /// Equality operator
         bool operator==(const Entity& entity) const;
 
         /// Inequality operator
         bool operator!=(const Entity& entity) const;
 
-        // -------------------- Friendship -------------------- //
+    // -------------------- Friendship -------------------- //
 
-        friend class EntityManager;
+    friend class EntityManager;
 };
 
 // Return the lookup index of the entity in a array
@@ -110,6 +148,21 @@ RP3D_FORCE_INLINE uint32 Entity::getIndex() const {
 // Return the generation number of the entity
 RP3D_FORCE_INLINE uint32 Entity::getGeneration() const {
     return (id >> ENTITY_INDEX_BITS) & ENTITY_GENERATION_MASK;
+}
+
+// Return the signature of the entity
+RP3D_FORCE_INLINE const Entity::Signature& Entity::getSignature() const {
+    return mSignature;
+}
+
+// Add a new component to this entity
+RP3D_FORCE_INLINE void Entity::addComponent(uint32 componentId) {
+    mSignature.set(componentId, true);
+}
+
+// Remove a component from this entity
+RP3D_FORCE_INLINE void Entity::removeComponent(uint32 componentId) {
+    mSignature.set(componentId, false);
 }
 
 // Equality operator

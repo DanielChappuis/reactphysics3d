@@ -29,7 +29,7 @@
 // Libraries
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Matrix3x3.h>
-#include <reactphysics3d/engine/Entity.h>
+#include <reactphysics3d/ecs/Entity.h>
 #include <reactphysics3d/components/Components.h>
 #include <reactphysics3d/containers/Map.h>
 

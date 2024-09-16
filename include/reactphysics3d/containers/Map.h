@@ -31,9 +31,7 @@
 #include <reactphysics3d/mathematics/mathematics_functions.h>
 #include <reactphysics3d/containers/Pair.h>
 #include <cstring>
-#include <stdexcept>
 #include <functional>
-#include <limits>
 
 namespace reactphysics3d {
 

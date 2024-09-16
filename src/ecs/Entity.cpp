@@ -35,6 +35,7 @@ const uint32 Entity::ENTITY_INDEX_MASK = (1 << Entity::ENTITY_INDEX_BITS) - 1;
 const uint32 Entity::ENTITY_GENERATION_BITS = 8;
 const uint32 Entity::ENTITY_GENERATION_MASK = (1 << Entity::ENTITY_GENERATION_BITS) - 1;
 const uint32 Entity::MINIMUM_FREE_INDICES = 1024;
+const uint32 Entity::MAXIMUM_COMPONENTS = 16;
 
 // Constructor
 Entity::Entity(uint32 index, uint32 generation)

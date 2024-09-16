@@ -31,6 +31,7 @@
 #include <reactphysics3d/memory/MemoryAllocator.h>
 #include <cassert>
 #include <cstring>
+#include <cmath>
 #include <iterator>
 #include <memory>
 
