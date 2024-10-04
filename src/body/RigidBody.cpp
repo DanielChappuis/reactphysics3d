@@ -855,10 +855,10 @@ void RigidBody::setTransform(const Transform& transform) {
         mWorld.mRigidBodyComponents.setConstrainedOrientation(mEntity, transform.getOrientation());
     }
 
-    Body::setTransform(transform);
-
     // Awake the body if it is sleeping
     setIsSleeping(false);
+
+    Body::setTransform(transform);
 }
 
 // Return the linear velocity
