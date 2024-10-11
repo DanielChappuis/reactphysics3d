@@ -1,12 +1,12 @@
 # Changelog
 
-## [0.10.2] - 2024-10-01
+## [0.10.2] - 2024-10-11
+
+### Fixed
 
 - Issue [#402](https://github.com/DanielChappuis/reactphysics3d/issues/402) Adding colliders to inactive body
 - Issue [#391](https://github.com/DanielChappuis/reactphysics3d/issues/391) with assert in OverlappingPairs::setNeedToTestOverlap() method
 - Fix issue with capsule vs capsule collision detection
-
-### Fixed
 
 ## [0.10.1] - 2024-06-25
 
