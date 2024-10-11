@@ -149,7 +149,7 @@ constexpr decimal SAME_CONTACT_POINT_DISTANCE_THRESHOLD = decimal(0.01);
 constexpr uint8 GLOBAL_ALIGNMENT = 16;
 
 /// Current version of ReactPhysics3D
-const std::string RP3D_VERSION = std::string("0.10.1");
+const std::string RP3D_VERSION = std::string("0.10.2");
 
 }
 
