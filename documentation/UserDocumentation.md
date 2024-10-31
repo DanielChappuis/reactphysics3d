@@ -1130,7 +1130,7 @@ TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 // Create the TriangleMesh
 std::vector<rp3d::Message> messages;
-TriangleMesh* triangleMesh = physicsCommon.createTriangleMesh(vertexArray, messages);
+TriangleMesh* triangleMesh = physicsCommon.createTriangleMesh(*triangleArray, messages);
 
 // Display the messages (info, warning and errors)
 if (messages.size() > 0) {
