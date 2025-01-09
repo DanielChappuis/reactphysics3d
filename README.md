@@ -46,7 +46,7 @@
 
 ## Documentation
 
-You can find the user manual and the Doxygen API documentation <a href="https://www.reactphysics3d.com/documentation.html" target="_blank">here</a>.
+You can find the user manual and the Doxygen API documentation <a href="https://www.reactphysics3d.com/documentation" target="_blank">here</a>.
 
 ## Branches
 
