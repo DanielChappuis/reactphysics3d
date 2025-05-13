@@ -134,8 +134,31 @@ void DynamicsSystem::integrateRigidBodiesVelocities(decimal timeStep) {
         // Integrate the external force to get the new velocity of the body
         mRigidBodyComponents.mConstrainedLinearVelocities[i] = linearVelocity + timeStep * mRigidBodyComponents.mInverseMasses[i] *
                                                                mRigidBodyComponents.mLinearLockAxisFactors[i] * mRigidBodyComponents.mExternalForces[i];
-        mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity + timeStep * mRigidBodyComponents.mAngularLockAxisFactors[i] *
-                                                                (mRigidBodyComponents.mInverseInertiaTensorsWorld[i] * mRigidBodyComponents.mExternalTorques[i]);
+
+
+        mRigidBodyComponents.mConstrainedAngularVelocities[i] = angularVelocity; // old part of angular velocity 
+        {
+          Entity & entity = mRigidBodyComponents.mBodiesEntities[i];
+          const Matrix3x3 & B2W 
+              = mTransformComponents.getTransform(entity).getOrientation().getMatrix();
+          const Matrix3x3 W2B = B2W.getTranspose();
+
+          // inertia in local CS
+          Vector3 & I = mRigidBodyComponents.mLocalInertiaTensors[i];
+          // torque in local CS
+          Vector3 L =  W2B * mRigidBodyComponents.mExternalTorques[i];
+          // angular velocity in local CS
+          Vector3 om = W2B * mRigidBodyComponents.getAngularVelocity(entity);
+          Vector3 eps; // angular acceleration in local CS
+          // Euler equation
+          eps.x = L.x + (I.y-I.z)*om.y*om.z;
+          eps.y = L.y + (I.z-I.x)*om.z*om.x;
+          eps.z = L.z + (I.x-I.y)*om.x*om.y;
+          eps = eps/I;
+
+          mRigidBodyComponents.mConstrainedAngularVelocities[i] +=
+              timeStep * mRigidBodyComponents.mAngularLockAxisFactors[i] * (B2W * eps);
+        }
     }
 
     // Apply gravity force

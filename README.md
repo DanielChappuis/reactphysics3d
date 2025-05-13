@@ -48,6 +48,10 @@
 
 You can find the user manual and the Doxygen API documentation <a href="https://www.reactphysics3d.com/documentation" target="_blank">here</a>.
 
+Instructions how to build and install library can be found in the file
+<a href="https://www.reactphysics3d.com/documentation/UserDocumentation.md"
+target="_blank">UserDocumentation.md</a>.
+
 ## Branches
 
 The "master" branch always contains the last released version of the library and some possible hot fixes. This is the most stable version. On the other side,

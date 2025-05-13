@@ -26,6 +26,10 @@ Thumbs.db
 #####################
 *.*sw*
 
+# LSP Client file
+compile_commands.json
+.cache/
+
 # documentation
 #####################
 documentation/API/html/
