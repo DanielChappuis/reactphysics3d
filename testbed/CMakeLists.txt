@@ -123,6 +123,8 @@ set(COMMON_SOURCES
     common/PerlinNoise.cpp
     common/AABB.h
     common/AABB.cpp
+    common/ResourceManager.h
+    common/ResourceManager.cpp
 )
 
 # Examples scenes source files

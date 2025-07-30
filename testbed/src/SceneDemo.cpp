@@ -29,6 +29,7 @@
 #include "AABB.h"
 #include <reactphysics3d/constraint/ContactPoint.h>
 #include <reactphysics3d/collision/ContactManifold.h>
+#include "ResourceManager.h"
 
 using namespace openglframework;
 
@@ -43,12 +44,12 @@ openglframework::Color SceneDemo::mSelectedObjectColorDemo = Color(0.09f, 0.88f,
 SceneDemo::SceneDemo(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon, bool isPhysicsWorldSimulated, bool isShadowMappingEnabled)
           : Scene(name, settings, isShadowMappingEnabled), mBackgroundColor(0.75, 0.75, 0.75, 1),
                      mIsShadowMappingInitialized(false),
-                     mDepthShader("shaders/depth.vert", "shaders/depth.frag"),
-                     mPhongShader("shaders/phong.vert", "shaders/phong.frag"),
-					 mColorShader("shaders/color.vert", "shaders/color.frag"),
-                     mQuadShader("shaders/quad.vert", "shaders/quad.frag"),
+                     mDepthShader(ResourceManager::getShaderPath("depth.vert"), ResourceManager::getShaderPath("depth.frag")),
+                     mPhongShader(ResourceManager::getShaderPath("phong.vert"), ResourceManager::getShaderPath("phong.frag")),
+					 mColorShader(ResourceManager::getShaderPath("color.vert"), ResourceManager::getShaderPath("color.frag")),
+                     mQuadShader(ResourceManager::getShaderPath("quad.vert"), ResourceManager::getShaderPath("quad.frag")),
                      mVBOQuad(GL_ARRAY_BUFFER), mDebugVBOLinesVertices(GL_ARRAY_BUFFER), mDebugVBOTrianglesVertices(GL_ARRAY_BUFFER),
-                     mMeshFolderPath("meshes/"), mPhysicsCommon(physicsCommon), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated),
+                     mMeshFolderPath(ResourceManager::getMeshDirectoryPath()), mPhysicsCommon(physicsCommon), mPhysicsWorld(nullptr), mIsPhysicsWorldSimulated(isPhysicsWorldSimulated),
                      mIsMovingBody(false), mMovingBody(nullptr), mCameraRotationAngle(0) {
 
     shadowMapTextureLevel++;

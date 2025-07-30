@@ -25,6 +25,7 @@
 
 // Libraries
 #include "RaycastScene.h"
+#include "../../common/ResourceManager.h"
 
 // Namespaces
 using namespace openglframework;
@@ -95,7 +96,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Convex Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConvexMesh = new ConvexMesh(rp3d::BodyType::STATIC, false,  mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(rp3d::BodyType::STATIC, false,  mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("convexmesh.obj"));
 
     // Set the color
     mConvexMesh->setColor(mObjectColorDemo);
@@ -105,7 +106,7 @@ RaycastScene::RaycastScene(const std::string& name, EngineSettings& settings, re
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.7, 0.7, 0.7));
+    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("castle.obj"), rp3d::Vector3(0.7, 0.7, 0.7));
 
     // Set the color
     mConcaveMesh->setColor(mObjectColorDemo);

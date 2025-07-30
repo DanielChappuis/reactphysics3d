@@ -25,6 +25,7 @@
 
 // Libraries
 #include "ConcaveMeshScene.h"
+#include "../../common/ResourceManager.h"
 
 // Namespaces
 using namespace openglframework;
@@ -34,7 +35,7 @@ using namespace trianglemeshscene;
 ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
       : SceneDemo(name, settings, physicsCommon, true) {
 
-    std::string meshFolderPath("meshes/");
+    std::string meshFolderPath = ResourceManager::getMeshDirectoryPath();
 
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 15, 0);
@@ -149,7 +150,7 @@ void ConcaveMeshScene::createPhysicsWorld() {
     for (int i = 0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("convexmesh.obj"));
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
@@ -167,7 +168,7 @@ void ConcaveMeshScene::createPhysicsWorld() {
     // ---------- Create the triangular mesh ---------- //
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.5, 0.5, 0.5));
+    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, true, mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("castle.obj"), rp3d::Vector3(0.5, 0.5, 0.5));
 
     // Set the box color
     mConcaveMesh->setColor(mFloorColorDemo);

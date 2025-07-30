@@ -25,6 +25,7 @@
 
 // Libraries
 #include "Box.h"
+#include "ResourceManager.h"
 
 // Macros
 #define MEMBER_OFFSET(s,m) ((char *)nullptr + (offsetof(s,m)))
@@ -40,7 +41,7 @@ int Box::totalNbBoxes = 0;
 // Constructor
 Box::Box(reactphysics3d::BodyType type, bool isSimulationCollider, const openglframework::Vector3& size, reactphysics3d::PhysicsCommon& physicsCommon, reactphysics3d::PhysicsWorld* world,
          const std::string& meshFolderPath)
-    : PhysicsObject(physicsCommon, meshFolderPath + "cube.obj"), mPhysicsWorld(world) {
+    : PhysicsObject(physicsCommon, ResourceManager::getMeshPath("cube.obj")), mPhysicsWorld(world) {
 
     // Initialize the size of the box
     mSize[0] = size.x * 0.5f;

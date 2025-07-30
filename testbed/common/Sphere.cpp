@@ -25,6 +25,7 @@
 
 // Libraries
 #include "Sphere.h"
+#include "ResourceManager.h"
 
 openglframework::VertexBufferObject Sphere::mVBOVertices(GL_ARRAY_BUFFER);
 openglframework::VertexBufferObject Sphere::mVBONormals(GL_ARRAY_BUFFER);
@@ -36,7 +37,7 @@ int Sphere::totalNbSpheres = 0;
 // Constructor
 Sphere::Sphere(rp3d::BodyType type, bool isSimulationCollider, float radius, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* world,
                const std::string& meshFolderPath)
-       : PhysicsObject(physicsCommon, meshFolderPath + "sphere.obj"), mRadius(radius), mPhysicsWorld(world) {
+       : PhysicsObject(physicsCommon, ResourceManager::getMeshPath("sphere.obj")), mRadius(radius), mPhysicsWorld(world) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,

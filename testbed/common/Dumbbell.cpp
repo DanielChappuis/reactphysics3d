@@ -25,6 +25,7 @@
 
 // Libraries
 #include "Dumbbell.h"
+#include "ResourceManager.h"
 
 openglframework::VertexBufferObject Dumbbell::mVBOVertices(GL_ARRAY_BUFFER);
 openglframework::VertexBufferObject Dumbbell::mVBONormals(GL_ARRAY_BUFFER);
@@ -35,7 +36,7 @@ int Dumbbell::totalNbDumbbells = 0;
 
 // Constructor
 Dumbbell::Dumbbell(reactphysics3d::BodyType type, bool isSimulationCollider, rp3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld, const std::string& meshFolderPath)
-         : PhysicsObject(physicsCommon, meshFolderPath + "dumbbell.obj"), mPhysicsWorld(physicsWorld) {
+         : PhysicsObject(physicsCommon, ResourceManager::getMeshPath("dumbbell.obj")), mPhysicsWorld(physicsWorld) {
 
     // Identity scaling matrix
     mScalingMatrix.setToIdentity();

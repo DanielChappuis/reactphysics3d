@@ -25,6 +25,7 @@
 
 // Libraries
 #include "CollisionDetectionScene.h"
+#include "../../common/ResourceManager.h"
 #include <reactphysics3d/constraint/ContactPoint.h>
 #include <reactphysics3d/collision/ContactManifold.h>
 
@@ -105,7 +106,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Concave Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "castle.obj", rp3d::Vector3(0.3, 0.3, 0.3));
+    mConcaveMesh = new ConcaveMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("castle.obj"), rp3d::Vector3(0.3, 0.3, 0.3));
     mAllShapes.push_back(mConcaveMesh);
 
     // Set the color
@@ -138,7 +139,7 @@ CollisionDetectionScene::CollisionDetectionScene(const std::string& name, Engine
     // ---------- Convex Mesh ---------- //
 
     // Create a convex mesh and a corresponding collision body in the physics world
-    mConvexMesh = new ConvexMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+    mConvexMesh = new ConvexMesh(rp3d::BodyType::STATIC, false, mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("convexmesh.obj"));
     mAllShapes.push_back(mConvexMesh);
 
     // Set the color

@@ -25,6 +25,7 @@
 
 // Libraries
 #include "Capsule.h"
+#include "ResourceManager.h"
 
 openglframework::VertexBufferObject Capsule::mVBOVertices(GL_ARRAY_BUFFER);
 openglframework::VertexBufferObject Capsule::mVBONormals(GL_ARRAY_BUFFER);
@@ -36,7 +37,7 @@ int Capsule::totalNbCapsules = 0;
 // Constructor
 Capsule::Capsule(reactphysics3d::BodyType type, bool isSimulationCollider, float radius, float height, reactphysics3d::PhysicsCommon& physicsCommon, rp3d::PhysicsWorld* physicsWorld,
                  const std::string& meshFolderPath)
-        : PhysicsObject(physicsCommon, meshFolderPath + "capsule.obj"), mRadius(radius), mHeight(height), mPhysicsWorld(physicsWorld) {
+        : PhysicsObject(physicsCommon, ResourceManager::getMeshPath("capsule.obj")), mRadius(radius), mHeight(height), mPhysicsWorld(physicsWorld) {
 
     // Compute the scaling matrix
     mScalingMatrix = openglframework::Matrix4(mRadius, 0, 0, 0,

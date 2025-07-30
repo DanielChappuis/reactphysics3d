@@ -25,6 +25,7 @@
 
 // Libraries
 #include "VisualContactPoint.h"
+#include "ResourceManager.h"
 
 // Initialization of static variables
 openglframework::VertexBufferObject VisualContactPoint::mVBOVertices(GL_ARRAY_BUFFER);
@@ -86,7 +87,7 @@ void VisualContactPoint::createStaticData(const std::string& meshFolderPath) {
     if (mStaticDataCreated) return;
 
     // Load the mesh from a file
-    openglframework::MeshReaderWriter::loadMeshFromFile(meshFolderPath + "sphere.obj", mMesh);
+    openglframework::MeshReaderWriter::loadMeshFromFile(ResourceManager::getMeshPath("sphere.obj"), mMesh);
 
     // Calculate the normals of the mesh
     mMesh.calculateNormals();

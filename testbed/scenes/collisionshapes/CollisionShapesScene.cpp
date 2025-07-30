@@ -25,6 +25,7 @@
 
 // Libraries
 #include "CollisionShapesScene.h"
+#include "../../common/ResourceManager.h"
 
 // Namespaces
 using namespace openglframework;
@@ -147,7 +148,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_MESHES; i++) {
 
         // Create a convex mesh and a corresponding rigid in the physics world
-        ConvexMesh* mesh = new ConvexMesh(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "convexmesh.obj");
+        ConvexMesh* mesh = new ConvexMesh(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("convexmesh.obj"));
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);
