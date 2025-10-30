@@ -351,4 +351,23 @@ if(RP3D_COMPILE_LIBRARY)
         DESTINATION lib/cmake/ReactPhysics3D
     )
 
+	include(CMakePackageConfigHelpers)
+
+	write_basic_package_version_file(
+		"${CMAKE_CURRENT_BINARY_DIR}/ReactPhysics3DConfigVersion.cmake"
+		VERSION ${PROJECT_VERSION}
+		COMPATIBILITY AnyNewerVersion
+	)
+
+	configure_package_config_file(
+		cmake/ReactPhysics3D-config.cmake.in
+		${CMAKE_CURRENT_BINARY_DIR}/ReactPhysics3D-config.cmake
+		INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ReactPhysics3D
+	)
+
+	install(FILES
+		${CMAKE_CURRENT_BINARY_DIR}/ReactPhysics3D-config.cmake
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ReactPhysics3D
+	)
+
 endif()
