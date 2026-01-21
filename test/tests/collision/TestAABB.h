@@ -303,14 +303,14 @@ class TestAABB : public Test {
             const Vector3 ray8Direction = ray8.point2 - ray8.point1;
             const Vector3 ray8DirectionInv(decimal(1.0) / ray8Direction.x, decimal(1.0) / ray8Direction.y, decimal(1.0) / ray8Direction.z);
 
-            rp3d_test(mAABB1.testRayIntersect(ray1.point1, ray1DirectionInv, decimal(1.0)));
-            rp3d_test(!mAABB1.testRayIntersect(ray2.point1, ray2DirectionInv, decimal(1.0)));
-            rp3d_test(mAABB1.testRayIntersect(ray3.point1, ray3DirectionInv, decimal(1.0)));
-            rp3d_test(mAABB1.testRayIntersect(ray4.point1, ray4DirectionInv, decimal(1.0)));
-            rp3d_test(mAABB1.testRayIntersect(ray5.point1, ray5DirectionInv, decimal(1.0)));
-            rp3d_test(mAABB1.testRayIntersect(ray6.point1, ray6DirectionInv, decimal(1.0)));
-            rp3d_test(!mAABB1.testRayIntersect(ray7.point1, ray7DirectionInv, decimal(1.0)));
-            rp3d_test(!mAABB1.testRayIntersect(ray8.point1, ray8DirectionInv, decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray1.point1, ray1DirectionInv, decimal(0.0), decimal(1.0)));
+            rp3d_test(!mAABB1.testRayIntersect(ray2.point1, ray2DirectionInv, decimal(0.0), decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray3.point1, ray3DirectionInv, decimal(0.0), decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray4.point1, ray4DirectionInv, decimal(0.0), decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray5.point1, ray5DirectionInv, decimal(0.0), decimal(1.0)));
+            rp3d_test(mAABB1.testRayIntersect(ray6.point1, ray6DirectionInv, decimal(0.0), decimal(1.0)));
+            rp3d_test(!mAABB1.testRayIntersect(ray7.point1, ray7DirectionInv, decimal(0.0), decimal(1.0)));
+            rp3d_test(!mAABB1.testRayIntersect(ray8.point1, ray8DirectionInv, decimal(0.0), decimal(1.0)));
         }
  };
 

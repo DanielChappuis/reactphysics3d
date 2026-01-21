@@ -80,7 +80,7 @@ bool HeightFieldShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collide
     // Apply the height-field scale inverse scale factor because the mesh is stored without scaling
     // inside the dynamic AABB tree
     const Vector3 inverseScale(decimal(1.0) / mScale.x, decimal(1.0) / mScale.y, decimal(1.0) / mScale.z);
-    Ray scaledRay(ray.point1 * inverseScale, ray.point2 * inverseScale, ray.maxFraction);
+    Ray scaledRay(ray.point1 * inverseScale, ray.point2 * inverseScale, ray.radius, ray.maxFraction);
 
     if (mHeightField->raycast(scaledRay, raycastInfo, collider, getRaycastTestType(), allocator)) {
 

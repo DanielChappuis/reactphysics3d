@@ -108,7 +108,7 @@ class AABB {
         bool testCollisionTriangleAABB(const Vector3* trianglePoints) const;
 
         /// Return true if the ray intersects the AABB
-        bool testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInv, decimal rayMaxFraction) const;
+        bool testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInv, decimal rayRadius, decimal rayMaxFraction) const;
 
         /// Compute the intersection of a ray and the AABB
         bool raycast(const Ray& ray, Vector3& hitPoint) const;
@@ -282,7 +282,7 @@ RP3D_FORCE_INLINE AABB AABB::createAABBForTriangle(const Vector3* trianglePoints
 }
 
 // Return true if the ray intersects the AABB
-RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInverse, decimal rayMaxFraction) const {
+RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Vector3& rayOrigin, const Vector3& rayDirectionInverse, decimal rayRadius, decimal rayMaxFraction) const {
 
     // This algorithm relies on the IEE floating point properties (division by zero). If the rayDirection is zero, rayDirectionInverse and
     // therfore t1 and t2 will be +-INFINITY. If the i coordinate of the ray's origin is inside the AABB (mMinCoordinates[i] < rayOrigin[i] < mMaxCordinates[i)), we have
@@ -295,8 +295,12 @@ RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Vector3& rayOrigin, const Ve
     // the BVH tree. Because this should be rare, it is not really a big issue.
     // Reference: https://tavianator.com/2011/ray_box.html
 
-    decimal t1 = (mMinCoordinates[0] - rayOrigin[0]) * rayDirectionInverse[0];
-    decimal t2 = (mMaxCoordinates[0] - rayOrigin[0]) * rayDirectionInverse[0];
+    // Adjust min and max to account for ray radius
+    Vector3 extendedMinCoordinates = mMinCoordinates - Vector3(rayRadius, rayRadius, rayRadius);
+    Vector3 extendedMaxCoordinates = mMaxCoordinates + Vector3(rayRadius, rayRadius, rayRadius);
+    
+    decimal t1 = (extendedMinCoordinates[0] - rayOrigin[0]) * rayDirectionInverse[0];
+    decimal t2 = (extendedMaxCoordinates[0] - rayOrigin[0]) * rayDirectionInverse[0];
 
     decimal tMin = std::min(t1, t2);
     decimal tMax = std::max(t1, t2);
@@ -304,8 +308,8 @@ RP3D_FORCE_INLINE bool AABB::testRayIntersect(const Vector3& rayOrigin, const Ve
 
     for (int i = 1; i < 3; i++) {
 
-        t1 = (mMinCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
-        t2 = (mMaxCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
+        t1 = (extendedMinCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
+        t2 = (extendedMaxCoordinates[i] - rayOrigin[i]) * rayDirectionInverse[i];
 
         tMin = std::max(tMin, std::min(t1, t2));
         tMax = std::min(tMax, std::max(t1, t2));
@@ -324,6 +328,10 @@ RP3D_FORCE_INLINE bool AABB::raycast(const Ray& ray, Vector3& hitPoint) const {
 
     const Vector3 rayDirection = ray.point2 - ray.point1;
 
+    // Adjust min and max to account for ray radius
+    Vector3 extendedMinCoordinates = mMinCoordinates - Vector3(ray.radius, ray.radius, ray.radius);
+    Vector3 extendedMaxCoordinates = mMaxCoordinates + Vector3(ray.radius, ray.radius, ray.radius);
+    
     // For all three slabs
     for (int i=0; i < 3; i++) {
 
@@ -331,13 +339,13 @@ RP3D_FORCE_INLINE bool AABB::raycast(const Ray& ray, Vector3& hitPoint) const {
         if (std::abs(rayDirection[i]) < epsilon) {
 
             // If origin of the ray is not inside the slab, no hit
-            if (ray.point1[i] < mMinCoordinates[i] || ray.point1[i] > mMaxCoordinates[i]) return false;
+            if (ray.point1[i] < extendedMinCoordinates[i] || ray.point1[i] > extendedMaxCoordinates[i]) return false;
         }
         else {
 
             decimal rayDirectionInverse = decimal(1.0) / rayDirection[i];
-            decimal t1 = (mMinCoordinates[i] - ray.point1[i]) * rayDirectionInverse;
-            decimal t2 = (mMaxCoordinates[i] - ray.point1[i]) * rayDirectionInverse;
+            decimal t1 = (extendedMinCoordinates[i] - ray.point1[i]) * rayDirectionInverse;
+            decimal t2 = (extendedMaxCoordinates[i] - ray.point1[i]) * rayDirectionInverse;
 
             if (t1 > t2) {
 
@@ -357,6 +365,36 @@ RP3D_FORCE_INLINE bool AABB::raycast(const Ray& ray, Vector3& hitPoint) const {
 
     // Compute the hit point
     hitPoint = ray.point1 + tMin * rayDirection;
+
+    // Adjust hit point for sweep radius
+    if (ray.radius > decimal(0.0))
+    {
+        // Clamp point to box
+        Vector3 contactPointOnBox;
+        contactPointOnBox.x = std::clamp(hitPoint.x, extendedMinCoordinates.x, extendedMaxCoordinates.x);
+        contactPointOnBox.y = std::clamp(hitPoint.y, extendedMinCoordinates.y, extendedMaxCoordinates.y);
+        contactPointOnBox.z = std::clamp(hitPoint.z, extendedMinCoordinates.z, extendedMaxCoordinates.z);
+
+        // Solve hit point for box
+        Vector3 oc = ray.point1 - contactPointOnBox;
+        decimal a = rayDirection.lengthSquare(); // a = D.D
+        decimal b = 2.0 * rayDirection.dot(oc);  // b = 2 * (D . OC)
+        decimal c = oc.lengthSquare() - ray.radius * ray.radius; // c = OC.OC - r^2
+
+        // If origin is inside sphere (c < 0)
+        if (c < 0.0) {
+            if (b >= 0.0) return false; // Already overlapping and moving away
+            tMin = 0.0;
+        } else {
+            decimal discriminant = b * b - 4.0 * a * c;
+            if (discriminant < 0.0) return false; // No real solution, so no hit
+            decimal t = (-b - std::sqrt(discriminant)) / (2.0 * a);
+            if (t < 0.0 || t > ray.maxFraction) return false; // Hit is behind or too far
+            tMin = t;
+        }
+
+        hitPoint = ray.point1 + tMin * rayDirection;
+    }
 
     return true;
 }

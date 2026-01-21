@@ -708,12 +708,12 @@ void DynamicAABBTree::raycast(const Ray& ray, DynamicAABBTreeRaycastCallback& ca
         const TreeNode* node = mNodes + nodeID;
 
         // Test if the ray intersects with the current node AABB
-        if (!node->aabb.testRayIntersect(ray.point1, rayDirectionInverse, maxFraction)) continue;
+        if (!node->aabb.testRayIntersect(ray.point1, rayDirectionInverse, ray.radius, maxFraction)) continue;
 
         // If the node is a leaf of the tree
         if (node->isLeaf()) {
 
-            Ray rayTemp(ray.point1, ray.point2, maxFraction);
+            Ray rayTemp(ray.point1, ray.point2, ray.radius, maxFraction);
 
             // Call the callback that will raycast again the broad-phase shape
             decimal hitFraction = callback.raycastBroadPhaseShape(nodeID, rayTemp);

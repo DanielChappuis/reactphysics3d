@@ -178,7 +178,7 @@ bool Collider::raycast(const Ray& ray, RaycastInfo& raycastInfo) {
     // Convert the ray into the local-space of the collision shape
     const Transform& localToWorldTransform = mBody->mWorld.mCollidersComponents.getLocalToWorldTransform(mEntity);
     const Transform worldToLocalTransform = localToWorldTransform.getInverse();
-    Ray rayLocal(worldToLocalTransform * ray.point1, worldToLocalTransform * ray.point2, ray.maxFraction);
+    Ray rayLocal(worldToLocalTransform * ray.point1, worldToLocalTransform * ray.point2, ray.radius, ray.maxFraction);
 
     const CollisionShape* collisionShape = mBody->mWorld.mCollidersComponents.getCollisionShape(mEntity);
     bool isHit = collisionShape->raycast(rayLocal, raycastInfo, this, mMemoryManager.getPoolAllocator());

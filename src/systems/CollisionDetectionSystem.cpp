@@ -1187,6 +1187,8 @@ void CollisionDetectionSystem::raycast(RaycastCallback* raycastCallback, const R
 
     RP3D_PROFILE("CollisionDetectionSystem::raycast()", mProfiler);
 
+    assert(ray.radius >= decimal(0.0));
+
     RaycastTest rayCastTest(raycastCallback);
 
     // Ask the broad-phase algorithm to call the testRaycastAgainstShape()

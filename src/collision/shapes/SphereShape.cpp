@@ -61,7 +61,10 @@ AABB SphereShape::computeTransformedAABB(const Transform& transform) const {
 bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* collider, MemoryAllocator& /*allocator*/) const {
 
     const Vector3 m = ray.point1;
-    decimal c = m.dot(m) - mMargin * mMargin;
+
+    // "Grow" the sphere with the ray radius
+    decimal extendedMargin = mMargin + ray.radius;
+    decimal c = m.dot(m) - extendedMargin * extendedMargin;
 
     // If the origin of the ray is inside the sphere, we return no intersection
     if (c < decimal(0.0)) return false;
@@ -96,6 +99,11 @@ bool SphereShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* co
         raycastInfo.hitFraction = t;
         raycastInfo.worldPoint = ray.point1 + t * rayDirection;
         raycastInfo.worldNormal = raycastInfo.worldPoint;
+
+        // Push back the intersection point to account for ray radius
+        if (ray.radius > decimal(0.0)) {
+            raycastInfo.worldPoint -= ray.radius * raycastInfo.worldNormal.getUnit();
+        }
 
         return true;
     }

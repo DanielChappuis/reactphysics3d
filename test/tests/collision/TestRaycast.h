@@ -414,10 +414,10 @@ class TestRaycast : public Test {
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(100.0)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mBoxBody->raycast(ray2, raycastInfo3));
@@ -475,22 +475,22 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             // ----- Test raycast hits ----- //
@@ -500,7 +500,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray12, raycastInfo3));
@@ -509,7 +509,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray13, raycastInfo3));
@@ -518,7 +518,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray14, raycastInfo3));
@@ -527,7 +527,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray15, raycastInfo3));
@@ -536,7 +536,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mBoxBody->raycast(ray16, raycastInfo3));
@@ -545,7 +545,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
         }
 
@@ -626,10 +626,10 @@ class TestRaycast : public Test {
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(100.0)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mSphereBody->raycast(ray2, raycastInfo3));
@@ -687,22 +687,22 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             // ----- Test raycast hits ----- //
@@ -712,7 +712,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mSphereBody->raycast(ray12, raycastInfo3));
@@ -721,7 +721,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mSphereBody->raycast(ray13, raycastInfo3));
@@ -729,7 +729,7 @@ class TestRaycast : public Test {
             mCallback.reset();
             mWorld->raycast(ray13, &mCallback);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.8)), &mCallback);
 
             rp3d_test(mSphereBody->raycast(ray14, raycastInfo3));
             rp3d_test(mSphereCollider->raycast(ray14, raycastInfo3));
@@ -737,7 +737,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mSphereBody->raycast(ray15, raycastInfo3));
@@ -746,7 +746,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mSphereBody->raycast(ray16, raycastInfo3));
@@ -755,7 +755,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
         }
 
@@ -865,10 +865,10 @@ class TestRaycast : public Test {
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.0), decimal(100.0)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mCapsuleBody->raycast(ray2, raycastInfo3));
@@ -925,22 +925,22 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             // ----- Test raycast hits ----- //
@@ -950,7 +950,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray12, raycastInfo3));
@@ -959,7 +959,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray13, raycastInfo3));
@@ -968,7 +968,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray14, raycastInfo3));
@@ -977,7 +977,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray15, raycastInfo3));
@@ -986,7 +986,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCapsuleBody->raycast(ray16, raycastInfo3));
@@ -995,7 +995,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
         }
 
@@ -1077,10 +1077,10 @@ class TestRaycast : public Test {
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(100.0)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConvexMeshBody->raycast(ray2, raycastInfo3));
@@ -1138,22 +1138,22 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             // ----- Test raycast hits ----- //
@@ -1163,7 +1163,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray12, raycastInfo3));
@@ -1172,7 +1172,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray13, raycastInfo3));
@@ -1181,7 +1181,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray14, raycastInfo3));
@@ -1190,7 +1190,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray15, raycastInfo3));
@@ -1199,7 +1199,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConvexMeshBody->raycast(ray16, raycastInfo3));
@@ -1208,7 +1208,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
         }
 
@@ -1244,7 +1244,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray2, raycastInfo));
@@ -1252,7 +1252,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray2, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray2.point1, ray2.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray2.point1, ray2.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray3, raycastInfo));
@@ -1260,7 +1260,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray3, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray3.point1, ray3.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray3.point1, ray3.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray4, raycastInfo));
@@ -1268,7 +1268,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray4, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray4.point1, ray4.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray4.point1, ray4.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray5, raycastInfo));
@@ -1276,7 +1276,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray5, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray5.point1, ray5.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray5.point1, ray5.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray6, raycastInfo));
@@ -1284,7 +1284,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray6, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray6.point1, ray6.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray6.point1, ray6.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             // Raycast hit agains the capsule shape
@@ -1302,7 +1302,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray12, raycastInfo));
@@ -1310,7 +1310,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray13, raycastInfo));
@@ -1318,7 +1318,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray14, raycastInfo));
@@ -1326,7 +1326,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray15, raycastInfo));
@@ -1334,7 +1334,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mCompoundBody->raycast(ray16, raycastInfo));
@@ -1342,7 +1342,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
         }
 
@@ -1442,10 +1442,10 @@ class TestRaycast : public Test {
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(100.0)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mConcaveMeshBody->raycast(ray2, raycastInfo3));
@@ -1503,22 +1503,22 @@ class TestRaycast : public Test {
             rp3d_test(!mCallback.isHit);
 
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             // ----- Test raycast hits ----- //
@@ -1528,7 +1528,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray12, raycastInfo3));
@@ -1537,7 +1537,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray13, raycastInfo3));
@@ -1546,7 +1546,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray14, raycastInfo3));
@@ -1555,7 +1555,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray15, raycastInfo3));
@@ -1564,7 +1564,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray15, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray15.point1, ray15.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mConcaveMeshBody->raycast(ray16, raycastInfo3));
@@ -1573,7 +1573,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray16, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray16.point1, ray16.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
         }
 
@@ -1681,10 +1681,10 @@ class TestRaycast : public Test {
             mWorld->raycast(ray1, &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0.01)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(0.01)), &mCallback);
             rp3d_test(!mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(100.0)), &mCallback);
+            mWorld->raycast(Ray(ray1.point1, ray1.point2, decimal(0), decimal(100.0)), &mCallback);
             rp3d_test(!mCallback.isHit);
 
             rp3d_test(!mHeightFieldBody->raycast(ray2, raycastInfo3));
@@ -1720,7 +1720,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray11, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0.95)), &mCallback);
+            mWorld->raycast(Ray(ray11.point1, ray11.point2, decimal(0), decimal(0.95)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mHeightFieldBody->raycast(ray12, raycastInfo3));
@@ -1729,7 +1729,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray12, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0.92)), &mCallback);
+            mWorld->raycast(Ray(ray12.point1, ray12.point2, decimal(0), decimal(0.92)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mHeightFieldBody->raycast(ray13, raycastInfo3));
@@ -1738,7 +1738,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray13, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0.8)), &mCallback);
+            mWorld->raycast(Ray(ray13.point1, ray13.point2, decimal(0), decimal(0.8)), &mCallback);
             rp3d_test(mCallback.isHit);
 
             rp3d_test(mHeightFieldBody->raycast(ray14, raycastInfo3));
@@ -1747,7 +1747,7 @@ class TestRaycast : public Test {
             mWorld->raycast(ray14, &mCallback);
             rp3d_test(mCallback.isHit);
             mCallback.reset();
-            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0.82)), &mCallback);
+            mWorld->raycast(Ray(ray14.point1, ray14.point2, decimal(0), decimal(0.82)), &mCallback);
             rp3d_test(mCallback.isHit);
         }
 };

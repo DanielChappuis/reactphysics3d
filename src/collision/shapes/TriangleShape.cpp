@@ -145,9 +145,23 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* 
     RP3D_PROFILE("TriangleShape::raycast()", mProfiler);
 
     const Vector3 pq = ray.point2 - ray.point1;
-    const Vector3 pa = mPoints[0] - ray.point1;
-    const Vector3 pb = mPoints[1] - ray.point1;
-    const Vector3 pc = mPoints[2] - ray.point1;
+
+    // Compute the triangle face normal
+    Vector3 normal = (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]);
+    normal.normalize();
+    normal = normal.dot(pq) > decimal(0.0) ? -normal : normal;
+
+    // Offset the face to account for ray radius 
+    const Vector3 offset = normal * ray.radius;
+    const Vector3 extendedPoints[3] = {
+        mPoints[0] + offset,
+        mPoints[1] + offset,
+        mPoints[2] + offset
+    };
+    
+    const Vector3 pa = extendedPoints[0] - ray.point1;
+    const Vector3 pb = extendedPoints[1] - ray.point1;
+    const Vector3 pc = extendedPoints[2] - ray.point1;
 
     // Test if the line PQ is inside the eges BC, CA and AB. We use the triple
     // product for this test.
@@ -193,20 +207,15 @@ bool TriangleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* 
     w *= denom;
 
     // Compute the local hit point using the barycentric coordinates
-    const Vector3 localHitPoint = u * mPoints[0] + v * mPoints[1] + w * mPoints[2];
+    const Vector3 localHitPoint = u * extendedPoints[0] + v * extendedPoints[1] + w * extendedPoints[2];
     const Vector3 point1ToHitPoint = localHitPoint - ray.point1;
     const decimal hitFraction = point1ToHitPoint.dot(pq) / pq.lengthSquare();
 
     if (hitFraction < decimal(0.0) || hitFraction > ray.maxFraction) return false;
 
-    // Compute the triangle face normal
-    Vector3 normal = (mPoints[1] - mPoints[0]).cross(mPoints[2] - mPoints[0]);
-    normal.normalize();
-    normal = normal.dot(pq) > decimal(0.0) ? -normal : normal;
-
     raycastInfo.body = collider->getBody();
     raycastInfo.collider = collider;
-    raycastInfo.worldPoint = localHitPoint;
+    raycastInfo.worldPoint = localHitPoint - normal * ray.radius;
     raycastInfo.hitFraction = hitFraction;
     raycastInfo.worldNormal = normal;
 

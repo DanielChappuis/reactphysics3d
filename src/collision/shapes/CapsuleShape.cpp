@@ -98,6 +98,9 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* c
 
     const Vector3 n = ray.point2 - ray.point1;
 
+    // "Grow" the capsule with the ray radius
+    decimal extendedMargin = mMargin + ray.radius;
+    
     const decimal epsilon = decimal(0.01);
     Vector3 p(decimal(0), -mHalfHeight, decimal(0));
     Vector3 q(decimal(0), mHalfHeight, decimal(0));
@@ -110,16 +113,16 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* c
     decimal dDotD = d.dot(d);
 
     // Test if the segment is outside the cylinder
-    decimal vec1DotD = (ray.point1 - Vector3(decimal(0.0), -mHalfHeight - mMargin, decimal(0.0))).dot(d);
+    decimal vec1DotD = (ray.point1 - Vector3(decimal(0.0), -mHalfHeight - extendedMargin, decimal(0.0))).dot(d);
     if (vec1DotD < decimal(0.0) && vec1DotD + nDotD < decimal(0.0)) return false;
-    decimal ddotDExtraCaps = decimal(2.0) * mMargin * d.y;
+    decimal ddotDExtraCaps = decimal(2.0) * extendedMargin * d.y;
     if (vec1DotD > dDotD + ddotDExtraCaps && vec1DotD + nDotD > dDotD + ddotDExtraCaps) return false;
 
     decimal nDotN = n.dot(n);
     decimal mDotN = m.dot(n);
 
     decimal a = dDotD * nDotN - nDotD * nDotD;
-    decimal k = m.dot(m) - mMargin * mMargin;
+    decimal k = m.dot(m) - extendedMargin * extendedMargin;
     decimal c = dDotD * k - mDotD * mDotD;
 
     // If the ray is parallel to the capsule axis
@@ -136,13 +139,14 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* c
             // Check intersection between the ray and the "p" sphere endcap of the capsule
             Vector3 hitLocalPoint;
             decimal hitFraction;
-            if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
+            if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.radius, ray.maxFraction, hitLocalPoint, hitFraction)) {
                 raycastInfo.body = collider->getBody();
                 raycastInfo.collider = collider;
                 raycastInfo.hitFraction = hitFraction;
                 raycastInfo.worldPoint = hitLocalPoint;
                 Vector3 normalDirection = hitLocalPoint - p;
                 raycastInfo.worldNormal = normalDirection;
+                raycastInfo.worldPoint -= normalDirection.getUnit() * ray.radius;
 
                 return true;
             }
@@ -154,13 +158,14 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* c
             // Check intersection between the ray and the "q" sphere endcap of the capsule
             Vector3 hitLocalPoint;
             decimal hitFraction;
-            if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
+            if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.radius, ray.maxFraction, hitLocalPoint, hitFraction)) {
                 raycastInfo.body = collider->getBody();
                 raycastInfo.collider = collider;
                 raycastInfo.hitFraction = hitFraction;
                 raycastInfo.worldPoint = hitLocalPoint;
                 Vector3 normalDirection = hitLocalPoint - q;
                 raycastInfo.worldNormal = normalDirection;
+                raycastInfo.worldPoint -= normalDirection.getUnit() * ray.radius;
 
                 return true;
             }
@@ -187,13 +192,14 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* c
         // Check intersection between the ray and the "p" sphere endcap of the capsule
         Vector3 hitLocalPoint;
         decimal hitFraction;
-        if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.maxFraction, hitLocalPoint, hitFraction)) {
+        if (raycastWithSphereEndCap(ray.point1, ray.point2, p, ray.radius, ray.maxFraction, hitLocalPoint, hitFraction)) {
             raycastInfo.body = collider->getBody();
             raycastInfo.collider = collider;
             raycastInfo.hitFraction = hitFraction;
             raycastInfo.worldPoint = hitLocalPoint;
             Vector3 normalDirection = hitLocalPoint - p;
             raycastInfo.worldNormal = normalDirection;
+            raycastInfo.worldPoint -= normalDirection.getUnit() * ray.radius;
 
             return true;
         }
@@ -205,13 +211,14 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* c
         // Check intersection between the ray and the "q" sphere endcap of the capsule
         Vector3 hitLocalPoint;
         decimal hitFraction;
-        if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.maxFraction, hitLocalPoint, hitFraction)) {
+        if (raycastWithSphereEndCap(ray.point1, ray.point2, q, ray.radius, ray.maxFraction, hitLocalPoint, hitFraction)) {
             raycastInfo.body = collider->getBody();
             raycastInfo.collider = collider;
             raycastInfo.hitFraction = hitFraction;
             raycastInfo.worldPoint = hitLocalPoint;
             Vector3 normalDirection = hitLocalPoint - q;
             raycastInfo.worldNormal = normalDirection;
+            raycastInfo.worldPoint -= normalDirection.getUnit() * ray.radius;
 
             return true;
         }
@@ -235,17 +242,19 @@ bool CapsuleShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* c
     Vector3 w = (v.dot(d) / d.lengthSquare()) * d;
     Vector3 normalDirection = (localHitPoint - (p + w)).getUnit();
     raycastInfo.worldNormal = normalDirection;
+    raycastInfo.worldPoint -= normalDirection * ray.radius;
 
     return true;
 }
 
 // Raycasting method between a ray one of the two spheres end cap of the capsule
 bool CapsuleShape::raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,
-                                           const Vector3& sphereCenter, decimal maxFraction,
+                                           const Vector3& sphereCenter, decimal rayRadius, decimal maxFraction,
                                            Vector3& hitLocalPoint, decimal& hitFraction) const {
 
-     const Vector3 m = point1 - sphereCenter;
-    decimal c = m.dot(m) - mMargin * mMargin;
+    const Vector3 m = point1 - sphereCenter;
+    decimal extendedMargin = mMargin + rayRadius;
+    decimal c = m.dot(m) - extendedMargin * extendedMargin;
 
     // If the origin of the ray is inside the sphere, we return no intersection
     if (c < decimal(0.0)) return false;

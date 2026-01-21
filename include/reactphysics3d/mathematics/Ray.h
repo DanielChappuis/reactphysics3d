@@ -34,9 +34,10 @@ namespace reactphysics3d {
 
 // Class Ray
 /**
- * This structure represents a 3D ray represented by two points.
+ * This structure represents a 3D ray represented by two points and a radius.
  * The ray goes from point1 to point1 + maxFraction * (point2 - point1).
- * The points are specified in world-space coordinates.
+ * The points and radius are specified in world-space coordinates.
+ * If the radius is greater than zero, the ray will work as a sphere-sweep. 
  */
 struct Ray {
 
@@ -50,14 +51,17 @@ struct Ray {
         /// Second point of the ray in world-space
         Vector3 point2;
 
+        /// Radius of the ray in world-space
+        decimal radius;
+
         /// Maximum fraction value
         decimal maxFraction;
 
         // -------------------- Methods -------------------- //
 
         /// Constructor with arguments
-        Ray(const Vector3& p1, const Vector3& p2, decimal maxFrac = decimal(1.0))
-           : point1(p1), point2(p2), maxFraction(maxFrac) {
+        Ray(const Vector3& p1, const Vector3& p2, decimal radius = decimal(0.0), decimal maxFrac = decimal(1.0))
+           : point1(p1), point2(p2), radius(radius), maxFraction(maxFrac) {
 
         }
 };

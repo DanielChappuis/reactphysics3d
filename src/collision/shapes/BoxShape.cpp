@@ -70,21 +70,24 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* colli
     // For each of the three slabs
     for (int i=0; i<3; i++) {
 
+        // Account for ray radius
+        decimal expandedHalfExtent = mHalfExtents[i] + ray.radius;
+        
         // If ray is parallel to the slab
         if (std::abs(rayDirection[i]) < MACHINE_EPSILON) {
 
             // If the ray's origin is not inside the slab, there is no hit
-            if (ray.point1[i] > mHalfExtents[i] || ray.point1[i] < -mHalfExtents[i]) return false;
+            if (ray.point1[i] > expandedHalfExtent || ray.point1[i] < -expandedHalfExtent) return false;
         }
         else {
 
             // Compute the intersection of the ray with the near and far plane of the slab
             decimal oneOverD = decimal(1.0) / rayDirection[i];
-            decimal t1 = (-mHalfExtents[i] - ray.point1[i]) * oneOverD;
-            decimal t2 = (mHalfExtents[i] - ray.point1[i]) * oneOverD;
-            currentNormal[0] = (i == 0) ? -mHalfExtents[i] : decimal(0.0);
-            currentNormal[1] = (i == 1) ? -mHalfExtents[i] : decimal(0.0);
-            currentNormal[2] = (i == 2) ? -mHalfExtents[i] : decimal(0.0);
+            decimal t1 = (-expandedHalfExtent - ray.point1[i]) * oneOverD;
+            decimal t2 = (expandedHalfExtent - ray.point1[i]) * oneOverD;
+            currentNormal[0] = (i == 0) ? -expandedHalfExtent : decimal(0.0);
+            currentNormal[1] = (i == 1) ? -expandedHalfExtent : decimal(0.0);
+            currentNormal[2] = (i == 2) ? -expandedHalfExtent : decimal(0.0);
 
             // Swap t1 and t2 if need so that t1 is intersection with near plane and
             // t2 with far plane
@@ -114,6 +117,39 @@ bool BoxShape::raycast(const Ray& ray, RaycastInfo& raycastInfo, Collider* colli
     // The ray intersects the three slabs, we compute the hit point
     Vector3 localHitPoint = ray.point1 + tMin * rayDirection;
 
+    // Adjust hit point for sweep radius
+    if (ray.radius > decimal(0.0))
+    {
+        // Clamp point to box
+        Vector3 contactPointOnBox;
+        contactPointOnBox.x = std::clamp(localHitPoint.x, -mHalfExtents.x, mHalfExtents.x);
+        contactPointOnBox.y = std::clamp(localHitPoint.y, -mHalfExtents.y, mHalfExtents.y);
+        contactPointOnBox.z = std::clamp(localHitPoint.z, -mHalfExtents.z, mHalfExtents.z);
+
+        // Solve hit point for box
+        Vector3 oc = ray.point1 - contactPointOnBox;
+        decimal a = rayDirection.lengthSquare(); // a = D.D
+        decimal b = 2.0 * rayDirection.dot(oc);  // b = 2 * (D . OC)
+        decimal c = oc.lengthSquare() - ray.radius * ray.radius; // c = OC.OC - r^2
+
+        // If origin is inside sphere (c < 0)
+        if (c < 0.0) {
+            if (b >= 0.0) return false; // Already overlapping and moving away
+            tMin = 0.0;
+        } else {
+            decimal discriminant = b * b - 4.0 * a * c;
+            if (discriminant < 0.0) return false; // No real solution, so no hit
+            decimal t = (-b - std::sqrt(discriminant)) / (2.0 * a);
+            if (t < 0.0 || t > ray.maxFraction) return false; // Hit is behind or too far
+            tMin = t;
+        }
+        
+        // From sphere to box
+        Vector3 sphereHitPoint = ray.point1 + tMin * rayDirection;
+        normalDirection = (sphereHitPoint - contactPointOnBox).getUnit();
+        localHitPoint = contactPointOnBox;
+    }
+    
     raycastInfo.body = collider->getBody();
     raycastInfo.collider = collider;
     raycastInfo.hitFraction = tMin;

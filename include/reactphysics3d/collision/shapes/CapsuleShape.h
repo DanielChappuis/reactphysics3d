@@ -71,7 +71,7 @@ class CapsuleShape : public ConvexShape {
 
         /// Raycasting method between a ray one of the two spheres end cap of the capsule
         bool raycastWithSphereEndCap(const Vector3& point1, const Vector3& point2,
-                                     const Vector3& sphereCenter, decimal maxFraction,
+                                     const Vector3& sphereCenter, decimal rayRadius, decimal maxFraction,
                                      Vector3& hitLocalPoint, decimal& hitFraction) const;
 
         /// Return the number of bytes used by the collision shape
