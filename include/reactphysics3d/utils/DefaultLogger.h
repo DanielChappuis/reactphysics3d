@@ -37,6 +37,7 @@
 #include <iomanip>
 #include <mutex>
 #include <ctime>
+#include <chrono>
 
 /// ReactPhysics3D namespace
 namespace reactphysics3d {
