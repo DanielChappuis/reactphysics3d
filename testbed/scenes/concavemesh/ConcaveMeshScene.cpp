@@ -35,8 +35,6 @@ using namespace trianglemeshscene;
 ConcaveMeshScene::ConcaveMeshScene(const std::string& name, EngineSettings& settings, reactphysics3d::PhysicsCommon& physicsCommon)
       : SceneDemo(name, settings, physicsCommon, true) {
 
-    std::string meshFolderPath = ResourceManager::getMeshDirectoryPath();
-
     // Compute the radius and the center of the scene
     openglframework::Vector3 center(0, 15, 0);
 

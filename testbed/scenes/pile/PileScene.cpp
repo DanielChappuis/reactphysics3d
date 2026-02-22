@@ -165,7 +165,7 @@ void PileScene::createPhysicsWorld() {
     // ---------- Create the triangular mesh ---------- //
 
     // Create a convex mesh and a corresponding rigid in the physics world
-    mSandbox = new ConcaveMesh(rp3d::BodyType::STATIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "pile.obj");
+    mSandbox = new ConcaveMesh(rp3d::BodyType::STATIC, true, mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("pile.obj"));
 
     // Set the box color
     mSandbox->setColor(mFloorColorDemo);

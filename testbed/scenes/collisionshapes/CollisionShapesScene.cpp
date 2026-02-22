@@ -167,7 +167,7 @@ void CollisionShapesScene::createPhysicsWorld() {
     for (int i=0; i<NB_HULLS; i++) {
 
         // Create a convex hull and a corresponding rigid in the physics world
-        ConvexHull* mesh = new ConvexHull(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, mMeshFolderPath + "cow.obj", rp3d::Vector3(5, 5, 5));
+        ConvexHull* mesh = new ConvexHull(rp3d::BodyType::DYNAMIC, true, mPhysicsCommon, mPhysicsWorld, ResourceManager::getMeshPath("cow.obj"), rp3d::Vector3(5, 5, 5));
 
         // Set the box color
         mesh->setColor(mObjectColorDemo);

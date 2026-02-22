@@ -53,9 +53,6 @@ private:
     /// Private constructor (singleton pattern)
     ResourceManager() = default;
     
-    /// Find resource directory by name
-    static std::string findResourceDirectory(const std::string& dirName);
-    
     /// Initialize resource paths
     static void initialize();
     
