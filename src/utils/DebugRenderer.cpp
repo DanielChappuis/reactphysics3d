@@ -310,19 +310,20 @@ void DebugRenderer::drawConvexMesh(const Transform& transform, const ConvexMeshS
 
         Vector3 centroid;
 
+        uint32 v1Index = face.faceVertices[0];
+        Vector3 v1 = convexMesh->getVertexPosition(v1Index);
+        v1 = transform * v1;
+
 		// Perform a fan triangulation of the convex polygon face
         const uint32 nbFaceVertices = static_cast<uint32>(face.faceVertices.size());
         for (uint32 v = 2; v < nbFaceVertices; v++) {
 
-            uint32 v1Index = face.faceVertices[v - 2];
             uint32 v2Index = face.faceVertices[v - 1];
             uint32 v3Index = face.faceVertices[v];
 
-            Vector3 v1 = convexMesh->getVertexPosition(v1Index);
             Vector3 v2 = convexMesh->getVertexPosition(v2Index);
             Vector3 v3 = convexMesh->getVertexPosition(v3Index);
 
-            v1 = transform * v1;
             v2 = transform * v2;
             v3 = transform * v3;
 
