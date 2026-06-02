@@ -798,6 +798,9 @@ void PhysicsCommon::destroyDefaultLogger(DefaultLogger* logger) {
  * @param logger A pointer to the default logger to destroy
  */
 void PhysicsCommon::deleteDefaultLogger(DefaultLogger* logger) {
+    if (logger == mLogger) {
+        setLogger(nullptr);
+    }
 
    // Call the destructor of the logger
    logger->~DefaultLogger();
