@@ -808,7 +808,7 @@ by setting the lock factor to zero for this axis.
 
 ~~~.cpp
 // Disable rotation around the Y axis
-rigidBody->setAngularAxisFactor(Vector3(1, 0, 1));
+rigidBody->setAngularLockAxisFactor(Vector3(1, 0, 1));
 ~~~
 
 ### Destroying a Rigid Body {#destroyingbody}
