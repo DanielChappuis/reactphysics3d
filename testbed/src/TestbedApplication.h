@@ -71,6 +71,10 @@ class TestbedApplication {
         /// Current 3D scene
         Scene* mCurrentScene;
 
+        /// True while a mouse button press that landed on the GUI is being held: the scene's
+        /// camera controls don't get the press, the drag, or the release (see mouse_button_event)
+        bool mIsMouseCapturedByGui = false;
+
         /// Physics engine default settings
         EngineSettings mDefaultEngineSettings;
 
@@ -207,6 +211,9 @@ class TestbedApplication {
 
         /// Default keyboard event handler
         void keyboard_event(int key, int scancode, int action, int modifiers);
+
+        /// Typed character (GLFW char callback) - text input for the GUI
+        void char_event(unsigned int codepoint);
 
         /// Handle a mouse button event (default implementation: propagate to children)
         void mouse_button_event(int button, int action, int modifiers);

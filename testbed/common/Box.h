@@ -91,6 +91,9 @@ class Box : public PhysicsObject {
 
         /// Return the collider
         rp3d::Collider* getCollider();
+
+        /// Change the size of the box (visual scaling and collision shape half-extents)
+        void setSize(const openglframework::Vector3& size);
 };
 
 // Update the transform matrix of the object

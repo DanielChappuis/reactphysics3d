@@ -74,9 +74,8 @@ HingeJoint::HingeJoint(Entity entity, PhysicsWorld &world, const HingeJointInfo&
     mWorld.mHingeJointsComponents.setHingeLocalAxisBody1(mEntity, hingeLocalAxisBody1);
     mWorld.mHingeJointsComponents.setHingeLocalAxisBody2(mEntity, hingeLocalAxisBody2);
 
-    // Compute the inverse of the initial orientation difference between the two bodies
-    Quaternion initOrientationDifferenceInv = transform2.getOrientation() *
-                                    transform1.getOrientation().getInverse();
+    Quaternion initOrientationDifferenceInv = transform1.getOrientation().getInverse() *
+                                    transform2.getOrientation();
     initOrientationDifferenceInv.normalize();
     initOrientationDifferenceInv.inverse();
     mWorld.mHingeJointsComponents.setInitOrientationDifferenceInv(mEntity, initOrientationDifferenceInv);

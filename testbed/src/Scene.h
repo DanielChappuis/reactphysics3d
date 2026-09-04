@@ -30,6 +30,8 @@
 #include "openglframework.h"
 #include <reactphysics3d/reactphysics3d.h>
 
+namespace nanogui { class Widget; }
+
 using namespace std::chrono_literals;
 
 // Structure ContactPoint
@@ -280,6 +282,11 @@ class Scene : public rp3d::EventListener {
 
         /// Update the engine settings
         virtual void updateEngineSettings() = 0;
+
+        /// Populate a "Scene" GUI panel with scene-specific controls (sliders, buttons, ...).
+        /// Called by the Gui each time this scene becomes the current one; the panel is hidden
+        /// if a scene adds nothing. Default: no scene-specific controls.
+        virtual void createGuiWidgets(nanogui::Widget* /*parent*/) {}
 
         /// Return a reference to the engine settings of the scene
         EngineSettings& getEngineSettings();

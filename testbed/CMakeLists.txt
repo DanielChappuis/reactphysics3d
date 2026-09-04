@@ -127,6 +127,8 @@ set(COMMON_SOURCES
 
 # Examples scenes source files
 set(SCENES_SOURCES
+    scenes/crane/CraneScene.h
+    scenes/crane/CraneScene.cpp
     scenes/ballandsocketjointsnet/BallAndSocketJointsNetScene.h
     scenes/ballandsocketjointsnet/BallAndSocketJointsNetScene.cpp
     scenes/ballandsocketjointschain/BallAndSocketJointsChainScene.h

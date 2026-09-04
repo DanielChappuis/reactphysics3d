@@ -68,10 +68,14 @@ class Gui {
 
         // Settings Panel
         Widget* mSettingsPanel;
+
+        // Scene-specific controls panel (rebuilt on every scene switch, see createScenePanel())
+        Widget* mScenePanel;
         Widget* mPhysicsPanel;
         Widget* mRenderingPanel;
 
         // Profiling panel
+        Widget* mProfilingPanel;
         Label* mFPSLabel;
         Label* mFrameTimeLabel;
         Label* mTotalPhysicsTimeLabel;
@@ -120,7 +124,13 @@ class Gui {
 
         void createSettingsPanel();
 
+        void createScenePanel();
+
         void createProfilingPanel();
+
+        /// Stack the Simulation / Settings / Profiling windows vertically below each other,
+        /// whatever their current heights (call after any perform_layout that can change them)
+        void stackPanels();
 
         // Convert float value to string
         std::string floatToString(float value, int precision);
@@ -156,11 +166,18 @@ class Gui {
 
         void onMouseMotionEvent(double x, double y);
 
+        /// True if the given window position is over a visible GUI widget - nanogui's answer to
+        /// ImGui's io.WantCaptureMouse. Used to keep clicks/drags that start on the GUI (e.g. a
+        /// slider) from also reaching the scene's camera controls.
+        bool isMouseOverGui(double x, double y) const;
+
         bool onScrollEvent(double x, double y);
 
         void onMouseButtonEvent(int button, int action, int modifiers);
 
         void onKeyboardEvent(int key, int scancode, int action, int modifiers);
+
+        void onCharEvent(unsigned int codepoint);
 
         bool getIsDisplayed() const;
 

@@ -81,6 +81,21 @@ Box::Box(reactphysics3d::BodyType type, bool isSimulationCollider, const openglf
     mTransformMatrix = mTransformMatrix * mScalingMatrix;
 }
 
+// Change the size of the box (visual scaling and collision shape half-extents)
+void Box::setSize(const openglframework::Vector3& size) {
+
+    mSize[0] = size.x * 0.5f;
+    mSize[1] = size.y * 0.5f;
+    mSize[2] = size.z * 0.5f;
+
+    mScalingMatrix = openglframework::Matrix4(mSize[0], 0, 0, 0,
+                                              0, mSize[1], 0, 0,
+                                              0, 0, mSize[2], 0,
+                                              0, 0, 0, 1);
+
+    mBoxShape->setHalfExtents(rp3d::Vector3(mSize[0], mSize[1], mSize[2]));
+}
+
 // Destructor
 Box::~Box() {
 

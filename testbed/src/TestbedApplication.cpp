@@ -49,6 +49,7 @@
 #include "sliderjoint/SliderJointScene.h"
 #include "ragdoll/RagdollScene.h"
 #include "rope/RopeScene.h"
+#include "crane/CraneScene.h"
 
 using namespace openglframework;
 using namespace jointsscene;
@@ -69,6 +70,7 @@ using namespace fixedjointscene;
 using namespace ballandsocketjointscene;
 using namespace hingejointscene;
 using namespace sliderjointscene;
+using namespace cranescene;
 using namespace ragdollscene;
 using namespace ropescene;
 
@@ -213,6 +215,12 @@ void TestbedApplication::start() {
     glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
          TestbedApplication* app = static_cast<TestbedApplication*>(glfwGetWindowUserPointer(window));
          app->keyboard_event(key, scancode, action, mods);
+        }
+    );
+
+    glfwSetCharCallback(mWindow, [](GLFWwindow* window, unsigned int codepoint) {
+         TestbedApplication* app = static_cast<TestbedApplication*>(glfwGetWindowUserPointer(window));
+         app->char_event(codepoint);
         }
     );
 
@@ -366,6 +374,12 @@ void TestbedApplication::createScenes() {
     mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
     SliderJointScene* sliderJointScene = new SliderJointScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
     mScenes.push_back(sliderJointScene);
+
+    // Crane scene (hinge + slider + ball-and-socket + slider chain, driven by motors from the Scene panel)
+    sceneName = "Crane";
+    mLogger.addFileDestination(sceneName, logLevel, rp3d::DefaultLogger::Format::HTML);
+    CraneScene* craneScene = new CraneScene(sceneName, mDefaultEngineSettings, mPhysicsCommon);
+    mScenes.push_back(craneScene);
 
     // Ragdoll scene
     sceneName = "Ragdoll";
@@ -553,7 +567,7 @@ void GLAPIENTRY TestbedApplication::onOpenGLError(GLenum source, GLenum type, GL
 
 #ifdef GL_DEBUG_OUTPUT
     if (type == GL_DEBUG_TYPE_ERROR) {
-        fprintf( stderr, "GL CALLBACK: %s source = 0x%x, type = 0x%x, severity = 0x%x, message = %s\n",
+        fprintf( stderr, "GL CALLBACK: %s source = 0x%x, type = 0x%x, severity = 0x%x, message = %s\n",
                    ("** GL ERROR **" ),
                     source, type, severity, message );
     }
@@ -594,6 +608,11 @@ void TestbedApplication::computeFPS() {
 
     //  Set time
     mPreviousTime = mCurrentTime;
+}
+
+// Typed character (text input for the GUI's text boxes)
+void TestbedApplication::char_event(unsigned int codepoint) {
+    mGui.onCharEvent(codepoint);
 }
 
 void TestbedApplication::keyboard_event(int key, int scancode, int action, int modifiers) {
@@ -645,6 +664,22 @@ void TestbedApplication::mouse_button_event(int button, int action, int modifier
 
     bool down = action == GLFW_PRESS;
 
+    // A press on the GUI belongs to the GUI: the scene sees neither it, the drag that follows,
+    // nor the release (otherwise dragging a slider also rotates the camera)
+    if (down && mGui.isMouseOverGui(x, y)) {
+        mIsMouseCapturedByGui = true;
+        return;
+    }
+    if (!down && mIsMouseCapturedByGui) {
+        int leftState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_LEFT);
+        int rightState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_RIGHT);
+        int middleState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_MIDDLE);
+        if (leftState != GLFW_PRESS && rightState != GLFW_PRESS && middleState != GLFW_PRESS) {
+            mIsMouseCapturedByGui = false;
+        }
+        return;
+    }
+
     mCurrentScene->mouseButtonEvent(button, down, modifiers, x, y);
 }
 
@@ -657,6 +692,13 @@ void TestbedApplication::mouse_motion_event(double x, double y) {
     int rightButtonState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_RIGHT);
     int middleButtonState = glfwGetMouseButton(mWindow, GLFW_MOUSE_BUTTON_MIDDLE);
     int altKeyState = glfwGetKey(mWindow, GLFW_KEY_LEFT_ALT);
+
+    // While a GUI drag is in progress the scene's camera must not follow the mouse. Report the
+    // buttons as released so the scene just records the position (no rotate/pan/zoom) and won't
+    // jump when the drag ends.
+    if (mIsMouseCapturedByGui) {
+        leftButtonState = rightButtonState = middleButtonState = GLFW_RELEASE;
+    }
 
     mCurrentScene->mouseMotionEvent(x, y, leftButtonState, rightButtonState, middleButtonState, altKeyState);
 }
