@@ -76,6 +76,9 @@ void RigidBody::setType(BodyType type) {
         mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
         mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
 
+        mWorld.mRigidBodyComponents.setConstrainedLinearVelocity(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setConstrainedAngularVelocity(mEntity, Vector3::zero());
+
         const Transform& transform = getTransform();
         mWorld.mRigidBodyComponents.setConstrainedPosition(mEntity, transform.getPosition());
         mWorld.mRigidBodyComponents.setConstrainedOrientation(mEntity, transform.getOrientation());
@@ -1039,6 +1042,10 @@ void RigidBody::setIsSleeping(bool isSleeping) {
 
         mWorld.mRigidBodyComponents.setLinearVelocity(mEntity, Vector3::zero());
         mWorld.mRigidBodyComponents.setAngularVelocity(mEntity, Vector3::zero());
+
+        mWorld.mRigidBodyComponents.setConstrainedLinearVelocity(mEntity, Vector3::zero());
+        mWorld.mRigidBodyComponents.setConstrainedAngularVelocity(mEntity, Vector3::zero());
+
         mWorld.mRigidBodyComponents.setExternalForce(mEntity, Vector3::zero());
         mWorld.mRigidBodyComponents.setExternalTorque(mEntity, Vector3::zero());
     }

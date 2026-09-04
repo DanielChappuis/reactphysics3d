@@ -255,7 +255,8 @@ void SolveHingeJointSystem::warmstart() {
         const Vector3 limitsImpulse = (impulseUpperLimit - impulseLowerLimit) * a1;
 
         // Compute the impulse P=J^T * lambda for the motor constraint
-        const Vector3 motorImpulse = -mHingeJointComponents.mImpulseMotor[i] * a1;
+        // sign flipped to match the corrected motor impulse in solveVelocityConstraint
+        const Vector3 motorImpulse = mHingeJointComponents.mImpulseMotor[i] * a1;
 
         // Compute the impulse P=J^T * lambda for the 3 translation constraints of body 1
         Vector3 linearImpulseBody1 = -impulseTranslation;
@@ -400,13 +401,13 @@ void SolveHingeJointSystem::solveVelocityConstraint() {
             deltaLambdaMotor = mHingeJointComponents.mImpulseMotor[i] - lambdaTemp;
 
             // Compute the impulse P=J^T * lambda for the motor of body 1
-            const Vector3 angularImpulseBody1 = -deltaLambdaMotor * a1;
+            const Vector3 angularImpulseBody1 = deltaLambdaMotor * a1;
 
             // Apply the impulse to the body 1
             w1 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody1] * (i1 * angularImpulseBody1);
 
             // Compute the impulse P=J^T * lambda for the motor of body 2
-            const Vector3 angularImpulseBody2 = deltaLambdaMotor * a1;
+            const Vector3 angularImpulseBody2 = -deltaLambdaMotor * a1;
 
             // Apply the impulse to the body 2
             w2 += mRigidBodyComponents.mAngularLockAxisFactors[componentIndexBody2] * (i2 * angularImpulseBody2);
@@ -760,8 +761,10 @@ decimal SolveHingeJointSystem::computeCurrentHingeAngle(Entity jointEntity, cons
 
     decimal hingeAngle;
 
-    // Compute the current orientation difference between the two bodies
-    Quaternion currentOrientationDiff = orientationBody2 * orientationBody1.getInverse();
+    // Compute the current orientation difference between the two bodies, in body 1's frame
+    // q1^-1 * q2 rather than the world-frame q2 * q1^-1
+    // In body 1's frame a hinge rotation shows up as a rotation about the local axis
+    Quaternion currentOrientationDiff = orientationBody1.getInverse() * orientationBody2;
     currentOrientationDiff.normalize();
 
     // Compute the relative rotation considering the initial orientation difference
@@ -779,7 +782,7 @@ decimal SolveHingeJointSystem::computeCurrentHingeAngle(Entity jointEntity, cons
     decimal sinHalfAngleAbs = relativeRotation.getVectorV().length();
 
     // Compute the dot product of the relative rotation axis and the hinge axis
-    decimal dotProduct = relativeRotation.getVectorV().dot(mHingeJointComponents.getA1(jointEntity));
+    decimal dotProduct = relativeRotation.getVectorV().dot(mHingeJointComponents.getHingeLocalAxisBody1(jointEntity));
 
     // If the relative rotation axis and the hinge axis are pointing the same direction
     if (dotProduct >= decimal(0.0)) {
