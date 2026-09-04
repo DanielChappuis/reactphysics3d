@@ -41,7 +41,7 @@ double Gui::mCachedPhysicsStepTime = 0;
 
 // Constructor
 Gui::Gui(TestbedApplication* app)
-    : mApp(app), mSimulationPanel(nullptr), mSettingsPanel(nullptr), mPhysicsPanel(nullptr),
+    : mApp(app), mSimulationPanel(nullptr), mSettingsPanel(nullptr), mScenePanel(nullptr), mPhysicsPanel(nullptr), mProfilingPanel(nullptr), mComboBoxScenes(nullptr),
       mRenderingPanel(nullptr), mFPSLabel(nullptr), mFrameTimeLabel(nullptr), mTotalPhysicsTimeLabel(nullptr),
       mPhysicsStepTimeLabel(nullptr), mIsDisplayed(true)
 {
@@ -73,8 +73,23 @@ void Gui::init(GLFWwindow* window) {
 
     mScreen->set_visible(true);
     mScreen->perform_layout();
+    stackPanels();
 
     mTimeSinceLastProfilingDisplay = glfwGetTime();
+}
+
+// Stack the left-hand windows below each other. They used to sit at hard-coded y positions,
+// which only works while their heights never change.
+void Gui::stackPanels() {
+
+    const int margin = 15;
+    int y = margin;
+    Widget* panels[] = { mSimulationPanel, mSettingsPanel, mProfilingPanel };
+    for (Widget* panel : panels) {
+        if (panel == nullptr) continue;
+        panel->set_position(Vector2i(margin, y));
+        y += panel->height() + margin;
+    }
 }
 
 void Gui::drawAll() {
@@ -101,7 +116,42 @@ void Gui::drawTearDown() {
 
 
 // Update the GUI values with the engine settings from the current scene
+// (Re)create the panel holding the current scene's own controls
+void Gui::createScenePanel() {
+
+    if (mScenePanel != nullptr) {
+        mScreen->remove_child(mScenePanel);
+        mScenePanel = nullptr;
+    }
+
+    mScenePanel = new Window(mScreen, "Scene");
+    mScenePanel->set_position(Vector2i(250, 15));
+    mScenePanel->set_layout(new GroupLayout(10, 5, 10, 20));
+    mScenePanel->set_fixed_width(260);
+
+    mApp->mCurrentScene->createGuiWidgets(mScenePanel);
+
+    // Nothing added: don't show an empty window
+    mScenePanel->set_visible(mScenePanel->child_count() > 0);
+
+    mScreen->perform_layout();
+}
+
 void Gui::resetWithValuesFromCurrentScene() {
+
+    createScenePanel();
+
+    // Keep the scene combo box in sync with the scene actually shown (a switch can come from
+    // code, not only from the combo box itself)
+    if (mComboBoxScenes != nullptr) {
+        std::vector<Scene*> scenes = mApp->getScenes();
+        for (size_t i = 0; i < scenes.size(); i++) {
+            if (scenes[i] == mApp->mCurrentScene) {
+                mComboBoxScenes->set_selected_index((int)i);
+                break;
+            }
+        }
+    }
 
     auto test = mApp->getCurrentSceneEngineSettings();
     mCheckboxSleeping->set_checked(mApp->getCurrentSceneEngineSettings().isSleepingEnabled);
@@ -197,6 +247,21 @@ void Gui::createSimulationPanel() {
     mComboBoxScenes->set_callback([&, scenes](int index) {
         mApp->switchScene(scenes[index]);
     });
+
+    // The testbed's own controls (see TestbedApplication::keyboard_event and Scene::mouseMotionEvent)
+    new Label(mSimulationPanel, "Controls (global)", "sans-bold");
+    auto addHelp = [&](const std::string& text) {
+        Label* label = new Label(mSimulationPanel, text);
+        label->set_fixed_width(190);   // wraps
+    };
+    addHelp("P : Play / Pause");
+    addHelp("R : Enable Automatic Camera Rotation");
+    addHelp("I : Show / Hide this GUI");
+    addHelp("Esc : Quit");
+    addHelp("Left Drag : Rotate Camera");
+    addHelp("Right or Middle Drag : Pan Camera");
+    addHelp("Wheel, or Alt + Up/Down Drag : Zoom Camera");
+    addHelp("Scenes may add their own keys - see the Scene panel.");
 }
 
 void Gui::createSettingsPanel() {
@@ -217,6 +282,7 @@ void Gui::createSettingsPanel() {
         mPhysicsPanel->set_visible(true);
         mRenderingPanel->set_visible(false);
         mScreen->perform_layout();
+        stackPanels();
     });
     Button* buttonRendering = new Button(buttonsPanel, "Rendering");
     buttonRendering->set_flags(Button::RadioButton);
@@ -224,6 +290,7 @@ void Gui::createSettingsPanel() {
         mRenderingPanel->set_visible(true);
         mPhysicsPanel->set_visible(false);
         mScreen->perform_layout();
+        stackPanels();
     });
 
     // ---------- Physics Panel ----------
@@ -546,7 +613,8 @@ void Gui::createSettingsPanel() {
 void Gui::createProfilingPanel() {
 
     Widget* profilingPanel = new Window(mScreen, "Profiling");
-    profilingPanel->set_position(Vector2i(15, 505));
+    mProfilingPanel = profilingPanel;
+    profilingPanel->set_position(Vector2i(15, 505));   // re-stacked by stackPanels()
     profilingPanel->set_layout(new BoxLayout(Orientation::Vertical, Alignment::Fill, 10, 5));
     //profilingPanel->setId("SettingsPanel");
     profilingPanel->set_fixed_width(220);
@@ -570,6 +638,16 @@ void Gui::onWindowResizeEvent(int width, int height) {
     mScreen->resize_callback_event(width, height);
 }
 
+bool Gui::isMouseOverGui(double x, double y) const {
+
+    if (!mIsDisplayed || mScreen == nullptr) return false;
+
+    // find_widget() returns the deepest visible widget under the point, or the screen itself
+    // (or null) when the point is over empty background
+    const Widget* widget = mScreen->find_widget(Vector2i((int)x, (int)y));
+    return widget != nullptr && widget != mScreen;
+}
+
 void Gui::onMouseMotionEvent(double x, double y) {
     mScreen->cursor_pos_callback_event(x, y);
 }
@@ -591,6 +669,10 @@ bool Gui::onScrollEvent(double x, double y) {
 
 void Gui::onMouseButtonEvent(int button, int action, int modifiers) {
     mScreen->mouse_button_callback_event(button, action, modifiers);
+}
+
+void Gui::onCharEvent(unsigned int codepoint) {
+    mScreen->char_callback_event(codepoint);
 }
 
 void Gui::onKeyboardEvent(int key, int scancode, int action, int modifiers) {
